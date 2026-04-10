@@ -1,7 +1,7 @@
 {
   "name": "botero-trade",
   "version": "0.1.0",
-  "description": "Botero Trade \u2014 algorithmic trading engine with Next.js + PayloadCMS frontend and Python FastAPI trading backend",
+  "description": "Botero Trade — algorithmic trading engine with Next.js + PayloadCMS frontend and Python FastAPI trading backend",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -20,6 +20,7 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "generate": "pnpm generate:types && pnpm generate:importmap",
     "dev:api": "cd backend && .venv/bin/uvicorn api.main:app --reload --port 8000",
+    "dev:all": "concurrently --names \"web,api\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail \"pnpm dev\" \"pnpm dev:api\"",
     "docker:up": "docker compose up",
     "docker:build": "docker compose build",
     "docker:down": "docker compose down"
@@ -73,6 +74,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "autoprefixer": "^10.4.19",
+    "concurrently": "^9.2.1",
     "copyfiles": "^2.4.1",
     "eslint": "^9.16.0",
     "eslint-config-next": "16.1.7",

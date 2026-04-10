@@ -173,7 +173,7 @@ botero-trade/
 │   ├── requirements.txt
 │   └── Dockerfile
 │
-├── docker-compose.yml               # Orchestrates web + api + postgres
+├── docker-compose.yml               # Orchestrates web + api (DB is external)
 ├── Dockerfile                       # Next.js production image (standalone)
 ├── package.json                     # pnpm root — pnpm start runs Next.js
 ├── .env.example                     # All required environment variables
@@ -189,7 +189,8 @@ botero-trade/
 - [Node.js](https://nodejs.org) `>=20.9.0`
 - [pnpm](https://pnpm.io) `>=9`
 - [Python](https://python.org) `3.12+`
-- [Docker + Docker Compose](https://docs.docker.com/compose/) (optional but recommended)
+- [Docker + Docker Compose](https://docs.docker.com/compose/) (optional)
+- An external PostgreSQL database (see [Database](#database) below)
 
 ### 1. Clone and configure environment
 
@@ -197,32 +198,21 @@ botero-trade/
 cp .env.example .env
 ```
 
-Edit `.env` and fill in your credentials (see [Environment Variables](#environment-variables) below).
+Edit `.env` and fill in your credentials — especially `POSTGRES_URL` (see [Environment Variables](#environment-variables)).
 
-### 2a. Local development (without Docker)
+### 2a. Local development — all services in one command
 
-**Terminal 1 — Frontend:**
 ```bash
 pnpm install
-pnpm dev
-# → http://localhost:3000
+cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && cd ..
+pnpm dev:all
 ```
 
-**Terminal 2 — Python trading engine:**
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn api.main:app --reload --port 8000
-# → http://localhost:8000
-# → http://localhost:8000/docs  (Swagger UI)
+`pnpm dev:all` starts both services concurrently with labeled, colored output:
+
 ```
-
-You will also need a local PostgreSQL instance running on port `5432`.
-
-### 2b. Docker Compose (all services in one command)
-
-```bash
-docker compose up
+[web] ▶ Next.js ready on http://localhost:3000
+[api] ▶ Uvicorn running on http://0.0.0.0:8000
 ```
 
 | Service | URL |
@@ -231,7 +221,34 @@ docker compose up
 | PayloadCMS admin | http://localhost:3000/admin |
 | Trading Engine API | http://localhost:8000 |
 | API docs (Swagger) | http://localhost:8000/docs |
-| PostgreSQL | localhost:5432 |
+
+### 2b. Docker Compose (containerized)
+
+```bash
+docker compose up
+```
+
+Starts `web` (port 3000) and `api` (port 8000). The database is not managed by Docker — set `POSTGRES_URL` in `.env` to your external database.
+
+---
+
+## Database
+
+PostgreSQL is hosted **externally** — not inside Docker — so your data is never tied to this project's containers and survives migrations, rebuilds, and deployments.
+
+Recommended providers:
+
+| Provider | Free tier | Notes |
+|---|---|---|
+| [Vercel Postgres](https://vercel.com/storage/postgres) | Yes | Best for Vercel deployments — zero config |
+| [Neon](https://neon.tech) | Yes | Serverless, branching support |
+| [Supabase](https://supabase.com) | Yes | Includes auth, storage, realtime |
+| Local instance | — | `postgres://postgres:<pw>@127.0.0.1:5432/botero_trade` |
+
+Set the connection string in `.env`:
+```
+POSTGRES_URL=postgres://user:password@host:5432/database
+```
 
 ---
 
@@ -241,7 +258,7 @@ Copy `.env.example` to `.env` and fill in the values:
 
 | Variable | Description |
 |---|---|
-| `POSTGRES_URL` | PostgreSQL connection string for PayloadCMS |
+| `POSTGRES_URL` | External PostgreSQL connection string |
 | `PAYLOAD_SECRET` | Secret key for JWT encryption |
 | `NEXT_PUBLIC_SERVER_URL` | Public URL of the frontend |
 | `TRADING_API_URL` | URL of the Python trading engine |
@@ -251,7 +268,6 @@ Copy `.env.example` to `.env` and fill in the values:
 | `ALPACA_API_KEY` | Alpaca API key |
 | `ALPACA_SECRET_KEY` | Alpaca secret key |
 | `ALPACA_BASE_URL` | Alpaca endpoint (default: paper trading) |
-| `POSTGRES_PASSWORD` | PostgreSQL password (Docker only) |
 
 > **Interactive Brokers note:** TWS or IB Gateway must run on your local machine — it cannot run inside Docker. The `api` container connects to it via `host.docker.internal` or your machine's LAN IP.
 
@@ -356,18 +372,21 @@ The template is already configured for `@payloadcms/db-vercel-postgres` and `@pa
 The Python `api` service requires persistent server infrastructure (it connects to broker APIs and runs long-lived processes). Deploy it to any VPS, DigitalOcean Droplet, or similar:
 
 ```bash
-docker compose up -d api postgres
+docker compose up -d api
 ```
 
 Set `TRADING_API_URL` in your Vercel environment variables to point to your server's public IP/domain.
 
-### Production scripts
+### Scripts reference
 
 | Command | Description |
 |---|---|
+| `pnpm dev:all` | Start frontend + Python API together (recommended for local dev) |
+| `pnpm dev` | Frontend only (Next.js dev server) |
+| `pnpm dev:api` | Python API only (uvicorn with hot reload) |
 | `pnpm start` | Start Next.js production server |
 | `pnpm build` | Build Next.js for production |
-| `pnpm docker:up` | Start all Docker services |
+| `pnpm docker:up` | Start web + api via Docker Compose |
 | `pnpm docker:build` | Rebuild Docker images |
 | `pnpm docker:down` | Stop all Docker services |
 

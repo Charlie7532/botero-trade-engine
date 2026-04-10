@@ -181,6 +181,8 @@ pnpm generate         # regenerate PayloadCMS types + importmap
 
 ## Available slash commands
 
+Full documentation for each command is in `.claude/SKILLS.md`.
+
 | Command | Purpose |
 |---|---|
 | `/start` | Full startup checklist — prerequisites, env, install, launch |

@@ -1,0 +1,23 @@
+<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#fafafa"/>
+  <!-- Title -->
+  <text x="200" y="26" text-anchor="middle" fill="#1d1d1f" font-size="13" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Lorem Ipsum Dolor</text>
+  <!-- Card 1 -->
+  <rect x="18" y="40" width="115" height="196" rx="12" fill="#fff"/>
+  <rect x="26" y="48" width="99" height="82" rx="8" fill="#e8e8ed"/>
+  <text x="36" y="150" fill="#1d1d1f" font-size="9" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Lorem Ipsum</text>
+  <text x="36" y="166" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">Dolor sit amet</text>
+  <text x="36" y="180" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">consectetur elit.</text>
+  <!-- Card 2 -->
+  <rect x="143" y="40" width="115" height="196" rx="12" fill="#fff"/>
+  <rect x="151" y="48" width="99" height="82" rx="8" fill="#e8e8ed"/>
+  <text x="161" y="150" fill="#1d1d1f" font-size="9" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Dolor Amet</text>
+  <text x="161" y="166" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">Adipiscing tempor</text>
+  <text x="161" y="180" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">incididunt labore.</text>
+  <!-- Card 3 -->
+  <rect x="268" y="40" width="115" height="196" rx="12" fill="#fff"/>
+  <rect x="276" y="48" width="99" height="82" rx="8" fill="#e8e8ed"/>
+  <text x="286" y="150" fill="#1d1d1f" font-size="9" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Sit Eiusmod</text>
+  <text x="286" y="166" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">Ut enim ad minim</text>
+  <text x="286" y="180" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">veniam nostrud.</text>
+</svg>

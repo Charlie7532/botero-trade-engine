@@ -1,0 +1,48 @@
+/*
+ * Tailwind CSS for the Payload Admin Panel (utilities only)
+ *
+ * This file provides Tailwind utility classes and HeroUI component styles
+ * inside custom Payload admin components WITHOUT importing Tailwind's
+ * preflight/reset, which would conflict with Payload's built-in styles.
+ *
+ * NOTE: If Payload regenerates layout.tsx, re-add this import line:
+ *   import './tailwind-admin.css'
+ *
+ * IMPORTANT: HeroUI styles are imported FIRST so Tailwind utilities can override them
+ */
+
+/* HeroUI v3 styles - imported first so Tailwind can override */
+@import "@heroui/styles";
+
+/* Tailwind theme and utilities - imported AFTER HeroUI to take precedence */
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
+
+/* Scan custom admin components for Tailwind class usage */
+@source '../../components/**/*.{ts,tsx}';
+@source '../../collections/**/*.{ts,tsx}';
+
+/* Dark mode variant matching Payload's theme class */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Override HeroUI base styles that conflict with Payload's admin UI
+ * These ensure Payload's styling takes precedence for default elements
+ */
+
+/* Prevent HeroUI from resetting body/html styles */
+body, html {
+  all: revert-layer;
+}
+
+/* Restore Payload's button styling (HeroUI resets buttons globally) */
+button:not([class*="heroui"]):not([data-slot]) {
+  all: revert-layer;
+}
+
+/* Restore default input styling for non-HeroUI inputs */
+input:not([class*="heroui"]):not([data-slot]),
+select:not([class*="heroui"]):not([data-slot]),
+textarea:not([class*="heroui"]):not([data-slot]) {
+  all: revert-layer;
+}

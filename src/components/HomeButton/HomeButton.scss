@@ -1,0 +1,55 @@
+.home-button-wrapper {
+  padding: 1rem;
+  border-bottom: 1px solid var(--theme-elevation-100);
+  background: var(--theme-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--theme-text);
+  text-decoration: none;
+  
+  &:hover {
+    background: var(--theme-elevation-100);
+    border-color: var(--theme-elevation-300);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.loading {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  .home-button-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .home-button-text {
+    white-space: nowrap;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}

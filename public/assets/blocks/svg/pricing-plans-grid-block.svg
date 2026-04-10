@@ -1,0 +1,40 @@
+<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#fafafa"/>
+  <!-- Title -->
+  <text x="200" y="24" text-anchor="middle" fill="#1d1d1f" font-size="14" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Lorem Ipsum Dolor</text>
+  <text x="200" y="42" text-anchor="middle" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">Consectetur adipiscing elit.</text>
+  <!-- Card 1 -->
+  <rect x="15" y="56" width="115" height="185" rx="12" fill="#fff"/>
+  <text x="72" y="80" text-anchor="middle" fill="#1d1d1f" font-size="10" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Lorem</text>
+  <text x="72" y="108" text-anchor="middle" fill="#1d1d1f" font-size="22" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">$9</text>
+  <text x="72" y="122" text-anchor="middle" fill="#86868b" font-size="8" font-family="-apple-system, Helvetica, sans-serif">/lorem</text>
+  <line x1="30" y1="132" x2="115" y2="132" stroke="#e5e5e7" stroke-width="0.5"/>
+  <text x="35" y="150" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Ipsum dolor</text>
+  <text x="35" y="164" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Sit amet</text>
+  <text x="35" y="178" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Consectetur</text>
+  <rect x="28" y="210" width="88" height="24" rx="12" fill="#f5f5f7"/>
+  <text x="72" y="227" text-anchor="middle" fill="#1d1d1f" font-size="8.5" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Lorem</text>
+  <!-- Card 2 (featured) -->
+  <rect x="143" y="50" width="115" height="192" rx="12" fill="#1d1d1f"/>
+  <text x="200" y="74" text-anchor="middle" fill="#f5f5f7" font-size="10" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Ipsum</text>
+  <text x="200" y="102" text-anchor="middle" fill="#f5f5f7" font-size="22" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">$29</text>
+  <text x="200" y="116" text-anchor="middle" fill="#86868b" font-size="8" font-family="-apple-system, Helvetica, sans-serif">/lorem</text>
+  <line x1="158" y1="126" x2="243" y2="126" stroke="#3a3a3c" stroke-width="0.5"/>
+  <text x="163" y="144" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Ipsum dolor</text>
+  <text x="163" y="158" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Sit amet</text>
+  <text x="163" y="172" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Adipiscing</text>
+  <text x="163" y="186" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Eiusmod</text>
+  <rect x="156" y="210" width="88" height="24" rx="12" fill="#f5f5f7"/>
+  <text x="200" y="227" text-anchor="middle" fill="#1d1d1f" font-size="8.5" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Lorem</text>
+  <!-- Card 3 -->
+  <rect x="270" y="56" width="115" height="185" rx="12" fill="#fff"/>
+  <text x="327" y="80" text-anchor="middle" fill="#1d1d1f" font-size="10" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Dolor</text>
+  <text x="327" y="108" text-anchor="middle" fill="#1d1d1f" font-size="22" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">$49</text>
+  <text x="327" y="122" text-anchor="middle" fill="#86868b" font-size="8" font-family="-apple-system, Helvetica, sans-serif">/lorem</text>
+  <line x1="285" y1="132" x2="370" y2="132" stroke="#e5e5e7" stroke-width="0.5"/>
+  <text x="290" y="150" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Ipsum dolor</text>
+  <text x="290" y="164" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Sit amet</text>
+  <text x="290" y="178" fill="#86868b" font-size="7.5" font-family="-apple-system, Helvetica, sans-serif">&#x2713; Consectetur</text>
+  <rect x="283" y="210" width="88" height="24" rx="12" fill="#f5f5f7"/>
+  <text x="327" y="227" text-anchor="middle" fill="#1d1d1f" font-size="8.5" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Lorem</text>
+</svg>

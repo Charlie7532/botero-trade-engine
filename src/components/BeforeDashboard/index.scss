@@ -1,0 +1,22 @@
+.dashboard .before-dashboard {
+  margin-bottom: 2.25rem;
+
+  &__banner {
+    & h4 {
+      margin: 0;
+    }
+  }
+
+  &__instructions {
+    list-style: decimal;
+    margin-bottom: 0.75rem;
+
+    & li {
+      width: 100%;
+    }
+  }
+
+  & a:hover {
+    opacity: 0.85;
+  }
+}

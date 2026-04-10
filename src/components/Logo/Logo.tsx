@@ -1,0 +1,24 @@
+import React from 'react'
+
+interface Props {
+  className?: string
+  loading?: 'lazy' | 'eager'
+  priority?: 'auto' | 'high' | 'low'
+}
+
+export const Logo = (props: Props) => {
+  // Props are available if needed in the future
+  const { } = props
+
+  return (
+    <svg
+      viewBox="0 0 54.111 7.937"
+      height="30" width="204.516"
+      xmlns="http://www.w3.org/2000/svg">
+      <g >
+        <path className="fill-black dark:fill-white" d="M681.276-735.473v7.888h-.8v-6.31l-3.1 5.307h-.394l-3.099-5.274v6.277h-.8v-7.888h.687l3.426 5.849 3.392-5.85zm7.212 5.105-1.893-4.237-1.893 4.237zm.304.676h-4.395l-.946 2.107h-.868l3.606-7.888h.823l3.606 7.888h-.879zm3.133-5.781h.834v7.888h-.834zm9.996 0v7.888h-.687l-5.072-6.4v6.4h-.833v-7.888h.687l5.082 6.4v-6.4zm7.956 0v7.888h-1.825v-6.423h-1.578v-1.465zm7.229 6.42v1.468h-5.886v-1.168l3.004-2.837q.478-.456.645-.784.168-.329.167-.65 0-.469-.317-.718-.317-.25-.929-.25-.512 0-.923.194-.412.195-.69.584l-1.313-.846a3.1 3.1 0 0 1 1.257-1.062q.801-.384 1.836-.384.868 0 1.519.284t1.012.801.362 1.218q0 .635-.267 1.19-.267.557-1.035 1.269l-1.791 1.69z" transform="translate(-664.468 737.017)scale(1.00206)" />
+        <path className="fill-black dark:fill-white" d="M671.022-731.52h-3.969v3.968m-3.968-3.968h3.968v-3.97" transform="translate(-663.085 735.489)" />
+      </g>
+    </svg>
+  )
+}

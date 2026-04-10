@@ -1,0 +1,18 @@
+<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#111"/>
+  <!-- Avatars -->
+  <circle cx="160" cy="48" r="15" fill="#2d2d2d" stroke="#333" stroke-width="1.5"/>
+  <circle cx="180" cy="48" r="15" fill="#3a3a3c" stroke="#333" stroke-width="1.5"/>
+  <circle cx="200" cy="48" r="15" fill="#48484a" stroke="#333" stroke-width="1.5"/>
+  <circle cx="220" cy="48" r="15" fill="#636366" stroke="#333" stroke-width="1.5"/>
+  <circle cx="240" cy="48" r="15" fill="#86868b" stroke="#333" stroke-width="1.5"/>
+  <!-- Title -->
+  <text x="200" y="96" text-anchor="middle" fill="#f5f5f7" font-size="17" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Lorem Ipsum Dolor Sit Amet</text>
+  <!-- Subtitle -->
+  <text x="200" y="118" text-anchor="middle" fill="#86868b" font-size="10" font-family="-apple-system, Helvetica, sans-serif">Consectetur adipiscing elit, sed do eiusmod tempor.</text>
+  <!-- Buttons -->
+  <rect x="112" y="140" width="86" height="34" rx="17" fill="#f5f5f7"/>
+  <text x="155" y="162" text-anchor="middle" fill="#1d1d1f" font-size="10" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Lorem</text>
+  <rect x="208" y="140" width="86" height="34" rx="17" fill="none" stroke="#48484a" stroke-width="1"/>
+  <text x="251" y="162" text-anchor="middle" fill="#86868b" font-size="10" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Ipsum</text>
+</svg>

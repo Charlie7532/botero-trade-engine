@@ -1,0 +1,14 @@
+<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#fafafa"/>
+  <!-- Text column -->
+  <text x="30" y="56" fill="#1d1d1f" font-size="16" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Lorem Ipsum</text>
+  <text x="30" y="78" fill="#1d1d1f" font-size="16" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Dolor Sit Amet</text>
+  <text x="30" y="104" fill="#86868b" font-size="9.5" font-family="-apple-system, Helvetica, sans-serif">Consectetur adipiscing elit, sed</text>
+  <text x="30" y="118" fill="#86868b" font-size="9.5" font-family="-apple-system, Helvetica, sans-serif">do eiusmod tempor incididunt</text>
+  <text x="30" y="132" fill="#86868b" font-size="9.5" font-family="-apple-system, Helvetica, sans-serif">ut labore et dolore magna.</text>
+  <!-- Button -->
+  <rect x="30" y="154" width="80" height="32" rx="16" fill="#1d1d1f"/>
+  <text x="70" y="175" text-anchor="middle" fill="#fff" font-size="10" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Lorem</text>
+  <!-- Image placeholder -->
+  <rect x="210" y="25" width="170" height="200" rx="14" fill="#e8e8ed"/>
+</svg>

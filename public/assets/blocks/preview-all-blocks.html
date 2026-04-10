@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Block SVG Previews — Apple Minimal</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #000;
+        color: #f5f5f7;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+        padding: 4rem 2rem;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: #f5f5f7;
+      }
+      .subtitle {
+        text-align: center;
+        color: #86868b;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: 400;
+      }
+      .count {
+        text-align: center;
+        color: #48484a;
+        font-size: 0.85rem;
+        margin-bottom: 3rem;
+        font-weight: 400;
+      }
+
+      /* Section headers */
+      .section-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #f5f5f7;
+        letter-spacing: -0.01em;
+        max-width: 1400px;
+        margin: 3rem auto 1.5rem;
+        padding-left: 0.5rem;
+        border-left: 3px solid #86868b;
+      }
+      .section-title span {
+        color: #86868b;
+        font-weight: 400;
+        font-size: 0.9rem;
+        margin-left: 0.75rem;
+      }
+
+      /* Grid */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1.5rem;
+        max-width: 1400px;
+        margin: 0 auto 2rem;
+      }
+
+      /* Cards */
+      .card {
+        background: #1d1d1f;
+        border-radius: 18px;
+        overflow: hidden;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      }
+      .card .thumb {
+        width: 100%;
+        aspect-ratio: 16/10;
+        object-fit: cover;
+        display: block;
+        border-bottom: 1px solid #2d2d2f;
+      }
+      .card .info {
+        padding: 1rem 1.25rem 1.25rem;
+      }
+      .card h3 {
+        color: #f5f5f7;
+        margin: 0 0 0.2rem;
+        font-size: 1rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      .card .slug {
+        color: #636366;
+        font-size: 0.78rem;
+        font-family: 'SF Mono', Menlo, monospace;
+        font-weight: 400;
+      }
+      .card .desc {
+        color: #86868b;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Blocks</h1>
+    <p class="subtitle">Preview de cada bloque del sistema</p>
+    <p class="count">17 bloques &middot; estilo Apple minimal &middot; Lorem Ipsum</p>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- HERO & CTA                                      -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="section-title">Hero &amp; CTA <span>4 bloques</span></div>
+    <div class="grid">
+      <!-- 1. Call to Action -->
+      <div class="card">
+        <img class="thumb" src="svg/cta-block.svg" alt="Call to Action block preview" />
+        <div class="info">
+          <h3>Call to Action</h3>
+          <div class="slug">cta</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Texto + botón CTA.
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Signup CTA -->
+      <div class="card">
+        <img class="thumb" src="svg/signup-cta-block.svg" alt="Signup CTA block preview" />
+        <div class="info">
+          <h3>Signup CTA</h3>
+          <div class="slug">signupCTA</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Avatars apilados, título y botones de acción.
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Section Hero With Badge -->
+      <div class="card">
+        <img
+          class="thumb"
+          src="svg/section-hero-with-badge-block.svg"
+          alt="Section Hero With Badge block preview"
+        />
+        <div class="info">
+          <h3>Section Hero With Badge</h3>
+          <div class="slug">sectionHeroWithBadge</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Badge + heading destacado + imagen hero.
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Banner -->
+      <div class="card">
+        <img class="thumb" src="svg/banner-block.svg" alt="Banner block preview" />
+        <div class="info">
+          <h3>Banner</h3>
+          <div class="slug">banner</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Alerta/notificación con variantes de color.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- CONTENT & LAYOUT                                -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="section-title">Content &amp; Layout <span>4 bloques</span></div>
+    <div class="grid">
+      <!-- 5. Content -->
+      <div class="card">
+        <img class="thumb" src="svg/content-block.svg" alt="Content block preview" />
+        <div class="info">
+          <h3>Content</h3>
+          <div class="slug">content</div>
+          <div class="desc">Lorem ipsum dolor sit amet. Layout multi-columna flexible.</div>
+        </div>
+      </div>
+
+      <!-- 6. Two Column Text Image -->
+      <div class="card">
+        <img
+          class="thumb"
+          src="svg/two-column-text-image-block.svg"
+          alt="Two Column Text Image block preview"
+        />
+        <div class="info">
+          <h3>Two Column Text Image</h3>
+          <div class="slug">twoColumnTextImage</div>
+          <div class="desc">Lorem ipsum dolor sit amet. Texto + imagen a dos columnas.</div>
+        </div>
+      </div>
+
+      <!-- 7. Profile With Image -->
+      <div class="card">
+        <img
+          class="thumb"
+          src="svg/profile-with-image-block.svg"
+          alt="Profile With Image block preview"
+        />
+        <div class="info">
+          <h3>Profile With Image</h3>
+          <div class="slug">profileWithImage</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Imagen + bio alternados izquierda/derecha.
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Related Posts -->
+      <div class="card">
+        <img class="thumb" src="svg/related-posts-block.svg" alt="Related Posts block preview" />
+        <div class="info">
+          <h3>Related Posts</h3>
+          <div class="slug">relatedPosts</div>
+          <div class="desc">Lorem ipsum dolor sit amet. Grid de posts relacionados.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- MEDIA                                           -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="section-title">Media <span>2 bloques</span></div>
+    <div class="grid">
+      <!-- 9. Media Block -->
+      <div class="card">
+        <img class="thumb" src="svg/media-block.svg" alt="Media Block preview" />
+        <div class="info">
+          <h3>Media Block</h3>
+          <div class="slug">mediaBlock</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Imagen con opciones de tamaño, sombra y borde.
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Video Embed With Heading -->
+      <div class="card">
+        <img
+          class="thumb"
+          src="svg/video-with-heading-block.svg"
+          alt="Video Embed With Heading block preview"
+        />
+        <div class="info">
+          <h3>Video Embed With Heading</h3>
+          <div class="slug">videoEmbedWithHeading</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Reproductor de video con heading destacado.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PRICING                                         -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="section-title">Pricing <span>2 bloques</span></div>
+    <div class="grid">
+      <!-- 11. Pricing Plans Grid -->
+      <div class="card">
+        <img
+          class="thumb"
+          src="svg/pricing-plans-grid-block.svg"
+          alt="Pricing Plans Grid block preview"
+        />
+        <div class="info">
+          <h3>Pricing Plan Grid</h3>
+          <div class="slug">pricingPlanGrid</div>
+          <div class="desc">Lorem ipsum dolor sit amet. Grid de planes con card destacada.</div>
+        </div>
+      </div>
+
+      <!-- 12. Pricing Card -->
+      <div class="card">
+        <img class="thumb" src="svg/pricing-card-block.svg" alt="Pricing Card block preview" />
+        <div class="info">
+          <h3>Pricing Card</h3>
+          <div class="slug">pricingCard</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Card individual con precio, features y CTA.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SERVICES                                        -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="section-title">Services <span>2 bloques</span></div>
+    <div class="grid">
+      <!-- 13. Service Card Grid -->
+      <div class="card">
+        <img
+          class="thumb"
+          src="svg/service-card-grid-block.svg"
+          alt="Service Card Grid block preview"
+        />
+        <div class="info">
+          <h3>Service Card Grid</h3>
+          <div class="slug">serviceCardGrid</div>
+          <div class="desc">Lorem ipsum dolor sit amet. Grid de service cards con header.</div>
+        </div>
+      </div>
+
+      <!-- 14. Service Card -->
+      <div class="card">
+        <img class="thumb" src="svg/service-card-block.svg" alt="Service Card block preview" />
+        <div class="info">
+          <h3>Service Card</h3>
+          <div class="slug">serviceCard</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Card 3D con imagen + descripción + botones.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- FORM & INTERACTIVE                              -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="section-title">Form &amp; Interactive <span>2 bloques</span></div>
+    <div class="grid">
+      <!-- 15. Form Block -->
+      <div class="card">
+        <img class="thumb" src="svg/form-block.svg" alt="Form Block preview" />
+        <div class="info">
+          <h3>Form Block</h3>
+          <div class="slug">formBlock</div>
+          <div class="desc">Lorem ipsum dolor sit amet. Formulario con campos configurables.</div>
+        </div>
+      </div>
+
+      <!-- 16. Archive -->
+      <div class="card">
+        <img class="thumb" src="svg/archive-block.svg" alt="Archive block preview" />
+        <div class="info">
+          <h3>Archive</h3>
+          <div class="slug">archive</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Colección de posts en grid con filtros.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- CODE & TECHNICAL                                -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="section-title">Code &amp; Technical <span>1 bloque</span></div>
+    <div class="grid">
+      <!-- 17. Code Block -->
+      <div class="card">
+        <img class="thumb" src="svg/code-block.svg" alt="Code Block preview" />
+        <div class="info">
+          <h3>Code Block</h3>
+          <div class="slug">code</div>
+          <div class="desc">
+            Lorem ipsum dolor sit amet. Snippet con syntax highlighting y botón copiar.
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

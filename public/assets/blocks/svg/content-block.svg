@@ -1,0 +1,24 @@
+<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#fafafa"/>
+  <!-- Col 1 -->
+  <text x="30" y="72" fill="#1d1d1f" font-size="11" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Lorem Ipsum</text>
+  <text x="30" y="90" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">Dolor sit amet consectetur</text>
+  <text x="30" y="104" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">adipiscing elit sed do.</text>
+  <line x1="30" y1="118" x2="125" y2="118" stroke="#e5e5e7" stroke-width="0.5"/>
+  <text x="30" y="136" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">Sed do eiusmod tempor</text>
+  <text x="30" y="150" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">incididunt ut labore.</text>
+  <!-- Col 2 -->
+  <text x="155" y="72" fill="#1d1d1f" font-size="11" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Dolor Amet</text>
+  <text x="155" y="90" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">Ut enim ad minim veniam</text>
+  <text x="155" y="104" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">quis nostrud exercitation.</text>
+  <line x1="155" y1="118" x2="250" y2="118" stroke="#e5e5e7" stroke-width="0.5"/>
+  <text x="155" y="136" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">Exercitation ullamco</text>
+  <text x="155" y="150" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">laboris nisi ut aliquip.</text>
+  <!-- Col 3 -->
+  <text x="280" y="72" fill="#1d1d1f" font-size="11" font-weight="600" font-family="-apple-system, Helvetica, sans-serif">Sit Consectetur</text>
+  <text x="280" y="90" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">Duis aute irure dolor</text>
+  <text x="280" y="104" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">in reprehenderit.</text>
+  <line x1="280" y1="118" x2="380" y2="118" stroke="#e5e5e7" stroke-width="0.5"/>
+  <text x="280" y="136" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">Voluptate velit esse</text>
+  <text x="280" y="150" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">cillum dolore eu fugiat.</text>
+</svg>

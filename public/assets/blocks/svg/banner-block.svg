@@ -1,0 +1,8 @@
+<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#fafafa"/>
+  <rect x="20" y="90" width="360" height="70" rx="14" fill="#fff"/>
+  <circle cx="56" cy="125" r="14" fill="#f5f5f7"/>
+  <text x="56" y="130" text-anchor="middle" fill="#86868b" font-size="14" font-family="-apple-system, Helvetica, sans-serif">i</text>
+  <text x="84" y="118" fill="#1d1d1f" font-size="11" font-weight="500" font-family="-apple-system, Helvetica, sans-serif">Lorem ipsum dolor sit amet</text>
+  <text x="84" y="136" fill="#86868b" font-size="9" font-family="-apple-system, Helvetica, sans-serif">Consectetur adipiscing elit, sed do eiusmod tempor.</text>
+</svg>

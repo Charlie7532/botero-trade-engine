@@ -1,0 +1,217 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@import "../../styles/heroui-theme.css";
+
+/* Plugin imports for Tailwind v4 */
+@plugin "@tailwindcss/typography";
+
+/* Source paths - scan src files */
+@source '../../**/*.{ts,tsx}';
+
+/* Custom variant for dark mode - supports both data-theme attribute and .dark class for HeroUI */
+@custom-variant dark (&:is([data-theme="dark"] *, .dark *));
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: unset;
+    font-weight: unset;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Replaces prior tailwind.config container settings with CSS-native layout rules */
+@layer base {
+  :root {
+    --container-sm: 40rem;
+    --container-md: 48rem;
+    --container-lg: 64rem;
+    --container-xl: 80rem;
+    --container-2xl: 86rem;
+    --container-pad-mobile: 1rem;
+    --container-pad-desktop: 2rem;
+  }
+
+  .container {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: var(--container-pad-mobile);
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      max-width: var(--container-sm);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container {
+      max-width: var(--container-md);
+      padding-inline: var(--container-pad-desktop);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      max-width: var(--container-lg);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container {
+      max-width: var(--container-xl);
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .container {
+      max-width: var(--container-2xl);
+    }
+  }
+}
+
+html {
+  opacity: 0;
+}
+
+html[data-theme='dark'],
+html[data-theme='light'] {
+  opacity: initial;
+}
+
+/* Admin Bar and Header Integration */
+@layer base {
+  /* Ensure admin bar has maximum priority and proper spacing */
+  [data-payload-admin-bar] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 999999 !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    min-height: 40px !important;
+  }
+
+  /* Add top padding to body when admin bar exists */
+  html:has([data-payload-admin-bar]) body,
+  body {
+    padding-top: var(--payload-admin-bar-height, 0px);
+  }
+}
+
+@layer utilities {
+  /* Header positioning that respects admin bar */
+  .header-with-admin-bar {
+    position: relative;
+    z-index: 10; /* Lower than admin bar */
+  }
+
+  .header-sticky {
+    position: sticky;
+    top: 0px; /* Start from top of viewport after body padding */
+    z-index: 10;
+  }
+
+  /* Content spacing utilities */
+  .main-content {
+    min-height: calc(100vh - var(--payload-admin-bar-height, 0px));
+  }
+}
+
+/* Admin Bar and Header Integration */
+@layer base {
+  /* Ensure admin bar has maximum priority and proper spacing */
+  [data-payload-admin-bar] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 999999 !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    min-height: 40px !important;
+  }
+
+  /* Add top padding to body when admin bar exists */
+  html:has([data-payload-admin-bar]) body,
+  body {
+    padding-top: var(--payload-admin-bar-height, 0px);
+  }
+}
+
+@layer utilities {
+  /* Header positioning that respects admin bar */
+  .header-with-admin-bar {
+    position: relative;
+    z-index: 10; /* Lower than admin bar */
+  }
+
+  .header-sticky {
+    position: sticky;
+    top: 0px; /* Start from top of viewport after body padding */
+    z-index: 10;
+  }
+
+  /* Content spacing utilities */
+  .main-content {
+    min-height: calc(100vh - var(--payload-admin-bar-height, 0px));
+  }
+}
+
+/* Admin Bar and Header Integration */
+@layer base {
+  /* Ensure admin bar has maximum priority and proper spacing */
+  [data-payload-admin-bar] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 999999 !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    min-height: 40px !important;
+  }
+
+  /* Add top padding to body when admin bar exists */
+  html:has([data-payload-admin-bar]) body,
+  body {
+    padding-top: var(--payload-admin-bar-height, 0px);
+  }
+}
+
+@layer utilities {
+  /* Header positioning that respects admin bar */
+  .header-with-admin-bar {
+    position: relative;
+    z-index: 10; /* Lower than admin bar */
+  }
+
+  .header-sticky {
+    position: sticky;
+    top: 0px; /* Start from top of viewport after body padding */
+    z-index: 10;
+  }
+
+  /* Content spacing utilities */
+  .main-content {
+    min-height: calc(100vh - var(--payload-admin-bar-height, 0px));
+  }
+}

@@ -60,9 +60,10 @@ class Position:
 class Order:
     symbol: str
     side: OrderSide
-    quantity: float
     order_type: OrderType
     broker: Broker
+    quantity: Optional[float] = None
+    notional: Optional[float] = None
     limit_price: Optional[float] = None
     stop_price: Optional[float] = None
     order_id: Optional[str] = None

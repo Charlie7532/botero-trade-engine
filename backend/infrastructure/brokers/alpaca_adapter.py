@@ -88,20 +88,23 @@ class AlpacaAdapter(BrokerAdapter):
 
         client = self._get_trading_client()
         side = AlpacaSide.BUY if order.side == OrderSide.BUY else AlpacaSide.SELL
+        # Crypto symbols contain "/" (e.g. "BTC/USD"); crypto requires GTC, not DAY
+        is_crypto = "/" in order.symbol
+        tif = TimeInForce.GTC if is_crypto else TimeInForce.DAY
 
         if order.order_type == OrderType.MARKET:
-            request = MarketOrderRequest(
-                symbol=order.symbol,
-                qty=order.quantity,
-                side=side,
-                time_in_force=TimeInForce.DAY,
-            )
+            kwargs: dict = {"symbol": order.symbol, "side": side, "time_in_force": tif}
+            if order.notional is not None:
+                kwargs["notional"] = order.notional
+            else:
+                kwargs["qty"] = order.quantity
+            request = MarketOrderRequest(**kwargs)
         else:
             request = LimitOrderRequest(
                 symbol=order.symbol,
                 qty=order.quantity,
                 side=side,
-                time_in_force=TimeInForce.DAY,
+                time_in_force=tif,
                 limit_price=order.limit_price,
             )
 

@@ -2,7 +2,9 @@ build
 dist / media
 node_modules
 .DS_Store
+.vscode/
 .env
+.mcp.json
 .next
 .vercel
 

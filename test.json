@@ -1,0 +1,12 @@
+{
+  "name": "botero-trade",
+  "version": "1.0.0",
+  "description": "Archivo de prueba para el proyecto botero-trade",
+  "data": {
+    "symbol": "AAPL",
+    "price": 175.50,
+    "currency": "USD",
+    "active": true
+  },
+  "tags": ["trading", "prueba", "json"]
+}

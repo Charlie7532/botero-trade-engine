@@ -23,3 +23,17 @@ services:
       - ./backend:/app
     environment:
       - PYTHONPATH=/app
+
+  # Cloudflare Tunnel — exposes the app to the internet via your domain
+  # 1. Create a tunnel:  cloudflared tunnel create botero-trade
+  # 2. Add your token to .env:  CLOUDFLARE_TUNNEL_TOKEN=your-token
+  # 3. Configure DNS in Cloudflare dashboard to point your domain to this tunnel
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    depends_on:
+      - web
+      - api
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}

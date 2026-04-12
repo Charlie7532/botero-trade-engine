@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "backtesting-trading-strategies": {
+      "source": "jeremylongshore/claude-code-plugins-plus-skills",
+      "sourceType": "github",
+      "computedHash": "d3d31dfb5a2234936d56f9097f5f5636a0a2469b7a21ce1cfc2909f9cafbf699"
+    },
+    "trading-analysis": {
+      "source": "gracefullight/stock-checker",
+      "sourceType": "github",
+      "computedHash": "886bdbb07be29864ef396e06c3cc2b0931d767c93e46487a2f26594c5b09c9f2"
+    }
+  }
+}

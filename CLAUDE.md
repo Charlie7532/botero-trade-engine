@@ -190,6 +190,36 @@ Full documentation for each command is in `.claude/SKILLS.md`.
 | `/dev` | Dev environment reference and common task cheatsheet |
 | `/add-strategy` | Guided workflow: add a new Backtrader strategy |
 | `/add-broker` | Guided workflow: add a new broker adapter |
+| `/find-finance-skills` | Descubrir e integrar nuevas herramientas financieras (librerías, APIs, MCP servers) |
+
+---
+
+## Security — credential files are OFF LIMITS
+
+**This is a hard rule. No exceptions.**
+
+The following files contain secrets and must NEVER be read, written, viewed, cat'd, printed, or output by any AI agent:
+
+- `.env`
+- `.env.local`
+- `.env.development`
+- `.env.production`
+- `.mcp.json`
+- Any file matching `.env*` (except `.env.example`)
+
+**What you CAN do:**
+- Edit `.env.example` (it contains only placeholders, never real values)
+- Tell the user what variables to add/change and let them edit manually
+- Use `grep -c VARIABLE_NAME .env` to check if a variable exists (returns count, not content)
+- Reference env var names in code via `process.env.X` or `os.getenv("X")`
+
+**What you MUST NEVER do:**
+- `cat .env`, `view_file .env`, or any command that outputs credential file contents
+- Write or overwrite `.env`, `.env.local`, or `.mcp.json`
+- Include credential values in your responses, code comments, or logs
+- Copy credential values between files
+
+Credentials leaking into LLM context = credentials leaking to the world. Treat these files like they don't exist.
 
 ---
 
@@ -208,3 +238,5 @@ Full documentation for each command is in `.claude/SKILLS.md`.
 6. **No direct `fetch` in React components.** Data fetching belongs in `src/modules/*/infrastructure/` or `src/shared/infrastructure/`. Components receive data as props or via hooks that call infrastructure.
 
 7. **Do not add error handling for impossible cases.** Trust the layer above to validate. Trust the broker adapter interface. Only handle errors at system boundaries (incoming HTTP, external API responses).
+
+8. **Never read or modify `.env` files.** Only `.env.example` may be edited. See the Security section above.

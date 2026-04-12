@@ -106,6 +106,19 @@ If a skill asks you to place code somewhere that would violate this rule, correc
 
 ---
 
+## `/find-finance-skills`
+**File:** `.claude/commands/find-finance-skills.md`
+**Use when:** Quieres descubrir e integrar nuevas herramientas, librerías o fuentes de datos financieras en el proyecto.
+
+Flujo guiado que:
+1. Presenta 10 categorías de herramientas financieras (datos de mercado, análisis fundamental, riesgo, opciones, crypto, ML, MCP servers, etc.)
+2. Para cada herramienta: muestra ficha con tipo, instalación, dónde vive en Clean Architecture y ejemplo de código
+3. Si el usuario elige una herramienta, guía la integración paso a paso respetando las capas del proyecto
+4. Para MCP servers, busca en el directorio oficial y en la comunidad
+5. Evita sugerir herramientas ya integradas (Alpaca, IB, Backtrader, yfinance vía MCP)
+
+---
+
 ## Adding a new skill
 
 1. Create `.claude/commands/{skill-name}.md`

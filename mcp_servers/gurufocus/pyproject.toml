@@ -1,0 +1,17 @@
+[project]
+name = "gurufocus-mcp"
+version = "0.6.0"
+description = "GuruFocus MCP server patched"
+authors = [{ name = "Local Installer", email = "local@example.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=0.4",
+    "gurufocus-api",
+    "jmespath>=1.0",
+    "python-toon>=0.1",
+    "structlog>=24.0",
+    "uvicorn"
+]
+
+[project.scripts]
+gurufocus-mcp = "gurufocus_mcp.server:main"

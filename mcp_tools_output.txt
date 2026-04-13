@@ -1,0 +1,1401 @@
+
+# alpaca-mcp-server
+- **place_stock_order**: Place a stock or ETF order.
+
+Args:
+    symbol: Stock ticker (e.g., "AAPL", "SPY").
+    side: "buy" or "sell".
+    qty: Number of shares. Mutually exclusive with notional.
+    notional: Dollar amount to trade. Mutually exclusive with qty.
+              Only valid for market orders with time_in_force="day".
+    type: Order type — "market", "limit", "stop", "stop_limit",
+          "trailing_stop".
+    time_in_force: "day", "gtc", "opg", "cls", "ioc", or "fok".
+    limit_price: Required for limit and stop_limit orders.
+    stop_price: Required for stop and stop_limit orders.
+    trail_price: Dollar trail amount for trailing_stop orders.
+    trail_percent: Percent trail for trailing_stop orders.
+    extended_hours: Allow execution in extended hours. Only works
+                    with type="limit" and time_in_force="day".
+    client_order_id: Unique idempotency key. If the request times out,
+                     you can safely retry with the same value — the API
+                     will reject duplicates. Recommended for every order.
+    order_class: "simple", "bracket", "oco", or "oto". Automatically
+                 set to "bracket" when take_profit or stop_loss params
+                 are provided.
+    take_profit_limit_price: Limit price for bracket take-profit leg.
+    stop_loss_stop_price: Stop price for bracket stop-loss leg.
+    stop_loss_limit_price: Limit price for bracket stop-loss leg.
+- **place_crypto_order**: Place a cryptocurrency order.
+
+Args:
+    symbol: Crypto pair (e.g., "BTC/USD", "ETH/USD").
+    side: "buy" or "sell".
+    qty: Number of coins/tokens. Mutually exclusive with notional.
+    notional: Dollar amount to trade. Mutually exclusive with qty.
+              Only valid for market orders.
+    type: "market", "limit", or "stop_limit".
+    time_in_force: "gtc" (default) or "ioc". Crypto does not
+                   support "day" or "fok".
+    limit_price: Required for limit and stop_limit orders.
+    stop_price: Required for stop_limit orders.
+    client_order_id: Unique idempotency key. If the request times out,
+                     you can safely retry with the same value — the API
+                     will reject duplicates. Recommended for every order.
+- **place_option_order**: Place an options order (single-leg or multi-leg).
+
+For single-leg orders, provide symbol, side, and qty.
+For multi-leg orders, provide qty, legs, and optionally
+order_class="mleg" (auto-inferred). Symbol and side on the
+parent are not needed for multi-leg.
+
+Args:
+    qty: Number of contracts. Required for both single-leg and
+         multi-leg orders. For multi-leg, this is the strategy
+         multiplier — each leg's ratio_qty is scaled by this
+         value (e.g., qty="10" with ratio_qty="2" = 20
+         contracts for that leg).
+    type: "market" or "limit".
+    time_in_force: "day" only. Options do not support other
+                   values.
+    symbol: OCC option symbol (e.g., "AAPL250321C00150000").
+            Required for single-leg.
+    side: "buy" or "sell". Required for single-leg.
+    position_intent: "buy_to_open", "buy_to_close", "sell_to_open",
+                     or "sell_to_close". Clarifies whether the trade
+                     opens or closes a position. Optional but
+                     recommended.
+    limit_price: Required for limit orders. For multi-leg, this is
+                 the net debit/credit (positive = debit/cost,
+                 negative = credit/proceeds).
+    client_order_id: Unique idempotency key. If the request times out,
+                     you can safely retry with the same value — the API
+                     will reject duplicates. Recommended for every order.
+    order_class: Set to "mleg" for multi-leg orders. Automatically
+                 inferred when legs are provided.
+    legs: List of leg dicts for multi-leg orders (max 4). Each leg
+          requires "symbol" and "ratio_qty" (string). Optional
+          per-leg fields: "side" ("buy" or "sell") and
+          "position_intent".
+- **get_stock_bars**: Retrieve historical price bars (OHLCV) for one or more stocks.
+
+When start is omitted, it is automatically computed as
+now minus the days/hours/minutes lookback.
+
+Args:
+    symbols: Comma-separated tickers (e.g. "AAPL" or "AAPL,MSFT,GOOG").
+    timeframe: Bar aggregation period — "1Min", "5Min", "15Min",
+               "30Min", "1Hour", "1Day", "1Week", or "1Month".
+    start: Inclusive start time (RFC 3339). Omit to use relative lookback.
+    end: Inclusive end time (RFC 3339). Omit for current time.
+    days: Days to look back when start is omitted (default 5).
+    hours: Additional hours in the lookback (default 0).
+    minutes: Additional minutes in the lookback (default 0).
+    limit: Max total data points returned across all symbols,
+           1–10000 (default 1000).
+    adjustment: Price adjustment — "raw", "split", "dividend",
+                "spin-off", or "all". Comma-separated combos allowed
+                (e.g. "split,dividend"). Default "raw".
+    feed: Data feed — "sip" (all US exchanges, default, paid),
+          "iex" (IEX only, free tier), "otc", or "boats".
+    currency: Price currency (ISO 4217, e.g. "USD"). Default USD.
+    sort: Timestamp sort order — "asc" (default) or "desc".
+    asof: As-of date (YYYY-MM-DD) for point-in-time symbol mapping.
+          Useful for backtesting with historical ticker changes.
+- **get_stock_quotes**: Retrieve historical bid/ask quotes (level 1) for one or more stocks.
+
+When start is omitted, it is automatically computed as
+now minus the days/hours/minutes lookback.
+
+Args:
+    symbols: Comma-separated tickers (e.g. "AAPL" or "AAPL,MSFT").
+    start: Inclusive start time (RFC 3339). Omit to use relative lookback.
+    end: Inclusive end time (RFC 3339). Omit for current time.
+    days: Days to look back when start is omitted (default 0).
+    hours: Additional hours in the lookback (default 0).
+    minutes: Additional minutes in the lookback (default 20).
+    limit: Max total data points returned across all symbols,
+           1–10000 (default 1000).
+    feed: Data feed — "sip" (all US exchanges, default, paid),
+          "iex" (free tier), "otc", or "boats".
+          Paper/free accounts must set feed="iex" to avoid 403 errors.
+    currency: Price currency (ISO 4217). Default USD.
+    sort: Timestamp sort order — "asc" (default) or "desc".
+    asof: As-of date (YYYY-MM-DD) for point-in-time symbol mapping.
+- **get_stock_trades**: Retrieve historical trade data for one or more stocks.
+
+When start is omitted, it is automatically computed as
+now minus the days/hours/minutes lookback.
+
+Args:
+    symbols: Comma-separated tickers (e.g. "AAPL" or "AAPL,MSFT").
+    start: Inclusive start time (RFC 3339). Omit to use relative lookback.
+    end: Inclusive end time (RFC 3339). Omit for current time.
+    days: Days to look back when start is omitted (default 0).
+    hours: Additional hours in the lookback (default 0).
+    minutes: Additional minutes in the lookback (default 20).
+    limit: Max total data points returned across all symbols,
+           1–10000 (default 1000).
+    feed: Data feed — "sip" (all US exchanges, default, paid),
+          "iex" (free tier), "otc", or "boats".
+          Paper/free accounts must set feed="iex" to avoid 403 errors.
+    currency: Price currency (ISO 4217). Default USD.
+    sort: Timestamp sort order — "asc" (default) or "desc".
+    asof: As-of date (YYYY-MM-DD) for point-in-time symbol mapping.
+- **get_crypto_bars**: Retrieve historical price bars (OHLCV) for one or more cryptocurrencies.
+
+When start is omitted, it is automatically computed as
+now minus the days/hours/minutes lookback.
+
+Args:
+    symbols: Comma-separated crypto pairs (e.g. "BTC/USD" or
+             "BTC/USD,ETH/USD").
+    timeframe: Bar aggregation period — "1Min", "5Min", "15Min",
+               "30Min", "1Hour", "1Day", "1Week", or "1Month".
+    start: Inclusive start time (RFC 3339). Omit to use relative lookback.
+    end: Inclusive end time (RFC 3339). Omit for current time.
+    days: Days to look back when start is omitted (default 1).
+    hours: Additional hours in the lookback (default 0).
+    minutes: Additional minutes in the lookback (default 0).
+    limit: Max total data points returned across all symbols,
+           1–10000 (default 1000).
+    sort: Timestamp sort order — "asc" (default) or "desc".
+- **get_crypto_quotes**: Retrieve historical bid/ask quotes for one or more cryptocurrencies.
+
+When start is omitted, it is automatically computed as
+now minus the days/hours/minutes lookback.
+
+Args:
+    symbols: Comma-separated crypto pairs (e.g. "BTC/USD" or
+             "BTC/USD,ETH/USD").
+    start: Inclusive start time (RFC 3339). Omit to use relative lookback.
+    end: Inclusive end time (RFC 3339). Omit for current time.
+    days: Days to look back when start is omitted (default 0).
+    hours: Additional hours in the lookback (default 0).
+    minutes: Additional minutes in the lookback (default 15).
+    limit: Max total data points returned across all symbols,
+           1–10000 (default 1000).
+    sort: Timestamp sort order — "asc" (default) or "desc".
+- **get_crypto_trades**: Retrieve historical trade data for one or more cryptocurrencies.
+
+When start is omitted, it is automatically computed as
+now minus the days/hours/minutes lookback.
+
+Args:
+    symbols: Comma-separated crypto pairs (e.g. "BTC/USD" or
+             "BTC/USD,ETH/USD").
+    start: Inclusive start time (RFC 3339). Omit to use relative lookback.
+    end: Inclusive end time (RFC 3339). Omit for current time.
+    days: Days to look back when start is omitted (default 0).
+    hours: Additional hours in the lookback (default 0).
+    minutes: Additional minutes in the lookback (default 15).
+    limit: Max total data points returned across all symbols,
+           1–10000 (default 1000).
+    sort: Timestamp sort order — "asc" (default) or "desc".
+- **get_account_info**: Retrieves and formats the current account information including balances and status.
+- **get_orders**: Retrieves and formats orders with the specified filters.
+- **cancel_all_orders**: Cancel all open orders.
+- **get_order_by_client_id**: Retrieves a single order specified by the client order ID. Note: if the order was replaced, this returns the original order (status "replaced") with a replaced_by field pointing to the new order ID.
+- **get_order_by_id**: Retrieves a single order by its ID.
+- **cancel_order_by_id**: Cancel a specific order by its ID.
+- **replace_order_by_id**: Replaces an existing open order with updated parameters. At least one optional field must be provided.
+- **get_all_positions**: Retrieves all current positions in the portfolio as JSON.
+- **close_all_positions**: Closes all open positions by placing sell orders for each. If the market is closed, the sell orders will remain queued and execute at the next market open.
+- **get_open_position**: Retrieves and formats details for a specific open position.
+- **close_position**: Closes a specific position for a single symbol by placing a sell order. If the market is closed, the sell order will remain queued and execute at the next market open.
+- **exercise_options_position**: Exercises a held option contract, converting it into the underlying asset.
+- **do_not_exercise_options_position**: Submits a do-not-exercise instruction for a held option contract.
+- **get_portfolio_history**: Retrieves account portfolio history (equity and P/L) over a requested time window.
+- **get_watchlists**: Get all watchlists for the account.
+- **create_watchlist**: Creates a new watchlist with specified symbols.
+- **get_watchlist_by_id**: Get a specific watchlist by its ID.
+- **update_watchlist_by_id**: Update an existing watchlist. IMPORTANT: this replaces the entire watchlist. You must include the symbols parameter with the full list of desired symbols, otherwise all assets will be removed.
+- **add_asset_to_watchlist_by_id**: Add an asset by symbol to a specific watchlist.
+- **delete_watchlist_by_id**: Delete a specific watchlist by its ID.
+- **remove_asset_from_watchlist_by_id**: Remove an asset by symbol from a specific watchlist.
+- **get_account_config**: Retrieves the current account configuration settings, including trading restrictions, margin settings, PDT checks, and options trading level.
+- **update_account_config**: Updates one or more account configuration settings. Only the fields you provide will be changed; all others retain their current values.
+- **get_account_activities**: Returns a list of account activities such as fills, dividends, and transfers.
+- **get_account_activities_by_type**: Returns account activity entries for a specific type of activity.
+- **get_calendar**: Retrieves and formats market calendar for specified date range. WARNING: Always provide start and end dates (YYYY-MM-DD). Without date bounds the response contains the entire multi-year calendar and will be extremely large.
+- **get_clock**: Retrieves and formats current market status and next open/close times.
+- **get_all_assets**: Get all available assets with optional filtering. WARNING: The unfiltered response is very large (thousands of assets). Always narrow results with the status, asset_class, or exchange parameters. To look up a single asset, use get_asset instead.
+- **get_asset**: Retrieves and formats detailed information about a specific asset.
+- **get_option_contracts**: Retrieves option contracts for underlying symbol(s).
+- **get_option_contract**: Retrieves a single option contract by symbol or contract ID.
+- **get_corporate_action_announcement**: Retrieves a single corporate action announcement by ID.
+- **get_corporate_action_announcements**: Retrieves corporate action announcements (dividends, mergers, splits, spinoffs). Use a narrow date range and filter by symbol when possible — broad queries can return very large responses.
+- **get_corporate_actions**: Retrieves and formats corporate action announcements.
+- **get_option_bars**: Retrieves historical bar (OHLCV) data for one or more option contracts.
+- **get_option_exchange_codes**: Retrieves the mapping of exchange codes to exchange names for option market data. Useful for interpreting exchange fields returned by other option data tools.
+- **get_option_latest_quote**: Retrieves and formats the latest quote for one or more option contracts including bid/ask prices, sizes, and exchange information.
+- **get_option_snapshot**: Retrieves comprehensive snapshots of option contracts including latest trade, quote, implied volatility, and Greeks.
+- **get_option_chain**: Retrieves option chain data for an underlying symbol, including latest trade, quote, implied volatility, and greeks for each contract. The response can be very large. Use the type (call/put), strike_price_gte/lte, expiration_date, and limit parameters to narrow results.
+- **get_option_trades**: Retrieves historical trade data for one or more option contracts.
+- **get_option_latest_trade**: Retrieves the latest trade for one or more option contracts.
+- **get_most_active_stocks**: Screens the market for most active stocks by volume or trade count.
+- **get_market_movers**: Returns the top market movers (gainers and losers) based on real-time SIP data.
+- **get_crypto_latest_bar**: Returns the latest minute bar for one or more crypto symbols. The loc parameter is required — always set loc to "us".
+- **get_crypto_latest_orderbook**: Returns the latest orderbook for one or more crypto symbols. The loc parameter is required — always set loc to "us". Note: the response includes the full order book depth and can be large.
+- **get_crypto_latest_quote**: Returns the latest quote for one or more crypto symbols. The loc parameter is required — always set loc to "us".
+- **get_crypto_latest_trade**: Returns the latest trade for one or more crypto symbols. The loc parameter is required — always set loc to "us".
+- **get_crypto_snapshot**: Returns a snapshot for one or more crypto symbols including latest trade, quote, minute bar, daily bar, and previous daily bar. The loc parameter is required — always set loc to "us".
+- **get_stock_latest_bar**: Get the latest minute bar for one or more stocks.
+- **get_stock_latest_quote**: Retrieves and formats the latest quote for one or more stocks.
+- **get_stock_snapshot**: Retrieves comprehensive snapshots of stock symbols including latest trade, quote, minute bar, daily bar, and previous daily bar.
+- **get_stock_latest_trade**: Get the latest trade for one or more stocks.
+
+# mcp-yahoo-finance
+- **get_current_stock_price**: Get the current stock price based on stock symbol.
+- **get_stock_price_by_date**: Get the stock price for a given stock symbol on a specific date.
+- **get_stock_price_date_range**: Get the stock prices for a given date range for a given stock symbol.
+- **get_historical_stock_prices**: Get historical stock prices for a given stock symbol.
+- **get_dividends**: Get dividends for a given stock symbol.
+- **get_income_statement**: Get income statement for a given stock symbol.
+- **get_cashflow**: Get cashflow for a given stock symbol.
+- **get_earning_dates**: Get earning dates.
+- **get_news**: Get news for a given stock symbol.
+- **get_recommendations**: Get analyst recommendations for a given symbol.
+
+# --directory
+- **get_stock_summary**: Get comprehensive financial summary for a stock.
+
+Returns structured data including:
+- Company info: name, sector, industry, market cap, description
+- Current price and daily change percentage
+- Quality scores: GF Score, financial strength, profitability rank, growth rank
+- Valuation metrics: P/E, P/B, P/S ratios, GF Value, DCF estimates
+- Financial ratios with 5/10-year averages and industry medians
+- Institutional activity: guru and fund buying/selling percentages
+
+Use this tool when you need to analyze a stock's fundamentals,
+valuation, or financial health.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_quote**: Get real-time stock quote data.
+
+Returns current market data for a stock:
+- current_price: Current trading price
+- price_change: Absolute price change from previous close
+- price_change_pct: Percentage change from previous close
+- open, high, low: Daily OHLV data
+- volume: Trading volume for the day
+- exchange: Stock exchange (NAS, NYSE, etc.)
+- currency: Price currency (USD, EUR, etc.)
+
+This is a lightweight alternative to get_stock_summary when you only
+need current price and daily trading data, not full fundamental analysis.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_dividend**: Get dividend history for a stock.
+
+Schema: Call get_schema("DividendHistory") to see the full schema.
+
+Returns historical dividend payment data:
+- payments: Array of historical dividend payments
+  - ex_date: Ex-dividend date
+  - pay_date: Payment date
+  - record_date: Record date
+  - amount: Dividend amount per share
+  - type: Dividend type (regular, special, etc.)
+  - frequency: Payment frequency (quarterly, annual, etc.)
+
+Use this tool when you need to analyze a stock's dividend history,
+track payout trends, or evaluate income potential.
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_current_dividend**: Get current dividend information for a stock.
+
+Returns current dividend data including:
+- dividend_yield: Current dividend yield percentage
+- dividends_per_share_ttm: Trailing twelve months dividend per share
+- dividend_yield_10y_range: 10-year historical yield range
+- dividend_yield_10y_median: 10-year median dividend yield
+- next_payment_date: Next scheduled dividend payment date
+- frequency: Payment frequency (Quarterly, Annual, etc.)
+- currency: Currency symbol
+
+Use this tool when you need to analyze a stock's current dividend
+yield, compare it to historical ranges, or check payment schedule.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_financials**: Get financial statements for a stock.
+
+Schema: Call get_schema("FinancialStatements") to see the full schema.
+
+Returns historical financial data including:
+- Per-share metrics: revenue per share, EPS, book value per share, FCF per share
+- Income statement: revenue, gross profit, operating income, net income, EBITDA
+- Balance sheet: total assets, liabilities, equity, debt, cash
+- Cash flow: operating cash flow, capex, free cash flow, dividends paid
+- Margins: gross margin, operating margin, net margin
+
+Data is organized by fiscal period (most recent first) with both annual
+and quarterly options available.
+
+Use this tool when you need to analyze a company's financial performance
+over time, track revenue/earnings trends, or evaluate balance sheet health.
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_keyratios**: Get key financial ratios for a stock.
+
+Schema: Call get_schema("KeyRatios") to see the full schema.
+
+Returns comprehensive financial ratios organized by category:
+- Quality scores: Piotroski F-Score, Altman Z-Score, GF Score, financial strength
+- Profitability: ROE, ROA, ROIC, gross/operating/net margins
+- Liquidity: current ratio, quick ratio, cash ratio
+- Solvency: debt-to-equity, debt-to-asset, interest coverage
+- Efficiency: asset turnover, inventory turnover, days sales outstanding
+- Growth: 1/3/5/10-year revenue, EPS, and FCF growth rates
+- Valuation: P/E, P/B, P/S, PEG, EV/EBITDA, GF Value
+- Price metrics: 52-week high/low, beta, volatility, returns
+- Dividends: yield, payout ratio, growth rates, years of consecutive growth
+
+Use this tool when you need to evaluate a company's financial health,
+compare it to peers, or assess investment quality across multiple dimensions.
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_gurus**: Get guru (institutional investor) holdings for a stock.
+
+Returns data about famous investors who hold positions in this stock:
+- Picks: Recent trading activity including buys, sells, and position changes
+  - guru: Investor/firm name (e.g., Warren Buffett, BlackRock)
+  - action: Trade type (Add, Reduce, New Buy, Sold Out)
+  - impact: Position impact percentage
+  - price range: Min/max/avg prices during the period
+  - current_shares: Shares held after the action
+- Holdings: Current guru positions
+  - current_shares: Number of shares held
+  - perc_shares: Percentage of company shares owned
+  - perc_assets: Percentage of guru's portfolio
+  - change: Position change percentage
+
+Use this tool when you need to see which famous investors own a stock,
+track guru buying/selling activity, or follow institutional investor trends.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_executives**: Get company executives and directors for a stock.
+
+Returns a list of company officers and board members:
+- name: Executive name
+- position: Title/role (e.g., 'director, officer: Chief Executive Officer')
+- transaction_date: Date of last insider transaction
+
+Use this tool when you need to identify company leadership,
+check insider trading activity, or understand corporate governance.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_trades_history**: Get guru trades history for a stock.
+
+Returns historical guru trading activity organized by portfolio
+reporting periods:
+- periods: Array of trading activity by date
+  - portdate: Portfolio reporting date (YYYY-MM-DD)
+  - buy_count: Number of gurus who bought
+  - buy_gurus: List of buyers with guru_name and share_change
+  - sell_count: Number of gurus who sold
+  - sell_gurus: List of sellers with guru_name and share_change
+
+Use this tool when you need to track guru buying/selling patterns
+over time or identify periods of institutional accumulation/distribution.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_price_ohlc**: Get OHLC (Open-High-Low-Close) price history for a stock.
+
+Schema: Call get_schema("OHLCHistory") to see the full schema.
+
+Returns daily OHLC price bars with volume data:
+- bars: Array of daily price bars
+  - date: Trading date (YYYY-MM-DD)
+  - open: Opening price
+  - high: Highest price of the day
+  - low: Lowest price of the day
+  - close: Closing price
+  - volume: Trading volume
+  - unadjusted_close: Unadjusted closing price
+
+Use this tool when you need historical candlestick/OHLC data for
+technical analysis, charting, or computing price-based indicators.
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_volume**: Get trading volume history for a stock.
+
+Returns daily trading volume data:
+- data: Array of daily volume points
+  - date: Trading date (MM-DD-YYYY)
+  - volume: Number of shares traded
+
+Use this tool when you need to analyze volume patterns,
+identify accumulation/distribution, or study liquidity trends.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_unadjusted_price**: Get unadjusted (pre-split) price history for a stock.
+
+Returns daily unadjusted prices:
+- prices: Array of daily price points
+  - date: Trading date (MM-DD-YYYY)
+  - price: Unadjusted closing price
+
+Unadjusted prices show the actual historical trading prices without
+adjustments for stock splits or dividends. Use this when you need
+to see the actual price investors paid at a given time, or to
+compare with historical news/events.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_operating_data**: Get operating metrics and KPIs for a stock.
+
+Returns operational data and key performance indicators:
+- metrics: Dictionary of operating metrics by key
+  - name: Human-readable metric name
+  - key: Metric identifier
+  - data: Time series data
+    - annual: Annual values by fiscal year (e.g., {"2023-12": 1000000})
+    - quarterly: Quarterly values by period (e.g., {"2023-Q4": 250000})
+
+Common operating metrics include:
+- Revenue per employee, units shipped, active users
+- Production capacity, utilization rates
+- Customer counts, average revenue per user (ARPU)
+- Industry-specific KPIs (e.g., same-store sales, load factor)
+
+Use this tool when you need to analyze operational efficiency,
+track business KPIs beyond financial statements, or compare
+operating performance across periods.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_segments_data**: Get business and geographic segment data for a stock.
+
+Returns revenue breakdown by business segment and geographic region:
+- business: Business segment breakdown
+  - annual: Annual revenue by segment and fiscal year
+  - quarterly: Quarterly revenue by segment
+  - ttm: Trailing twelve months data
+  - keys: List of segment names
+- geographic: Geographic segment breakdown
+  - annual: Annual revenue by region and fiscal year
+  - quarterly: Quarterly revenue by region
+  - ttm: Trailing twelve months data
+  - keys: List of region names
+
+Use this tool when you need to understand:
+- Revenue diversification across product lines or services
+- Geographic exposure and international revenue mix
+- Segment growth trends and margin differences
+- Business model composition analysis
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_ownership**: Get ownership breakdown for a stock.
+
+Schema: Call get_schema("StockOwnership") to see the full schema.
+
+Returns current ownership structure including:
+- Shares outstanding
+- Institutional ownership percentage and shares
+- Insider ownership percentage and shares
+- Float percentage
+
+Use this tool to understand who owns the stock and ownership distribution.
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+- **get_stock_indicator_history**: Get historical ownership indicator data for a stock.
+
+Returns time series data including:
+- Historical institutional ownership percentage and shares
+- Historical shares outstanding
+- Historical institution shares held
+
+Use this tool to analyze ownership trends over time.
+- **get_stock_indicators**: Get list of available stock indicators.
+
+Schema: Call get_schema("IndicatorsList") to see the full schema.
+
+Returns all 240+ available indicators that can be queried for individual stocks.
+Each indicator has:
+- key: The indicator key for API calls (e.g., 'net_income', 'roe')
+- name: Human-readable name
+
+Use this tool to discover what indicators are available before
+querying specific indicator values with get_stock_indicator.
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+- **get_stock_indicator**: Get time series data for a specific indicator.
+
+Returns historical values for a specific indicator key.
+Common indicators include:
+- net_income, revenue, gross_profit
+- roe, roa, roic
+- gross_margin, operating_margin, net_margin
+- pettm, ps_ratio, pb_ratio
+
+Use get_stock_indicators first to see all available indicator keys.
+- **get_stock_analyst_estimates**: Get analyst estimates and ratings for a stock.
+
+Returns consensus analyst estimates including:
+- current_estimates: Current EPS and revenue estimates
+  - eps_current_year: Consensus EPS estimate for current year
+  - eps_next_year: Consensus EPS estimate for next year
+  - revenue_current_year: Consensus revenue estimate for current year
+  - revenue_next_year: Consensus revenue estimate for next year
+- growth_estimates: Expected growth rates
+  - eps_growth_current_year: Expected EPS growth for current year
+  - eps_growth_next_year: Expected EPS growth for next year
+  - revenue_growth_current_year: Expected revenue growth for current year
+  - revenue_growth_next_year: Expected revenue growth for next year
+- analyst_coverage: Number of analysts covering the stock
+- target_price: Consensus price target
+
+Use this tool when you need analyst consensus forecasts, earnings
+expectations, or price targets for investment analysis.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_estimate_history**: Get historical analyst estimate revisions for a stock.
+
+Returns historical consensus estimate data showing how analyst
+forecasts have evolved over time:
+- metrics: Dictionary of estimate metrics by key
+  - eps_estimate: EPS estimates over time
+  - revenue_estimate: Revenue estimates over time
+  - periods: Fiscal periods with estimates (annual, quarterly)
+    - original: Original estimate when first published
+    - current: Current consensus estimate
+    - change: Revision from original
+    - revision_date: When estimate was last revised
+    - num_analysts: Number of analysts contributing
+
+Use this tool when you need to:
+- Track how analyst expectations have changed over time
+- Identify estimate revisions (upgrades/downgrades)
+- Compare original forecasts vs current consensus
+- Analyze analyst sentiment trends
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_stock_news_feed**: Get latest stock market news feed.
+
+Returns recent news headlines and articles from GuruFocus covering:
+- Market events and trends
+- Company announcements and analysis
+- Earnings reports and financial news
+- Analyst commentary and ratings
+
+Each news item includes:
+- date: Publication date/time
+- headline: News headline
+- url: Link to full article
+
+Use this tool when you need to:
+- Get latest news for a specific stock
+- Monitor market-wide news and events
+- Research recent developments affecting a company
+- Stay updated on financial market trends
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_qgarp_analysis**: Generate a QGARP (Quality Growth at Reasonable Price) investment scorecard.
+
+Fetches summary, key ratios, and financial statements, then computes:
+
+**Screening (Sections 1-2)**:
+- Company overview (name, sector, market cap, 52-week range)
+- QGARP screen: ROIC >10%, Revenue/EPS growth >10%, D/E <0.5, P/E <40
+- Pass count and overall screen result
+
+**Quality (Sections 3-4)**:
+- GF Score, Piotroski F-Score, Altman Z-Score with interpretations
+- Financial strength: debt ratios, interest coverage, liquidity ratios
+- Red flag detection (high debt >0.8 D/E, low coverage <2x)
+
+**Growth (Section 5)**:
+- Rule #1 "Big Four": Revenue, EPS, Book Value, FCF growth (1/3/5/10yr)
+- Calculated book value/share CAGR from historical financials
+- Growth consistency rating (Excellent/Good/Inconsistent/Poor)
+- Conservative growth rate for valuation
+
+**Valuation (Sections 6-8)**:
+- Profitability metrics (ROE, ROA, ROIC, margins) with industry comparison
+- Moat indicators (quantitative signals only)
+- Valuation multiples vs historical/industry medians
+- Rule #1 Sticker Price and Buy Price calculation
+- GF Value discount and valuation verdict
+
+**Decision (Sections 9-12)**:
+- Business cycle phase classification (1-6)
+- Institutional sentiment (guru/fund/ETF activity)
+- Weighted overall score (0-100)
+- Gate decision: PROCEED / WATCHLIST / DISCARD
+- Suggested areas for moat investigation and risk review
+- Price targets (buy price, sticker price, sell price)
+
+Use this tool for systematic investment screening using the QGARP methodology.
+One API call replaces multiple get_stock_* calls with pre-computed analysis.
+- **get_stock_risk_analysis**: Quantitative risk analysis using GuruFocus metrics.
+
+Analyzes five risk dimensions with RED/YELLOW/GREEN ratings:
+
+**Financial Risk**:
+- Altman Z-Score (bankruptcy probability)
+- Debt-to-Equity, Debt-to-EBITDA (leverage)
+- Interest Coverage (debt servicing ability)
+- Current Ratio (liquidity)
+
+**Quality Risk**:
+- Piotroski F-Score (fundamental strength)
+- GF Score (overall quality)
+- Beneish M-Score (earnings manipulation)
+- ROE (profitability)
+
+**Growth Risk**:
+- Revenue, EPS, FCF growth (3-year CAGR)
+- Revenue momentum (1Y vs 3Y)
+
+**Valuation Risk**:
+- Price/GF Value ratio
+- PEG ratio
+- P/E vs historical median
+- Margin of safety
+
+**Market Risk**:
+- Beta (systematic risk)
+- 1Y Volatility
+- Drawdown from 52-week high
+
+Returns a risk matrix with ratings and evidence for each dimension.
+Use as quantitative foundation for investment risk assessment.
+- **get_insider_updates**: Get recent insider transaction updates.
+
+Schema: Call get_schema("InsiderUpdatesResponse") to see the full schema.
+
+Returns a list of recent insider transactions filed with the SEC:
+- symbol: Stock ticker
+- insider: Name of the insider
+- position: Insider's role (CEO, Director, etc.)
+- type: Transaction type - 'P' (Purchase) or 'S' (Sell)
+- trans_share: Number of shares transacted
+- price: Transaction price per share
+- date: Transaction date
+- file_date: SEC filing date
+
+Use this tool to monitor recent insider buying and selling activity
+across all stocks. High insider buying can be a bullish signal.
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_insider_ceo_buys**: Get stocks where CEOs are buying shares.
+
+Returns paginated list of CEO buy transactions - a strong bullish signal:
+- symbol: Stock ticker
+- company: Company name
+- name: CEO name
+- trans_share: Shares purchased
+- trade_price: Purchase price
+- cost: Total transaction cost
+- shares_change: Percentage change in holdings
+- change_from_insider_trade: Stock price change since purchase
+
+CEO buying is often considered one of the most bullish insider signals
+as CEOs have the deepest knowledge of their company's prospects.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_insider_cfo_buys**: Get stocks where CFOs are buying shares.
+
+Returns paginated list of CFO buy transactions - a bullish signal:
+- symbol: Stock ticker
+- company: Company name
+- name: CFO name
+- trans_share: Shares purchased
+- trade_price: Purchase price
+- cost: Total transaction cost
+- shares_change: Percentage change in holdings
+
+CFO buying is a significant signal as CFOs have detailed knowledge
+of the company's financial position and future outlook.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_insider_cluster_buys**: Get stocks with cluster insider buying.
+
+Returns stocks where multiple insiders are buying - a very bullish signal:
+- symbol: Stock ticker
+- company: Company name
+- insider_buy_count: Total insider buy transactions
+- insider_buy_count_unique: Number of unique insiders buying
+- buy_total_shares: Total shares purchased
+- buy_price_avg: Average purchase price
+- buy_price_value: Total value of purchases
+- buy_company_held_shares: Percentage of company shares held by insiders
+
+Cluster buying occurs when multiple insiders buy around the same time,
+which is one of the strongest bullish signals from insider activity.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_insider_double_buys**: Get stocks with double-down insider buying.
+
+Returns stocks where insiders are doubling down on purchases:
+- symbol: Stock ticker
+- company: Company name
+- buy_add_count: Number of additional buy transactions
+- insider_buy_count: Total insider buy transactions
+- insider_buy_shares: Total shares purchased
+
+Double-down buying indicates insiders are adding to existing positions,
+showing continued conviction in the stock.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_insider_triple_buys**: Get stocks with triple-down insider buying.
+
+Returns stocks where insiders have made multiple additional purchases:
+- symbol: Stock ticker
+- company: Company name
+- buy_add_count: Number of additional buy transactions
+- insider_buy_count: Total insider buy transactions
+- total_buyback_1y: Company's total buyback in past year (%)
+
+Triple-down buying is an even stronger signal than double-down,
+indicating very high insider conviction in the stock.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_insider_list**: Get list of known company insiders.
+
+Returns paginated list of insiders in the database:
+- cik: SEC CIK identifier
+- name: Insider's name
+- address: Mailing address (may be empty)
+- latest_transaction_date: Date of most recent transaction
+- companies: List of stock symbols associated with the insider
+
+Use this tool to look up information about specific insiders
+or to browse the insider database.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_gurulist**: Get list of all tracked institutional gurus (Super Investors).
+
+Schema: Call get_schema("GuruList") to see the full schema.
+
+Returns a comprehensive list of tracked institutional investors:
+- us_gurus: US institutional gurus (13F filers)
+- plus_gurus: GuruFocus Plus category gurus
+- total_count: Total number of gurus
+
+Each guru includes:
+- guru_id: Unique identifier for API calls
+- name: Guru or fund name
+- firm: Investment firm/company
+- num_stocks: Number of stocks in portfolio
+- equity: Portfolio value in millions USD
+- turnover: Portfolio turnover rate (%)
+- last_updated: Date of last portfolio update
+- cik: SEC CIK number
+
+Note: This is a large dataset (~2.6MB) - cache is recommended.
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_guru_picks**: Get a guru's stock picks and trading activity.
+
+Schema: Call get_schema("GuruPicks") to see the full schema.
+
+Returns the guru's stock picks with detailed transaction info:
+- guru_id: Guru identifier
+- guru_name: Guru or fund name
+- picks: List of stock picks
+
+Each pick includes:
+- symbol: Stock ticker
+- company: Company name
+- action: Trade action (Buy, Sell, Add, Reduce)
+- trade_type: 'quarterly' (13F) or 'realtime' (Form 4)
+- date: Transaction date
+- current_shares: Shares held after transaction
+- share_change: Change in shares
+- price: Current stock price
+- rec_price: Price at recommendation
+
+Use guru_id from get_gurulist to look up specific investors.
+Common guru IDs: 7 (Warren Buffett/Berkshire), 4 (Bill Ackman).
+
+Use the 'query' parameter with a JMESPath expression to filter the response.
+Call get_schema() first to understand the data structure.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_guru_aggregated**: Get a guru's complete aggregated portfolio.
+
+Returns the guru's full portfolio with summary and all holdings:
+
+Summary includes:
+- firm: Investment firm name
+- num_new: Number of new positions this quarter
+- number_of_stocks: Total stocks in portfolio
+- equity: Total portfolio value (millions USD)
+- turnover: Portfolio turnover rate (%)
+- date: Portfolio snapshot date
+
+Each holding includes:
+- symbol: Stock ticker
+- company: Company name
+- shares: Number of shares held
+- price: Current stock price
+- value: Position value (thousands USD)
+- position: Portfolio weight (%)
+- change: Change from prior quarter (or 'New Buy'/'Sold Out')
+- impact: Impact on portfolio (%)
+- sector/industry: Classification
+
+Use guru_id from get_gurulist to look up specific investors.
+Common guru IDs: 7 (Warren Buffett/Berkshire), 4 (Bill Ackman).
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_guru_realtime_picks**: Get real-time guru trading activity across all tracked investors.
+
+Returns recent trading activity from Form 4 filings (real-time):
+- picks: List of recent trades
+- total: Total number of picks
+- current_page: Current page number
+- last_page: Last page number
+
+Each pick includes:
+- symbol: Stock ticker
+- company: Company name
+- guru_name: Guru who made the trade
+- action: Trade action (Add, Reduce, Buy, Sell)
+- date: Portfolio date
+- shares: Current shares held
+- price: Current stock price
+- price_avg: Average purchase price
+- impact: Portfolio impact (%)
+- comment: Action description
+
+This tool shows the most recent guru trades across all tracked
+investors. Use it to monitor what super investors are buying/selling.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_politicians**: Get list of all tracked politicians (senators and representatives).
+
+Returns a list of US politicians whose stock transactions are tracked:
+- politicians: List of politician records
+- count: Total number of politicians
+
+Each politician includes:
+- id: Unique identifier for filtering transactions
+- full_name: Politician's full name
+- position: 'senator' or 'representative'
+- district: Congressional district (e.g., 'CA12', 'TX00' for senators)
+- state: Two-letter state code
+- party: Political party (Democrat, Republican, Independent)
+
+Use the politician 'id' with get_politician_transactions to filter
+transactions for a specific politician.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_politician_transactions**: Get politician stock transactions with optional filters.
+
+Returns paginated stock transactions by US politicians:
+- transactions: List of transaction records
+- count: Number of transactions on this page
+- current_page: Current page number
+- last_page: Last available page
+- total: Total number of transactions
+
+Each transaction includes:
+Stock information:
+- symbol: Stock ticker
+- company: Company name
+- exchange: Exchange (NAS, NYSE, etc.)
+- asset_class: Asset type (Common Stock, etc.)
+
+Transaction details:
+- trans_type: Transaction type (purchase, sale_full, sale_partial, exchange)
+- amount: Transaction amount range (e.g., '$15,001 - $50,000')
+- disclosure_date: When transaction was disclosed
+- transaction_date: When transaction occurred
+
+Option details (if applicable):
+- option_type: 'call' or 'put' if option transaction
+- strike_price: Option strike price
+- expiration_date: Option expiration date
+
+Politician information:
+- politician_id: Politician ID
+- politician_name: Politician name
+- position: 'senator' or 'representative'
+- state: Two-letter state code
+- party: Political party
+
+Use politician_id filter to track a specific politician's trades.
+Use get_politicians to find politician IDs.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_exchange_list**: Get list of worldwide stock exchanges grouped by country.
+
+Returns a map of countries to their stock exchanges:
+- exchanges_by_country: Map of country name to list of exchange codes
+- total_countries: Number of countries with exchanges
+- total_exchanges: Total number of exchanges
+
+Exchange codes can be used with get_exchange_stocks to list stocks
+on a specific exchange.
+
+Common exchange codes:
+- USA: NAS (NASDAQ), NYSE (New York Stock Exchange), AMEX
+- UK: LSE (London Stock Exchange)
+- Germany: FRA (Frankfurt), XTER (XETRA)
+- Japan: TSE (Tokyo Stock Exchange)
+- Canada: TSX, TSXV (Toronto Stock Exchange)
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_exchange_stocks**: Get all stocks listed on a specific exchange.
+
+Args:
+    exchange: Exchange code from get_exchange_list (e.g., 'NYSE', 'NAS', 'LSE')
+
+Returns list of stocks on the exchange:
+- exchange: Exchange code
+- stocks: List of stock records
+- count: Number of stocks
+
+Each stock includes:
+- symbol: Stock ticker symbol
+- exchange: Exchange code
+- company: Company name
+- currency: Trading currency (USD, EUR, GBP, etc.)
+- industry: Industry classification
+- sector: Sector classification
+- subindustry: Sub-industry classification
+
+Use get_exchange_list to find available exchange codes.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_index_list**: Get list of worldwide market indexes.
+
+Returns list of major market indexes:
+- indexes: List of index records
+- count: Number of indexes
+
+Each index includes:
+- name: Index name (e.g., 'S&P 500', 'Dow 30')
+- symbol: Index symbol (e.g., '^GSPC', '^DJI')
+
+Use index symbols with get_index_stocks to get constituent stocks.
+
+Common index symbols:
+- ^GSPC: S&P 500
+- ^DJI: Dow Jones Industrial Average (Dow 30)
+- ^NDX: NASDAQ 100
+- ^RUT: Russell 2000
+- ^FTSE: FTSE 100 (UK)
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_index_stocks**: Get stocks that are constituents of a market index.
+
+Args:
+    index_symbol: Index symbol from get_index_list (e.g., '^GSPC', '^DJI')
+    page: Page number for paginated results (default: 1)
+
+Returns list of constituent stocks:
+- index_symbol: Index symbol
+- stocks: List of stock records
+- count: Number of stocks on this page
+
+Each stock includes:
+- symbol: Stock ticker symbol
+- exchange: Exchange code (NAS, NYSE, etc.)
+- company: Company name
+- currency: Trading currency
+- industry: Industry classification
+- sector: Sector classification
+- subindustry: Sub-industry classification
+
+Use get_index_list to find available index symbols.
+Large indexes like S&P 500 may require multiple pages.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_country_currency**: Get list of country to currency mappings.
+
+Returns worldwide country/currency reference data:
+- currencies: List of country/currency records
+- count: Number of countries
+
+Each country includes:
+- country: Country name
+- country_iso: ISO 3-letter country code (e.g., 'USA', 'GBR')
+- currency: ISO 3-letter currency code (e.g., 'USD', 'GBP', 'EUR')
+
+Use this to look up which currency is used in a specific country,
+or to map between country codes and currency codes.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_funda_updated**: Get stocks that had fundamentals updated on a specific date.
+
+Args:
+    date: Date in YYYY-MM-DD format
+
+Returns list of stocks with updated fundamentals:
+- date: The queried date
+- stocks: List of stock records
+- count: Number of stocks with updates
+
+Each stock includes:
+- symbol: Stock ticker symbol
+- exchange: Exchange code
+- company: Company name
+
+Use this to track which stocks had new fundamental data published
+on a given date. This is useful for monitoring data freshness.
+
+Note: Returns an empty list if no fundamentals were updated on that date.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_economic_indicators**: Get list of available economic indicators.
+
+Returns a list of economic indicator names that can be queried with
+get_economic_indicator.
+
+Response includes:
+- indicators: List of indicator names (e.g., 'US GDP', 'Civilian Unemployment Rate')
+- count: Number of available indicators
+
+Common indicators include:
+- US GDP: Gross Domestic Product
+- 10 Year Treasury Yield: Interest rate benchmark
+- S&P 500 Index: Market benchmark
+- Civilian Unemployment Rate: Labor market indicator
+- Consumer Price Index: Inflation measure
+- Federal Funds Rate: Fed interest rate target
+- US Trade Balance: Import/export difference
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_economic_indicator**: Get data for a specific economic indicator.
+
+Args:
+    indicator: Name of the indicator from get_economic_indicators
+               (e.g., 'US GDP', 'Consumer Price Index')
+
+Returns historical time series data for the indicator:
+- name: Indicator name
+- unit: Unit of measurement (e.g., 'Billions of Dollars', 'Percent')
+- frequency: Data frequency (Daily, Monthly, Quarterly, etc.)
+- source: Data source (e.g., 'Bureau of Economic Analysis')
+- data: Time series of data points with date and value
+
+Use get_economic_indicators to see available indicator names.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_financial_calendar**: Get financial calendar events for a specific date.
+
+Args:
+    date: Date in YYYY-MM-DD format
+    event_type: Filter by event type (default: 'all')
+
+Returns calendar events organized by category:
+- economic: Economic reports and announcements
+- ipo: Initial public offerings
+- earning: Earnings announcements
+- dividend: Dividend events (ex-date, record date, pay date)
+- split: Stock splits
+
+Economic events include:
+- date: Event date
+- event: Event name (e.g., 'Employment Report')
+- actual: Actual reported value
+- forecast: Consensus forecast
+- previous: Previous period value
+
+IPO events include:
+- symbol: Stock ticker
+- company: Company name
+- exchange: Exchange code
+- date: IPO date
+- price_range: Expected price range
+- shares: Number of shares offered
+
+Earnings events include:
+- symbol: Stock ticker
+- company: Company name
+- date: Earnings date
+- time: Timing (before_market, after_market)
+- eps_estimate: EPS estimate
+
+Dividend events include:
+- symbol: Stock ticker
+- company: Company name
+- declaration_date, ex_date, record_date, pay_date
+- cash_amount: Dividend amount
+- frequency: Payment frequency per year
+
+Split events include:
+- symbol: Stock ticker
+- company: Company name
+- date: Split date
+- ratio: Split ratio (e.g., '4:1')
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_etf_list**: Get paginated list of all ETFs.
+
+Returns a paginated list of ETFs tracked by GuruFocus:
+- etfs: List of ETF records
+- current_page: Current page number
+- per_page: Items per page
+- last_page: Total number of pages
+- total: Total number of ETFs (typically 6000+)
+
+Each ETF includes:
+- name: ETF name
+
+Use pagination to iterate through the full list. With default page size
+of 50 and 6000+ ETFs, there are ~127 pages.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_etf_sector_weighting**: Get sector and industry weightings for an ETF.
+
+Returns the allocation breakdown of the ETF showing how assets are
+distributed across market sectors and industries:
+
+- name: ETF name
+- sectors: List of sector allocations, each containing:
+  - sector: Sector name (e.g., "Technology", "Healthcare")
+  - weightings: Date-keyed percentages (e.g., {"2025-09-30": 35.68})
+  - industries: List of industries within the sector
+    - industry: Industry name (e.g., "Semiconductors", "Software")
+    - weightings: Date-keyed percentages
+
+Use this tool to analyze:
+- ETF sector allocation and diversification
+- Industry-level exposure within sectors
+- Historical weighting changes over time
+
+Note: ETF names must match exactly as listed in the get_etf_list tool.
+Names with spaces are handled automatically.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_api_usage**: Get API usage statistics for the current API token.
+
+Returns information about your API quota:
+- api_usage: Number of API requests made
+- api_requests_remaining: Number of API requests remaining
+
+Use this to monitor your API usage and avoid hitting rate limits.
+Note that the result may be cached for up to 5 minutes.
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_user_screeners**: Get the current user's saved stock screeners.
+
+Returns a list of screeners saved by the user:
+- screeners: List of screener objects
+- count: Total number of screeners
+
+Each screener includes:
+- id: Unique screener ID
+- name: Screener name
+- short_description: Brief description (if set)
+- note: User notes (if set)
+- is_public: Whether screener is publicly shared
+- is_predefined: Whether it's a built-in screener
+- default_exchanges: List of exchanges to search
+- created_at: Creation timestamp
+- updated_at: Last update timestamp
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_user_screener_results**: Get results from a user screener.
+
+Returns stocks that match the screener criteria:
+- screener_id: The screener ID
+- page: Current page number
+- stocks: List of matching stocks
+- count: Number of stocks on this page
+
+Each stock includes:
+- symbol: Stock ticker
+- exchange: Exchange code
+- company: Company name
+- sector: Sector classification
+- industry: Industry classification
+
+The 'format' parameter controls output encoding:
+- 'toon': Token-efficient format (30-60% smaller), recommended for AI contexts
+- 'json': Standard JSON format for debugging or compatibility
+- **get_usage_estimate**: Get estimated API usage WITHOUT making an API call.
+
+Returns the locally tracked estimate of remaining API calls.
+This tool does NOT consume an API call - it uses cached/tracked values.
+
+Returns:
+- remaining_estimate: Estimated remaining API calls (null if never synced)
+- local_consumed_since_sync: Calls made since last sync
+- last_sync_timestamp: Unix timestamp of last sync with API
+- tracking_enabled: Whether usage tracking is enabled
+- note: Explanation of estimate accuracy
+
+Use this tool to check quota without consuming calls. For accurate
+current data, use get_api_usage() instead (which makes an API call).
+
+Note: The estimate accuracy depends on:
+1. How recently get_api_usage() was called (syncs the tracker)
+2. Whether all API calls go through this client (external calls not tracked)
+- **list_schemas**: List all available model schemas.
+
+Returns a categorized list of all schema names that can be queried
+via get_schema(). Use this to discover available schemas before
+fetching specific ones.
+
+Returns:
+    - total_schemas: Number of available schemas
+    - categories: Map of category name to list of schema names
+    - all_schemas: Alphabetized list of all schema names
+
+Categories include:
+    - stock_fundamentals: StockSummary, FinancialStatements, KeyRatios
+    - ratios: ProfitabilityRatios, LiquidityRatios, GrowthRatios, etc.
+    - price_volume: OHLCHistory, VolumeHistory, PriceHistory
+    - dividends: DividendHistory, CurrentDividend
+    - guru_institutional: GuruList, GuruTrades, StockGurus
+    - insider: InsiderTrades, ClusterBuyResponse
+    - operating: OperatingData, SegmentData
+    - estimates: AnalystEstimates, EstimateHistoryResponse
+    - economic: CalendarResponse, EconomicIndicatorResponse
+- **get_schema**: Get JSON Schema for a specific Pydantic model.
+
+Use this to understand the exact structure of data returned by tools.
+The schema includes field names, types, descriptions, and constraints.
+
+This enables you to write correct JMESPath queries to filter data:
+- Know exact field names for JMESPath expressions
+- Understand nested structure for JSON traversal
+- See which fields are optional vs required
+
+Common schemas to query:
+- FinancialStatements: periods[], revenue, net_income, etc.
+- KeyRatios: profitability.roe, liquidity.current_ratio, etc.
+- StockSummary: general, quality, valuation, ratios
+- OHLCHistory: bars[] with open, high, low, close, volume
+- GuruTrades: trades[] with guru_name, action, shares
+
+Args:
+    model_name: Name of the model (case-sensitive)
+
+Returns:
+    - model_name: The requested model name
+    - schema: Full JSON Schema with properties, types, descriptions
+- **get_schemas_by_category**: Get all schemas for a specific category.
+
+Useful for understanding related data models together. For example,
+get all ratio-related schemas to understand the full KeyRatios structure.
+
+Categories:
+- stock_fundamentals: Core stock data (StockSummary, FinancialStatements, KeyRatios)
+- ratios: Financial ratios (ProfitabilityRatios, LiquidityRatios, etc.)
+- price_volume: Price/volume history (OHLCHistory, VolumeHistory)
+- dividends: Dividend data (DividendHistory, CurrentDividend)
+- guru_institutional: Guru/fund holdings (GuruList, GuruTrades, StockGurus)
+- insider: Insider trading (InsiderTrades, ClusterBuyResponse)
+- operating: Operating metrics (OperatingData, SegmentData)
+- estimates: Analyst estimates (AnalystEstimates, EstimateHistoryResponse)
+- economic: Economic data (CalendarResponse, EconomicIndicatorResponse)
+
+Args:
+    category: Category name
+
+Returns:
+    - category: The requested category name
+    - model_count: Number of schemas in the category
+    - schemas: Map of model name to JSON schema

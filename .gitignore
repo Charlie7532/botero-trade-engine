@@ -25,3 +25,5 @@ backend/**/*.pyc
 # Trading journal data (local only)
 data/journal/*.json
 data/journal/*.db
+.claude/
+data/journal/logs/

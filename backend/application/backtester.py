@@ -131,7 +131,18 @@ class WalkForwardBacktester:
         'max_drawdown': -20.0,
         'min_win_rate': 45.0,
         'min_profit_factor': 1.3,
+        'min_trades_total': 15,   # Mínimo de trades totales para significancia
     }
+
+    # Costos de transacción realistas para ETFs
+    TRANSACTION_COSTS = {
+        'spread_pct': 0.03,      # Spread promedio para ETFs líquidos
+        'slippage_pct': 0.05,    # Slippage en condiciones oversold (spread ensanchado)
+        'commission_per_trade': 0.0,  # Comisiones $0 en brokers modernos
+    }
+
+    # Costo round-trip total = (spread + slippage) × 2 lados
+    ROUND_TRIP_COST_PCT = (TRANSACTION_COSTS['spread_pct'] + TRANSACTION_COSTS['slippage_pct']) * 2
 
     def __init__(
         self,
@@ -158,6 +169,76 @@ class WalkForwardBacktester:
         self.kalman = KalmanVolumeTracker(
             dt=1.0, process_noise=0.05, obs_noise=0.2,
         )
+        self._all_trades = []  # Aggregate all trades across windows
+
+    @staticmethod
+    def volume_quality_score(
+        close: float,
+        high: float,
+        low: float,
+        volume: float,
+        avg_volume: float,
+        prev_close: float,
+    ) -> float:
+        """
+        Volume Quality Score (0.0 - 3.0) para filtrar volumen ficticio de HFT.
+
+        Concepto: Los algoritmos HFT generan millones de transacciones en
+        microsegundos con márgenes minúsculos. Esto infla el volumen reportado
+        pero NO mueve el precio proporcionalmente. Un volumen "real" de
+        institucionales MUEVE el precio.
+
+        Métricas usadas:
+        1. AMIHUD ILLIQUIDITY: |return| / dollar_volume
+           - Si el volumen es alto pero el precio no se mueve → HFT noise
+           - Si el volumen es alto Y el precio se mueve → real
+
+        2. PRICE CONFIRMATION: Close relativo al rango High-Low
+           - Si el close está cerca del Low → buyers activos (convicción)
+           - Si el close está al medio del rango → sin convicción
+
+        3. RELATIVE VOLUME: Vs promedio
+           - Solo puntúa si el volumen es genuinamente elevado
+
+        Returns:
+            Score 0.0 (noise) a 3.0 (high-quality institutional volume)
+        """
+        score = 0.0
+        price_range = high - low
+
+        if price_range <= 0 or volume <= 0 or avg_volume <= 0:
+            return 0.0
+
+        # 1. Amihud: ¿el volumen MUEVE el precio?
+        abs_return = abs(close - prev_close) / prev_close if prev_close > 0 else 0
+        dollar_volume = volume * close
+        amihud = abs_return / (dollar_volume / 1e9) if dollar_volume > 0 else 0
+
+        # Amihud alto = el volumen sí mueve el precio = volumen real
+        # Amihud bajo = mucho volumen pero precio no se mueve = HFT noise
+        if amihud > 0.5:  # Umbral adaptativo basado en ETFs
+            score += 1.0
+        elif amihud > 0.1:
+            score += 0.5
+
+        # 2. Price Confirmation: ¿el close está cerca del extremo del rango?
+        # Close cerca del Low en un dip = buyers defending (bueno para Spring)
+        close_position = (close - low) / price_range  # 0 = close@low, 1 = close@high
+        # En una vela de dip, queremos que el close NO esté en el mínimo
+        # (señal de que buyers aparecieron al final)
+        if close_position > 0.6:  # Close en el tercio superior del rango
+            score += 1.0
+        elif close_position > 0.3:
+            score += 0.5
+
+        # 3. Relative Volume genuinamente elevado
+        rvol = volume / avg_volume
+        if rvol > 2.0:
+            score += 1.0
+        elif rvol > 1.5:
+            score += 0.5
+
+        return score
 
     def load_data(self, ticker: str = None) -> pd.DataFrame:
         """
@@ -525,6 +606,16 @@ class WalkForwardBacktester:
             if rvol < 1.2:
                 continue
 
+            # Condición 2b: VOLUME QUALITY — filtrar ruido HFT
+            #   Si el volumen es alto pero el precio no se mueve = HFT noise
+            vol_quality = self.volume_quality_score(
+                close=closes[i], high=highs_arr[i], low=lows_arr[i],
+                volume=volumes[i], avg_volume=avg_vol_local,
+                prev_close=closes[i-1],
+            )
+            if vol_quality < 1.0:  # Score mínimo = volumen tiene que mover precio
+                continue
+
             # Condición 3: NOT IN FREEFALL — Kalman no debe confirmar
             # distribución activa ni markdown (caída libre)
             if wyckoff_state in ('DISTRIBUTION', 'MARKDOWN'):
@@ -588,6 +679,11 @@ class WalkForwardBacktester:
                     'ma20_target': round(ma20, 2),
                 },
             })
+
+        # ── Deducir costos de transacción de TODOS los trades ──────
+        cost = self.ROUND_TRIP_COST_PCT
+        for t in trades:
+            t['pnl_pct'] = round(t['pnl_pct'] - cost, 3)
 
         return trades
 
@@ -657,6 +753,9 @@ class WalkForwardBacktester:
                 adaptive_params=adaptive_params,
                 kalman=kalman,
             )
+
+        # Acumular trades para métricas agregadas
+        self._all_trades.extend(trades)
 
         if not trades:
             return WindowResult(
@@ -776,6 +875,7 @@ class WalkForwardBacktester:
             return BacktestReport()
 
         # 3. Evaluar cada ventana con señales reales
+        self._all_trades = []  # Reset para aggregate metrics
         results = []
         for w in windows:
             logger.info(
@@ -811,32 +911,68 @@ class WalkForwardBacktester:
         return report
 
     def _aggregate_results(self, results: list[WindowResult]) -> BacktestReport:
-        """Agrega resultados de todas las ventanas en un reporte."""
+        """
+        Agrega resultados de todas las ventanas en un reporte HONESTO.
+
+        CAMBIO CLAVE: Las métricas (Sharpe, PF) se calculan sobre TODOS
+        los trades agregados, NO promediando métricas por ventana.
+        Esto elimina la inflación por ventanas con N=1-3 trades.
+        """
         active = [r for r in results if r.n_trades > 0]
 
         if not active:
             return BacktestReport(total_windows=len(results))
 
-        sharpes = [r.sharpe_ratio for r in active]
-        win_rates = [r.win_rate for r in active]
-        pfs = [r.profit_factor for r in active]
-        dds = [r.max_drawdown_pct for r in active]
+        # ── Recopilar TODOS los trades desde _all_trades ──
+        all_pnls = [t['pnl_pct'] for t in self._all_trades]
+        all_bars = [t['bars_held'] for t in self._all_trades]
+        total_trades = len(all_pnls)
 
-        avg_sharpe = float(np.mean(sharpes))
-        avg_wr = float(np.mean(win_rates))
-        avg_pf = float(np.mean(pfs))
-        worst_dd = float(np.min(dds))
-        total_ret = sum(r.total_pnl_pct for r in active)
+        if total_trades > 0:
+            winners = [p for p in all_pnls if p > 0]
+            losers = [p for p in all_pnls if p <= 0]
 
-        # Gating checks
+            # Sharpe agregado (sobre todos los trades)
+            if len(all_pnls) > 1 and np.std(all_pnls) > 0:
+                avg_bars = np.mean(all_bars) if all_bars else 5
+                trades_per_year = 252 / max(avg_bars, 1)
+                agg_sharpe = (np.mean(all_pnls) / np.std(all_pnls)) * np.sqrt(trades_per_year)
+            else:
+                agg_sharpe = 0.0
+
+            # Win Rate agregado
+            agg_wr = len(winners) / total_trades * 100
+
+            # Profit Factor agregado (honesto)
+            gross_profit = sum(winners) if winners else 0
+            gross_loss = abs(sum(losers)) if losers else 0.001
+            agg_pf = gross_profit / gross_loss
+
+            # Max Drawdown sobre equity curve completa
+            equity = np.cumsum(all_pnls)
+            running_max = np.maximum.accumulate(equity)
+            drawdowns = equity - running_max
+            worst_dd = float(np.min(drawdowns)) if len(drawdowns) > 0 else 0.0
+
+            total_ret = sum(all_pnls)
+        else:
+            agg_sharpe = 0.0
+            agg_wr = 0.0
+            agg_pf = 0.0
+            worst_dd = 0.0
+            total_ret = 0.0
+
+        # Gating checks (con mínimo de trades)
         g = self.GATING_CRITERIA
-        passes_sharpe = avg_sharpe >= g['min_sharpe']
-        passes_dd = worst_dd >= g['max_drawdown']
-        passes_wr = avg_wr >= g['min_win_rate']
-        passes_pf = avg_pf >= g['min_profit_factor']
-        approved = passes_sharpe and passes_dd and passes_wr and passes_pf
+        min_trades = g.get('min_trades_total', 15)
+        enough_trades = total_trades >= min_trades
+        passes_sharpe = bool(agg_sharpe >= g['min_sharpe'] and enough_trades)
+        passes_dd = bool(worst_dd >= g['max_drawdown'])
+        passes_wr = bool(agg_wr >= g['min_win_rate'] and enough_trades)
+        passes_pf = bool(agg_pf >= g['min_profit_factor'] and enough_trades)
+        approved = bool(passes_sharpe and passes_dd and passes_wr and passes_pf)
 
-        # Debilidades sistémicas: agregar error_distributions
+        # Debilidades sistémicas
         all_errors = {}
         for r in active:
             for err, count in r.error_distribution.items():
@@ -846,17 +982,17 @@ class WalkForwardBacktester:
         weaknesses = [
             {"error": e, "count": c, "pct": round(c / total_errs * 100, 1)}
             for e, c in sorted(all_errors.items(), key=lambda x: -x[1])
-            if c / total_errs > 0.25  # Solo reportar errores > 25%
+            if c / total_errs > 0.25
         ]
 
         return BacktestReport(
             total_windows=len(results),
             windows=[asdict(r) for r in results],
-            avg_sharpe=round(avg_sharpe, 3),
-            avg_win_rate=round(avg_wr, 1),
-            avg_profit_factor=round(avg_pf, 3),
-            worst_drawdown=round(worst_dd, 2),
-            total_return_pct=round(total_ret, 2),
+            avg_sharpe=round(float(agg_sharpe), 3),
+            avg_win_rate=round(float(agg_wr), 1),
+            avg_profit_factor=round(float(agg_pf), 3),
+            worst_drawdown=round(float(worst_dd), 2),
+            total_return_pct=round(float(total_ret), 2),
             passes_sharpe=passes_sharpe,
             passes_drawdown=passes_dd,
             passes_win_rate=passes_wr,

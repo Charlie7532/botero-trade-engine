@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass, field
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, UTC
 
 logger = logging.getLogger(__name__)
 
@@ -493,7 +493,7 @@ class RiskGuardian:
         # 2. Daily loss check
         if abs(daily_pnl_pct) >= self.max_daily_loss and daily_pnl_pct < 0:
             can_trade = False
-            self._last_loss_event = datetime.utcnow()
+            self._last_loss_event = datetime.now(UTC)
             alerts.append(f"🚨 Pérdida diaria {daily_pnl_pct*100:.1f}% ≥ {self.max_daily_loss*100:.0f}%. Trading pausado {self.cooldown_hours}h.")
         
         # 3. VIX scaling
@@ -511,7 +511,7 @@ class RiskGuardian:
         
         # 5. Cooldown check
         if self._last_loss_event:
-            hours_since = (datetime.utcnow() - self._last_loss_event).total_seconds() / 3600
+            hours_since = (datetime.now(UTC) - self._last_loss_event).total_seconds() / 3600
             if hours_since < self.cooldown_hours:
                 can_trade = False
                 alerts.append(f"⏳ Cooldown: {self.cooldown_hours - hours_since:.0f}h restantes.")

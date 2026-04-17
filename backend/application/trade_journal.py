@@ -18,7 +18,7 @@ import logging
 import os
 import sqlite3
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Optional
 
@@ -71,7 +71,7 @@ class TradeJournalEntry:
     trade_id: str
     ticker: str
     direction: str  # LONG, SHORT
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     
     # ─── PRE-TRADE: ¿Por qué entramos? ───
     entry_thesis: str = ""  # Tesis en texto libre
@@ -231,7 +231,7 @@ class TradeJournal:
             entry.entry_thesis, entry.alpha_score, entry.qualifier_grade,
             entry.rs_vs_spy, entry.insider_signal, entry.sector_alignment,
             json.dumps(asdict(entry), default=str),
-            datetime.utcnow().isoformat(),
+            datetime.now(UTC).isoformat(),
         ))
         
         # Guardar snapshot de entrada
@@ -276,7 +276,7 @@ class TradeJournal:
             1 if entry.was_winner else 0,
             entry.exit_reason, entry.lesson_learned, entry.grade,
             json.dumps(asdict(entry), default=str),
-            datetime.utcnow().isoformat(),
+            datetime.now(UTC).isoformat(),
             entry.trade_id,
         ))
         
@@ -296,7 +296,7 @@ class TradeJournal:
                 entry.trade_id, tag, entry.entry_thesis,
                 'WIN' if entry.was_winner else 'LOSS',
                 abs(entry.pnl_r_multiple),
-                datetime.utcnow().isoformat(),
+                datetime.now(UTC).isoformat(),
             ))
         
         conn.commit()

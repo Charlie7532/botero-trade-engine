@@ -11,12 +11,11 @@ import logging
 import os
 import uuid
 import sys
-sys.path.insert(0, '/root/botero-trade')
 
 import yfinance as yf
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, UTC
 
 from backend.application.trade_journal import TradeJournal, TradeJournalEntry
 from backend.application.portfolio_intelligence import (
@@ -93,7 +92,7 @@ class PaperTradingOrchestrator:
                     for p in positions
                 ],
                 "num_positions": len(positions),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             return {"error": str(e)}
@@ -156,7 +155,7 @@ class PaperTradingOrchestrator:
             sector = info.get('sector', 'Unknown')
             
             return {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "price": close,
                 "daily_change_pct": round((close / prev_close - 1) * 100, 2),
                 "distance_from_20sma_pct": round((close / sma20 - 1) * 100, 2),
@@ -177,7 +176,7 @@ class PaperTradingOrchestrator:
             }
         except Exception as e:
             logger.error(f"Error creating snapshot for {ticker}: {e}")
-            return {"timestamp": datetime.utcnow().isoformat(), "error": str(e)}
+            return {"timestamp": datetime.now(UTC).isoformat(), "error": str(e)}
     
     def open_position(
         self,
@@ -193,7 +192,7 @@ class PaperTradingOrchestrator:
         """
         Abre una posición en Paper Trading con journal completo.
         """
-        trade_id = f"BT-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{ticker}"
+        trade_id = f"BT-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{ticker}"
         
         # 1. Snapshot pre-trade
         logger.info(f"Capturando snapshot para {ticker}...")
@@ -231,41 +230,87 @@ class PaperTradingOrchestrator:
             sector_alignment=sector_alignment,
             entry_snapshot=snapshot,
             entry_price=snapshot.get('price', 0),
-            entry_time=datetime.utcnow().isoformat(),
+            entry_time=datetime.now(UTC).isoformat(),
             entry_notional=adjusted_notional,
             rs_vs_spy=snapshot.get('rs_vs_spy_20d', 1.0),
             pattern_tags=pattern_tags or [],
         )
         
-        # 4. Ejecutar en Alpaca
+        # 4. Smart Entry — Pre-Market Validation + Limit Order
         client = self._get_alpaca()
         if not client:
             return {"error": "Alpaca no conectado"}
         
         try:
-            from alpaca.trading.requests import MarketOrderRequest
-            from alpaca.trading.enums import OrderSide, TimeInForce
+            from backend.application.smart_entry import SmartEntryEngine
             
-            order_request = MarketOrderRequest(
-                symbol=ticker,
-                notional=round(adjusted_notional, 2),
-                side=OrderSide.BUY,
-                time_in_force=TimeInForce.DAY,
+            smart = SmartEntryEngine()
+            analysis_price = snapshot.get('price', 0)
+            atr = snapshot.get('atr', 1.0)
+            
+            # Get current/premarket price from Alpaca
+            current_price = analysis_price
+            bid, ask = None, None
+            try:
+                from alpaca.data.requests import StockLatestQuoteRequest
+                from alpaca.data import StockHistoricalDataClient
+                
+                data_client = StockHistoricalDataClient(
+                    os.getenv('ALPACA_API_KEY'),
+                    os.getenv('ALPACA_SECRET_KEY'),
+                )
+                quote = data_client.get_stock_latest_quote(
+                    StockLatestQuoteRequest(symbol_or_symbols=ticker)
+                )
+                if ticker in quote:
+                    q = quote[ticker]
+                    bid = float(q.bid_price) if q.bid_price else None
+                    ask = float(q.ask_price) if q.ask_price else None
+                    current_price = float(q.ask_price) if q.ask_price else analysis_price
+            except Exception as e:
+                logger.warning(f"No se pudo obtener quote premarket para {ticker}: {e}")
+            
+            # Validate entry
+            vix = snapshot.get('vix', 17)
+            if vix > 25:
+                smart = SmartEntryEngine(rules=smart.adaptive_rules(vix=vix))
+            
+            check = smart.validate_entry(
+                ticker=ticker,
+                analysis_price=analysis_price,
+                current_price=current_price,
+                bid=bid,
+                ask=ask,
+                atr=atr,
             )
             
-            order = client.submit_order(order_request)
+            if not check.is_valid:
+                logger.warning(f"❌ ENTRADA RECHAZADA: {ticker} — {check.rejection_reason}")
+                return {
+                    "action": "REJECTED",
+                    "reason": check.rejection_reason,
+                    "gap_pct": check.gap_pct,
+                    "analysis_price": analysis_price,
+                    "current_price": current_price,
+                }
+            
+            # Submit LIMIT order (replaces MarketOrderRequest)
+            order = smart.submit_alpaca_limit_order(
+                client=client,
+                check=check,
+                notional=adjusted_notional,
+            )
+            
             entry.entry_order_id = str(order.id)
             entry.status = "OPEN"
+            entry.entry_price = check.recommended_limit  # Limit price, not market
             
-            # Calcular stop inicial
-            atr = snapshot.get('atr', 1.0)
+            # Stop from SmartEntry (ATR-based)
             rs = snapshot.get('rs_vs_spy_20d', 1.0)
-            stop = self.trailing.calculate_stop(
-                snapshot.get('price', 100), atr, rs
-            )
+            stop = check.recommended_stop
             entry.initial_stop_price = stop
             entry.current_stop_price = stop
-            entry.highest_price = snapshot.get('price', 0)
+            entry.highest_price = current_price
             
             # Registrar RS al entrar
             self.rs_monitor.register_entry(ticker, rs)
@@ -274,17 +319,24 @@ class PaperTradingOrchestrator:
             self.journal.open_trade(entry)
             
             logger.info(
-                f"✅ ORDEN ENVIADA: {ticker} ${adjusted_notional:,.0f} "
-                f"(Stop: ${stop:.2f}) Order ID: {order.id}"
+                f"✅ LIMIT ORDEN ENVIADA: {ticker} ${adjusted_notional:,.0f} "
+                f"Limit=${check.recommended_limit:.2f} "
+                f"(Gap={check.gap_pct:+.1f}%, Stop=${stop:.2f}) "
+                f"Order ID: {order.id}"
             )
             
             return {
                 "action": "BUY",
                 "trade_id": trade_id,
                 "ticker": ticker,
+                "order_type": "LIMIT",
+                "limit_price": check.recommended_limit,
                 "notional": adjusted_notional,
                 "order_id": str(order.id),
                 "initial_stop": stop,
+                "gap_pct": check.gap_pct,
+                "analysis_price": analysis_price,
+                "current_price": current_price,
                 "snapshot": snapshot,
                 "risk_scale": risk_check['position_scale'],
             }
@@ -401,7 +453,7 @@ class PaperTradingOrchestrator:
                 
                 # Actualizar con datos de cierre
                 entry.exit_price = float(pos.current_price)
-                entry.exit_time = datetime.utcnow().isoformat()
+                entry.exit_time = datetime.now(UTC).isoformat()
                 entry.exit_reason = exit_reason
                 entry.exit_order_id = str(order.id)
                 entry.exit_snapshot = exit_snapshot
@@ -494,14 +546,159 @@ class PaperTradingOrchestrator:
         
         return recs
 
+    def run_daily_scan(
+        self,
+        candidate_tickers: list[str] = None,
+        max_positions: int = 5,
+        notional_per_trade: float = 5000.0,
+        macro_mcp_data: dict = None,
+        sector_mcp_data: dict = None,
+        guru_mcp_data: dict = None,
+        finviz_movers_data: dict = None,
+    ) -> dict:
+        """
+        Pipeline completo de selección y ejecución diaria.
 
-if __name__ == '__main__':
+        Invoca en secuencia:
+        1. AlphaScanner → genera ranking de candidatos
+        2. UniverseFilter → aplica scoring Guru + macro
+        3. SmartEntryEngine → valida y limita la entrada
+
+        Args:
+            candidate_tickers: Lista de tickers a evaluar. Si None, usa Finviz movers.
+            max_positions: Máximo de posiciones a abrir en la sesión.
+            notional_per_trade: Capital nominal por trade ($).
+            macro_mcp_data: Datos macro pre-fetched del MCP de FRED.
+            sector_mcp_data: Datos sectoriales pre-fetched de Finviz MCP.
+            guru_mcp_data: Datos GuruFocus pre-fetched por ticker.
+            finviz_movers_data: Respuesta del MCP volume_surge_screener.
+
+        Returns:
+            Resumen de la sesión de scanning con trades intentados.
+        """
+        from backend.application.alpha_scanner import AlphaScanner
+        from backend.application.universe_filter import UniverseFilter, UniverseCandidate
+
+        session_start = datetime.now(UTC).isoformat()
+        logger.info(f"🚀 run_daily_scan() iniciado — {session_start}")
+
+        # ── 1. Account check ────────────────────────────────────────
+        account = self.get_account_status()
+        if 'error' in account:
+            return {"error": account['error'], "session_start": session_start}
+
+        current_positions = len(account.get('positions', []))
+        slots_available = max(0, max_positions - current_positions)
+        if slots_available == 0:
+            logger.info(f"🛑 Portfolio lleno ({current_positions}/{max_positions} posiciones). No se escanea.")
+            return {
+                "status": "PORTFOLIO_FULL",
+                "positions": current_positions,
+                "session_start": session_start,
+            }
+
+        logger.info(f"📊 Slots disponibles: {slots_available} | Equity: ${account['equity']:,.0f}")
+
+        # ── 2. Alpha Scanner ─────────────────────────────────────────
+        scanner = AlphaScanner()
+        alpha_results = scanner.scan(
+            tickers=candidate_tickers,
+            max_results=slots_available * 3,  # Buffer 3x para que el filtro elija
+            include_qualifier=False,
+            finviz_movers_data=finviz_movers_data,
+            guru_mcp_data=guru_mcp_data,
+        )
+
+        if not alpha_results:
+            logger.warning("⚠️  AlphaScanner no retornó candidatos. Sesión terminada.")
+            return {"status": "NO_CANDIDATES", "session_start": session_start}
+
+        logger.info(f"🔍 AlphaScanner: {len(alpha_results)} candidatos rankeados")
+
+        # ── 3. Universe Filter (scoring Guru + macro) ────────────────
+        uf = UniverseFilter()
+        existing_tickers = [p['ticker'] for p in account.get('positions', [])]
+
+        candidates = []
+        for result in alpha_results:
+            ticker = result.get('ticker', '')
+            if not ticker or ticker in existing_tickers:
+                continue
+            candidates.append(UniverseCandidate(
+                ticker=ticker,
+                alpha_score=result.get('alpha_score', 0),
+                sector=result.get('sector', 'Unknown'),
+                rs_vs_spy=result.get('rs_vs_spy', 1.0),
+                insider_signal=result.get('insider_signal', 'neutral'),
+                sector_alignment=result.get('sector_alignment', 'NEUTRAL'),
+                # Guru metrics populated if mcp data provided
+            ))
+
+        if macro_mcp_data:
+            uf.update_macro_regime(macro_mcp_data)
+
+        top_candidates = uf.filter_and_rank(
+            candidates,
+            sector_mcp_data=sector_mcp_data,
+            max_results=slots_available,
+        )
+
+        if not top_candidates:
+            logger.info("ℹ️  UniverseFilter descartó todos los candidatos. Nada aprobado.")
+            return {"status": "ALL_FILTERED", "candidates_scanned": len(candidates), "session_start": session_start}
+
+        logger.info(f"✅ UniverseFilter aprobó {len(top_candidates)} tickers: {[c.ticker for c in top_candidates]}")
+
+        # ── 4. Ejecutar trades aprobados ─────────────────────────────
+        trades_attempted = []
+        for candidate in top_candidates:
+            logger.info(f"📝 Intentando entrada: {candidate.ticker} (score={candidate.alpha_score:.1f})")
+            result = self.open_position(
+                ticker=candidate.ticker,
+                thesis=f"Alpha={candidate.alpha_score:.1f} | Sector={candidate.sector} | RS={candidate.rs_vs_spy:.3f} | {candidate.sector_alignment}",
+                alpha_score=candidate.alpha_score,
+                insider_signal=candidate.insider_signal,
+                sector_alignment=candidate.sector_alignment,
+                notional=notional_per_trade,
+            )
+            trades_attempted.append({
+                "ticker": candidate.ticker,
+                "action": result.get('action', 'ERROR'),
+                "reason": result.get('reason', result.get('error', '')),
+                "limit_price": result.get('limit_price'),
+                "order_id": result.get('order_id'),
+            })
+
+        executed = [t for t in trades_attempted if t['action'] == 'BUY']
+        rejected = [t for t in trades_attempted if t['action'] == 'REJECTED']
+        errors = [t for t in trades_attempted if t['action'] == 'ERROR']
+
+        session_summary = {
+            "status": "COMPLETED",
+            "session_start": session_start,
+            "session_end": datetime.now(UTC).isoformat(),
+            "slots_available": slots_available,
+            "candidates_scanned": len(alpha_results),
+            "candidates_approved": len(top_candidates),
+            "trades_executed": len(executed),
+            "trades_rejected": len(rejected),
+            "trades_errored": len(errors),
+            "trades": trades_attempted,
+        }
+
+        logger.info(
+            f"📈 Sesión completada: {len(executed)} ejecutados, "
+            f"{len(rejected)} rechazados, {len(errors)} errores"
+        )
+        return session_summary
+
+
     logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(message)s')
     
     # ─── DEMO: Conectar y verificar estado ───
-    os.environ.setdefault('ALPACA_API_KEY', 'PKLBZC43ERHDNVTT4LEMM5ICJV')
-    os.environ.setdefault('ALPACA_SECRET_KEY', '164GZfKpnLscLmsn4CCn31eP7XqVJ8iZPYQ25sQrr92')
-    os.environ.setdefault('FINNHUB_API_KEY', 'd7gffopr01qmqj4553cgd7gffopr01qmqj4553d0')
+    # Credentials loaded from .env (never hardcode secrets)
+    from dotenv import load_dotenv
+    load_dotenv()
     
     orch = PaperTradingOrchestrator()
     

@@ -26,7 +26,6 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import sys
-sys.path.insert(0, '/root/botero-trade')
 
 from backend.application.feature_engineering import QuantFeatureEngineer
 from backend.application.sequence_modeling import (

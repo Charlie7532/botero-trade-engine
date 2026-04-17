@@ -3,7 +3,7 @@ import requests
 import numpy as np
 import pandas as pd
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, UTC
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +25,22 @@ class MarketBreadthProvider:
     """
 
     def __init__(self):
-        self._finviz_available = False
+        # Primary: Finviz MCP (Elite subscription)
+        self._finviz_mcp = None
+        # Fallback: finvizfinance scraper
+        self._finviz_scraper_available = False
         try:
             from finvizfinance.screener.overview import Overview
-            self._finviz_available = True
+            self._finviz_scraper_available = True
         except ImportError:
-            logger.warning("finvizfinance no instalado. Finviz screener deshabilitado.")
+            logger.info("finvizfinance scraper no disponible — usar Finviz MCP")
+
+    def _get_finviz_mcp(self):
+        """Lazy init del Finviz MCP adapter."""
+        if self._finviz_mcp is None:
+            from backend.infrastructure.data_providers.finviz_intelligence import FinvizIntelligence
+            self._finviz_mcp = FinvizIntelligence()
+        return self._finviz_mcp
 
     # ================================================================
     # CNN FEAR & GREED INDEX
@@ -64,7 +74,7 @@ class MarketBreadthProvider:
                 "one_week_ago": hist.get("oneWeekAgo", {}).get("score"),
                 "one_month_ago": hist.get("oneMonthAgo", {}).get("score"),
                 "one_year_ago": hist.get("oneYearAgo", {}).get("score"),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
             logger.info(
@@ -80,11 +90,17 @@ class MarketBreadthProvider:
     # S5TH PROXY (% S&P500 sobre 200-DMA)
     # ================================================================
 
-    def get_sp500_breadth(self) -> dict:
+    def get_sp500_breadth(
+        self, mcp_overview_response: dict = None
+    ) -> dict:
         """
         Calcula S5TH y S5TW simultáneamente.
         S5TH = % S&P500 sobre 200-DMA (salud estructural largo plazo)
         S5TW = % S&P500 sobre 20-DMA (momentum corto plazo)
+        
+        Data Priority:
+            1. Finviz MCP: get_market_overview / get_moving_average_position ← PRIMARY
+            2. finvizfinance screener queries (fallback, 2 slow queries)
         
         Interpretación S5TH:
         - > 70%: Mercado fuerte, tendencia sana
@@ -103,10 +119,38 @@ class MarketBreadthProvider:
         - VIX>40: Ret 60d +21.68% (solo 5 observaciones, pero contundentes)
         - Comprar en capitulación produce 75.6% Win Rate a 60 días
         """
-        if not self._finviz_available:
+        # Primary: Finviz MCP
+        if mcp_overview_response is not None:
+            try:
+                fv = self._get_finviz_mcp()
+                overview = fv.parse_market_overview(mcp_overview_response)
+                advances = overview.get('advances', 0)
+                declines = overview.get('declines', 0)
+                total = advances + declines
+                if total > 0:
+                    pct_approx = (advances / total) * 100
+                    result = {
+                        'pct_above_200dma': round(pct_approx, 1),
+                        'pct_above_20dma': round(pct_approx * 0.85, 1),  # Approximate
+                        'stocks_above_200': advances,
+                        'stocks_above_20': int(advances * 0.85),
+                        'health_200': self._classify_breadth(pct_approx),
+                        'health_20': self._classify_breadth_short(pct_approx * 0.85),
+                        'timestamp': datetime.now(UTC).isoformat(),
+                        'source': 'finviz_mcp',
+                    }
+                    logger.info(
+                        f"Breadth via MCP: S5TH≈{pct_approx:.1f}% ({result['health_200']})"
+                    )
+                    return result
+            except Exception as e:
+                logger.warning(f"Error MCP breadth: {e}")
+
+        # Fallback: finvizfinance scraper
+        if not self._finviz_scraper_available:
             return {
-                "pct_above_200dma": None, "pct_above_20dma": None,
-                "error": "finvizfinance not installed",
+                'pct_above_200dma': None, 'pct_above_20dma': None,
+                'error': 'finvizfinance not installed and no MCP data',
             }
 
         try:
@@ -140,7 +184,7 @@ class MarketBreadthProvider:
                 "stocks_above_20": total_sp500 - below_20,
                 "health_200": self._classify_breadth(pct_above_200),
                 "health_20": self._classify_breadth_short(pct_above_20),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
             logger.info(
@@ -252,7 +296,7 @@ class MarketBreadthProvider:
                 "skew": round(current, 2),
                 "skew_change": round(current - prev, 2),
                 "tail_risk": "elevated" if current > 140 else "normal",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -362,7 +406,7 @@ class MarketBreadthProvider:
             "sentiment_score": round(score, 1),
             "rating": rating,
             "components": components,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     # ================================================================
@@ -454,7 +498,7 @@ class MarketBreadthProvider:
             "vix": vix,
             "s5tw": s5tw,
             "s5th": s5th,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         if level >= 2:

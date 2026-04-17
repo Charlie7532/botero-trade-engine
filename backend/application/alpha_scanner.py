@@ -16,7 +16,6 @@ import logging
 import sys
 import os
 import numpy as np
-sys.path.insert(0, '/root/botero-trade')
 
 logger = logging.getLogger(__name__)
 
@@ -34,24 +33,39 @@ class AlphaScanner:
     
     # Componentes del Alpha Score
     WEIGHTS = {
-        'rs_vs_spy': 0.25,       # Relative Strength vs SPY
-        'rs_vs_sector': 0.20,    # RS vs sector ETF
-        'insider_score': 0.15,   # Finnhub insider signal
+        'rs_vs_spy': 0.20,       # Relative Strength vs SPY
+        'rs_vs_sector': 0.15,    # RS vs sector ETF
+        'insider_score': 0.15,   # Insider conviction (GuruFocus + Finnhub)
         'sector_health': 0.15,   # Breadth del sector
         'volume_signal': 0.10,   # Acumulación por volumen
-        'qualifier': 0.15,       # Ticker Qualifier fitness test
+        'qualifier': 0.10,       # Ticker Qualifier fitness test
+        'guru_score': 0.10,      # Guru conviction (NEW)
+        'analyst_score': 0.05,   # Analyst consensus (NEW)
     }
     
     def __init__(self):
         self._finnhub = None
         self._sector_flow = None
+        self._gurufocus = None
+        self._finviz = None
     
     def _get_finnhub(self):
         if self._finnhub is None:
-            os.environ.setdefault('FINNHUB_API_KEY', '')
             from backend.infrastructure.data_providers.finnhub_intelligence import FinnhubIntelligence
             self._finnhub = FinnhubIntelligence()
         return self._finnhub
+    
+    def _get_gurufocus(self):
+        if self._gurufocus is None:
+            from backend.infrastructure.data_providers.gurufocus_intelligence import GuruFocusIntelligence
+            self._gurufocus = GuruFocusIntelligence()
+        return self._gurufocus
+
+    def _get_finviz(self):
+        if self._finviz is None:
+            from backend.infrastructure.data_providers.finviz_intelligence import FinvizIntelligence
+            self._finviz = FinvizIntelligence()
+        return self._finviz
     
     def _get_sector_flow(self):
         if self._sector_flow is None:
@@ -64,6 +78,11 @@ class AlphaScanner:
         tickers: list[str] = None,
         max_results: int = 15,
         include_qualifier: bool = False,
+        # ─── NEW: MCP-sourced data (pre-fetched by orchestrator) ───
+        insider_mcp_data: dict = None,     # {ticker: {cluster, ceo, cfo}}
+        guru_mcp_data: dict = None,        # {ticker: mcp_response}
+        analyst_mcp_data: dict = None,     # {ticker: mcp_response}
+        finviz_movers_data: dict = None,   # Finviz MCP volume_surge response
     ) -> list[dict]:
         """
         Escanea una lista de tickers y los rankea por Alpha Score.
@@ -156,10 +175,31 @@ class AlphaScanner:
         # Normalizar RS a 0-100
         rs_spy_score = max(0, min(100, (rs_spy - 0.8) / 0.4 * 100))
         
-        # 3. Sector health
+        # 3. Sector health + RS vs Sector ETF
         sector_health_score = 50  # Default
         stock_info = yf.Ticker(ticker).info
         sector = stock_info.get('sector', 'Unknown')
+        
+        # RS vs Sector ETF (fix placeholder)
+        SECTOR_ETFS = {
+            'Technology': 'XLK', 'Healthcare': 'XLV', 'Financial Services': 'XLF',
+            'Consumer Cyclical': 'XLY', 'Industrials': 'XLI', 'Energy': 'XLE',
+            'Communication Services': 'XLC', 'Consumer Defensive': 'XLP',
+            'Utilities': 'XLU', 'Real Estate': 'XLRE', 'Basic Materials': 'XLB',
+        }
+        rs_sector_score = 50  # Default neutral
+        sector_etf = SECTOR_ETFS.get(sector)
+        if sector_etf:
+            try:
+                etf_data = yf.download(sector_etf, period='3mo', interval='1d', progress=False)
+                if not etf_data.empty and len(etf_data) >= 20:
+                    if isinstance(etf_data.columns, __import__('pandas').MultiIndex):
+                        etf_data.columns = etf_data.columns.get_level_values(0)
+                    etf_ret_20d = float(etf_data['Close'].iloc[-1] / etf_data['Close'].iloc[-20] - 1)
+                    rs_sector = (1 + stock_ret_20d) / (1 + etf_ret_20d) if etf_ret_20d != -1 else 1.0
+                    rs_sector_score = max(0, min(100, (rs_sector - 0.8) / 0.4 * 100))
+            except Exception:
+                pass
         
         if sector_report:
             for s_name, s_data in sector_report.items():
@@ -207,14 +247,48 @@ class AlphaScanner:
             except Exception:
                 pass
         
+        # 7. Guru / Analyst from MCP (NEW)
+        guru_score = 50
+        analyst_score_val = 50
+        if insider_mcp_data and ticker in insider_mcp_data:
+            try:
+                gf = self._get_gurufocus()
+                idata = insider_mcp_data[ticker]
+                insider_parsed = gf.parse_insider_conviction(
+                    ticker,
+                    cluster_data=idata.get("cluster"),
+                    ceo_data=idata.get("ceo"),
+                    cfo_data=idata.get("cfo"),
+                )
+                insider_score = max(insider_score, insider_parsed.conviction_score)
+            except Exception:
+                pass
+        if guru_mcp_data and ticker in guru_mcp_data:
+            try:
+                gf = self._get_gurufocus()
+                guru = gf.parse_guru_tracking(ticker, guru_mcp_data[ticker])
+                guru_score = guru.net_buying_score
+            except Exception:
+                pass
+        if analyst_mcp_data and ticker in analyst_mcp_data:
+            try:
+                gf = self._get_gurufocus()
+                analyst = gf.parse_analyst_intelligence(ticker, analyst_mcp_data[ticker])
+                analyst_map = {"strong_buy": 90, "buy": 70, "hold": 50, "sell": 30, "strong_sell": 10}
+                analyst_score_val = analyst_map.get(analyst.consensus, 50)
+            except Exception:
+                pass
+
         # Alpha Score composite
         alpha_score = (
             rs_spy_score * self.WEIGHTS['rs_vs_spy']
-            + 50 * self.WEIGHTS['rs_vs_sector']  # TODO: RS vs sector ETF
+            + rs_sector_score * self.WEIGHTS['rs_vs_sector']
             + insider_score * self.WEIGHTS['insider_score']
             + sector_health_score * self.WEIGHTS['sector_health']
             + volume_score * self.WEIGHTS['volume_signal']
             + qualifier_score * self.WEIGHTS['qualifier']
+            + guru_score * self.WEIGHTS['guru_score']
+            + analyst_score_val * self.WEIGHTS['analyst_score']
         )
         
         return {

@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, UTC
 
 import numpy as np
 import pandas as pd
@@ -30,6 +30,25 @@ class UniverseCandidate:
     guru_accumulation: bool = False       # True si Gurus están comprando
     dcf_discount_pct: float = 0.0         # Descuento vs valor intrínseco
     catalyst_active: bool = False         # Sobrerreacción detectada
+    # ─── QGARP / GuruFocus Intelligence (NEW) ───
+    qgarp_score: float = 0.0              # QGARP composite 0-100
+    piotroski_f_score: int = 0            # Financial strength 0-9
+    altman_z_score: float = 0.0           # Bankruptcy risk (>2.99 safe)
+    guru_conviction_score: float = 0.0    # Guru net buying 0-100
+    guru_count: int = 0                   # Number of gurus holding
+    insider_conviction_score: float = 0.0 # Insider cluster buying 0-100
+    insider_sentiment: str = "neutral"    # strong_buy, buy, neutral, sell
+    risk_score_5d: float = 50.0           # 5D risk matrix 0-100 (higher=safer)
+    analyst_consensus: str = "hold"       # strong_buy → strong_sell
+    analyst_upside_pct: float = 0.0       # Price target upside %
+    political_signal: str = "neutral"     # Congressional trades signal
+    # ─── GURU VALUATION METRICS (GuruFocus real data) ───
+    price_to_gf_value: float = 0.0        # Price / GF Value (<1 = undervalued)
+    gf_value_discount_pct: float = 0.0    # Margin of Safety % (positive = cheap)
+    ps_vs_historical: float = 0.0         # Current P/S / Historical Median P/S
+    price_to_fcf: float = 0.0             # Price / Free Cash Flow
+    fcf_margin: float = 0.0               # FCF Margin % (cash conversion quality)
+    beneish_m_score: float = -3.0         # Beneish M-Score (> -1.78 = manipulation risk)
     # Opciones & Sentimiento
     max_pain: float = 0.0                 # Max Pain del ticker
     max_pain_distance_pct: float = 0.0    # Distancia precio→MaxPain en %
@@ -41,25 +60,71 @@ class UniverseCandidate:
     fear_greed_macro: float = 50.0        # CNN Fear & Greed
     sp500_breadth_pct: float = 50.0       # S5TH proxy
     score: float = 0.0                    # Score compuesto
-    selected_at: datetime = field(default_factory=datetime.utcnow)
+    selected_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 class MacroRegimeDetector:
     """
-    Tier 0: Detecta el régimen macroeconómico usando VIX y Yield Curve.
+    Tier 0: Detecta el régimen macroeconómico.
     
-    Opera en dos modos:
-    1. Live: Descarga VIX y bonos vía yfinance.
-    2. Local: Usa datos precalculados si están disponibles.
+    Opera en tres modos:
+    1. FRED MCP (PRIMARY): 6+ signals from FRED (GDP, CPI, FFR, Unemployment, Yield, VIX)
+    2. Live yfinance (FALLBACK): VIX y Yield Curve vía yfinance
+    3. Manual: Datos proporcionados para backtesting
     """
 
     def __init__(self):
         self.vix_level: float = 20.0
         self.yield_spread: float = 0.5
         self.regime: MarketRegime = MarketRegime.NEUTRAL
+        self.macro_snapshot = None  # FREDMacroIntelligence.MacroSnapshot
+        self._fred = None
+
+    def _init_fred(self):
+        if self._fred is None:
+            from backend.infrastructure.data_providers.fred_macro_intelligence import FREDMacroIntelligence
+            self._fred = FREDMacroIntelligence()
+
+    def detect_from_fred(self, fred_mcp_data: dict) -> MarketRegime:
+        """
+        Detecta régimen usando FRED MCP data (6+ señales).
+        
+        PRIMARY method — uses GDP, CPI, Fed Funds, Unemployment,
+        Yield Curve, VIX for institutional-grade regime detection.
+        
+        Args:
+            fred_mcp_data: Response from FRED MCP get_economic_indicators
+        """
+        self._init_fred()
+        self.macro_snapshot = self._fred.parse_macro_snapshot(
+            indicators_data=fred_mcp_data
+        )
+
+        # Extract key values for compatibility with existing code
+        if self.macro_snapshot.vix is not None:
+            self.vix_level = self.macro_snapshot.vix
+        if self.macro_snapshot.yield_spread is not None:
+            self.yield_spread = self.macro_snapshot.yield_spread
+
+        # Use FRED's composite regime classification
+        regime_map = {
+            "risk_on": MarketRegime.RISK_ON,
+            "neutral": MarketRegime.NEUTRAL,
+            "risk_off": MarketRegime.RISK_OFF,
+            "crisis": MarketRegime.CRISIS,
+        }
+        self.regime = regime_map.get(self.macro_snapshot.macro_regime, MarketRegime.NEUTRAL)
+
+        logger.info(
+            f"Régimen FRED: {self.regime.value} "
+            f"(score={self.macro_snapshot.regime_score:.0f}, "
+            f"VIX={self.vix_level:.1f}, Spread={self.yield_spread:.2f}, "
+            f"CPI={self.macro_snapshot.cpi_yoy}, FFR={self.macro_snapshot.fed_funds_rate})"
+        )
+        return self.regime
 
     def detect_from_market(self) -> MarketRegime:
-        """Detecta régimen descargando VIX y Yield Curve actuales."""
+        """Detecta régimen descargando VIX y Yield Curve actuales (FALLBACK)."""
         try:
             # VIX
             vix_data = yf.download("^VIX", period="5d", progress=False)
@@ -84,7 +149,7 @@ class MacroRegimeDetector:
 
             self.regime = self._classify()
             logger.info(
-                f"Régimen detectado: {self.regime.value} "
+                f"Régimen detectado (yfinance fallback): {self.regime.value} "
                 f"(VIX={self.vix_level:.1f}, YieldSpread={self.yield_spread:.2f})"
             )
             return self.regime
@@ -336,6 +401,13 @@ class UniverseFilter:
         # Opciones & Breadth
         self._options = None
         self._breadth = None
+        # GuruFocus Intelligence adapter (lazy init)
+        self._gurufocus = None
+
+    def _init_gurufocus(self):
+        if self._gurufocus is None:
+            from backend.infrastructure.data_providers.gurufocus_intelligence import GuruFocusIntelligence
+            self._gurufocus = GuruFocusIntelligence()
 
     def _init_options(self):
         if self._options is None:
@@ -356,6 +428,14 @@ class UniverseFilter:
         yield_override: float = None,
         include_options: bool = False,
         include_breadth: bool = False,
+        # ─── NEW: MCP Intelligence Data ───
+        qgarp_data: dict = None,           # {ticker: mcp_response}
+        insider_data: dict = None,         # {ticker: {cluster, ceo, cfo}}
+        guru_tracking_data: dict = None,   # {ticker: mcp_response}
+        risk_data: dict = None,            # {ticker: mcp_response}
+        analyst_data: dict = None,         # {ticker: mcp_response}
+        political_data: dict = None,       # {ticker: mcp_response}
+        fred_mcp_data: dict = None,        # FRED MCP get_economic_indicators
     ) -> list[UniverseCandidate]:
         """
         Ejecuta el pipeline completo de filtrado.
@@ -375,11 +455,15 @@ class UniverseFilter:
         logger.info("=" * 60)
 
         # ── TIER 0: Macro Regime ──
-        if vix_override is not None:
+        if fred_mcp_data is not None:
+            # PRIMARY: FRED MCP with 6+ macro signals
+            regime = self.macro.detect_from_fred(fred_mcp_data)
+        elif vix_override is not None:
             regime = self.macro.detect_from_data(
                 vix_override, yield_override or 0.5
             )
         elif use_live_macro:
+            # FALLBACK: yfinance VIX + Yield only
             regime = self.macro.detect_from_market()
         else:
             regime = MarketRegime.NEUTRAL
@@ -495,6 +579,66 @@ class UniverseFilter:
                 candidate.fear_greed_macro = fear_greed_data.get("score", 50)
                 candidate.sp500_breadth_pct = breadth_data.get("pct_above_200dma", 50) or 50
 
+            # ── Enriquecer con GuruFocus Intelligence (NEW) ──
+            if any([qgarp_data, insider_data, guru_tracking_data, risk_data, analyst_data, political_data]):
+                self._init_gurufocus()
+
+                # QGARP Score — replaces ad-hoc dcf_discount scoring
+                if qgarp_data and ticker in qgarp_data:
+                    scorecard = self._gurufocus.parse_qgarp_scorecard(ticker, qgarp_data[ticker])
+                    candidate.qgarp_score = scorecard.total_score
+                    candidate.piotroski_f_score = scorecard.piotroski_f_score
+                    candidate.altman_z_score = scorecard.altman_z_score
+                    if scorecard.gf_value_discount_pct > 0:
+                        candidate.dcf_discount_pct = scorecard.gf_value_discount_pct
+
+                    # Guru Valuation — real GF metrics for scoring
+                    gv = self._gurufocus.parse_guru_valuation(
+                        ticker, qgarp_data[ticker],
+                        keyratios_data=qgarp_data[ticker].get("keyratios"),
+                    )
+                    candidate.price_to_gf_value = gv["price_to_gf_value"]
+                    candidate.gf_value_discount_pct = gv["gf_value_discount_pct"]
+                    candidate.ps_vs_historical = gv["ps_vs_historical"]
+                    candidate.price_to_fcf = gv["price_to_fcf"]
+                    candidate.fcf_margin = gv["fcf_margin"]
+                    candidate.beneish_m_score = gv["beneish_m_score"]
+
+                # Insider Conviction — replaces boolean insider_signal
+                if insider_data and ticker in insider_data:
+                    idata = insider_data[ticker]
+                    insider = self._gurufocus.parse_insider_conviction(
+                        ticker,
+                        cluster_data=idata.get("cluster"),
+                        ceo_data=idata.get("ceo"),
+                        cfo_data=idata.get("cfo"),
+                    )
+                    candidate.insider_conviction_score = insider.conviction_score
+                    candidate.insider_sentiment = insider.net_insider_sentiment
+
+                # Guru Tracking — replaces boolean guru_accumulation
+                if guru_tracking_data and ticker in guru_tracking_data:
+                    guru = self._gurufocus.parse_guru_tracking(ticker, guru_tracking_data[ticker])
+                    candidate.guru_accumulation = guru.accumulation
+                    candidate.guru_conviction_score = guru.net_buying_score
+                    candidate.guru_count = guru.guru_count
+
+                # 5D Risk Matrix
+                if risk_data and ticker in risk_data:
+                    risk = self._gurufocus.parse_risk_matrix(ticker, risk_data[ticker])
+                    candidate.risk_score_5d = risk.risk_score
+
+                # Analyst Intelligence
+                if analyst_data and ticker in analyst_data:
+                    analyst = self._gurufocus.parse_analyst_intelligence(ticker, analyst_data[ticker])
+                    candidate.analyst_consensus = analyst.consensus
+                    candidate.analyst_upside_pct = analyst.price_target_upside_pct
+
+                # Political Signal
+                if political_data and ticker in political_data:
+                    pol = self._gurufocus.parse_political_trades(ticker, political_data[ticker])
+                    candidate.political_signal = pol.get("net_signal", "neutral")
+
             # Score compuesto
             candidate.score = self._compute_score(candidate)
             candidates.append(candidate)
@@ -522,37 +666,111 @@ class UniverseFilter:
 
     def _compute_score(self, c: UniverseCandidate) -> float:
         """
-        Score compuesto ponderado.
-        Factores: Momentum, Gurus, DCF, Catalizador, Options, Sentimiento.
+        Score compuesto ponderado INSTITUCIONAL.
+        
+        v2: Integra QGARP, guru conviction, insider conviction, risk matrix,
+        analyst consensus, y political signal.
+        
+        Factores: Momentum, QGARP, Gurus, Insiders, Risk, Analyst, Options, Sentimiento.
         """
         score = 0.0
 
-        # Momentum relativo (peso: 25%)
-        score += c.relative_momentum * 25.0
+        # Momentum relativo (peso: 15%)
+        score += c.relative_momentum * 15.0
 
-        # Acumulación de Gurus (peso: 20%)
-        if c.guru_accumulation:
-            score += 20.0
-
-        # Descuento DCF (peso: 15%)
-        if c.dcf_discount_pct > 20:
-            score += min(c.dcf_discount_pct * 0.5, 15.0)
-
-        # Catalizador activo (peso: 10%)
-        if c.catalyst_active:
+        # QGARP Score — institucional quality-growth-value composite (peso: 20%)
+        if c.qgarp_score > 0:
+            score += (c.qgarp_score / 100) * 20.0
+        elif c.guru_accumulation:
+            # Fallback: legacy boolean
             score += 10.0
 
-        # Options: Market Maker Bias (peso: 15%)
-        if c.mm_bias == "BULLISH_PULL":
-            score += 15.0  # Precio debajo de Max Pain → MMs empujan arriba
-        elif c.mm_bias == "BEARISH_PULL":
-            score -= 10.0  # Precio arriba de Max Pain → presión bajista
+        # Guru Conviction — quantitative net buying (peso: 15%)
+        if c.guru_conviction_score > 0:
+            score += min((c.guru_conviction_score / 100) * 15.0, 15.0)
+        elif c.guru_accumulation:
+            score += 7.5  # Fallback: legacy boolean
 
-        # Sentimiento contrarian (peso: 15%)
-        # Score bajo = fear = oportunidad para value investor
+        # Insider Conviction — cluster buys weighted (peso: 10%)
+        if c.insider_conviction_score > 0:
+            score += min((c.insider_conviction_score / 100) * 10.0, 10.0)
+
+        # Descuento DCF / GF Value (peso: 10%)
+        if c.dcf_discount_pct > 20:
+            score += min(c.dcf_discount_pct * 0.5, 10.0)
+
+        # Catalizador activo (peso: 5%)
+        if c.catalyst_active:
+            score += 5.0
+
+        # Risk Score 5D — penalize risky stocks (peso: 5%)
+        if c.risk_score_5d < 30:
+            score -= 5.0  # High risk penalty
+        elif c.risk_score_5d > 70:
+            score += 5.0  # Low risk bonus
+
+        # Analyst Consensus (peso: 5%)
+        analyst_map = {"strong_buy": 5.0, "buy": 3.0, "hold": 0, "sell": -3.0, "strong_sell": -5.0}
+        score += analyst_map.get(c.analyst_consensus, 0)
+
+        # Political signal (peso: 3%)
+        if c.political_signal == "bullish":
+            score += 3.0
+        elif c.political_signal == "bearish":
+            score -= 2.0
+
+        # Options: Market Maker Bias (peso: 7%)
+        if c.mm_bias == "BULLISH_PULL":
+            score += 7.0
+        elif c.mm_bias == "BEARISH_PULL":
+            score -= 5.0
+
+        # Sentimiento contrarian (peso: 5%)
         if c.sentiment_score < 30:
-            score += 15.0  # Extreme fear = buy signal
+            score += 5.0
         elif c.sentiment_score > 80:
-            score -= 10.0  # Extreme greed = cautela
+            score -= 3.0
+
+        # ─── GURU VALUATION (datos reales de GuruFocus) ───
+
+        # Price/GF Value — la referencia de valoración primaria
+        # GF Value = modelo DCF + múltiplos históricos calculado por GuruFocus
+        if c.price_to_gf_value > 0:
+            if c.price_to_gf_value < 0.8:
+                score += 8.0   # Undervalued: trading >20% below intrinsic
+            elif c.price_to_gf_value < 1.0:
+                score += 4.0   # Slight discount to intrinsic
+            elif c.price_to_gf_value > 1.3:
+                score -= 6.0   # >30% above GF Value: overvalued
+            elif c.price_to_gf_value > 1.15:
+                score -= 3.0   # >15% above GF Value: expensive
+
+        # P/S vs Historical Median — la acción vs SÍ MISMA (Fisher/Lynch)
+        # ratio = current_ps / historical_median_ps
+        if c.ps_vs_historical > 0:
+            if c.ps_vs_historical < 0.7:
+                score += 5.0   # Cheap vs own history
+            elif c.ps_vs_historical > 2.0:
+                score -= 5.0   # 2x+ its own historical P/S = extreme expansion
+            elif c.ps_vs_historical > 1.5:
+                score -= 2.0   # Elevated vs own history
+
+        # P/FCF — cash real, no manipulable (lo que Buffett mira)
+        if c.price_to_fcf > 0:
+            if c.price_to_fcf < 15:
+                score += 3.0   # Strong FCF yield
+            elif c.price_to_fcf > 50:
+                score -= 3.0   # Paying 50x+ free cash flow
+
+        # FCF Margin — calidad de conversión revenue → cash
+        if c.fcf_margin > 25:
+            score += 2.0       # Excellent cash conversion (>25%)
+        elif c.fcf_margin > 15:
+            score += 1.0       # Good cash conversion
+
+        # Beneish M-Score — detector de manipulación de earnings
+        # > -1.78 = probable earnings manipulator
+        if c.beneish_m_score > -1.78 and c.beneish_m_score != -3.0:
+            score -= 5.0       # Red flag: probable earnings manipulation
 
         return score

@@ -362,7 +362,7 @@ class FinnhubIntelligence:
             "insiders": self.get_insider_activity(ticker),
             "consensus": self.get_analyst_consensus(ticker),
             "news_count": len(self.get_recent_news(ticker)),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         # Score final de convicción

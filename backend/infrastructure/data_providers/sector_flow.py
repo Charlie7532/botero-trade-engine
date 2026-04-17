@@ -2,7 +2,7 @@ import logging
 import numpy as np
 import pandas as pd
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, UTC
 
 logger = logging.getLogger(__name__)
 
@@ -46,25 +46,71 @@ class SectorFlowEngine:
         'Communication Services': 'XLC',
     }
 
+    # ETFs geográficos internacionales — para detectar rotación global
+    INTERNATIONAL_ETFS = {
+        'World_Developed': 'EFA',    # iShares MSCI EAFE (Europa, Asia, Oceanía)
+        'Emerging_Markets': 'EEM',   # iShares MSCI Emerging Markets
+        'China':           'MCHI',   # iShares MSCI China
+        'China_LargeCap':  'FXI',    # iShares China Large-Cap
+        'Japan':           'EWJ',    # iShares MSCI Japan
+        'Europe':          'VGK',    # Vanguard FTSE Europe
+        'Brazil':          'EWZ',    # iShares MSCI Brazil
+        'India':           'INDA',   # iShares MSCI India
+    }
+
     def __init__(self):
-        self._finviz_available = False
+        # Primary: Finviz MCP (Elite subscription)
+        self._finviz_mcp = None
+        # Fallback: finvizfinance scraper
+        self._finviz_scraper_available = False
         try:
             from finvizfinance.screener.overview import Overview
             from finvizfinance.group.performance import Performance
-            self._finviz_available = True
+            self._finviz_scraper_available = True
         except ImportError:
-            logger.warning("finvizfinance no disponible.")
+            logger.info("finvizfinance scraper no disponible — usar Finviz MCP")
+
+    def _get_finviz_mcp(self):
+        """Lazy init del Finviz MCP adapter."""
+        if self._finviz_mcp is None:
+            from backend.infrastructure.data_providers.finviz_intelligence import FinvizIntelligence
+            self._finviz_mcp = FinvizIntelligence()
+        return self._finviz_mcp
 
     # ================================================================
     # NIVEL 2: CORRIENTE SECTORIAL
     # ================================================================
 
-    def get_sector_performance(self) -> pd.DataFrame:
+    def get_sector_performance(
+        self, mcp_response: dict = None
+    ) -> pd.DataFrame:
         """
         Obtiene rendimiento de cada sector en múltiples horizontes.
-        Fuente: Finviz Group Performance.
+        
+        Data Priority:
+            1. Finviz MCP: get_sector_performance (Elite) ← PRIMARY
+            2. finvizfinance scraper (fallback)
         """
-        if not self._finviz_available:
+        # Primary: Finviz MCP
+        if mcp_response is not None:
+            try:
+                fv = self._get_finviz_mcp()
+                sectors = fv.parse_sector_performance(mcp_response)
+                if sectors:
+                    rows = [{
+                        'Name': s.sector, 'Perf 1D': s.perf_1d, 'Perf 1W': s.perf_1w,
+                        'Perf 1M': s.perf_1m, 'Perf 3M': s.perf_3m,
+                        'Perf YTD': s.perf_ytd, 'Perf 1Y': s.perf_1y,
+                        'Rel Volume': s.relative_volume, 'Momentum': s.momentum_score,
+                    } for s in sectors]
+                    df = pd.DataFrame(rows)
+                    logger.info(f"Sector performance via MCP: {len(df)} sectores")
+                    return df
+            except Exception as e:
+                logger.warning(f"Error MCP sector performance: {e}")
+
+        # Fallback: finvizfinance scraper
+        if not self._finviz_scraper_available:
             return pd.DataFrame()
 
         try:
@@ -72,25 +118,55 @@ class SectorFlowEngine:
             perf = Performance()
             df = perf.screener_view(group='Sector')
             if df is not None and not df.empty:
-                logger.info(f"Sector performance: {len(df)} sectores cargados")
+                logger.info(f"Sector performance (scraper fallback): {len(df)} sectores")
                 return df
         except Exception as e:
-            logger.error(f"Error sector performance: {e}")
+            logger.error(f"Error sector performance scraper: {e}")
 
         return pd.DataFrame()
 
-    def get_sector_breadth(self) -> list[dict]:
+    def get_sector_breadth(
+        self, mcp_overview_response: dict = None
+    ) -> list[dict]:
         """
         Calcula breadth por sector: % de acciones sobre 50-DMA.
-        Esto muestra la SALUD INTERNA de cada sector.
         
-        Un sector puede subir en precio (por 2-3 mega caps) mientras
-        la mayoría de sus acciones bajan. Eso es DIVERGENCIA.
-        
-        Returns:
-            Lista de dicts con sector, pct_above_50dma, health, trend
+        Data Priority:
+            1. Finviz MCP: get_market_overview + custom_screener ← PRIMARY
+            2. finvizfinance screener queries (fallback, SLOW: 11 queries)
         """
-        if not self._finviz_available:
+        # Primary: Finviz MCP (uses get_moving_average_position)
+        if mcp_overview_response is not None:
+            try:
+                fv = self._get_finviz_mcp()
+                overview = fv.parse_market_overview(mcp_overview_response)
+                if overview:
+                    # Build breadth from overview data if available
+                    results = []
+                    advances = overview.get('advances', 0)
+                    declines = overview.get('declines', 0)
+                    total = advances + declines
+                    if total > 0:
+                        pct = (advances / total) * 100
+                        health = 'strong' if pct >= 70 else 'moderate' if pct >= 50 else 'weak' if pct >= 30 else 'capitulation'
+                        results.append({
+                            'sector': 'S&P 500 (Overall)',
+                            'etf': 'SPY',
+                            'total_stocks': total,
+                            'above_50dma': advances,
+                            'below_50dma': declines,
+                            'pct_above_50dma': round(pct, 1),
+                            'health': health,
+                            'trend': '↑' if pct >= 60 else '→' if pct >= 40 else '↓',
+                        })
+                    if results:
+                        logger.info(f"Sector breadth via MCP: {len(results)} entries")
+                        return results
+            except Exception as e:
+                logger.warning(f"Error MCP breadth: {e}")
+
+        # Fallback: finvizfinance scraper
+        if not self._finviz_scraper_available:
             return []
 
         from finvizfinance.screener.overview import Overview
@@ -157,12 +233,36 @@ class SectorFlowEngine:
     # NIVEL 3: OLAS INDIVIDUALES
     # ================================================================
 
-    def get_movers(self, min_change_pct: str = "Up 3%") -> list[dict]:
+    def get_movers(
+        self, min_change_pct: str = "Up 3%",
+        mcp_response: dict = None,
+    ) -> list[dict]:
         """
         Obtiene las acciones con mayor movimiento hoy del S&P500.
-        Estas son las "olas" — movimientos individuales sobre la marea.
+        
+        Data Priority:
+            1. Finviz MCP: custom_screener / earnings_winners_screener ← PRIMARY
+            2. finvizfinance screener (fallback)
         """
-        if not self._finviz_available:
+        # Primary: Finviz MCP
+        if mcp_response is not None:
+            try:
+                fv = self._get_finviz_mcp()
+                surges = fv.parse_volume_surge(mcp_response)
+                return [
+                    {
+                        'ticker': s.ticker, 'price': s.price,
+                        'change': s.change_pct, 'volume': s.volume,
+                        'relative_volume': s.relative_volume,
+                        'sector': '', 'company': '',
+                    }
+                    for s in surges
+                ]
+            except Exception as e:
+                logger.warning(f"Error MCP movers: {e}")
+
+        # Fallback: finvizfinance scraper
+        if not self._finviz_scraper_available:
             return []
 
         try:
@@ -178,29 +278,56 @@ class SectorFlowEngine:
 
             return [
                 {
-                    "ticker": row.get("Ticker", ""),
-                    "company": row.get("Company", ""),
-                    "sector": row.get("Sector", ""),
-                    "industry": row.get("Industry", ""),
-                    "price": row.get("Price", 0),
-                    "change": row.get("Change", 0),
-                    "volume": row.get("Volume", 0),
+                    'ticker': row.get('Ticker', ''),
+                    'company': row.get('Company', ''),
+                    'sector': row.get('Sector', ''),
+                    'industry': row.get('Industry', ''),
+                    'price': row.get('Price', 0),
+                    'change': row.get('Change', 0),
+                    'volume': row.get('Volume', 0),
                 }
                 for _, row in df.iterrows()
             ]
         except Exception as e:
-            logger.error(f"Error movers: {e}")
+            logger.error(f"Error movers scraper: {e}")
             return []
 
-    def get_unusual_volume(self, min_rel_vol: str = "Over 2") -> list[dict]:
+    def get_unusual_volume(
+        self, min_rel_vol: str = "Over 2",
+        mcp_response: dict = None,
+    ) -> list[dict]:
         """
-        Detecta acciones con volumen inusual (> 2x promedio).
-        Volumen inusual = institucionales actuando.
+        Detecta acciones con volumen inusual (>2x promedio).
         
-        Regla: Volumen inusual + precio subiendo = acumulación institucional
-                Volumen inusual + precio bajando = distribución / panic selling
+        Data Priority:
+            1. Finviz MCP: volume_surge_screener / get_relative_volume_stocks ← PRIMARY
+            2. finvizfinance screener (fallback)
         """
-        if not self._finviz_available:
+        # Primary: Finviz MCP
+        if mcp_response is not None:
+            try:
+                fv = self._get_finviz_mcp()
+                surges = fv.parse_volume_surge(mcp_response)
+                results = []
+                for s in surges:
+                    action = 'accumulation' if s.change_pct > 0 else 'distribution'
+                    results.append({
+                        'ticker': s.ticker,
+                        'price': s.price,
+                        'change': s.change_pct,
+                        'volume': s.volume,
+                        'relative_volume': s.relative_volume,
+                        'institutional_action': action,
+                        'company': '', 'sector': '',
+                    })
+                if results:
+                    logger.info(f"Unusual volume via MCP: {len(results)} stocks")
+                    return results
+            except Exception as e:
+                logger.warning(f"Error MCP unusual volume: {e}")
+
+        # Fallback: finvizfinance scraper
+        if not self._finviz_scraper_available:
             return []
 
         try:
@@ -216,25 +343,22 @@ class SectorFlowEngine:
 
             results = []
             for _, row in df.iterrows():
-                change = row.get("Change", 0)
+                change = row.get('Change', 0)
                 if isinstance(change, str):
                     change = float(change.replace('%', '')) / 100
-
-                action = "accumulation" if change > 0 else "distribution"
-
+                action = 'accumulation' if change > 0 else 'distribution'
                 results.append({
-                    "ticker": row.get("Ticker", ""),
-                    "company": row.get("Company", ""),
-                    "sector": row.get("Sector", ""),
-                    "price": row.get("Price", 0),
-                    "change": change,
-                    "volume": row.get("Volume", 0),
-                    "institutional_action": action,
+                    'ticker': row.get('Ticker', ''),
+                    'company': row.get('Company', ''),
+                    'sector': row.get('Sector', ''),
+                    'price': row.get('Price', 0),
+                    'change': change,
+                    'volume': row.get('Volume', 0),
+                    'institutional_action': action,
                 })
-
             return results
         except Exception as e:
-            logger.error(f"Error unusual volume: {e}")
+            logger.error(f"Error unusual volume scraper: {e}")
             return []
 
     # ================================================================
@@ -317,7 +441,7 @@ class SectorFlowEngine:
             "action": action,
             "conviction": round(conviction, 1),
             "reason": reason,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     # ================================================================
@@ -336,7 +460,7 @@ class SectorFlowEngine:
             "movers_up": self.get_movers("Up 3%"),
             "movers_down": self.get_movers("Down 3%"),
             "unusual_volume": self.get_unusual_volume("Over 2"),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         # Clasificar sectores
@@ -364,3 +488,180 @@ class SectorFlowEngine:
         )
 
         return snapshot
+
+    # ================================================================
+    # HEATMAP GLOBAL: ETFs SECTORIALES + INTERNACIONALES
+    # ================================================================
+
+    def get_global_volume_heatmap(
+        self,
+        mcp_response: dict = None,
+        include_dynamics: bool = True,
+    ) -> pd.DataFrame:
+        """
+        Radar de Flujo Institucional Global.
+
+        Consolida en un solo DataFrame los 19 ETFs (11 sectoriales + 8
+        internacionales) con su Relative Volume, cambio de precio, y la
+        señal de flujo inferida.
+
+        De ser posible, enriquece con dinámica de volumen (velocidad y
+        aceleración) usando el KalmanVolumeTracker — esto permite detectar
+        la rotación ANTES de que el volumen explote, no después.
+
+        Args:
+            mcp_response: Respuesta de get_multiple_stocks_fundamentals para
+                          los 19 ETFs. Si None, intenta construir un DataFrame
+                          de fallback vía yfinance.
+            include_dynamics: Si True, e intent el KalmanVolumeTracker está
+                              disponible, añade columnas vel_rvol y accel_rvol.
+
+        Returns:
+            DataFrame con columnas:
+              etf, label, universe, rel_vol, change_pct, flow_signal,
+              wyckoff_state, vel_rvol, accel_rvol  (las dos últimas si disponibles)
+        """
+        # ── 1. Construir tabla base de todos los ETFs ────────────────
+        all_etfs = {
+            **{v: ('Domestic', k) for k, v in self.SECTOR_ETFS.items()},
+            **{v: ('International', k) for k, v in self.INTERNATIONAL_ETFS.items()},
+        }
+
+        rows = []
+
+        if mcp_response is not None:
+            # Parsear respuesta MCP de get_multiple_stocks_fundamentals
+            items = mcp_response if isinstance(mcp_response, list) else \
+                mcp_response.get('data', mcp_response.get('results', []))
+
+            for item in items:
+                ticker = str(item.get('ticker', item.get('Ticker', ''))).upper()
+                if ticker not in all_etfs:
+                    continue
+                universe, label = all_etfs[ticker]
+                rel_vol = self._safe_float(item.get('relative_volume', item.get('Relative Volume', 1.0)))
+                change = self._safe_float(item.get('change', item.get('Change', 0.0)))
+                rows.append({
+                    'etf': ticker,
+                    'label': label,
+                    'universe': universe,
+                    'rel_vol': rel_vol,
+                    'change_pct': change,
+                })
+        else:
+            # Fallback: yfinance para datos básicos (sin velocidad ni MCP)
+            logger.info("Heatmap: usando yfinance como fallback (sin datos MCP)")
+            try:
+                import yfinance as yf
+                tickers_list = list(all_etfs.keys())
+                data = yf.download(
+                    tickers_list, period='5d', interval='1d',
+                    progress=False, auto_adjust=True,
+                )
+                if isinstance(data.columns, pd.MultiIndex):
+                    close = data['Close']
+                    volume = data['Volume']
+                else:
+                    close = data[['Close']]
+                    volume = data[['Volume']]
+
+                for ticker, (universe, label) in all_etfs.items():
+                    try:
+                        c = close[ticker].dropna()
+                        v = volume[ticker].dropna()
+                        if len(c) < 2:
+                            continue
+                        change = (c.iloc[-1] / c.iloc[-2] - 1) * 100
+                        avg_vol = v.rolling(20, min_periods=5).mean().iloc[-1]
+                        rel_vol = v.iloc[-1] / avg_vol if avg_vol > 0 else 1.0
+                        rows.append({
+                            'etf': ticker,
+                            'label': label,
+                            'universe': universe,
+                            'rel_vol': round(float(rel_vol), 2),
+                            'change_pct': round(float(change), 2),
+                        })
+                    except Exception:
+                        continue
+            except ImportError:
+                logger.warning("yfinance no disponible para fallback del Heatmap")
+
+        if not rows:
+            logger.warning("Heatmap global: sin datos disponibles")
+            return pd.DataFrame()
+
+        df = pd.DataFrame(rows)
+
+        # ── 2. Clasificar Flow Signal (posición estática) ─────────────
+        df['flow_signal'] = df.apply(
+            lambda r: self._classify_flow_signal(r['rel_vol'], r['change_pct']),
+            axis=1,
+        )
+
+        # ── 3. Enriquecer con dinámica Kalman (velocidad + aceleración) ──
+        if include_dynamics:
+            try:
+                from backend.infrastructure.data_providers.volume_dynamics import KalmanVolumeTracker
+                tracker = KalmanVolumeTracker()
+                velocities, accels, states = [], [], []
+                for _, row in df.iterrows():
+                    state = tracker.update(row['etf'], row['rel_vol'])
+                    velocities.append(state['velocity'])
+                    accels.append(state['acceleration'])
+                    states.append(state['wyckoff_state'])
+                df['vel_rvol'] = velocities
+                df['accel_rvol'] = accels
+                df['wyckoff_state'] = states
+            except Exception as e:
+                logger.debug(f"KalmanVolumeTracker no disponible: {e}")
+                df['vel_rvol'] = 0.0
+                df['accel_rvol'] = 0.0
+                df['wyckoff_state'] = 'UNKNOWN'
+
+        # ── 4. Ordenar: flujo más caliente primero ───────────────────
+        # Priorizar acumulación temprana (vel alta + precio no explotado)
+        sort_key = 'vel_rvol' if 'vel_rvol' in df.columns else 'rel_vol'
+        df = df.sort_values(sort_key, ascending=False).reset_index(drop=True)
+
+        logger.info(
+            f"Heatmap global: {len(df)} ETFs | "
+            f"Top flujo: {df.iloc[0]['etf']} ({df.iloc[0]['flow_signal']})"
+            if not df.empty else "Heatmap global: vacío"
+        )
+        return df
+
+    @staticmethod
+    def _classify_flow_signal(rel_vol: float, change_pct: float) -> str:
+        """
+        Clasifica la señal de flujo institucional en base a
+        la posición estática de Relative Volume y precio.
+
+        Matriz Wyckoff simplificada:
+          RVol alto + Change >0  → ACCUMULATION_ACTIVE  (dinero llegando)
+          RVol alto + Change <0  → DISTRIBUTION          (dinero saliendo — evitar)
+          RVol bajo  + Change >0  → WEAK_RALLY            (sin respaldo institucional)
+          RVol bajo  + Change <0  → QUIET_DECLINE         (sin catalizador aún)
+          RVol med   + Change ≈0   → CONSOLIDATION         (acumulación silenciosa posible)
+        """
+        if rel_vol >= 1.5 and change_pct > 0.3:
+            return 'ACCUMULATION_ACTIVE'
+        elif rel_vol >= 1.5 and change_pct < -0.3:
+            return 'DISTRIBUTION'
+        elif rel_vol >= 1.5 and abs(change_pct) <= 0.3:
+            return 'HIGH_VOL_CONSOLIDATION'  # ← Potencial punto de ruptura inminente
+        elif rel_vol < 0.8 and change_pct > 0.3:
+            return 'WEAK_RALLY'
+        elif rel_vol < 0.8 and change_pct < -0.3:
+            return 'QUIET_DECLINE'
+        else:
+            return 'CONSOLIDATION'
+
+    @staticmethod
+    def _safe_float(value, default: float = 0.0) -> float:
+        """Convierte un valor a float de forma segura."""
+        if value is None:
+            return default
+        try:
+            return float(str(value).replace('%', '').replace(',', '').strip())
+        except (ValueError, TypeError):
+            return default

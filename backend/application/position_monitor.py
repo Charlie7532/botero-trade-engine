@@ -15,15 +15,15 @@ import sys
 import os
 import time
 import argparse
-sys.path.insert(0, '/root/botero-trade')
-os.environ.setdefault('ALPACA_API_KEY', 'PKLBZC43ERHDNVTT4LEMM5ICJV')
-os.environ.setdefault('ALPACA_SECRET_KEY', '164GZfKpnLscLmsn4CCn31eP7XqVJ8iZPYQ25sQrr92')
-os.environ.setdefault('FINNHUB_API_KEY', 'd7gffopr01qmqj4553cgd7gffopr01qmqj4553d0')
+
+# Credentials loaded from .env (never hardcode secrets)
+from dotenv import load_dotenv
+load_dotenv()
 
 import logging
 logging.basicConfig(level=logging.WARNING, format='%(message)s')
 
-from datetime import datetime
+from datetime import datetime, UTC
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import GetOrdersRequest
 from alpaca.trading.enums import QueryOrderStatus
@@ -117,7 +117,7 @@ class PositionMonitor:
         status = self.get_full_status()
         acct = status['account']
         
-        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
+        now = datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC')
         
         print(f"\n{'═'*70}")
         print(f"  🏦 BOTERO TRADE — POSITION MONITOR")

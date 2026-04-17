@@ -2,7 +2,7 @@ import logging
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -181,5 +181,5 @@ class OptionsAwareness:
             "gex": gex,
             "mm_bias": mm_bias,
             "expiration": exp,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

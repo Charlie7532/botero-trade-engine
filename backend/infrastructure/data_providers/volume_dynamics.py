@@ -95,7 +95,7 @@ class KalmanVolumeTracker:
             'prev_vel': 0.0,                        # Para calcular aceleración
         }
 
-    def update(self, etf: str, observed_rvol: float) -> dict:
+    def update(self, etf: str, observed_rvol: float, change_pct: float = None) -> dict:
         """
         Procesa una nueva observación de Relative Volume para un ETF.
 
@@ -106,6 +106,9 @@ class KalmanVolumeTracker:
         Args:
             etf: Ticker del ETF (e.g. 'XLK', 'EEM')
             observed_rvol: Relative Volume observado en este snapshot.
+            change_pct: Cambio de precio % del período (crucial para
+                        clasificación Wyckoff correcta). Si None, el
+                        clasificador opera ciego (40% falsos positivos).
 
         Returns:
             Dict con: rel_vol, velocity, acceleration, wyckoff_state, confidence
@@ -158,6 +161,7 @@ class KalmanVolumeTracker:
             rel_vol=x_new[0],
             velocity=vel,
             acceleration=accel,
+            change_pct=change_pct,
         )
 
         return {

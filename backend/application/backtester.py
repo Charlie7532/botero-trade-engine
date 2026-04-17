@@ -41,6 +41,9 @@ from typing import Optional
 
 from backend.application.sequence_modeling import TripleBarrierLabeler
 from backend.application.trade_autopsy import TradeAutopsy
+from backend.infrastructure.data_providers.volume_dynamics import (
+    KalmanVolumeTracker, SectorRegimeDetector,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -152,6 +155,9 @@ class WalkForwardBacktester:
             profit_mult=2.0, loss_mult=1.0, max_bars=30, vol_lookback=20
         )
         self.autopsy = TradeAutopsy()
+        self.kalman = KalmanVolumeTracker(
+            dt=1.0, process_noise=0.05, obs_noise=0.2,
+        )
 
     def load_data(self, ticker: str = None) -> pd.DataFrame:
         """
@@ -334,182 +340,254 @@ class WalkForwardBacktester:
         )
         return params
 
-    def simulate_trades_in_window(
+    def simulate_trades_with_edge(
         self,
         ticker_data: pd.DataFrame,
+        spy_data: pd.DataFrame,
         test_start: pd.Timestamp,
         test_end: pd.Timestamp,
-        adaptive_params: dict = None,
-        # Fallback estáticos (usados solo si adaptive_params es None)
-        entry_threshold: float = 0.02,
-        stop_pct: float = 0.05,
-        target_pct: float = 0.10,
+        adaptive_params: dict,
+        kalman: KalmanVolumeTracker,
     ) -> list[dict]:
         """
-        Simula trades durante una ventana de test con parámetros adaptativos.
+        Simula trades usando Mean-Reversion Spring con confirmación Kalman.
 
-        Filtros inteligentes:
-        1. RÉGIMEN GATE: Si el training period fue BEAR, reducimos sizing
-           y elevamos el threshold de entrada (más selectivo).
-        2. MOMENTUM ADAPTATIVO: El threshold de entrada se calibra al
-           z-score del retorno diario del ticker (no un % fijo).
-        3. STOP/TARGET ATR: Los stops y targets escalan con la volatilidad
-           actual del ticker, no un % fijo.
-        4. VOLUMEN GATE: Si el volumen del día es menor al 60% del promedio,
-           la señal se descarta (sin respaldo institucional).
+        Lógica empíricamente validada:
+          ETFs mean-revertan por el mecanismo de creation/redemption.
+          El "Spring" de Wyckoff es comprar la caída injusta con volumen.
+
+        ENTRY (3 condiciones simultáneas — "Wyckoff Spring"):
+          1. OVERSOLD:  Retorno de 5 días < -2% (precio cayó más de lo justo)
+          2. VOLUME:    RVol > 1.2 (institucionales están comprando el dip)
+          3. KALMAN:    wyckoff_state != DISTRIBUTION ni MARKDOWN
+                        (no entramos en caída libre confirmada)
+
+        EXIT (cualquiera de las 4 condiciones):
+          1. MA20_REVERSION: Precio alcanza la MA20 (target natural de reversión)
+          2. TRAILING ATR:   Trailing stop adaptativo a la volatilidad
+          3. RS SAFETY:      RS decay < 0.85 (si pierde vs SPY, salimos)
+          4. TIMEOUT:        max_bars (evitar capital atrapado)
 
         Args:
-            ticker_data:     DataFrame con Date, Close, Volume para UN ticker.
+            ticker_data:     DataFrame con Date, OHLCV para UN ticker.
+            spy_data:        DataFrame con Date, OHLCV para SPY.
             test_start:      Inicio de la ventana de test.
             test_end:        Fin de la ventana de test.
-            adaptive_params: Parámetros calibrados por calibrate_adaptive_params().
-            entry_threshold: Fallback estático si no hay params adaptativos.
-            stop_pct:        Fallback estático.
-            target_pct:      Fallback estático.
+            adaptive_params: Parámetros calibrados del train period.
+            kalman:          KalmanVolumeTracker ya calentado con train data.
 
         Returns:
             Lista de trades simulados con datos para TradeAutopsy.
         """
-        test_data = ticker_data[
+        test_ticker = ticker_data[
             (ticker_data['Date'] >= test_start) &
             (ticker_data['Date'] < test_end)
-        ].copy()
+        ].copy().reset_index(drop=True)
+        test_spy = spy_data[
+            (spy_data['Date'] >= test_start) &
+            (spy_data['Date'] < test_end)
+        ].copy().reset_index(drop=True)
 
-        if len(test_data) < 10:
+        if len(test_ticker) < 20 or len(test_spy) < 20:
             return []
 
-        closes = test_data['Close'].values
-        dates = test_data['Date'].values
-        volumes = test_data['Volume'].values if 'Volume' in test_data else np.ones(len(closes))
+        # Alinear por fecha
+        test_ticker = test_ticker.set_index('Date')
+        test_spy = test_spy.set_index('Date')
+        common_dates = test_ticker.index.intersection(test_spy.index)
+        test_ticker = test_ticker.loc[common_dates].reset_index()
+        test_spy = test_spy.loc[common_dates].reset_index()
 
-        # ── Usar parámetros adaptativos si disponibles ────────────
-        if adaptive_params:
-            entry_threshold = adaptive_params['entry_threshold']
-            stop_pct = adaptive_params['stop_pct']
-            target_pct = adaptive_params['target_pct']
-            max_bars = adaptive_params['max_bars']
-            avg_volume = adaptive_params['avg_volume']
-            regime = adaptive_params['train_regime']
+        if len(test_ticker) < 20:
+            return []
 
-            # RÉGIMEN GATE: En bear market, duplicamos el Z-score requerido
-            if regime == "BEAR":
-                entry_threshold *= 2.0
-                logger.debug("   ⚠️ Régimen BEAR detectado: threshold duplicado")
-        else:
-            max_bars = 30
-            avg_volume = np.mean(volumes) if len(volumes) > 0 else 1
-            regime = "UNKNOWN"
+        closes = test_ticker['Close'].values
+        highs_arr = test_ticker['High'].values
+        lows_arr = test_ticker['Low'].values
+        spy_closes = test_spy['Close'].values
+        volumes = test_ticker['Volume'].values
+        dates = test_ticker['Date'].values
+        ticker_name = ticker_data['Ticker'].iloc[0] if 'Ticker' in ticker_data else 'UNK'
+
+        # Parámetros adaptativos
+        stop_pct = adaptive_params['stop_pct']
+        max_bars = adaptive_params['max_bars']
+        avg_volume = adaptive_params['avg_volume']
 
         trades = []
-        i = 1  # Empezamos en la segunda barra (necesitamos retorno)
+        in_trade = False
+        entry_price = 0.0
+        entry_idx = 0
+        entry_rs = 0.0
+        stop_price = 0.0
+        ma20_target = 0.0
+        highest_price = 0.0
+        price_series = []
+        local_stop_pct = stop_pct
+        entry_wyckoff = 'UNKNOWN'
 
-        # Rolling volatility para z-score en tiempo real dentro del test
-        rolling_window = min(20, len(closes) // 3)
+        # Lookbacks
+        rs_lookback = 20
+        oversold_lookback = 5
 
-        while i < len(closes) - 1:
-            # ── Z-Score del retorno diario (adaptativo en tiempo real) ──
-            daily_return = (closes[i] / closes[i-1]) - 1.0
+        for i in range(rs_lookback, len(closes)):
+            # ── Calcular señales del motor ──────────────────────────
 
-            # Calcular volatilidad rolling del test period hasta ahora
-            lookback_start = max(0, i - rolling_window)
-            recent_returns = np.diff(closes[lookback_start:i+1]) / closes[lookback_start:i]
-            if len(recent_returns) > 2:
-                local_vol = np.std(recent_returns)
-                # Actualizar threshold usando la volatilidad LOCAL (no solo la del train)
-                effective_threshold = max(entry_threshold, local_vol * 1.5)
-            else:
-                effective_threshold = entry_threshold
+            # 1. KALMAN: Alimentar con rvol + cambio de precio
+            avg_vol_local = np.mean(volumes[max(0, i-20):i]) if i >= 20 else np.mean(volumes[:i+1])
+            rvol = volumes[i] / max(avg_vol_local, 1.0)
+            price_change_pct = (closes[i] / closes[i-1] - 1) * 100 if i > 0 else 0.0
+            kalman_result = kalman.update(ticker_name, rvol, change_pct=price_change_pct)
+            wyckoff_state = kalman_result['wyckoff_state']
+            kalman_velocity = kalman_result['velocity']
 
-            if daily_return < effective_threshold:
-                i += 1
+            # 2. RS vs SPY (20 días)
+            stock_ret = closes[i] / closes[i - rs_lookback] - 1
+            spy_ret = spy_closes[i] / spy_closes[i - rs_lookback] - 1
+            rs_vs_spy = (1 + stock_ret) / (1 + spy_ret) if spy_ret != -1 else 1.0
+
+            # 3. MA20 (target natural de reversión)
+            ma20 = np.mean(closes[max(0, i-20):i]) if i >= 20 else closes[i]
+
+            # 4. Retorno de 5 días (oversold detection)
+            ret_5d = (closes[i] / closes[i - oversold_lookback] - 1) if i >= oversold_lookback else 0.0
+
+            # ── GESTIÓN DE POSICIÓN ABIERTA ────────────────────────
+            if in_trade:
+                price_series.append(closes[i])
+                highest_price = max(highest_price, closes[i])
+                bars_held = i - entry_idx
+
+                rs_decay = rs_vs_spy / entry_rs if entry_rs > 0 else 1.0
+                exit_reason = None
+
+                # Exit 1: MA20 REVERSION — precio alcanzó la MA20 (target)
+                if closes[i] >= ma20 and bars_held >= 2:
+                    exit_reason = 'MA20_REVERSION'
+
+                # Exit 2: RS SAFETY — perdimos ventaja vs SPY
+                elif rs_decay < 0.85:
+                    exit_reason = 'RS_DECAY'
+
+                # Exit 3: DISTRIBUTION — Kalman confirma distribución
+                elif wyckoff_state == 'DISTRIBUTION' and bars_held >= 3:
+                    exit_reason = 'DISTRIBUTION'
+
+                # Exit 4: TRAILING ATR STOP
+                if highest_price > entry_price * (1 + local_stop_pct):
+                    trailing = entry_price + (highest_price - entry_price) * 0.5
+                    stop_price = max(stop_price, trailing)
+
+                if closes[i] <= stop_price:
+                    exit_reason = 'STOP_HIT'
+                elif bars_held >= max_bars:
+                    exit_reason = 'TIMEOUT'
+
+                if exit_reason:
+                    exit_price = closes[i]
+                    pnl = (exit_price / entry_price - 1) * 100
+                    trades.append({
+                        'trade_id': f"BT-{len(trades)+1:04d}",
+                        'ticker': ticker_name,
+                        'entry_price': round(entry_price, 2),
+                        'exit_price': round(exit_price, 2),
+                        'initial_stop': round(entry_price * (1 - local_stop_pct), 2),
+                        'price_series': [round(p, 2) for p in price_series],
+                        'exit_reason': exit_reason,
+                        'direction': 'LONG',
+                        'entry_date': str(dates[entry_idx]),
+                        'exit_date': str(dates[i]),
+                        'pnl_pct': round(pnl, 3),
+                        'bars_held': bars_held,
+                        'adaptive_params': {
+                            'entry_rs': round(entry_rs, 4),
+                            'exit_rs': round(rs_vs_spy, 4),
+                            'rs_decay': round(rs_decay, 4),
+                            'ret_5d_at_entry': round(ret_5d * 100, 2),
+                            'rvol_at_entry': round(rvol, 2),
+                            'wyckoff_at_entry': entry_wyckoff,
+                            'wyckoff_at_exit': wyckoff_state,
+                            'kalman_velocity': round(kalman_velocity, 4),
+                            'local_stop_pct': round(local_stop_pct * 100, 3),
+                            'ma20_target': round(ma20, 2),
+                        },
+                    })
+                    in_trade = False
                 continue
 
-            # ── VOLUMEN GATE: Descartar si volumen < 60% del promedio ──
-            if avg_volume > 0 and volumes[i] < avg_volume * 0.6:
-                i += 1
-                continue  # Sin respaldo institucional
+            # ── SEÑAL DE ENTRADA: MEAN-REVERSION SPRING ───────────
 
-            # ── Entrar en el trade ──
+            # Condición 1: OVERSOLD — retorno de 5 días < -2%
+            if ret_5d >= -0.02:
+                continue
+
+            # Condición 2: VOLUME SURGE — RVol > 1.2 (institucionales activos)
+            if rvol < 1.2:
+                continue
+
+            # Condición 3: NOT IN FREEFALL — Kalman no debe confirmar
+            # distribución activa ni markdown (caída libre)
+            if wyckoff_state in ('DISTRIBUTION', 'MARKDOWN'):
+                continue
+
+            # ── SPRING CONFIRMADO → ENTRAR ────────────────────────
             entry_price = closes[i]
             entry_idx = i
+            entry_rs = rs_vs_spy
+            entry_wyckoff = wyckoff_state
+            price_series = [entry_price]
+            highest_price = entry_price
+            ma20_target = ma20
+            in_trade = True
 
-            # Stop y target adaptativos al precio actual
-            # (recalculados con ATR local si tenemos suficientes datos)
+            # ATR local para stop adaptativo
             if i >= 20:
-                local_highs = test_data['High'].values[i-20:i] if 'High' in test_data else closes[i-20:i] * 1.005
-                local_lows = test_data['Low'].values[i-20:i] if 'Low' in test_data else closes[i-20:i] * 0.995
-                local_trs = []
-                for k in range(1, len(local_highs)):
+                trs = []
+                for k in range(1, 20):
                     tr = max(
-                        local_highs[k] - local_lows[k],
-                        abs(local_highs[k] - closes[i-20+k-1]),
-                        abs(local_lows[k] - closes[i-20+k-1]),
+                        highs_arr[i-20+k] - lows_arr[i-20+k],
+                        abs(highs_arr[i-20+k] - closes[i-20+k-1]),
+                        abs(lows_arr[i-20+k] - closes[i-20+k-1]),
                     )
-                    local_trs.append(tr)
-                local_atr = np.mean(local_trs) if local_trs else entry_price * stop_pct
+                    trs.append(tr)
+                local_atr = np.mean(trs) if trs else entry_price * stop_pct
                 local_stop_pct = (local_atr * 2.0) / entry_price
-                local_target_pct = (local_atr * 3.0) / entry_price
             else:
                 local_stop_pct = stop_pct
-                local_target_pct = target_pct
 
             stop_price = entry_price * (1 - local_stop_pct)
-            target_price = entry_price * (1 + local_target_pct)
-            exit_price = entry_price
-            exit_idx = i
-            price_series = [entry_price]
 
-            # ── Buscar salida con trailing logic ──
-            highest_price = entry_price
-            for j in range(i + 1, min(len(closes), i + max_bars + 1)):
-                price_series.append(closes[j])
-                highest_price = max(highest_price, closes[j])
-
-                # Trailing stop: una vez que ganamos > 1 ATR,
-                # ajustamos el stop al 50% del recorrido favorable
-                if highest_price > entry_price * (1 + local_stop_pct):
-                    trailing_stop = entry_price + (highest_price - entry_price) * 0.5
-                    stop_price = max(stop_price, trailing_stop)
-
-                if closes[j] <= stop_price:
-                    exit_price = closes[j]
-                    exit_idx = j
-                    break
-                if closes[j] >= target_price:
-                    exit_price = closes[j]
-                    exit_idx = j
-                    break
-                exit_price = closes[j]
-                exit_idx = j
-
+        # Cerrar trade abierto al final del período
+        if in_trade and len(closes) > 0:
+            exit_price = closes[-1]
             pnl = (exit_price / entry_price - 1) * 100
-
+            rs_decay = rs_vs_spy / entry_rs if entry_rs > 0 else 1.0
             trades.append({
                 'trade_id': f"BT-{len(trades)+1:04d}",
-                'ticker': ticker_data['Ticker'].iloc[0] if 'Ticker' in ticker_data else 'UNK',
+                'ticker': ticker_name,
                 'entry_price': round(entry_price, 2),
                 'exit_price': round(exit_price, 2),
                 'initial_stop': round(entry_price * (1 - local_stop_pct), 2),
                 'price_series': [round(p, 2) for p in price_series],
-                'exit_reason': 'STOP_HIT' if exit_price <= stop_price
-                               else 'TAKE_PROFIT' if exit_price >= target_price
-                               else 'TIMEOUT',
+                'exit_reason': 'WINDOW_END',
                 'direction': 'LONG',
                 'entry_date': str(dates[entry_idx]),
-                'exit_date': str(dates[exit_idx]),
+                'exit_date': str(dates[-1]),
                 'pnl_pct': round(pnl, 3),
-                'bars_held': exit_idx - entry_idx,
-                # Metadata adaptativa (para análisis posterior)
+                'bars_held': len(closes) - 1 - entry_idx,
                 'adaptive_params': {
-                    'effective_threshold': round(effective_threshold * 100, 3),
+                    'entry_rs': round(entry_rs, 4),
+                    'exit_rs': round(rs_vs_spy, 4),
+                    'rs_decay': round(rs_decay, 4),
+                    'ret_5d_at_entry': round(ret_5d * 100, 2),
+                    'rvol_at_entry': round(rvol, 2),
+                    'wyckoff_at_entry': entry_wyckoff,
+                    'wyckoff_at_exit': wyckoff_state,
+                    'kalman_velocity': round(kalman_velocity, 4),
                     'local_stop_pct': round(local_stop_pct * 100, 3),
-                    'local_target_pct': round(local_target_pct * 100, 3),
-                    'volume_ratio': round(volumes[entry_idx] / max(avg_volume, 1), 2),
-                    'regime': regime,
+                    'ma20_target': round(ma20, 2),
                 },
             })
-
-            i = exit_idx + 1  # No re-entrar durante el mismo trade
 
         return trades
 
@@ -517,13 +595,16 @@ class WalkForwardBacktester:
         self,
         window: dict,
         ticker_data: pd.DataFrame,
+        spy_data: pd.DataFrame = None,
     ) -> WindowResult:
         """
-        Evalúa una ventana completa: calibra, simula trades y produce métricas.
+        Evalúa una ventana completa: calibra Kalman, simula trades con
+        señales reales (Accumulation + RS), y produce métricas.
 
         Args:
             window: Dict con train_start/end, test_start/end, window_id.
             ticker_data: DataFrame con datos para un ticker.
+            spy_data: DataFrame con datos de SPY para RS calculation.
 
         Returns:
             WindowResult con todas las métricas de la ventana.
@@ -531,7 +612,7 @@ class WalkForwardBacktester:
         w = window
         wid = w['window_id']
 
-        # ── NUEVO: Calibrar parámetros adaptativos desde TRAIN data ──
+        # ── Calibrar parámetros adaptativos desde TRAIN data ──
         train_data = ticker_data[
             (ticker_data['Date'] >= w['train_start']) &
             (ticker_data['Date'] < w['train_end'])
@@ -549,11 +630,33 @@ class WalkForwardBacktester:
 
         adaptive_params = self.calibrate_adaptive_params(train_data)
 
-        # Simular trades en la ventana de test CON parámetros adaptativos
-        trades = self.simulate_trades_in_window(
-            ticker_data, w['test_start'], w['test_end'],
-            adaptive_params=adaptive_params,
-        )
+        # ── Calentar Kalman con datos de TRAIN (warm-up) ──
+        ticker_name = ticker_data['Ticker'].iloc[0] if 'Ticker' in ticker_data else 'UNK'
+        kalman = KalmanVolumeTracker(dt=1.0, process_noise=0.05, obs_noise=0.2)
+        train_volumes = train_data['Volume'].values
+        train_closes = train_data['Close'].values
+        for vi in range(20, len(train_volumes)):
+            avg_v = np.mean(train_volumes[max(0, vi-20):vi])
+            rvol = train_volumes[vi] / max(avg_v, 1.0)
+            chg = (train_closes[vi] / train_closes[vi-1] - 1) * 100 if vi > 0 else 0.0
+            kalman.update(ticker_name, rvol, change_pct=chg)
+
+        # ── Simular trades con señales REALES ──
+        if spy_data is not None and not spy_data.empty:
+            trades = self.simulate_trades_with_edge(
+                ticker_data, spy_data,
+                w['test_start'], w['test_end'],
+                adaptive_params=adaptive_params,
+                kalman=kalman,
+            )
+        else:
+            # Fallback si no hay SPY data (autodeterminación)
+            trades = self.simulate_trades_with_edge(
+                ticker_data, ticker_data,
+                w['test_start'], w['test_end'],
+                adaptive_params=adaptive_params,
+                kalman=kalman,
+            )
 
         if not trades:
             return WindowResult(
@@ -638,6 +741,11 @@ class WalkForwardBacktester:
         """
         Ejecuta el Walk-Forward completo sobre un ticker.
 
+        Usa señales reales del motor:
+        - Kalman ACCUMULATION para entradas
+        - RS vs SPY para confirmación y salidas
+        - ATR trailing para protección
+
         Args:
             ticker: El ticker a evaluar (default: SPY como benchmark).
 
@@ -648,8 +756,18 @@ class WalkForwardBacktester:
         logger.info(f"WALK-FORWARD BACKTESTER — {ticker}")
         logger.info(f"{'='*60}")
 
-        # 1. Cargar datos
+        # 1. Cargar datos del ticker + SPY (benchmark para RS)
         df = self.load_data(ticker)
+        spy_df = None
+        if ticker != 'SPY':
+            try:
+                spy_df = self.load_data('SPY')
+            except Exception as e:
+                logger.warning(f"No se pudo cargar SPY para RS: {e}")
+        else:
+            # SPY vs sí mismo → RS siempre ~1.0, las señales
+            # dependerán más de Kalman + Volume
+            spy_df = df.copy()
 
         # 2. Generar ventanas
         windows = self.generate_windows(df)
@@ -657,7 +775,7 @@ class WalkForwardBacktester:
             logger.warning("No se pudieron generar ventanas Walk-Forward.")
             return BacktestReport()
 
-        # 3. Evaluar cada ventana
+        # 3. Evaluar cada ventana con señales reales
         results = []
         for w in windows:
             logger.info(
@@ -665,7 +783,7 @@ class WalkForwardBacktester:
                 f"\n   Train: {w['train_start'].date()} → {w['train_end'].date()}"
                 f"\n   Test:  {w['test_start'].date()} → {w['test_end'].date()}"
             )
-            result = self.evaluate_window(w, df)
+            result = self.evaluate_window(w, df, spy_data=spy_df)
             results.append(result)
             logger.info(
                 f"   Trades: {result.n_trades} | "

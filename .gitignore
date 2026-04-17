@@ -27,3 +27,8 @@ data/journal/*.json
 data/journal/*.db
 .claude/
 data/journal/logs/
+
+# Data caches
+data/historical/*.parquet
+tests/__pycache__/
+mcp_servers/**/.cache/

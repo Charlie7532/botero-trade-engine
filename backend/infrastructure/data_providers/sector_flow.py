@@ -46,6 +46,11 @@ class SectorFlowEngine:
         'Communication Services': 'XLC',
     }
 
+    # Mercado general (Baseline)
+    MARKET_ETFS = {
+        'S&P 500 (Market)': 'SPY',
+    }
+
     # ETFs geográficos internacionales — para detectar rotación global
     INTERNATIONAL_ETFS = {
         'World_Developed': 'EFA',    # iShares MSCI EAFE (Europa, Asia, Oceanía)
@@ -56,6 +61,15 @@ class SectorFlowEngine:
         'Europe':          'VGK',    # Vanguard FTSE Europe
         'Brazil':          'EWZ',    # iShares MSCI Brazil
         'India':           'INDA',   # iShares MSCI India
+        'South_Korea':     'EWY',    # iShares MSCI South Korea (Proxy Semiconductores)
+        'Asia_Pacific':    'EPP',    # iShares MSCI Pacific ex Japan
+    }
+
+    # ETFs de Commodities — para rotación hacia materias primas / inflación
+    COMMODITY_ETFS = {
+        'Gold':        'GLD',   # SPDR Gold
+        'Oil':         'USO',   # United States Oil Fund
+        'Agriculture': 'DBA',   # Invesco DB Agriculture Fund
     }
 
     def __init__(self):
@@ -523,8 +537,10 @@ class SectorFlowEngine:
         """
         # ── 1. Construir tabla base de todos los ETFs ────────────────
         all_etfs = {
+            **{v: ('Market', k) for k, v in getattr(self, 'MARKET_ETFS', {}).items()},
             **{v: ('Domestic', k) for k, v in self.SECTOR_ETFS.items()},
-            **{v: ('International', k) for k, v in self.INTERNATIONAL_ETFS.items()},
+            **{v: ('International', k) for k, v in getattr(self, 'INTERNATIONAL_ETFS', {}).items()},
+            **{v: ('Commodity', k) for k, v in getattr(self, 'COMMODITY_ETFS', {}).items()},
         }
 
         rows = []

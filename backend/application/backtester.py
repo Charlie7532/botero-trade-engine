@@ -229,30 +229,143 @@ class WalkForwardBacktester:
         )
         return windows
 
+    def calibrate_adaptive_params(
+        self,
+        train_data: pd.DataFrame,
+    ) -> dict:
+        """
+        Calibra parámetros adaptativos usando la ventana de TRAIN.
+
+        El motor aprende el comportamiento histórico del ticker:
+        - Su volatilidad típica (para calibrar entry z-score y stops)
+        - Su ATR promedio (para stops/targets dinámicos)
+        - Su ratio de distribución de retornos (para entry threshold)
+        - El régimen del período (para filtrar entradas en bear markets)
+
+        Args:
+            train_data: DataFrame con Date, Close, Volume de la ventana train.
+
+        Returns:
+            Dict con parámetros calibrados al ticker/período.
+        """
+        closes = train_data['Close'].values
+        volumes = train_data['Volume'].values if 'Volume' in train_data else np.ones(len(closes))
+
+        # ── Volatilidad histórica del ticker ──────────────────────
+        returns = np.diff(closes) / closes[:-1]
+        daily_vol = np.std(returns) if len(returns) > 1 else 0.01
+
+        # EWMA volatility (más reactiva a cambios recientes)
+        ewma_vol = float(pd.Series(returns).ewm(span=20).std().iloc[-1]) if len(returns) > 20 else daily_vol
+
+        # ── ATR (Average True Range) ──────────────────────────────
+        highs = train_data['High'].values if 'High' in train_data else closes * 1.005
+        lows = train_data['Low'].values if 'Low' in train_data else closes * 0.995
+        true_ranges = []
+        for k in range(1, len(closes)):
+            tr = max(
+                highs[k] - lows[k],
+                abs(highs[k] - closes[k-1]),
+                abs(lows[k] - closes[k-1]),
+            )
+            true_ranges.append(tr)
+        atr = np.mean(true_ranges[-20:]) if len(true_ranges) >= 20 else np.mean(true_ranges) if true_ranges else closes[-1] * 0.01
+        atr_pct = atr / closes[-1] * 100  # ATR como % del precio
+
+        # ── Entry threshold adaptativo (Z-Score) ──────────────────
+        # En vez de un umbral fijo de 2%, usamos 1.5 desviaciones estándar
+        # del PROPIO ticker. Un ticker volátil (TSLA, 3% std) necesita
+        # un threshold más alto que uno estable (KO, 0.8% std).
+        entry_z_multiplier = 1.5
+        entry_threshold = daily_vol * entry_z_multiplier
+
+        # ── Stop adaptativo (ATR-based) ───────────────────────────
+        # Stop = 2.0 * ATR (se adapta a la volatilidad actual)
+        stop_atr_mult = 2.0
+        stop_pct = (atr_pct * stop_atr_mult) / 100
+
+        # ── Target adaptativo (Risk:Reward basado en ATR) ─────────
+        # Target = 3.0 * ATR (ratio 1:1.5 respecto al stop)
+        target_atr_mult = 3.0
+        target_pct = (atr_pct * target_atr_mult) / 100
+
+        # ── Max bars adaptativo ───────────────────────────────────
+        # En mercados más volátiles, los trades se resuelven más rápido.
+        # Escalamos inversamente a la volatilidad.
+        base_bars = 30
+        vol_ratio = daily_vol / 0.01  # Normalizado a "volatilidad estándar" de 1%
+        max_bars = max(10, min(50, int(base_bars / max(vol_ratio, 0.5))))
+
+        # ── Régimen del periodo de entrenamiento ──────────────────
+        train_return = (closes[-1] / closes[0] - 1) * 100
+        if train_return < -15:
+            regime = "BEAR"
+        elif train_return > 15:
+            regime = "BULL"
+        else:
+            regime = "SIDEWAYS"
+
+        # ── Volumen: baseline para Kalman ─────────────────────────
+        avg_volume = float(np.mean(volumes[-20:])) if len(volumes) >= 20 else float(np.mean(volumes))
+
+        params = {
+            'daily_vol': round(daily_vol, 5),
+            'ewma_vol': round(ewma_vol, 5),
+            'atr': round(atr, 3),
+            'atr_pct': round(atr_pct, 3),
+            'entry_threshold': round(entry_threshold, 5),
+            'stop_pct': round(stop_pct, 5),
+            'target_pct': round(target_pct, 5),
+            'max_bars': max_bars,
+            'train_regime': regime,
+            'train_return_pct': round(train_return, 2),
+            'avg_volume': round(avg_volume, 0),
+            # Multiplicadores (para logging y ajuste manual)
+            'entry_z_mult': entry_z_multiplier,
+            'stop_atr_mult': stop_atr_mult,
+            'target_atr_mult': target_atr_mult,
+        }
+
+        logger.info(
+            f"   Params adaptativos: vol={daily_vol*100:.2f}%/día | "
+            f"ATR={atr_pct:.2f}% | entry>{entry_threshold*100:.2f}% | "
+            f"stop={stop_pct*100:.2f}% | target={target_pct*100:.2f}% | "
+            f"max_bars={max_bars} | régimen={regime}"
+        )
+        return params
+
     def simulate_trades_in_window(
         self,
         ticker_data: pd.DataFrame,
         test_start: pd.Timestamp,
         test_end: pd.Timestamp,
+        adaptive_params: dict = None,
+        # Fallback estáticos (usados solo si adaptive_params es None)
         entry_threshold: float = 0.02,
         stop_pct: float = 0.05,
         target_pct: float = 0.10,
     ) -> list[dict]:
         """
-        Simula trades durante una ventana de test.
+        Simula trades durante una ventana de test con parámetros adaptativos.
 
-        Estrategia baseline (rule-based, reemplazable por ML):
-        - Entry: Cuando el cambio diario supera entry_threshold (momentum burst)
-          y la Triple Barrera en datos previos tenía win rate > 50%.
-        - Exit: Stop loss fijo o target fijo, lo que ocurra primero.
+        Filtros inteligentes:
+        1. RÉGIMEN GATE: Si el training period fue BEAR, reducimos sizing
+           y elevamos el threshold de entrada (más selectivo).
+        2. MOMENTUM ADAPTATIVO: El threshold de entrada se calibra al
+           z-score del retorno diario del ticker (no un % fijo).
+        3. STOP/TARGET ATR: Los stops y targets escalan con la volatilidad
+           actual del ticker, no un % fijo.
+        4. VOLUMEN GATE: Si el volumen del día es menor al 60% del promedio,
+           la señal se descarta (sin respaldo institucional).
 
         Args:
-            ticker_data: DataFrame con Date, Close, Volume para UN ticker.
-            test_start:  Inicio de la ventana de test.
-            test_end:    Fin de la ventana de test.
-            entry_threshold: Cambio % mínimo para generar señal de entrada.
-            stop_pct:    Stop loss en porcentaje del precio de entrada.
-            target_pct:  Take profit en porcentaje del precio de entrada.
+            ticker_data:     DataFrame con Date, Close, Volume para UN ticker.
+            test_start:      Inicio de la ventana de test.
+            test_end:        Fin de la ventana de test.
+            adaptive_params: Parámetros calibrados por calibrate_adaptive_params().
+            entry_threshold: Fallback estático si no hay params adaptativos.
+            stop_pct:        Fallback estático.
+            target_pct:      Fallback estático.
 
         Returns:
             Lista de trades simulados con datos para TradeAutopsy.
@@ -267,28 +380,97 @@ class WalkForwardBacktester:
 
         closes = test_data['Close'].values
         dates = test_data['Date'].values
+        volumes = test_data['Volume'].values if 'Volume' in test_data else np.ones(len(closes))
+
+        # ── Usar parámetros adaptativos si disponibles ────────────
+        if adaptive_params:
+            entry_threshold = adaptive_params['entry_threshold']
+            stop_pct = adaptive_params['stop_pct']
+            target_pct = adaptive_params['target_pct']
+            max_bars = adaptive_params['max_bars']
+            avg_volume = adaptive_params['avg_volume']
+            regime = adaptive_params['train_regime']
+
+            # RÉGIMEN GATE: En bear market, duplicamos el Z-score requerido
+            if regime == "BEAR":
+                entry_threshold *= 2.0
+                logger.debug("   ⚠️ Régimen BEAR detectado: threshold duplicado")
+        else:
+            max_bars = 30
+            avg_volume = np.mean(volumes) if len(volumes) > 0 else 1
+            regime = "UNKNOWN"
+
         trades = []
         i = 1  # Empezamos en la segunda barra (necesitamos retorno)
 
+        # Rolling volatility para z-score en tiempo real dentro del test
+        rolling_window = min(20, len(closes) // 3)
+
         while i < len(closes) - 1:
-            # ── Señal de entrada: momentum burst ──
+            # ── Z-Score del retorno diario (adaptativo en tiempo real) ──
             daily_return = (closes[i] / closes[i-1]) - 1.0
-            if daily_return < entry_threshold:
+
+            # Calcular volatilidad rolling del test period hasta ahora
+            lookback_start = max(0, i - rolling_window)
+            recent_returns = np.diff(closes[lookback_start:i+1]) / closes[lookback_start:i]
+            if len(recent_returns) > 2:
+                local_vol = np.std(recent_returns)
+                # Actualizar threshold usando la volatilidad LOCAL (no solo la del train)
+                effective_threshold = max(entry_threshold, local_vol * 1.5)
+            else:
+                effective_threshold = entry_threshold
+
+            if daily_return < effective_threshold:
                 i += 1
                 continue
+
+            # ── VOLUMEN GATE: Descartar si volumen < 60% del promedio ──
+            if avg_volume > 0 and volumes[i] < avg_volume * 0.6:
+                i += 1
+                continue  # Sin respaldo institucional
 
             # ── Entrar en el trade ──
             entry_price = closes[i]
             entry_idx = i
-            stop_price = entry_price * (1 - stop_pct)
-            target_price = entry_price * (1 + target_pct)
+
+            # Stop y target adaptativos al precio actual
+            # (recalculados con ATR local si tenemos suficientes datos)
+            if i >= 20:
+                local_highs = test_data['High'].values[i-20:i] if 'High' in test_data else closes[i-20:i] * 1.005
+                local_lows = test_data['Low'].values[i-20:i] if 'Low' in test_data else closes[i-20:i] * 0.995
+                local_trs = []
+                for k in range(1, len(local_highs)):
+                    tr = max(
+                        local_highs[k] - local_lows[k],
+                        abs(local_highs[k] - closes[i-20+k-1]),
+                        abs(local_lows[k] - closes[i-20+k-1]),
+                    )
+                    local_trs.append(tr)
+                local_atr = np.mean(local_trs) if local_trs else entry_price * stop_pct
+                local_stop_pct = (local_atr * 2.0) / entry_price
+                local_target_pct = (local_atr * 3.0) / entry_price
+            else:
+                local_stop_pct = stop_pct
+                local_target_pct = target_pct
+
+            stop_price = entry_price * (1 - local_stop_pct)
+            target_price = entry_price * (1 + local_target_pct)
             exit_price = entry_price
             exit_idx = i
             price_series = [entry_price]
 
-            # ── Buscar salida ──
-            for j in range(i + 1, min(len(closes), i + 31)):  # Max 30 bars
+            # ── Buscar salida con trailing logic ──
+            highest_price = entry_price
+            for j in range(i + 1, min(len(closes), i + max_bars + 1)):
                 price_series.append(closes[j])
+                highest_price = max(highest_price, closes[j])
+
+                # Trailing stop: una vez que ganamos > 1 ATR,
+                # ajustamos el stop al 50% del recorrido favorable
+                if highest_price > entry_price * (1 + local_stop_pct):
+                    trailing_stop = entry_price + (highest_price - entry_price) * 0.5
+                    stop_price = max(stop_price, trailing_stop)
+
                 if closes[j] <= stop_price:
                     exit_price = closes[j]
                     exit_idx = j
@@ -307,7 +489,7 @@ class WalkForwardBacktester:
                 'ticker': ticker_data['Ticker'].iloc[0] if 'Ticker' in ticker_data else 'UNK',
                 'entry_price': round(entry_price, 2),
                 'exit_price': round(exit_price, 2),
-                'initial_stop': round(stop_price, 2),
+                'initial_stop': round(entry_price * (1 - local_stop_pct), 2),
                 'price_series': [round(p, 2) for p in price_series],
                 'exit_reason': 'STOP_HIT' if exit_price <= stop_price
                                else 'TAKE_PROFIT' if exit_price >= target_price
@@ -317,6 +499,14 @@ class WalkForwardBacktester:
                 'exit_date': str(dates[exit_idx]),
                 'pnl_pct': round(pnl, 3),
                 'bars_held': exit_idx - entry_idx,
+                # Metadata adaptativa (para análisis posterior)
+                'adaptive_params': {
+                    'effective_threshold': round(effective_threshold * 100, 3),
+                    'local_stop_pct': round(local_stop_pct * 100, 3),
+                    'local_target_pct': round(local_target_pct * 100, 3),
+                    'volume_ratio': round(volumes[entry_idx] / max(avg_volume, 1), 2),
+                    'regime': regime,
+                },
             })
 
             i = exit_idx + 1  # No re-entrar durante el mismo trade
@@ -329,7 +519,7 @@ class WalkForwardBacktester:
         ticker_data: pd.DataFrame,
     ) -> WindowResult:
         """
-        Evalúa una ventana completa: simula trades y produce métricas.
+        Evalúa una ventana completa: calibra, simula trades y produce métricas.
 
         Args:
             window: Dict con train_start/end, test_start/end, window_id.
@@ -341,9 +531,28 @@ class WalkForwardBacktester:
         w = window
         wid = w['window_id']
 
-        # Simular trades en la ventana de test
+        # ── NUEVO: Calibrar parámetros adaptativos desde TRAIN data ──
+        train_data = ticker_data[
+            (ticker_data['Date'] >= w['train_start']) &
+            (ticker_data['Date'] < w['train_end'])
+        ]
+
+        if len(train_data) < 30:
+            return WindowResult(
+                window_id=wid,
+                train_start=str(w['train_start'].date()),
+                train_end=str(w['train_end'].date()),
+                test_start=str(w['test_start'].date()),
+                test_end=str(w['test_end'].date()),
+                regime="INSUFFICIENT_DATA",
+            )
+
+        adaptive_params = self.calibrate_adaptive_params(train_data)
+
+        # Simular trades en la ventana de test CON parámetros adaptativos
         trades = self.simulate_trades_in_window(
             ticker_data, w['test_start'], w['test_end'],
+            adaptive_params=adaptive_params,
         )
 
         if not trades:

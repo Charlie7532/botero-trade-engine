@@ -161,6 +161,12 @@ class TradeJournalEntry:
     
     # ─── META ───
     status: str = "OPEN"  # OPEN, CLOSED, CANCELLED
+    
+    # ─── V2: Entry Intelligence Context ───
+    # Full EntryIntelligenceReport captured for ML and post-mortem analysis.
+    # Contains ~40 variables: VIX, Gamma Regime, Wyckoff State, Whale Flow,
+    # Phase, R:R, dimensions confirming, Put Wall, Call Wall, etc.
+    entry_intelligence: Optional[dict] = None
 
 
 class TradeJournal:

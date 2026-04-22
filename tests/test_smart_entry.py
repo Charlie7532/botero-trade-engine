@@ -233,33 +233,33 @@ class TestGuruValuationScoring:
         )
         assert uf._compute_score(c_discount) > uf._compute_score(c_fair)
 
-    def test_ps_vs_historical_cheap(self, uf):
-        """Stock trading below its own P/S historical median = bonus."""
+    def test_piotroski_high_vs_low(self, uf):
+        """High Piotroski F-Score should score better than low."""
         from backend.application.universe_filter import UniverseCandidate, MarketRegime
 
-        c_cheap_ps = UniverseCandidate(
-            ticker="CHEAPPS", regime=MarketRegime.RISK_ON,
-            ps_vs_historical=0.6,
+        c_strong = UniverseCandidate(
+            ticker="STRONG", regime=MarketRegime.RISK_ON,
+            piotroski_f_score=8,
         )
-        c_expensive_ps = UniverseCandidate(
-            ticker="EXPPS", regime=MarketRegime.RISK_ON,
-            ps_vs_historical=2.5,
+        c_weak = UniverseCandidate(
+            ticker="WEAK", regime=MarketRegime.RISK_ON,
+            piotroski_f_score=3,
         )
-        assert uf._compute_score(c_cheap_ps) > uf._compute_score(c_expensive_ps)
+        assert uf._compute_score(c_strong) > uf._compute_score(c_weak)
 
-    def test_strong_fcf_yield_bonus(self, uf):
-        """Low P/FCF (strong free cash flow yield) = bonus."""
+    def test_guru_conviction_bonus(self, uf):
+        """High guru conviction should boost score vs no conviction."""
         from backend.application.universe_filter import UniverseCandidate, MarketRegime
 
-        c_cash_machine = UniverseCandidate(
-            ticker="CASH", regime=MarketRegime.RISK_ON,
-            price_to_fcf=12.0,
+        c_backed = UniverseCandidate(
+            ticker="BACKED", regime=MarketRegime.RISK_ON,
+            guru_conviction_score=85,
         )
-        c_cash_burn = UniverseCandidate(
-            ticker="BURN", regime=MarketRegime.RISK_ON,
-            price_to_fcf=60.0,
+        c_solo = UniverseCandidate(
+            ticker="SOLO", regime=MarketRegime.RISK_ON,
+            guru_conviction_score=0,
         )
-        assert uf._compute_score(c_cash_machine) > uf._compute_score(c_cash_burn)
+        assert uf._compute_score(c_backed) > uf._compute_score(c_solo)
 
     def test_fcf_margin_quality(self, uf):
         """High FCF margin (cash conversion) = quality bonus."""

@@ -61,28 +61,29 @@ class TestUniverseFilterScoring:
         return UniverseFilter()
 
     def test_max_score_candidate(self, uf):
-        """Candidate with all signals bullish should score high."""
+        """Candidate with all V3 Hohn signals should score high."""
         c = UniverseCandidate(
             ticker="PERFECT", regime=MarketRegime.RISK_ON,
-            relative_momentum=0.1, qgarp_score=95,
+            qgarp_score=95,
+            fcf_margin=30.0,
+            piotroski_f_score=8,
             guru_conviction_score=90, guru_count=15,
-            insider_conviction_score=85, insider_sentiment="strong_buy",
-            dcf_discount_pct=30, catalyst_active=True,
-            risk_score_5d=90, analyst_consensus="strong_buy",
-            political_signal="bullish", mm_bias="BULLISH_PULL",
-            sentiment_score=20,
+            insider_conviction_score=85,
+            price_to_gf_value=0.7,  # Subvaluado
         )
         score = uf._compute_score(c)
         assert score > 60  # Should be high
 
     def test_min_score_candidate(self, uf):
-        """Candidate with all signals bearish should score low."""
+        """Candidate with toxic fundamentals should score negative."""
         c = UniverseCandidate(
             ticker="TERRIBLE", regime=MarketRegime.CRISIS,
-            relative_momentum=-0.1, qgarp_score=0,
-            risk_score_5d=10, analyst_consensus="strong_sell",
-            political_signal="bearish", mm_bias="BEARISH_PULL",
-            sentiment_score=90,
+            qgarp_score=20,
+            fcf_margin=2.0,
+            piotroski_f_score=2,
+            price_to_gf_value=1.5,  # Muy caro + baja calidad = penalización
+            beneish_m_score=-1.0,   # Manipulación contable
+            altman_z_score=1.2,     # Riesgo de quiebra
         )
         score = uf._compute_score(c)
         assert score < 0
@@ -101,29 +102,37 @@ class TestUniverseFilterScoring:
         score_legacy = uf._compute_score(c_legacy)
         assert score_qgarp > score_legacy
 
-    def test_risk_penalty(self, uf):
-        """High risk stock should get penalized."""
+    def test_risk_penalty_beneish_altman(self, uf):
+        """Beneish and Altman should penalize risky companies."""
         c_safe = UniverseCandidate(
             ticker="SAFE", regime=MarketRegime.NEUTRAL,
-            risk_score_5d=80,
+            qgarp_score=60,
+            fcf_margin=20.0,
+            beneish_m_score=-3.0,  # No manipulation (default safe)
+            altman_z_score=5.0,    # Healthy
         )
         c_risky = UniverseCandidate(
             ticker="RISKY", regime=MarketRegime.NEUTRAL,
-            risk_score_5d=10,
+            qgarp_score=60,
+            fcf_margin=20.0,
+            beneish_m_score=-1.0,  # Manipulation suspected
+            altman_z_score=1.2,    # Bankruptcy risk
         )
         assert uf._compute_score(c_safe) > uf._compute_score(c_risky)
 
-    def test_contrarian_sentiment(self, uf):
-        """Extreme fear should boost score (contrarian)."""
-        c_fear = UniverseCandidate(
-            ticker="FEAR", regime=MarketRegime.NEUTRAL,
-            sentiment_score=15,  # extreme fear
+    def test_valuation_premium_penalty(self, uf):
+        """Overvalued stocks with low quality should be penalized vs undervalued."""
+        c_cheap = UniverseCandidate(
+            ticker="CHEAP", regime=MarketRegime.NEUTRAL,
+            qgarp_score=50,
+            price_to_gf_value=0.7,  # 30% discount
         )
-        c_greed = UniverseCandidate(
-            ticker="GREED", regime=MarketRegime.NEUTRAL,
-            sentiment_score=90,  # extreme greed
+        c_expensive = UniverseCandidate(
+            ticker="EXPENSIVE", regime=MarketRegime.NEUTRAL,
+            qgarp_score=50,
+            price_to_gf_value=1.5,  # 50% premium + low quality
         )
-        assert uf._compute_score(c_fear) > uf._compute_score(c_greed)
+        assert uf._compute_score(c_cheap) > uf._compute_score(c_expensive)
 
     def test_all_defaults_score_zero(self, uf):
         """Default candidate (no signals) should score near 0."""

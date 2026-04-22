@@ -322,6 +322,8 @@ class PaperTradingOrchestrator:
             entry_notional=adjusted_notional,
             rs_vs_spy=snapshot.get('rs_vs_spy_20d', 1.0),
             pattern_tags=tags,
+            # V2: Capture full intelligence report for ML & post-mortem
+            entry_intelligence=intel.to_dict() if (not skip_intelligence and intel) else None,
         )
         
         # 4. Smart Entry — Pre-Market Validation + Limit Order
@@ -393,9 +395,14 @@ class PaperTradingOrchestrator:
             entry.status = "OPEN"
             entry.entry_price = check.recommended_limit  # Limit price, not market
             
-            # Stop from SmartEntry (ATR-based)
+            # V2: Prefer gamma-anchored stop from EntryHub if available
             rs = snapshot.get('rs_vs_spy_20d', 1.0)
-            stop = check.recommended_stop
+            if not skip_intelligence and intel and intel.stop_price > 0:
+                # Hub calculated stop using Put Wall + VIX + phase awareness
+                stop = intel.stop_price
+                logger.info(f"   🛡️ Using gamma-anchored stop: ${stop:.2f} (Put Wall: ${intel.put_wall:.2f})")
+            else:
+                stop = check.recommended_stop
             entry.initial_stop_price = stop
             entry.current_stop_price = stop
             entry.highest_price = current_price
@@ -436,10 +443,39 @@ class PaperTradingOrchestrator:
     def check_positions(self) -> list[dict]:
         """
         Revisa todas las posiciones abiertas y evalúa exits.
+        
+        V2: Auto-activates Event Freeze when FOMC/CPI/NFP is < 4 hours away.
+        Uses EventFlowIntelligence to detect macro events.
         """
         account = self.get_account_status()
         if 'error' in account:
-            return [{"error": account['error']}]
+            return [{'error': account['error']}]
+        
+        # ═══ V2: Auto-activate Event Freeze ═══════════════════
+        try:
+            from backend.infrastructure.data_providers.event_flow_intelligence import EventFlowIntelligence
+            event_flow = self.entry_hub.event_flow if hasattr(self.entry_hub, 'event_flow') else EventFlowIntelligence()
+            # Assess current macro environment (no ticker-specific data needed)
+            whale_check = event_flow.assess(
+                spy_cumulative_delta=0,
+                spy_signal="NEUTRAL",
+                tide_direction="NEUTRAL",
+                tide_accelerating=False,
+                sweeps_count=0,
+                calls_pct=50,
+                am_pm_divergence=False,
+            )
+            if whale_check.freeze_stops:
+                for pos in account.get('positions', []):
+                    t = pos['ticker']
+                    if t not in self._freeze_state:
+                        self._freeze_state[t] = datetime.now(UTC)
+                        logger.warning(
+                            f"🧊 Event Freeze ACTIVADO para {t}: "
+                            f"{whale_check.nearest_event} en {whale_check.hours_to_event:.0f}h"
+                        )
+        except Exception as e:
+            logger.debug(f"Event freeze check skipped: {e}")
         
         evaluations = []
         for pos in account.get('positions', []):

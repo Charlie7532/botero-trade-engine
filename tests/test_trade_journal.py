@@ -2,14 +2,13 @@
 Tests for TradeJournal — Institutional trade recording system.
 
 Tests verify:
-- Opening a trade persists to SQLite and JSON
+- Opening a trade persists to MongoDB
 - Closing a trade updates all fields
 - Querying open trades returns correct results
 - Pattern storage and retrieval
 """
 import json
 import pytest
-import sqlite3
 from datetime import datetime, UTC
 from dataclasses import asdict
 
@@ -18,44 +17,41 @@ from backend.application.trade_journal import TradeJournal, TradeJournalEntry
 
 class TestTradeJournalOpenClose:
 
-    def test_open_trade_persists_to_db(self, tmp_journal_dir, sample_trade_entry):
-        """Opening a trade should create a DB record with status OPEN."""
-        journal = TradeJournal(db_path=str(tmp_journal_dir / "test.db"))
+    def test_open_trade_persists_to_db(self, mongo_db, sample_trade_entry):
+        """Opening a trade should create a MongoDB document with status OPEN."""
+        journal = TradeJournal(db=mongo_db)
         trade_id = journal.open_trade(sample_trade_entry)
 
         assert trade_id == "test-001"
 
-        # Verify in DB
-        conn = sqlite3.connect(str(tmp_journal_dir / "test.db"))
-        row = conn.execute(
-            "SELECT ticker, status, entry_price FROM trades WHERE trade_id = ?",
-            (trade_id,),
-        ).fetchone()
-        conn.close()
+        # Verify in MongoDB
+        doc = mongo_db["trades"].find_one({"trade_id": trade_id}, {"_id": 0})
 
-        assert row is not None
-        assert row[0] == "AAPL"
-        assert row[1] == "OPEN"
-        assert row[2] == 175.50
+        assert doc is not None
+        assert doc["ticker"] == "AAPL"
+        assert doc["status"] == "OPEN"
+        assert doc["entry_price"] == 175.50
 
-    def test_open_trade_creates_json_file(self, tmp_journal_dir, sample_trade_entry):
-        """Opening a trade should also create a JSON sidecar file."""
-        journal = TradeJournal(db_path=str(tmp_journal_dir / "test.db"))
+    def test_open_trade_stores_complete_document(self, mongo_db, sample_trade_entry):
+        """Opening a trade should store the complete document natively (no JSON blob)."""
+        journal = TradeJournal(db=mongo_db)
         journal.open_trade(sample_trade_entry)
 
-        json_file = tmp_journal_dir / "test-001.json"
-        assert json_file.exists()
+        doc = mongo_db["trades"].find_one({"trade_id": "test-001"}, {"_id": 0})
 
-        with open(json_file) as f:
-            data = json.load(f)
-        assert data["ticker"] == "AAPL"
-        assert data["alpha_score"] == 78.5
+        # All fields should be queryable directly — no full_data TEXT blob
+        assert doc["alpha_score"] == 78.5
+        assert doc["qualifier_grade"] == "A-"
+        assert doc["rs_vs_spy"] == 1.12
+        assert doc["insider_signal"] == "strong_buy"
+        assert doc["sector_alignment"] == "WITH_TIDE"
+        assert doc["entry_thesis"] == "Strong RS + insider cluster buy"
 
     def test_close_trade_updates_status_and_pnl(
-        self, tmp_journal_dir, sample_trade_entry
+        self, mongo_db, sample_trade_entry
     ):
         """Closing a trade should set status=CLOSED and record PnL."""
-        journal = TradeJournal(db_path=str(tmp_journal_dir / "test.db"))
+        journal = TradeJournal(db=mongo_db)
         journal.open_trade(sample_trade_entry)
 
         # Simulate close
@@ -72,23 +68,18 @@ class TestTradeJournalOpenClose:
 
         journal.close_trade(sample_trade_entry)
 
-        conn = sqlite3.connect(str(tmp_journal_dir / "test.db"))
-        row = conn.execute(
-            "SELECT status, pnl_dollars, was_winner, exit_reason FROM trades WHERE trade_id = ?",
-            ("test-001",),
-        ).fetchone()
-        conn.close()
+        doc = mongo_db["trades"].find_one({"trade_id": "test-001"}, {"_id": 0})
 
-        assert row[0] == "CLOSED"
-        assert row[1] == 1450.0
-        assert row[2] == 1  # True → 1 in SQLite
-        assert row[3] == "TAKE_PROFIT"
+        assert doc["status"] == "CLOSED"
+        assert doc["pnl_dollars"] == 1450.0
+        assert doc["was_winner"] is True
+        assert doc["exit_reason"] == "TAKE_PROFIT"
 
     def test_get_open_trades_returns_only_open(
-        self, tmp_journal_dir, sample_trade_entry
+        self, mongo_db, sample_trade_entry
     ):
         """get_open_trades should return only OPEN status trades."""
-        journal = TradeJournal(db_path=str(tmp_journal_dir / "test.db"))
+        journal = TradeJournal(db=mongo_db)
 
         # Open two trades
         journal.open_trade(sample_trade_entry)
@@ -111,14 +102,25 @@ class TestTradeJournalOpenClose:
         assert len(open_trades) == 1
         assert open_trades[0]["ticker"] == "MSFT"
 
+    def test_get_trade_full_data(self, mongo_db, sample_trade_entry):
+        """get_trade_full_data should return the complete document."""
+        journal = TradeJournal(db=mongo_db)
+        journal.open_trade(sample_trade_entry)
+
+        data = journal.get_trade_full_data("test-001")
+        assert data is not None
+        assert data["ticker"] == "AAPL"
+        assert data["alpha_score"] == 78.5
+        assert data["entry_price"] == 175.50
+
 
 class TestTradeJournalPatterns:
 
     def test_close_with_patterns_stores_tags(
-        self, tmp_journal_dir, sample_trade_entry
+        self, mongo_db, sample_trade_entry
     ):
-        """Pattern tags should be stored in the patterns table on close."""
-        journal = TradeJournal(db_path=str(tmp_journal_dir / "test.db"))
+        """Pattern tags should be stored in the patterns collection on close."""
+        journal = TradeJournal(db=mongo_db)
         journal.open_trade(sample_trade_entry)
 
         sample_trade_entry.exit_price = 190.0
@@ -131,15 +133,13 @@ class TestTradeJournalPatterns:
 
         journal.close_trade(sample_trade_entry)
 
-        conn = sqlite3.connect(str(tmp_journal_dir / "test.db"))
-        patterns = conn.execute(
-            "SELECT pattern_name, outcome FROM patterns WHERE trade_id = ?",
-            ("test-001",),
-        ).fetchall()
-        conn.close()
+        patterns = list(mongo_db["patterns"].find(
+            {"trade_id": "test-001"},
+            {"_id": 0},
+        ))
 
         assert len(patterns) == 3
-        names = [p[0] for p in patterns]
+        names = [p["pattern_name"] for p in patterns]
         assert "breakout" in names
         assert "insider_signal" in names
-        assert all(p[1] == "WIN" for p in patterns)
+        assert all(p["outcome"] == "WIN" for p in patterns)

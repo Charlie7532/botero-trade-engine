@@ -41,6 +41,8 @@ FRED_SERIES = {
     "vix": "VIXCLS",
     "mortgage_30y": "MORTGAGE30US",
     "consumer_sentiment": "UMCSENT",
+    "fed_balance_sheet": "WALCL",    # Total Assets of Federal Reserve
+    "m2_money_supply": "WM2NS",      # M2 Money Stock
 }
 
 
@@ -75,6 +77,12 @@ class MacroSnapshot:
     # Consumer
     consumer_sentiment: Optional[float] = None
     mortgage_30y: Optional[float] = None
+
+    # Liquidity
+    fed_balance_sheet: Optional[float] = None    # Total FED assets (trillions)
+    fed_balance_trend: str = "unknown"           # expanding, contracting, stable
+    m2_money_supply: Optional[float] = None
+    liquidity_regime: str = "unknown"            # abundant, tightening, drought
 
     # Composite
     macro_regime: str = "neutral"              # risk_on, neutral, risk_off, crisis
@@ -129,6 +137,8 @@ class FREDMacroIntelligence:
             snapshot.vix = self._safe_float(data.get("vix", data.get("VIXCLS")))
             snapshot.consumer_sentiment = self._safe_float(data.get("consumer_sentiment", data.get("UMCSENT")))
             snapshot.mortgage_30y = self._safe_float(data.get("mortgage_30y", data.get("MORTGAGE30US")))
+            snapshot.fed_balance_sheet = self._safe_float(data.get("fed_balance_sheet", data.get("WALCL")))
+            snapshot.m2_money_supply = self._safe_float(data.get("m2_money_supply", data.get("WM2NS")))
             snapshot.raw_data = data
 
             # Calculate yield spread if we have both rates
@@ -141,6 +151,7 @@ class FREDMacroIntelligence:
             self._classify_fed(snapshot)
             self._classify_yield_curve(snapshot)
             self._classify_vix(snapshot)
+            self._classify_liquidity(snapshot)
             self._classify_macro_regime(snapshot)
 
             self.logger.info(
@@ -218,6 +229,66 @@ class FREDMacroIntelligence:
         else:
             s.vix_regime = "crisis"
 
+    @staticmethod
+    def _classify_liquidity(s: MacroSnapshot):
+        """
+        Clasifica el régimen de liquidez de la FED.
+        
+        Soporta 3 formatos de entrada:
+        1. raw_data contiene "WALCL_series" (lista de valores históricos)
+           → Calcula delta entre el último y el de hace ~4 semanas
+        2. raw_data contiene "WALCL_prev" (valor previo explícito)
+           → Calcula delta contra el valor actual
+        3. Solo fed_balance_sheet disponible (sin histórico)
+           → Usa heurística basada en el tamaño absoluto del balance
+        """
+        if s.fed_balance_sheet is None:
+            return
+        
+        walcl_diff_pct = 0.0
+        calculated = False
+        
+        # Método 1: Serie histórica completa (ideal)
+        walcl_series = s.raw_data.get("WALCL_series")
+        if walcl_series and isinstance(walcl_series, (list, tuple)) and len(walcl_series) >= 2:
+            # El último vs hace 4 semanas (o el más antiguo disponible)
+            lookback = min(4, len(walcl_series) - 1)
+            current = float(walcl_series[-1])
+            previous = float(walcl_series[-(lookback + 1)])
+            if previous > 0:
+                walcl_diff_pct = ((current - previous) / previous) * 100
+                calculated = True
+        
+        # Método 2: Valor previo explícito
+        if not calculated:
+            walcl_prev = s.raw_data.get("WALCL_prev")
+            if walcl_prev is not None:
+                try:
+                    prev = float(walcl_prev)
+                    if prev > 0:
+                        walcl_diff_pct = ((s.fed_balance_sheet - prev) / prev) * 100
+                        calculated = True
+                except (ValueError, TypeError):
+                    pass
+        
+        # Método 3: Campo precalculado (compatibilidad)
+        if not calculated:
+            walcl_diff_pct = float(s.raw_data.get("WALCL_diff_pct", 0))
+        
+        # Clasificar régimen de liquidez
+        if walcl_diff_pct > 0.5:
+            s.liquidity_regime = "abundant"
+            s.fed_balance_trend = "expanding"
+        elif walcl_diff_pct < -0.5:
+            s.liquidity_regime = "tightening"
+            s.fed_balance_trend = "contracting"
+        else:
+            s.liquidity_regime = "neutral"
+            s.fed_balance_trend = "stable"
+        
+        # Guardar la delta calculada para logging/debug
+        s.raw_data["_walcl_diff_pct_calculated"] = round(walcl_diff_pct, 3)
+
     def _classify_macro_regime(self, s: MacroSnapshot):
         """
         Composite macro regime classification.
@@ -256,6 +327,15 @@ class FREDMacroIntelligence:
             s.regime_score = sum(scores) / len(scores)
         else:
             s.regime_score = 50.0
+
+        # Liquidity Modifier (Direct impact on final score)
+        if s.liquidity_regime == "tightening":
+            s.regime_score -= 15.0
+        elif s.liquidity_regime == "abundant":
+            s.regime_score += 10.0
+            
+        # Ensure bounds
+        s.regime_score = max(0, min(100, s.regime_score))
 
         # Map score to regime
         if s.regime_score >= 70:

@@ -119,6 +119,35 @@ Flujo guiado que:
 
 ---
 
+## `/proposito-practico`
+**File:** `.claude/commands/proposito-practico.md`
+**Use when:** Notes que la AI está perdiendo foco en teorías académicas, adoptando sesgos financieros genéricos, o mostrando de exceso de cautela frente a realidades operativas observables.
+
+Alinea a la AI hacia el propósito operativo estricto:
+1. Omite disclaimers estándar y prioriza la verdad mecánica y cuantitativa de los mercados.
+2. Obliga a centrarse en utilidad clínica: Cómo observarlo, medirlo y aplicarlo en Botero Trade.
+3. Reprime la necesidad de balance académico irreal y enfoca sus respuestas a la microestructura real y ejecutable del trading institucional.
+
+---
+
+## Especialistas Operacionales (IA de Pipeline Institucional)
+
+### `/analista-filtrado`
+**File:** `.claude/commands/analista-filtrado.md`
+**Use when:** Quieras evaluar fundamentales a largo plazo. Encarna la mente de Sir Christopher Hohn y Charlie Munger. Exige Fosos Competitivos masivos, *Pricing Power* y desdeña la diversificación irrelevante de las posiciones CORE.
+
+### `/ejecutor-entradas`
+**File:** `.claude/commands/ejecutor-entradas.md`
+**Use when:** Necesites el "Gatillo Táctico". Encarna a Benn Eifert y Paul Tudor Jones. Ignora la lógica fundamental y analiza flujos de Opciones (GEX), anomalías de *Unusual Whales*, Muros Gamma y Microestructura del día.
+
+### `/gestor-riesgos`
+**File:** `.claude/commands/gestor-riesgos.md`
+**Use when:** Evaluemos posiciones abiertas. Tiene una Mente Dividida:
+*   Para **CORE (80%)**: Filosofía *Stanley Druckenmiller*. Evalúa noticias fundamentales en el intradía para ajustar tamaños del swing sin destruir el núcleo de la inversión a largo plazo.
+*   Para **TACTICAL (20%)**: Filosofía *Ed Seykota*. Pánico puramente matemático, ejecución de de trailing stop despiadado (ATR/GEX) al centavo y recorte implacable de cisnes negros.
+
+---
+
 ## Adding a new skill
 
 1. Create `.claude/commands/{skill-name}.md`

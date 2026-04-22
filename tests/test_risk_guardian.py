@@ -143,7 +143,7 @@ class TestRiskGuardianCombined:
             daily_pnl_pct=-0.01,
             current_vix=42,          # VIX emergency → ×0.5
         )
-        # 0.5 (DD) * 0.5 (VIX) * 0.7 (losses) = 0.175
-        expected = round(0.5 * 0.5 * 0.7, 2)
+        # 0.5 (DD) * 0.5 (VIX) * 0.7 (losses) = 0.175, floored to 0.20
+        expected = 0.20  # Floor prevents going below 0.20
         assert result["position_scale"] == expected
         assert len(result["alerts"]) >= 3

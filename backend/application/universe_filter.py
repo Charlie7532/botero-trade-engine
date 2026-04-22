@@ -60,6 +60,8 @@ class UniverseCandidate:
     fear_greed_macro: float = 50.0        # CNN Fear & Greed
     sp500_breadth_pct: float = 50.0       # S5TH proxy
     score: float = 0.0                    # Score compuesto
+    is_emerging_gem: bool = False         # True si viene de Guru Gems (fuera de S&P500)
+    alpha_score: float = 0.0              # Alpha score posterior
     selected_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
@@ -668,109 +670,97 @@ class UniverseFilter:
         """
         Score compuesto ponderado INSTITUCIONAL.
         
-        v2: Integra QGARP, guru conviction, insider conviction, risk matrix,
-        analyst consensus, y political signal.
-        
-        Factores: Momentum, QGARP, Gurus, Insiders, Risk, Analyst, Options, Sentimiento.
+        v3: "La Puerta Doble" - Purga de sesgos.
+        Separa la evaluación fundamental de empresas maduras (Hohn Mode)
+        de las empresas emergentes (Rule of 40 / Guru Conviction).
+        No incluye momentum técnico, opciones, ni opiniones de analistas.
         """
         score = 0.0
 
-        # Momentum relativo (peso: 15%)
-        score += c.relative_momentum * 15.0
-
-        # QGARP Score — institucional quality-growth-value composite (peso: 20%)
-        if c.qgarp_score > 0:
-            score += (c.qgarp_score / 100) * 20.0
-        elif c.guru_accumulation:
-            # Fallback: legacy boolean
-            score += 10.0
-
-        # Guru Conviction — quantitative net buying (peso: 15%)
-        if c.guru_conviction_score > 0:
-            score += min((c.guru_conviction_score / 100) * 15.0, 15.0)
-        elif c.guru_accumulation:
-            score += 7.5  # Fallback: legacy boolean
-
-        # Insider Conviction — cluster buys weighted (peso: 10%)
-        if c.insider_conviction_score > 0:
-            score += min((c.insider_conviction_score / 100) * 10.0, 10.0)
-
-        # Descuento DCF / GF Value (peso: 10%)
-        if c.dcf_discount_pct > 20:
-            score += min(c.dcf_discount_pct * 0.5, 10.0)
-
-        # Catalizador activo (peso: 5%)
-        if c.catalyst_active:
-            score += 5.0
-
-        # Risk Score 5D — penalize risky stocks (peso: 5%)
-        if c.risk_score_5d < 30:
-            score -= 5.0  # High risk penalty
-        elif c.risk_score_5d > 70:
-            score += 5.0  # Low risk bonus
-
-        # Analyst Consensus (peso: 5%)
-        analyst_map = {"strong_buy": 5.0, "buy": 3.0, "hold": 0, "sell": -3.0, "strong_sell": -5.0}
-        score += analyst_map.get(c.analyst_consensus, 0)
-
-        # Political signal (peso: 3%)
-        if c.political_signal == "bullish":
-            score += 3.0
-        elif c.political_signal == "bearish":
-            score -= 2.0
-
-        # Options: Market Maker Bias (peso: 7%)
-        if c.mm_bias == "BULLISH_PULL":
-            score += 7.0
-        elif c.mm_bias == "BEARISH_PULL":
-            score -= 5.0
-
-        # Sentimiento contrarian (peso: 5%)
-        if c.sentiment_score < 30:
-            score += 5.0
-        elif c.sentiment_score > 80:
-            score -= 3.0
-
-        # ─── GURU VALUATION (datos reales de GuruFocus) ───
-
-        # Price/GF Value — la referencia de valoración primaria
-        # GF Value = modelo DCF + múltiplos históricos calculado por GuruFocus
-        if c.price_to_gf_value > 0:
-            if c.price_to_gf_value < 0.8:
-                score += 8.0   # Undervalued: trading >20% below intrinsic
-            elif c.price_to_gf_value < 1.0:
-                score += 4.0   # Slight discount to intrinsic
-            elif c.price_to_gf_value > 1.3:
-                score -= 6.0   # >30% above GF Value: overvalued
-            elif c.price_to_gf_value > 1.15:
-                score -= 3.0   # >15% above GF Value: expensive
-
-        # P/S vs Historical Median — la acción vs SÍ MISMA (Fisher/Lynch)
-        # ratio = current_ps / historical_median_ps
-        if c.ps_vs_historical > 0:
-            if c.ps_vs_historical < 0.7:
-                score += 5.0   # Cheap vs own history
-            elif c.ps_vs_historical > 2.0:
-                score -= 5.0   # 2x+ its own historical P/S = extreme expansion
-            elif c.ps_vs_historical > 1.5:
-                score -= 2.0   # Elevated vs own history
-
-        # P/FCF — cash real, no manipulable (lo que Buffett mira)
-        if c.price_to_fcf > 0:
-            if c.price_to_fcf < 15:
-                score += 3.0   # Strong FCF yield
-            elif c.price_to_fcf > 50:
-                score -= 3.0   # Paying 50x+ free cash flow
-
-        # FCF Margin — calidad de conversión revenue → cash
-        if c.fcf_margin > 25:
-            score += 2.0       # Excellent cash conversion (>25%)
-        elif c.fcf_margin > 15:
-            score += 1.0       # Good cash conversion
-
-        # Beneish M-Score — detector de manipulación de earnings
-        # > -1.78 = probable earnings manipulator
-        if c.beneish_m_score > -1.78 and c.beneish_m_score != -3.0:
-            score -= 5.0       # Red flag: probable earnings manipulation
+        if c.is_emerging_gem:
+            # ========================================================
+            # RUTA B: GURU GEMS (EMPRESAS EMERGENTES)
+            # ========================================================
+            # Prioridad: Convicción Institucional y Crecimiento Unitario
+            
+            # Guru Conviction (35% peso)
+            if c.guru_conviction_score > 0:
+                score += min((c.guru_conviction_score / 100) * 35.0, 35.0)
+            elif c.guru_accumulation:
+                score += 15.0
+            
+            # Insider Conviction (25% peso)
+            if c.insider_conviction_score > 0:
+                score += min((c.insider_conviction_score / 100) * 25.0, 25.0)
+            
+            # Margen Bruto como Proxy de Pricing Power incipiente (15%)
+            # Nota: Asumimos que viene cargado en dcf_discount_pct u otro campo 
+            # de extensión si no está en dataclass base, pero usemos fcf_margin
+            # si es positivo como proxy de calidad de conversión.
+            if c.fcf_margin > 0:
+                score += min(c.fcf_margin * 0.5, 15.0)
+            
+            # Crecimiento de ingresos y Rule of 40 (Bonus)
+            if c.qgarp_score > 50:
+                # Usamos qgarp > 50 como indicador de que al menos hay crecimiento 
+                score += 15.0
+            
+            # Cero penalizaciones por FCF negativo, Altman bajo o valuación alta
+        
+        else:
+            # ========================================================
+            # RUTA A: S&P 500 (BLUE CHIPS / HOHN MODE)
+            # ========================================================
+            # Prioridad: ROIC, FCF Margins, Pricing Power, Calidad
+            
+            # QGARP Quality & Growth (30% peso)
+            if c.qgarp_score > 0:
+                score += (c.qgarp_score / 100) * 30.0
+            
+            # FCF Margin - Pricing Power puro (15% peso)
+            if c.fcf_margin > 25:
+                score += 15.0
+            elif c.fcf_margin > 15:
+                score += 10.0
+            elif c.fcf_margin > 10:
+                score += 5.0
+            
+            # Piotroski F-Score (10% peso)
+            if c.piotroski_f_score >= 7:
+                score += 10.0
+            elif c.piotroski_f_score >= 5:
+                score += 5.0
+            
+            # Guru Conviction (15% peso)
+            if c.guru_conviction_score > 0:
+                score += min((c.guru_conviction_score / 100) * 15.0, 15.0)
+            elif c.guru_accumulation:
+                score += 7.5
+                
+            # Insider Conviction (10% peso)
+            if c.insider_conviction_score > 0:
+                score += min((c.insider_conviction_score / 100) * 10.0, 10.0)
+            
+            # Valoración - Descuento GF Value (10% peso)
+            if c.price_to_gf_value > 0:
+                if c.price_to_gf_value < 0.8:
+                    score += 10.0   # Subvaluado
+                elif c.price_to_gf_value < 1.0:
+                    score += 5.0    # Descuento ligero
+                elif c.price_to_gf_value > 1.3:
+                    # Penalización por caro, A MENOS QUE sea calidad de monopolio
+                    if c.qgarp_score < 80 and c.fcf_margin < 20:
+                        score -= 10.0
+                elif c.price_to_gf_value > 1.15:
+                    if c.qgarp_score < 70:
+                        score -= 5.0
+                        
+            # Beneish M-Score (Penalización severa por manipulación contable)
+            if c.beneish_m_score > -1.78 and c.beneish_m_score != -3.0:
+                score -= 15.0
+                
+            # Altman Z-Score (Penalización por riesgo de quiebra)
+            if c.altman_z_score > 0 and c.altman_z_score < 1.8:
+                score -= 10.0
 
         return score

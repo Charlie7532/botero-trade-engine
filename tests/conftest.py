@@ -5,31 +5,69 @@ import os
 import sys
 import pytest
 import tempfile
-import sqlite3
 from pathlib import Path
 from datetime import datetime, UTC
 from unittest.mock import MagicMock
 
+# Load .env BEFORE anything else so MONGODB_URI is available
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+from pymongo import MongoClient
+
 # Ensure project root is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+# Test MongoDB URI — uses the same Atlas cluster with a test-specific database
+_TEST_MONGODB_URI = os.getenv(
+    "MONGODB_URI", "mongodb://localhost:27017"
+)
+_TEST_DB_NAME = "botero_trade_test"
+
 
 @pytest.fixture
-def tmp_db(tmp_path):
-    """Temporary SQLite database for TradeJournal tests."""
-    return str(tmp_path / "test_journal.db")
+def mongo_db():
+    """
+    Provides a clean MongoDB test database.
+    Drops test collections before AND after each test for isolation.
+    Uses collection-level drops (Atlas free tier doesn't allow dropDatabase).
+    """
+    client = MongoClient(_TEST_MONGODB_URI, serverSelectionTimeoutMS=5000)
+    db = client[_TEST_DB_NAME]
+
+    # Clean before test (in case previous run crashed)
+    _clean_test_collections(db)
+
+    yield db
+
+    # Clean after test
+    _clean_test_collections(db)
+    client.close()
+
+
+def _clean_test_collections(db):
+    """Drop all test collections individually (Atlas-compatible)."""
+    for name in db.list_collection_names():
+        db.drop_collection(name)
 
 
 @pytest.fixture
-def tmp_journal_dir(tmp_path, monkeypatch):
-    """Temporary journal directory — patches module-level constants."""
-    journal_dir = tmp_path / "journal"
+def tmp_journal_dir(mongo_db, monkeypatch):
+    """
+    Provides a clean MongoDB-backed TradeJournal.
+    Patches module-level DB function to use test database.
+
+    Also creates a temporary filesystem dir for any file-based
+    operations that might still exist in adjacent code.
+    """
+    tmp = tempfile.mkdtemp()
+    journal_dir = Path(tmp) / "journal"
     journal_dir.mkdir()
+
+    # Patch the module-level _get_mongo_db to return test DB
     monkeypatch.setattr(
-        "backend.application.trade_journal.JOURNAL_DIR", journal_dir
-    )
-    monkeypatch.setattr(
-        "backend.application.trade_journal.DB_PATH", journal_dir / "test.db"
+        "backend.application.trade_journal._get_mongo_db",
+        lambda: mongo_db,
     )
     return journal_dir
 

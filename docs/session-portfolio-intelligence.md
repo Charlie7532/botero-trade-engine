@@ -43,7 +43,7 @@ graph TD
     subgraph "⚡ Execution Layer"
         EE[Execution Engine<br/>Kelly 3% • Capitulation Override]
         PT[Paper Trading Orchestrator]
-        TJ[Trade Journal<br/>SQLite + JSON • 30+ vars]
+        TJ[Trade Journal<br/>MongoDB Atlas • 30+ vars]
         PM[Position Monitor<br/>real-time dashboard]
     end
 
@@ -85,7 +85,7 @@ graph TD
 | [ticker_qualifier.py](file:///root/botero-trade/backend/application/ticker_qualifier.py) | 600 | Fitness test pre-trade: Walk-Forward mini + Drift + Montecarlo |
 | [portfolio_intelligence.py](file:///root/botero-trade/backend/application/portfolio_intelligence.py) | 500 | RS Monitor, Adaptive Trailing, HRP Optimizer, Rotation Engine, Risk Guardian |
 | [alpha_scanner.py](file:///root/botero-trade/backend/application/alpha_scanner.py) | 350 | Scanner de oportunidades con Alpha Score composite |
-| [trade_journal.py](file:///root/botero-trade/backend/application/trade_journal.py) | 380 | Bitácora institucional: SQLite + JSON, 30+ variables por trade |
+| [trade_journal.py](file:///root/botero-trade/backend/application/trade_journal.py) | 310 | Bitácora institucional: MongoDB Atlas, 30+ variables por trade |
 | [paper_trading.py](file:///root/botero-trade/backend/application/paper_trading.py) | 600 | Orquestador: Scanner→Execution→Monitor→Guardian |
 | [position_monitor.py](file:///root/botero-trade/backend/application/position_monitor.py) | 280 | Dashboard real-time + detección de doble exposición |
 | [finnhub_intelligence.py](file:///root/botero-trade/backend/infrastructure/data_providers/finnhub_intelligence.py) | 300 | Earnings calendar, Insider transactions, Analyst consensus |
@@ -299,7 +299,7 @@ backend/application/
 ├── position_monitor.py       # Dashboard real-time
 ├── sequence_modeling.py      # Triple Barrera + MetaLabeling
 ├── ticker_qualifier.py       # Fitness test pre-trade
-├── trade_journal.py          # Journal SQLite + JSON
+├── trade_journal.py          # Journal MongoDB Atlas
 └── universe_filter.py        # Macro regime + Sector + Fundamental
 
 backend/infrastructure/data_providers/
@@ -310,9 +310,14 @@ backend/infrastructure/data_providers/
 └── options_awareness.py      # Max Pain, P/C OI, GEX
 
 data/journal/
-├── trade_journal.db          # SQLite con todos los trades
-├── BT-*.json                 # JSON detallado por trade
 └── logs/monitor.log          # Log del position monitor
+
+# MongoDB Atlas (botero_trade)
+# ├── trades                  # Todos los trades (documento nativo)
+# ├── trade_snapshots          # Snapshots de entrada/salida
+# ├── patterns                 # Pattern tags para aprendizaje
+# ├── shadow_signals           # Señales Spring scanner
+# └── shadow_positions         # Posiciones shadow mode
 ```
 
 ---
@@ -352,5 +357,5 @@ Fase de validación. No apostamos $100K al inicio. Probing positions de $3-5K po
 > **Para retomar contexto rápidamente:**
 > 1. Leer este documento
 > 2. Correr `python backend/application/position_monitor.py` para ver estado actual
-> 3. Revisar `data/journal/trade_journal.db` para historial de trades
+> 3. Consultar MongoDB Atlas (`botero_trade.trades`) para historial de trades
 > 4. Git log en branch `v4-omnidimensional` para ver evolución de commits

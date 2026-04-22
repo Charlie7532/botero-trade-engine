@@ -1,6 +1,6 @@
 """
-ALPHA SCANNER: Motor de Búsqueda de Oportunidades
-===================================================
+ALPHA SCANNER: Motor de Búsqueda de Oportunidades — Strategy Synthesis V2
+==========================================================================
 Corre periódicamente (cada 4 horas) y genera una lista
 ranqueada de candidatos usando TODAS nuestras fuentes.
 
@@ -10,44 +10,129 @@ Pipeline:
 3. Unusual Volume → Acumulación institucional
 4. Finnhub → Filtro de earnings + insiders
 5. Ticker Qualifier → Fitness test rápido
-6. Alpha Score composite → Ranking final
+6. UW Institutional Flow → Sweep/VOI/Premium conviction (NEW V2)
+7. Macro Gate → SPY flow as risk posture (NEW V2)
+8. Alpha Score composite → Ranking final (ADAPTIVE WEIGHTS)
 """
 import logging
 import sys
 import os
 import numpy as np
+from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+
+class AdaptiveWeightManager:
+    """
+    Manages component weights adaptively based on signal effectiveness.
+    
+    Instead of static weights, tracks each component's contribution
+    to successful predictions using an exponential moving average.
+    Components that consistently identify winners get more weight;
+    those that don't get less.
+    
+    Principle: The system learns from experience while maintaining
+    minimum/maximum bounds to prevent any single signal from dominating.
+    """
+    
+    # Base weights — starting point before adaptation
+    BASE_WEIGHTS = {
+        'rs_vs_spy': 0.18,       # Relative Strength vs SPY
+        'rs_vs_sector': 0.13,    # RS vs sector ETF
+        'insider_score': 0.13,   # Insider conviction (GuruFocus + Finnhub)
+        'sector_health': 0.12,   # Breadth del sector
+        'volume_signal': 0.10,   # Acumulación por volumen
+        'qualifier': 0.05,       # Ticker Qualifier fitness test (slow, optional)
+        'guru_score': 0.09,      # Guru conviction
+        'analyst_score': 0.05,   # Analyst consensus
+        'uw_flow_score': 0.10,   # UW Institutional Flow (V2)
+    }
+    # Sum = 0.95 → leaves 0.05 buffer for adaptation
+    
+    # Bounds: no component goes below 3% or above 30%
+    MIN_WEIGHT = 0.03
+    MAX_WEIGHT = 0.30
+    
+    # EMA decay factor for tracking effectiveness
+    EMA_ALPHA = 0.15  # 15% weight on new observation
+    
+    def __init__(self):
+        self._weights = dict(self.BASE_WEIGHTS)
+        self._effectiveness = {k: 0.5 for k in self.BASE_WEIGHTS}
+        self._n_updates = 0
+    
+    @property
+    def weights(self) -> dict:
+        """Current adaptive weights, always normalized to sum=1.0."""
+        total = sum(self._weights.values())
+        if total <= 0:
+            return dict(self.BASE_WEIGHTS)
+        return {k: v / total for k, v in self._weights.items()}
+    
+    def update_effectiveness(self, component: str, was_correct: bool):
+        """
+        Update a component's effectiveness score after observing outcome.
+        
+        Called by the Orchestrator after a trade resolves:
+        - was_correct=True: this component's score was above average AND the trade won
+        - was_correct=False: this component's score was above average BUT the trade lost
+        """
+        if component not in self._effectiveness:
+            return
+        
+        new_val = 1.0 if was_correct else 0.0
+        self._effectiveness[component] = (
+            self.EMA_ALPHA * new_val + 
+            (1 - self.EMA_ALPHA) * self._effectiveness[component]
+        )
+        
+        # Adapt weight: base_weight × (0.5 + effectiveness)
+        # effectiveness 0.0 → weight × 0.5 (halved)
+        # effectiveness 0.5 → weight × 1.0 (base)
+        # effectiveness 1.0 → weight × 1.5 (50% boost)
+        base = self.BASE_WEIGHTS.get(component, 0.05)
+        adapted = base * (0.5 + self._effectiveness[component])
+        self._weights[component] = max(self.MIN_WEIGHT, min(self.MAX_WEIGHT, adapted))
+        
+        self._n_updates += 1
+        if self._n_updates % 10 == 0:
+            logger.info(f"Adaptive weights after {self._n_updates} updates: {self.weights}")
+    
+    def get_effectiveness_report(self) -> dict:
+        """Returns current effectiveness scores for monitoring."""
+        return {
+            'n_updates': self._n_updates,
+            'effectiveness': dict(self._effectiveness),
+            'current_weights': self.weights,
+            'base_weights': dict(self.BASE_WEIGHTS),
+        }
 
 
 class AlphaScanner:
     """
     Escanea el mercado buscando las mejores oportunidades.
+    Strategy Synthesis V2 — with Institutional Flow + Adaptive Weights.
     
     Integra:
     - Finviz (screener, sector breadth, unusual volume)
     - Finnhub (earnings, insiders)
     - Relative Strength vs SPY y sector
     - Sector Flow Engine (WITH_TIDE vs AGAINST_TIDE)
+    - UW Institutional Flow (sweeps, VOI, premium) [NEW V2]
+    - SPY Macro Gate (adaptive risk posture) [NEW V2]
     """
     
-    # Componentes del Alpha Score
-    WEIGHTS = {
-        'rs_vs_spy': 0.20,       # Relative Strength vs SPY
-        'rs_vs_sector': 0.15,    # RS vs sector ETF
-        'insider_score': 0.15,   # Insider conviction (GuruFocus + Finnhub)
-        'sector_health': 0.15,   # Breadth del sector
-        'volume_signal': 0.10,   # Acumulación por volumen
-        'qualifier': 0.10,       # Ticker Qualifier fitness test
-        'guru_score': 0.10,      # Guru conviction (NEW)
-        'analyst_score': 0.05,   # Analyst consensus (NEW)
-    }
+    # Static weights kept for backward compatibility
+    WEIGHTS = AdaptiveWeightManager.BASE_WEIGHTS
     
     def __init__(self):
         self._finnhub = None
         self._sector_flow = None
         self._gurufocus = None
         self._finviz = None
+        self._uw_intel = None
+        self.weight_manager = AdaptiveWeightManager()
     
     def _get_finnhub(self):
         if self._finnhub is None:
@@ -73,16 +158,26 @@ class AlphaScanner:
             self._sector_flow = SectorFlowEngine()
         return self._sector_flow
     
+    def _get_uw_intel(self):
+        if self._uw_intel is None:
+            from backend.infrastructure.data_providers.uw_intelligence import UnusualWhalesIntelligence
+            self._uw_intel = UnusualWhalesIntelligence()
+        return self._uw_intel
+    
     def scan(
         self,
         tickers: list[str] = None,
         max_results: int = 15,
         include_qualifier: bool = False,
-        # ─── NEW: MCP-sourced data (pre-fetched by orchestrator) ───
+        # ─── MCP-sourced data (pre-fetched by orchestrator) ───
         insider_mcp_data: dict = None,     # {ticker: {cluster, ceo, cfo}}
         guru_mcp_data: dict = None,        # {ticker: mcp_response}
         analyst_mcp_data: dict = None,     # {ticker: mcp_response}
         finviz_movers_data: dict = None,   # Finviz MCP volume_surge response
+        # ─── UW Institutional Flow (Strategy Synthesis V2) ───
+        uw_flow_data: dict = None,         # {ticker: FlowSignal}
+        uw_macro_gate: 'MacroGate' = None, # SPY macro gate
+        uw_sentiment: 'MarketSentiment' = None,  # Market-wide sentiment
     ) -> list[dict]:
         """
         Escanea una lista de tickers y los rankea por Alpha Score.
@@ -112,12 +207,39 @@ class AlphaScanner:
         candidates = []
         for ticker in tickers:
             try:
-                score = self._score_ticker(ticker, sector_report, include_qualifier)
+                score = self._score_ticker(
+                    ticker, sector_report, include_qualifier,
+                    uw_flow_data=uw_flow_data,
+                    insider_mcp_data=insider_mcp_data,
+                    guru_mcp_data=guru_mcp_data,
+                    analyst_mcp_data=analyst_mcp_data,
+                )
                 if score is not None:
                     candidates.append(score)
             except Exception as e:
                 logger.debug(f"Error scoring {ticker}: {e}")
                 continue
+        
+        # ═══ MACRO GATE: Adaptive scaling of all scores ═══
+        if uw_macro_gate:
+            scale = uw_macro_gate.position_scale_factor
+            for candidate in candidates:
+                original = candidate['alpha_score']
+                candidate['alpha_score'] = round(original * scale, 1)
+                candidate['macro_gate'] = uw_macro_gate.signal
+                candidate['macro_scale'] = scale
+            
+            if scale != 1.0:
+                logger.info(
+                    f"Macro Gate applied: {uw_macro_gate.signal} "
+                    f"(scale={scale:.2f}, score={uw_macro_gate.composite_score:+d})"
+                )
+        
+        # ═══ SENTIMENT CONTEXT ═══
+        if uw_sentiment:
+            for candidate in candidates:
+                candidate['market_regime'] = uw_sentiment.regime
+                candidate['market_sentiment'] = uw_sentiment.sentiment_score
         
         # Ordenar por Alpha Score
         candidates.sort(key=lambda x: -x.get('alpha_score', 0))
@@ -151,6 +273,10 @@ class AlphaScanner:
         ticker: str,
         sector_report: dict,
         include_qualifier: bool,
+        uw_flow_data: dict = None,
+        insider_mcp_data: dict = None,
+        guru_mcp_data: dict = None,
+        analyst_mcp_data: dict = None,
     ) -> dict:
         """Calcula el Alpha Score composite para un ticker."""
         import yfinance as yf
@@ -247,7 +373,7 @@ class AlphaScanner:
             except Exception:
                 pass
         
-        # 7. Guru / Analyst from MCP (NEW)
+        # 7. Guru / Analyst from MCP
         guru_score = 50
         analyst_score_val = 50
         if insider_mcp_data and ticker in insider_mcp_data:
@@ -279,19 +405,42 @@ class AlphaScanner:
             except Exception:
                 pass
 
-        # Alpha Score composite
-        alpha_score = (
-            rs_spy_score * self.WEIGHTS['rs_vs_spy']
-            + rs_sector_score * self.WEIGHTS['rs_vs_sector']
-            + insider_score * self.WEIGHTS['insider_score']
-            + sector_health_score * self.WEIGHTS['sector_health']
-            + volume_score * self.WEIGHTS['volume_signal']
-            + qualifier_score * self.WEIGHTS['qualifier']
-            + guru_score * self.WEIGHTS['guru_score']
-            + analyst_score_val * self.WEIGHTS['analyst_score']
+        # 8. UW Institutional Flow Score (Strategy Synthesis V2)
+        uw_flow_score_val = 50  # Neutral default when no UW data
+        uw_flow_detail = None
+        if uw_flow_data and ticker in uw_flow_data:
+            flow = uw_flow_data[ticker]
+            uw_flow_score_val = flow.flow_score
+            uw_flow_detail = {
+                'sweeps': flow.n_sweeps,
+                'calls': flow.n_calls,
+                'puts': flow.n_puts,
+                'voi': flow.avg_voi_ratio,
+                'premium': flow.total_premium,
+                'score': flow.flow_score,
+            }
+
+        # ═══ Alpha Score composite (ADAPTIVE WEIGHTS) ═══
+        w = self.weight_manager.weights
+        
+        component_scores = {
+            'rs_vs_spy': rs_spy_score,
+            'rs_vs_sector': rs_sector_score,
+            'insider_score': insider_score,
+            'sector_health': sector_health_score,
+            'volume_signal': volume_score,
+            'qualifier': qualifier_score,
+            'guru_score': guru_score,
+            'analyst_score': analyst_score_val,
+            'uw_flow_score': uw_flow_score_val,
+        }
+        
+        alpha_score = sum(
+            component_scores[k] * w.get(k, 0) 
+            for k in component_scores
         )
         
-        return {
+        result = {
             'ticker': ticker,
             'alpha_score': round(alpha_score, 1),
             'sector': sector,
@@ -307,7 +456,12 @@ class AlphaScanner:
             'spy_return_20d': round(spy_ret_20d * 100, 2),
             'outperformance': round((stock_ret_20d - spy_ret_20d) * 100, 2),
             'earnings_safe': earnings_safe,
+            # V2: UW Flow
+            'uw_flow_score': round(uw_flow_score_val, 1),
+            'uw_flow_detail': uw_flow_detail,
         }
+        
+        return result
 
 
 if __name__ == '__main__':

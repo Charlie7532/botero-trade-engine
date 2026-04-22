@@ -9,7 +9,7 @@ This file is auto-loaded by Claude Code at the start of every session. Read it f
 Algorithmic trading monorepo combining:
 - **Next.js 16 + PayloadCMS 3** (TypeScript) — trading dashboard UI + CMS admin at `src/`
 - **Python Trading Engine** — institutional-grade engine with MCP data pipelines at `backend/`
-- **7 MCP Servers** (~200 tools) — Alpaca, GuruFocus, Finviz, Finnhub, FRED, Yahoo Finance, News
+- **8 MCP Servers** (~200+ tools) — Alpaca, GuruFocus, Finviz, Finnhub, FRED, Yahoo Finance, News, Unusual Whales
 - **Docker Compose** — orchestrates `web` (3000) and `api` (8000). PostgreSQL is **external**.
 
 Git remote: `https://github.com/Charlie7532/botero-trade-engine`
@@ -106,7 +106,7 @@ botero-trade/
 │   │   ├── universe_filter.py   # 4-Tier universe pipeline (Macro→Sector→Fundamental→Catalyst)
 │   │   ├── alpha_scanner.py     # Alpha Score ranking engine
 │   │   ├── portfolio_intelligence.py # RiskGuardian, AdaptiveTrailingStop, PortfolioOptimizer
-│   │   ├── trade_journal.py     # Institutional trade journal (SQLite + JSON)
+│   │   ├── trade_journal.py     # Institutional trade journal (MongoDB Atlas)
 │   │   ├── ticker_qualifier.py  # Walk-Forward fitness test
 │   │   ├── position_monitor.py  # Live position tracking
 │   │   └── lstm_model.py        # QuantInstitutionalLSTM (⚠️ layer violation — planned move)
@@ -121,7 +121,8 @@ botero-trade/
 │   │   │   ├── finnhub_intelligence.py     # Finnhub SDK adapter (earnings, insiders)
 │   │   │   ├── sector_flow.py              # Sector rotation engine
 │   │   │   ├── market_breadth.py           # Market breadth (S5TH, S5TW, F&G)
-│   │   │   └── options_awareness.py        # Options chain analysis
+│   │   │   ├── options_awareness.py        # Options chain analysis
+│   │   │   └── uw_intelligence.py           # Unusual Whales institutional flow (V2)
 │   │   └── brokers/
 │   │       ├── base.py                     # BrokerAdapter interface
 │   │       └── alpaca_adapter.py           # Alpaca execution adapter
@@ -129,11 +130,11 @@ botero-trade/
 │       ├── main.py              # FastAPI app + CORS
 │       └── routers/
 │
-├── tests/                       # Pytest suite (19 tests)
-│   ├── conftest.py              # Shared fixtures
+├── tests/                       # Pytest suite (20 tests)
+│   ├── conftest.py              # Shared fixtures (MongoDB test DB)
 │   ├── test_risk_guardian.py     # 7 tests: DD, VIX, anti-martingale
 │   ├── test_trailing_stop.py     # 5 tests: regime adaptation, floor/ceiling
-│   └── test_trade_journal.py     # 5 tests: DB persistence, patterns
+│   └── test_trade_journal.py     # 6 tests: MongoDB persistence, patterns
 │
 ├── .mcp.json                    # 7 MCP server configs (secrets via env vars)
 ├── pytest.ini
@@ -142,7 +143,7 @@ botero-trade/
 
 ---
 
-## MCP Servers (7 active)
+## MCP Servers (8 active)
 
 All configured in `.mcp.json` with secrets via environment variables.
 
@@ -155,6 +156,7 @@ All configured in `.mcp.json` with secrets via environment variables.
 | **FRED** | 12 | Free | Macro indicators (GDP, CPI, FFR, yield curve) |
 | **Yahoo Finance** | 9 | Free | VIX, options chains, fallback data |
 | **News Sentiment** | 4 | Free | FinBERT sentiment scoring |
+| **Unusual Whales** | 20+ | Premium | Institutional flow, market tide, SPY delta, options alerts |
 
 ### Data Provider Hierarchy
 
@@ -163,7 +165,8 @@ All configured in `.mcp.json` with secrets via environment variables.
 3. **FRED** → PRIMARY for macro indicators
 4. **Finnhub** → Earnings calendar + insider redundancy
 5. **Alpaca** → Execution only (future: migrate to Interactive Brokers)
-6. **Yahoo Finance** → Last resort fallback
+6. **Unusual Whales** → Institutional flow, macro gates, market sentiment
+7. **Yahoo Finance** → Last resort fallback
 
 ---
 
@@ -220,6 +223,16 @@ Full documentation for each command is in `.claude/SKILLS.md`.
 | `/add-strategy` | Guided workflow: add a new Backtrader strategy |
 | `/add-broker` | Guided workflow: add a new broker adapter |
 | `/find-finance-skills` | Descubrir e integrar nuevas herramientas financieras (librerías, APIs, MCP servers) |
+| `/proposito-practico` | Activa directivas anti-sesgo y enfoca a la AI en el pragmatismo institucional |
+
+---
+
+## Operational Objectivity & AI Persona 
+**Mandatory Paradigm**: In this project, the AI must empathize with the *operational purpose*, not the user. 
+- **Practical over Academic**: The user trades mechanically. Options expire, gamma exposes, and market makers delta-hedge. These are observable, quantifiable forces, not "academic theories." Treat market mechanics as first-class deterministic facts. 
+- **Zero Ritual Caution**: Remove generic financial disclaimers ("past performance is no guarantee...", "the market is volatile"). Only warn if a specific operational risk (e.g., illiquidity, slippage) is materially present.
+- **Empirical Validation**: If the user states an observation, treat it as a working hypothesis and validate it with mechanics or data immediately, rather than pushing back initially seeking a false "academic balance".
+- **Actionable Utility**: All technical answers regarding micro-structure, regimes, or flows must explicitly conclude: *How does it work? How do we measure it? When does it apply? What are its real limits?*
 
 ---
 

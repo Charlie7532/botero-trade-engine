@@ -24,7 +24,6 @@ Señal de salida:
 import json
 import logging
 import os
-import sqlite3
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, UTC
 from pathlib import Path
@@ -32,16 +31,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yfinance as yf
+from pymongo import ASCENDING, DESCENDING
 
-from backend.infrastructure.data_providers.volume_dynamics import (
+from infrastructure.data_providers.volume_dynamics import (
     KalmanVolumeTracker,
 )
-from backend.application.backtester import WalkForwardBacktester
+from application.backtester import WalkForwardBacktester
+from application.trade_journal import _get_mongo_db
 
 logger = logging.getLogger(__name__)
-
-# Ruta de la base de datos de Shadow Mode
-SHADOW_DB = Path(__file__).resolve().parent.parent.parent / "data" / "shadow_mode.db"
 
 
 @dataclass
@@ -132,68 +130,33 @@ class ShadowSpringScanner:
             )
 
     def _init_db(self):
-        """Crear tablas de Shadow Mode si no existen."""
-        SHADOW_DB.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(str(SHADOW_DB))
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS shadow_signals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT NOT NULL,
-                ticker TEXT NOT NULL,
-                signal_type TEXT NOT NULL,
-                data TEXT NOT NULL
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS shadow_positions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ticker TEXT NOT NULL,
-                entry_date TEXT,
-                exit_date TEXT,
-                status TEXT DEFAULT 'OPEN',
-                data TEXT NOT NULL
-            )
-        """)
-        conn.execute("""
-            CREATE INDEX IF NOT EXISTS idx_shadow_ticker
-            ON shadow_signals(ticker, timestamp)
-        """)
-        conn.commit()
-        conn.close()
-        logger.info(f"Shadow DB inicializada: {SHADOW_DB}")
+        """Inicializar colecciones MongoDB para Shadow Mode."""
+        self._db = _get_mongo_db()
+        self._signals_col = self._db["shadow_signals"]
+        self._positions_col = self._db["shadow_positions"]
+
+        # Índices para queries frecuentes
+        self._signals_col.create_index(
+            [("ticker", ASCENDING), ("timestamp", DESCENDING)]
+        )
+        self._positions_col.create_index(
+            [("ticker", ASCENDING), ("status", ASCENDING)]
+        )
+        logger.info(f"Shadow DB MongoDB inicializada: {self._db.name}")
 
     def _save_signal(self, signal: SpringSignal):
-        """Persiste una señal en la base de datos."""
-        conn = sqlite3.connect(str(SHADOW_DB))
-        conn.execute(
-            "INSERT INTO shadow_signals (timestamp, ticker, signal_type, data) VALUES (?, ?, ?, ?)",
-            (signal.timestamp, signal.ticker, signal.signal_type, json.dumps(asdict(signal))),
-        )
-        conn.commit()
-        conn.close()
+        """Persiste una señal en MongoDB."""
+        doc = asdict(signal)
+        self._signals_col.insert_one(doc)
 
     def _save_position(self, pos: ShadowPosition):
-        """Persiste o actualiza una posición."""
-        conn = sqlite3.connect(str(SHADOW_DB))
-        # Check if exists
-        row = conn.execute(
-            "SELECT id FROM shadow_positions WHERE ticker = ? AND status = 'OPEN'",
-            (pos.ticker,),
-        ).fetchone()
-
-        data_json = json.dumps(asdict(pos))
-        if row:
-            conn.execute(
-                "UPDATE shadow_positions SET data = ?, status = ?, exit_date = ? WHERE id = ?",
-                (data_json, pos.status, pos.exit_date, row[0]),
-            )
-        else:
-            conn.execute(
-                "INSERT INTO shadow_positions (ticker, entry_date, status, data) VALUES (?, ?, ?, ?)",
-                (pos.ticker, pos.entry_date, pos.status, data_json),
-            )
-        conn.commit()
-        conn.close()
+        """Persiste o actualiza una posición en MongoDB (upsert)."""
+        doc = asdict(pos)
+        self._positions_col.update_one(
+            {"ticker": pos.ticker, "status": "OPEN"},
+            {"$set": doc},
+            upsert=True,
+        )
 
     def warmup_kalman(self, ticker: str, days: int = 60) -> dict:
         """
@@ -478,16 +441,13 @@ class ShadowSpringScanner:
 
     def get_performance_summary(self) -> dict:
         """Resumen de performance de todas las señales shadow."""
-        conn = sqlite3.connect(str(SHADOW_DB))
-        rows = conn.execute(
-            "SELECT data FROM shadow_positions WHERE status = 'CLOSED'"
-        ).fetchall()
-        conn.close()
+        trades = list(self._positions_col.find(
+            {"status": "CLOSED"}, {"_id": 0}
+        ))
 
-        if not rows:
+        if not trades:
             return {"total_trades": 0, "message": "No hay trades cerrados aún"}
 
-        trades = [json.loads(r[0]) for r in rows]
         pnls = [t['pnl_pct'] for t in trades]
         winners = [p for p in pnls if p > 0]
         losers = [p for p in pnls if p <= 0]
@@ -513,9 +473,6 @@ class ShadowSpringScanner:
 
     def get_open_positions(self) -> list[dict]:
         """Retorna posiciones shadow abiertas."""
-        conn = sqlite3.connect(str(SHADOW_DB))
-        rows = conn.execute(
-            "SELECT data FROM shadow_positions WHERE status = 'OPEN'"
-        ).fetchall()
-        conn.close()
-        return [json.loads(r[0]) for r in rows]
+        return list(self._positions_col.find(
+            {"status": "OPEN"}, {"_id": 0}
+        ))

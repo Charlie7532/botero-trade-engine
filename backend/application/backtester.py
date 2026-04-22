@@ -39,9 +39,9 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime, UTC
 from typing import Optional
 
-from backend.application.sequence_modeling import TripleBarrierLabeler
-from backend.application.trade_autopsy import TradeAutopsy
-from backend.infrastructure.data_providers.volume_dynamics import (
+from application.sequence_modeling import TripleBarrierLabeler
+from application.trade_autopsy import TradeAutopsy
+from infrastructure.data_providers.volume_dynamics import (
     KalmanVolumeTracker, SectorRegimeDetector,
 )
 

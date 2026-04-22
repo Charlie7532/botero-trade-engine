@@ -17,14 +17,15 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, UTC
 
-from backend.application.trade_journal import TradeJournal, TradeJournalEntry
-from backend.application.portfolio_intelligence import (
+from application.trade_journal import TradeJournal, TradeJournalEntry
+from application.portfolio_intelligence import (
     RelativeStrengthMonitor, AdaptiveTrailingStop,
     PortfolioOptimizer, RiskGuardian,
 )
-from backend.application.execution_engine import (
+from application.execution_engine import (
     InstitutionalExecutionEngine, TradeContext, PositionState,
 )
+from application.entry_intelligence_hub import EntryIntelligenceHub
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,9 @@ class PaperTradingOrchestrator:
         self.optimizer = PortfolioOptimizer()
         self.risk_guardian = RiskGuardian()
         self.execution = InstitutionalExecutionEngine()
+        self.entry_hub = EntryIntelligenceHub()
         self._alpaca = None
+        self._freeze_state = {}  # {ticker: freeze_start_time}
     
     def _get_alpaca(self):
         """Lazy init del cliente Alpaca."""
@@ -65,7 +68,7 @@ class PaperTradingOrchestrator:
         return self._alpaca
     
     def get_account_status(self) -> dict:
-        """Estado actual de la cuenta de Paper Trading."""
+        """Estado actual de la cuenta de Paper Trading y Exposición Estratégica."""
         client = self._get_alpaca()
         if not client:
             return {"error": "Alpaca no conectado"}
@@ -74,23 +77,42 @@ class PaperTradingOrchestrator:
             account = client.get_account()
             positions = client.get_all_positions()
             
+            # Recuperar tags de strategy_type del Journal para las posiciones abiertas
+            open_trades = self.journal.get_open_trades()
+            strategy_map = {t['ticker']: t.get('strategy_bucket', 'UNKNOWN') for t in open_trades}
+            
+            core_exposure = 0.0
+            tactical_exposure = 0.0
+            
+            mapped_positions = []
+            for p in positions:
+                strategy = strategy_map.get(p.symbol, 'CORE')  # Default CORE si no hay tag
+                market_val = float(p.market_value)
+                
+                if strategy == 'CORE':
+                    core_exposure += market_val
+                elif strategy == 'TACTICAL':
+                    tactical_exposure += market_val
+                
+                mapped_positions.append({
+                    "ticker": p.symbol,
+                    "qty": float(p.qty),
+                    "avg_entry": float(p.avg_entry_price),
+                    "current_price": float(p.current_price),
+                    "unrealized_pnl": float(p.unrealized_pl),
+                    "unrealized_pnl_pct": float(p.unrealized_plpc) * 100,
+                    "market_value": market_val,
+                    "strategy": strategy,
+                })
+            
             return {
                 "buying_power": float(account.buying_power),
                 "cash": float(account.cash),
                 "portfolio_value": float(account.portfolio_value),
                 "equity": float(account.equity),
-                "positions": [
-                    {
-                        "ticker": p.symbol,
-                        "qty": float(p.qty),
-                        "avg_entry": float(p.avg_entry_price),
-                        "current_price": float(p.current_price),
-                        "unrealized_pnl": float(p.unrealized_pl),
-                        "unrealized_pnl_pct": float(p.unrealized_plpc) * 100,
-                        "market_value": float(p.market_value),
-                    }
-                    for p in positions
-                ],
+                "core_exposure": core_exposure,
+                "tactical_exposure": tactical_exposure,
+                "positions": mapped_positions,
                 "num_positions": len(positions),
                 "timestamp": datetime.now(UTC).isoformat(),
             }
@@ -178,21 +200,81 @@ class PaperTradingOrchestrator:
             logger.error(f"Error creating snapshot for {ticker}: {e}")
             return {"timestamp": datetime.now(UTC).isoformat(), "error": str(e)}
     
+    def inject_whale_data(
+        self,
+        spy_ticks: list = None,
+        flow_alerts: list = None,
+        tide_data: list = None,
+    ):
+        """
+        Inyecta datos de Unusual Whales pre-obtenidos via MCP.
+        Llamar ANTES de run_core_scan() o run_tactical_scan().
+        """
+        self.entry_hub.inject_uw_data(
+            spy_ticks=spy_ticks or [],
+            flow_alerts=flow_alerts or [],
+            tide_data=tide_data or [],
+        )
+        logger.info("🐋 Datos de ballenas inyectados en EntryHub")
+
     def open_position(
         self,
         ticker: str,
         thesis: str,
+        strategy_type: str = "CORE",
         alpha_score: float = 0,
         qualifier_grade: str = "",
         insider_signal: str = "",
         sector_alignment: str = "",
         notional: float = 5000.0,
         pattern_tags: list = None,
+        skip_intelligence: bool = False,
     ) -> dict:
         """
         Abre una posición en Paper Trading con journal completo.
+        
+        V2: Ejecuta el EntryIntelligenceHub ANTES de enviar la orden.
+        El hub conecta OptionsAwareness, Kalman Wyckoff, UW Intelligence,
+        EventFlowIntelligence y PricePhaseIntelligence para decidir.
         """
         trade_id = f"BT-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{ticker}"
+        
+        # ═══ V2: Entry Intelligence Pipeline ═══════════════════
+        if not skip_intelligence:
+            intel = self.entry_hub.evaluate(ticker)
+            
+            if intel.final_verdict == "BLOCK":
+                logger.warning(
+                    f"⛔ {ticker} BLOQUEADO por EntryHub: {intel.final_reason}"
+                )
+                return {
+                    "action": "BLOCKED",
+                    "reason": f"EntryHub: {intel.final_reason}",
+                    "whale_verdict": intel.whale_verdict,
+                    "phase": intel.phase,
+                    "intelligence": intel.to_dict(),
+                }
+            
+            if intel.final_verdict == "STALK":
+                logger.info(
+                    f"⏳ {ticker} en STALK: {intel.final_reason}"
+                )
+                return {
+                    "action": "STALKING",
+                    "reason": f"EntryHub: {intel.final_reason}",
+                    "whale_verdict": intel.whale_verdict,
+                    "phase": intel.phase,
+                    "risk_reward": intel.risk_reward,
+                    "intelligence": intel.to_dict(),
+                }
+            
+            # EXECUTE: adjust sizing by whale scale
+            notional *= intel.final_scale
+            logger.info(
+                f"✅ {ticker} APROBADO: {intel.final_verdict} "
+                f"(whale={intel.whale_verdict}, phase={intel.phase}, "
+                f"R:R={intel.risk_reward}:1, scale={intel.final_scale:.0%})"
+            )
         
         # 1. Snapshot pre-trade
         logger.info(f"Capturando snapshot para {ticker}...")
@@ -206,6 +288,9 @@ class PaperTradingOrchestrator:
         risk_check = self.risk_guardian.evaluate(
             current_capital=account.get('equity', 100000),
             daily_pnl_pct=0,
+            strategy_type=strategy_type,
+            core_exposure=account.get('core_exposure', 0),
+            tactical_exposure=account.get('tactical_exposure', 0),
             current_vix=snapshot.get('vix', 17),
         )
         
@@ -218,12 +303,15 @@ class PaperTradingOrchestrator:
         # Ajustar sizing por risk guardian
         adjusted_notional = notional * risk_check['position_scale']
         
-        # 3. Journal PRE-TRADE
+        # 3. Journal PRE-TRADE (incluye strategy bucket pseudo-inyectado en pattern_tags por compatibilidad)
+        tags = pattern_tags or []
+        tags.append(f"bucket_{strategy_type.lower()}")
+        
         entry = TradeJournalEntry(
             trade_id=trade_id,
             ticker=ticker,
             direction="LONG",
-            entry_thesis=thesis,
+            entry_thesis=f"[{strategy_type}] {thesis}",
             alpha_score=alpha_score,
             qualifier_grade=qualifier_grade,
             insider_signal=insider_signal,
@@ -233,7 +321,7 @@ class PaperTradingOrchestrator:
             entry_time=datetime.now(UTC).isoformat(),
             entry_notional=adjusted_notional,
             rs_vs_spy=snapshot.get('rs_vs_spy_20d', 1.0),
-            pattern_tags=pattern_tags or [],
+            pattern_tags=tags,
         )
         
         # 4. Smart Entry — Pre-Market Validation + Limit Order
@@ -362,16 +450,74 @@ class PaperTradingOrchestrator:
             snapshot = self.create_trade_snapshot(ticker)
             current_rs = snapshot.get('rs_vs_spy_20d', 1.0)
             
-            # Alpha Decay
+            # Alpha Decay Evaluator (Solo influye fuerte si es CORE)
             decay = self.rs_monitor.calculate_alpha_decay(ticker, current_rs)
             exit_eval = self.rs_monitor.should_exit(ticker, current_rs)
             
-            # Trailing stop
+            # ═══ V2: Gamma-Aware Trailing Stop ═══════════════
             atr = snapshot.get('atr', 1.0)
-            stop = self.trailing.calculate_stop(current_price, atr, current_rs)
+            vix = snapshot.get('vix', 17.0)
+            strategy = pos.get('strategy', 'CORE')
+            
+            # Check freeze state (event storm protection)
+            if ticker in self._freeze_state:
+                is_frozen = self.trailing.should_freeze(
+                    freeze_stops=True,
+                    freeze_start_time=self._freeze_state[ticker],
+                )
+                if is_frozen:
+                    evaluations.append({
+                        "ticker": ticker,
+                        "strategy": strategy,
+                        "current_price": current_price,
+                        "unrealized_pnl_pct": pos['unrealized_pnl_pct'],
+                        "rs_vs_spy": current_rs,
+                        "alpha_decay": decay,
+                        "trailing_stop": 0,
+                        "exit_signal": {"should_exit": False},
+                        "vix": vix,
+                        "stop_frozen": True,
+                        "freeze_reason": "Event storm protection — stop congelado",
+                    })
+                    logger.info(
+                        f"🧊 {ticker}: Stop CONGELADO (evento macro en curso)"
+                    )
+                    continue
+                else:
+                    # Freeze expired
+                    del self._freeze_state[ticker]
+            
+            # Fetch Put Wall for gamma anchoring (if available)
+            put_wall = 0.0
+            try:
+                opts_data = self.entry_hub._fetch_options_data(ticker)
+                put_wall = opts_data.get('put_wall', 0.0)
+            except Exception:
+                pass
+            
+            # Calculate stop with all 3 defenses:
+            # 1. Put Wall anchoring (institutional floor)
+            # 2. VIX dynamic scaling (wider in high vol)
+            # 3. RS-based multiplier (original logic preserved)
+            stop = self.trailing.calculate_stop(
+                current_price, atr, current_rs,
+                put_wall=put_wall,
+                vix_current=vix,
+            )
+            
+            # Ajuste adicional según Mente (Seykota vs Druckenmiller)
+            if strategy == 'TACTICAL':
+                # SEYKOTA MODE: Muy ajustado pero respetando Put Wall
+                seykota_stop = current_price - (atr * 2.0)
+                stop = max(stop, seykota_stop)
+            else:
+                # DRUCKENMILLER MODE: Más espacio al ruido.
+                drucks_stop = current_price - (atr * 3.5)
+                stop = min(stop, drucks_stop)
             
             evaluations.append({
                 "ticker": ticker,
+                "strategy": strategy,
                 "current_price": current_price,
                 "unrealized_pnl_pct": pos['unrealized_pnl_pct'],
                 "rs_vs_spy": current_rs,
@@ -430,16 +576,9 @@ class PaperTradingOrchestrator:
             if trade_entry:
                 # Reconstruir entry para actualizar
                 import json
-                conn = __import__('sqlite3').connect(self.journal.db_path)
-                cursor = conn.execute(
-                    "SELECT full_data FROM trades WHERE trade_id = ?",
-                    (trade_entry['trade_id'],)
-                )
-                row = cursor.fetchone()
-                conn.close()
+                entry_data = self.journal.get_trade_full_data(trade_entry['trade_id'])
                 
-                if row:
-                    entry_data = json.loads(row[0])
+                if entry_data:
                     entry = TradeJournalEntry(**{
                         k: v for k, v in entry_data.items()
                         if k in TradeJournalEntry.__dataclass_fields__
@@ -546,179 +685,250 @@ class PaperTradingOrchestrator:
         
         return recs
 
-    def run_daily_scan(
+    def get_sp500_universe(self) -> list[str]:
+        """Extrae el universo completo del S&P500 desde Wikipedia (o fallback amplio)."""
+        try:
+            import pandas as pd
+            # Intento dinámico de obtener las 500
+            table = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+            tickers = table[0]['Symbol'].str.replace('.', '-', regex=False).tolist()
+            return tickers
+        except Exception as e:
+            logger.warning(f"No se pudo descargar S&P500 de Wikipedia: {e}. Usando fallback.")
+            return ['AAPL','MSFT','NVDA','AMZN','GOOGL','META','BRK-B','TSLA','LLY','JPM',
+                    'UNH','V','XOM','JNJ','MA','PG','COST','HD','AVGO','ABBV',
+                    'MRK','CVX','CRM','AMD','PEP','KO','ADBE','WMT','TMO','MCD',
+                    'ACN','ORCL','LIN','CSCO','PM','ABT','IBM','GE','CAT','ISRG',
+                    'NOW','TXN','QCOM','INTU','BKNG','SPGI','HON','AXP','COP','BA']
+
+    def extract_guru_gems(self, guru_mcp_data: dict) -> list[str]:
+        """Extrae mid/large caps fuera del SP500 fuertemente acumuladas por Gurús."""
+        if not guru_mcp_data: return []
+        gems = []
+        for ticker, data in guru_mcp_data.items():
+            holders = data if isinstance(data, list) else data.get("data", [])
+            net_buys = sum(1 for h in holders if "buy" in str(h.get("action","")).lower() or "add" in str(h.get("action","")).lower())
+            net_sells = sum(1 for h in holders if "sell" in str(h.get("action","")).lower() or "reduce" in str(h.get("action","")).lower())
+            if net_buys > net_sells:
+                gems.append(ticker)
+        return gems
+
+    def run_core_scan(
         self,
-        candidate_tickers: list[str] = None,
         max_positions: int = 5,
-        notional_per_trade: float = 5000.0,
+        notional_per_trade: float = 8000.0,
+        guru_mcp_data: dict = None,
         macro_mcp_data: dict = None,
         sector_mcp_data: dict = None,
-        guru_mcp_data: dict = None,
-        finviz_movers_data: dict = None,
     ) -> dict:
         """
-        Pipeline completo de selección y ejecución diaria.
+        ===================================================================
+        MODO CHRISTOPHER HOHN (80% DEL CAPITAL)
+        ===================================================================
+        1. Obtiene S&P500 + Joyas de GuruFocus.
+        2. Consulta la caché fundamental (MongoDB) antes de golpear APIs.
+        3. UniverseFilter evalúa la CALIDAD SUPREMA con datos frescos.
+        4. Pasa los ganadores estrictos al AlphaScanner para timing de entrada.
+        5. Compra con Strategy: CORE.
+        """
+        from backend.application.universe_filter import UniverseFilter, UniverseCandidate
+        from backend.application.alpha_scanner import AlphaScanner
 
-        Invoca en secuencia:
-        1. AlphaScanner → genera ranking de candidatos
-        2. UniverseFilter → aplica scoring Guru + macro
-        3. SmartEntryEngine → valida y limita la entrada
+        session_start = datetime.now(UTC).isoformat()
+        logger.info(f"🏛️ INICIANDO ESCANEO CORE (Hohn Modo) — {session_start}")
 
-        Args:
-            candidate_tickers: Lista de tickers a evaluar. Si None, usa Finviz movers.
-            max_positions: Máximo de posiciones a abrir en la sesión.
-            notional_per_trade: Capital nominal por trade ($).
-            macro_mcp_data: Datos macro pre-fetched del MCP de FRED.
-            sector_mcp_data: Datos sectoriales pre-fetched de Finviz MCP.
-            guru_mcp_data: Datos GuruFocus pre-fetched por ticker.
-            finviz_movers_data: Respuesta del MCP volume_surge_screener.
+        # 1. Chequeo de Account
+        account = self.get_account_status()
+        if 'error' in account: return {"error": account['error']}
 
-        Returns:
-            Resumen de la sesión de scanning con trades intentados.
+        # Validamos si cabe otro core trade ($8000 en 80%) o si excedemos límite
+        if account.get("core_exposure", 0) / max(account.get("equity", 1), 1) >= 0.80:
+            logger.warning("🚫 Escaneo Core Anulado: Bucket CORE Lleno al 80%.")
+            return {"status": "BUCKET_FULL"}
+
+        current_positions = len(account.get('positions', []))
+        slots_available = max(0, max_positions - current_positions)
+        if slots_available == 0: return {"status": "PORTFOLIO_FULL"}
+
+        # 2. Reclutar Candidatos (S&P500 + Guru Gems)
+        sp500 = self.get_sp500_universe()
+        guru_gems = self.extract_guru_gems(guru_mcp_data)
+        raw_tickers = list(set(sp500 + guru_gems))
+        logger.info(f"🔍 Evaluando Universo ESTRUCTURAL: {len(raw_tickers)} activos (SP500 + Guru).")
+
+        # 2.5. Inicializar caché fundamental (MongoDB)
+        cache = None
+        cache_hits = 0
+        cache_misses = 0
+        try:
+            from backend.infrastructure.data_providers.fundamental_cache import FundamentalCache
+            cache = FundamentalCache()
+        except Exception as e:
+            logger.warning(f"Caché fundamental no disponible: {e}. Continuando sin caché.")
+
+        # 3. Flujo HOHN: Primero filtramos la CALIDAD ESTRUCTURAL
+        uf = UniverseFilter()
+        if macro_mcp_data: uf.update_macro_regime(macro_mcp_data)
+        
+        # Filtraremos simulando Candidates, etiquetando Gemas
+        # y enriqueciendo con datos de la caché si están disponibles
+        base_candidates = []
+        sp500_set = set(sp500)
+        for t in raw_tickers:
+            is_gem = t not in sp500_set
+            candidate = UniverseCandidate(ticker=t, sector="Unknown", is_emerging_gem=is_gem)
+            
+            # Intentar enriquecer desde la caché
+            if cache:
+                cached = cache.get_cached_data(t)
+                if cached and cached.get("status") == "fresh":
+                    data = cached.get("data", {})
+                    candidate.qgarp_score = data.get("qgarp_score", 0.0)
+                    candidate.piotroski_f_score = data.get("piotroski_f_score", 0)
+                    candidate.altman_z_score = data.get("altman_z_score", 0.0)
+                    candidate.guru_conviction_score = data.get("guru_conviction_score", 0.0)
+                    candidate.insider_conviction_score = data.get("insider_conviction_score", 0.0)
+                    candidate.fcf_margin = data.get("fcf_margin", 0.0)
+                    candidate.price_to_gf_value = data.get("price_to_gf_value", 0.0)
+                    candidate.beneish_m_score = data.get("beneish_m_score", -3.0)
+                    candidate.guru_accumulation = data.get("guru_accumulation", False)
+                    cache_hits += 1
+                else:
+                    cache_misses += 1
+            
+            base_candidates.append(candidate)
+        
+        if cache:
+            logger.info(f"💾 Caché: {cache_hits} hits, {cache_misses} misses de {len(raw_tickers)} tickers.")
+        
+        strong_candidates = uf.filter_and_rank(
+            base_candidates,
+            sector_mcp_data=sector_mcp_data,
+            max_results=slots_available * 3, # Nos quedamos con la crema de la crema
+        )
+
+        if not strong_candidates:
+            return {"status": "NO_CORE_CANDIDATES"}
+
+        # 4. AlphaScanner (Tactical Entry sobre los fuertes fundamentales)
+        strong_tickers = [c.ticker for c in strong_candidates]
+        logger.info(f"🏢 Hohn seleccionó The Elite {len(strong_tickers)}. Buscando táctica con Eifert...")
+
+        scanner = AlphaScanner()
+        alpha_results = scanner.scan(
+            tickers=strong_tickers,
+            max_results=slots_available,
+            include_qualifier=False,
+            # No usamos finviz_movers porque Hohn no requiere explosión hoy
+        )
+
+        trades_attempted = []
+        for result in alpha_results:
+            ticker = result['ticker']
+            score = result['alpha_score']
+            logger.info(f"📝 Orden CORE para {ticker} (Alpha={score})")
+            res = self.open_position(
+                ticker=ticker,
+                thesis=f"Moat Confirmado. Alpha Timing Score: {score}",
+                strategy_type="CORE",
+                alpha_score=score,
+                notional=notional_per_trade,
+            )
+            trades_attempted.append(res)
+            
+        return {"status": "CORE_SCAN_COMPLETE", "trades": trades_attempted}
+
+    def run_tactical_scan(
+        self,
+        max_positions: int = 5,
+        notional_per_trade: float = 2000.0, 
+        finviz_movers_data: dict = None,
+        macro_mcp_data: dict = None,
+    ) -> dict:
+        """
+        ===================================================================
+        MODO TACTICAL EIFERT/TUDOR JONES (20% DEL CAPITAL)
+        ===================================================================
+        Busca momentum direccional puro y asimetrías de opciones.
+        Ignora calidades profundas, busca la acción del mercado de hoy.
         """
         from backend.application.alpha_scanner import AlphaScanner
         from backend.application.universe_filter import UniverseFilter, UniverseCandidate
 
-        session_start = datetime.now(UTC).isoformat()
-        logger.info(f"🚀 run_daily_scan() iniciado — {session_start}")
-
-        # ── 1. Account check ────────────────────────────────────────
+        logger.info(f"🔥 INICIANDO ESCANEO TÁCTICO (Eifert Modo)")
+        
         account = self.get_account_status()
-        if 'error' in account:
-            return {"error": account['error'], "session_start": session_start}
+        if 'error' in account: return {"error": account['error']}
+
+        if account.get("tactical_exposure", 0) / max(account.get("equity", 1), 1) >= 0.20:
+            logger.warning("🚫 Escaneo Táctico Anulado: Bucket TACTICAL Lleno al 20%.")
+            return {"status": "BUCKET_FULL"}
 
         current_positions = len(account.get('positions', []))
         slots_available = max(0, max_positions - current_positions)
-        if slots_available == 0:
-            logger.info(f"🛑 Portfolio lleno ({current_positions}/{max_positions} posiciones). No se escanea.")
-            return {
-                "status": "PORTFOLIO_FULL",
-                "positions": current_positions,
-                "session_start": session_start,
-            }
+        if slots_available == 0: return {"status": "PORTFOLIO_FULL"}
 
-        logger.info(f"📊 Slots disponibles: {slots_available} | Equity: ${account['equity']:,.0f}")
-
-        # ── 2. Alpha Scanner ─────────────────────────────────────────
         scanner = AlphaScanner()
+        # Escanea FinViz movers (si tickers=None)
         alpha_results = scanner.scan(
-            tickers=candidate_tickers,
-            max_results=slots_available * 3,  # Buffer 3x para que el filtro elija
-            include_qualifier=False,
+            tickers=None, 
+            max_results=slots_available * 2,
             finviz_movers_data=finviz_movers_data,
-            guru_mcp_data=guru_mcp_data,
         )
 
-        if not alpha_results:
-            logger.warning("⚠️  AlphaScanner no retornó candidatos. Sesión terminada.")
-            return {"status": "NO_CANDIDATES", "session_start": session_start}
-
-        logger.info(f"🔍 AlphaScanner: {len(alpha_results)} candidatos rankeados")
-
-        # ── 3. Universe Filter (scoring Guru + macro) ────────────────
+        if not alpha_results: return {"status": "NO_MOVERS"}
+        
+        # Filtro muy leve (UniverseFilter solo para evitar basuras extremas)
         uf = UniverseFilter()
-        existing_tickers = [p['ticker'] for p in account.get('positions', [])]
+        if macro_mcp_data: uf.update_macro_regime(macro_mcp_data)
+        
+        candidates = [UniverseCandidate(ticker=r['ticker'], alpha_score=r['alpha_score']) for r in alpha_results]
+        approved = uf.filter_and_rank(candidates, max_results=slots_available) # Podríamos relajar filtros aquí luego
 
-        candidates = []
-        for result in alpha_results:
-            ticker = result.get('ticker', '')
-            if not ticker or ticker in existing_tickers:
-                continue
-            candidates.append(UniverseCandidate(
-                ticker=ticker,
-                alpha_score=result.get('alpha_score', 0),
-                sector=result.get('sector', 'Unknown'),
-                rs_vs_spy=result.get('rs_vs_spy', 1.0),
-                insider_signal=result.get('insider_signal', 'neutral'),
-                sector_alignment=result.get('sector_alignment', 'NEUTRAL'),
-                # Guru metrics populated if mcp data provided
-            ))
-
-        if macro_mcp_data:
-            uf.update_macro_regime(macro_mcp_data)
-
-        top_candidates = uf.filter_and_rank(
-            candidates,
-            sector_mcp_data=sector_mcp_data,
-            max_results=slots_available,
-        )
-
-        if not top_candidates:
-            logger.info("ℹ️  UniverseFilter descartó todos los candidatos. Nada aprobado.")
-            return {"status": "ALL_FILTERED", "candidates_scanned": len(candidates), "session_start": session_start}
-
-        logger.info(f"✅ UniverseFilter aprobó {len(top_candidates)} tickers: {[c.ticker for c in top_candidates]}")
-
-        # ── 4. Ejecutar trades aprobados ─────────────────────────────
         trades_attempted = []
-        for candidate in top_candidates:
-            logger.info(f"📝 Intentando entrada: {candidate.ticker} (score={candidate.alpha_score:.1f})")
-            result = self.open_position(
-                ticker=candidate.ticker,
-                thesis=f"Alpha={candidate.alpha_score:.1f} | Sector={candidate.sector} | RS={candidate.rs_vs_spy:.3f} | {candidate.sector_alignment}",
-                alpha_score=candidate.alpha_score,
-                insider_signal=candidate.insider_signal,
-                sector_alignment=candidate.sector_alignment,
+        for candidate in approved:
+            ticker = candidate.ticker
+            score = candidate.alpha_score
+            logger.info(f"📝 Orden TACTICAL para {ticker} (Alpha={score})")
+            res = self.open_position(
+                ticker=ticker,
+                thesis=f"Gamma Squeeze/ Momentum Surge hoy. Alpha: {score}",
+                strategy_type="TACTICAL",
+                alpha_score=score,
                 notional=notional_per_trade,
             )
-            trades_attempted.append({
-                "ticker": candidate.ticker,
-                "action": result.get('action', 'ERROR'),
-                "reason": result.get('reason', result.get('error', '')),
-                "limit_price": result.get('limit_price'),
-                "order_id": result.get('order_id'),
-            })
-
-        executed = [t for t in trades_attempted if t['action'] == 'BUY']
-        rejected = [t for t in trades_attempted if t['action'] == 'REJECTED']
-        errors = [t for t in trades_attempted if t['action'] == 'ERROR']
-
-        session_summary = {
-            "status": "COMPLETED",
-            "session_start": session_start,
-            "session_end": datetime.now(UTC).isoformat(),
-            "slots_available": slots_available,
-            "candidates_scanned": len(alpha_results),
-            "candidates_approved": len(top_candidates),
-            "trades_executed": len(executed),
-            "trades_rejected": len(rejected),
-            "trades_errored": len(errors),
-            "trades": trades_attempted,
-        }
-
-        logger.info(
-            f"📈 Sesión completada: {len(executed)} ejecutados, "
-            f"{len(rejected)} rechazados, {len(errors)} errores"
-        )
-        return session_summary
+            trades_attempted.append(res)
+            
+        return {"status": "TACTICAL_SCAN_COMPLETE", "trades": trades_attempted}
 
 
+if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(message)s')
-    
+
     # ─── DEMO: Conectar y verificar estado ───
     # Credentials loaded from .env (never hardcode secrets)
     from dotenv import load_dotenv
     load_dotenv()
-    
+
     orch = PaperTradingOrchestrator()
-    
+
     print(f"\n{'='*60}")
     print(f"  BOTERO TRADE: Paper Trading Status")
     print(f"{'='*60}")
-    
+
     status = orch.get_account_status()
     if 'error' not in status:
         print(f"\n  💰 Capital: ${status['equity']:,.2f}")
         print(f"  💵 Cash: ${status['cash']:,.2f}")
         print(f"  📊 Posiciones abiertas: {status['num_positions']}")
-        
+
         for p in status.get('positions', []):
             emoji = "📈" if p['unrealized_pnl'] > 0 else "📉"
             print(f"    {emoji} {p['ticker']}: {p['qty']} shares @ ${p['avg_entry']:.2f} "
                   f"→ ${p['current_price']:.2f} ({p['unrealized_pnl_pct']:+.2f}%)")
-        
+
         print(f"\n  Journal: {len(orch.journal.get_open_trades())} trades registrados")
     else:
         print(f"\n  ❌ Error: {status['error']}")
-    
+
     print(f"\n{'='*60}")

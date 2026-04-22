@@ -143,6 +143,11 @@ class AdaptiveTrailingStop:
     SOLUCIÓN: Usar max(ATR_trailing, fixed_trailing).
     Esto evita salir en correcciones pequeñas (ATR low) 
     Y evita salir en crashes (fixed% cap).
+    
+    V2 GAMMA-AWARE EXTENSIONS:
+    - Put Wall anchoring: stop below institutional support, not obvious technicals
+    - VIX dynamic scaling: wider stops in high vol to survive liquidity sweeps
+    - Event freeze: don't evaluate stops during post-announcement storm window
     """
     
     # Parámetros calibrados con backtest
@@ -151,26 +156,54 @@ class AdaptiveTrailingStop:
     fixed_floor_pct: float = 0.05        # 5% mínimo absoluto
     fixed_ceiling_pct: float = 0.12      # 12% máximo absoluto
     
+    # VIX scaling thresholds
+    VIX_NORMAL = 18
+    VIX_ELEVATED = 25
+    VIX_HIGH = 35
+    
     def calculate_stop(
         self,
         highest_since_entry: float,
         current_atr: float,
         rs_vs_spy: float = 1.0,
+        # ─── Gamma-Aware Extensions (V2) ───
+        put_wall: float = 0.0,        # Put Wall from options_awareness
+        vix_current: float = 17.0,    # Current VIX for dynamic scaling
     ) -> float:
         """
-        Calcula el nivel de stop adaptativo.
+        Calcula el nivel de stop adaptativo con conciencia Gamma.
         
         En tendencia fuerte (RS > 1.05): trailing wide (3×ATR)
         En mercado neutro: (2.5×ATR)
         En debilidad (RS < 0.95): trailing tight (2×ATR)
+        
+        V2: Si put_wall > 0, ancla el stop debajo del Put Wall
+        (donde los MMs compran para cubrirse = piso institucional)
+        en vez de usar niveles técnicos obvios que todos ven.
+        
+        V2: Si vix_current > 25, expande el multiplicador ATR
+        para sobrevivir las mechas de barrido de liquidez.
         """
-        # Adaptar multiplicador al régimen
+        # Adaptar multiplicador al régimen RS
         if rs_vs_spy > 1.05:
             mult = self.atr_multiplier_trend
         elif rs_vs_spy < 0.95:
             mult = self.atr_multiplier_chop
         else:
             mult = (self.atr_multiplier_trend + self.atr_multiplier_chop) / 2
+        
+        # ── V2: VIX Dynamic Scaling ────────────────────────────
+        # En alta volatilidad, las mechas son más largas.
+        # Si el stop no respira, la mecha lo mata.
+        vix_scale = 1.0
+        if vix_current > self.VIX_HIGH:
+            vix_scale = 2.0     # Double the ATR multiplier
+        elif vix_current > self.VIX_ELEVATED:
+            vix_scale = 1.5     # 50% wider
+        elif vix_current > self.VIX_NORMAL:
+            vix_scale = 1.2     # 20% wider
+        
+        mult *= vix_scale
         
         atr_stop = highest_since_entry - (mult * current_atr)
         fixed_stop_low = highest_since_entry * (1 - self.fixed_floor_pct)
@@ -181,7 +214,48 @@ class AdaptiveTrailingStop:
         stop = max(atr_stop, fixed_stop_high)
         stop = min(stop, fixed_stop_low)
         
-        return stop
+        # ── V2: Put Wall Anchoring ─────────────────────────────
+        # If Put Wall is provided and is below the current price,
+        # the stop should go BELOW the Put Wall (not at technical levels).
+        # The Put Wall is where Market Makers MUST buy to hedge.
+        # That's a concrete floor, not a drawing on a chart.
+        if put_wall > 0 and put_wall < highest_since_entry:
+            gamma_stop = put_wall - (0.3 * current_atr * vix_scale)
+            # Use the LOWER of ATR stop and gamma stop
+            # (gamma stop is more generous = more survival)
+            stop = min(stop, gamma_stop)
+        
+        return round(stop, 2)
+    
+    def should_freeze(
+        self,
+        freeze_stops: bool = False,
+        freeze_start_time: Optional[datetime] = None,
+        freeze_duration_min: int = 30,
+    ) -> bool:
+        """
+        Determina si el trailing stop debe estar congelado.
+        
+        During macro event storms (FOMC, CPI), the first 15-30 minutes
+        are a liquidity hunt — not a real market move. Freezing the stop
+        prevents being swept out by a wick that reverses in minutes.
+        
+        Args:
+            freeze_stops: Flag from EventFlowIntelligence
+            freeze_start_time: When the freeze was activated
+            freeze_duration_min: How long to freeze (default 30 min)
+        
+        Returns:
+            True if stop should NOT be evaluated right now.
+        """
+        if not freeze_stops:
+            return False
+        
+        if freeze_start_time is None:
+            return True  # Freeze just activated, no start time yet
+        
+        elapsed = (datetime.now(UTC) - freeze_start_time).total_seconds() / 60
+        return elapsed < freeze_duration_min
 
 
 # ================================================================
@@ -454,6 +528,10 @@ class RiskGuardian:
         self.vix_emergency = vix_emergency_threshold
         self.cooldown_hours = cooldown_hours
         
+        # 80/20 Institutional Buckets
+        self.core_allocation_limit = 0.80
+        self.tactical_allocation_limit = 0.20
+        
         self._peak_capital = 0
         self._last_loss_event = None
         self._consecutive_losses = 0
@@ -462,8 +540,14 @@ class RiskGuardian:
         self,
         current_capital: float,
         daily_pnl_pct: float,
+        strategy_type: str = "CORE",           # "CORE" o "TACTICAL"
+        core_exposure: float = 0.0,            # Capital actualmente expuesto en CORE
+        tactical_exposure: float = 0.0,        # Capital actualmente expuesto en TACTICAL
         current_vix: float = 17,
         last_trade_won: Optional[bool] = None,
+        # ─── Strategy Synthesis V2: Institutional Flow Gates ───
+        macro_gate: Optional[dict] = None,     # MacroGate from UW
+        market_sentiment: Optional[dict] = None,  # MarketSentiment from UW
     ) -> dict:
         """
         Evalúa el estado de riesgo del portafolio.
@@ -489,6 +573,23 @@ class RiskGuardian:
         if abs(current_dd) >= self.max_portfolio_dd:
             position_scale = 0.5
             alerts.append(f"🚨 Portfolio DD {current_dd*100:.1f}% ≥ {self.max_portfolio_dd*100:.0f}%. Sizing reducido 50%.")
+            
+        # 1.5 Estrategia Bucket Check (80/20)
+        total_cap = max(current_capital, 1.0)
+        core_pct = core_exposure / total_cap
+        tactical_pct = tactical_exposure / total_cap
+        
+        if strategy_type == "CORE" and core_pct >= self.core_allocation_limit:
+            can_trade = False
+            alerts.append(f"🚫 CORE Bucket Lleno: Exp={core_pct*100:.1f}% / Límite={self.core_allocation_limit*100:.0f}%")
+        elif strategy_type == "TACTICAL" and tactical_pct >= self.tactical_allocation_limit:
+            can_trade = False
+            alerts.append(f"🚫 TACTICAL Bucket Lleno: Exp={tactical_pct*100:.1f}% / Límite={self.tactical_allocation_limit*100:.0f}%")
+        
+        # Si es TACTICAL y el VIX está alto, podemos prohibir completamente el trade satélite
+        if strategy_type == "TACTICAL" and current_vix > self.vix_reduce:
+            can_trade = False
+            alerts.append(f"🛑 Cancelado TACTICAL por Macro VIX ({current_vix:.0f} > {self.vix_reduce}).")
         
         # 2. Daily loss check
         if abs(daily_pnl_pct) >= self.max_daily_loss and daily_pnl_pct < 0:
@@ -516,8 +617,60 @@ class RiskGuardian:
                 can_trade = False
                 alerts.append(f"⏳ Cooldown: {self.cooldown_hours - hours_since:.0f}h restantes.")
         
+        # ═══ Strategy Synthesis V2: Institutional Flow Gates ═══
+        
+        # 6. Macro Flow Gate (SPY delta — ADAPTIVE)
+        # Uses graduated scaling from MacroGate.position_scale_factor
+        # instead of binary thresholds
+        if macro_gate is not None:
+            # Support both MacroGate dataclass and dict
+            gate_signal = getattr(macro_gate, 'signal', macro_gate.get('signal', 'NEUTRAL') if isinstance(macro_gate, dict) else 'NEUTRAL')
+            gate_scale = getattr(macro_gate, 'position_scale_factor', macro_gate.get('position_scale_factor', 1.0) if isinstance(macro_gate, dict) else 1.0)
+            gate_score = getattr(macro_gate, 'composite_score', macro_gate.get('composite_score', 0) if isinstance(macro_gate, dict) else 0)
+            am_pm_div = getattr(macro_gate, 'am_pm_diverges', macro_gate.get('am_pm_diverges', False) if isinstance(macro_gate, dict) else False)
+            confidence = getattr(macro_gate, 'confidence', macro_gate.get('confidence', 0.5) if isinstance(macro_gate, dict) else 0.5)
+            
+            # Apply adaptive scaling
+            position_scale *= gate_scale
+            
+            if gate_signal == 'EXIT':
+                alerts.append(
+                    f"🚨 SPY Flow EXIT (score={gate_score:+d}, scale={gate_scale:.2f}). "
+                    f"Institutional outflow detected."
+                )
+            elif gate_signal == 'REDUCE':
+                alerts.append(
+                    f"⚠️ SPY Flow REDUCE (score={gate_score:+d}, scale={gate_scale:.2f}). "
+                    f"{'AM/PM divergence!' if am_pm_div else 'Weakening flow.'}"
+                )
+            elif gate_signal == 'FULL_IN' and confidence > 0.7:
+                alerts.append(
+                    f"🟢 SPY Flow FULL IN (score={gate_score:+d}, conf={confidence:.0%}). "
+                    f"Institutional accumulation confirmed."
+                )
+        
+        # 7. Market Sentiment Gate (breadth + PCR + sweeps)
+        if market_sentiment is not None:
+            regime = getattr(market_sentiment, 'regime', market_sentiment.get('regime', 'NEUTRAL') if isinstance(market_sentiment, dict) else 'NEUTRAL')
+            sent_score = getattr(market_sentiment, 'sentiment_score', market_sentiment.get('sentiment_score', 0) if isinstance(market_sentiment, dict) else 0)
+            breadth = getattr(market_sentiment, 'breadth_pct', market_sentiment.get('breadth_pct', 50) if isinstance(market_sentiment, dict) else 50)
+            
+            if regime == 'BEAR' and sent_score <= -2:
+                position_scale *= 0.85
+                alerts.append(
+                    f"⚠️ Market Sentiment BEARISH (score={sent_score:+d}, breadth={breadth:.0f}%). "
+                    f"Sizing -15%."
+                )
+            elif regime == 'BULL' and sent_score >= 3 and breadth > 60:
+                # Don't exceed 1.0 — only restore if other gates reduced
+                position_scale = min(position_scale * 1.05, 1.0)
+                alerts.append(
+                    f"🟢 Market Sentiment BULLISH (score={sent_score:+d}, breadth={breadth:.0f}%). "
+                    f"Sizing confirmed."
+                )
+        
         return {
-            "position_scale": round(position_scale, 2),
+            "position_scale": round(max(0.20, min(position_scale, 1.0)), 2),
             "can_trade": can_trade,
             "current_dd": round(current_dd * 100, 2),
             "consecutive_losses": self._consecutive_losses,

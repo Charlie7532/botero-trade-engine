@@ -12,22 +12,36 @@ Estructura del Journal Entry:
 ─ EXECUTION: Qué pasó al ejecutar
 ─ POST-TRADE: Resultado y análisis
 ─ LESSONS: Qué aprendimos
+
+Persistencia: MongoDB Atlas (migrado desde SQLite + JSON dual-write).
+Cada trade es un documento completo — sin JSON blobs en columnas SQL.
 """
-import json
 import logging
 import os
-import sqlite3
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, UTC
-from pathlib import Path
 from typing import Optional
+
+from pymongo import MongoClient, ASCENDING, DESCENDING
 
 logger = logging.getLogger(__name__)
 
-# Directorio de persistencia local
-JOURNAL_DIR = Path(os.getenv("JOURNAL_DIR", "/root/botero-trade/data/journal"))
-JOURNAL_DIR.mkdir(parents=True, exist_ok=True)
-DB_PATH = JOURNAL_DIR / "trade_journal.db"
+# MongoDB connection — lazy singleton
+_mongo_client: Optional[MongoClient] = None
+
+MONGODB_URI = os.getenv(
+    "MONGODB_URI", "mongodb://localhost:27017"
+)
+MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "botero_trade")
+
+
+def _get_mongo_db():
+    """Lazy singleton para la conexión MongoDB."""
+    global _mongo_client
+    if _mongo_client is None:
+        _mongo_client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+        logger.info(f"MongoDB conectado: {MONGODB_DB_NAME}")
+    return _mongo_client[MONGODB_DB_NAME]
 
 
 @dataclass
@@ -152,160 +166,127 @@ class TradeJournalEntry:
 class TradeJournal:
     """
     Gestor del Trade Journal.
-    Persiste cada entrada en SQLite local + JSON para análisis.
+    Persiste cada entrada en MongoDB Atlas como documento nativo.
+
+    Migrado desde SQLite + JSON dual-write. Ahora cada trade es un
+    documento completo sin el anti-patrón full_data TEXT blob.
     """
     
-    def __init__(self, db_path: str = None):
-        self.db_path = db_path or str(DB_PATH)
-        self._init_db()
+    def __init__(self, db=None, db_name: str = None):
+        """
+        Args:
+            db: Instancia de pymongo Database (para tests con mongomock).
+                Si None, usa la conexión real a MongoDB Atlas.
+            db_name: Nombre alternativo de la DB (para tests).
+        """
+        if db is not None:
+            self._db = db
+        else:
+            if db_name:
+                global _mongo_client
+                if _mongo_client is None:
+                    _mongo_client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+                self._db = _mongo_client[db_name]
+            else:
+                self._db = _get_mongo_db()
+        self._init_collections()
     
-    def _init_db(self):
-        """Crea las tablas si no existen."""
-        conn = sqlite3.connect(self.db_path)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS trades (
-                trade_id TEXT PRIMARY KEY,
-                ticker TEXT NOT NULL,
-                direction TEXT,
-                status TEXT DEFAULT 'OPEN',
-                created_at TEXT,
-                entry_time TEXT,
-                exit_time TEXT,
-                entry_price REAL,
-                exit_price REAL,
-                pnl_dollars REAL DEFAULT 0,
-                pnl_pct REAL DEFAULT 0,
-                pnl_r_multiple REAL DEFAULT 0,
-                was_winner INTEGER DEFAULT 0,
-                exit_reason TEXT,
-                entry_thesis TEXT,
-                alpha_score REAL,
-                qualifier_grade TEXT,
-                rs_vs_spy REAL,
-                insider_signal TEXT,
-                sector_alignment TEXT,
-                lesson_learned TEXT,
-                grade TEXT,
-                full_data TEXT,
-                updated_at TEXT
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS trade_snapshots (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                trade_id TEXT,
-                snapshot_type TEXT,
-                timestamp TEXT,
-                data TEXT,
-                FOREIGN KEY (trade_id) REFERENCES trades(trade_id)
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS patterns (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                trade_id TEXT,
-                pattern_name TEXT,
-                context TEXT,
-                outcome TEXT,
-                confidence REAL,
-                created_at TEXT,
-                FOREIGN KEY (trade_id) REFERENCES trades(trade_id)
-            )
-        """)
-        conn.commit()
-        conn.close()
-        logger.info(f"Trade Journal DB: {self.db_path}")
+    def _init_collections(self):
+        """Crea índices en las colecciones si no existen."""
+        self.trades = self._db["trades"]
+        self.snapshots = self._db["trade_snapshots"]
+        self.patterns = self._db["patterns"]
+        
+        # Índices para queries frecuentes
+        self.trades.create_index("trade_id", unique=True)
+        self.trades.create_index([("ticker", ASCENDING), ("status", ASCENDING)])
+        self.trades.create_index([("created_at", DESCENDING)])
+        self.trades.create_index([("exit_reason", ASCENDING), ("was_winner", ASCENDING)])
+        
+        self.snapshots.create_index([("trade_id", ASCENDING), ("snapshot_type", ASCENDING)])
+        self.patterns.create_index([("trade_id", ASCENDING)])
+        self.patterns.create_index([("pattern_name", ASCENDING)])
+        
+        logger.info(f"Trade Journal MongoDB: {self._db.name}")
     
     def open_trade(self, entry: TradeJournalEntry) -> str:
         """Registra una nueva entrada de trade."""
-        conn = sqlite3.connect(self.db_path)
-        conn.execute("""
-            INSERT INTO trades 
-            (trade_id, ticker, direction, status, created_at, entry_time,
-             entry_price, entry_thesis, alpha_score, qualifier_grade,
-             rs_vs_spy, insider_signal, sector_alignment, full_data, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            entry.trade_id, entry.ticker, entry.direction, 'OPEN',
-            entry.created_at, entry.entry_time, entry.entry_price,
-            entry.entry_thesis, entry.alpha_score, entry.qualifier_grade,
-            entry.rs_vs_spy, entry.insider_signal, entry.sector_alignment,
-            json.dumps(asdict(entry), default=str),
-            datetime.now(UTC).isoformat(),
-        ))
+        doc = asdict(entry)
+        doc["_trade_id"] = entry.trade_id  # Redundante pero útil para queries
+        doc["updated_at"] = datetime.now(UTC).isoformat()
         
-        # Guardar snapshot de entrada
+        self.trades.insert_one(doc)
+        
+        # Guardar snapshot de entrada como subdocumento separado
         if entry.entry_snapshot:
-            conn.execute("""
-                INSERT INTO trade_snapshots (trade_id, snapshot_type, timestamp, data)
-                VALUES (?, 'ENTRY', ?, ?)
-            """, (entry.trade_id, entry.entry_time, json.dumps(entry.entry_snapshot)))
-        
-        conn.commit()
-        conn.close()
-        
-        # También guardar JSON completo
-        json_path = JOURNAL_DIR / f"{entry.trade_id}.json"
-        with open(json_path, 'w') as f:
-            json.dump(asdict(entry), f, indent=2, default=str)
+            self.snapshots.insert_one({
+                "trade_id": entry.trade_id,
+                "snapshot_type": "ENTRY",
+                "timestamp": entry.entry_time,
+                "data": entry.entry_snapshot,
+            })
         
         logger.info(f"📝 Journal OPEN: {entry.ticker} @ ${entry.entry_price:.2f} — {entry.entry_thesis[:80]}")
         return entry.trade_id
     
     def close_trade(self, entry: TradeJournalEntry) -> None:
         """Actualiza el journal al cerrar un trade."""
-        conn = sqlite3.connect(self.db_path)
-        conn.execute("""
-            UPDATE trades SET
-                status = 'CLOSED',
-                exit_time = ?,
-                exit_price = ?,
-                pnl_dollars = ?,
-                pnl_pct = ?,
-                pnl_r_multiple = ?,
-                was_winner = ?,
-                exit_reason = ?,
-                lesson_learned = ?,
-                grade = ?,
-                full_data = ?,
-                updated_at = ?
-            WHERE trade_id = ?
-        """, (
-            entry.exit_time, entry.exit_price,
-            entry.pnl_dollars, entry.pnl_pct, entry.pnl_r_multiple,
-            1 if entry.was_winner else 0,
-            entry.exit_reason, entry.lesson_learned, entry.grade,
-            json.dumps(asdict(entry), default=str),
-            datetime.now(UTC).isoformat(),
-            entry.trade_id,
-        ))
+        update_fields = {
+            "status": "CLOSED",
+            "exit_time": entry.exit_time,
+            "exit_price": entry.exit_price,
+            "exit_order_id": entry.exit_order_id,
+            "exit_fill_price": entry.exit_fill_price,
+            "exit_slippage": entry.exit_slippage,
+            "exit_snapshot": entry.exit_snapshot,
+            "pnl_dollars": entry.pnl_dollars,
+            "pnl_pct": entry.pnl_pct,
+            "pnl_r_multiple": entry.pnl_r_multiple,
+            "was_winner": entry.was_winner,
+            "exit_reason": entry.exit_reason,
+            "what_went_right": entry.what_went_right,
+            "what_went_wrong": entry.what_went_wrong,
+            "lesson_learned": entry.lesson_learned,
+            "grade": entry.grade,
+            "pattern_tags": entry.pattern_tags,
+            "highest_price": entry.highest_price,
+            "lowest_price": entry.lowest_price,
+            "max_favorable_excursion_pct": entry.max_favorable_excursion_pct,
+            "max_adverse_excursion_pct": entry.max_adverse_excursion_pct,
+            "bars_held": entry.bars_held,
+            "scaling_events": entry.scaling_events,
+            "stop_adjustments": entry.stop_adjustments,
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        
+        self.trades.update_one(
+            {"trade_id": entry.trade_id},
+            {"$set": update_fields},
+        )
         
         # Guardar snapshot de salida
         if entry.exit_snapshot:
-            conn.execute("""
-                INSERT INTO trade_snapshots (trade_id, snapshot_type, timestamp, data)
-                VALUES (?, 'EXIT', ?, ?)
-            """, (entry.trade_id, entry.exit_time, json.dumps(entry.exit_snapshot)))
+            self.snapshots.insert_one({
+                "trade_id": entry.trade_id,
+                "snapshot_type": "EXIT",
+                "timestamp": entry.exit_time,
+                "data": entry.exit_snapshot,
+            })
         
         # Guardar patrones
-        for tag in entry.pattern_tags:
-            conn.execute("""
-                INSERT INTO patterns (trade_id, pattern_name, context, outcome, confidence, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                entry.trade_id, tag, entry.entry_thesis,
-                'WIN' if entry.was_winner else 'LOSS',
-                abs(entry.pnl_r_multiple),
-                datetime.now(UTC).isoformat(),
-            ))
-        
-        conn.commit()
-        conn.close()
-        
-        # Actualizar JSON
-        json_path = JOURNAL_DIR / f"{entry.trade_id}.json"
-        with open(json_path, 'w') as f:
-            json.dump(asdict(entry), f, indent=2, default=str)
+        if entry.pattern_tags:
+            pattern_docs = [
+                {
+                    "trade_id": entry.trade_id,
+                    "pattern_name": tag,
+                    "context": entry.entry_thesis,
+                    "outcome": "WIN" if entry.was_winner else "LOSS",
+                    "confidence": abs(entry.pnl_r_multiple),
+                    "created_at": datetime.now(UTC).isoformat(),
+                }
+                for tag in entry.pattern_tags
+            ]
+            self.patterns.insert_many(pattern_docs)
         
         emoji = "✅" if entry.was_winner else "❌"
         logger.info(
@@ -316,22 +297,26 @@ class TradeJournal:
             f"Grade: {entry.grade}"
         )
     
+    def get_trade_full_data(self, trade_id: str) -> Optional[dict]:
+        """
+        Retorna el documento completo de un trade por ID.
+        Reemplaza el patrón SQLite de leer full_data TEXT blob.
+        """
+        doc = self.trades.find_one({"trade_id": trade_id}, {"_id": 0})
+        return doc
+    
     def get_performance_summary(self) -> dict:
         """Resumen de performance de todos los trades cerrados."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.execute(
-            "SELECT * FROM trades WHERE status = 'CLOSED'"
-        )
-        rows = cursor.fetchall()
-        cols = [d[0] for d in cursor.description]
-        trades = [dict(zip(cols, r)) for r in rows]
-        conn.close()
+        trades = list(self.trades.find(
+            {"status": "CLOSED"},
+            {"_id": 0},
+        ))
         
         if not trades:
             return {"total_trades": 0, "message": "Sin trades cerrados"}
         
-        wins = [t for t in trades if t['was_winner']]
-        losses = [t for t in trades if not t['was_winner']]
+        wins = [t for t in trades if t.get('was_winner')]
+        losses = [t for t in trades if not t.get('was_winner')]
         
         avg_win = sum(t['pnl_pct'] for t in wins) / len(wins) if wins else 0
         avg_loss = sum(t['pnl_pct'] for t in losses) / len(losses) if losses else 0
@@ -353,65 +338,76 @@ class TradeJournal:
         }
     
     def get_pattern_stats(self) -> list[dict]:
-        """Estadísticas de patrones para aprendizaje."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.execute("""
-            SELECT pattern_name, 
-                   COUNT(*) as total,
-                   SUM(CASE WHEN outcome = 'WIN' THEN 1 ELSE 0 END) as wins,
-                   AVG(confidence) as avg_confidence
-            FROM patterns
-            GROUP BY pattern_name
-            ORDER BY total DESC
-        """)
-        results = [
-            {
-                "pattern": r[0],
-                "total": r[1],
-                "wins": r[2],
-                "win_rate": r[2] / r[1] * 100 if r[1] > 0 else 0,
-                "avg_r": r[3],
-            }
-            for r in cursor.fetchall()
+        """Estadísticas de patrones para aprendizaje — usando aggregation pipeline."""
+        pipeline = [
+            {"$group": {
+                "_id": "$pattern_name",
+                "total": {"$sum": 1},
+                "wins": {"$sum": {"$cond": [{"$eq": ["$outcome", "WIN"]}, 1, 0]}},
+                "avg_confidence": {"$avg": "$confidence"},
+            }},
+            {"$sort": {"total": -1}},
+            {"$project": {
+                "_id": 0,
+                "pattern": "$_id",
+                "total": 1,
+                "wins": 1,
+                "win_rate": {
+                    "$cond": [
+                        {"$gt": ["$total", 0]},
+                        {"$multiply": [{"$divide": ["$wins", "$total"]}, 100]},
+                        0,
+                    ]
+                },
+                "avg_r": "$avg_confidence",
+            }},
         ]
-        conn.close()
-        return results
+        return list(self.patterns.aggregate(pipeline))
     
     def get_exit_reason_stats(self) -> list[dict]:
-        """Estadísticas por razón de salida para ajustar trailing/exits."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.execute("""
-            SELECT exit_reason,
-                   COUNT(*) as total,
-                   SUM(CASE WHEN was_winner = 1 THEN 1 ELSE 0 END) as wins,
-                   AVG(pnl_pct) as avg_pnl,
-                   AVG(pnl_r_multiple) as avg_r
-            FROM trades
-            WHERE status = 'CLOSED' AND exit_reason IS NOT NULL
-            GROUP BY exit_reason
-            ORDER BY total DESC
-        """)
-        results = [
-            {
-                "exit_reason": r[0],
-                "total": r[1],
-                "wins": r[2],
-                "win_rate": r[2] / r[1] * 100 if r[1] > 0 else 0,
-                "avg_pnl": r[3],
-                "avg_r": r[4],
-            }
-            for r in cursor.fetchall()
+        """Estadísticas por razón de salida — usando aggregation pipeline."""
+        pipeline = [
+            {"$match": {
+                "status": "CLOSED",
+                "exit_reason": {"$ne": None, "$ne": ""},
+            }},
+            {"$group": {
+                "_id": "$exit_reason",
+                "total": {"$sum": 1},
+                "wins": {"$sum": {"$cond": [{"$eq": ["$was_winner", True]}, 1, 0]}},
+                "avg_pnl": {"$avg": "$pnl_pct"},
+                "avg_r": {"$avg": "$pnl_r_multiple"},
+            }},
+            {"$sort": {"total": -1}},
+            {"$project": {
+                "_id": 0,
+                "exit_reason": "$_id",
+                "total": 1,
+                "wins": 1,
+                "win_rate": {
+                    "$cond": [
+                        {"$gt": ["$total", 0]},
+                        {"$multiply": [{"$divide": ["$wins", "$total"]}, 100]},
+                        0,
+                    ]
+                },
+                "avg_pnl": 1,
+                "avg_r": 1,
+            }},
         ]
-        conn.close()
-        return results
+        return list(self.trades.aggregate(pipeline))
     
     def get_open_trades(self) -> list[dict]:
         """Retorna trades abiertos."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.execute(
-            "SELECT trade_id, ticker, entry_price, entry_time, alpha_score, qualifier_grade "
-            "FROM trades WHERE status = 'OPEN'"
-        )
-        results = [dict(zip([d[0] for d in cursor.description], r)) for r in cursor.fetchall()]
-        conn.close()
-        return results
+        return list(self.trades.find(
+            {"status": "OPEN"},
+            {
+                "_id": 0,
+                "trade_id": 1,
+                "ticker": 1,
+                "entry_price": 1,
+                "entry_time": 1,
+                "alpha_score": 1,
+                "qualifier_grade": 1,
+            },
+        ))

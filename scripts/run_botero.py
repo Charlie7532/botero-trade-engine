@@ -168,6 +168,17 @@ class BoteroEngine:
             self._core_scan_done_today = False
             self._tactical_scan_done_today = False
             self.logger.info(f"📅 New trading day: {today}")
+            
+            # V7: Reconcile broker state before scanning
+            try:
+                sync_result = self.orchestrator.sync_broker_and_journal()
+                if sync_result.get("status") == "SYNC_COMPLETE":
+                    self.logger.info(
+                        f"🔄 Broker sync: {sync_result['ghosts_closed']} ghosts, "
+                        f"{sync_result['orphans_adopted']} orphans"
+                    )
+            except Exception as e:
+                self.logger.error(f"❌ Broker sync failed: {e}")
     
     # ═══════════════════════════════════════════════════════════
     # DATA REFRESH

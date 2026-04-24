@@ -129,7 +129,7 @@ class UWDataBridge:
         if ticker:
             endpoint = f"/api/stock/{ticker}/options-volume"
         else:
-            endpoint = "/api/option-trades/flow"
+            endpoint = "/api/option-trades/flow-alerts"
             
         data = self._request(endpoint, params)
         if not data:
@@ -162,6 +162,47 @@ class UWDataBridge:
         return []
     
     # ═══════════════════════════════════════════════════════════
+    # V7: MAXIMUM EXTRACTION ENDPOINTS
+    # ═══════════════════════════════════════════════════════════
+
+    def fetch_ticker_flow_recent(self, ticker: str, min_premium: int = 50000) -> list[dict]:
+        params = {"min_premium": min_premium}
+        data = self._request(f"/api/stock/{ticker}/flow-recent", params)
+        if not data: return []
+        alerts = data.get("data", data) if isinstance(data, dict) else data
+        return alerts if isinstance(alerts, list) else []
+
+    def fetch_ticker_net_prem_ticks(self, ticker: str, date: str = None) -> list[dict]:
+        params = {"date": date} if date else {}
+        data = self._request(f"/api/stock/{ticker}/net-prem-ticks", params)
+        if not data: return []
+        ticks = data.get("data", data) if isinstance(data, dict) else data
+        return ticks if isinstance(ticks, list) else []
+
+    def fetch_darkpool_trades(self, ticker: str) -> list[dict]:
+        data = self._request(f"/api/darkpool/{ticker}")
+        if not data: return []
+        prints = data.get("data", data) if isinstance(data, dict) else data
+        return prints if isinstance(prints, list) else []
+
+    def fetch_ticker_gex(self, ticker: str) -> dict:
+        data = self._request(f"/api/stock/{ticker}/greek-exposure")
+        if not data: return {}
+        return data.get("data", data) if isinstance(data, dict) else data
+
+    def fetch_oi_change(self) -> list[dict]:
+        data = self._request("/api/market/oi-change")
+        if not data: return []
+        changes = data.get("data", data) if isinstance(data, dict) else data
+        return changes if isinstance(changes, list) else []
+
+    def fetch_economic_calendar(self) -> list[dict]:
+        data = self._request("/api/market/economic-calendar")
+        if not data: return []
+        events = data.get("data", data) if isinstance(data, dict) else data
+        return events if isinstance(events, list) else []
+    
+    # ═══════════════════════════════════════════════════════════
     # CONVENIENCE: Fetch all for orchestrator injection
     # ═══════════════════════════════════════════════════════════
     
@@ -181,6 +222,10 @@ class UWDataBridge:
             "spy_ticks": spy_ticks,
             "flow_alerts": flow_alerts,
             "tide_data": tide_data,
+            # V7: Pass flow_alerts as recent_flow for FlowPersistenceAnalyzer.
+            # Per-ticker filtering happens downstream.
+            "recent_flow": flow_alerts,
+            "darkpool_prints": [],  # Fetched per-ticker during evaluate()
         }
     
     def is_configured(self) -> bool:

@@ -57,6 +57,7 @@ class FlowSignal:
     ask_bid_ratio: float = 1.0
     avg_trade_count: float = 0.0
     flow_score: float = 50.0  # 0-100 composite
+    last_updated: Optional[str] = None
 
 
 @dataclass
@@ -83,6 +84,7 @@ class MacroGate:
     # Instead of binary -50%, this graduates based on signal strength
     position_scale_factor: float = 1.0
     confidence: float = 0.5  # How confident we are in the signal
+    last_updated: Optional[str] = None
 
 
 @dataclass
@@ -117,6 +119,7 @@ class MarketTide:
     tide_direction: str = "NEUTRAL"  # BULLISH | BEARISH | NEUTRAL
     is_accelerating: bool = False
     n_bars: int = 0
+    last_updated: Optional[str] = None
 
 
 # ================================================================
@@ -238,6 +241,14 @@ class UnusualWhalesIntelligence:
         elif total_premium > 100_000:
             score += 4
         
+        # Extract the latest timestamp
+        last_updated = None
+        for a in sorted(alerts, key=lambda x: x.get('executed_at') or x.get('timestamp') or '', reverse=True):
+            ts = a.get('executed_at') or a.get('timestamp') or a.get('time')
+            if ts:
+                last_updated = str(ts)
+                break
+
         return FlowSignal(
             ticker=ticker,
             n_calls=n_calls,
@@ -253,6 +264,7 @@ class UnusualWhalesIntelligence:
             ask_bid_ratio=round(ask_bid, 3),
             avg_trade_count=round(avg_tc, 1),
             flow_score=min(100.0, score),
+            last_updated=last_updated,
         )
     
     # ─────────────────────────────────────────
@@ -481,6 +493,12 @@ class UnusualWhalesIntelligence:
         if am_pm_diverges and signal in ("STAY_IN", "FULL_IN", "NEUTRAL"):
             signal = "REDUCE"
         
+        # Extract latest tape_time
+        last_updated = None
+        if spy_ticks:
+            latest_tick = sorted(spy_ticks, key=lambda x: x.get('tape_time', ''), reverse=True)[0]
+            last_updated = str(latest_tick.get('tape_time')) if latest_tick.get('tape_time') else None
+
         gate = MacroGate(
             cum_delta=total_delta,
             morning_delta=morning_delta,
@@ -492,6 +510,7 @@ class UnusualWhalesIntelligence:
             signal=signal,
             position_scale_factor=round(adjusted_scale, 3),
             confidence=round(confidence, 3),
+            last_updated=last_updated,
         )
         self._last_macro_gate = gate
         
@@ -545,6 +564,12 @@ class UnusualWhalesIntelligence:
         else:
             direction = "NEUTRAL"
         
+        # Extract latest timestamp
+        last_updated = None
+        if tide_data:
+            latest_bar = sorted(tide_data, key=lambda x: x.get('timestamp', ''), reverse=True)[0]
+            last_updated = str(latest_bar.get('timestamp')) if latest_bar.get('timestamp') else None
+
         tide = MarketTide(
             cum_net_premium=cum_net,
             total_call_premium=total_call,
@@ -553,6 +578,7 @@ class UnusualWhalesIntelligence:
             tide_direction=direction,
             is_accelerating=is_accelerating,
             n_bars=len(tide_data),
+            last_updated=last_updated,
         )
         
         logger.info(

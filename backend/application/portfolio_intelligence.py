@@ -169,6 +169,8 @@ class AdaptiveTrailingStop:
         # ─── Gamma-Aware Extensions (V2) ───
         put_wall: float = 0.0,        # Put Wall from options_awareness
         vix_current: float = 17.0,    # Current VIX for dynamic scaling
+        # ─── Flow Persistence (V7) ───
+        flow_persistence_grade: str = "UNKNOWN",
     ) -> float:
         """
         Calcula el nivel de stop adaptativo con conciencia Gamma.
@@ -204,6 +206,12 @@ class AdaptiveTrailingStop:
             vix_scale = 1.2     # 20% wider
         
         mult *= vix_scale
+        
+        # ── V7: Flow Persistence Scaling ───────────────────────
+        if flow_persistence_grade == "CONFIRMED_STREAK":
+            mult *= 1.15  # Widen stop by 15% to let the whale work
+        elif flow_persistence_grade == "DEAD_SIGNAL":
+            mult *= 0.90  # Tighten stop by 10% because edge is decaying
         
         atr_stop = highest_since_entry - (mult * current_atr)
         fixed_stop_low = highest_since_entry * (1 - self.fixed_floor_pct)

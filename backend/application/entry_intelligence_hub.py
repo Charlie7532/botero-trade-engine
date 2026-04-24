@@ -89,6 +89,14 @@ class EntryIntelligenceReport:
     tide_direction: str = "NEUTRAL"
     tide_accelerating: bool = False
     am_pm_divergence: bool = False
+    whale_last_updated: Optional[str] = None
+
+    # ── Flow Persistence (V7) ──────────────────────────────────
+    flow_persistence_grade: str = "UNKNOWN"
+    flow_freshness_weight: float = 1.0
+    flow_consecutive_days: int = 0
+    flow_darkpool_confirmed: bool = False
+    flow_hours_since_latest: float = 999.0
 
     # ── Dictamen Final ─────────────────────────────────────────
     final_verdict: str = "PASS"          # EXECUTE, STALK, PASS, BLOCK
@@ -121,9 +129,14 @@ class EntryIntelligenceHub:
         # Módulos de decisión (nuevos)
         from infrastructure.data_providers.event_flow_intelligence import EventFlowIntelligence
         from application.price_phase_intelligence import PricePhaseIntelligence
+        from infrastructure.data_providers.flow_persistence import FlowPersistenceAnalyzer
 
         self.event_flow = EventFlowIntelligence()
         self.price_phase = PricePhaseIntelligence()
+        self.flow_persistence = FlowPersistenceAnalyzer()
+
+        from application.trade_journal import TradeJournal
+        self.journal = TradeJournal()
 
         # Módulos de datos vivos (existentes)
         self._options = None
@@ -168,6 +181,8 @@ class EntryIntelligenceHub:
         spy_ticks: list[dict] = None,
         flow_alerts: list[dict] = None,
         tide_data: list[dict] = None,
+        recent_flow: list[dict] = None,
+        darkpool_prints: list[dict] = None,
     ):
         """
         Inyecta datos pre-obtenidos de Unusual Whales (via MCP).
@@ -180,6 +195,8 @@ class EntryIntelligenceHub:
             "spy_ticks": spy_ticks or [],
             "flow_alerts": flow_alerts or [],
             "tide_data": tide_data or [],
+            "recent_flow": recent_flow or [],
+            "darkpool_prints": darkpool_prints or [],
         }
 
     # ═══════════════════════════════════════════════════════════
@@ -274,6 +291,34 @@ class EntryIntelligenceHub:
         report.tide_direction = flow.get("tide_direction", "NEUTRAL")
         report.tide_accelerating = flow.get("tide_accelerating", False)
         report.am_pm_divergence = flow.get("am_pm_divergence", False)
+        report.whale_last_updated = flow.get("last_updated")
+
+        # ══════════════════════════════════════════════════════
+        # STEP 4b: Flow Persistence Analyzer (V7)
+        # ══════════════════════════════════════════════════════
+        recent_flow = self._uw_data_cache.get("recent_flow", [])
+        darkpool_prints = self._uw_data_cache.get("darkpool_prints", [])
+        persistence = self.flow_persistence.evaluate_persistence(
+            ticker=ticker,
+            recent_flow=recent_flow,
+            darkpool_prints=darkpool_prints,
+            current_price=report.current_price,
+            price_history=prices['Close'].tolist() if prices is not None else [],
+            reference_date=reference_date
+        )
+        report.flow_persistence_grade = persistence.persistence_grade
+        report.flow_freshness_weight = persistence.freshness_weight
+        report.flow_consecutive_days = persistence.consecutive_days
+        report.flow_darkpool_confirmed = persistence.darkpool_aligned
+        report.flow_hours_since_latest = persistence.hours_since_latest
+
+        # Early exit if DEAD_SIGNAL
+        if persistence.persistence_grade == "DEAD_SIGNAL":
+            report.final_verdict = "BLOCK"
+            report.final_scale = 0.0
+            report.final_reason = f"BLOCK: DEAD_SIGNAL — Options flow is {persistence.hours_since_latest:.1f} hours old (decayed)."
+            logger.info(f"EntryHub {ticker}: BLOCKED by DEAD_SIGNAL")
+            return report
 
         # ══════════════════════════════════════════════════════
         # STEP 5: EventFlowIntelligence (Calendario + Flujo)
@@ -346,12 +391,29 @@ class EntryIntelligenceHub:
             report.final_reason = f"ABORT: {phase_verdict.phase} — {phase_verdict.diagnosis[:80]}"
 
         elif phase_verdict.verdict == "FIRE":
-            report.final_verdict = "EXECUTE"
-            report.final_scale = whale_verdict.position_scale
-            report.final_reason = (
-                f"FIRE: {phase_verdict.phase}, R:R={phase_verdict.risk_reward_ratio}:1, "
-                f"Whale={whale_verdict.verdict}, Dims={phase_verdict.dimensions_confirming}/3"
-            )
+            # V7: Pre-Trade Memory Query
+            vector = self._vectorize_report(report)
+            similar_trades = self.journal.find_similar_trades(vector, limit=5)
+            
+            # Analizar si los similares fracasaron
+            bad_luck = 0
+            for t in similar_trades:
+                # V7: Check if the historical trade was a loser with negative edge
+                if not t.get("was_winner", False) and "grade" in t:
+                    bad_luck += 1
+                    
+            if len(similar_trades) >= 3 and bad_luck / len(similar_trades) >= 0.8:
+                report.final_verdict = "BLOCK"
+                report.final_scale = 0.0
+                report.final_reason = "BLOCK: Vector DB Query — 80%+ de setups históricos similares fracasaron sin edge."
+                logger.warning(f"EntryHub {ticker}: BLOCKED by Vector Memory! Evitando error histórico.")
+            else:
+                report.final_verdict = "EXECUTE"
+                report.final_scale = whale_verdict.position_scale
+                report.final_reason = (
+                    f"FIRE: {phase_verdict.phase}, R:R={phase_verdict.risk_reward_ratio}:1, "
+                    f"Whale={whale_verdict.verdict}, Dims={phase_verdict.dimensions_confirming}/3"
+                )
 
         elif phase_verdict.verdict == "STALK":
             report.final_verdict = "STALK"
@@ -373,6 +435,25 @@ class EntryIntelligenceHub:
         )
 
         return report
+
+    # ═══════════════════════════════════════════════════════════
+    # V7: VECTORIZATION
+    # ═══════════════════════════════════════════════════════════
+    def _vectorize_report(self, report: EntryIntelligenceReport) -> list[float]:
+        """
+        Convierte las variables críticas del reporte en un vector para búsqueda.
+        (En producción, usar embeddings de un LLM o un dense vector norm).
+        """
+        return [
+            float(report.vix),
+            float(report.rsi),
+            float(report.rs_vs_spy),
+            1.0 if report.gamma_regime == "POSITIVE" else -1.0,
+            float(report.whale_confidence),
+            float(report.phase_confidence),
+            float(report.risk_reward),
+            float(report.flow_persistence_grade == "CONFIRMED_STREAK"),
+        ]
 
     # ═══════════════════════════════════════════════════════════
     # STEP IMPLEMENTATIONS
@@ -471,6 +552,7 @@ class EntryIntelligenceHub:
                 result["spy_signal"] = gate.signal
                 result["spy_confidence"] = gate.confidence
                 result["am_pm_divergence"] = gate.am_pm_diverges
+                result["spy_updated"] = gate.last_updated
 
             # Parse Market Tide
             tide_data = self._uw_data_cache.get("tide_data", [])
@@ -479,6 +561,7 @@ class EntryIntelligenceHub:
                 result["tide_direction"] = tide.tide_direction
                 result["tide_accelerating"] = tide.is_accelerating
                 result["tide_net_premium"] = tide.cum_net_premium
+                result["tide_updated"] = tide.last_updated
 
             # Parse Flow Alerts for ticker sweeps
             flow_alerts = self._uw_data_cache.get("flow_alerts", [])
@@ -489,6 +572,7 @@ class EntryIntelligenceHub:
                     flow.n_calls / (flow.n_calls + flow.n_puts) * 100
                     if (flow.n_calls + flow.n_puts) > 0 else 50.0
                 )
+                result["flow_updated"] = flow.last_updated
 
                 # Market sentiment for breadth
                 sentiment = uw.parse_market_sentiment(flow_alerts)
@@ -497,5 +581,10 @@ class EntryIntelligenceHub:
 
         except Exception as e:
             logger.warning(f"EntryHub: UW Intelligence error: {e}")
+
+        # Get latest timestamp from parsed elements
+        timestamps = [result.get(k) for k in ["spy_updated", "tide_updated", "flow_updated"] if result.get(k)]
+        if timestamps:
+            result["last_updated"] = max(timestamps)
 
         return result

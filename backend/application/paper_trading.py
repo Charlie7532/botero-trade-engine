@@ -118,6 +118,83 @@ class PaperTradingOrchestrator:
             }
         except Exception as e:
             return {"error": str(e)}
+
+    def sync_broker_and_journal(self) -> dict:
+        """
+        V7: Reconcilia el estado entre Alpaca (broker) y MongoDB (TradeJournal).
+        Identifica trades fantasma (Ghost) y adopta trades huérfanos (Orphan).
+        Debe correrse antes de cada escaneo.
+        """
+        client = self._get_alpaca()
+        if not client:
+            return {"error": "Alpaca no conectado"}
+            
+        try:
+            alpaca_positions = client.get_all_positions()
+            alpaca_tickers = {p.symbol: p for p in alpaca_positions}
+            
+            db_trades = self.journal.get_open_trades()
+            db_tickers = {t['ticker']: t for t in db_trades}
+            
+            ghosts_closed = 0
+            orphans_adopted = 0
+            
+            # 1. Detectar Ghost Trades (En DB pero no en Alpaca)
+            for ticker, trade in db_tickers.items():
+                if ticker not in alpaca_tickers:
+                    logger.warning(f"👻 Ghost Trade detectado: {ticker} cerrado en broker pero abierto en DB.")
+                    # Build a minimal entry to close via the standard API
+                    ghost_entry = TradeJournalEntry(
+                        trade_id=trade['trade_id'],
+                        ticker=ticker,
+                        direction=trade.get('direction', 'LONG'),
+                        exit_price=trade.get('current_stop_price', trade.get('entry_price', 0.0)),
+                        exit_time=datetime.now(UTC).isoformat(),
+                        exit_reason="CLOSED_BY_BROKER",
+                        exit_order_id="GHOST_RECONCILIATION",
+                        status="CLOSED",
+                        was_winner=False,
+                    )
+                    self.journal.close_trade(ghost_entry)
+                    ghosts_closed += 1
+                    
+            # 2. Detectar Orphan Trades (En Alpaca pero no en DB)
+            for ticker, p in alpaca_tickers.items():
+                if ticker not in db_tickers:
+                    logger.warning(f"🍼 Orphan Trade detectado: {ticker} abierto en broker pero sin registro en DB.")
+                    # Adoptar trade
+                    trade_id = f"BT-ORPHAN-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{ticker}"
+                    entry_price = float(p.avg_entry_price)
+                    qty = float(p.qty)
+                    notional = entry_price * qty
+                    
+                    entry = TradeJournalEntry(
+                        trade_id=trade_id,
+                        ticker=ticker,
+                        direction="LONG" if qty > 0 else "SHORT",
+                        entry_thesis="Trade adoptado (huérfano en Alpaca)",
+                        entry_price=entry_price,
+                        entry_shares=qty,
+                        entry_notional=notional,
+                        strategy_bucket="UNCLASSIFIED",
+                        status="OPEN"
+                    )
+                    self.journal.open_trade(entry)
+                    orphans_adopted += 1
+                    
+            if ghosts_closed > 0 or orphans_adopted > 0:
+                logger.info(f"🔄 Sincronización completada: {ghosts_closed} Ghosts cerrados, {orphans_adopted} Orphans adoptados.")
+                
+            return {
+                "status": "SYNC_COMPLETE",
+                "ghosts_closed": ghosts_closed,
+                "orphans_adopted": orphans_adopted,
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sincronizando broker y journal: {e}")
+            return {"error": str(e)}
+
     
     def create_trade_snapshot(self, ticker: str) -> dict:
         """Captura un snapshot completo del mercado para el journal."""
@@ -205,6 +282,8 @@ class PaperTradingOrchestrator:
         spy_ticks: list = None,
         flow_alerts: list = None,
         tide_data: list = None,
+        recent_flow: list = None,
+        darkpool_prints: list = None,
     ):
         """
         Inyecta datos de Unusual Whales pre-obtenidos via MCP.
@@ -214,6 +293,8 @@ class PaperTradingOrchestrator:
             spy_ticks=spy_ticks or [],
             flow_alerts=flow_alerts or [],
             tide_data=tide_data or [],
+            recent_flow=recent_flow or [],
+            darkpool_prints=darkpool_prints or [],
         )
         logger.info("🐋 Datos de ballenas inyectados en EntryHub")
 
@@ -535,10 +616,18 @@ class PaperTradingOrchestrator:
             # 1. Put Wall anchoring (institutional floor)
             # 2. VIX dynamic scaling (wider in high vol)
             # 3. RS-based multiplier (original logic preserved)
+            # Retrieve flow_persistence_grade from journal entry intelligence
+            trade_data = self.journal.get_trade_full_data(pos.get('trade_id', ''))
+            flow_grade = "UNKNOWN"
+            if trade_data:
+                intel = trade_data.get('entry_intelligence') or {}
+                flow_grade = intel.get('flow_persistence_grade', 'UNKNOWN')
+            
             stop = self.trailing.calculate_stop(
                 current_price, atr, current_rs,
                 put_wall=put_wall,
                 vix_current=vix,
+                flow_persistence_grade=flow_grade,
             )
             
             # Ajuste adicional según Mente (Seykota vs Druckenmiller)

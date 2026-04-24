@@ -51,6 +51,8 @@ class TradeAutopsyResult:
     entry_efficiency: float = 0.0  # PnL / MFE (qué % del movimiento capturamos)
     stop_efficiency: float = 0.0   # MAE / initial_stop_distance
     edge_ratio: float = 0.0       # MFE / |MAE| (calidad del edge)
+    normalized_edge_ratio: float = 0.0 # V7: Volatility-Normalized E-Ratio
+    mc_p_value: float = 0.0       # V7: Monte Carlo Permutation p-value (Suerte vs Skill)
     mfe_timing: float = 0.0       # bars_to_mfe / total_bars (pico temprano vs tardío)
 
     # ── Diagnóstico ──────────────────────────────────────────────
@@ -100,6 +102,7 @@ class TradeAutopsy:
         price_series: list[float],
         exit_reason: str = "",
         direction: str = "LONG",
+        atr: float = 1.0,  # V7: Entry ATR
     ) -> TradeAutopsyResult:
         """
         Ejecuta la autopsia completa de un trade.
@@ -160,6 +163,44 @@ class TradeAutopsy:
 
         # Edge Ratio: calidad del edge (MFE / |MAE|)
         edge_ratio = mfe_pct / abs(mae_pct) if abs(mae_pct) > 0.01 else mfe_pct * 10
+        
+        # V7: Volatility-Normalized Edge Ratio
+        # Normalizamos la distancia absoluta recorrida dividiéndola por el ATR
+        mfe_abs = abs(mfe_price - entry_price)
+        mae_abs = abs(mae_price - entry_price)
+        mfe_atr = mfe_abs / atr if atr > 0.01 else 0.0
+        mae_atr = mae_abs / atr if atr > 0.01 else 0.0
+        normalized_edge_ratio = mfe_atr / mae_atr if mae_atr > 0.01 else mfe_atr * 10
+
+        # V7: Monte Carlo Permutation Testing
+        # ¿Pudimos haber obtenido este Edge Ratio entrando al azar ese mismo día?
+        mc_p_value = 0.0
+        if n_bars > 10 and atr > 0.01:
+            random_edges = []
+            for _ in range(1000): # 1000 iteraciones como pide la ciencia de datos
+                # Pick a random entry point in the series
+                rand_idx = np.random.randint(0, n_bars - 2)
+                rand_entry = prices[rand_idx]
+                rand_future = prices[rand_idx:]
+                if len(rand_future) < 2: continue
+                
+                if is_long:
+                    r_mfe_abs = float(np.max(rand_future)) - rand_entry
+                    r_mae_abs = rand_entry - float(np.min(rand_future))
+                else:
+                    r_mfe_abs = rand_entry - float(np.min(rand_future))
+                    r_mae_abs = float(np.max(rand_future)) - rand_entry
+                    
+                r_mfe_atr = r_mfe_abs / atr
+                r_mae_atr = r_mae_abs / atr
+                r_edge = r_mfe_atr / r_mae_atr if r_mae_atr > 0.01 else r_mfe_atr * 10
+                random_edges.append(r_edge)
+                
+            if random_edges:
+                # El p-value es la probabilidad de que una entrada ALEATORIA 
+                # tuviera un Edge Ratio MEJOR que nuestra entrada algorítmica.
+                # Si p > 0.05, el trade fue pura suerte (Beta).
+                mc_p_value = sum(1 for e in random_edges if e > normalized_edge_ratio) / len(random_edges)
 
         # MFE Timing: ¿el pico fue temprano o tardío?
         mfe_timing = bars_to_mfe / n_bars if n_bars > 0 else 0.0
@@ -192,6 +233,8 @@ class TradeAutopsy:
             entry_efficiency=round(entry_efficiency, 3),
             stop_efficiency=round(stop_efficiency, 3),
             edge_ratio=round(edge_ratio, 3),
+            normalized_edge_ratio=round(normalized_edge_ratio, 3),
+            mc_p_value=round(mc_p_value, 4),
             mfe_timing=round(mfe_timing, 3),
             error_class=error_class,
             diagnosis=diagnosis,

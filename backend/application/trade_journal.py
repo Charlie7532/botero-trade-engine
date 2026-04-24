@@ -161,6 +161,7 @@ class TradeJournalEntry:
     
     # ─── META ───
     status: str = "OPEN"  # OPEN, CLOSED, CANCELLED
+    strategy_bucket: str = "CORE"  # CORE, TACTICAL, UNCLASSIFIED
     
     # ─── V2: Entry Intelligence Context ───
     # Full EntryIntelligenceReport captured for ML and post-mortem analysis.
@@ -212,6 +213,9 @@ class TradeJournal:
         self.snapshots.create_index([("trade_id", ASCENDING), ("snapshot_type", ASCENDING)])
         self.patterns.create_index([("trade_id", ASCENDING)])
         self.patterns.create_index([("pattern_name", ASCENDING)])
+        
+        # V7 Note: Atlas Vector Search index is created via Atlas UI or Admin API,
+        # not standard pymongo. It should index the `entry_vector` field on `trades`.
         
         logger.info(f"Trade Journal MongoDB: {self._db.name}")
     
@@ -278,7 +282,6 @@ class TradeJournal:
                 "timestamp": entry.exit_time,
                 "data": entry.exit_snapshot,
             })
-        
         # Guardar patrones
         if entry.pattern_tags:
             pattern_docs = [
@@ -415,5 +418,48 @@ class TradeJournal:
                 "entry_time": 1,
                 "alpha_score": 1,
                 "qualifier_grade": 1,
+                "strategy_bucket": 1,
             },
         ))
+
+    # ═══════════════════════════════════════════════════════════
+    # V7: VECTOR SEARCH MEMORY
+    # ═══════════════════════════════════════════════════════════
+
+    def find_similar_trades(self, vector: list[float], limit: int = 5) -> list[dict]:
+        """
+        Consulta la base de datos vectorial de MongoDB Atlas para encontrar
+        trades históricos similares a las condiciones actuales de mercado.
+        
+        Requiere un Atlas Vector Search Index en el campo `entry_vector`.
+        """
+        try:
+            pipeline = [
+                {
+                    "$vectorSearch": {
+                        "index": "vector_index",
+                        "path": "entry_vector",
+                        "queryVector": vector,
+                        "numCandidates": 100,
+                        "limit": limit
+                    }
+                },
+                {
+                    "$project": {
+                        "trade_id": 1,
+                        "ticker": 1,
+                        "status": 1,
+                        "was_winner": 1,
+                        "exit_reason": 1,
+                        "pnl_pct": 1,
+                        "grade": 1,
+                        "lesson_learned": 1,
+                        "score": { "$meta": "vectorSearchScore" }
+                    }
+                }
+            ]
+            results = list(self.trades.aggregate(pipeline))
+            return results
+        except Exception as e:
+            logger.warning(f"Vector Search no disponible o falló: {e}")
+            return []

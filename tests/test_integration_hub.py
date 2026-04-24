@@ -118,19 +118,38 @@ class TestHubEvaluate:
         mock_uw = MagicMock()
         mock_uw.parse_spy_macro_gate.return_value = MagicMock(
             cum_delta=500_000, signal="STAY_IN", confidence=0.75,
-            am_pm_diverges=False,
+            am_pm_diverges=False, last_updated="2023-10-27T10:00:00Z"
         )
         mock_uw.parse_market_tide.return_value = MagicMock(
             tide_direction="BULLISH", is_accelerating=True,
-            cum_net_premium=8_000_000,
+            cum_net_premium=8_000_000, last_updated="2023-10-27T10:05:00Z"
         )
         mock_uw.parse_flow_alerts.return_value = MagicMock(
-            n_sweeps=12, n_calls=15, n_puts=5,
+            n_sweeps=12, n_calls=15, n_puts=5, last_updated="2023-10-27T10:01:00Z"
         )
         mock_uw.parse_market_sentiment.return_value = MagicMock(
-            regime="BULL", breadth_pct=65,
+            regime="BULL", breadth_pct=65, last_updated="2023-10-27T10:00:00Z"
         )
         hub._uw = mock_uw
+
+        # V7: Mock journal to avoid real DB + provide empty vector search
+        mock_journal = MagicMock()
+        mock_journal.find_similar_trades.return_value = []
+        hub.journal = mock_journal
+
+        # V7: Inject recent_flow with a fresh timestamp to bypass DEAD_SIGNAL
+        from datetime import datetime, UTC
+        fresh_ts = datetime.now(UTC).isoformat()
+        hub.inject_uw_data(
+            spy_ticks=[{"delta": 500_000}],
+            flow_alerts=[{"ticker": "TEST"}],
+            tide_data=[{"premium": 8_000_000}],
+            recent_flow=[
+                {"timestamp": fresh_ts, "option_type": "CALL", "side": "ASK", "ticker": "TEST"},
+                {"timestamp": fresh_ts, "option_type": "CALL", "side": "ASK", "ticker": "TEST"},
+            ],
+            darkpool_prints=[],
+        )
 
         return hub
 
@@ -142,11 +161,7 @@ class TestHubEvaluate:
         BULLISH whale flow → should produce a high-conviction report.
         """
         hub = self._make_hub_with_mocks()
-        hub.inject_uw_data(
-            spy_ticks=[{"delta": 500_000}],
-            flow_alerts=[{"ticker": "TEST"}],
-            tide_data=[{"premium": 8_000_000}],
-        )
+        # V7: recent_flow already injected by _make_hub_with_mocks
 
         prices = _make_prices(trend="up")
         report = hub.evaluate("TEST", prices_df=prices)
@@ -191,11 +206,7 @@ class TestHubEvaluate:
     def test_report_has_all_fields(self, mock_rs, mock_vix):
         """Verify report contains data from all connected modules."""
         hub = self._make_hub_with_mocks()
-        hub.inject_uw_data(
-            spy_ticks=[{"delta": 500_000}],
-            flow_alerts=[{"ticker": "TEST"}],
-            tide_data=[{"premium": 8_000_000}],
-        )
+        # recent_flow already injected by _make_hub_with_mocks
 
         prices = _make_prices(trend="up")
         report = hub.evaluate("TEST", prices_df=prices)

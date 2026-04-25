@@ -21,7 +21,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from backend.application.shadow_spring import ShadowSpringScanner
+from _legacy.shadow_spring import ShadowSpringScanner
 
 logging.basicConfig(
     level=logging.INFO,

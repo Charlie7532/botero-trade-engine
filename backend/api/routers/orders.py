@@ -3,10 +3,10 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, model_validator
 
-from application.use_cases import place_order
-from domain.entities import Broker, Order, OrderSide, OrderStatus, OrderType
-from infrastructure.brokers.alpaca_adapter import AlpacaAdapter
-from infrastructure.brokers.ib_adapter import IBAdapter
+from backend.modules.shared.use_cases import place_order
+from backend.modules.execution.domain.entities.order_models import Broker, Order, OrderSide, OrderStatus, OrderType
+from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
+from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 

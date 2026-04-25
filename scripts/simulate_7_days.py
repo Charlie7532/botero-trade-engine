@@ -20,8 +20,8 @@ from dataclasses import dataclass
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'backend'))
 
-from application.entry_intelligence_hub import EntryIntelligenceHub
-from application.portfolio_intelligence import AdaptiveTrailingStop
+from modules.entry_decision.hub import EntryIntelligenceHub
+from modules.portfolio_management.domain.portfolio_intelligence import AdaptiveTrailingStop
 from dotenv import load_dotenv
 
 load_dotenv()

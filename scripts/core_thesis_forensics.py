@@ -23,8 +23,8 @@ from datetime import datetime, date
 from collections import defaultdict
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'backend'))
-from infrastructure.data_providers.volume_dynamics import KalmanVolumeTracker, SectorRegimeDetector
-from application.entry_intelligence_hub import EntryIntelligenceHub
+from modules.volume_intelligence.kalman_engine import KalmanVolumeTracker, SectorRegimeDetector
+from modules.entry_decision.hub import EntryIntelligenceHub
 from dotenv import load_dotenv
 load_dotenv()
 

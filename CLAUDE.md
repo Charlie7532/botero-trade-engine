@@ -36,20 +36,20 @@ This is the most important section. Every agent must follow these rules without 
          └─────────────────────────┘
 ```
 
-### Python backend layer rules
+### Python backend layer rules (Modular Clean Architecture)
+
+The backend is now structured into feature **modules**. Each module can be either *pure domain* (flat structure) or *hybrid* (split into `domain/` and `infrastructure/`).
 
 | Layer | Location | Allowed imports | Forbidden |
 |---|---|---|---|
-| **Domain** | `backend/domain/` | Python stdlib only | fastapi, backtrader, ib_insync, alpaca, pandas |
-| **Application** | `backend/application/` | domain, stdlib | fastapi, ib_insync, alpaca |
-| **Infrastructure** | `backend/infrastructure/` | domain, application, any library | — |
-| **API** | `backend/api/` | application, infrastructure, fastapi | direct broker SDK calls |
+| **Module Domain** | `backend/modules/*/domain/` | stdlib, pandas, numpy, own entities/rules/ports | any external API or SDK (e.g. yfinance, requests, finnhub) |
+| **Module Infra** | `backend/modules/*/infrastructure/` | module domain, any library | — |
+| **Domain Ports** | `backend/modules/*/domain/ports/` | stdlib, ABC | any infrastructure |
+| **API** | `backend/api/` | modules, fastapi | direct broker SDK calls |
 
-**Domain entities** (`backend/domain/entities.py`) are pure Python dataclasses. Never add framework decorators, ORM mappings, or Pydantic models here. Pydantic belongs in the API layer as request/response schemas.
+**Domain entities** (e.g. `backend/modules/execution/domain/entities/order_models.py`) are pure Python dataclasses. Never add framework decorators, ORM mappings, or Pydantic models here. Pydantic belongs in the API layer.
 
-**BrokerAdapter** (`backend/infrastructure/brokers/base.py`) is the critical abstraction. Application and API code must always depend on `BrokerAdapter`, never on `IBAdapter` or `AlpacaAdapter` directly.
-
-**Use cases** (`backend/application/use_cases.py`) are plain async functions. No FastAPI `Request`, no HTTP concepts, no broker SDK types — only domain entities and the `BrokerAdapter` interface.
+**Infrastructure Adapters** (e.g., `market_data_fetcher.py`, `finnhub_adapter.py`) are the ONLY files allowed to touch external APIs like yfinance, requests, or broker SDKs. The domain code must remain pure and fully testable without network access.
 
 ### TypeScript frontend layer rules
 
@@ -66,24 +66,15 @@ PayloadCMS collections (`src/collections/`) and globals (`src/globals/`) are inf
 ### Where to put new code — decision tree
 
 ```
-Is it a business concept with no framework dependency?
-  → Domain (entities, rules, ports)
+Is it a business concept or calculation with no API dependency?
+  → Module Domain (e.g., modules/price_analysis/rsi_engine.py)
 
-Is it orchestration logic that combines domain concepts?
-  → Application (use cases)
+Is it orchestration logic that combines multiple module signals?
+  → Hub / Engine within a Module Domain (e.g., modules/entry_decision/hub.py)
 
-Is it a connection to something external (broker, DB, cache, Next.js APIs)?
-  → Infrastructure (adapters)
-
-Is it an HTTP endpoint or a React component?
-  → API router or UI component (outermost layer)
+Is it a connection to something external (broker, DB, REST API, yfinance)?
+  → Module Infrastructure (e.g., modules/flow_intelligence/infrastructure/uw_adapter.py)
 ```
-
-### What a port is and why it matters
-
-A port is an interface defined in the domain that infrastructure implements. `BrokerAdapter` is a port. `CacheRevalidator` (in `src/shared/domain/ports/`) is a port. Ports let you swap implementations without touching domain or application code.
-
-When adding a new external dependency, always ask: *does the domain need to define a port for this?* If application code needs to use it, yes.
 
 ---
 
@@ -100,36 +91,23 @@ botero-trade/
 │   └── components/              # Shared React components (UI layer)
 │
 ├── backend/                     # Python trading engine
-│   ├── domain/entities.py       # Portfolio, Position, Order, Signal, Trade, Bar
-│   ├── application/             # Core trading logic
-│   │   ├── paper_trading.py     # PaperTradingOrchestrator (main entry point)
-│   │   ├── universe_filter.py   # 4-Tier universe pipeline (Macro→Sector→Fundamental→Catalyst)
-│   │   ├── alpha_scanner.py     # Alpha Score ranking engine
-│   │   ├── portfolio_intelligence.py # RiskGuardian, AdaptiveTrailingStop, PortfolioOptimizer
-│   │   ├── trade_journal.py     # Institutional trade journal (MongoDB Atlas)
-│   │   ├── ticker_qualifier.py  # Walk-Forward fitness test
-│   │   ├── position_monitor.py  # Live position tracking
-│   │   └── lstm_model.py        # QuantInstitutionalLSTM (⚠️ layer violation — planned move)
-│   ├── infrastructure/
-│   │   ├── ports/               # Clean Architecture interfaces
-│   │   │   └── market_data_port.py  # MarketDataPort + ExecutionPort (for IB migration)
-│   │   ├── data_providers/      # MCP adapters + external data
-│   │   │   ├── gurufocus_intelligence.py   # GuruFocus MCP adapter (QGARP, insiders, gurus)
-│   │   │   ├── finviz_intelligence.py      # Finviz MCP adapter (sectors, screening)
-│   │   │   ├── fred_macro_intelligence.py  # FRED MCP adapter (macro dashboard)
-│   │   │   ├── alpaca_market_data.py       # Alpaca SDK adapter (OHLCV, quotes)
-│   │   │   ├── finnhub_intelligence.py     # Finnhub SDK adapter (earnings, insiders)
-│   │   │   ├── sector_flow.py              # Sector rotation engine
-│   │   │   ├── market_breadth.py           # Market breadth (S5TH, S5TW, F&G)
-│   │   │   ├── options_awareness.py        # Options chain analysis
-│   │   │   └── uw_intelligence.py           # Unusual Whales institutional flow (V2)
-│   │   └── brokers/
-│   │       ├── base.py                     # BrokerAdapter interface
-│   │       └── alpaca_adapter.py           # Alpaca execution adapter
+│   ├── modules/                 # Feature-oriented Hexagonal Architecture Modules
+│   │   ├── price_analysis/      # RSI & Phase Timing (Pure Domain)
+│   │   ├── volume_intelligence/ # Volume Profile & Kalman Filter (Pure Domain)
+│   │   ├── pattern_recognition/ # Candlestick patterns via pandas-ta (Pure Domain)
+│   │   ├── flow_intelligence/   # Whale flow (Domain) + Finnhub/UW/FRED (Infra)
+│   │   ├── options_gamma/       # Gamma Regime (Domain) + yfinance chain (Infra)
+│   │   ├── entry_decision/      # Entry Hub (Domain) + Price/VIX fetcher (Infra)
+│   │   ├── portfolio_management/# Universe Filter, Alpha Scanner (Domain) + Finviz (Infra)
+│   │   ├── execution/           # Paper Trading, Journal (Domain) + Broker adapters (Infra)
+│   │   ├── simulation/          # Backtester, Autopsy (Domain) + Backtrader (Infra)
+│   │   └── shared/              # Cache Utils, Global Ports, Market Data entities
+│   ├── _legacy/                 # Deprecated / Experimental code (LSTM, Sequence modeling)
 │   └── api/
 │       ├── main.py              # FastAPI app + CORS
 │       └── routers/
 │
+
 ├── tests/                       # Pytest suite (20 tests)
 │   ├── conftest.py              # Shared fixtures (MongoDB test DB)
 │   ├── test_risk_guardian.py     # 7 tests: DD, VIX, anti-martingale
@@ -275,7 +253,7 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
 4. **New strategy = new file + one registry line.** Create the strategy in `infrastructure/backtrader/strategies/`, register it in `api/routers/strategy.py`. Nothing else changes.
 
-5. **Pydantic schemas are not domain entities.** Request/response models in `api/routers/` are API contracts. Domain entities in `domain/entities.py` are business concepts. Keep them separate.
+5. **Pydantic schemas are not domain entities.** Request/response models in `api/routers/` are API contracts. Domain entities in `modules/*/domain/entities/` are business concepts. Keep them separate.
 
 6. **No direct `fetch` in React components.** Data fetching belongs in `src/modules/*/infrastructure/` or `src/shared/infrastructure/`. Components receive data as props or via hooks that call infrastructure.
 

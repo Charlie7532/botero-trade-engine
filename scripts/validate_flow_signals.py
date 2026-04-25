@@ -14,8 +14,8 @@ import numpy as np
 # Ensure botero-trade path
 sys.path.append("/root/botero-trade/backend")
 
-from infrastructure.data_providers.flow_persistence import FlowPersistenceAnalyzer, FlowPersistenceSignal
-from application.trade_autopsy import TradeAutopsy
+from modules.flow_intelligence.persistence_engine import FlowPersistenceAnalyzer, FlowPersistenceSignal
+from modules.simulation.domain.trade_autopsy import TradeAutopsy
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)

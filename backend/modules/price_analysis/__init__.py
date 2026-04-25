@@ -12,7 +12,7 @@ Components:
   rsi_engine.py → RSIIntelligence (regime-aware RSI)
   phase_engine.py → PricePhaseIntelligence (phase classification)
 """
-from modules.price_analysis.models import EntryVerdict, RSIIntelligenceResult
-from modules.price_analysis import rules
+from backend.modules.price_analysis.domain.entities.price_models import EntryVerdict, RSIIntelligenceResult
+import backend.modules.price_analysis.domain.rules.price_rules as rules
 
 __all__ = ["EntryVerdict", "RSIIntelligenceResult", "rules"]

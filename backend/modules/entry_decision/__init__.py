@@ -6,7 +6,7 @@ Responsible for:
   - Quality gates (VP Distribution, RSI Hostile Zone, Pattern VETO)
   - EntryIntelligenceReport (134-field unified report)
 """
-from modules.entry_decision.models import EntryIntelligenceReport
-from modules.entry_decision.hub import EntryIntelligenceHub
+from backend.modules.entry_decision.domain.entities.entry_report import EntryIntelligenceReport
+from backend.modules.entry_decision.domain.use_cases.evaluate_entry import EntryIntelligenceHub
 
 __all__ = ["EntryIntelligenceReport", "EntryIntelligenceHub"]

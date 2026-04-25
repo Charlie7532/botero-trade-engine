@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
 
-from domain.entities import Bar, Broker, Order, OrderSide, OrderStatus, OrderType, Portfolio, Position
-from modules.execution.infrastructure.brokers.base import BrokerAdapter
+from backend.modules.execution.domain.entities.order_models import Broker, Order, OrderSide, OrderStatus, OrderType
+from backend.modules.portfolio_management.domain.entities.portfolio_models import Portfolio, Position
+from backend.modules.shared.domain.entities.market_data import Bar
+from backend.modules.execution.infrastructure.brokers.base import BrokerAdapter
 
 
 class AlpacaAdapter(BrokerAdapter):

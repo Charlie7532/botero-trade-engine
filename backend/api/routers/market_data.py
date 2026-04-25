@@ -3,9 +3,10 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from domain.entities import Bar, Broker
-from infrastructure.brokers.alpaca_adapter import AlpacaAdapter
-from infrastructure.brokers.ib_adapter import IBAdapter
+from backend.modules.shared.domain.entities.market_data import Bar
+from backend.modules.execution.domain.entities.order_models import Broker
+from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
+from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
 
 router = APIRouter(prefix="/market-data", tags=["Market Data"])
 

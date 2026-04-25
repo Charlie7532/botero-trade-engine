@@ -3,7 +3,7 @@ from datetime import datetime
 import backtrader as bt
 import pandas as pd
 
-from domain.entities import Bar
+from backend.modules.shared.domain.entities.market_data import Bar
 
 
 def bars_to_dataframe(bars: list[Bar]) -> pd.DataFrame:

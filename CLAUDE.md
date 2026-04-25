@@ -42,12 +42,12 @@ The backend is now structured into feature **modules**. Each module can be eithe
 
 | Layer | Location | Allowed imports | Forbidden |
 |---|---|---|---|
-| **Global Domain** | `backend/domain/entities.py` | Python stdlib only | any external library |
-| **Module Domain** | `backend/modules/*/domain/` or `backend/modules/*.py` | stdlib, pandas, numpy, entities | any external API or SDK (e.g. yfinance, requests, finnhub) |
+| **Module Domain** | `backend/modules/*/domain/` | stdlib, pandas, numpy, own entities/rules/ports | any external API or SDK (e.g. yfinance, requests, finnhub) |
 | **Module Infra** | `backend/modules/*/infrastructure/` | module domain, any library | — |
+| **Domain Ports** | `backend/modules/*/domain/ports/` | stdlib, ABC | any infrastructure |
 | **API** | `backend/api/` | modules, fastapi | direct broker SDK calls |
 
-**Domain entities** (`backend/domain/entities.py`) are pure Python dataclasses. Never add framework decorators, ORM mappings, or Pydantic models here. Pydantic belongs in the API layer.
+**Domain entities** (e.g. `backend/modules/execution/domain/entities/order_models.py`) are pure Python dataclasses. Never add framework decorators, ORM mappings, or Pydantic models here. Pydantic belongs in the API layer.
 
 **Infrastructure Adapters** (e.g., `market_data_fetcher.py`, `finnhub_adapter.py`) are the ONLY files allowed to touch external APIs like yfinance, requests, or broker SDKs. The domain code must remain pure and fully testable without network access.
 
@@ -91,8 +91,7 @@ botero-trade/
 │   └── components/              # Shared React components (UI layer)
 │
 ├── backend/                     # Python trading engine
-│   ├── domain/entities.py       # Portfolio, Position, Order, Signal, Trade, Bar
-│   ├── modules/                 # Feature-oriented Clean Architecture Modules
+│   ├── modules/                 # Feature-oriented Hexagonal Architecture Modules
 │   │   ├── price_analysis/      # RSI & Phase Timing (Pure Domain)
 │   │   ├── volume_intelligence/ # Volume Profile & Kalman Filter (Pure Domain)
 │   │   ├── pattern_recognition/ # Candlestick patterns via pandas-ta (Pure Domain)
@@ -102,7 +101,7 @@ botero-trade/
 │   │   ├── portfolio_management/# Universe Filter, Alpha Scanner (Domain) + Finviz (Infra)
 │   │   ├── execution/           # Paper Trading, Journal (Domain) + Broker adapters (Infra)
 │   │   ├── simulation/          # Backtester, Autopsy (Domain) + Backtrader (Infra)
-│   │   └── shared/              # Cache Utils, Global Ports
+│   │   └── shared/              # Cache Utils, Global Ports, Market Data entities
 │   ├── _legacy/                 # Deprecated / Experimental code (LSTM, Sequence modeling)
 │   └── api/
 │       ├── main.py              # FastAPI app + CORS
@@ -254,7 +253,7 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
 4. **New strategy = new file + one registry line.** Create the strategy in `infrastructure/backtrader/strategies/`, register it in `api/routers/strategy.py`. Nothing else changes.
 
-5. **Pydantic schemas are not domain entities.** Request/response models in `api/routers/` are API contracts. Domain entities in `domain/entities.py` are business concepts. Keep them separate.
+5. **Pydantic schemas are not domain entities.** Request/response models in `api/routers/` are API contracts. Domain entities in `modules/*/domain/entities/` are business concepts. Keep them separate.
 
 6. **No direct `fetch` in React components.** Data fetching belongs in `src/modules/*/infrastructure/` or `src/shared/infrastructure/`. Components receive data as props or via hooks that call infrastructure.
 

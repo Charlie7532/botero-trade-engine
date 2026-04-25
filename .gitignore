@@ -23,6 +23,10 @@ data/historical/*.parquet
 data/journal/*.db
 data/journal/*.json
 data/journal/logs/
+data/sim_7d_cache.json
+data/forensic_ml_dataset.csv
+data/forensic_signals.csv
+logs/*.log
 dist / media
 mcp_servers/**/.cache/
 node_modules

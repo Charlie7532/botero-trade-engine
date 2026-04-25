@@ -32,59 +32,18 @@ class Broker(str, Enum):
     {NEW_BROKER} = "{new_broker_value}"   # ← add here
 ```
 
-3. Create the adapter at `backend/infrastructure/brokers/{broker_name}_adapter.py`:
-
-```python
-import os
-from datetime import datetime
-from domain.entities import Bar, Broker, Order, Portfolio, Position
-from infrastructure.brokers.base import BrokerAdapter
-
-class {BrokerName}Adapter(BrokerAdapter):
-    """{BrokerName} adapter using {sdk_name}.
-    
-    Set {ENV_VARS} in environment.
-    """
-
-    def __init__(self):
-        # load credentials from env vars
-        self._client = None
-
-    @property
-    def broker(self) -> Broker:
-        return Broker.{NEW_BROKER}
-
-    # implement all abstract methods...
-```
+3. Create the adapter at `backend/infrastructure/brokers/{broker_name}_adapter.py`
 
 4. Add the adapter to the `_brokers` registry in all three routers:
    - `backend/api/routers/market_data.py`
    - `backend/api/routers/portfolio.py`
    - `backend/api/routers/strategy.py`
 
-```python
-from infrastructure.brokers.{broker_name}_adapter import {BrokerName}Adapter
+5. Add credentials to `.env.example`
 
-_brokers = {
-    Broker.ALPACA: AlpacaAdapter(),
-    Broker.INTERACTIVE_BROKERS: IBAdapter(),
-    Broker.{NEW_BROKER}: {BrokerName}Adapter(),   # ← add here
-}
-```
+6. Add the SDK to `backend/requirements.txt`
 
-5. Add credentials to `.env.example`:
-```bash
-# {BrokerName}
-{BROKER}_API_KEY=
-{BROKER}_SECRET_KEY=
-```
-
-6. Add the SDK to `backend/requirements.txt`.
-
-7. Show the user how to test the connection:
-```bash
-curl http://localhost:8000/api/portfolio/{new_broker_value}
-```
+7. Show the user how to test: `curl http://localhost:8000/api/portfolio/{new_broker_value}`
 
 ## Important rules
 

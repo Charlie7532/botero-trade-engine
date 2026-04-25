@@ -1,10 +1,10 @@
-import type { CacheRevalidator } from '../../../../shared/domain/ports/CacheRevalidator'
+import type { CacheRevalidator } from '@/shared/domain/ports/CacheRevalidator'
 import {
   isCurrentlyPublished,
   isNewlyUnpublished,
   requiresRevalidationOnDelete,
   requiresRevalidationOnUpdate,
-} from '../../domain/rules/revalidationRules'
+} from '../rules/revalidationRules'
 
 export interface RevalidationPayloadLogger {
   info(msg: string): void

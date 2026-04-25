@@ -1,5 +1,5 @@
-import type { UserRepository } from '../../domain/ports/UserRepository'
-import type { AuthorPreview } from '../../domain/models/AuthorPreview'
+import type { UserRepository } from '../ports/UserRepository'
+import type { AuthorPreview } from '../models/AuthorPreview'
 
 /**
  * Given a list of author references from a post, securely fetches and maps 

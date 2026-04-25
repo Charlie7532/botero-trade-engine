@@ -1,6 +1,6 @@
 import type { Payload } from 'payload'
-import type { UserRepository } from '../../domain/ports/UserRepository'
-import type { AuthorPreview } from '../../domain/models/AuthorPreview'
+import type { UserRepository } from '../domain/ports/UserRepository'
+import type { AuthorPreview } from '../domain/models/AuthorPreview'
 
 export class PayloadUserRepository implements UserRepository {
   constructor(private readonly payload: Payload) {}

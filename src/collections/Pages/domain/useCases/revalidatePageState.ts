@@ -1,11 +1,11 @@
-import type { CacheRevalidator } from '../../../../shared/domain/ports/CacheRevalidator'
+import type { CacheRevalidator } from '@/shared/domain/ports/CacheRevalidator'
 import {
   isCurrentlyPublished,
   isNewlyUnpublished,
   requiresRevalidationOnDelete,
   requiresRevalidationOnUpdate,
-} from '../../../posts/domain/rules/revalidationRules'
-import { getPageWebPath } from '../../domain/rules/pageRouteRules'
+} from '../../../Posts/domain/rules/revalidationRules'
+import { getPageWebPath } from '../rules/pageRouteRules'
 
 export interface RevalidationPayloadLogger {
   info(msg: string): void

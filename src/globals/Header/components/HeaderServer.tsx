@@ -1,4 +1,4 @@
-import { HeaderClient } from './Component.client'
+import { HeaderClient } from './HeaderClient'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import { getCachedSiteSettings } from '@/utilities/getSiteSettings'
 import React from 'react'

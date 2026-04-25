@@ -2,12 +2,12 @@ import { handleAfterChangeHook, handleAfterDeleteHook, handleAfterReadHook } fro
 
 import type { Post } from '../../payload-types'
 import { NextCacheRevalidator } from '../../shared/infrastructure/next/NextCacheRevalidator'
-import { PayloadUserRepository } from '../../modules/posts/infrastructure/payload/PayloadUserRepository'
-import { populatePublicAuthors } from '../../modules/posts/application/useCases/populatePublicAuthors'
+import { PayloadUserRepository } from './infrastructure/PayloadUserRepository'
+import { populatePublicAuthors } from './domain/useCases/populatePublicAuthors'
 import { 
   revalidatePostStateOnUpdate, 
   revalidatePostStateOnDelete 
-} from '../../modules/posts/application/useCases/revalidatePostState'
+} from './domain/useCases/revalidatePostState'
 
 const populateAuthorsAdapter = handleAfterReadHook({
   name: 'Posts',
@@ -57,4 +57,3 @@ export const postsLifecycle = {
   afterRead: [populateAuthorsAdapter],
   afterDelete: [revalidateDeleteAdapter],
 }
-

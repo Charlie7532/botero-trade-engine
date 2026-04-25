@@ -150,9 +150,137 @@ class UnusualWhalesIntelligence:
     # PER-TICKER: Flow Alerts → FlowSignal
     # ─────────────────────────────────────────
     
+    def _is_aggregate_format(self, alerts: list[dict]) -> bool:
+        """Detect if data is daily aggregates vs individual alerts."""
+        if not alerts:
+            return False
+        return 'call_volume' in alerts[0] and 'type' not in alerts[0] and 'option_type' not in alerts[0]
+
     def parse_flow_alerts(self, ticker: str, alerts: list[dict]) -> FlowSignal:
         """
         Parse flow alerts for a specific ticker into a FlowSignal.
+        
+        Supports TWO formats:
+        1. Individual alerts (from /option-trades/flow-alerts) with type, has_sweep, etc.
+        2. Daily aggregates (from /stock/{ticker}/options-volume) with call_volume, put_volume.
+        """
+        if not alerts:
+            return FlowSignal(ticker=ticker)
+        
+        # Detect and dispatch based on data format
+        if self._is_aggregate_format(alerts):
+            return self._parse_aggregate_flow(ticker, alerts)
+        
+        return self._parse_individual_alerts(ticker, alerts)
+
+    def _parse_aggregate_flow(self, ticker: str, aggregates: list[dict]) -> FlowSignal:
+        """
+        Parse daily aggregate flow data into a FlowSignal.
+        Uses call_volume_ask_side, put_volume_ask_side, net premiums, etc.
+        to reconstruct directional signals.
+        """
+        # Use the most recent 5 trading days
+        recent = sorted(aggregates, key=lambda x: x.get('date', ''), reverse=True)[:5]
+        
+        total_call_vol = sum(int(r.get('call_volume', 0) or 0) for r in recent)
+        total_put_vol = sum(int(r.get('put_volume', 0) or 0) for r in recent)
+        call_ask_vol = sum(int(r.get('call_volume_ask_side', 0) or 0) for r in recent)
+        put_ask_vol = sum(int(r.get('put_volume_ask_side', 0) or 0) for r in recent)
+        call_bid_vol = sum(int(r.get('call_volume_bid_side', 0) or 0) for r in recent)
+        put_bid_vol = sum(int(r.get('put_volume_bid_side', 0) or 0) for r in recent)
+        
+        call_premium = sum(float(r.get('call_premium', 0) or 0) for r in recent)
+        put_premium = sum(float(r.get('put_premium', 0) or 0) for r in recent)
+        total_premium = call_premium + put_premium
+        net_premium = call_premium - put_premium
+        
+        bullish_premium = sum(float(r.get('bullish_premium', 0) or 0) for r in recent)
+        bearish_premium = sum(float(r.get('bearish_premium', 0) or 0) for r in recent)
+        
+        cp_ratio = total_call_vol / max(total_put_vol, 1)
+        
+        # Ask-side aggression: buying calls at ask = bullish conviction
+        ask_side_bullish = call_ask_vol + put_bid_vol   # Buying calls + selling puts = bullish
+        ask_side_bearish = put_ask_vol + call_bid_vol   # Buying puts + selling calls = bearish
+        ask_bid_ratio = ask_side_bullish / max(ask_side_bearish, 1)
+        
+        # Synthetic sweep count from volume spikes
+        # If ask-side call volume dominates strongly, it's equivalent to sweep activity
+        avg_daily_call_vol = sum(int(r.get('avg_30_day_call_volume', 0) or 0) for r in recent[:1])
+        n_sweeps = 0
+        if avg_daily_call_vol > 0 and total_call_vol / len(recent) > avg_daily_call_vol * 1.5:
+            n_sweeps = max(1, int((total_call_vol / len(recent) / avg_daily_call_vol - 1) * 10))
+        
+        # ═══ FLOW SCORE: Adapted for aggregate data ═══
+        score = 0.0
+        
+        # Component 1: Volume spike (proxy for sweep activity) — 40 points
+        if n_sweeps > 5:
+            score += 40
+        elif n_sweeps > 0:
+            score += 25
+        elif total_call_vol > total_put_vol * 1.5:
+            score += 15  # Strong call dominance even without spike
+        
+        # Component 2: Premium conviction — 25 points
+        if bullish_premium > 0 and bearish_premium > 0:
+            conviction = bullish_premium / (bullish_premium + bearish_premium)
+            if conviction > 0.7:
+                score += 25
+            elif conviction > 0.6:
+                score += 15
+            elif conviction > 0.55:
+                score += 10
+        elif net_premium > 0:
+            score += 15  # Positive net premium = bullish lean
+        
+        # Component 3: Call/Put ratio — 15 points
+        if cp_ratio > 2.0:
+            score += 15
+        elif cp_ratio > 1.3:
+            score += 10
+        elif cp_ratio > 1.0:
+            score += 5
+        
+        # Component 4: Ask-side aggression — 10 points
+        if ask_bid_ratio > 1.5:
+            score += 10
+        elif ask_bid_ratio > 1.2:
+            score += 7
+        elif ask_bid_ratio > 1.0:
+            score += 3
+        
+        # Component 5: Premium magnitude — 10 points
+        if total_premium > 1_000_000_000:
+            score += 10
+        elif total_premium > 500_000_000:
+            score += 7
+        elif total_premium > 100_000_000:
+            score += 4
+        
+        last_updated = recent[0].get('date') if recent else None
+        
+        return FlowSignal(
+            ticker=ticker,
+            n_calls=total_call_vol,
+            n_puts=total_put_vol,
+            n_sweeps=n_sweeps,
+            call_put_ratio=round(cp_ratio, 3),
+            total_premium=total_premium,
+            call_premium=call_premium,
+            put_premium=put_premium,
+            net_premium=net_premium,
+            avg_voi_ratio=0.0,
+            max_voi_ratio=0.0,
+            ask_bid_ratio=round(ask_bid_ratio, 3),
+            avg_trade_count=0.0,
+            flow_score=min(100.0, score),
+            last_updated=last_updated,
+        )
+
+    def _parse_individual_alerts(self, ticker: str, alerts: list[dict]) -> FlowSignal:
+        """
+        Original parser for individual alert data.
         
         Input: List of alert dicts from /option-trades/flow-alerts
                filtered to this ticker.
@@ -164,9 +292,6 @@ class UnusualWhalesIntelligence:
         - Ask > Bid: +10 (7.3pp HR improvement)
         - Premium magnitude: +0-10
         """
-        if not alerts:
-            return FlowSignal(ticker=ticker)
-        
         n_calls = sum(1 for a in alerts if a.get('type') == 'call')
         n_puts = sum(1 for a in alerts if a.get('type') == 'put')
         n_sweeps = sum(1 for a in alerts if a.get('has_sweep'))
@@ -198,50 +323,21 @@ class UnusualWhalesIntelligence:
         # ═══ FLOW SCORE: Evidence-based formula ═══
         score = 0.0
         
-        # Component 1: Sweep presence (40 points max)
-        # Forensic finding: 83.9% of misses had 0 sweeps
-        if n_sweeps > 0:
-            score += 40
+        if n_sweeps > 0: score += 40
+        if avg_voi > 5.0: score += 25
+        elif avg_voi > 2.0: score += 20
+        elif avg_voi > 1.0: score += 15
+        elif avg_voi > 0.5: score += 5
+        if cp_ratio > 2.0: score += 15
+        elif cp_ratio > 1.0: score += 10
+        elif cp_ratio > 0.8: score += 3
+        if ask_bid > 2.0: score += 10
+        elif ask_bid > 1.5: score += 8
+        elif ask_bid > 1.0: score += 4
+        if total_premium > 1_000_000: score += 10
+        elif total_premium > 500_000: score += 7
+        elif total_premium > 100_000: score += 4
         
-        # Component 2: Volume/OI ratio (25 points max)
-        # Forensic finding: 69.9% of misses had VOI < 1.0
-        # VOI > 5.0 = 90% hit rate, VOI 2-5 = 76% hit rate
-        if avg_voi > 5.0:
-            score += 25
-        elif avg_voi > 2.0:
-            score += 20
-        elif avg_voi > 1.0:
-            score += 15
-        elif avg_voi > 0.5:
-            score += 5
-        
-        # Component 3: Call dominance (15 points max)
-        # Forensic finding: 40.9% of misses were put-dominant
-        if cp_ratio > 2.0:
-            score += 15
-        elif cp_ratio > 1.0:
-            score += 10
-        elif cp_ratio > 0.8:
-            score += 3
-        
-        # Component 4: Ask-side aggression (10 points max)
-        # Forensic finding: +7.3pp HR improvement when ask > bid
-        if ask_bid > 2.0:
-            score += 10
-        elif ask_bid > 1.5:
-            score += 8
-        elif ask_bid > 1.0:
-            score += 4
-        
-        # Component 5: Premium magnitude (10 points max)
-        if total_premium > 1_000_000:
-            score += 10
-        elif total_premium > 500_000:
-            score += 7
-        elif total_premium > 100_000:
-            score += 4
-        
-        # Extract the latest timestamp
         last_updated = None
         for a in sorted(alerts, key=lambda x: x.get('executed_at') or x.get('timestamp') or '', reverse=True):
             ts = a.get('executed_at') or a.get('timestamp') or a.get('time')
@@ -250,21 +346,12 @@ class UnusualWhalesIntelligence:
                 break
 
         return FlowSignal(
-            ticker=ticker,
-            n_calls=n_calls,
-            n_puts=n_puts,
-            n_sweeps=n_sweeps,
-            call_put_ratio=round(cp_ratio, 3),
-            total_premium=total_premium,
-            call_premium=call_premium,
-            put_premium=put_premium,
-            net_premium=net_premium,
-            avg_voi_ratio=round(avg_voi, 3),
-            max_voi_ratio=round(max_voi, 3),
-            ask_bid_ratio=round(ask_bid, 3),
-            avg_trade_count=round(avg_tc, 1),
-            flow_score=min(100.0, score),
-            last_updated=last_updated,
+            ticker=ticker, n_calls=n_calls, n_puts=n_puts, n_sweeps=n_sweeps,
+            call_put_ratio=round(cp_ratio, 3), total_premium=total_premium,
+            call_premium=call_premium, put_premium=put_premium, net_premium=net_premium,
+            avg_voi_ratio=round(avg_voi, 3), max_voi_ratio=round(max_voi, 3),
+            ask_bid_ratio=round(ask_bid, 3), avg_trade_count=round(avg_tc, 1),
+            flow_score=min(100.0, score), last_updated=last_updated,
         )
     
     # ─────────────────────────────────────────
@@ -364,11 +451,11 @@ class UnusualWhalesIntelligence:
     
     def parse_spy_macro_gate(self, spy_ticks: list[dict]) -> MacroGate:
         """
-        Build SPY macro gate from net premium ticks.
+        Build SPY macro gate from net premium ticks OR daily aggregates.
         
-        Input: List of tick dicts from /stock/SPY/net-prem-ticks.
-        Each tick has: tape_time, net_call_premium, net_put_premium, 
-                      net_delta, call_volume, put_volume.
+        Supports TWO formats:
+        1. Tick-level: /stock/SPY/net-prem-ticks with tape_time, net_delta, etc.
+        2. Daily aggregates: /stock/SPY/options-volume with call_volume, bullish_premium, etc.
         
         ADAPTIVE SCALING:
         Instead of binary -50%, the position_scale_factor graduates:
@@ -380,6 +467,11 @@ class UnusualWhalesIntelligence:
         """
         if not spy_ticks:
             return MacroGate()
+        
+        # Detect data format: aggregates have 'call_volume' but no 'net_delta'
+        is_aggregate = 'call_volume' in spy_ticks[0] and 'net_delta' not in spy_ticks[0]
+        if is_aggregate:
+            return self._parse_spy_aggregate(spy_ticks)
         
         # Aggregate to hourly blocks
         hourly_deltas = []
@@ -518,6 +610,108 @@ class UnusualWhalesIntelligence:
             f"SPY Macro Gate: score={score:+d} signal={signal} "
             f"scale={adjusted_scale:.2f} conf={confidence:.2f} "
             f"delta={total_delta:+,.0f} AM/PM_div={am_pm_diverges}"
+        )
+        
+        return gate
+    
+    def _parse_spy_aggregate(self, spy_aggregates: list[dict]) -> MacroGate:
+        """
+        Parse SPY daily aggregate data into a MacroGate.
+        Used when /stock/SPY/options-volume returns daily summaries
+        instead of intraday net-premium ticks.
+        """
+        # Use the most recent day
+        recent = sorted(spy_aggregates, key=lambda x: x.get('date', ''), reverse=True)[:1]
+        if not recent:
+            return MacroGate()
+        
+        day = recent[0]
+        call_vol = int(day.get('call_volume', 0) or 0)
+        put_vol = int(day.get('put_volume', 0) or 0)
+        call_ask = int(day.get('call_volume_ask_side', 0) or 0)
+        put_ask = int(day.get('put_volume_ask_side', 0) or 0)
+        call_bid = int(day.get('call_volume_bid_side', 0) or 0)
+        put_bid = int(day.get('put_volume_bid_side', 0) or 0)
+        
+        net_call_prem = float(day.get('net_call_premium', 0) or 0)
+        net_put_prem = float(day.get('net_put_premium', 0) or 0)
+        bullish_prem = float(day.get('bullish_premium', 0) or 0)
+        bearish_prem = float(day.get('bearish_premium', 0) or 0)
+        
+        # Synthetic cum_delta from ask-side volumes (buying pressure)
+        # Ask-side calls = buying to open (bullish delta)
+        # Ask-side puts = buying to open (bearish delta)
+        synthetic_delta = float(call_ask - put_ask)
+        
+        cp_vol_ratio = call_vol / max(put_vol, 1)
+        cum_net_premium = bullish_prem - bearish_prem if (bullish_prem or bearish_prem) else (net_call_prem - net_put_prem)
+        
+        # Composite score
+        score = 0
+        
+        # Delta direction from ask-side volume
+        if synthetic_delta > 100_000:
+            score += 1
+        elif synthetic_delta < -100_000:
+            score -= 1
+        if synthetic_delta > 500_000:
+            score += 1
+        elif synthetic_delta < -500_000:
+            score -= 1
+        
+        # Net premium direction
+        if cum_net_premium > 1_000_000:
+            score += 1
+        elif cum_net_premium < -1_000_000:
+            score -= 1
+        
+        # Call/Put volume ratio
+        if cp_vol_ratio > 1.2:
+            score += 1
+        elif cp_vol_ratio < 0.8:
+            score -= 1
+        
+        # Adaptive scaling
+        base_scale = 0.85 + (score + 4) * (0.50 / 8)
+        base_scale = max(0.50, min(1.15, base_scale))
+        
+        # Can't detect AM/PM divergence from daily aggregates
+        am_pm_diverges = False
+        
+        # Confidence: daily aggregate is inherently less informative
+        confidence = min(1.0, abs(score) / 3.0) * 0.7  # Max 70% confidence from aggregate
+        adjusted_scale = base_scale * confidence + 1.0 * (1 - confidence)
+        
+        if score >= 3:
+            signal = "FULL_IN"
+        elif score >= 1:
+            signal = "STAY_IN"
+        elif score >= -1:
+            signal = "NEUTRAL"
+        elif score >= -3:
+            signal = "REDUCE"
+        else:
+            signal = "EXIT"
+        
+        gate = MacroGate(
+            cum_delta=synthetic_delta,
+            morning_delta=0.0,
+            afternoon_delta=0.0,
+            am_pm_diverges=am_pm_diverges,
+            cum_net_premium=cum_net_premium,
+            call_put_vol_ratio=round(cp_vol_ratio, 3),
+            composite_score=score,
+            signal=signal,
+            position_scale_factor=round(adjusted_scale, 3),
+            confidence=round(confidence, 3),
+            last_updated=day.get('date'),
+        )
+        self._last_macro_gate = gate
+        
+        logger.info(
+            f"SPY Macro Gate (aggregate): score={score:+d} signal={signal} "
+            f"scale={adjusted_scale:.2f} conf={confidence:.2f} "
+            f"synth_delta={synthetic_delta:+,.0f} C/P={cp_vol_ratio:.2f}"
         )
         
         return gate

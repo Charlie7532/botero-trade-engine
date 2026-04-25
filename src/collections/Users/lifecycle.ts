@@ -1,6 +1,6 @@
 import { handleBeforeChangeHook } from '@/shared/handlers'
-import { assignInitialAdminRole } from '../../modules/users/application/useCases/assignInitialAdminRole'
-import { formatUserAvatarUpload } from '../../modules/users/application/useCases/formatUserAvatarUpload'
+import { assignInitialAdminRole } from './domain/useCases/assignInitialAdminRole'
+import type { PayloadRequest } from 'payload'
 
 const ensureFirstUserIsSuperAdmin = handleBeforeChangeHook({
   name: 'Users',
@@ -23,7 +23,19 @@ const formatAvatarData = handleBeforeChangeHook({
   name: 'UserAvatar',
   operation: 'all',
   handler: async ({ data, req, operation }) => {
-    return formatUserAvatarUpload(data, req, operation)
+    // Bind owner on create, but do not reassign owner on updates.
+    if (operation === 'create' && req.user && !data.user) {
+      data.user = req.user.id
+    }
+
+    // Auto-generate alt text if not provided
+    if (!data.alt) {
+      const user = req?.user
+      const userName = user?.name || user?.email || 'user'
+      data.alt = `${userName} - avatar`
+    }
+
+    return data
   },
 })
 

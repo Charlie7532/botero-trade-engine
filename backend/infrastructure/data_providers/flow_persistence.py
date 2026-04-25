@@ -58,6 +58,122 @@ class FlowPersistenceAnalyzer:
         days_old = hours_old / 24.0
         return math.exp(-self.LAMBDA_DECAY * days_old)
 
+    def _is_aggregate_format(self, flow: List[Dict]) -> bool:
+        """Detect if flow data is daily aggregates (from /options-volume) vs individual alerts."""
+        if not flow:
+            return False
+        sample = flow[0]
+        # Aggregates have call_volume/put_volume; individual alerts have option_type/side
+        return 'call_volume' in sample and 'option_type' not in sample
+
+    def _parse_aggregates(
+        self,
+        ticker: str,
+        flow: List[Dict],
+        reference_date: Optional[date],
+        now: datetime,
+    ) -> FlowPersistenceSignal:
+        """
+        Parse daily aggregate flow data (from UW /stock/{ticker}/options-volume).
+        
+        Each record has: date, call_volume, put_volume, call_volume_ask_side,
+        put_volume_ask_side, net_call_premium, net_put_premium, bullish_premium,
+        bearish_premium, etc.
+        """
+        ref_str = reference_date.isoformat() if reference_date else now.strftime("%Y-%m-%d")
+        
+        # Filter to only the 7 days up to reference_date
+        recent = [r for r in flow if r.get('date', '') <= ref_str]
+        recent = sorted(recent, key=lambda x: x.get('date', ''), reverse=True)[:7]
+        
+        if not recent:
+            return FlowPersistenceSignal(ticker=ticker, persistence_grade="DEAD_SIGNAL", freshness_weight=0.0)
+        
+        latest_date_str = recent[0].get('date', '')
+        if latest_date_str:
+            try:
+                latest_dt = datetime.fromisoformat(latest_date_str + "T16:00:00+00:00")
+                hours_old = (now - latest_dt).total_seconds() / 3600.0
+            except:
+                hours_old = 999.0
+        else:
+            hours_old = 999.0
+        
+        freshness = self.calculate_freshness(hours_old)
+        days_with_flow = set(r.get('date', '')[:10] for r in recent if r.get('date'))
+        consecutive_days = len(days_with_flow)
+        
+        # Directional conviction from aggregate metrics
+        bullish_days = 0
+        bearish_days = 0
+        total_bullish_premium = 0.0
+        total_bearish_premium = 0.0
+        
+        for r in recent:
+            # Method 1: Use bullish_premium / bearish_premium if available
+            bp = float(r.get('bullish_premium', 0) or 0)
+            brp = float(r.get('bearish_premium', 0) or 0)
+            
+            if bp > 0 or brp > 0:
+                total_bullish_premium += bp
+                total_bearish_premium += brp
+                if bp > brp:
+                    bullish_days += 1
+                elif brp > bp:
+                    bearish_days += 1
+            else:
+                # Method 2: Fallback to call_volume_ask_side vs put_volume_ask_side
+                call_ask = int(r.get('call_volume_ask_side', 0) or 0)
+                put_ask = int(r.get('put_volume_ask_side', 0) or 0)
+                # Ask-side calls = buying to open (bullish), Ask-side puts = buying to open (bearish)
+                if call_ask > put_ask * 1.1:
+                    bullish_days += 1
+                elif put_ask > call_ask * 1.1:
+                    bearish_days += 1
+                    
+                # Use net premiums
+                ncp = float(r.get('net_call_premium', 0) or 0)
+                npp = float(r.get('net_put_premium', 0) or 0)
+                total_bullish_premium += max(0, ncp)
+                total_bearish_premium += max(0, npp)
+        
+        total_dir = bullish_days + bearish_days
+        consistency = (max(bullish_days, bearish_days) / total_dir) if total_dir > 0 else 0.0
+        
+        # Classify grade
+        grade = "UNKNOWN"
+        score = 50.0
+        
+        if hours_old > 96:
+            grade = "DEAD_SIGNAL"
+            score = 10.0
+        elif consecutive_days >= 3 and consistency >= 0.65:
+            grade = "CONFIRMED_STREAK"
+            score = 90.0
+        elif consecutive_days >= 2 and hours_old < 24 and consistency >= 0.7:
+            grade = "FRESH_ACCUMULATION"
+            score = 85.0
+        elif consecutive_days >= 1 and hours_old < 24:
+            grade = "FRESH_ISOLATED"
+            score = 65.0
+        elif consecutive_days >= 2 and hours_old > 24:
+            grade = "STALE_CONFIRMED"
+            score = 55.0
+        else:
+            grade = "STALE_UNCONFIRMED"
+            score = 30.0
+        
+        return FlowPersistenceSignal(
+            ticker=ticker,
+            hours_since_latest=hours_old,
+            days_with_flow=len(days_with_flow),
+            consecutive_days=consecutive_days,
+            freshness_weight=freshness,
+            direction_consistency=consistency,
+            persistence_score=score,
+            persistence_grade=grade,
+        )
+
     def evaluate_persistence(
         self,
         ticker: str,
@@ -70,8 +186,12 @@ class FlowPersistenceAnalyzer:
         """
         Analyzes recent flow to generate a persistence grade.
         
+        Supports TWO data formats:
+        1. Individual alerts (from /option-trades/flow-alerts) with option_type, side, is_sweep
+        2. Daily aggregates (from /stock/{ticker}/options-volume) with call_volume, put_volume
+        
         Args:
-            recent_flow: List of flow alerts from last 5 days.
+            recent_flow: List of flow alerts or daily aggregates.
             darkpool_prints: List of dark pool blocks from last 5 days.
             current_price: Latest close.
             price_history: Historical prices matching the days of the flow.
@@ -91,6 +211,11 @@ class FlowPersistenceAnalyzer:
         else:
             now = datetime.now(UTC)
         
+        # Detect data format and dispatch
+        if self._is_aggregate_format(recent_flow):
+            return self._parse_aggregates(ticker, recent_flow, reference_date, now)
+        
+        # Original path: individual alerts
         # Sort flow newest to oldest
         try:
             sorted_flow = sorted(
@@ -120,7 +245,6 @@ class FlowPersistenceAnalyzer:
         freshness = self.calculate_freshness(hours_old)
         
         # Group by day to check streaks
-        # In a real scenario, we map timestamps to trading days
         days_with_flow = set()
         bullish_count = 0
         bearish_count = 0
@@ -146,29 +270,16 @@ class FlowPersistenceAnalyzer:
                 bearish_count += 1
                 
         total_directional = bullish_count + bearish_count
-        dominant_direction = "BULLISH" if bullish_count >= bearish_count else "BEARISH"
         consistency = (max(bullish_count, bearish_count) / total_directional) if total_directional > 0 else 0.0
         
-        # Mocking consecutive days logic (assumes sorted_flow covers continuous days)
-        # For full implementation, we need a trading calendar. Let's approximate.
         consecutive_days = len(days_with_flow)
         
         # 2. Analyze Dark Pool
         dp_premium = 0.0
-        dp_bullish = 0
-        dp_bearish = 0
-        
-        for print in darkpool_prints:
-            size = float(print.get('size', 0))
-            price = float(print.get('price', 0))
-            premium = size * price
-            dp_premium += premium
-            
-            # Very naive DP assumption: large blocks at ask = buy
-            # Normally UW doesn't give side for DP, so we might need to assume 
-            # alignment if price moves up after print
-            # For now, we will rely on external flagging or price action
-            pass
+        for dp in darkpool_prints:
+            size = float(dp.get('size', 0))
+            price = float(dp.get('price', 0))
+            dp_premium += size * price
 
         # 3. Classify Grade
         grade = "UNKNOWN"

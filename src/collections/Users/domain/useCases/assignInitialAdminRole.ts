@@ -1,4 +1,4 @@
-import { isFirstUser, requiresSuperAdminRole } from '../../domain/rules/userRules'
+import { isFirstUser, requiresSuperAdminRole } from '../rules/userRules'
 
 /**
  * Use case to assign the initial admin role to a user.

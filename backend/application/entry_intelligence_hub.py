@@ -98,6 +98,40 @@ class EntryIntelligenceReport:
     flow_darkpool_confirmed: bool = False
     flow_hours_since_latest: float = 999.0
 
+    # ── Volume Profile (V9) ────────────────────────────────────
+    vp_poc_short: float = 0.0
+    vp_vah_short: float = 0.0
+    vp_val_short: float = 0.0
+    vp_poc_long: float = 0.0
+    vp_vah_long: float = 0.0
+    vp_val_long: float = 0.0
+    vp_shape_short: str = "D"          # P (accum), D (balanced), b (distrib)
+    vp_shape_long: str = "D"
+    vp_poc_migration: str = "NEUTRAL"  # BULLISH, BEARISH, NEUTRAL
+    vp_institutional_bias: str = "NEUTRAL"  # ACCUMULATION, DISTRIBUTION, NEUTRAL
+    vp_bias_confidence: float = 0.0
+    vp_price_vs_va: str = "UNKNOWN"    # ABOVE_VA, IN_VA, BELOW_VA
+    vp_diagnosis: str = ""
+
+    # ── Pattern Intelligence (V8 — 4ª Dimensión) ──────────────
+    candlestick_pattern: str = "NONE"    # Patrón detectado (ej. BULLISH_ENGULFING)
+    pattern_sentiment: str = "NEUTRAL"   # BULLISH | BEARISH | NEUTRAL
+    pattern_score: float = 0.0           # -1.0 → +1.0
+    pattern_on_support: bool = False     # ¿El patrón ocurre en Put Wall?
+    pattern_confirms: bool = False       # True si patrón alineado con la fase
+    pattern_diagnosis: str = ""          # Explicación textual del patrón
+
+    # ── RSI Intelligence (V10 — Cardwell/Brown) ────────────────
+    rsi_regime: str = "NEUTRAL"          # BULL, BEAR, NEUTRAL
+    rsi_zone: str = "NEUTRAL"            # PULLBACK_BUY, CONTINUATION, etc.
+    rsi_divergence: str = "NONE"         # POSITIVE_REVERSAL, CLASSIC_BEARISH_DIV, etc.
+    rsi_divergence_strength: float = 0.0 # 0.0 → 1.0
+    rsi_price_slope: float = 0.0         # Normalized price slope
+    rsi_indicator_slope: float = 0.0     # RSI slope
+    rsi_slope_alignment: str = "ALIGNED" # ALIGNED, DIVERGING, CONVERGING
+    rsi_conviction: float = 0.0          # -1.0 → +1.0 composite
+    rsi_diagnosis: str = ""
+
     # ── Dictamen Final ─────────────────────────────────────────
     final_verdict: str = "PASS"          # EXECUTE, STALK, PASS, BLOCK
     final_scale: float = 0.0            # 0-1
@@ -130,10 +164,13 @@ class EntryIntelligenceHub:
         from infrastructure.data_providers.event_flow_intelligence import EventFlowIntelligence
         from application.price_phase_intelligence import PricePhaseIntelligence
         from infrastructure.data_providers.flow_persistence import FlowPersistenceAnalyzer
+        from infrastructure.data_providers.volume_profile import VolumeProfileAnalyzer
 
         self.event_flow = EventFlowIntelligence()
         self.price_phase = PricePhaseIntelligence()
         self.flow_persistence = FlowPersistenceAnalyzer()
+        self.volume_profile = VolumeProfileAnalyzer()
+        self._rsi_intel = None             # RSIIntelligence (lazy)
 
         from application.trade_journal import TradeJournal
         self.journal = TradeJournal()
@@ -142,7 +179,10 @@ class EntryIntelligenceHub:
         self._options = None
         self._kalman = None
         self._uw = None
+        self._pattern = None           # PatternRecognitionIntelligence (lazy)
         self._uw_data_cache = {}  # Pre-fetched UW data from MCP
+        self._spy_cache = None     # Cached SPY data for RS calculation (avoid 500 downloads)
+        self._spy_cache_date = None
 
     # ── Lazy init de módulos costosos ───────────────────────────
 
@@ -175,6 +215,16 @@ class EntryIntelligenceHub:
             except Exception as e:
                 logger.warning(f"EntryHub: UnusualWhalesIntelligence NO disponible: {e}")
         return self._uw
+
+    def _get_pattern(self):
+        if self._pattern is None:
+            try:
+                from infrastructure.data_providers.pattern_intelligence import PatternRecognitionIntelligence
+                self._pattern = PatternRecognitionIntelligence()
+                logger.info("EntryHub: PatternRecognitionIntelligence conectado ✅")
+            except Exception as e:
+                logger.warning(f"EntryHub: PatternRecognitionIntelligence NO disponible: {e}")
+        return self._pattern
 
     def inject_uw_data(
         self,
@@ -210,6 +260,7 @@ class EntryIntelligenceHub:
         # Pre-computed data (optional — if not provided, we'll fetch)
         prices_df: pd.DataFrame = None,
         vix_override: float = None,
+        strategy_bucket: str = "CORE",  # "CORE" or "TACTICAL"
     ) -> EntryIntelligenceReport:
         """
         Evaluación completa de inteligencia para un ticker.
@@ -350,12 +401,61 @@ class EntryIntelligenceHub:
             report.nearest_event = whale_verdict.nearest_event.name
             report.hours_to_event = whale_verdict.hours_to_event
 
-        # Early exit if CONTRA_FLOW
+        # Early exit if CONTRA_FLOW — but TACTICAL gets a pass if momentum is strong
         if whale_verdict.verdict == "CONTRA_FLOW":
-            report.final_verdict = "BLOCK"
+            if strategy_bucket == "TACTICAL":
+                # Tactical: Log warning but DON'T block. Let PricePhase decide.
+                logger.info(f"EntryHub {ticker}: CONTRA_FLOW detected but TACTICAL bucket — passing to phase analysis")
+                report.whale_verdict = "CONTRA_FLOW_TACTICAL"  # Mark it
+            else:
+                report.final_verdict = "BLOCK"
+                report.final_scale = 0.0
+                report.final_reason = f"CONTRA_FLOW: {whale_verdict.diagnosis[:100]}"
+                logger.info(f"EntryHub {ticker}: BLOCKED by CONTRA_FLOW")
+                return report
+
+        # ══════════════════════════════════════════════════════
+        # STEP 5.5: Volume Profile (Institutional Levels)
+        # ══════════════════════════════════════════════════════
+        try:
+            vp_result = self.volume_profile.compute(prices)
+            report.vp_poc_short = vp_result.short.poc
+            report.vp_vah_short = vp_result.short.vah
+            report.vp_val_short = vp_result.short.val
+            report.vp_poc_long = vp_result.long.poc
+            report.vp_vah_long = vp_result.long.vah
+            report.vp_val_long = vp_result.long.val
+            report.vp_shape_short = vp_result.short.shape
+            report.vp_shape_long = vp_result.long.shape
+            report.vp_poc_migration = vp_result.poc_migration
+            report.vp_institutional_bias = vp_result.institutional_bias
+            report.vp_bias_confidence = vp_result.bias_confidence
+            report.vp_price_vs_va = vp_result.short.current_vs_va
+            report.vp_diagnosis = vp_result.diagnosis
+            logger.info(
+                f"EntryHub {ticker}: VP Short={vp_result.short.shape}(POC=${vp_result.short.poc:.2f}) "
+                f"Long={vp_result.long.shape}(POC=${vp_result.long.poc:.2f}) "
+                f"Migration={vp_result.poc_migration} Bias={vp_result.institutional_bias}"
+            )
+        except Exception as e:
+            logger.warning(f"EntryHub {ticker}: Volume Profile error: {e}")
+            vp_result = None
+
+        # ══════════════════════════════════════════════════════
+        # STEP 5.6: Institutional Bias Gate (V9 — from VP)
+        # ══════════════════════════════════════════════════════
+        # CORE: Block if VP shows DISTRIBUTION with high confidence
+        if (strategy_bucket == "CORE"
+                and report.vp_institutional_bias == "DISTRIBUTION"
+                and report.vp_bias_confidence >= 75):
+            report.final_verdict = "STALK"
             report.final_scale = 0.0
-            report.final_reason = f"CONTRA_FLOW: {whale_verdict.diagnosis[:100]}"
-            logger.info(f"EntryHub {ticker}: BLOCKED by CONTRA_FLOW")
+            report.final_reason = (
+                f"VP_DISTRIBUTION_GATE: Institucionales distribuyendo "
+                f"(conf={report.vp_bias_confidence:.0f}%, shapes={report.vp_shape_short}/{report.vp_shape_long}, "
+                f"POC migration={report.vp_poc_migration}). No entrar CORE."
+            )
+            logger.info(f"EntryHub {ticker}: BLOCKED by VP Distribution Gate")
             return report
 
         # ══════════════════════════════════════════════════════
@@ -369,6 +469,8 @@ class EntryIntelligenceHub:
             gamma_regime=report.gamma_regime,
             wyckoff_state=report.wyckoff_state,
             wyckoff_velocity=report.wyckoff_velocity,
+            strategy_bucket=strategy_bucket,
+            vp_result=vp_result,
         )
 
         report.phase = phase_verdict.phase
@@ -383,6 +485,86 @@ class EntryIntelligenceHub:
         report.rsi = phase_verdict.rsi14
 
         # ══════════════════════════════════════════════════════
+        # STEP 6b: PatternRecognitionIntelligence (4ª Dimensión)
+        # ══════════════════════════════════════════════════════
+        pattern_eng = self._get_pattern()
+        if pattern_eng is not None:
+            try:
+                pv = pattern_eng.detect(
+                    prices=prices,
+                    put_wall=report.put_wall,
+                    call_wall=report.call_wall,
+                    ticker=ticker,
+                )
+                report.candlestick_pattern = pv.primary_pattern
+                report.pattern_sentiment = pv.sentiment
+                report.pattern_score = pv.confirmation_score
+                report.pattern_on_support = pv.detected_on_support
+                report.pattern_diagnosis = pv.diagnosis
+
+                # ¿El patrón confirma la fase actual?
+                bullish_phases = {
+                    "CORRECTION", "BREAKOUT", "EXHAUSTION_DOWN",
+                    "CONTRARIAN_DIP", "MOMENTUM_CONTINUATION"
+                }
+                bearish_phases = {"EXHAUSTION_UP", "STEALTH_DISTRIBUTION"}
+
+                report.pattern_confirms = (
+                    (pv.sentiment == "BULLISH" and report.phase in bullish_phases)
+                    or (pv.sentiment == "BEARISH" and report.phase in bearish_phases)
+                    or (pv.is_inside_bar_series and report.phase in {"CORRECTION", "CONSOLIDATION"})
+                    or (pv.is_vcp_tight and report.phase in {"CORRECTION", "CONSOLIDATION"})
+                )
+
+                # Sumar la 4ª dimensión al conteo
+                if report.pattern_confirms:
+                    report.dimensions_confirming += 1
+
+                logger.info(
+                    f"EntryHub {ticker}: Pattern={pv.primary_pattern} "
+                    f"sentiment={pv.sentiment} score={pv.confirmation_score:+.2f} "
+                    f"confirms={report.pattern_confirms} "
+                    f"→ dims_total={report.dimensions_confirming}"
+                )
+            except Exception as e:
+                logger.warning(f"EntryHub: PatternIntelligence error for {ticker}: {e}")
+
+        # ══════════════════════════════════════════════════════
+        # STEP 6c: RSI Intelligence (Cardwell/Brown Regime-Aware)
+        # ══════════════════════════════════════════════════════
+        try:
+            if self._rsi_intel is None:
+                from infrastructure.data_providers.rsi_intelligence import RSIIntelligence
+                self._rsi_intel = RSIIntelligence()
+
+            close_arr = prices['Close'].values.astype(float)
+            # Use VP institutional bias as regime hint
+            regime_map = {
+                'ACCUMULATION': 'BULL', 'DISTRIBUTION': 'BEAR', 'NEUTRAL': 'NEUTRAL'
+            }
+            regime_hint = regime_map.get(report.vp_institutional_bias, 'NEUTRAL')
+
+            rsi_result = self._rsi_intel.analyze(close_arr, regime_hint=regime_hint)
+
+            report.rsi_regime = rsi_result.rsi_regime
+            report.rsi_zone = rsi_result.rsi_zone
+            report.rsi_divergence = rsi_result.divergence_type
+            report.rsi_divergence_strength = rsi_result.divergence_strength
+            report.rsi_price_slope = rsi_result.price_slope
+            report.rsi_indicator_slope = rsi_result.rsi_slope
+            report.rsi_slope_alignment = rsi_result.slope_alignment
+            report.rsi_conviction = rsi_result.rsi_conviction
+            report.rsi_diagnosis = rsi_result.diagnosis
+
+            logger.info(
+                f"EntryHub {ticker}: RSI_Intel regime={rsi_result.rsi_regime} "
+                f"zone={rsi_result.rsi_zone} div={rsi_result.divergence_type} "
+                f"conviction={rsi_result.rsi_conviction:+.2f}"
+            )
+        except Exception as e:
+            logger.warning(f"EntryHub: RSIIntelligence error for {ticker}: {e}")
+
+        # ══════════════════════════════════════════════════════
         # STEP 7: Dictamen Final
         # ══════════════════════════════════════════════════════
         if phase_verdict.verdict == "ABORT":
@@ -391,17 +573,43 @@ class EntryIntelligenceHub:
             report.final_reason = f"ABORT: {phase_verdict.phase} — {phase_verdict.diagnosis[:80]}"
 
         elif phase_verdict.verdict == "FIRE":
+            # ── Forensic Quality Gates (V10 — Cardwell Regime-Aware RSI) ────
+            # V9 had static RSI 35-65 which blocked valid continuation trades.
+            # V10: Use RSI zone classification — block only hostile zones.
+            hostile_rsi_zones = {"BOUNCE_SELL", "EXTREME_BULL", "EXTREME_BEAR", "OVERBOUGHT"}
+            if strategy_bucket == "CORE" and report.rsi_zone in hostile_rsi_zones:
+                report.final_verdict = "STALK"
+                report.final_scale = 0.0
+                report.final_reason = (
+                    f"QUALITY_GATE_V10: CORE entry in hostile RSI zone={report.rsi_zone} "
+                    f"(regime={report.rsi_regime}, RSI={report.rsi:.0f}). "
+                    f"Conviction={report.rsi_conviction:+.2f}. STALK."
+                )
+                logger.info(f"EntryHub {ticker}: QUALITY_GATE_V10 blocked zone={report.rsi_zone}")
+                return report
+
+            # ── Pattern Gate (V8) ─────────────────────────────────
+            # VETO: patrón bajista cancela FIRE → STALK
+            if report.pattern_sentiment == "BEARISH" and report.pattern_score <= -0.5:
+                report.final_verdict = "STALK"
+                report.final_scale = 0.0
+                report.final_reason = (
+                    f"PATTERN_VETO: {report.candlestick_pattern} (score={report.pattern_score:+.2f}) "
+                    f"cancela FIRE. {phase_verdict.phase} requiere confirmación visual."
+                )
+                logger.info(f"EntryHub {ticker}: PATTERN_VETO → STALK ({report.candlestick_pattern})")
+                return report
+
             # V7: Pre-Trade Memory Query
             vector = self._vectorize_report(report)
             similar_trades = self.journal.find_similar_trades(vector, limit=5)
-            
+
             # Analizar si los similares fracasaron
             bad_luck = 0
             for t in similar_trades:
-                # V7: Check if the historical trade was a loser with negative edge
                 if not t.get("was_winner", False) and "grade" in t:
                     bad_luck += 1
-                    
+
             if len(similar_trades) >= 3 and bad_luck / len(similar_trades) >= 0.8:
                 report.final_verdict = "BLOCK"
                 report.final_scale = 0.0
@@ -409,19 +617,45 @@ class EntryIntelligenceHub:
                 logger.warning(f"EntryHub {ticker}: BLOCKED by Vector Memory! Evitando error histórico.")
             else:
                 report.final_verdict = "EXECUTE"
-                report.final_scale = whale_verdict.position_scale
+                base_scale = whale_verdict.position_scale
+
+                # AMPLIFY: patrón alcista en soporte institucional → +25% escala
+                if (report.pattern_sentiment == "BULLISH"
+                        and report.pattern_on_support
+                        and report.pattern_score >= 0.5):
+                    base_scale = min(1.0, base_scale * 1.25)
+                    logger.info(
+                        f"EntryHub {ticker}: PATTERN_AMPLIFY → scale {whale_verdict.position_scale:.0%} "
+                        f"→ {base_scale:.0%} ({report.candlestick_pattern} en soporte)"
+                    )
+
+                report.final_scale = base_scale
                 report.final_reason = (
                     f"FIRE: {phase_verdict.phase}, R:R={phase_verdict.risk_reward_ratio}:1, "
-                    f"Whale={whale_verdict.verdict}, Dims={phase_verdict.dimensions_confirming}/3"
+                    f"Whale={whale_verdict.verdict}, Dims={report.dimensions_confirming}, "
+                    f"Pattern={report.candlestick_pattern}"
                 )
 
         elif phase_verdict.verdict == "STALK":
-            report.final_verdict = "STALK"
-            report.final_scale = 0.0
-            report.final_reason = (
-                f"STALK: {phase_verdict.phase}, R:R={phase_verdict.risk_reward_ratio}:1, "
-                f"Dims={phase_verdict.dimensions_confirming}/3 — esperando mejor setup"
-            )
+            # ── Pattern PROMOTE: patrón fuerte puede elevar STALK → FIRE ──
+            if (report.pattern_sentiment == "BULLISH"
+                    and report.pattern_score >= 0.7
+                    and report.dimensions_confirming >= 2
+                    and report.risk_reward >= 3.0):
+                report.final_verdict = "EXECUTE"
+                report.final_scale = whale_verdict.position_scale * 0.75  # Escala reducida
+                report.final_reason = (
+                    f"PATTERN_PROMOTE: {report.candlestick_pattern} (score={report.pattern_score:+.2f}) "
+                    f"eleva STALK → FIRE. R:R={report.risk_reward}:1, Dims={report.dimensions_confirming}."
+                )
+                logger.info(f"EntryHub {ticker}: PATTERN_PROMOTE → EXECUTE ({report.candlestick_pattern})")
+            else:
+                report.final_verdict = "STALK"
+                report.final_scale = 0.0
+                report.final_reason = (
+                    f"STALK: {phase_verdict.phase}, R:R={phase_verdict.risk_reward_ratio}:1, "
+                    f"Dims={report.dimensions_confirming} — esperando mejor setup"
+                )
 
         else:
             report.final_verdict = "PASS"
@@ -437,12 +671,15 @@ class EntryIntelligenceHub:
         return report
 
     # ═══════════════════════════════════════════════════════════
-    # V7: VECTORIZATION
+    # V8: VECTORIZATION (9 dimensiones — incluye pattern_score)
     # ═══════════════════════════════════════════════════════════
     def _vectorize_report(self, report: EntryIntelligenceReport) -> list[float]:
         """
         Convierte las variables críticas del reporte en un vector para búsqueda.
-        (En producción, usar embeddings de un LLM o un dense vector norm).
+        9 dimensiones (V8): agrega pattern_score para mejor recall en Atlas VS.
+
+        ⚠️ NOTA: Si hay vectores de 8D en Atlas, reindexar la colección antes
+        de activar esta versión (dimensión incompatible).
         """
         return [
             float(report.vix),
@@ -453,6 +690,7 @@ class EntryIntelligenceHub:
             float(report.phase_confidence),
             float(report.risk_reward),
             float(report.flow_persistence_grade == "CONFIRMED_STREAK"),
+            float(report.pattern_score),  # Dim 9: sentimiento visual (-1.0 → +1.0)
         ]
 
     # ═══════════════════════════════════════════════════════════
@@ -481,11 +719,16 @@ class EntryIntelligenceHub:
             return 17.0
 
     def _calc_rs_vs_spy(self, prices: pd.DataFrame) -> float:
-        """Calcula RS vs SPY 20d."""
+        """Calcula RS vs SPY 20d. Uses cache to avoid repeated downloads."""
         try:
-            spy = yf.download('SPY', period='3mo', interval='1d', progress=False)
-            if isinstance(spy.columns, pd.MultiIndex):
-                spy.columns = spy.columns.get_level_values(0)
+            today = date.today()
+            if self._spy_cache is None or self._spy_cache_date != today:
+                spy = yf.download('SPY', period='3mo', interval='1d', progress=False)
+                if isinstance(spy.columns, pd.MultiIndex):
+                    spy.columns = spy.columns.get_level_values(0)
+                self._spy_cache = spy
+                self._spy_cache_date = today
+            spy = self._spy_cache
             if len(prices) >= 20 and len(spy) >= 20:
                 stock_ret = float(prices['Close'].iloc[-1]) / float(prices['Close'].iloc[-20]) - 1
                 spy_ret = float(spy['Close'].iloc[-1]) / float(spy['Close'].iloc[-20]) - 1

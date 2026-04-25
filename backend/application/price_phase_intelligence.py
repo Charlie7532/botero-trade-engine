@@ -94,6 +94,7 @@ class PricePhaseIntelligence:
     RSI_OVERBOUGHT = 75
     RSI_OVERSOLD = 25
     MIN_RR_RATIO = 3.0                # R:R mínimo para FIRE
+    _rsi_intel = None                 # RSIIntelligence (lazy, Cardwell/Brown)
 
     def diagnose(
         self,
@@ -106,6 +107,8 @@ class PricePhaseIntelligence:
         # Volumen (de volume_dynamics.py)
         wyckoff_state: str = "UNKNOWN",
         wyckoff_velocity: float = 0.0,
+        strategy_bucket: str = "CORE",    # "CORE" or "TACTICAL"
+        vp_result = None,                 # DualProfileResult from VolumeProfileAnalyzer
     ) -> EntryVerdict:
         """
         Ejecuta el diagnóstico completo de timing.
@@ -130,6 +133,28 @@ class PricePhaseIntelligence:
         v.sma20 = float(np.mean(close[-20:]))
         v.rsi14 = self._calc_rsi(close, 14)
         v.atr14 = self._calc_atr(high, low, close, 14)
+
+        # ── RSI Intelligence (Cardwell/Brown Regime-Aware) ─────
+        rsi_zone = "NEUTRAL"
+        rsi_regime = "NEUTRAL"
+        rsi_conviction = 0.0
+        try:
+            if PricePhaseIntelligence._rsi_intel is None:
+                from infrastructure.data_providers.rsi_intelligence import RSIIntelligence
+                PricePhaseIntelligence._rsi_intel = RSIIntelligence()
+
+            # Derive regime hint from VP if available
+            regime_hint = "NEUTRAL"
+            if vp_result is not None:
+                regime_map = {'ACCUMULATION': 'BULL', 'DISTRIBUTION': 'BEAR', 'NEUTRAL': 'NEUTRAL'}
+                regime_hint = regime_map.get(vp_result.institutional_bias, 'NEUTRAL')
+
+            rsi_result = PricePhaseIntelligence._rsi_intel.analyze(close, regime_hint=regime_hint)
+            rsi_zone = rsi_result.rsi_zone
+            rsi_regime = rsi_result.rsi_regime
+            rsi_conviction = rsi_result.rsi_conviction
+        except Exception:
+            pass  # Fallback to static if RSI Intelligence unavailable
 
         # Distancia al SMA20 en unidades de ATR
         if v.atr14 > 0:
@@ -158,9 +183,16 @@ class PricePhaseIntelligence:
         v.wyckoff_state = wyckoff_state
 
         # ═══ DIAGNÓSTICO DE FASE ════════════════════════════════
+        # TACTICAL bucket uses empirical ML-validated phases
+        if strategy_bucket == "TACTICAL":
+            return self._diagnose_tactical(
+                v, close, high, low, volume, is_volume_climax,
+                put_wall, call_wall, gamma_regime, vp_result
+            )
+        
+        # CORE bucket: Original institutional-grade phases
         # Priority order:
-        #   1. BREAKOUT (new high + volume) — must be checked before
-        #      exhaustion because a fresh breakout naturally has high RSI
+        #   1. BREAKOUT (new high + volume)
         #   2. EXHAUSTION UP (parabolic + no breakout volume)
         #   3. EXHAUSTION DOWN (capitulation)
         #   4. CORRECTION (pullback near SMA20 + dry volume)
@@ -209,19 +241,90 @@ class PricePhaseIntelligence:
             )
 
         # 4. CORRECTION: Retroceso sano a soporte
-        elif (abs(v.distance_to_sma20_atr) < 2.0
-                and v.rsi14 >= 30 and v.rsi14 <= 62
+        # V10: RSI is now regime-aware (Cardwell/Brown). Instead of static 40-62,
+        # we accept RSI values that make sense for the current regime:
+        #   BULL: PULLBACK_BUY (RSI 40-45) or HEALTHY_BULL (45-60) → best entries
+        #   BEAR: HEALTHY_BEAR (40-55) → contrarian bounce opportunity
+        #   NEUTRAL: LEAN_BULLISH or NEUTRAL (35-55) → standard correction
+        # Static gate only used as extreme safety valve (RSI > 75 or RSI < 20)
+        
+        # Calculate volume direction: is volume on UP or DOWN days?
+        up_vol_total = 0.0
+        down_vol_total = 0.0
+        up_count = 0
+        down_count = 0
+        for i in range(-5, 0):
+            if i > -len(close) and close[i] > close[i-1]:
+                up_vol_total += volume[i]
+                up_count += 1
+            elif i > -len(close):
+                down_vol_total += volume[i]
+                down_count += 1
+        
+        avg_up_v = up_vol_total / max(up_count, 1)
+        avg_down_v = down_vol_total / max(down_count, 1)
+        recent_up_down_ratio = avg_up_v / avg_down_v if avg_down_v > 0 else 2.0
+        volume_confirms_accumulation = recent_up_down_ratio > 1.0
+
+        # V10: Regime-aware RSI acceptance for CORRECTION
+        rsi_acceptable_for_correction = (
+            rsi_zone in ("PULLBACK_BUY", "HEALTHY_BULL", "HEALTHY_BEAR",
+                         "LEAN_BULLISH", "NEUTRAL", "OVERSOLD")
+            and v.rsi14 < self.RSI_OVERBOUGHT  # Never enter at RSI > 75
+            and v.rsi14 > 20                   # Never enter at RSI < 20 (capitulation)
+        )
+        
+        if (v.distance_to_sma20_atr > -2.0 and v.distance_to_sma20_atr < 0.5
+                and rsi_acceptable_for_correction
                 and v.rvol < self.CORRECTION_RVOL_MAX):
-            v.phase = "CORRECTION"
-            v.volume_confirms = v.rvol < self.CORRECTION_RVOL_MAX
-            v.gamma_confirms = gamma_regime == "PIN"
-            v.vcp_detected = v.vcp_detected  # Already calculated
-            v.diagnosis = (
-                f"CORRECCIÓN SANA. Precio cerca de SMA20 ({v.distance_to_sma20_atr:+.1f} ATR). "
-                f"RSI={v.rsi14:.0f} (descansando). RVOL={v.rvol:.1f}x (seco). "
-                f"{'VCP detectado — contracción de volatilidad.' if v.vcp_detected else ''} "
-                f"{'PIN Gamma — dealers sostienen el precio.' if gamma_regime == 'PIN' else ''}"
-            )
+            
+            if volume_confirms_accumulation:
+                # VP Enhancement: Check institutional bias from Volume Profile
+                vp_confirms = True
+                vp_info = ""
+                if vp_result is not None:
+                    vp_confirms = vp_result.institutional_bias != "DISTRIBUTION"
+                    vp_info = (
+                        f"VP: {vp_result.short.shape}/{vp_result.long.shape} "
+                        f"POC_mig={vp_result.poc_migration} "
+                        f"Bias={vp_result.institutional_bias}. "
+                    )
+                    if not vp_confirms:
+                        # VP says distribution — override to STALK
+                        v.phase = "VP_DISTRIBUTION_BLOCK"
+                        v.verdict = "STALK"
+                        v.diagnosis = (
+                            f"⚠️ VP DISTRIBUTION. Vol UP/DOWN={recent_up_down_ratio:.1f}x OK "
+                            f"pero Volume Profile muestra {vp_result.short.shape}-shape (corto), "
+                            f"{vp_result.long.shape}-shape (largo). "
+                            f"POC Migration={vp_result.poc_migration}. "
+                            f"Institucionales distribuyendo. NO ENTRAR."
+                        )
+                        # Skip to end — don't set as CORRECTION
+                        return self._finalize_verdict(v, gamma_regime, vp_result)
+                
+                v.phase = "CORRECTION"
+                v.volume_confirms = True
+                v.gamma_confirms = gamma_regime == "PIN"
+                v.vcp_detected = v.vcp_detected
+                v.diagnosis = (
+                    f"CORRECCIÓN SANA. Precio cerca de SMA20 ({v.distance_to_sma20_atr:+.1f} ATR). "
+                    f"RSI={v.rsi14:.0f}. RVOL={v.rvol:.1f}x (seco). "
+                    f"Vol UP/DOWN={recent_up_down_ratio:.1f}x → ACUMULACIÓN. "
+                    f"{vp_info}"
+                    f"{'VCP detectado.' if v.vcp_detected else ''} "
+                    f"{'PIN Gamma.' if gamma_regime == 'PIN' else ''}"
+                )
+            else:
+                # Volume on DOWN days > UP days = DISTRIBUTION disguised as correction
+                v.phase = "STEALTH_DISTRIBUTION"
+                v.verdict = "STALK"
+                v.diagnosis = (
+                    f"⚠️ DISTRIBUCIÓN ENCUBIERTA. Parece corrección pero volumen "
+                    f"concentrado en días DOWN (ratio={recent_up_down_ratio:.2f}). "
+                    f"RSI={v.rsi14:.0f}. Institucionales vendiendo gradualmente. "
+                    f"NO ENTRAR — esperar confirmación de acumulación real."
+                )
 
         # 5. CONSOLIDATION: Rango lateral
         else:
@@ -235,30 +338,45 @@ class PricePhaseIntelligence:
 
         # ═══ CALCULAR NIVELES DE ENTRADA ════════════════════════
 
-        # Entry price: preferir Put Wall si está disponible y el precio está cerca
+        # Entry price: Use Volume Profile levels when available
         if v.phase in ("CORRECTION", "BREAKOUT"):
+            # VP-anchored levels (institutional precision)
+            vp_val = None
+            vp_poc = None
+            vp_vah = None
+            if vp_result is not None and vp_result.short.val > 0:
+                vp_val = vp_result.short.val
+                vp_poc = vp_result.short.poc
+                vp_vah = vp_result.short.vah
+            
             if put_wall > 0 and abs(v.current_price - put_wall) / v.current_price < 0.03:
-                # Put Wall cercano → entrar justo por encima
-                v.entry_price = round(put_wall * 1.002, 2)  # +0.2% buffer
+                v.entry_price = round(put_wall * 1.002, 2)
+            elif v.phase == "CORRECTION" and vp_val and abs(v.current_price - vp_val) / v.current_price < 0.05:
+                # Entry near VAL (institutional support)
+                v.entry_price = round(max(vp_val, v.current_price * 0.998), 2)
             elif v.phase == "CORRECTION":
-                # Entrar cerca del SMA20
                 v.entry_price = round(max(v.sma20, v.current_price * 0.998), 2)
             else:
-                # Breakout: entrar al precio actual con buffer
                 v.entry_price = round(v.current_price * 1.003, 2)
 
-            # Stop: anclado a Put Wall si disponible, sino ATR
+            # Stop: VAL or Put Wall (institutional floor)
             if put_wall > 0:
-                # Debajo del Put Wall con buffer de 0.3×ATR
                 v.stop_price = round(put_wall - 0.3 * v.atr14, 2)
+            elif vp_val:
+                # Below VAL with 0.3×ATR buffer (institutional support breach)
+                v.stop_price = round(vp_val - 0.3 * v.atr14, 2)
             else:
-                # Fallback: 2×ATR debajo de entry
                 v.stop_price = round(v.entry_price - 2.0 * v.atr14, 2)
 
-            # Target: Call Wall si disponible, sino 3×riesgo
+            # Target: POC or VAH (institutional magnets)
             risk = v.entry_price - v.stop_price
             if call_wall > 0 and call_wall > v.entry_price:
                 v.target_price = round(call_wall, 2)
+            elif vp_poc and vp_poc > v.entry_price:
+                # POC as target (price gravitates to POC)
+                v.target_price = round(vp_poc, 2)
+            elif vp_vah and vp_vah > v.entry_price:
+                v.target_price = round(vp_vah, 2)
             else:
                 v.target_price = round(v.entry_price + risk * 3.5, 2)
 
@@ -305,6 +423,168 @@ class PricePhaseIntelligence:
             f"PricePhase {ticker}: {v.phase} → {v.verdict} "
             f"(R:R={v.risk_reward_ratio}:1, conf={v.confidence:.0f}%, "
             f"dims={v.dimensions_confirming}/3)"
+        )
+        return v
+
+    def _finalize_verdict(self, v: EntryVerdict, gamma_regime: str, vp_result=None) -> EntryVerdict:
+        """Quick finalize for early returns (VP blocks, etc.)."""
+        logger.info(
+            f"PricePhase {v.ticker}: {v.phase} → {v.verdict} "
+            f"(R:R={v.risk_reward_ratio}:1, conf={v.confidence:.0f}%)"
+        )
+        return v
+
+    def _diagnose_tactical(
+        self,
+        v: EntryVerdict,
+        close: np.ndarray,
+        high: np.ndarray,
+        low: np.ndarray,
+        volume: np.ndarray,
+        is_volume_climax: bool,
+        put_wall: float,
+        call_wall: float,
+        gamma_regime: str,
+        vp_result=None,
+    ) -> EntryVerdict:
+        """
+        TACTICAL phase diagnosis based on forensic ML analysis.
+        
+        Empirical findings (2,515 obs, S&P 500, April 2026):
+        - Gap DOWN (<-2%): WR=63%, avg_5d=+1.89% → CONTRARIAN_DIP
+        - Gap UP (>3%): WR=34%, avg_5d=-2.24% → DON'T CHASE
+        - Momentum Q5 + no gap chase: WR=56%, avg_5d=+2.30%
+        - dist_sma20_atr > 2.06: WR=62% (most important feature)
+        - rsi ≤ 45: WR=60% (oversold bounces work)
+        - bull_bear_ratio sweet spot: 1.0-2.0 (extremes underperform)
+        """
+        # Calculate gap% from yesterday
+        # V10: Compute RSI Intelligence for tactical phases
+        rsi_zone = "NEUTRAL"
+        try:
+            if PricePhaseIntelligence._rsi_intel is None:
+                from infrastructure.data_providers.rsi_intelligence import RSIIntelligence
+                PricePhaseIntelligence._rsi_intel = RSIIntelligence()
+            regime_hint = "NEUTRAL"
+            if vp_result is not None:
+                regime_map = {'ACCUMULATION': 'BULL', 'DISTRIBUTION': 'BEAR', 'NEUTRAL': 'NEUTRAL'}
+                regime_hint = regime_map.get(vp_result.institutional_bias, 'NEUTRAL')
+            rsi_result = PricePhaseIntelligence._rsi_intel.analyze(close, regime_hint=regime_hint)
+            rsi_zone = rsi_result.rsi_zone
+        except Exception:
+            pass
+
+        if len(close) >= 2:
+            prev_close = float(close[-2])
+            today_open = float(high[-1] + low[-1]) / 2  # Approx open from H+L
+            gap_pct = ((float(close[-1]) / prev_close) - 1) * 100
+        else:
+            gap_pct = 0
+            prev_close = float(close[-1])
+        
+        # Momentum 5d
+        if len(close) >= 6:
+            momentum_5d = ((float(close[-1]) / float(close[-6])) - 1) * 100
+        else:
+            momentum_5d = 0
+        
+        # ═══ PHASE 1: CONTRARIAN_DIP (Highest conviction — WR=63%) ═══
+        # Empirical: gap_pct < -2%, dist_sma20_atr > -3, rsi < 55, rvol > 1.3
+        is_dip = (
+            gap_pct < -2.0
+            and v.distance_to_sma20_atr > -3.0  # Not in free-fall
+            and v.rsi14 < 55
+            and v.rvol > 1.0  # Some participation
+        )
+        
+        if is_dip:
+            v.phase = "CONTRARIAN_DIP"
+            v.verdict = "FIRE"
+            
+            # Entry at current close (buying the dip)
+            v.entry_price = round(v.current_price * 1.001, 2)
+            
+            # Stop: below recent low or 2 ATR
+            recent_low = float(np.min(low[-5:]))
+            v.stop_price = round(min(recent_low, v.current_price - 2.0 * v.atr14) * 0.998, 2)
+            
+            # Target: SMA20 or 3x risk
+            risk = v.entry_price - v.stop_price
+            if risk > 0:
+                sma_target = v.sma20 if v.sma20 > v.entry_price else v.entry_price + risk * 3.5
+                v.target_price = round(max(sma_target, v.entry_price + risk * 2.5), 2)
+                v.risk_reward_ratio = round((v.target_price - v.entry_price) / risk, 1)
+            
+            v.dimensions_confirming = 2  # Price dip + Volume participation
+            v.confidence = 63.0  # Empirical WR from forensic analysis
+            v.diagnosis = (
+                f"CONTRARIAN DIP. Gap={gap_pct:+.1f}%. RSI={v.rsi14:.0f}. "
+                f"RVOL={v.rvol:.1f}x. Dist_SMA20={v.distance_to_sma20_atr:+.1f} ATR. "
+                f"ML: WR=63% para gap downs con estructura intacta. "
+                f"✅ TACTICAL FIRE: R:R={v.risk_reward_ratio}:1."
+            )
+            logger.info(f"PricePhase {v.ticker}: CONTRARIAN_DIP → FIRE (gap={gap_pct:+.1f}%, conf=63%)")
+            return v
+        
+        # ═══ PHASE 2: MOMENTUM_CONTINUATION (Tightened from forensics) ═══
+        # V10: RSI gate is now regime-aware. In BULL regime, RSI 60-80 is CONTINUATION
+        # (not overbought). Accept CONTINUATION, HEALTHY_BULL, PULLBACK_BUY zones.
+        rsi_ok_for_momentum = (
+            rsi_zone in ("CONTINUATION", "HEALTHY_BULL", "PULLBACK_BUY",
+                         "LEAN_BULLISH", "NEUTRAL")
+            and v.rsi14 < 80  # Only block extreme >80
+        )
+        is_momentum = (
+            momentum_5d > 4.0  # Strong 5d trend (tighter than before)
+            and v.distance_to_sma20_atr > 1.0  # Above structure
+            and abs(gap_pct) < 2.5  # NOT chasing a gap (tightened)
+            and rsi_ok_for_momentum  # V10: regime-aware RSI
+            and v.rvol > 1.3  # Volume confirms (not a dead drift)
+        )
+        
+        if is_momentum:
+            v.phase = "MOMENTUM_CONTINUATION"
+            v.verdict = "FIRE"
+            
+            v.entry_price = round(v.current_price * 1.002, 2)
+            v.stop_price = round(v.current_price - 2.0 * v.atr14, 2)
+            
+            risk = v.entry_price - v.stop_price
+            if risk > 0:
+                v.target_price = round(v.entry_price + risk * 3.0, 2)
+                v.risk_reward_ratio = round((v.target_price - v.entry_price) / risk, 1)
+            
+            v.dimensions_confirming = 2
+            v.confidence = 56.0
+            v.diagnosis = (
+                f"MOMENTUM CONTINUATION. Mom5d={momentum_5d:+.1f}%. "
+                f"Dist_SMA20={v.distance_to_sma20_atr:+.1f} ATR. Gap={gap_pct:+.1f}% (no chase). "
+                f"ML: WR=56% para momentum Q5 sin gap chase. "
+                f"✅ TACTICAL FIRE: R:R={v.risk_reward_ratio}:1."
+            )
+            logger.info(f"PricePhase {v.ticker}: MOMENTUM_CONTINUATION → FIRE (mom5d={momentum_5d:+.1f}%, conf=56%)")
+            return v
+        
+        # ═══ PHASE 3: GAP_CHASE (ABORT — WR=34%) ═══
+        if gap_pct > 3.0:
+            v.phase = "GAP_CHASE"
+            v.verdict = "ABORT"
+            v.confidence = 34.0
+            v.diagnosis = (
+                f"GAP CHASE ABORT. Gap={gap_pct:+.1f}% (>3%). "
+                f"ML: WR=34% para gap ups >3%, avg_5d=-2.24%. "
+                f"❌ Históricamente destruye valor. NO ENTRAR."
+            )
+            logger.info(f"PricePhase {v.ticker}: GAP_CHASE → ABORT (gap={gap_pct:+.1f}%, WR=34%)")
+            return v
+        
+        # ═══ DEFAULT: STALK ═══
+        v.phase = "TACTICAL_NEUTRAL"
+        v.verdict = "STALK"
+        v.confidence = 50.0
+        v.diagnosis = (
+            f"Sin señal táctica clara. Gap={gap_pct:+.1f}%. Mom5d={momentum_5d:+.1f}%. "
+            f"RSI={v.rsi14:.0f}. RVOL={v.rvol:.1f}x. Esperar setup."
         )
         return v
 

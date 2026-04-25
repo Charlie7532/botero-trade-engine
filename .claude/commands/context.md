@@ -22,10 +22,6 @@ botero-trade/
 │   ├── app/(frontend)/          # Trading dashboard UI pages
 │   ├── app/(payload)/           # PayloadCMS admin panel
 │   ├── shared/                  # Clean Architecture (TS side)
-│   │   ├── domain/              # Domain types, ports, rules
-│   │   ├── application/         # Use cases
-│   │   ├── infrastructure/      # Adapters (Next cache, etc.)
-│   │   └── handlers/
 │   ├── collections/             # PayloadCMS: Pages, Posts, Media, Users, Categories
 │   ├── globals/                 # PayloadCMS: Header, Footer, SiteSettings
 │   ├── blocks/                  # Layout builder blocks (20+ blocks)
@@ -33,58 +29,26 @@ botero-trade/
 │   └── components/              # Shared React components
 │
 ├── backend/                     # Python trading engine
-│   ├── domain/entities.py       # Portfolio, Position, Order, Signal, Trade, Bar, BacktestResult
-│   ├── application/use_cases.py # run_backtest(), fetch_market_data(), place_order(), get_portfolio()
-│   ├── infrastructure/
-│   │   ├── brokers/
-│   │   │   ├── base.py          # Abstract BrokerAdapter (interface all brokers must implement)
-│   │   │   ├── ib_adapter.py    # Interactive Brokers via ib_insync
-│   │   │   └── alpaca_adapter.py# Alpaca via alpaca-py
-│   │   └── backtrader/
-│   │       ├── base_strategy.py # BaseStrategy(bt.Strategy) — extend this for new strategies
-│   │       └── data_feeds.py    # create_data_feed(bars) → bt.feeds.PandasData
-│   └── api/
-│       ├── main.py              # FastAPI app, CORS config
-│       └── routers/
-│           ├── market_data.py   # GET /api/market-data/{symbol}, GET /api/market-data/{symbol}/price
-│           ├── portfolio.py     # GET /api/portfolio/{broker}, GET /api/portfolio/
-│           └── strategy.py      # GET /api/strategy/list, POST /api/strategy/backtest
+│   ├── modules/                 # Modular hexagonal architecture
+│   ├── api/                     # FastAPI routers
+│   └── Dockerfile
 │
 ├── docker-compose.yml           # Services: web (3000), api (8000), postgres (5432)
-├── Dockerfile                   # Next.js standalone production image
-├── backend/Dockerfile           # Python uvicorn image
 ├── package.json                 # pnpm root — name: "botero-trade"
 └── .env.example                 # All required env vars documented
 ```
 
 ---
 
-## Key architectural decisions
+## Domain entities (backend/modules/)
 
-**Broker Adapter Pattern** — All trading logic depends on the abstract `BrokerAdapter` interface (`backend/infrastructure/brokers/base.py`), never on concrete broker implementations. Swap or combine brokers without touching strategy code.
-
-**Clean Architecture** — Both the Python backend and TypeScript frontend follow Clean Architecture. Dependencies point inward: API/UI → Application → Infrastructure → Domain. Domain layer has zero framework imports.
-
-**Strategy Registry** — Trading strategies are registered in `backend/api/routers/strategy.py` in `_strategy_registry`. New strategies extend `BaseStrategy` and are added to the registry — nothing else changes.
-
-**PayloadCMS is the content backend** — The Next.js app and PayloadCMS run in the same process (same port 3000). The Python FastAPI engine (port 8000) is a separate service for trading logic only.
-
-**Vercel for frontend, self-hosted for backend** — The Next.js + Payload app deploys to Vercel (auto-detects from repo root). The Python trading engine requires a persistent server (VPS/Docker) since it connects to broker APIs.
-
----
-
-## Domain entities (backend/domain/entities.py)
-
-| Entity | Key fields |
+| Entity | Location |
 |---|---|
-| `Bar` | symbol, timestamp, open, high, low, close, volume |
-| `Order` | symbol, side (buy/sell), quantity, order_type, broker, status |
-| `Position` | symbol, quantity, avg_cost, market_price, broker |
-| `Trade` | order_id, symbol, side, quantity, price, broker, executed_at |
-| `Signal` | symbol, side, strength (0–1), strategy_name |
-| `Portfolio` | broker, cash, positions[], trades[] |
-| `BacktestResult` | strategy_name, symbol, initial_cash, final_value, trades[], metrics{} |
-| `Broker` | enum: `interactive_brokers`, `alpaca` |
+| `Order`, `Trade`, `Broker` | `modules/execution/domain/entities/order_models.py` |
+| `Position`, `Portfolio` | `modules/portfolio_management/domain/entities/portfolio_models.py` |
+| `Bar` | `modules/shared/domain/entities/market_data.py` |
+| `Signal` | `modules/entry_decision/domain/entities/signal.py` |
+| `BacktestResult` | `modules/simulation/domain/entities/simulation_models.py` |
 
 ---
 
@@ -99,7 +63,6 @@ botero-trade/
 | GET | `/api/portfolio/` | All connected broker portfolios |
 | GET | `/api/strategy/list` | Registered strategies |
 | POST | `/api/strategy/backtest` | Run Backtrader backtest |
-| GET | `/api/docs` | Swagger UI |
 
 ---
 
@@ -110,32 +73,9 @@ botero-trade/
 | `POSTGRES_URL` | PayloadCMS database |
 | `PAYLOAD_SECRET` | JWT encryption key |
 | `NEXT_PUBLIC_SERVER_URL` | Frontend public URL |
-| `TRADING_API_URL` | Python engine URL (Docker: `http://api:8000`, local: `http://localhost:8000`) |
-| `IB_HOST/PORT/CLIENT_ID` | Interactive Brokers TWS/Gateway connection |
-| `ALPACA_API_KEY/SECRET_KEY/BASE_URL` | Alpaca credentials (defaults to paper trading) |
-| `POSTGRES_PASSWORD` | PostgreSQL password (Docker only) |
-
----
-
-## Dev commands
-
-```bash
-# Frontend only
-pnpm dev                        # Next.js dev server → localhost:3000
-
-# Python engine only  
-pnpm dev:api                    # uvicorn with --reload → localhost:8000
-
-# Everything via Docker
-pnpm docker:up                  # docker compose up (web + api + postgres)
-pnpm docker:build               # rebuild images
-pnpm docker:down                # stop all
-
-# PayloadCMS
-pnpm generate                   # regenerate Payload types + import map
-pnpm payload migrate:create     # create DB migration
-pnpm payload migrate            # run pending migrations
-```
+| `TRADING_API_URL` | Python engine URL |
+| `IB_HOST/PORT/CLIENT_ID` | Interactive Brokers connection |
+| `ALPACA_API_KEY/SECRET_KEY/BASE_URL` | Alpaca credentials |
 
 ---
 
@@ -147,9 +87,5 @@ pnpm payload migrate            # run pending migrations
 | CMS | PayloadCMS 3 |
 | Trading engine | Python 3.12, FastAPI, Backtrader |
 | Brokers | ib_insync (Interactive Brokers), alpaca-py (Alpaca) |
-| Data | pandas, numpy |
 | Database | PostgreSQL 16 |
-| Containers | Docker Compose |
 | Deployment | Vercel (frontend) + VPS/Docker (backend) |
-| Package manager | pnpm ≥9 |
-| Git remote | https://github.com/Charlie7532/botero-trade-engine |

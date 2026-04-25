@@ -1,93 +1,55 @@
-# Start Botero Trade Dev Environment
+# Start Botero Trade — Production Mode
 
-Run the following steps in order to bring up the full Botero Trade development environment.
+Launch all Botero Trade services in production mode.
 
-## Step 1 — Verify prerequisites
+## Prerequisites
 
-Run these checks and report what is missing before proceeding:
+Before starting production, ensure:
+- `.env` is configured with real credentials (never edit it directly — ask the user)
+- Dependencies are installed (`pnpm install` + `backend/.venv`)
 
-```bash
-node --version        # must be >=20.9.0
-pnpm --version        # must be >=9
-python3 --version     # must be 3.12+
-docker --version
-docker compose version
-```
-
-If Node.js is missing: install via NodeSource (`curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs`)
-If pnpm is missing: `npm install -g pnpm`
-If docker compose is missing: `apt-get install -y docker-compose-v2`
-
-## Step 2 — Check environment file
+## Start Production via Docker Compose
 
 ```bash
-ls .env 2>/dev/null || echo "MISSING"
-```
-
-If `.env` does not exist, copy the example and alert the user:
-```bash
-cp .env.example .env
-```
-Then tell the user: "`.env` was created from `.env.example`. You must fill in `POSTGRES_URL` and `PAYLOAD_SECRET` before the frontend will work. The Python trading engine can start without them."
-
-## Step 3 — Install frontend dependencies
-
-```bash
-pnpm install
-```
-
-If there are build script warnings, run:
-```bash
-pnpm approve-builds
-pnpm install
-```
-
-## Step 4 — Set up Python virtual environment
-
-Check if venv exists:
-```bash
-ls backend/.venv 2>/dev/null || echo "MISSING"
-```
-
-If missing, create it and install:
-```bash
-cd backend && python3 -m venv .venv && .venv/bin/pip install --upgrade pip -q && .venv/bin/pip install -r requirements.txt
-```
-
-## Step 5 — Start all services
-
-```bash
-pnpm dev:all
+pnpm docker:build
+docker compose up -d
 ```
 
 This starts:
-- **[web]** Next.js + PayloadCMS → http://localhost:3000 (admin at /admin)
-- **[api]** Python FastAPI + Backtrader → http://localhost:8000 (docs at /docs)
+- **[web]** Next.js + PayloadCMS → http://localhost:3000 (production build)
+- **[api]** Python FastAPI → http://localhost:8000 (uvicorn production)
+- **[db]** PostgreSQL 16 → port 5432
 
-## Step 6 — Verify services are up
+## Start Production Locally (no Docker)
 
-After starting, confirm both services respond:
+### Frontend (production build)
+```bash
+pnpm build
+pnpm start
+```
+→ http://localhost:3000
+
+### Python trading engine (production)
+```bash
+cd backend && .venv/bin/uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 4
+```
+→ http://localhost:8000
+
+## Health Check
+
 ```bash
 curl -s http://localhost:8000/health
+# Expected: {"status":"ok","service":"botero-trade-engine"}
+
+curl -s http://localhost:3000
+# Expected: 200 OK
 ```
-Expected: `{"status":"ok","service":"botero-trade-engine"}`
 
-## Troubleshooting
+## Service URLs
 
-| Problem | Fix |
+| Service | URL |
 |---|---|
-| `POSTGRES_URL` error on web | Fill in `.env` with a valid external Postgres connection string |
-| Port 3000 already in use | `lsof -ti:3000 \| xargs kill` |
-| Port 8000 already in use | `lsof -ti:8000 \| xargs kill` |
-| Python import errors | `cd backend && .venv/bin/pip install -r requirements.txt` |
-| pnpm install fails | `pnpm reinstall` |
-| IB connection refused | TWS or IB Gateway must run locally — not needed for Alpaca-only usage |
-
-## Quick reference
-
-```
-http://localhost:3000        → Trading dashboard + CMS frontend
-http://localhost:3000/admin  → PayloadCMS admin panel
-http://localhost:8000        → Python trading engine
-http://localhost:8000/docs   → FastAPI Swagger UI (interactive API docs)
-```
+| Trading Dashboard | http://localhost:3000 |
+| PayloadCMS Admin | http://localhost:3000/admin |
+| Trading Engine API | http://localhost:8000 |
+| Swagger Docs | http://localhost:8000/docs |

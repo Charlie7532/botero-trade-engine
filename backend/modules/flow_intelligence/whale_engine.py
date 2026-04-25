@@ -109,25 +109,10 @@ class MacroEventCalendar:
     DATA_HOUR_UTC = 12  # 8:30 AM ET ≈ 12:30 UTC (simplificado)
 
     def __init__(self):
-        self._finnhub = None
-        self._finnhub_available = False
+        from modules.flow_intelligence.infrastructure.finnhub_adapter import FinnhubCalendarAdapter
+        self._finnhub_adapter = FinnhubCalendarAdapter()
         self._cached_events: list[MacroEvent] = []
         self._cache_date: Optional[date] = None
-
-    def _try_init_finnhub(self):
-        """Intenta inicializar Finnhub para calendario económico."""
-        if self._finnhub is not None:
-            return
-        try:
-            import os
-            import finnhub
-            api_key = os.getenv("FINNHUB_API_KEY", "")
-            if api_key:
-                self._finnhub = finnhub.Client(api_key=api_key)
-                self._finnhub_available = True
-                logger.info("MacroEventCalendar: Finnhub economic calendar disponible")
-        except (ImportError, Exception) as e:
-            logger.info(f"MacroEventCalendar: Finnhub no disponible ({e}), usando fallback hardcoded")
 
     def get_upcoming_events(
         self,
@@ -148,9 +133,8 @@ class MacroEventCalendar:
 
         events = []
 
-        # 1. Intentar Finnhub
-        self._try_init_finnhub()
-        if self._finnhub_available:
+        # 1. Intentar Finnhub via adapter
+        if self._finnhub_adapter.is_available:
             events.extend(self._fetch_finnhub_events(today, days_ahead))
 
         # 2. Siempre agregar FOMC hardcoded (más confiable)
@@ -191,23 +175,16 @@ class MacroEventCalendar:
         return events[0] if events else None
 
     def _fetch_finnhub_events(self, today: date, days_ahead: int) -> list[MacroEvent]:
-        """Obtiene eventos de Finnhub economic_calendar."""
+        """Obtiene eventos de Finnhub via infrastructure adapter."""
         events = []
         try:
             end_date = today + timedelta(days=days_ahead)
-            result = self._finnhub.economic_calendar(
-                _from=today.isoformat(),
-                to=end_date.isoformat(),
-            )
-            for item in result.get("economicCalendar", []):
-                country = item.get("country", "")
-                if country != "US":
-                    continue
-
+            raw_events = self._finnhub_adapter.fetch_events(today, end_date)
+            for item in raw_events:
                 event_name = item.get("event", "").upper()
                 impact = self._classify_event_impact(event_name)
                 if impact is None:
-                    continue  # Evento de bajo impacto, ignorar
+                    continue
 
                 event_date_str = item.get("time", item.get("date", ""))
                 try:
@@ -222,7 +199,7 @@ class MacroEventCalendar:
                     description=event_name,
                 ))
         except Exception as e:
-            logger.warning(f"Error fetching Finnhub economic calendar: {e}")
+            logger.warning(f"Error processing Finnhub events: {e}")
         return events
 
     def _get_fomc_events(self, today: date, days_ahead: int) -> list[MacroEvent]:

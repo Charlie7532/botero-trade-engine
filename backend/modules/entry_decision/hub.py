@@ -22,7 +22,6 @@ nuevos módulos de inteligencia de entrada:
     para que el orquestador decida si entra o no.
 """
 import logging
-import yfinance as yf
 import pandas as pd
 import numpy as np
 from dataclasses import asdict
@@ -57,11 +56,13 @@ class EntryIntelligenceHub:
         from modules.price_analysis.phase_engine import PricePhaseIntelligence
         from modules.flow_intelligence.persistence_engine import FlowPersistenceAnalyzer
         from modules.volume_intelligence.profile_engine import VolumeProfileAnalyzer
+        from modules.entry_decision.infrastructure.market_data_fetcher import MarketDataFetcher
 
         self.event_flow = EventFlowIntelligence()
         self.price_phase = PricePhaseIntelligence()
         self.flow_persistence = FlowPersistenceAnalyzer()
         self.volume_profile = VolumeProfileAnalyzer()
+        self._market_data = MarketDataFetcher()
         self._rsi_intel = None             # RSIIntelligence (lazy)
 
         from application.trade_journal import TradeJournal
@@ -73,8 +74,6 @@ class EntryIntelligenceHub:
         self._uw = None
         self._pattern = None           # PatternRecognitionIntelligence (lazy)
         self._uw_data_cache = {}  # Pre-fetched UW data from MCP
-        self._spy_cache = None     # Cached SPY data for RS calculation (avoid 500 downloads)
-        self._spy_cache_date = None
 
     # ── Lazy init de módulos costosos ───────────────────────────
 
@@ -180,7 +179,7 @@ class EntryIntelligenceHub:
         if prices_df is not None:
             prices = prices_df
         else:
-            prices = self._fetch_prices(ticker)
+            prices = self._market_data.fetch_prices(ticker)
 
         if prices is None or prices.empty:
             report.final_verdict = "PASS"
@@ -198,14 +197,14 @@ class EntryIntelligenceHub:
         if vix_override is not None:
             report.vix = vix_override
         else:
-            report.vix = self._fetch_vix()
+            report.vix = self._market_data.fetch_vix()
 
         # RVOL
         avg_vol = float(prices['Volume'].rolling(20).mean().iloc[-1])
         report.rvol = float(prices['Volume'].iloc[-1]) / avg_vol if avg_vol > 0 else 1.0
 
         # RS vs SPY
-        report.rs_vs_spy = self._calc_rs_vs_spy(prices)
+        report.rs_vs_spy = self._market_data.calc_rs_vs_spy(prices)
 
         # ══════════════════════════════════════════════════════
         # STEP 2: Opciones — Gamma Regime, Put/Call Walls
@@ -585,49 +584,7 @@ class EntryIntelligenceHub:
             float(report.pattern_score),  # Dim 9: sentimiento visual (-1.0 → +1.0)
         ]
 
-    # ═══════════════════════════════════════════════════════════
-    # STEP IMPLEMENTATIONS
-    # ═══════════════════════════════════════════════════════════
 
-    def _fetch_prices(self, ticker: str) -> Optional[pd.DataFrame]:
-        """Descarga datos de precio de yfinance."""
-        try:
-            data = yf.download(ticker, period='3mo', interval='1d', progress=False)
-            if isinstance(data.columns, pd.MultiIndex):
-                data.columns = data.columns.get_level_values(0)
-            return data if not data.empty else None
-        except Exception as e:
-            logger.error(f"EntryHub: Error descargando precios de {ticker}: {e}")
-            return None
-
-    def _fetch_vix(self) -> float:
-        """Obtiene VIX actual."""
-        try:
-            vix_data = yf.download('^VIX', period='5d', interval='1d', progress=False)
-            if isinstance(vix_data.columns, pd.MultiIndex):
-                vix_data.columns = vix_data.columns.get_level_values(0)
-            return float(vix_data['Close'].iloc[-1]) if not vix_data.empty else 17.0
-        except Exception:
-            return 17.0
-
-    def _calc_rs_vs_spy(self, prices: pd.DataFrame) -> float:
-        """Calcula RS vs SPY 20d. Uses cache to avoid repeated downloads."""
-        try:
-            today = date.today()
-            if self._spy_cache is None or self._spy_cache_date != today:
-                spy = yf.download('SPY', period='3mo', interval='1d', progress=False)
-                if isinstance(spy.columns, pd.MultiIndex):
-                    spy.columns = spy.columns.get_level_values(0)
-                self._spy_cache = spy
-                self._spy_cache_date = today
-            spy = self._spy_cache
-            if len(prices) >= 20 and len(spy) >= 20:
-                stock_ret = float(prices['Close'].iloc[-1]) / float(prices['Close'].iloc[-20]) - 1
-                spy_ret = float(spy['Close'].iloc[-1]) / float(spy['Close'].iloc[-20]) - 1
-                return round((1 + stock_ret) / (1 + spy_ret), 4)
-        except Exception:
-            pass
-        return 1.0
 
     def _fetch_options_data(self, ticker: str) -> dict:
         """Obtiene datos de opciones de OptionsAwareness."""

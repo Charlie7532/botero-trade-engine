@@ -14,7 +14,6 @@ Ecuación base:
 import logging
 import numpy as np
 import pandas as pd
-import yfinance as yf
 from datetime import datetime, date, timedelta, UTC
 from typing import Optional
 from dataclasses import dataclass, field
@@ -208,6 +207,8 @@ class OptionsAwareness:
 
     def __init__(self):
         self.logger = logging.getLogger(f"{__name__}.OptionsAwareness")
+        from modules.options_gamma.infrastructure.yfinance_adapter import YFinanceOptionsAdapter
+        self._adapter = YFinanceOptionsAdapter()
 
     # ─────────────────────────────────────────────────────────
     # PUBLIC API
@@ -274,24 +275,18 @@ class OptionsAwareness:
         analysis = self._analyze(symbol)
         return analysis.gravity_score
 
-    # Legacy API compatibility
     def get_nearest_expiration(self, symbol: str) -> Optional[str]:
         """Obtiene la fecha de expiración más cercana."""
-        ticker = yf.Ticker(symbol)
-        expirations = ticker.options
-        return expirations[0] if expirations else None
+        return self._adapter.fetch_nearest_expiration(symbol)
 
     def calculate_max_pain(self, symbol: str,
                            expiration_date: Optional[str] = None) -> Optional[float]:
         """Legacy: Calculate max pain for a symbol."""
-        ticker = yf.Ticker(symbol)
-        if not expiration_date:
-            expiration_date = self.get_nearest_expiration(symbol)
-            if not expiration_date:
-                return None
+        chain_data = self._adapter.fetch_chain(symbol)
+        if not chain_data or 'calls' not in chain_data:
+            return None
         try:
-            chain = ticker.option_chain(expiration_date)
-            return self._calc_max_pain(chain.calls, chain.puts)
+            return self._calc_max_pain(chain_data['calls'], chain_data['puts'])
         except Exception as e:
             self.logger.error(f"Error calculando Max Pain para {symbol}: {e}")
             return None
@@ -299,13 +294,12 @@ class OptionsAwareness:
     def get_put_call_ratio(self, symbol: str,
                            expiration_date: Optional[str] = None) -> Optional[float]:
         """Legacy: PCR for a symbol."""
-        ticker = yf.Ticker(symbol)
-        if not expiration_date:
-            expiration_date = self.get_nearest_expiration(symbol)
+        chain_data = self._adapter.fetch_chain(symbol)
+        if not chain_data or 'calls' not in chain_data:
+            return None
         try:
-            chain = ticker.option_chain(expiration_date)
-            call_oi = chain.calls['openInterest'].sum()
-            put_oi = chain.puts['openInterest'].sum()
+            call_oi = chain_data['calls']['openInterest'].sum()
+            put_oi = chain_data['puts']['openInterest'].sum()
             return put_oi / call_oi if call_oi > 0 else None
         except Exception as e:
             self.logger.error(f"Error calculando PCR para {symbol}: {e}")
@@ -325,33 +319,22 @@ class OptionsAwareness:
     # ─────────────────────────────────────────────────────────
 
     def _analyze(self, symbol: str) -> OptionsAnalysis:
-        """Full analysis pipeline."""
+        """Full analysis pipeline — uses adapter for data, pure math for analysis."""
         result = OptionsAnalysis(symbol=symbol)
 
         try:
-            ticker = yf.Ticker(symbol)
-
-            # Price
-            hist = ticker.history(period="1d")
-            if isinstance(hist.columns, pd.MultiIndex):
-                hist.columns = hist.columns.get_level_values(0)
-            if hist.empty:
+            chain_data = self._adapter.fetch_chain(symbol)
+            if not chain_data or 'calls' not in chain_data:
                 return result
-            result.current_price = float(hist['Close'].iloc[-1])
 
-            # Expiration
-            exps = ticker.options
-            if not exps:
-                return result
-            result.expiration = exps[0]
+            result.current_price = chain_data['current_price']
+            result.expiration = chain_data['expiration']
+            calls = chain_data['calls']
+            puts = chain_data['puts']
 
             # Time to expiration
             exp_date = pd.Timestamp(result.expiration)
             T = max((exp_date - pd.Timestamp.now()).days / 365.0, 1/365.0)
-
-            # Options chain
-            chain = ticker.option_chain(result.expiration)
-            calls, puts = chain.calls, chain.puts
 
             # Max Pain
             result.max_pain = self._calc_max_pain(calls, puts) or 0
@@ -390,7 +373,7 @@ class OptionsAwareness:
             else:
                 result.mm_bias = "NEUTRAL"
 
-            result.timestamp = datetime.now(UTC).isoformat()
+            result.timestamp = chain_data.get('timestamp', datetime.now(UTC).isoformat())
 
         except Exception as e:
             self.logger.error(f"Error en análisis de {symbol}: {e}")

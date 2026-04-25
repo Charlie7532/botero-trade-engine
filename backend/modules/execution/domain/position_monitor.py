@@ -28,8 +28,8 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import GetOrdersRequest
 from alpaca.trading.enums import QueryOrderStatus
 
-from application.trade_journal import TradeJournal
-from application.portfolio_intelligence import (
+from modules.execution.domain.trade_journal import TradeJournal
+from modules.portfolio_management.domain.portfolio_intelligence import (
     RelativeStrengthMonitor, AdaptiveTrailingStop, RiskGuardian,
 )
 

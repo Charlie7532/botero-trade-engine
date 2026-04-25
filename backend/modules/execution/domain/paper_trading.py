@@ -17,15 +17,15 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, UTC
 
-from application.trade_journal import TradeJournal, TradeJournalEntry
-from application.portfolio_intelligence import (
+from modules.execution.domain.trade_journal import TradeJournal, TradeJournalEntry
+from modules.portfolio_management.domain.portfolio_intelligence import (
     RelativeStrengthMonitor, AdaptiveTrailingStop,
     PortfolioOptimizer, RiskGuardian,
 )
-from application.execution_engine import (
+from modules.execution.domain.engine import (
     InstitutionalExecutionEngine, TradeContext, PositionState,
 )
-from application.entry_intelligence_hub import EntryIntelligenceHub
+from modules.entry_decision.hub import EntryIntelligenceHub
 
 logger = logging.getLogger(__name__)
 
@@ -413,7 +413,7 @@ class PaperTradingOrchestrator:
             return {"error": "Alpaca no conectado"}
         
         try:
-            from backend.application.smart_entry import SmartEntryEngine
+            from _legacy.smart_entry import SmartEntryEngine
             
             smart = SmartEntryEngine()
             analysis_price = snapshot.get('price', 0)

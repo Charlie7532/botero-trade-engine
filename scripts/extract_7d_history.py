@@ -19,7 +19,7 @@ load_dotenv()
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'backend'))
 
-from infrastructure.data_providers.uw_data_bridge import UWDataBridge
+from modules.flow_intelligence.infrastructure.uw_mcp_bridge import UWDataBridge
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)

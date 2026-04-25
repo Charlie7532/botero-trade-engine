@@ -65,7 +65,7 @@ class EntryIntelligenceHub:
         self._market_data = MarketDataFetcher()
         self._rsi_intel = None             # RSIIntelligence (lazy)
 
-        from application.trade_journal import TradeJournal
+        from modules.execution.domain.trade_journal import TradeJournal
         self.journal = TradeJournal()
 
         # Módulos de datos vivos (existentes)
@@ -100,7 +100,7 @@ class EntryIntelligenceHub:
     def _get_uw(self):
         if self._uw is None:
             try:
-                from infrastructure.data_providers.uw_intelligence import UnusualWhalesIntelligence
+                from modules.flow_intelligence.infrastructure.uw_adapter import UnusualWhalesIntelligence
                 self._uw = UnusualWhalesIntelligence()
                 logger.info("EntryHub: UnusualWhalesIntelligence conectado ✅")
             except Exception as e:

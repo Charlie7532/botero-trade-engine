@@ -19,7 +19,7 @@ import pandas as pd
 from unittest.mock import MagicMock
 from datetime import datetime, date, UTC
 
-from application.entry_intelligence_hub import EntryIntelligenceHub
+from modules.entry_decision.hub import EntryIntelligenceHub
 
 
 # ═══════════════════════════════════════════════════════════════

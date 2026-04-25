@@ -22,7 +22,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
-from application.entry_intelligence_hub import EntryIntelligenceHub
+from modules.entry_decision.hub import EntryIntelligenceHub
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)

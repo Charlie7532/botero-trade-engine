@@ -39,8 +39,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 from dotenv import load_dotenv
 load_dotenv()
 
-from application.paper_trading import PaperTradingOrchestrator
-from infrastructure.data_providers.uw_data_bridge import UWDataBridge
+from modules.execution.domain.paper_trading import PaperTradingOrchestrator
+from modules.flow_intelligence.infrastructure.uw_mcp_bridge import UWDataBridge
 
 # ═══════════════════════════════════════════════════════════
 # CONFIGURATION

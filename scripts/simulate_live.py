@@ -23,8 +23,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, date, UTC
 
-from application.entry_intelligence_hub import EntryIntelligenceHub
-from application.portfolio_intelligence import AdaptiveTrailingStop
+from modules.entry_decision.hub import EntryIntelligenceHub
+from modules.portfolio_management.domain.portfolio_intelligence import AdaptiveTrailingStop
 
 # Suppress yfinance noise
 logging.basicConfig(level=logging.WARNING)

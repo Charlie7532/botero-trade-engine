@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from domain.entities import Bar, Broker, Order, OrderSide, OrderStatus, OrderType, Portfolio, Position
-from infrastructure.brokers.base import BrokerAdapter
+from modules.execution.infrastructure.brokers.base import BrokerAdapter
 
 
 class AlpacaAdapter(BrokerAdapter):

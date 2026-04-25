@@ -4,9 +4,9 @@ from typing import Type
 import backtrader as bt
 
 from domain.entities import BacktestResult, Bar, Broker, Order, Portfolio, Trade
-from infrastructure.backtrader.data_feeds import create_data_feed
-from infrastructure.backtrader.base_strategy import BaseStrategy
-from infrastructure.brokers.base import BrokerAdapter
+from modules.simulation.infrastructure.backtrader.data_feeds import create_data_feed
+from modules.simulation.infrastructure.backtrader.base_strategy import BaseStrategy
+from modules.execution.infrastructure.brokers.base import BrokerAdapter
 
 
 async def fetch_market_data(

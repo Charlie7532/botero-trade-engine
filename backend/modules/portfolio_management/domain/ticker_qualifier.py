@@ -27,11 +27,11 @@ warnings.filterwarnings('ignore')
 
 import sys
 
-from application.feature_engineering import QuantFeatureEngineer
-from application.sequence_modeling import (
+from modules.simulation.domain.feature_engineering import QuantFeatureEngineer
+from _legacy.sequence_modeling import (
     TripleBarrierLabeler, MetaLabeler, SampleWeighter, QuantSequenceDataset
 )
-from application.lstm_model import QuantInstitutionalLSTM
+from _legacy.lstm_model import QuantInstitutionalLSTM
 
 logger = logging.getLogger(__name__)
 

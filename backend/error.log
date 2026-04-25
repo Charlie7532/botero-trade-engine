@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/root/botero-trade/backend/modules/execution/domain/paper_trading.py", line 28, in <module>
+    from application.entry_intelligence_hub import EntryIntelligenceHub
+ModuleNotFoundError: No module named 'application'
+['', '/usr/lib/python312.zip', '/usr/lib/python3.12', '/usr/lib/python3.12/lib-dynload', '/usr/local/lib/python3.12/dist-packages', '/usr/lib/python3/dist-packages']

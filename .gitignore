@@ -1,23 +1,36 @@
-build
-dist / media
-node_modules
+
+# Data caches
+# Payload default media upload directory
+# Python
+# Trading journal data (local only)
+*.pyc
+*.test
 .DS_Store
-.vscode/
+.claude/
 .env
+.env*.local
 .mcp.json
 .next
 .vercel
-
-# Payload default media upload directory
-public/media/
-
-public/robots.txt
-public/sitemap*.xml
-.env*.local
-*.test
-
-# Python
+.vscode/
+__pycache__/
+backend/**/*.pyc
+backend/**/__pycache__
 backend/.venv
 backend/__pycache__
-backend/**/__pycache__
-backend/**/*.pyc
+build
+data/historical/*.parquet
+data/journal/*.db
+data/journal/*.json
+data/journal/logs/
+data/sim_7d_cache.json
+data/forensic_ml_dataset.csv
+data/forensic_signals.csv
+logs/*.log
+dist / media
+mcp_servers/**/.cache/
+node_modules
+public/media/
+public/robots.txt
+public/sitemap*.xml
+tests/__pycache__/

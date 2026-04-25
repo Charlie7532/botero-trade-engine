@@ -1,12 +1,12 @@
 import { handleGlobalAfterChangeHook } from '@/shared/handlers'
 import { NextCacheRevalidator } from '@/shared/infrastructure/next/NextCacheRevalidator'
-import { revalidateFooterState } from '@/modules/layout/application/useCases/revalidateLayoutState'
 import type { GlobalAfterChangeHook } from 'payload'
 
 const footerRevalidationAdapter: GlobalAfterChangeHook = ({ doc, req: { payload, context } }) => {
   if (!context.disableRevalidate) {
     const cache = new NextCacheRevalidator()
-    revalidateFooterState(cache, payload.logger)
+    payload.logger.info(`Revalidating footer`)
+    cache.revalidateTag('global_footer')
   }
   return doc
 }

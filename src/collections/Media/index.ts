@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url'
 import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
 import { mediaFields } from './fields'
-import { mediaLifecycle } from './lifecycle'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -23,7 +22,6 @@ export const Media: CollectionConfig = {
     group: 'Website',
   },
   fields: mediaFields,
-  hooks: mediaLifecycle,
   upload: {
     staticDir: path.resolve(dirname, '../../../public/media'),
     adminThumbnail: 'thumbnail',

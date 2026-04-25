@@ -5,7 +5,7 @@ import { NextCacheRevalidator } from '../../shared/infrastructure/next/NextCache
 import { 
   revalidatePageStateOnUpdate, 
   revalidatePageStateOnDelete 
-} from '../../modules/pages/application/useCases/revalidatePageState'
+} from './domain/useCases/revalidatePageState'
 
 const revalidatePageAdapter = handleAfterChangeHook({
   name: 'Pages',

@@ -12,6 +12,12 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
+import { Portfolios } from './collections/Portfolios'
+import { PortfolioMemberships } from './collections/PortfolioMemberships'
+import { BrokerAccounts } from './collections/BrokerAccounts'
+import { BrokerCredentials } from './collections/BrokerCredentials'
+import { Bots } from './collections/Bots'
+import { BotAssignments } from './collections/BotAssignments'
 import { Footer } from './globals/Footer'
 import { Header } from './globals/Header'
 import { SiteSettings } from './globals/SiteSettings'
@@ -37,13 +43,13 @@ export default buildConfig({
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below and the import `BeforeLogin` statement on line 15.
       beforeLogin: [
-        '@/components/BeforeLogin',
+        // '@/components/BeforeLogin',
         // '@/components/AdminFavicon'
       ],
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below and the import `BeforeDashboard` statement on line 15.
       beforeDashboard: [
-        '@/components/BeforeDashboard',
+        // '@/components/BeforeDashboard',
       ],
       graphics: {
         Logo: '@/components/Logo/AppLogoExpanded',
@@ -88,7 +94,14 @@ export default buildConfig({
       connectionString: process.env.POSTGRES_URL || '',
     },
   }),
-  collections: [Pages, Posts, Media, Categories, Users, UserAvatar],
+  collections: [
+    // Content
+    Pages, Posts, Media, Categories,
+    // Users
+    Users, UserAvatar,
+    // Multi-Tenant Trading
+    Portfolios, PortfolioMemberships, BrokerAccounts, BrokerCredentials, Bots, BotAssignments,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, SiteSettings],
   plugins: [

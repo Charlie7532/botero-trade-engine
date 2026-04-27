@@ -9,12 +9,12 @@ export const Users: CollectionConfig = {
   access: {
     admin: authenticated,
     create: authenticated,
-    delete: authenticated,
     read: authenticated,
     update: authenticated,
+    delete: authenticated,
   },
   admin: {
-    group: 'Users',
+    group: 'Users & Portfolios',
     defaultColumns: ['name', 'email'],
     useAsTitle: 'name',
   },

@@ -29,8 +29,6 @@ import { default as default_f8aac8edd5dde803bbebb1dadcc3c472 } from '@/component
 import { default as default_b071f7683a0bf61183f98194697e6e39 } from '@/components/Admin/EmptyLogoutButton'
 import { default as default_94a6a70cbadb7fb6025ad84852bbcc14 } from '@/components/Logo/AppLogoCompact '
 import { default as default_b8eccbc6e976e9f5be666a1b4a18a98c } from '@/components/Logo/AppLogoExpanded'
-import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
-import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { default as default_57542a803be6bc6602169e617924d624 } from '@/components/SidebarHomeButton'
 import { default as default_fe6522ffb7de26dad8c594d3f8d9234a } from '@/components/Admin/AdminHeroUIProvider'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
@@ -68,8 +66,6 @@ export const importMap = {
   "@/components/Admin/EmptyLogoutButton#default": default_b071f7683a0bf61183f98194697e6e39,
   "@/components/Logo/AppLogoCompact #default": default_94a6a70cbadb7fb6025ad84852bbcc14,
   "@/components/Logo/AppLogoExpanded#default": default_b8eccbc6e976e9f5be666a1b4a18a98c,
-  "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
-  "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/SidebarHomeButton#default": default_57542a803be6bc6602169e617924d624,
   "@/components/Admin/AdminHeroUIProvider#default": default_fe6522ffb7de26dad8c594d3f8d9234a,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,

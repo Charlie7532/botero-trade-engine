@@ -73,6 +73,12 @@ export interface Config {
     categories: Category;
     users: User;
     'user-avatar': UserAvatar;
+    portfolios: Portfolio;
+    'portfolio-memberships': PortfolioMembership;
+    'broker-accounts': BrokerAccount;
+    'broker-credentials': BrokerCredential;
+    bots: Bot;
+    'bot-assignments': BotAssignment;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -83,7 +89,16 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    portfolios: {
+      brokerAccounts: 'broker-accounts';
+      bots: 'bots';
+      members: 'portfolio-memberships';
+    };
+    bots: {
+      assignments: 'bot-assignments';
+    };
+  };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
@@ -91,6 +106,12 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'user-avatar': UserAvatarSelect<false> | UserAvatarSelect<true>;
+    portfolios: PortfoliosSelect<false> | PortfoliosSelect<true>;
+    'portfolio-memberships': PortfolioMembershipsSelect<false> | PortfolioMembershipsSelect<true>;
+    'broker-accounts': BrokerAccountsSelect<false> | BrokerAccountsSelect<true>;
+    'broker-credentials': BrokerCredentialsSelect<false> | BrokerCredentialsSelect<true>;
+    bots: BotsSelect<false> | BotsSelect<true>;
+    'bot-assignments': BotAssignmentsSelect<false> | BotAssignmentsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -10894,6 +10915,140 @@ export interface ServiceCardBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolios".
+ */
+export interface Portfolio {
+  id: number;
+  name: string;
+  slug?: string | null;
+  status: 'active' | 'suspended' | 'archived';
+  owner: number | User;
+  brokerAccounts?: {
+    docs?: (number | BrokerAccount)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  bots?: {
+    docs?: (number | Bot)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  members?: {
+    docs?: (number | PortfolioMembership)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "broker-accounts".
+ */
+export interface BrokerAccount {
+  id: number;
+  portfolio: number | Portfolio;
+  name: string;
+  brokerType: 'alpaca' | 'interactive_brokers';
+  environment: 'paper' | 'live';
+  isActive?: boolean | null;
+  alpacaBaseUrl?: string | null;
+  ibHost?: string | null;
+  ibPort?: number | null;
+  ibAccountId?: string | null;
+  ibClientId?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bots".
+ */
+export interface Bot {
+  id: number;
+  name: string;
+  portfolio: number | Portfolio;
+  strategyType: 'qgarp' | 'momentum' | 'mean_reversion' | 'trend_following' | 'custom';
+  status: 'active' | 'paused' | 'stopped' | 'error';
+  description?: string | null;
+  /**
+   * Strategy-specific configuration (parameters, thresholds, filters).
+   */
+  config?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  assignments?: {
+    docs?: (number | BotAssignment)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bot-assignments".
+ */
+export interface BotAssignment {
+  id: number;
+  bot: number | Bot;
+  brokerAccount: number | BrokerAccount;
+  isActive?: boolean | null;
+  riskLimits?: {
+    /**
+     * Max % of portfolio value per position.
+     */
+    maxPositionSize?: number | null;
+    /**
+     * Max daily loss % before bot auto-pauses.
+     */
+    maxDailyLoss?: number | null;
+    /**
+     * Max concurrent open positions.
+     */
+    maxOpenPositions?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio-memberships".
+ */
+export interface PortfolioMembership {
+  id: number;
+  portfolio: number | Portfolio;
+  user: number | User;
+  portfolioRole: 'owner' | 'admin' | 'trader' | 'viewer';
+  invitedBy?: (number | null) | User;
+  joinedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "broker-credentials".
+ */
+export interface BrokerCredential {
+  id: number;
+  brokerAccount: number | BrokerAccount;
+  keyName: 'apiKey' | 'secretKey';
+  plaintextValue?: string | null;
+  encryptedValue?: string | null;
+  iv?: string | null;
+  authTag?: string | null;
+  maskedPreview?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -11104,6 +11259,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'user-avatar';
         value: number | UserAvatar;
+      } | null)
+    | ({
+        relationTo: 'portfolios';
+        value: number | Portfolio;
+      } | null)
+    | ({
+        relationTo: 'portfolio-memberships';
+        value: number | PortfolioMembership;
+      } | null)
+    | ({
+        relationTo: 'broker-accounts';
+        value: number | BrokerAccount;
+      } | null)
+    | ({
+        relationTo: 'broker-credentials';
+        value: number | BrokerCredential;
+      } | null)
+    | ({
+        relationTo: 'bots';
+        value: number | Bot;
+      } | null)
+    | ({
+        relationTo: 'bot-assignments';
+        value: number | BotAssignment;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -11723,6 +11902,100 @@ export interface UserAvatarSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolios_select".
+ */
+export interface PortfoliosSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  status?: T;
+  owner?: T;
+  brokerAccounts?: T;
+  bots?: T;
+  members?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio-memberships_select".
+ */
+export interface PortfolioMembershipsSelect<T extends boolean = true> {
+  portfolio?: T;
+  user?: T;
+  portfolioRole?: T;
+  invitedBy?: T;
+  joinedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "broker-accounts_select".
+ */
+export interface BrokerAccountsSelect<T extends boolean = true> {
+  portfolio?: T;
+  name?: T;
+  brokerType?: T;
+  environment?: T;
+  isActive?: T;
+  alpacaBaseUrl?: T;
+  ibHost?: T;
+  ibPort?: T;
+  ibAccountId?: T;
+  ibClientId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "broker-credentials_select".
+ */
+export interface BrokerCredentialsSelect<T extends boolean = true> {
+  brokerAccount?: T;
+  keyName?: T;
+  plaintextValue?: T;
+  encryptedValue?: T;
+  iv?: T;
+  authTag?: T;
+  maskedPreview?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bots_select".
+ */
+export interface BotsSelect<T extends boolean = true> {
+  name?: T;
+  portfolio?: T;
+  strategyType?: T;
+  status?: T;
+  description?: T;
+  config?: T;
+  assignments?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bot-assignments_select".
+ */
+export interface BotAssignmentsSelect<T extends boolean = true> {
+  bot?: T;
+  brokerAccount?: T;
+  isActive?: T;
+  riskLimits?:
+    | T
+    | {
+        maxPositionSize?: T;
+        maxDailyLoss?: T;
+        maxOpenPositions?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

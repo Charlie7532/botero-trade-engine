@@ -1,7 +1,7 @@
 ---
 name: payload-access-policy-audit
 description: Audit and improve Payload access policy, tenant scoping, and overrideAccess usage. Use this whenever a task changes roles, collection access, or trusted data-access paths.
-origin: TridasOS
+
 ---
 
 # Payload Access Policy Audit
@@ -50,5 +50,3 @@ This skill helps keep multi-tenant data access explicit, least-privilege, and co
 - `.agents/skills/payload-access-policy-audit/access-playbook.md`
 - `src/access/**`
 - `src/collections/**`
-- `src/lib/auth/**`
-- `src/modules/uploads/infrastructure/payload/payloadUploadFileStore.ts`

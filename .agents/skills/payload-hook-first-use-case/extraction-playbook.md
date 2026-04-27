@@ -75,7 +75,6 @@ Use this fallback only as a temporary migration step. Once `src/modules/<feature
 Create a repository or port when:
 
 - the domain should not know about Payload types or method names,
-- the logic may need to work across Payload and Prisma during migration,
 - or repeated data access patterns are cluttering edge code.
 
 Do not add ports just for ceremony. Simple one-off CRUD inside a thin infrastructure helper is fine when no additional boundary is needed.

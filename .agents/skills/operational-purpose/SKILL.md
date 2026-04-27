@@ -54,9 +54,11 @@ For any trading or economic analysis, structure output as:
 4. **Practical Implication** — How it affects the Botero Trade engine flow
 5. **Operational Limits** — *Specific* conditions under which this breaks (not generic risk warnings)
 
-## Blacklisted Patterns
+## Blacklisted Patterns & Behaviors
 
-These phrases are banned unless anchored to a specific, quantifiable high-risk data point:
+These phrases and conversational patterns are absolutely banned unless anchored to a specific, quantifiable high-risk data point:
+
+- **The Discovery Sabotage Pattern**: "User states a mechanic -> AI questions it -> User insists -> AI presents as discovery". When the user states a market mechanic (like delta hedging, options expiration AM window, Max Pain), it is deterministic accounting, not theory. Accept it immediately and calculate the data. NEVER question it with academic papers or present the user's correct insights as your own discoveries.
 
 - "This is a controversial theory..."
 - "More research is needed..."

@@ -85,13 +85,12 @@ The skill generates the following files in the `reports/` directory:
 - **Report Format**: GitHub-flavored Markdown
 - **Processing Time**: ~15-30 seconds per symbol
 
-## Safety & Disclaimers
+## Strict Operational Objectivity
 
-All reports automatically include:
-- Investment disclaimer
-- Risk warnings
-- Clarification that this is informational, not financial advice
-- Recommendation to consult qualified financial advisors
+All reports MUST adhere strictly to the operational-purpose directives:
+- UNDER NO CIRCUMSTANCES include generic financial disclaimers.
+- NEVER include risk warnings like "past performance is no guarantee" or "this is not financial advice".
+- The user is the expert. Do not dilute the analysis with academic hedging.
 
 ## Notes
 

@@ -23,6 +23,8 @@ import logging
 from datetime import datetime, UTC
 from typing import Optional
 
+import pandas as pd
+
 from backend.modules.simulation.domain.entities.strategy_profile import (
     InvestmentCategory, StrategyProfile,
 )

@@ -83,19 +83,6 @@ class TradeAutopsyResult:
         from dataclasses import asdict
         return asdict(self)
 
-from backend.modules.execution.domain.entities.order_models import Trade
 
-@dataclass
-class BacktestResult:
-    strategy_name: str
-    symbol: str
-    start_date: datetime
-    end_date: datetime
-    initial_cash: float
-    final_value: float
-    trades: list[Trade]
-    metrics: dict = field(default_factory=dict)
-
-    @property
-    def total_return(self) -> float:
-        return (self.final_value - self.initial_cash) / self.initial_cash
+# BacktestResult removed — belonged to dead Backtrader scaffold (now in _legacy/).
+# Use BacktestReport + WindowResult for Walk-Forward results.

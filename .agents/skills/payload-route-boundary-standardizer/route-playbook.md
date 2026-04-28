@@ -20,12 +20,9 @@ If the route does more than that, it is probably carrying business logic that be
 
 Reuse these utilities when possible:
 
-- `src/shared/handlers/handlerRoute.ts`
-- `src/shared/handlers/handlePayloadEndpoint.ts`
-- `src/shared/kernel/exceptions.ts`
-- `src/lib/parseJsonBody.ts`
+- `src/shared/handlers/index.ts` (hook wrappers: `handleBeforeChangeHook`, `handleAfterChangeHook`, etc.)
 
-Use the Payload custom uploads endpoints under `src/modules/uploads/interface/payload/endpoints/` as the local example of a thinner route style and `src/app/api/v1/leads/route.ts` as a typical extraction candidate.
+When adding new shared route utilities, place them in `src/shared/handlers/`.
 
 ## Validation guidance
 
@@ -37,7 +34,6 @@ Use the Payload custom uploads endpoints under `src/modules/uploads/interface/pa
 ## Error guidance
 
 - Translate domain or application failures into typed exceptions.
-- Let `handlerRoute` produce the final HTTP response when possible.
 - Avoid scattered `try/catch` blocks unless the route truly needs special translation at a very local step.
 
 ## Extraction cues
@@ -61,9 +57,8 @@ After the refactor, a reviewer should be able to read the route top-to-bottom in
 
 ## Placement guidance
 
-- feature-local DTOs, presenters, and request context helpers stay under `src/modules/<feature>/**`
+- feature-local DTOs, presenters, and request context helpers stay under the collection or a feature directory
 - `src/shared/**` is reserved for cross-cutting behavior reused by multiple modules
-- if a feature already lives in `src/modules/<feature>/**`, treat any `src/lib/<feature>/**` path as temporary migration debt and remove it when safe
 
 ## Final response
 

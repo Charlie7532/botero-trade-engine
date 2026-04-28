@@ -1,12 +1,12 @@
 ---
 name: payload-hook-first-use-case
 description: Extract business logic from Payload hooks, routes, and jobs into rules, use cases, and adapters. Use this whenever a hook or endpoint mixes orchestration, persistence, and side-effects.
-origin: TridasOS
+
 ---
 
 # Payload Hook-First Use Case
 
-Use this skill when a Payload hook, Next.js route, job handler, or helper mixes business decisions with direct `payload`, Prisma, or external service calls.
+Use this skill when a Payload hook, Next.js route, job handler, or helper mixes business decisions with direct `payload` or external service calls.
 
 This skill applies the repo's CLEAN direction incrementally: thin adapters at the edge, business rules in pure functions, orchestration in use cases, and infrastructure behind ports or repository seams.
 
@@ -14,9 +14,8 @@ This skill applies the repo's CLEAN direction incrementally: thin adapters at th
 
 - Extracted domain rules for pure predicates and transformations
 - One or more use cases for orchestration and side-effects
-- Repository or port interfaces where the domain should not know about Payload or Prisma
+- Repository or port interfaces where the domain should not know about Payload
 - Thin adapters in hooks, routes, or jobs that instantiate dependencies and call the use case
-- A migration note when the change still straddles legacy Prisma and Payload data
 
 ## Project rules
 
@@ -31,9 +30,7 @@ This skill applies the repo's CLEAN direction incrementally: thin adapters at th
 - Prefer classes with `execute()` for use cases and keep controllers/hooks/endpoints as thin functions or factories.
 - Prefer Zod schemas for boundary DTOs instead of manual validation logic.
 - If the runtime already provides `req.payload`, inject that instance into feature dependencies and repositories instead of bootstrapping a new Payload client.
-- Avoid leaving long-term facades in `src/lib/<feature>/**`; once a feature has a stable module, remove the transitional `lib` layer.
-- For uploads, keep exactly three repository ports for business data access: `AccountRepository`, `UploadFilesRepository`, and `UploadSessionRepository`.
-- Legacy behaviors should live inside these three repositories instead of separate legacy repository interfaces or facades.
+- Avoid leaving long-term facades; once a feature is stable, remove transitional layers.
 
 ## Workflow
 
@@ -41,7 +38,7 @@ This skill applies the repo's CLEAN direction incrementally: thin adapters at th
 2. Split the code into pure rules, orchestration, persistence, and side-effects.
 3. Move pure logic into rules.
 4. Move orchestration into a use case with injected collaborators.
-5. Hide Payload or Prisma access behind repositories, ports, or feature services.
+5. Hide Payload access behind repositories, ports, or feature services.
 6. Reduce the edge adapter to parsing, instantiation, and response wiring.
 7. Verify that admin, API, and background flows can now share the same use case when relevant.
 
@@ -59,4 +56,3 @@ This skill applies the repo's CLEAN direction incrementally: thin adapters at th
 - `.agents/skills/payload-hook-first-use-case/extraction-playbook.md`
 - `src/app/api/**`
 - `src/collections/**`
-- `src/modules/uploads/infrastructure/payload/payloadUploadFileStore.ts`

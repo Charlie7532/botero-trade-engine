@@ -1,7 +1,7 @@
 ---
 name: payload-route-boundary-standardizer
 description: Standardize Next.js API routes around clear boundaries, typed errors, and thin adapters for Payload-backed features. Use this whenever a route mixes validation, business logic, and persistence.
-origin: TridasOS
+
 ---
 
 # Payload Route Boundary Standardizer
@@ -14,16 +14,14 @@ This skill makes routes act as boundaries: parse input, validate, instantiate co
 
 - Thin route handlers that focus on HTTP concerns only
 - Input validation isolated at the boundary, preferably with Zod
-- Consistent error handling through `src/shared/handlers/handlerRoute.ts` and `src/shared/kernel/exceptions.ts`
+- Consistent error handling and response mapping
 - Business logic moved into feature services, repositories, or use cases
 - Stable request and response shapes that do not leak infrastructure details
 
 ## Project rules
 
 - Routes should parse, validate, delegate, and respond. They should not carry large business workflows.
-- Prefer `handlerRoute` for consistent error translation.
 - Prefer importing route adapters from `src/shared/handlers` for new code.
-- Prefer importing control exceptions from `src/shared/kernel/exceptions.ts`.
 - Prefer typed control exceptions over ad hoc `return NextResponse.json({ error: ... })` branches scattered through the file.
 - Prefer dedicated request parsers or schemas over inline validation.
 - Use Zod for new boundary schemas when it fits the touched area; keep validation isolated even if the task only introduces a small parser.
@@ -31,9 +29,6 @@ This skill makes routes act as boundaries: parse input, validate, instantiate co
 - Keep presenters as pure feature-local functions; do not move them to `src/shared/**` unless multiple modules reuse them.
 - If a route manipulates Payload collections, prefer Payload Local API directly or through repositories that wrap it.
 - Adapters/gateways used by routes should be transport clients only; data fetching and payload shaping belong in use cases.
-- For uploads, standardize on exactly three repository ports: `AccountRepository`, `UploadFilesRepository`, and `UploadSessionRepository`.
-- Adapters/gateways used by routes should be transport clients only; data fetching and payload shaping belong in use cases.
-- For uploads, standardize on exactly three repository ports: `AccountRepository`, `UploadFilesRepository`, and `UploadSessionRepository`.
 
 ## Workflow
 
@@ -56,8 +51,4 @@ This skill makes routes act as boundaries: parse input, validate, instantiate co
 ## References
 
 - `.agents/skills/payload-route-boundary-standardizer/route-playbook.md`
-- `src/shared/handlers/handlerRoute.ts`
-- `src/shared/handlers/handlePayloadEndpoint.ts`
-- `src/shared/kernel/exceptions.ts`
-- `src/lib/parseJsonBody.ts`
 - `src/app/api/**`

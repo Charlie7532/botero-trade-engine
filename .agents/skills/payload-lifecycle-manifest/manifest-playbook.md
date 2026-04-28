@@ -12,8 +12,7 @@ Make collection behavior discoverable without changing the domain model. After t
 
 ## Preferred file placement
 
-- Generic wrappers and adapter controllers: `src/shared/handlers/**`
-- Cross-cutting control exceptions: `src/shared/kernel/**`
+- Generic wrappers and adapter controllers: `src/shared/handlers/index.ts`
 - Current collection default: colocate `lifecycle.ts` next to `src/collections/<CollectionName>/index.ts`
 - Target architecture when a feature module exists: `src/modules/<feature>/interface/lifecycle.ts`
 
@@ -79,18 +78,7 @@ When the repo is missing generic wrappers, introduce them under `src/shared/hand
 
 Recommended files:
 
-- `src/shared/handlers/_hookUtils.ts`
-- `src/shared/handlers/handleBeforeWriteHook.ts`
-- `src/shared/handlers/handleAfterChangeHook.ts`
-- `src/shared/handlers/handleBeforeDeleteHook.ts`
-- `src/shared/handlers/handleAfterDeleteHook.ts`
-- `src/shared/handlers/handleBeforeOperationHook.ts`
-- `src/shared/handlers/handleAfterOperationHook.ts`
-- `src/shared/handlers/handleHook.ts`
-- `src/shared/handlers/handlerRoute.ts`
-- `src/shared/handlers/handlePayloadEndpoint.ts`
-- `src/shared/handlers/index.ts`
-- `src/shared/kernel/exceptions.ts`
+- `src/shared/handlers/index.ts` (already exists with `handleBeforeChangeHook`, `handleAfterChangeHook`, `handleAfterDeleteHook`, `handleAfterReadHook`, `handleGlobalAfterChangeHook`)
 
 Keep them generic. Do not move collection-specific behavior into shared code.
 
@@ -109,22 +97,13 @@ When the hook runtime already provides `req.payload`, inject that instance into 
   - return `param.doc` when skipped or when a non-critical side-effect fails
 - `handleAfterDeleteHook`
   - log and swallow non-critical side-effect failures
-- `handleBeforeOperationHook`
-  - return `param.args` when skipped
-  - log and re-throw on error
-- `handleAfterOperationHook`
-  - return `param.result` when skipped or on non-critical failure
-- `handlerRoute`
-  - standard controller for Next.js route adapters
-- `handlePayloadEndpoint`
-  - standard controller for Payload-native endpoints
 
 Use `req.payload.logger ?? console` semantics for logging.
 
 Shared placement rule:
 
 - `src/shared/**` only for cross-cutting code used by multiple modules
-- feature-local schemas, presenters, context helpers, and orchestration remain inside `src/modules/<feature>/**`
+- feature-local schemas, presenters, context helpers, and orchestration remain inside the collection or a feature directory
 
 ## Step 5: Add manifest documentation
 
@@ -164,7 +143,6 @@ Report:
 
 - manifest path,
 - shared handler paths introduced or updated,
-- shared kernel paths introduced or updated,
 - hooks grouped by stage,
 - behavior preserved,
 - extraction candidates,

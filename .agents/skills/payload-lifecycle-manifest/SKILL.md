@@ -1,7 +1,7 @@
 ---
 name: payload-lifecycle-manifest
 description: Create or normalize Payload lifecycle manifests and shared hook handlers so collection behavior is explicit, wrapped, and easy to trace. Use this whenever a task changes hooks, lifecycle composition, or shared Payload handlers.
-origin: TridasOS
+
 ---
 
 # Payload Lifecycle Manifest
@@ -17,14 +17,12 @@ This skill is for discovery, shared handler standardization, hook normalization,
 - Named hook exports grouped by lifecycle stage (`beforeValidate`, `beforeChange`, `afterChange`, `beforeDelete`, `afterDelete`, operation hooks when needed)
 - A short manifest comment that lists execution order, guards, and visible side-effects
 - A simplified collection `index.ts` that imports hook composition instead of burying behavior inline
-- Shared kernel exceptions under `src/shared/kernel/**` for cross-cutting control errors
 - Follow-up notes for hooks that should be extracted into rules/use cases
 
 ## Project rules
 
 - Prefer one obvious lifecycle entrypoint per collection.
 - Prefer generic cross-cutting hook and endpoint handlers in `src/shared/handlers`.
-- Prefer cross-cutting exceptions in `src/shared/kernel`.
 - Prefer named wrapped hooks over inline anonymous hook functions.
 - Do not change behavior just to reorganize code unless the task explicitly asks for it.
 - If wrapper utilities do not exist yet, create them in `src/shared/handlers` and keep naming consistent.
@@ -32,7 +30,7 @@ This skill is for discovery, shared handler standardization, hook normalization,
 - If a hook receives `req.payload`, prefer request-scoped feature dependencies built from that instance instead of bootstrapping a new Payload client.
 - Keep feature-specific hook orchestration, presenters, and DTO helpers inside `src/modules/<feature>/**`, not `src/shared/**`.
 - If a hook has branching business logic, hidden side-effects, or multi-entity coordination, flag it for `payload-hook-first-use-case`.
-- If the task changes collection schema, also use `supabase-collection-migrations` and remind to run `pnpm payload:generate:types`.
+- If the task changes collection schema, remind to run `pnpm payload:generate:types`.
 
 ## Workflow
 
@@ -52,7 +50,6 @@ This skill is for discovery, shared handler standardization, hook normalization,
 - [ ] Hooks are named and grouped by stage
 - [ ] Guards and side-effects are documented in the manifest comment
 - [ ] Collection config is easier to scan after the change
-- [ ] Shared exceptions live in `src/shared/kernel` when introduced or updated
 - [ ] Behavior-preserving changes are kept separate from deeper refactors
 - [ ] Schema follow-ups are called out when relevant
 
@@ -61,5 +58,4 @@ This skill is for discovery, shared handler standardization, hook normalization,
 - `.agents/skills/payload-lifecycle-manifest/manifest-playbook.md`
 - `src/collections/**`
 - `src/shared/handlers/**`
-- `src/shared/kernel/**`
 - `src/payload.config.ts`

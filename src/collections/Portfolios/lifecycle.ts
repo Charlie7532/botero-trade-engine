@@ -1,13 +1,15 @@
 import { handleBeforeChangeHook, handleAfterChangeHook } from '@/shared/handlers'
-import { generateSlug } from './domain/rules/accountRules'
+import { generatePortfolioSlug, isValidPortfolioSlug } from './domain/rules/accountRules'
 import { buildOwnerMembership } from './domain/useCases/createOwnerMembership'
 
 const autoGenerateSlugAndOwner = handleBeforeChangeHook({
   name: 'Portfolios',
-  operation: 'create',
+  operation: ['create', 'update'],
   handler: async ({ data, req }) => {
-    if (data.name && !data.slug) {
-      data.slug = generateSlug(data.name)
+    if (!data.slug) {
+      data.slug = generatePortfolioSlug()
+    } else if (!isValidPortfolioSlug(String(data.slug))) {
+      throw new Error('Portfolio slug must be a valid UUID v4.')
     }
 
     if (req.user && !data.owner) {
@@ -26,11 +28,11 @@ const createOwnerMembership = handleAfterChangeHook({
     if (!userId) return doc
 
     const ownerId = typeof userId === 'object' && userId !== null
-      ? String((userId as unknown as { id: number | string }).id)
-      : String(userId)
+      ? (userId as unknown as { id: number | string }).id
+      : userId
 
     const membershipData = buildOwnerMembership({
-      portfolioId: String(doc.id),
+      portfolioId: doc.id as number | string,
       userId: ownerId,
     })
 

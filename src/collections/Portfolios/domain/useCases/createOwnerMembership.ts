@@ -1,13 +1,15 @@
+type RelationId = number | string
+
 export interface CreateOwnerMembershipInput {
-  portfolioId: string
-  userId: string
+  portfolioId: RelationId
+  userId: RelationId
 }
 
 export interface OwnerMembershipData {
-  portfolio: string
-  user: string
+  portfolio: RelationId
+  user: RelationId
   portfolioRole: 'owner'
-  invitedBy: string
+  invitedBy: RelationId
   joinedAt: string
 }
 

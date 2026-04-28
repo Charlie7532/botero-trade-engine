@@ -15,7 +15,6 @@ import { Users } from './collections/Users'
 import { Portfolios } from './collections/Portfolios'
 import { PortfolioMemberships } from './collections/PortfolioMemberships'
 import { BrokerAccounts } from './collections/BrokerAccounts'
-import { BrokerCredentials } from './collections/BrokerCredentials'
 import { Bots } from './collections/Bots'
 import { BotAssignments } from './collections/BotAssignments'
 import { Footer } from './globals/Footer'
@@ -100,7 +99,7 @@ export default buildConfig({
     // Users
     Users, UserAvatar,
     // Multi-Tenant Trading
-    Portfolios, PortfolioMemberships, BrokerAccounts, BrokerCredentials, Bots, BotAssignments,
+    Portfolios, PortfolioMemberships, BrokerAccounts, Bots, BotAssignments,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, SiteSettings],

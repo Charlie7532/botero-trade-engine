@@ -8,8 +8,8 @@ export const Portfolios: CollectionConfig = {
   slug: 'portfolios',
   access: portfoliosAccess,
   admin: {
-    group: 'Users & Portfolios',
-    defaultColumns: ['name', 'slug', 'status', 'owner'],
+    group: 'Accounts',
+    defaultColumns: ['name', 'slug', 'portfolio_status', 'owner'],
     useAsTitle: 'name',
   },
   hooks: portfoliosLifecycle,

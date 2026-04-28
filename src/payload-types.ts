@@ -76,7 +76,6 @@ export interface Config {
     portfolios: Portfolio;
     'portfolio-memberships': PortfolioMembership;
     'broker-accounts': BrokerAccount;
-    'broker-credentials': BrokerCredential;
     bots: Bot;
     'bot-assignments': BotAssignment;
     redirects: Redirect;
@@ -109,7 +108,6 @@ export interface Config {
     portfolios: PortfoliosSelect<false> | PortfoliosSelect<true>;
     'portfolio-memberships': PortfolioMembershipsSelect<false> | PortfolioMembershipsSelect<true>;
     'broker-accounts': BrokerAccountsSelect<false> | BrokerAccountsSelect<true>;
-    'broker-credentials': BrokerCredentialsSelect<false> | BrokerCredentialsSelect<true>;
     bots: BotsSelect<false> | BotsSelect<true>;
     'bot-assignments': BotAssignmentsSelect<false> | BotAssignmentsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -10921,7 +10919,7 @@ export interface Portfolio {
   id: number;
   name: string;
   slug?: string | null;
-  status: 'active' | 'suspended' | 'archived';
+  portfolio_status: 'active' | 'suspended' | 'archived';
   owner: number | User;
   brokerAccounts?: {
     docs?: (number | BrokerAccount)[];
@@ -10952,11 +10950,52 @@ export interface BrokerAccount {
   brokerType: 'alpaca' | 'interactive_brokers';
   environment: 'paper' | 'live';
   isActive?: boolean | null;
-  alpacaBaseUrl?: string | null;
-  ibHost?: string | null;
-  ibPort?: number | null;
+  /**
+   * Required for Alpaca. Enter your API Key here.
+   */
+  apiKeyPlaintext?: string | null;
+  /**
+   * Your API key (last 4 digits only for security).
+   */
+  apiKeyMasked?: string | null;
+  /**
+   * Required for Alpaca. Enter your Secret Key here.
+   */
+  secretKeyPlaintext?: string | null;
+  /**
+   * Your secret key (last 4 digits only for security).
+   */
+  secretKeyMasked?: string | null;
+  /**
+   * Required for Interactive Brokers. Your IB Account ID.
+   */
   ibAccountId?: string | null;
+  /**
+   * Alpaca API base URL (defaults to paper trading URL).
+   */
+  alpacaBaseUrl?: string | null;
+  /**
+   * Interactive Brokers host (e.g., 127.0.0.1).
+   */
+  ibHost?: string | null;
+  /**
+   * Interactive Brokers port.
+   */
+  ibPort?: number | null;
+  /**
+   * Interactive Brokers client ID.
+   */
   ibClientId?: number | null;
+  /**
+   * View all bots assigned to this broker account in Portfolio > Bot Assignments. Manage bot-to-account mappings at the portfolio level for a complete deployment strategy.
+   */
+  botsInfo?: string | null;
+  apiKeyEncrypted?: string | null;
+  apiKeyIv?: string | null;
+  apiKeyAuthTag?: string | null;
+  secretKeyEncrypted?: string | null;
+  secretKeyIv?: string | null;
+  secretKeyAuthTag?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -10997,8 +11036,21 @@ export interface Bot {
  */
 export interface BotAssignment {
   id: number;
+  /**
+   * Portfolio this bot assignment belongs to.
+   */
+  portfolio: number | Portfolio;
+  /**
+   * The bot strategy to deploy.
+   */
   bot: number | Bot;
+  /**
+   * The broker account where this bot will execute.
+   */
   brokerAccount: number | BrokerAccount;
+  /**
+   * Enable this bot on the selected broker account.
+   */
   isActive?: boolean | null;
   riskLimits?: {
     /**
@@ -11028,22 +11080,6 @@ export interface PortfolioMembership {
   portfolioRole: 'owner' | 'admin' | 'trader' | 'viewer';
   invitedBy?: (number | null) | User;
   joinedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "broker-credentials".
- */
-export interface BrokerCredential {
-  id: number;
-  brokerAccount: number | BrokerAccount;
-  keyName: 'apiKey' | 'secretKey';
-  plaintextValue?: string | null;
-  encryptedValue?: string | null;
-  iv?: string | null;
-  authTag?: string | null;
-  maskedPreview?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -11271,10 +11307,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'broker-accounts';
         value: number | BrokerAccount;
-      } | null)
-    | ({
-        relationTo: 'broker-credentials';
-        value: number | BrokerCredential;
       } | null)
     | ({
         relationTo: 'bots';
@@ -11910,7 +11942,7 @@ export interface UserAvatarSelect<T extends boolean = true> {
 export interface PortfoliosSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
-  status?: T;
+  portfolio_status?: T;
   owner?: T;
   brokerAccounts?: T;
   bots?: T;
@@ -11941,26 +11973,22 @@ export interface BrokerAccountsSelect<T extends boolean = true> {
   brokerType?: T;
   environment?: T;
   isActive?: T;
+  apiKeyPlaintext?: T;
+  apiKeyMasked?: T;
+  secretKeyPlaintext?: T;
+  secretKeyMasked?: T;
+  ibAccountId?: T;
   alpacaBaseUrl?: T;
   ibHost?: T;
   ibPort?: T;
-  ibAccountId?: T;
   ibClientId?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "broker-credentials_select".
- */
-export interface BrokerCredentialsSelect<T extends boolean = true> {
-  brokerAccount?: T;
-  keyName?: T;
-  plaintextValue?: T;
-  encryptedValue?: T;
-  iv?: T;
-  authTag?: T;
-  maskedPreview?: T;
+  botsInfo?: T;
+  apiKeyEncrypted?: T;
+  apiKeyIv?: T;
+  apiKeyAuthTag?: T;
+  secretKeyEncrypted?: T;
+  secretKeyIv?: T;
+  secretKeyAuthTag?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -11984,6 +12012,7 @@ export interface BotsSelect<T extends boolean = true> {
  * via the `definition` "bot-assignments_select".
  */
 export interface BotAssignmentsSelect<T extends boolean = true> {
+  portfolio?: T;
   bot?: T;
   brokerAccount?: T;
   isActive?: T;

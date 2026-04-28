@@ -8,8 +8,8 @@ export const BotAssignments: CollectionConfig = {
   slug: 'bot-assignments',
   access: botAssignmentsAccess,
   admin: {
-    hidden: true,
-    defaultColumns: ['bot', 'portfolio', 'isActive'],
+     group: 'Accounts',
+     defaultColumns: ['portfolio', 'bot', 'brokerAccount', 'isActive'],
     useAsTitle: 'bot',
   },
   hooks: botAssignmentsLifecycle,

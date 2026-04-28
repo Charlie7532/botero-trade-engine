@@ -13,11 +13,16 @@ export const BrokerAccounts: CollectionConfig = {
     delete: isPortfolioAdmin(),
   },
   admin: {
-    group: 'Trading',
+    // hidden: true,
+    group: 'Accounts',
     defaultColumns: ['name', 'portfolio', 'brokerType', 'environment', 'isActive'],
     useAsTitle: 'name',
   },
   hooks: brokerAccountsLifecycle,
   fields: brokerAccountsFields,
   timestamps: true,
+  versions: {
+    drafts: false,
+    maxPerDoc: 10,
+  },
 }

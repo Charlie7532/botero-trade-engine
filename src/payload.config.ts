@@ -18,6 +18,11 @@ import { BrokerAccounts } from './collections/BrokerAccounts'
 import { BrokerCredentials } from './collections/BrokerCredentials'
 import { Bots } from './collections/Bots'
 import { BotAssignments } from './collections/BotAssignments'
+import { Instruments } from './collections/Instruments'
+import { RegimePhases } from './collections/RegimePhases'
+import { CalibrationProfiles } from './collections/CalibrationProfiles'
+import { CandidateScreenings } from './collections/CandidateScreenings'
+import { TradeSnapshots } from './collections/TradeSnapshots'
 import { Footer } from './globals/Footer'
 import { Header } from './globals/Header'
 import { SiteSettings } from './globals/SiteSettings'
@@ -101,6 +106,8 @@ export default buildConfig({
     Users, UserAvatar,
     // Multi-Tenant Trading
     Portfolios, PortfolioMemberships, BrokerAccounts, BrokerCredentials, Bots, BotAssignments,
+    // Trading Engine — Lifecycle & Calibration
+    Instruments, RegimePhases, CalibrationProfiles, CandidateScreenings, TradeSnapshots,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, SiteSettings],

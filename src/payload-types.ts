@@ -79,6 +79,11 @@ export interface Config {
     'broker-credentials': BrokerCredential;
     bots: Bot;
     'bot-assignments': BotAssignment;
+    instruments: Instrument;
+    'regime-phases': RegimePhase;
+    'calibration-profiles': CalibrationProfile;
+    'candidate-screenings': CandidateScreening;
+    'trade-snapshots': TradeSnapshot;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -98,6 +103,11 @@ export interface Config {
     bots: {
       assignments: 'bot-assignments';
     };
+    instruments: {
+      regimePhases: 'regime-phases';
+      screenings: 'candidate-screenings';
+      calibrations: 'calibration-profiles';
+    };
   };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -112,6 +122,11 @@ export interface Config {
     'broker-credentials': BrokerCredentialsSelect<false> | BrokerCredentialsSelect<true>;
     bots: BotsSelect<false> | BotsSelect<true>;
     'bot-assignments': BotAssignmentsSelect<false> | BotAssignmentsSelect<true>;
+    instruments: InstrumentsSelect<false> | InstrumentsSelect<true>;
+    'regime-phases': RegimePhasesSelect<false> | RegimePhasesSelect<true>;
+    'calibration-profiles': CalibrationProfilesSelect<false> | CalibrationProfilesSelect<true>;
+    'candidate-screenings': CandidateScreeningsSelect<false> | CandidateScreeningsSelect<true>;
+    'trade-snapshots': TradeSnapshotsSelect<false> | TradeSnapshotsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -11049,6 +11064,345 @@ export interface BrokerCredential {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instruments".
+ */
+export interface Instrument {
+  id: number;
+  /**
+   * Ticker symbol (e.g., AAPL, XLK, SPY)
+   */
+  ticker: string;
+  /**
+   * Full instrument name
+   */
+  name: string;
+  instrumentType: 'stock' | 'etf_sector' | 'etf_international' | 'etf_commodity' | 'index';
+  /**
+   * GICS sector classification
+   */
+  gicsSector?:
+    | (
+        | 'information_technology'
+        | 'health_care'
+        | 'financials'
+        | 'consumer_discretionary'
+        | 'consumer_staples'
+        | 'industrials'
+        | 'energy'
+        | 'utilities'
+        | 'real_estate'
+        | 'materials'
+        | 'communication_services'
+      )
+    | null;
+  /**
+   * GICS industry (e.g., Semiconductors)
+   */
+  gicsIndustry?: string | null;
+  /**
+   * GICS sub-industry (e.g., Semiconductor Equipment)
+   */
+  gicsSubIndustry?: string | null;
+  /**
+   * Parent sector ETF (e.g., AAPL → XLK)
+   */
+  sectorETF?: (number | null) | Instrument;
+  universe?: ('sp500' | 'domestic_sector' | 'international' | 'commodity' | 'guru_gem') | null;
+  cyclicalType?: ('cyclical' | 'defensive' | 'mixed') | null;
+  marketCap?: ('mega' | 'large' | 'mid' | 'small') | null;
+  isActive?: boolean | null;
+  isInSP500?: boolean | null;
+  /**
+   * Latest fundamental metrics (QGARP, Piotroski, Altman Z, FCF Margin, etc.)
+   */
+  lastFundamentals?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * When fundamentals were last refreshed
+   */
+  fundamentalsUpdatedAt?: string | null;
+  /**
+   * Next earnings report date — triggers fundamental refresh
+   */
+  nextEarningsDate?: string | null;
+  regimePhases?: {
+    docs?: (number | RegimePhase)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  screenings?: {
+    docs?: (number | CandidateScreening)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  calibrations?: {
+    docs?: (number | CalibrationProfile)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Owning portfolio (tenant)
+   */
+  portfolio?: (number | null) | Portfolio;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "regime-phases".
+ */
+export interface RegimePhase {
+  id: number;
+  /**
+   * Instrument this phase belongs to (SPY for market, XLK for sector, AAPL for instrument)
+   */
+  instrument: number | Instrument;
+  level: 'market' | 'sector' | 'instrument';
+  phase: 'accumulation' | 'markup' | 'distribution' | 'markdown';
+  /**
+   * When this phase transition was detected
+   */
+  detectedAt: string;
+  /**
+   * When this phase ended (null = currently active)
+   */
+  closedAt?: string | null;
+  /**
+   * Duration in days (calculated when phase closes)
+   */
+  durationDays?: number | null;
+  /**
+   * VIX level when phase was detected
+   */
+  vixAtDetection?: number | null;
+  /**
+   * % of stocks above 50-DMA at detection
+   */
+  breadthAtDetection?: number | null;
+  /**
+   * Relative volume at detection time
+   */
+  relativeVolumeAtDetection?: number | null;
+  /**
+   * What signal triggered the phase change (e.g., CHoCH_BULLISH, VIX_CROSSOVER_25)
+   */
+  triggerSignal?: string | null;
+  /**
+   * Previous phase in the chain (for historical tracking)
+   */
+  previousPhase?: (number | null) | RegimePhase;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "candidate-screenings".
+ */
+export interface CandidateScreening {
+  id: number;
+  instrument: number | Instrument;
+  category: 'core_hohn' | 'core_dividend' | 'tactical_spring' | 'tactical_momentum';
+  /**
+   * Market regime at screening time
+   */
+  marketRegime?: (number | null) | RegimePhase;
+  /**
+   * Sector regime at screening time
+   */
+  sectorRegime?: (number | null) | RegimePhase;
+  /**
+   * Hohn/Munger composite conviction score
+   */
+  compositeScore: number;
+  qgarpScore?: number | null;
+  fcfMargin?: number | null;
+  piotroskiFScore?: number | null;
+  /**
+   * Price / GF Value ratio (< 1 = undervalued)
+   */
+  priceToGFValue?: number | null;
+  guruConviction?: number | null;
+  insiderConviction?: number | null;
+  /**
+   * Beneish M-Score (> -1.78 = manipulation risk)
+   */
+  beneishM?: number | null;
+  /**
+   * Altman Z-Score (< 1.81 = distress zone)
+   */
+  altmanZ?: number | null;
+  /**
+   * When this ticker passed the screening filter
+   */
+  enteredAt: string;
+  /**
+   * When this ticker stopped passing the filter
+   */
+  exitedAt?: string | null;
+  exitReason?:
+    | ('score_decay' | 'beneish_flag' | 'altman_distress' | 'regime_change' | 'manual' | 'positioned' | 'superseded')
+    | null;
+  status: 'active' | 'expired' | 'positioned' | 'closed';
+  portfolio?: (number | null) | Portfolio;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "calibration-profiles".
+ */
+export interface CalibrationProfile {
+  id: number;
+  instrument: number | Instrument;
+  category: 'core_hohn' | 'core_dividend' | 'tactical_spring' | 'tactical_momentum';
+  /**
+   * Market-level regime when this calibration was trained
+   */
+  marketRegime?: (number | null) | RegimePhase;
+  /**
+   * Sector-level regime when this calibration was trained
+   */
+  sectorRegime?: (number | null) | RegimePhase;
+  /**
+   * Instrument-level regime when this calibration was trained
+   */
+  instrumentRegime?: (number | null) | RegimePhase;
+  /**
+   * Array of {name, weight, ceiling_sharpe} — calibrated signal weights
+   */
+  signals:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Composite Sharpe ratio of the calibrated strategy
+   */
+  compositeSharpe?: number | null;
+  /**
+   * Win rate percentage of the calibrated strategy
+   */
+  winRate?: number | null;
+  /**
+   * Number of trades in the calibration backtest
+   */
+  totalTrades?: number | null;
+  trainedAt: string;
+  /**
+   * Start of OHLCV data used for calibration
+   */
+  dataRangeFrom?: string | null;
+  /**
+   * End of OHLCV data used for calibration
+   */
+  dataRangeTo?: string | null;
+  /**
+   * Parent calibration used as warm-start (initial weights)
+   */
+  warmStartFrom?: (number | null) | CalibrationProfile;
+  /**
+   * Diff of signal weights vs parent — shows how much changed
+   */
+  warmStartDelta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  status: 'active' | 'superseded' | 'invalidated';
+  /**
+   * The regime change that invalidated this calibration
+   */
+  invalidatedBy?: (number | null) | RegimePhase;
+  invalidatedAt?: string | null;
+  portfolio?: (number | null) | Portfolio;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trade-snapshots".
+ */
+export interface TradeSnapshot {
+  id: number;
+  instrument: number | Instrument;
+  /**
+   * Candidate screening that originated this trade evaluation
+   */
+  screening?: (number | null) | CandidateScreening;
+  /**
+   * Calibration profile used for signal weights
+   */
+  calibration?: (number | null) | CalibrationProfile;
+  marketRegime?: (number | null) | RegimePhase;
+  sectorRegime?: (number | null) | RegimePhase;
+  instrumentRegime?: (number | null) | RegimePhase;
+  /**
+   * Whether the PreTradeGate approved this trade
+   */
+  gateApproved?: boolean | null;
+  /**
+   * Reason for gate approval/rejection
+   */
+  gateReason?: string | null;
+  compositeScore?: number | null;
+  /**
+   * Snapshot of all signal values at evaluation time
+   */
+  signals?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * SMC analysis result (BOS, CHoCH, OB, FVG)
+   */
+  structureResult?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  side?: ('long' | 'short') | null;
+  strategy?: ('core' | 'tactical') | null;
+  entryPrice?: number | null;
+  stopPrice?: number | null;
+  targetPrice?: number | null;
+  exitPrice?: number | null;
+  exitReason?: ('target_hit' | 'stop_hit' | 'manual' | 'thesis_broke' | 'time_decay' | 'regime_change') | null;
+  /**
+   * Profit/Loss percentage
+   */
+  pnlPct?: number | null;
+  openedAt?: string | null;
+  closedAt?: string | null;
+  portfolio?: (number | null) | Portfolio;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -11283,6 +11637,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bot-assignments';
         value: number | BotAssignment;
+      } | null)
+    | ({
+        relationTo: 'instruments';
+        value: number | Instrument;
+      } | null)
+    | ({
+        relationTo: 'regime-phases';
+        value: number | RegimePhase;
+      } | null)
+    | ({
+        relationTo: 'calibration-profiles';
+        value: number | CalibrationProfile;
+      } | null)
+    | ({
+        relationTo: 'candidate-screenings';
+        value: number | CandidateScreening;
+      } | null)
+    | ({
+        relationTo: 'trade-snapshots';
+        value: number | TradeSnapshot;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -11994,6 +12368,134 @@ export interface BotAssignmentsSelect<T extends boolean = true> {
         maxDailyLoss?: T;
         maxOpenPositions?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instruments_select".
+ */
+export interface InstrumentsSelect<T extends boolean = true> {
+  ticker?: T;
+  name?: T;
+  instrumentType?: T;
+  gicsSector?: T;
+  gicsIndustry?: T;
+  gicsSubIndustry?: T;
+  sectorETF?: T;
+  universe?: T;
+  cyclicalType?: T;
+  marketCap?: T;
+  isActive?: T;
+  isInSP500?: T;
+  lastFundamentals?: T;
+  fundamentalsUpdatedAt?: T;
+  nextEarningsDate?: T;
+  regimePhases?: T;
+  screenings?: T;
+  calibrations?: T;
+  portfolio?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "regime-phases_select".
+ */
+export interface RegimePhasesSelect<T extends boolean = true> {
+  instrument?: T;
+  level?: T;
+  phase?: T;
+  detectedAt?: T;
+  closedAt?: T;
+  durationDays?: T;
+  vixAtDetection?: T;
+  breadthAtDetection?: T;
+  relativeVolumeAtDetection?: T;
+  triggerSignal?: T;
+  previousPhase?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "calibration-profiles_select".
+ */
+export interface CalibrationProfilesSelect<T extends boolean = true> {
+  instrument?: T;
+  category?: T;
+  marketRegime?: T;
+  sectorRegime?: T;
+  instrumentRegime?: T;
+  signals?: T;
+  compositeSharpe?: T;
+  winRate?: T;
+  totalTrades?: T;
+  trainedAt?: T;
+  dataRangeFrom?: T;
+  dataRangeTo?: T;
+  warmStartFrom?: T;
+  warmStartDelta?: T;
+  status?: T;
+  invalidatedBy?: T;
+  invalidatedAt?: T;
+  portfolio?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "candidate-screenings_select".
+ */
+export interface CandidateScreeningsSelect<T extends boolean = true> {
+  instrument?: T;
+  category?: T;
+  marketRegime?: T;
+  sectorRegime?: T;
+  compositeScore?: T;
+  qgarpScore?: T;
+  fcfMargin?: T;
+  piotroskiFScore?: T;
+  priceToGFValue?: T;
+  guruConviction?: T;
+  insiderConviction?: T;
+  beneishM?: T;
+  altmanZ?: T;
+  enteredAt?: T;
+  exitedAt?: T;
+  exitReason?: T;
+  status?: T;
+  portfolio?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trade-snapshots_select".
+ */
+export interface TradeSnapshotsSelect<T extends boolean = true> {
+  instrument?: T;
+  screening?: T;
+  calibration?: T;
+  marketRegime?: T;
+  sectorRegime?: T;
+  instrumentRegime?: T;
+  gateApproved?: T;
+  gateReason?: T;
+  compositeScore?: T;
+  signals?: T;
+  structureResult?: T;
+  side?: T;
+  strategy?: T;
+  entryPrice?: T;
+  stopPrice?: T;
+  targetPrice?: T;
+  exitPrice?: T;
+  exitReason?: T;
+  pnlPct?: T;
+  openedAt?: T;
+  closedAt?: T;
+  portfolio?: T;
   updatedAt?: T;
   createdAt?: T;
 }

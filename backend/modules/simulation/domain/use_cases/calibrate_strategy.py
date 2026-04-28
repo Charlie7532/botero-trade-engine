@@ -63,13 +63,20 @@ class StrategyCalibrator:
         tf: str,
         category: InvestmentCategory,
         context: dict | None = None,
+        warm_start_weights: dict[str, float] | None = None,
     ) -> StrategyProfile:
         """
         Full calibration pipeline for one ticker × category.
 
+        Args:
+            warm_start_weights: Optional dict of {signal_name: weight} from a previous
+                calibration. When provided, these are blended with Oracle ceilings
+                (70% warm-start, 30% Oracle) for faster convergence after regime changes.
+
         Returns a StrategyProfile with ML-discovered signal weights.
         """
-        logger.info(f"🔬 Calibrating {ticker}/{tf} for {category.value}...")
+        warm_mode = "WARM-START" if warm_start_weights else "COLD"
+        logger.info(f"🔬 Calibrating {ticker}/{tf} for {category.value} [{warm_mode}]...")
 
         geometry = ORACLE_GEOMETRY[category]
 
@@ -97,7 +104,15 @@ class StrategyCalibrator:
 
         for ranking in rankings:
             is_viable = any(v.name == ranking.name for v in viable_signals)
-            weight = ranking.ceiling_sharpe / total_ceiling if is_viable and total_ceiling > 0 else 0.0
+            oracle_weight = ranking.ceiling_sharpe / total_ceiling if is_viable and total_ceiling > 0 else 0.0
+
+            # Warm-start blending: if we have previous weights, blend them
+            if warm_start_weights and ranking.name in warm_start_weights and is_viable:
+                prev_w = warm_start_weights[ranking.name]
+                # 70% warm-start, 30% Oracle — previous weights are the strong prior
+                weight = 0.7 * prev_w + 0.3 * oracle_weight
+            else:
+                weight = oracle_weight
 
             signal_configs.append(SignalConfig(
                 name=ranking.name,
@@ -106,6 +121,14 @@ class StrategyCalibrator:
                 enabled=is_viable,
                 ceiling_sharpe=ranking.ceiling_sharpe,
             ))
+
+        # Re-normalize after warm-start blending
+        if warm_start_weights:
+            total_w = sum(c.weight for c in signal_configs if c.enabled)
+            if total_w > 0:
+                for c in signal_configs:
+                    if c.enabled:
+                        c.weight = round(c.weight / total_w, 4)
 
         # Step 4: Try XGBoost weight refinement if enough data
         xgb_weights = self._try_xgboost_weights(ticker, tf, rankings)

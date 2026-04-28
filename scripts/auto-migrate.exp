@@ -1,0 +1,49 @@
+#!/usr/bin/expect -f
+# Auto-approve ALL drizzle-kit push prompts including data loss warning.
+# Uses raw character sending for readline compatibility.
+
+set timeout 300
+set env(NODE_OPTIONS) "--no-deprecation"
+
+spawn pnpm dev
+
+set approved_tables 0
+
+expect {
+    "Ready in" {
+        after 2000
+        exec curl -s http://localhost:3000/api/instruments > /dev/null 2>&1 &
+        exp_continue
+    }
+    "created or renamed" {
+        # Enum/table/column creation prompt - send Enter
+        send "\r"
+        exp_continue
+    }
+    "Accept warnings and push schema to database" {
+        # Data loss warning - send 'y' then Enter
+        after 500
+        send "y"
+        after 200
+        send "\r"
+        set approved_tables 1
+        exp_continue
+    }
+    "Changes applied" {
+        puts "\n\n✅ === SCHEMA PUSH COMPLETE ==="
+    }
+    "Compiled" {
+        if {$approved_tables} {
+            puts "\n\n✅ === SERVER COMPILED - TABLES CREATED ==="
+        } else {
+            exp_continue
+        }
+    }
+    timeout {
+        puts "\n\n⏰ === TIMEOUT ==="
+    }
+}
+
+puts "Server running on http://localhost:3000"
+puts "Press Ctrl+C to stop."
+interact

@@ -31,15 +31,24 @@ class KalmanSignalAdapter(SignalPort):
         tracker = KalmanVolumeTracker(dt=1.0, process_noise=0.05, obs_noise=0.2)
         signals = []
 
+        # Pre-compute rolling mean volume for relative volume calculation
+        vol_series = ohlc["volume"].astype(float)
+        vol_mean_20 = vol_series.rolling(window=20, min_periods=1).mean()
+
+        ticker = context.get("ticker", "SIGNAL") if context else "SIGNAL"
+
         for i in range(len(ohlc)):
             row = ohlc.iloc[i]
-            tracker.update(float(row["volume"]))
-            state = tracker.classify_wyckoff(
-                price=float(row["close"]),
-                prev_price=float(ohlc.iloc[max(0, i - 1)]["close"]),
-                volume=float(row["volume"]),
-            )
-            wyckoff_state = state.get("state", "UNKNOWN")
+            raw_vol = float(row["volume"])
+            avg_vol = float(vol_mean_20.iloc[i])
+            observed_rvol = raw_vol / avg_vol if avg_vol > 0 else 1.0
+
+            prev_close = float(ohlc.iloc[max(0, i - 1)]["close"])
+            curr_close = float(row["close"])
+            change_pct = ((curr_close - prev_close) / prev_close * 100) if prev_close > 0 else 0.0
+
+            state = tracker.update(ticker, observed_rvol, change_pct)
+            wyckoff_state = state.get("wyckoff_state", "UNKNOWN")
             velocity = state.get("velocity", 0.0)
 
             if wyckoff_state == "ACCUMULATION" and velocity > 0:

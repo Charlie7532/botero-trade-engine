@@ -266,6 +266,10 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
 10. **Data providers use fallback chains.** Every data method should try MCP first (when data is provided), then fall back to SDK/scraper. Never fail silently — always log the fallback.
 
+11. **Simplicity first.** No features beyond what was asked. No abstractions for single-use code. No speculative "flexibility" or "configurability." If 200 lines could be 50, rewrite it. The test: would a senior engineer say this is overcomplicated? If yes, simplify.
+
+12. **Surgical changes.** Every changed line must trace directly to the user's request. Don't "improve" adjacent code, comments, or formatting. Match existing style. If you notice unrelated dead code, mention it — don't delete it. Remove only imports/variables/functions that YOUR changes made unused.
+
 ### Known Layer Violations
 
 - `backend/application/lstm_model.py` — ML model in Application layer (should be in `infrastructure/models/`). Planned for future refactor.

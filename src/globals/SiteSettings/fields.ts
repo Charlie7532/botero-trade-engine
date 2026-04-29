@@ -355,7 +355,7 @@ const legalPolicies: Field = {
         {
             name: 'reference',
             type: 'relationship',
-            relationTo: ['pages', 'posts'],
+            relationTo: ['portfolios'],
             admin: {
                 condition: (_, siblingData) => siblingData?.type === 'reference',
                 width: '50%'

@@ -13,7 +13,7 @@ export const Bots: CollectionConfig = {
     delete: isPortfolioAdmin(),
   },
   admin: {
-    group: 'Trading',
+    group: 'Accounts',
     defaultColumns: ['name', 'portfolio', 'strategyType', 'status'],
     useAsTitle: 'name',
   },

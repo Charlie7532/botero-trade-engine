@@ -7,21 +7,16 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
-import { Categories } from './collections/Categories'
-import { Media } from './collections/Media'
-import { Pages } from './collections/Pages'
-import { Posts } from './collections/Posts'
-import { Users } from './collections/Users'
-import { Portfolios } from './collections/Portfolios'
-import { PortfolioMemberships } from './collections/PortfolioMemberships'
-import { BrokerAccounts } from './collections/BrokerAccounts'
-import { BrokerCredentials } from './collections/BrokerCredentials'
-import { Bots } from './collections/Bots'
-import { BotAssignments } from './collections/BotAssignments'
-import { Footer } from './globals/Footer'
-import { Header } from './globals/Header'
-import { SiteSettings } from './globals/SiteSettings'
+import { Media } from './collections/Media/index'
+import { Users } from './collections/Users/index'
+import { Portfolios } from './collections/Portfolios/index'
+import { PortfolioMemberships } from './collections/PortfolioMemberships/index'
+import { BrokerAccounts } from './collections/BrokerAccounts/index'
+import { Bots } from './collections/Bots/index'
+import { BotAssignments } from './collections/BotAssignments/index'
+import { SiteSettings } from './globals/SiteSettings/index'
 import { plugins } from './plugins'
+import { dashboardConfig } from './widgets'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import brevoAdapter from './utilities/brevoAdapter'
@@ -62,6 +57,7 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    dashboard: dashboardConfig,
     user: Users.slug,
     livePreview: {
       breakpoints: [
@@ -90,20 +86,15 @@ export default buildConfig({
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
   db: vercelPostgresAdapter({
-    pool: {
-      connectionString: process.env.POSTGRES_URL || '',
-    },
+    schemaName: 'payload',
+    pool: { connectionString: process.env.POSTGRES_URL || '', },
   }),
   collections: [
-    // Content
-    Pages, Posts, Media, Categories,
-    // Users
-    Users, UserAvatar,
-    // Multi-Tenant Trading
-    Portfolios, PortfolioMemberships, BrokerAccounts, BrokerCredentials, Bots, BotAssignments,
+    Media, Users, UserAvatar,
+    Portfolios, PortfolioMemberships, BrokerAccounts, Bots, BotAssignments,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, SiteSettings],
+  globals: [SiteSettings],
   plugins: [
     ...plugins,
     vercelBlobStorage({

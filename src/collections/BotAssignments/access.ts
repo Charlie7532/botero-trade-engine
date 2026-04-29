@@ -30,23 +30,9 @@ const botAssignmentAccess = (requiredRoles: string[] = []): Access => {
         : portfolio
     })
 
-    const brokerAccounts = await payload.find({
-      collection: 'broker-accounts',
-      where: {
-        portfolio: { in: portfolioIds },
-      },
-      limit: 500,
-      depth: 0,
-      overrideAccess: true,
-    })
-
-    if (brokerAccounts.totalDocs === 0) return false
-
-    const brokerAccountIds = brokerAccounts.docs.map((ba) => ba.id)
-
     return {
-      brokerAccount: {
-        in: brokerAccountIds,
+      portfolio: {
+        in: portfolioIds,
       },
     }
   }

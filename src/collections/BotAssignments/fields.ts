@@ -2,11 +2,29 @@ import type { Field } from 'payload'
 
 export const botAssignmentsFields: Field[] = [
   {
+    name: 'portfolio',
+    type: 'relationship',
+    relationTo: 'portfolios',
+    required: true,
+    index: true,
+    admin: {
+      description: 'Portfolio this bot assignment belongs to.',
+    },
+  },
+  {
     name: 'bot',
     type: 'relationship',
     relationTo: 'bots',
     required: true,
     index: true,
+    admin: {
+      description: 'The bot strategy to deploy.',
+    },
+    filterOptions: ({ siblingData }) => {
+      const portfolio = (siblingData as Record<string, any>)?.portfolio
+      if (!portfolio) return true
+      return { portfolio: { equals: portfolio } }
+    },
   },
   {
     name: 'brokerAccount',
@@ -14,6 +32,14 @@ export const botAssignmentsFields: Field[] = [
     relationTo: 'broker-accounts',
     required: true,
     index: true,
+    admin: {
+      description: 'The broker account where this bot will execute.',
+    },
+    filterOptions: ({ siblingData }) => {
+      const portfolio = (siblingData as Record<string, any>)?.portfolio
+      if (!portfolio) return true
+      return { portfolio: { equals: portfolio } }
+    },
   },
   {
     name: 'isActive',
@@ -21,6 +47,7 @@ export const botAssignmentsFields: Field[] = [
     defaultValue: false,
     admin: {
       position: 'sidebar',
+      description: 'Enable this bot on the selected broker account.',
     },
   },
   {

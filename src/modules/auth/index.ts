@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-type Translator = (key: string) => string
-
 type LoginStep = 'email' | 'password' | 'otp-prompt'
 
 interface AuthErrorResponse {
@@ -50,6 +48,8 @@ interface StrengthDisplay {
     width: string
 }
 
+const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.'
+
 async function getErrorMessage(response: Response, fallback: string): Promise<string> {
     try {
         const data = (await response.json()) as AuthErrorResponse
@@ -74,7 +74,7 @@ export function useLoginFlow({ redirectTo }: UseLoginFlowOptions) {
     const [isSendingOtp, setIsSendingOtp] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
 
-    const handleEmailSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>, t: Translator) => {
+    const handleEmailSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError(null)
         setIsLoading(true)
@@ -87,25 +87,25 @@ export function useLoginFlow({ redirectTo }: UseLoginFlowOptions) {
             })
 
             if (!response.ok) {
-                throw new Error(await getErrorMessage(response, t('error')))
+                throw new Error(await getErrorMessage(response, DEFAULT_ERROR_MESSAGE))
             }
 
             const data = (await response.json()) as CheckEmailResponse
 
             if (!data.exists) {
-                setError(t('error'))
+                setError('No account found with that email address.')
                 return
             }
 
             setStep(data.hasPassword ? 'password' : 'otp-prompt')
         } catch (err) {
-            setError(err instanceof Error ? err.message : t('error'))
+            setError(err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE)
         } finally {
             setIsLoading(false)
         }
     }, [email])
 
-    const handlePasswordSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>, t: Translator) => {
+    const handlePasswordSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError(null)
         setIsLoading(true)
@@ -118,18 +118,18 @@ export function useLoginFlow({ redirectTo }: UseLoginFlowOptions) {
             })
 
             if (!response.ok) {
-                throw new Error(await getErrorMessage(response, t('error')))
+                throw new Error(await getErrorMessage(response, DEFAULT_ERROR_MESSAGE))
             }
 
             router.push(redirectTo)
         } catch (err) {
-            setError(err instanceof Error ? err.message : t('error'))
+            setError(err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE)
         } finally {
             setIsLoading(false)
         }
     }, [email, password, redirectTo, router])
 
-    const handleSendOtp = useCallback(async (t: Translator) => {
+    const handleSendOtp = useCallback(async () => {
         setError(null)
         setIsSendingOtp(true)
 
@@ -141,7 +141,7 @@ export function useLoginFlow({ redirectTo }: UseLoginFlowOptions) {
             })
 
             if (!response.ok) {
-                throw new Error(await getErrorMessage(response, t('error')))
+                throw new Error(await getErrorMessage(response, DEFAULT_ERROR_MESSAGE))
             }
 
             const params = new URLSearchParams({
@@ -151,7 +151,7 @@ export function useLoginFlow({ redirectTo }: UseLoginFlowOptions) {
             })
             router.push(`/verify-otp?${params.toString()}`)
         } catch (err) {
-            setError(err instanceof Error ? err.message : t('error'))
+            setError(err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE)
         } finally {
             setIsSendingOtp(false)
         }
@@ -192,7 +192,7 @@ export function useForgotPasswordFlow() {
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
-    const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>, t: Translator) => {
+    const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError(null)
         setIsLoading(true)
@@ -205,7 +205,7 @@ export function useForgotPasswordFlow() {
             })
 
             if (!response.ok) {
-                throw new Error(await getErrorMessage(response, t('error')))
+                throw new Error(await getErrorMessage(response, DEFAULT_ERROR_MESSAGE))
             }
 
             const params = new URLSearchParams({
@@ -215,7 +215,7 @@ export function useForgotPasswordFlow() {
             })
             router.push(`/verify-otp?${params.toString()}`)
         } catch (err) {
-            setError(err instanceof Error ? err.message : t('error'))
+            setError(err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE)
         } finally {
             setIsLoading(false)
         }
@@ -250,7 +250,7 @@ export function useVerifyOtpFlow({ email, purpose, redirectTo }: VerifyOtpOption
         return () => window.clearInterval(timer)
     }, [resendCooldown])
 
-    const handleSubmit = useCallback(async (submittedOtp: string, t: Translator) => {
+    const handleSubmit = useCallback(async (submittedOtp: string) => {
         setError(null)
         setIsLoading(true)
 
@@ -262,7 +262,7 @@ export function useVerifyOtpFlow({ email, purpose, redirectTo }: VerifyOtpOption
             })
 
             if (!response.ok) {
-                throw new Error(await getErrorMessage(response, t('error')))
+                throw new Error(await getErrorMessage(response, DEFAULT_ERROR_MESSAGE))
             }
 
             if (purpose === 'password-reset') {
@@ -272,19 +272,19 @@ export function useVerifyOtpFlow({ email, purpose, redirectTo }: VerifyOtpOption
 
             router.push(redirectTo)
         } catch (err) {
-            setError(err instanceof Error ? err.message : t('error'))
+            setError(err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE)
         } finally {
             setIsLoading(false)
         }
     }, [email, purpose, redirectTo, router])
 
-    const handleComplete = useCallback((value: string, t: Translator) => {
+    const handleComplete = useCallback((value: string) => {
         if (value.length === 6) {
-            void handleSubmit(value, t)
+            void handleSubmit(value)
         }
     }, [handleSubmit])
 
-    const handleResendCode = useCallback(async (t: Translator) => {
+    const handleResendCode = useCallback(async () => {
         setError(null)
         setIsResending(true)
 
@@ -298,12 +298,12 @@ export function useVerifyOtpFlow({ email, purpose, redirectTo }: VerifyOtpOption
             const data = (await response.json()) as ApiSuccessResponse
 
             if (!response.ok || !data.success) {
-                throw new Error(data.error ?? t('error'))
+                throw new Error(data.error ?? DEFAULT_ERROR_MESSAGE)
             }
 
             setResendCooldown(60)
         } catch (err) {
-            setError(err instanceof Error ? err.message : t('error'))
+            setError(err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE)
         } finally {
             setIsResending(false)
         }
@@ -331,12 +331,12 @@ function evaluateStrength(password: string): PasswordStrengthState {
     }
 }
 
-function getStrengthDisplayFromState(strength: PasswordStrengthState, t: Translator): StrengthDisplay {
+function getStrengthDisplayFromState(strength: PasswordStrengthState): StrengthDisplay {
     const score = Object.values(strength).filter(Boolean).length
 
     if (score <= 1) {
         return {
-            label: t('strength.weak'),
+            label: 'Weak',
             color: 'bg-red-500',
             width: '33%',
         }
@@ -344,14 +344,14 @@ function getStrengthDisplayFromState(strength: PasswordStrengthState, t: Transla
 
     if (score <= 3) {
         return {
-            label: t('strength.medium'),
+            label: 'Medium',
             color: 'bg-yellow-500',
             width: '66%',
         }
     }
 
     return {
-        label: t('strength.strong'),
+        label: 'Strong',
         color: 'bg-green-500',
         width: '100%',
     }
@@ -369,16 +369,16 @@ export function useSetPasswordFlow({ redirectTo }: UseSetPasswordFlowOptions) {
     const strength = useMemo(() => evaluateStrength(password), [password])
     const passwordsMatch = password === confirmPassword
 
-    const getStrengthDisplay = useCallback((t: Translator) => {
-        return getStrengthDisplayFromState(strength, t)
+    const getStrengthDisplay = useCallback(() => {
+        return getStrengthDisplayFromState(strength)
     }, [strength])
 
-    const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>, t: Translator) => {
+    const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError(null)
 
         if (!passwordsMatch) {
-            setError(t('passwordsMismatch'))
+            setError('Passwords do not match.')
             return
         }
 
@@ -394,12 +394,12 @@ export function useSetPasswordFlow({ redirectTo }: UseSetPasswordFlowOptions) {
             const data = (await response.json()) as ApiSuccessResponse
 
             if (!response.ok || !data.success) {
-                throw new Error(data.error ?? t('error'))
+                throw new Error(data.error ?? DEFAULT_ERROR_MESSAGE)
             }
 
             router.push(redirectTo)
         } catch (err) {
-            setError(err instanceof Error ? err.message : t('error'))
+            setError(err instanceof Error ? err.message : DEFAULT_ERROR_MESSAGE)
         } finally {
             setIsLoading(false)
         }

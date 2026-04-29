@@ -5,13 +5,11 @@ import { useSearchParams } from "next/navigation"
 import { Button, Card, Form, Input, Alert, Spinner } from "@heroui/react"
 import { Icon } from "@iconify/react"
 import { motion } from "framer-motion"
-import { useTranslations } from "next-intl"
 import { useSetPasswordFlow } from "@/modules/auth"
 import { Logo } from "@/components/Logo/Logo"
 import { PoweredBy } from "@/components/PoweredBy"
 
 function SetPasswordContent() {
-    const t = useTranslations("Auth.setPassword")
     const searchParams = useSearchParams()
     const redirectTo = searchParams.get('redirect') || '/'
 
@@ -33,7 +31,7 @@ function SetPasswordContent() {
         handleSkip,
     } = useSetPasswordFlow({ redirectTo })
 
-    const strengthDisplay = getStrengthDisplay(t)
+    const strengthDisplay = getStrengthDisplay()
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -53,10 +51,10 @@ function SetPasswordContent() {
                             {/* Logo */}
                             <Logo forceLight width={180} height={100} />
                             <Card.Title className="text-xl font-semibold text-gray-900">
-                                {t("title")}
+                                Set your password
                             </Card.Title>
                             <Card.Description className="text-gray-600 text-sm text-center">
-                                {t("subtitle")}
+                                Secure your account so you can sign in with email and password.
                             </Card.Description>
                         </Card.Header>
 
@@ -77,15 +75,15 @@ function SetPasswordContent() {
                             )}
 
                             {/* Form */}
-                            <Form onSubmit={(e) => handleSubmit(e, t)} className="flex flex-col gap-4">
+                            <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
                                 <div className="relative w-full">
                                     <Input
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         type={showPassword ? "text" : "password"}
                                         name="password"
-                                        aria-label={t("password")}
-                                        placeholder={t("password")}
+                                        aria-label="Password"
+                                        placeholder="Password"
                                         className="h-12 w-full bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-lg transition-all text-base text-gray-900 px-4 pr-12"
                                     />
                                     <button
@@ -107,8 +105,8 @@ function SetPasswordContent() {
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         type={showConfirmPassword ? "text" : "password"}
                                         name="confirmPassword"
-                                        aria-label={t("confirmPassword")}
-                                        placeholder={t("confirmPassword")}
+                                        aria-label="Confirm password"
+                                        placeholder="Confirm password"
                                         className="h-12 w-full bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-lg transition-all text-base text-gray-900 px-4 pr-12"
                                     />
                                     <button
@@ -126,7 +124,7 @@ function SetPasswordContent() {
 
                                 {confirmPassword && !passwordsMatch && (
                                     <p className="text-red-500 text-xs px-1">
-                                        {t("passwordsMismatch")}
+                                        Passwords do not match.
                                     </p>
                                 )}
 
@@ -134,9 +132,9 @@ function SetPasswordContent() {
                                 {password.length > 0 && (
                                     <div className="px-1">
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="text-xs text-gray-500">{t("passwordStrength")}</span>
-                                            <span className={`text-xs font-medium ${strengthDisplay.label === t("strength.weak") ? "text-red-500" :
-                                                strengthDisplay.label === t("strength.medium") ? "text-yellow-600" :
+                                            <span className="text-xs text-gray-500">Password strength</span>
+                                            <span className={`text-xs font-medium ${strengthDisplay.label === "Weak" ? "text-red-500" :
+                                                strengthDisplay.label === "Medium" ? "text-yellow-600" :
                                                     "text-green-600"
                                                 }`}>
                                                 {strengthDisplay.label}
@@ -153,12 +151,12 @@ function SetPasswordContent() {
 
                                 {/* Password Recommendations */}
                                 <div className="space-y-1 px-1">
-                                    <p className="text-xs text-gray-500 mb-2">{t("recommendations")}</p>
-                                    <RequirementItem met={strength.hasMinLength} text={t("requirements.minLength")} />
-                                    <RequirementItem met={strength.hasUppercase} text={t("requirements.uppercase")} />
-                                    <RequirementItem met={strength.hasNumber} text={t("requirements.number")} />
-                                    <RequirementItem met={strength.hasSpecialChar} text={t("requirements.specialChar")} />
-                                    <p className="text-xs text-gray-400 mt-2 italic">{t("minimumCriteria")}</p>
+                                    <p className="text-xs text-gray-500 mb-2">Recommendations</p>
+                                    <RequirementItem met={strength.hasMinLength} text="At least 8 characters" />
+                                    <RequirementItem met={strength.hasUppercase} text="At least 1 uppercase letter" />
+                                    <RequirementItem met={strength.hasNumber} text="At least 1 number" />
+                                    <RequirementItem met={strength.hasSpecialChar} text="At least 1 special character" />
+                                    <p className="text-xs text-gray-400 mt-2 italic">Use at least 2 of the 4 criteria above.</p>
                                 </div>
 
                                 <Button
@@ -173,7 +171,7 @@ function SetPasswordContent() {
                                     {({ isPending }) => (
                                         <>
                                             {isPending ? <Spinner color="current" size="sm" /> : null}
-                                            {isPending ? t("setting") : t("setPassword")}
+                                            {isPending ? "Setting..." : "Set password"}
                                         </>
                                     )}
                                 </Button>
@@ -186,7 +184,7 @@ function SetPasswordContent() {
                                 onClick={handleSkip}
                                 className="text-gray-600 text-sm hover:text-gray-900"
                             >
-                                {t("skipForNow")}
+                                Skip for now
                             </button>
                         </Card.Footer>
                     </Card>

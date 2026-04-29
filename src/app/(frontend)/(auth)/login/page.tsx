@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Card, Spinner } from "@heroui/react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useTranslations } from "next-intl"
 import { useLoginFlow } from "@/modules/auth"
 import { Logo } from "@/components/Logo/Logo"
 import { PoweredBy } from "@/components/PoweredBy"
@@ -14,7 +13,6 @@ import { PasswordStep } from "./components/PasswordStep"
 import { OtpPromptStep } from "./components/OtpPromptStep"
 
 function LoginContent() {
-    const t = useTranslations("Auth.login")
     const searchParams = useSearchParams()
 
     // Get redirect URL from query params (e.g., from admin login)
@@ -57,18 +55,18 @@ function LoginContent() {
                             <Logo forceLight width={180} height={100} />
                             <Card.Title className="text-xl font-semibold text-gray-900">
                                 {step === "otp-prompt"
-                                    ? t("verifyIdentity")
+                                    ? "Verify your identity"
                                     : step === "email"
-                                        ? t("title")
-                                        : t("enterPassword")
+                                        ? "Sign in"
+                                        : "Enter your password"
                                 }
                             </Card.Title>
                             <Card.Description className="text-gray-600 text-sm text-center">
                                 {step === "otp-prompt"
-                                    ? t("verifyIdentitySubtitle")
+                                    ? "Confirm your account with a one-time code"
                                     : step === "email"
-                                        ? t("subtitle")
-                                        : t("enterPasswordSubtitle")
+                                        ? "Use your email to continue"
+                                        : "Welcome back"
                                 }
                             </Card.Description>
                         </Card.Header>
@@ -81,9 +79,8 @@ function LoginContent() {
                                         error={error}
                                         isLoading={isLoading}
                                         onEmailChange={setEmail}
-                                        onSubmit={(e) => handleEmailSubmit(e, t)}
+                                        onSubmit={handleEmailSubmit}
                                         onGoogleLogin={handleGoogleLogin}
-                                        t={t}
                                     />
                                 ) : step === "password" ? (
                                     <PasswordStep
@@ -95,8 +92,7 @@ function LoginContent() {
                                         onPasswordChange={setPassword}
                                         onToggleShowPassword={() => setShowPassword(!showPassword)}
                                         onEditEmail={handleEditEmail}
-                                        onSubmit={(e) => handlePasswordSubmit(e, t)}
-                                        t={t}
+                                        onSubmit={handlePasswordSubmit}
                                     />
                                 ) : (
                                     <OtpPromptStep
@@ -104,8 +100,7 @@ function LoginContent() {
                                         error={error}
                                         isSendingOtp={isSendingOtp}
                                         onEditEmail={handleEditEmail}
-                                        onSendOtp={() => handleSendOtp(t)}
-                                        t={t}
+                                        onSendOtp={handleSendOtp}
                                     />
                                 )}
                             </AnimatePresence>
@@ -114,9 +109,9 @@ function LoginContent() {
                         <Card.Footer className="justify-center pb-6">
                             {/* Sign up link */}
                             <p className="text-center text-gray-600 text-sm">
-                                {t("noAccount")}{" "}
+                                Don't have an account? {" "}
                                 <Link href="/signup" className="text-gray-900 font-medium hover:underline">
-                                    {t("signUp")}
+                                    Sign up
                                 </Link>
                             </p>
                         </Card.Footer>

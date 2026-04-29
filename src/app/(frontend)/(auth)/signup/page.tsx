@@ -6,13 +6,11 @@ import Link from "next/link"
 import { Button, Card, Form, TextField, Input, Label, Alert, Spinner } from "@heroui/react"
 import { Icon } from "@iconify/react"
 import { motion } from "framer-motion"
-import { useTranslations } from "next-intl"
 import { useAuth } from "@/providers/Auth"
 import { PoweredBy } from "@/components/PoweredBy"
 import { Logo } from "@/components/Logo/Logo"
 
 export default function SignupPage() {
-    const t = useTranslations("Auth.signup")
     const router = useRouter()
     const { create } = useAuth()
 
@@ -30,7 +28,7 @@ export default function SignupPage() {
         setError(null)
 
         if (password !== confirmPassword) {
-            setError(t("passwordMismatch"))
+            setError("Passwords do not match.")
             setIsLoading(false)
             return
         }
@@ -39,7 +37,7 @@ export default function SignupPage() {
             await create({ email, password, passwordConfirm: confirmPassword })
             router.push("/")
         } catch (err) {
-            setError(t("error"))
+            setError("Could not create your account. Please try again.")
         } finally {
             setIsLoading(false)
         }
@@ -68,10 +66,10 @@ export default function SignupPage() {
                             {/* Logo */}
                             <Logo forceLight width={180} height={100} />
                             <Card.Title className="text-xl font-semibold text-gray-900">
-                                {t("title")}
+                                Create your account
                             </Card.Title>
                             <Card.Description className="text-gray-500 text-sm text-center">
-                                {t("subtitle")}
+                                Start your trading dashboard experience
                             </Card.Description>
                         </Card.Header>
 
@@ -85,13 +83,13 @@ export default function SignupPage() {
                                 onPress={handleGoogleSignup}
                             >
                                 <Icon icon="flat-color-icons:google" width={20} />
-                                {t("continueWithGoogle")}
+                                Continue with Google
                             </Button>
 
                             {/* Divider */}
                             <div className="flex items-center gap-4 my-4">
                                 <hr className="flex-1 bg-gray-200 border-0 h-px" />
-                                <span className="text-gray-500 text-sm">{t("orContinueWith")}</span>
+                                <span className="text-gray-500 text-sm">or continue with email</span>
                                 <hr className="flex-1 bg-gray-200 border-0 h-px" />
                             </div>
 
@@ -116,8 +114,8 @@ export default function SignupPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     type="email"
                                     name="email"
-                                    aria-label={t("email")}
-                                    placeholder={t("email")}
+                                    aria-label="Email"
+                                    placeholder="Email"
                                     className="h-12 w-full bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-lg transition-all text-base text-gray-900 px-4"
                                 />
 
@@ -128,8 +126,8 @@ export default function SignupPage() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         type={showPassword ? "text" : "password"}
                                         name="password"
-                                        aria-label={t("password")}
-                                        placeholder={t("password")}
+                                        aria-label="Password"
+                                        placeholder="Password"
                                         className="h-12 w-full bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-lg transition-all text-base text-gray-900 px-4 pr-12"
                                     />
                                     <button
@@ -152,8 +150,8 @@ export default function SignupPage() {
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         type={showConfirmPassword ? "text" : "password"}
                                         name="confirmPassword"
-                                        aria-label={t("confirmPassword")}
-                                        placeholder={t("confirmPassword")}
+                                        aria-label="Confirm password"
+                                        placeholder="Confirm password"
                                         className="h-12 w-full bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-lg transition-all text-base text-gray-900 px-4 pr-12"
                                     />
                                     <button
@@ -171,13 +169,13 @@ export default function SignupPage() {
 
                                 {/* Terms Agreement */}
                                 <p className="text-xs text-gray-600 text-center">
-                                    {t("termsAgreement")}{" "}
+                                    By creating an account, you agree to our {" "}
                                     <Link href="/terms" className="text-gray-900 hover:underline">
-                                        {t("termsOfService")}
+                                        Terms of Service
                                     </Link>{" "}
-                                    {t("and")}{" "}
+                                    and {" "}
                                     <Link href="/privacy" className="text-gray-900 hover:underline">
-                                        {t("privacyPolicy")}
+                                        Privacy Policy
                                     </Link>
                                 </p>
 
@@ -192,7 +190,7 @@ export default function SignupPage() {
                                     {({ isPending }) => (
                                         <>
                                             {isPending ? <Spinner color="current" size="sm" /> : null}
-                                            {isPending ? t("loading") : t("createAccount")}
+                                            {isPending ? "Loading..." : "Create account"}
                                         </>
                                     )}
                                 </Button>
@@ -202,9 +200,9 @@ export default function SignupPage() {
                         <Card.Footer className="justify-center pb-6">
                             {/* Sign in link */}
                             <p className="text-center text-gray-600 text-sm">
-                                {t("hasAccount")}{" "}
+                                Already have an account? {" "}
                                 <Link href="/login" className="text-gray-900 font-medium hover:underline">
-                                    {t("signIn")}
+                                    Sign in
                                 </Link>
                             </p>
                         </Card.Footer>

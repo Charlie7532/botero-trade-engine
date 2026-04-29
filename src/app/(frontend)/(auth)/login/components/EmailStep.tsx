@@ -12,7 +12,6 @@ interface EmailStepProps {
     onEmailChange: (value: string) => void
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
     onGoogleLogin: () => void
-    t: (key: string) => string
 }
 
 /**
@@ -28,7 +27,6 @@ export function EmailStep({
     onEmailChange,
     onSubmit,
     onGoogleLogin,
-    t,
 }: EmailStepProps) {
     return (
         <motion.div
@@ -47,13 +45,13 @@ export function EmailStep({
                 onPress={onGoogleLogin}
             >
                 <Icon icon="flat-color-icons:google" width={20} />
-                {t("continueWithGoogle")}
+                Continue with Google
             </Button>
 
             {/* Divider */}
             <div className="flex items-center gap-4 my-4">
                 <hr className="flex-1 bg-gray-200 border-0 h-px" />
-                <span className="text-gray-500 text-sm">{t("or")}</span>
+                <span className="text-gray-500 text-sm">or</span>
                 <hr className="flex-1 bg-gray-200 border-0 h-px" />
             </div>
 
@@ -78,8 +76,8 @@ export function EmailStep({
                     onChange={(e) => onEmailChange(e.target.value)}
                     type="email"
                     name="email"
-                    aria-label={t("email")}
-                    placeholder={t("email")}
+                    aria-label="Email"
+                    placeholder="Email"
                     variant="secondary"
                     className="h-12 w-full rounded-full bg-white border border-gray-300 px-4"
                 />
@@ -95,7 +93,7 @@ export function EmailStep({
                     {({ isPending }) => (
                         <>
                             {isPending ? <Spinner color="current" size="sm" /> : null}
-                            {isPending ? t("loading") : t("continue")}
+                            {isPending ? "Loading..." : "Continue"}
                         </>
                     )}
                 </Button>

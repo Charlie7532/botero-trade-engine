@@ -16,7 +16,6 @@ interface PasswordStepProps {
     onToggleShowPassword: () => void
     onEditEmail: () => void
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
-    t: (key: string) => string
 }
 
 /**
@@ -35,7 +34,6 @@ export function PasswordStep({
     onToggleShowPassword,
     onEditEmail,
     onSubmit,
-    t,
 }: PasswordStepProps) {
     return (
         <motion.div
@@ -53,7 +51,7 @@ export function PasswordStep({
                     onClick={onEditEmail}
                     className="text-gray-600 text-sm font-medium hover:text-gray-900"
                 >
-                    {t("edit")}
+                    Edit
                 </button>
             </div>
 
@@ -80,8 +78,8 @@ export function PasswordStep({
                         type={showPassword ? "text" : "password"}
                         name="password"
                         autoFocus
-                        aria-label={t("password")}
-                        placeholder={t("password")}
+                        aria-label="Password"
+                        placeholder="Password"
                         className="h-12 w-full bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-lg transition-all text-base text-gray-900 px-4 pr-12"
                     />
                     <button
@@ -102,7 +100,7 @@ export function PasswordStep({
                         href="/forgot-password"
                         className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
                     >
-                        {t("forgotPassword")}
+                        Forgot password?
                     </Link>
                 </div>
 
@@ -117,7 +115,7 @@ export function PasswordStep({
                     {({ isPending }) => (
                         <>
                             {isPending ? <Spinner color="current" size="sm" /> : null}
-                            {isPending ? t("loading") : t("continue")}
+                            {isPending ? "Loading..." : "Continue"}
                         </>
                     )}
                 </Button>

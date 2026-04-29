@@ -6,13 +6,11 @@ import Link from "next/link"
 import { Button, Card, InputOTP, Alert, Spinner } from "@heroui/react"
 import { Icon } from "@iconify/react"
 import { motion } from "framer-motion"
-import { useTranslations } from "next-intl"
 import { useVerifyOtpFlow } from "@/modules/auth"
 import { Logo } from "@/components/Logo/Logo"
 import { PoweredBy } from "@/components/PoweredBy"
 
 function VerifyOtpContent() {
-    const t = useTranslations("Auth.verifyOtp")
     const searchParams = useSearchParams()
     const email = searchParams.get("email") || ""
     const purpose = searchParams.get("purpose") || "login"
@@ -52,10 +50,12 @@ function VerifyOtpContent() {
                             {/* Logo */}
                             <Logo forceLight width={180} height={100} />
                             <Card.Title className="text-xl font-semibold text-gray-900">
-                                {purpose === "password-reset" ? t("titlePasswordReset") : t("title")}
+                                {purpose === "password-reset" ? "Reset your password" : "Verify your identity"}
                             </Card.Title>
                             <Card.Description className="text-gray-500 text-sm text-center">
-                                {purpose === "password-reset" ? t("subtitlePasswordReset") : t("subtitle")}
+                                {purpose === "password-reset"
+                                    ? "Enter the code we sent to continue resetting your password."
+                                    : "Enter the code we sent to your email to sign in."}
                             </Card.Description>
                             <p className="text-gray-700 text-sm font-medium mt-1">
                                 {email}
@@ -68,7 +68,7 @@ function VerifyOtpContent() {
                                 maxLength={6}
                                 value={otp}
                                 onChange={setOtp}
-                                onComplete={(value) => handleComplete(value, t)}
+                                onComplete={handleComplete}
                                 isDisabled={isLoading}
                                 isInvalid={!!error}
                                 autoFocus
@@ -108,13 +108,13 @@ function VerifyOtpContent() {
                                 className="h-12 font-semibold rounded-full text-gray-900 data-[loading=true]:text-gray-900"
                                 variant="primary"
                                 isPending={isLoading}
-                                onPress={() => handleSubmit(otp, t)}
+                                onPress={() => handleSubmit(otp)}
                                 isDisabled={otp.length !== 6 || isLoading}
                             >
                                 {({ isPending }) => (
                                     <>
                                         {isPending ? <Spinner color="current" size="sm" /> : null}
-                                        {isPending ? t("verifying") : t("verify")}
+                                        {isPending ? "Verifying..." : "Verify"}
                                     </>
                                 )}
                             </Button>
@@ -122,22 +122,22 @@ function VerifyOtpContent() {
                             {/* Resend Code */}
                             <div className="text-center">
                                 <p className="text-gray-600 text-sm mb-2">
-                                    {t("didntReceive")}
+                                    Didn't receive a code?
                                 </p>
                                 <button
-                                    onClick={() => handleResendCode(t)}
+                                    onClick={handleResendCode}
                                     disabled={isResending || resendCooldown > 0}
                                     className="text-primary font-medium text-sm hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isResending ? (
                                         <span className="flex items-center justify-center gap-2">
                                             <Icon icon="lucide:loader-2" className="animate-spin" width={16} />
-                                            {t("sending")}
+                                            Sending...
                                         </span>
                                     ) : resendCooldown > 0 ? (
-                                        `${t("resendIn")} ${resendCooldown}s`
+                                        `Resend in ${resendCooldown}s`
                                     ) : (
-                                        t("resendCode")
+                                        "Resend code"
                                     )}
                                 </button>
                             </div>
@@ -150,7 +150,7 @@ function VerifyOtpContent() {
                                 className="text-gray-600 text-sm hover:text-gray-900 flex items-center justify-center gap-1"
                             >
                                 <Icon icon="lucide:arrow-left" width={16} />
-                                {t("backToLogin")}
+                                Back to login
                             </Link>
                         </Card.Footer>
                     </Card>

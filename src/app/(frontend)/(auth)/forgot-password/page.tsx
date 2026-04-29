@@ -5,14 +5,11 @@ import Link from "next/link"
 import { Button, Card, Form, Input, Alert, Spinner } from "@heroui/react"
 import { Icon } from "@iconify/react"
 import { motion } from "framer-motion"
-import { useTranslations } from "next-intl"
 import { useForgotPasswordFlow } from "@/modules/auth"
 import { Logo } from "@/components/Logo/Logo"
 import { PoweredBy } from "@/components/PoweredBy"
 
 export default function ForgotPasswordPage() {
-    const t = useTranslations("Auth.forgotPassword")
-
     const {
         email,
         error,
@@ -39,15 +36,15 @@ export default function ForgotPasswordPage() {
                             {/* Logo */}
                             <Logo forceLight width={180} height={100} />
                             <Card.Title className="text-xl font-semibold text-gray-900">
-                                {t("title")}
+                                Forgot your password?
                             </Card.Title>
                             <Card.Description className="text-gray-600 text-sm text-center">
-                                {t("subtitle")}
+                                Enter your email and we will send a verification code.
                             </Card.Description>
                         </Card.Header>
 
                         <Card.Content>
-                            <Form onSubmit={(e) => handleSubmit(e, t)} className="flex flex-col gap-4">
+                            <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
                                 {error && (
                                     <motion.div
                                         initial={{ opacity: 0, height: 0 }}
@@ -67,8 +64,8 @@ export default function ForgotPasswordPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     type="email"
                                     name="email"
-                                    aria-label={t("email")}
-                                    placeholder={t("email")}
+                                    aria-label="Email"
+                                    placeholder="Email"
                                     className="h-12 w-full bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-lg transition-all text-base text-gray-900 px-4"
                                 />
 
@@ -83,7 +80,7 @@ export default function ForgotPasswordPage() {
                                     {({ isPending }) => (
                                         <>
                                             {isPending ? <Spinner color="current" size="sm" /> : null}
-                                            {isPending ? t("sending") : t("sendResetLink")}
+                                            {isPending ? "Sending..." : "Send reset code"}
                                         </>
                                     )}
                                 </Button>
@@ -94,7 +91,7 @@ export default function ForgotPasswordPage() {
                                         className="text-sm text-gray-600 hover:text-gray-900 inline-flex items-center gap-1"
                                     >
                                         <Icon icon="lucide:arrow-left" width={16} />
-                                        {t("backToLogin")}
+                                        Back to login
                                     </Link>
                                 </div>
                             </Form>

@@ -11,7 +11,6 @@ interface OtpPromptStepProps {
     isSendingOtp: boolean
     onEditEmail: () => void
     onSendOtp: () => void
-    t: (key: string) => string
 }
 
 /**
@@ -26,7 +25,6 @@ export function OtpPromptStep({
     isSendingOtp,
     onEditEmail,
     onSendOtp,
-    t,
 }: OtpPromptStepProps) {
     return (
         <motion.div
@@ -44,7 +42,7 @@ export function OtpPromptStep({
                     onClick={onEditEmail}
                     className="text-gray-600 text-sm font-medium hover:text-gray-900"
                 >
-                    {t("edit")}
+                    Edit
                 </button>
             </div>
 
@@ -69,7 +67,7 @@ export function OtpPromptStep({
                 </Alert.Indicator>
                 <Alert.Content>
                     <Alert.Description>
-                        {t("migratedUserMessage")}
+                        We need to verify your identity before signing you in. We will send a one-time code to your email.
                     </Alert.Description>
                 </Alert.Content>
             </Alert>
@@ -81,7 +79,7 @@ export function OtpPromptStep({
                 isPending={isSendingOtp}
                 onPress={onSendOtp}
             >
-                {isSendingOtp ? t("sendingCode") : t("sendCode")}
+                {isSendingOtp ? 'Sending code...' : 'Send code'}
             </Button>
         </motion.div>
     )

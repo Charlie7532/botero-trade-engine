@@ -67,6 +67,8 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    posts: Post;
+    pages: Page;
     media: Media;
     users: User;
     'user-avatar': UserAvatar;
@@ -93,6 +95,8 @@ export interface Config {
     };
   };
   collectionsSelect: {
+    posts: PostsSelect<false> | PostsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'user-avatar': UserAvatarSelect<false> | UserAvatarSelect<true>;
@@ -142,6 +146,49 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
+}
+
+export interface Post {
+  id: number | string;
+  title?: string | null;
+  slug?: string | null;
+  categories?: ((number | null) | { id: number | string; title?: string | null })[] | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    image?: (number | null) | Media;
+  } | null;
+  heroImage?: (number | null) | Media;
+  populatedAuthors?: { id: number | string; name?: string | null }[] | null;
+  publishedAt?: string | null;
+  content?: unknown;
+  relatedPosts?: ((number | null) | Post)[] | null;
+  [k: string]: unknown;
+}
+
+export interface Page {
+  id: number | string;
+  title?: string | null;
+  slug?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    image?: (number | null) | Media;
+  } | null;
+  [k: string]: unknown;
+}
+
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  categories?: T;
+  meta?: T;
+}
+
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  meta?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

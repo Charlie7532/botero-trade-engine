@@ -4,7 +4,6 @@ import configPromise from '@payload-config'
 import { verifyOtp, isOtpExpired, getMaxOtpAttempts } from '@/utilities/otp'
 import { SignJWT } from 'jose'
 import crypto from 'crypto'
-import { getPostHogClient } from '@/lib/posthog-server'
 
 interface VerifyOtpRequest {
     email: string
@@ -141,26 +140,6 @@ export async function POST(request: NextRequest) {
             .setProtectedHeader({ alg: 'HS256' })
             .setExpirationTime(`${tokenExpiration}s`)
             .sign(new TextEncoder().encode(secret))
-
-        // Track OTP verification and identify user server-side
-        const posthogClient = getPostHogClient()
-        posthogClient.capture({
-            distinctId: String(user.id),
-            event: 'otp_verified',
-            properties: {
-                email: normalizedEmail,
-                loginCount: (user.login_count || 0) + 1,
-            },
-        })
-        posthogClient.identify({
-            distinctId: String(user.id),
-            properties: {
-                email: normalizedEmail,
-                name: user.name,
-                nickname: user.nickname,
-                role: user.role,
-            },
-        })
 
         // Create response with auth cookie
         const response = NextResponse.json<VerifyOtpResponse>({

@@ -1,0 +1,63 @@
+# Dependencies & virtual environments
+node_modules/
+backend/.venv/
+.venv/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+
+# Data files (too large, no code structure)
+data/
+*.parquet
+*.csv
+*.json.gz
+
+# Generated files
+*.generated.*
+*.generated.ts
+src/app/(payload)/importMap.js
+
+# Cache & bytecode
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Migrations (auto-generated)
+src/migrations/
+
+# Secrets (NEVER process)
+.env*
+!.env.example
+.mcp.json
+
+# Media & assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Graphify output (avoid recursion)
+graphify-out/
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Docker volumes
+docker-data/
+
+# Logs
+*.log
+logs/

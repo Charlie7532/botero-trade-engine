@@ -14,6 +14,11 @@ import { PortfolioMemberships } from './collections/PortfolioMemberships/index'
 import { BrokerAccounts } from './collections/BrokerAccounts/index'
 import { Bots } from './collections/Bots/index'
 import { BotAssignments } from './collections/BotAssignments/index'
+import { Instruments } from './collections/Instruments'
+import { RegimePhases } from './collections/RegimePhases'
+import { CalibrationProfiles } from './collections/CalibrationProfiles'
+import { CandidateScreenings } from './collections/CandidateScreenings'
+import { TradeSnapshots } from './collections/TradeSnapshots'
 import { SiteSettings } from './globals/SiteSettings/index'
 import { plugins } from './plugins'
 import { dashboardConfig } from './widgets'
@@ -90,8 +95,14 @@ export default buildConfig({
     pool: { connectionString: process.env.POSTGRES_URL || '', },
   }),
   collections: [
-    Media, Users, UserAvatar,
+    // Content
+    Media,
+    // Users
+    Users, UserAvatar,
+    // Multi-Tenant Trading
     Portfolios, PortfolioMemberships, BrokerAccounts, Bots, BotAssignments,
+    // Trading Engine — Lifecycle & Calibration
+    Instruments, RegimePhases, CalibrationProfiles, CandidateScreenings, TradeSnapshots,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [SiteSettings],

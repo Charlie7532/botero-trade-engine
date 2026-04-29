@@ -98,6 +98,8 @@ The following files contain secrets and must NEVER be read, written, viewed, cat
 6. **Never read or modify `.env` files.** Only `.env.example` may be edited.
 7. **All MCP adapters receive pre-fetched data.** Infrastructure adapters never call MCP tools directly.
 8. **Data providers use fallback chains.** Try MCP first, then SDK/scraper. Never fail silently.
+9. **Simplicity first.** No features beyond what was asked. No abstractions for single-use code. No speculative "flexibility" or "configurability." If 200 lines could be 50, rewrite it. The test: would a senior engineer say this is overcomplicated? If yes, simplify.
+10. **Surgical changes.** Every changed line must trace directly to the user's request. Don't "improve" adjacent code, comments, or formatting. Match existing style. If you notice unrelated dead code, mention it — don't delete it. Remove only imports/variables/functions that YOUR changes made unused.
 
 ---
 

@@ -34,3 +34,6 @@ public/media/
 public/robots.txt
 public/sitemap*.xml
 tests/__pycache__/
+
+# Graphify knowledge graph output
+graphify-out/

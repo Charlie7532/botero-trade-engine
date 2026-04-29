@@ -27,8 +27,8 @@ Si NO pasan, el sistema NO avanza a Shadow Mode.
 
 Dependencias:
   - data/historical/market_context_5y.parquet  (descargado por download_historical.py)
-  - backend/application/sequence_modeling.py    (TripleBarrierLabeler, MetaLabeler)
-  - backend/application/feature_engineering.py  (QuantFeatureEngineer)
+  - backend/modules/volume_intelligence/       (KalmanVolumeTracker, SectorRegimeDetector)
+  - backend/modules/simulation/domain/use_cases/engineer_features.py (QuantFeatureEngineer)
   - backend/application/trade_autopsy.py        (TradeAutopsy para post-mortem)
 """
 import logging
@@ -41,8 +41,11 @@ from typing import Optional
 
 from backend.modules.simulation.domain.entities.simulation_models import WindowResult, BacktestReport
 from backend.modules.simulation.domain.use_cases.analyze_trades import TradeAutopsy
-from backend.infrastructure.data_providers.volume_dynamics import (
-    KalmanVolumeTracker, SectorRegimeDetector,
+from backend.modules.volume_intelligence.domain.use_cases.track_volume_dynamics import (
+    KalmanVolumeTracker,
+)
+from backend.modules.volume_intelligence.domain.rules.volume_rules import (
+    SectorRegimeDetector,
 )
 from backend.modules.execution.domain.rules.exit_rules import ExitEngine
 from backend.modules.execution.domain.entities.exit_context import TradeState, MarketContext
@@ -61,7 +64,7 @@ class WalkForwardBacktester:
     1. Carga datos históricos de Parquet
     2. Genera ventanas deslizantes (rolling windows)
     3. Para cada ventana:
-       a. Aplica TripleBarrierLabeler en la ventana de TRAIN
+       a. (Future: Oracle BarrierLabeler via BarrierLabelerPort)
        b. Genera features con QuantFeatureEngineer
        c. (Opcional) Entrena meta-labeler en la ventana de TRAIN
        d. Simula trades en la ventana de TEST con el modelo/reglas
@@ -107,9 +110,9 @@ class WalkForwardBacktester:
         self.test_months = test_months
         self.step_months = step_months
         self.parquet_path = DATA_DIR / parquet_file
-        self.labeler = TripleBarrierLabeler(
-            profit_mult=2.0, loss_mult=1.0, max_bars=30, vol_lookback=20
-        )
+        # TripleBarrierLabeler removed — will be re-injected in Phase 3
+        # via BarrierLabelerPort (Clean Architecture)
+        self.labeler = None
         self.autopsy = TradeAutopsy()
         self.kalman = KalmanVolumeTracker(
             dt=1.0, process_noise=0.05, obs_noise=0.2,

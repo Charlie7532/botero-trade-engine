@@ -6,8 +6,6 @@ import { GeistSans } from 'geist/font/sans'
 import React from 'react'
 
 import { AdminBar } from '@/components/AdminBar'
-import { Footer } from '@/globals/Footer/components/FooterServer'
-import { Header } from '@/globals/Header/components/HeaderServer'
 import { Providers } from '@/providers'
 import { DynamicColors } from '@/components/DynamicColors'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
@@ -55,9 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             }}
           />
 
-          <Header />
           {children}
-          <Footer />
         </Providers>
       </body>
     </html>

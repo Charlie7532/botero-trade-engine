@@ -87,7 +87,7 @@ export const TwoColumnTextImageBlock: Block = {
         {
           name: 'reference',
           type: 'relationship',
-          relationTo: ['pages'],
+          relationTo: ['portfolios'],
           required: true,
           admin: {
             condition: (_: any, siblingData: any) => siblingData?.type === 'reference',

@@ -45,6 +45,14 @@ function encryptSecretField(
   delete data[plaintextField]
 }
 
+function resolveCredentialEncryptionSecret(): string {
+  return (
+    process.env.BROKER_CREDENTIAL_ENCRYPTION_KEY ||
+    process.env.PAYLOAD_SECRET ||
+    ''
+  )
+}
+
 const encryptPlaintextValue = handleBeforeChangeHook({
   name: 'BrokerAccounts',
   operation: 'all',
@@ -88,10 +96,10 @@ const encryptPlaintextValue = handleBeforeChangeHook({
       if (!data.ibClientId) data.ibClientId = defaults.ibClientId
     }
 
-    const encryptionSecret = process.env.BROKER_CREDENTIAL_ENCRYPTION_KEY
+    const encryptionSecret = resolveCredentialEncryptionSecret()
     if (!encryptionSecret) {
       throw new Error(
-        'BROKER_CREDENTIAL_ENCRYPTION_KEY environment variable is not set.',
+        'Missing encryption secret. Set BROKER_CREDENTIAL_ENCRYPTION_KEY or PAYLOAD_SECRET.',
       )
     }
 
@@ -116,20 +124,20 @@ const encryptPlaintextValue = handleBeforeChangeHook({
     )
 
     if (brokerType === 'alpaca') {
-      if (!data.apiKeyEncrypted && !(originalDoc as Record<string, unknown> | undefined)?.apiKeyEncrypted) {
-        throw new Error('API Key is required for Alpaca credentials.')
-      }
-
+      const hasApiKey = Boolean(data.apiKeyEncrypted || (originalDoc as Record<string, unknown> | undefined)?.apiKeyEncrypted)
       const hasSecretKey = Boolean(data.secretKeyEncrypted || (originalDoc as Record<string, unknown> | undefined)?.secretKeyEncrypted)
-      if (requiresSecretKey(brokerType) && !hasSecretKey) {
-        throw new Error('Secret Key is required for Alpaca credentials.')
+
+      // Allow incremental credential entry in admin forms.
+      // Incomplete credentials should not remain active.
+      if ((!hasApiKey || (requiresSecretKey(brokerType) && !hasSecretKey)) && data.isActive === true) {
+        data.isActive = false
       }
     }
 
     if (brokerType === 'interactive_brokers') {
       const hasIbAccountId = Boolean(data.ibAccountId || (originalDoc as Record<string, unknown> | undefined)?.ibAccountId)
-      if (!hasIbAccountId) {
-        throw new Error('IB Account ID is required for Interactive Brokers credentials.')
+      if (!hasIbAccountId && data.isActive === true) {
+        data.isActive = false
       }
     }
 

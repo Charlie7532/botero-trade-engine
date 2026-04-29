@@ -23,7 +23,7 @@ export const portfoliosFields: Field[] = [
     },
   },
   {
-    name: 'portfolio_status',
+    name: 'status',
     label: 'Portfolio Status',
     type: 'select',
     required: true,

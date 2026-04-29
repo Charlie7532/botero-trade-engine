@@ -9,7 +9,7 @@ export const Portfolios: CollectionConfig = {
   access: portfoliosAccess,
   admin: {
     group: 'Accounts',
-    defaultColumns: ['name', 'slug', 'portfolio_status', 'owner'],
+    defaultColumns: ['name', 'slug', 'status', 'owner'],
     useAsTitle: 'name',
   },
   hooks: portfoliosLifecycle,

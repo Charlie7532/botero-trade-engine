@@ -22,7 +22,7 @@ When any agent works on a backend module, activate the skills listed for that mo
 | `flow_intelligence` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Whale flows, sweeps, institutional positioning — pure microstructure |
 | `options_gamma` | `clean-architecture`, `operational-purpose` | `tactical-entries`, `risk-manager` | GEX, Max Pain, gamma regime — drives entry timing AND risk regime detection |
 | `pattern_recognition` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Candlestick/technical patterns — visual structure for entry timing |
-| `portfolio_management` | `clean-architecture`, `operational-purpose` | `fundamental-analyst`, `risk-manager`, `cio-allocator` | Universe filtering, alpha scanning, CIO budget allocation, position sizing |
+| `portfolio_management` | `clean-architecture`, `operational-purpose` | `research-intelligence`, `fundamental-analyst`, `risk-manager`, `cio-allocator` | Universe filtering, alpha scanning, CIO budget allocation, position sizing, watchlist management |
 | `price_analysis` | `clean-architecture`, `operational-purpose` | `tactical-entries` | RSI, price phase detection — technical structure analysis |
 | `rotation_intelligence` | `clean-architecture`, `operational-purpose` | `rotation-analyst`, `cio-allocator` | Sector/international/asset class rotation via ETF RS and stage analysis — feeds CIO |
 | `shared` | `clean-architecture`, `operational-purpose` | *(none)* | Foundational types and shared ports — architecture-only |

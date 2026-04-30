@@ -65,6 +65,7 @@ All skills are located in `.agents/skills/`. Key skills:
 - `module-skill-map` — Maps backend modules to specialist skills
 - `cio-allocator` — Dynamic capital allocation & macro regime (Ray Dalio)
 - `rotation-analyst` — Sector/international/asset class rotation (Weinstein & Pring)
+- `research-intelligence` — Dual-track candidate sourcing & investigation (Quality watchlist + Speculative opportunities)
 - `fundamental-analyst` — QUALITY position evaluation (Hohn & Munger)
 - `tactical-entries` — Microstructure entry timing & dealer gamma (Eifert, Karsan & PTJ)
 - `risk-manager` — Dual-mode risk evaluation (Druckenmiller & Seykota)

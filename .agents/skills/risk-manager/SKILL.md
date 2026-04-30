@@ -42,7 +42,12 @@ Applicable to structural positions (Value / Growth / Dividend — Hohn & Munger)
    - Macro regime collapses to liquidity crisis (Cash is King — Dalio calls RISK_OFF).
    - A monumentally superior opportunity demands the capital (opportunity cost).
 
-6. **News Analysis — Real vs. Fake Pain**:
+6. **Anti-AI-Optimism Checkpoint**:
+   When evaluating whether a QUALITY thesis is "still intact", be aware that AI will systematically generate reasons to HOLD popular stocks. The training data is full of "buy the dip" narratives.
+   - **Test**: If you cannot identify at least ONE genuinely threatening scenario for the position, your analysis is biased. Every position has risks. If you can't find them, you're not looking hard enough.
+   - **Moat Decay Detection**: A moat doesn't break overnight. It DECAYS. If the margin profile is deteriorating quarter over quarter, the moat may be eroding even if the stock price hasn't reflected it yet. Watch MARGINS, not PRICE.
+
+7. **News Analysis — Real vs. Fake Pain**:
    If the asset drops 10% intraday, evaluate the SOURCE:
    - Generic analyst downgrade or blind sector rotation → HOLD / BUY THE DIP
    - CEO fraud, regulatory ban, permanent competitive disruption → LIQUIDATE AT MARKET

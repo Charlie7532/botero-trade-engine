@@ -33,8 +33,9 @@ Based on the prompt's topic, activate the appropriate specialist skills:
 
 | Skill | Path | Activate when... |
 |---|---|---|
-| Fundamental Analyst | `.agents/skills/fundamental-analyst/SKILL.md` | Moats, pricing power, ROIC, CORE positions, capital allocation, company quality |
-| Tactical Entries | `.agents/skills/tactical-entries/SKILL.md` | Options flow, GEX, gamma, Max Pain, tape reading, microstructure, entry timing |
+| CIO Allocator | `.agents/skills/cio-allocator/SKILL.md` | Budget allocation, macro regime, sector rotation, cause-and-effect, capital allocation between departments |
+| Fundamental Analyst | `.agents/skills/fundamental-analyst/SKILL.md` | Moats, pricing power, ROIC, QUALITY positions, capital allocation, company quality |
+| Tactical Entries | `.agents/skills/tactical-entries/SKILL.md` | Options flow, GEX, gamma, dealer positioning, Vanna/Charm, Max Pain, tape reading, microstructure, entry timing |
 | Risk Manager | `.agents/skills/risk-manager/SKILL.md` | Open positions, trailing stops, exits, position sizing, VIX regime, drawdown |
 
 #### Trading Tools

@@ -1,17 +1,23 @@
 import logging
 from datetime import datetime, UTC
 from backend.modules.execution.domain.use_cases.orchestrate_paper_trading import PaperTradingOrchestrator
+from backend.modules.portfolio_management.domain.use_cases.cio_orchestrator import CIOOrchestrator
 
 logger = logging.getLogger(__name__)
 
 class ScanOrchestrator:
     """
     Orquesta los escaneos Quality y Speculative usando el PaperTradingOrchestrator
-    para verificar límites de cuenta y ejecutar las órdenes.
+    para verificar límites de cuenta y ejecutar las órdenes, guiado por el CIO.
     """
     
-    def __init__(self, paper_orchestrator: PaperTradingOrchestrator):
+    def __init__(
+        self, 
+        paper_orchestrator: PaperTradingOrchestrator,
+        cio_orchestrator: CIOOrchestrator = None
+    ):
         self.orchestrator = paper_orchestrator
+        self.cio = cio_orchestrator or CIOOrchestrator()
 
     def get_sp500_universe(self) -> list[str]:
         """Extrae el universo completo del S&P500 desde Wikipedia (o fallback amplio)."""
@@ -51,13 +57,14 @@ class ScanOrchestrator:
     ) -> dict:
         """
         ===================================================================
-        MODO HOHN & MUNGER (80% DEL CAPITAL) — Quality Department
+        MODO HOHN & MUNGER — Quality Department
         ===================================================================
-        1. Obtiene S&P500 + Joyas de GuruFocus.
-        2. Consulta la caché fundamental (MongoDB) antes de golpear APIs.
-        3. UniverseFilter evalúa la CALIDAD SUPREMA con datos frescos.
-        4. Pasa los ganadores estrictos al AlphaScanner para timing de entrada.
-        5. Compra con Strategy: QUALITY.
+        1. Obtiene el mandato del CIO (Presupuesto y Sectores permitidos).
+        2. Obtiene S&P500 + Joyas de GuruFocus.
+        3. Consulta la caché fundamental (MongoDB) antes de golpear APIs.
+        4. UniverseFilter evalúa la CALIDAD SUPREMA con datos frescos.
+        5. Pasa los ganadores estrictos al AlphaScanner para timing de entrada.
+        6. Compra con Strategy: QUALITY.
         """
         from backend.modules.portfolio_management.domain.use_cases.filter_universe import UniverseFilter
         from backend.modules.portfolio_management.domain.entities.universe_candidate import UniverseCandidate
@@ -66,13 +73,17 @@ class ScanOrchestrator:
         session_start = datetime.now(UTC).isoformat()
         logger.info(f"🏛️ INICIANDO ESCANEO QUALITY (Hohn & Munger Modo) — {session_start}")
 
-        # 1. Chequeo de Account
+        # 1. Chequeo de CIO Mandate y Cuenta
+        mandate = self.cio.get_current_mandate()
+        limit = mandate.quality_budget_pct
+        
         account = self.orchestrator.get_account_status()
         if 'error' in account: return {"error": account['error']}
 
-        # Validamos si cabe otro core trade ($8000 en 80%) o si excedemos límite
-        if account.get("quality_exposure", 0) / max(account.get("equity", 1), 1) >= 0.80:
-            logger.warning("🚫 Escaneo Quality Anulado: Bucket QUALITY Lleno al 80%.")
+        # Validamos si cabe otro core trade
+        exposure = account.get("quality_exposure", 0) / max(account.get("equity", 1), 1)
+        if exposure >= limit:
+            logger.warning(f"🚫 Escaneo Quality Anulado: Bucket QUALITY Lleno al {limit*100:.0f}% (CIO Mandate).")
             return {"status": "BUCKET_FULL"}
 
         current_positions = len(account.get('positions', []))
@@ -134,6 +145,16 @@ class ScanOrchestrator:
         if not strong_candidates:
             return {"status": "NO_CORE_CANDIDATES"}
 
+        # 3.5. CIO Sector Vetoes — remove candidates in forbidden sectors
+        if mandate.vetoed_sectors:
+            pre_veto = len(strong_candidates)
+            strong_candidates = [c for c in strong_candidates if c.sector not in mandate.vetoed_sectors]
+            vetoed_count = pre_veto - len(strong_candidates)
+            if vetoed_count > 0:
+                logger.info(f"🚫 CIO Veto: {vetoed_count} candidatos eliminados por sector vetado ({mandate.vetoed_sectors}).")
+            if not strong_candidates:
+                return {"status": "ALL_VETOED"}
+
         # 4. AlphaScanner (Tactical Entry sobre los fuertes fundamentales)
         strong_tickers = [c.ticker for c in strong_candidates]
         logger.info(f"🏢 Hohn & Munger seleccionó The Elite {len(strong_tickers)}. Buscando táctica con Eifert...")
@@ -171,10 +192,10 @@ class ScanOrchestrator:
     ) -> dict:
         """
         ===================================================================
-        MODO EIFERT & PTJ (20% DEL CAPITAL) — Speculative Department
+        MODO EIFERT & PTJ — Speculative Department
         ===================================================================
         Busca momentum direccional puro y asimetrías de opciones.
-        Ignora calidades profundas, busca la acción del mercado de hoy.
+        Respeta implacablemente el presupuesto dictado por el CIO (Ray Dalio).
         """
         from backend.modules.portfolio_management.domain.use_cases.scan_alpha import AlphaScanner
         from backend.modules.portfolio_management.domain.use_cases.filter_universe import UniverseFilter
@@ -182,11 +203,19 @@ class ScanOrchestrator:
 
         logger.info(f"🔥 INICIANDO ESCANEO SPECULATIVE (Eifert & PTJ Modo)")
         
+        mandate = self.cio.get_current_mandate()
+        limit = mandate.speculative_budget_pct
+        
+        if limit <= 0.0:
+            logger.warning("🚫 Escaneo Speculative Anulado: El CIO asignó 0% de presupuesto a tácticas hoy (Risk-Off).")
+            return {"status": "CIO_VETO"}
+            
         account = self.orchestrator.get_account_status()
         if 'error' in account: return {"error": account['error']}
 
-        if account.get("speculative_exposure", 0) / max(account.get("equity", 1), 1) >= 0.20:
-            logger.warning("🚫 Escaneo Speculative Anulado: Bucket SPECULATIVE Lleno al 20%.")
+        exposure = account.get("speculative_exposure", 0) / max(account.get("equity", 1), 1)
+        if exposure >= limit:
+            logger.warning(f"🚫 Escaneo Speculative Anulado: Bucket SPECULATIVE Lleno al {limit*100:.0f}% (CIO Mandate).")
             return {"status": "BUCKET_FULL"}
 
         current_positions = len(account.get('positions', []))
@@ -208,7 +237,15 @@ class ScanOrchestrator:
         if macro_mcp_data: uf.update_macro_regime(macro_mcp_data)
         
         candidates = [UniverseCandidate(ticker=r['ticker'], alpha_score=r['alpha_score']) for r in alpha_results]
-        approved = uf.filter_and_rank(candidates, max_results=slots_available) # Podríamos relajar filtros aquí luego
+        approved = uf.filter_and_rank(candidates, max_results=slots_available)
+
+        # CIO Sector Vetoes
+        if mandate.vetoed_sectors:
+            pre_veto = len(approved)
+            approved = [c for c in approved if c.sector not in mandate.vetoed_sectors]
+            vetoed_count = pre_veto - len(approved)
+            if vetoed_count > 0:
+                logger.info(f"🚫 CIO Veto: {vetoed_count} candidatos especulativos eliminados por sector vetado ({mandate.vetoed_sectors}).")
 
         trades_attempted = []
         for candidate in approved:

@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 from datetime import datetime, UTC
 
+from backend.modules.portfolio_management.domain.entities.daily_mandate import DailyMandate
+
 logger = logging.getLogger(__name__)
 
 
@@ -72,6 +74,7 @@ class QualityRiskGuardian:
         context: Optional[RiskContext] = None,
         macro_gate: Optional[dict] = None,
         market_sentiment: Optional[dict] = None,
+        daily_mandate: Optional[DailyMandate] = None,
     ) -> dict:
         """
         Evalúa el riesgo para posiciones QUALITY.
@@ -100,9 +103,12 @@ class QualityRiskGuardian:
         # 2. QUALITY Bucket capacity
         total_cap = max(current_capital, 1.0)
         quality_pct = quality_exposure / total_cap
-        if quality_pct >= self.allocation_limit:
+        
+        limit = daily_mandate.quality_budget_pct if daily_mandate else self.allocation_limit
+        
+        if quality_pct >= limit:
             can_trade = False
-            alerts.append(f"🚫 QUALITY Bucket Lleno: Exp={quality_pct*100:.1f}% / Límite={self.allocation_limit*100:.0f}%")
+            alerts.append(f"🚫 QUALITY Bucket Lleno: Exp={quality_pct*100:.1f}% / Límite CIO={limit*100:.0f}%")
 
         # 3. Daily loss check
         if abs(daily_pnl_pct) >= self.max_daily_loss and daily_pnl_pct < 0:
@@ -230,6 +236,7 @@ class SpeculativeRiskGuardian:
         current_vix: float = 17,
         last_trade_won: Optional[bool] = None,
         context: Optional[RiskContext] = None,
+        daily_mandate: Optional[DailyMandate] = None,
     ) -> dict:
         """
         Evalúa el riesgo para posiciones SPECULATIVE.
@@ -250,9 +257,12 @@ class SpeculativeRiskGuardian:
         # 1. SPECULATIVE Bucket capacity
         total_cap = max(current_capital, 1.0)
         spec_pct = speculative_exposure / total_cap
-        if spec_pct >= self.allocation_limit:
+        
+        limit = daily_mandate.speculative_budget_pct if daily_mandate else self.allocation_limit
+        
+        if spec_pct >= limit:
             can_trade = False
-            alerts.append(f"🚫 SPECULATIVE Bucket Lleno: Exp={spec_pct*100:.1f}% / Límite={self.allocation_limit*100:.0f}%")
+            alerts.append(f"🚫 SPECULATIVE Bucket Lleno: Exp={spec_pct*100:.1f}% / Límite CIO={limit*100:.0f}%")
 
         # 2. VIX — Speculative is RUTHLESS (Seykota shuts the door)
         if current_vix > self.vix_block:
@@ -347,6 +357,7 @@ class RiskOrchestrator:
         last_trade_won: Optional[bool] = None,
         macro_gate: Optional[dict] = None,
         market_sentiment: Optional[dict] = None,
+        daily_mandate: Optional[DailyMandate] = None,
     ) -> dict:
         """
         Evalúa el estado de riesgo del portafolio.
@@ -366,6 +377,7 @@ class RiskOrchestrator:
                 current_vix=current_vix,
                 last_trade_won=last_trade_won,
                 context=self.context,
+                daily_mandate=daily_mandate,
             )
         else:
             return self.quality.evaluate(
@@ -377,6 +389,7 @@ class RiskOrchestrator:
                 context=self.context,
                 macro_gate=macro_gate,
                 market_sentiment=market_sentiment,
+                daily_mandate=daily_mandate,
             )
 
 

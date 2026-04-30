@@ -18,11 +18,11 @@ When any agent works on a backend module, activate the skills listed for that mo
 | Module | Always | Domain-Specific Skills | Why |
 |---|---|---|---|
 | `entry_decision` | `clean-architecture`, `operational-purpose` | `fundamental-analyst`, `tactical-entries`, `risk-manager` | Hub that gates all entries — needs fundamental quality, tactical precision, AND risk assessment |
-| `execution` | `clean-architecture`, `operational-purpose` | `risk-manager` | Order lifecycle, broker adapters, position monitoring — risk is the governing constraint |
+| `execution` | `clean-architecture`, `operational-purpose` | `risk-manager`, `cio-allocator` | Order lifecycle, broker adapters, position monitoring — risk + CIO budget governance |
 | `flow_intelligence` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Whale flows, sweeps, institutional positioning — pure microstructure |
 | `options_gamma` | `clean-architecture`, `operational-purpose` | `tactical-entries`, `risk-manager` | GEX, Max Pain, gamma regime — drives entry timing AND risk regime detection |
 | `pattern_recognition` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Candlestick/technical patterns — visual structure for entry timing |
-| `portfolio_management` | `clean-architecture`, `operational-purpose` | `fundamental-analyst`, `risk-manager` | Universe filtering, alpha scanning, position sizing — quality + risk governance |
+| `portfolio_management` | `clean-architecture`, `operational-purpose` | `fundamental-analyst`, `risk-manager`, `cio-allocator` | Universe filtering, alpha scanning, CIO budget allocation, position sizing |
 | `price_analysis` | `clean-architecture`, `operational-purpose` | `tactical-entries` | RSI, price phase detection — technical structure analysis |
 | `shared` | `clean-architecture`, `operational-purpose` | *(none)* | Foundational types and shared ports — architecture-only |
 | `simulation` | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies` | Backtesting engine — directly maps to the backtesting skill |

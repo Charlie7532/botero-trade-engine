@@ -20,6 +20,21 @@ def build_broker():
     return AlpacaAdapter()
 
 
+def build_ib_broker():
+    """Build the Interactive Brokers BrokerPort implementation."""
+    from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
+    return IBAdapter()
+
+
+def build_broker_registry() -> dict:
+    """Build a dict mapping Broker enum → BrokerPort implementation."""
+    from backend.modules.execution.domain.entities.order_models import Broker
+    return {
+        Broker.ALPACA: build_broker(),
+        Broker.INTERACTIVE_BROKERS: build_ib_broker(),
+    }
+
+
 def build_journal():
     """Build the default TradeJournalPort implementation (PostgreSQL)."""
     from backend.modules.execution.infrastructure.postgres_journal_adapter import PostgresTradeJournalAdapter

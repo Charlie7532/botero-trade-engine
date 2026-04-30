@@ -258,7 +258,7 @@ def run_all_tests():
     def _():
         from backend.modules.simulation.infrastructure.signal_adapters import MeanReversionSignalAdapter
         signal = MeanReversionSignalAdapter()
-        geometry = ORACLE_GEOMETRY[InvestmentCategory.TACTICAL_SPRING]
+        geometry = ORACLE_GEOMETRY[InvestmentCategory.SPECULATIVE_SPRING]
         result = oracle.run_signal("TEST", "1d", signal, geometry)
         assert result.signal_name == "mean_reversion"
         assert result.ticker == "TEST"
@@ -289,7 +289,7 @@ def run_all_tests():
     @test("Weighted vote: entry when score ≥ 0.5")
     def _():
         profile = StrategyProfile(
-            ticker="TEST", category=InvestmentCategory.TACTICAL_SPRING,
+            ticker="TEST", category=InvestmentCategory.SPECULATIVE_SPRING,
             signals=[
                 SignalConfig(name="a", weight=0.5, threshold=0.0),
                 SignalConfig(name="b", weight=0.3, threshold=0.0),
@@ -305,7 +305,7 @@ def run_all_tests():
     @test("Weighted vote: reject when insufficient signals")
     def _():
         profile = StrategyProfile(
-            ticker="TEST", category=InvestmentCategory.TACTICAL_SPRING,
+            ticker="TEST", category=InvestmentCategory.SPECULATIVE_SPRING,
             signals=[
                 SignalConfig(name="a", weight=0.5, threshold=0.0),
                 SignalConfig(name="b", weight=0.3, threshold=0.0),
@@ -320,7 +320,7 @@ def run_all_tests():
     @test("Majority composition")
     def _():
         profile = StrategyProfile(
-            ticker="TEST", category=InvestmentCategory.TACTICAL_SPRING,
+            ticker="TEST", category=InvestmentCategory.SPECULATIVE_SPRING,
             composite_method="majority",
             signals=[
                 SignalConfig(name="a", weight=1, threshold=0.0),
@@ -336,7 +336,7 @@ def run_all_tests():
     @test("Unanimous composition: all must agree")
     def _():
         profile = StrategyProfile(
-            ticker="TEST", category=InvestmentCategory.TACTICAL_SPRING,
+            ticker="TEST", category=InvestmentCategory.SPECULATIVE_SPRING,
             composite_method="unanimous",
             signals=[
                 SignalConfig(name="a", weight=1, threshold=0.0),
@@ -355,10 +355,10 @@ def run_all_tests():
 
     @test("InvestmentCategory taxonomy")
     def _():
-        assert InvestmentCategory.CORE_VALUE.bucket == "CORE"
-        assert InvestmentCategory.TACTICAL_SPRING.bucket == "TACTICAL"
-        assert InvestmentCategory.CORE_VALUE.is_core is True
-        assert InvestmentCategory.TACTICAL_GAMMA.is_core is False
+        assert InvestmentCategory.QUALITY_VALUE.bucket == "QUALITY"
+        assert InvestmentCategory.SPECULATIVE_SPRING.bucket == "SPECULATIVE"
+        assert InvestmentCategory.QUALITY_VALUE.is_quality is True
+        assert InvestmentCategory.SPECULATIVE_GAMMA.is_quality is False
         assert len(InvestmentCategory) == 7
     _()
 
@@ -404,10 +404,10 @@ def run_all_tests():
             composer=composer,
         )
         profile = StrategyProfile(
-            ticker="NODATA", category=InvestmentCategory.CORE_VALUE,
+            ticker="NODATA", category=InvestmentCategory.QUALITY_VALUE,
             signals=[SignalConfig(name=s.name, weight=0.33, threshold=0.0) for s in signals[:3]],
         )
-        intent, snapshot = gate.evaluate("NODATA", InvestmentCategory.CORE_VALUE, profile)
+        intent, snapshot = gate.evaluate("NODATA", InvestmentCategory.QUALITY_VALUE, profile)
         assert intent is None
         assert snapshot.gate_reason == "INSUFFICIENT_DATA"
     _()
@@ -421,11 +421,11 @@ def run_all_tests():
             composer=composer,
         )
         profile = StrategyProfile(
-            ticker="TEST", category=InvestmentCategory.TACTICAL_SPRING,
+            ticker="TEST", category=InvestmentCategory.SPECULATIVE_SPRING,
             signals=[SignalConfig(name=s.name, weight=0.33, threshold=0.0, enabled=True) for s in signals[:3]],
             min_signals_required=1,
         )
-        intent, snapshot = gate.evaluate("TEST", InvestmentCategory.TACTICAL_SPRING, profile)
+        intent, snapshot = gate.evaluate("TEST", InvestmentCategory.SPECULATIVE_SPRING, profile)
         assert snapshot is not None
         assert snapshot.ticker == "TEST"
         assert snapshot.structure is not None
@@ -450,7 +450,7 @@ def run_all_tests():
     def _():
         analyzer = IndicatorAnalyzer(store)
         trigger = RetrainTrigger(store, analyzer)
-        result = trigger.check("NONEXISTENT", "CORE_VALUE")
+        result = trigger.check("NONEXISTENT", "QUALITY_VALUE")
         assert isinstance(result, dict)
         assert "needs_retrain" in result
     _()

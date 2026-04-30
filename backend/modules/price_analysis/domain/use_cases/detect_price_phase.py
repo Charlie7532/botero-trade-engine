@@ -67,7 +67,7 @@ class PricePhaseIntelligence:
         # Volumen (de volume_dynamics.py)
         wyckoff_state: str = "UNKNOWN",
         wyckoff_velocity: float = 0.0,
-        strategy_bucket: str = "CORE",    # "CORE" or "TACTICAL"
+        strategy_bucket: str = "QUALITY",    # "QUALITY" or "SPECULATIVE"
         vp_result = None,                 # DualProfileResult from VolumeProfileAnalyzer
     ) -> EntryVerdict:
         """
@@ -144,13 +144,13 @@ class PricePhaseIntelligence:
 
         # ═══ DIAGNÓSTICO DE FASE ════════════════════════════════
         # TACTICAL bucket uses empirical ML-validated phases
-        if strategy_bucket == "TACTICAL":
-            return self._diagnose_tactical(
+        if strategy_bucket == "SPECULATIVE":
+            return self._diagnose_speculative(
                 v, close, high, low, volume, is_volume_climax,
                 put_wall, call_wall, gamma_regime, vp_result
             )
         
-        # CORE bucket: Original institutional-grade phases
+        # QUALITY bucket: Original institutional-grade phases
         # Priority order:
         #   1. BREAKOUT (new high + volume)
         #   2. EXHAUSTION UP (parabolic + no breakout volume)
@@ -394,7 +394,7 @@ class PricePhaseIntelligence:
         )
         return v
 
-    def _diagnose_tactical(
+    def _diagnose_speculative(
         self,
         v: EntryVerdict,
         close: np.ndarray,
@@ -408,7 +408,7 @@ class PricePhaseIntelligence:
         vp_result=None,
     ) -> EntryVerdict:
         """
-        TACTICAL phase diagnosis based on forensic ML analysis.
+        SPECULATIVE phase diagnosis based on forensic ML analysis.
         
         Empirical findings (2,515 obs, S&P 500, April 2026):
         - Gap DOWN (<-2%): WR=63%, avg_5d=+1.89% → CONTRARIAN_DIP

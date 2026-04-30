@@ -289,7 +289,7 @@ class OracleBacktester:
         ticker: str,
         tf: str,
         signals: list[SignalPort],
-        category: InvestmentCategory = InvestmentCategory.TACTICAL_SPRING,
+        category: InvestmentCategory = InvestmentCategory.SPECULATIVE_SPRING,
         context: dict | None = None,
     ) -> list[SignalRanking]:
         """

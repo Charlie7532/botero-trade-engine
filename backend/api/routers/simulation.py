@@ -19,7 +19,7 @@ router = APIRouter(prefix="/simulation", tags=["Simulation"])
 class CalibrateRequest(BaseModel):
     ticker: str
     timeframe: str = "1d"
-    category: str = "TACTICAL_SPRING"
+    category: str = "SPECULATIVE_SPRING"
 
 
 class CalibrateResponse(BaseModel):
@@ -32,7 +32,7 @@ class CalibrateResponse(BaseModel):
 
 class GateRequest(BaseModel):
     ticker: str
-    category: str = "CORE_VALUE"
+    category: str = "QUALITY_VALUE"
     portfolio_id: str = ""
 
 

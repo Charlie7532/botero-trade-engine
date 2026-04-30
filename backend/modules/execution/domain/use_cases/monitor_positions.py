@@ -35,38 +35,46 @@ class PositionMonitor:
     
     def __init__(
         self,
-        broker: BrokerPort,
+        broker_registry: dict,
         journal: TradeJournalPort,
         rs_monitor: RelativeStrengthMonitor = None,
         risk_guardian: RiskGuardian = None,
     ):
-        self.broker = broker
+        self.broker_registry = broker_registry
         self.journal = journal
         self.rs_monitor = rs_monitor or RelativeStrengthMonitor()
         self.trailing = AdaptiveTrailingStop()
         self.risk_guardian = risk_guardian or RiskGuardian()
     
     def get_full_status(self) -> dict:
-        """Estado completo del portafolio via BrokerPort."""
+        """Estado completo del portafolio via BrokerPort (aggregated across departments)."""
         import asyncio
-        try:
-            portfolio = asyncio.get_event_loop().run_until_complete(
-                self.broker.get_portfolio()
-            )
-        except RuntimeError:
-            portfolio = asyncio.run(self.broker.get_portfolio())
+        all_positions = []
+        total_cash = 0.0
+        for broker in self.broker_registry.values():
+            try:
+                try:
+                    portfolio = asyncio.get_event_loop().run_until_complete(
+                        broker.get_portfolio()
+                    )
+                except RuntimeError:
+                    portfolio = asyncio.run(broker.get_portfolio())
+                all_positions.extend(portfolio.positions)
+                total_cash += portfolio.cash
+            except Exception:
+                continue
         
         journal_trades = self.journal.get_open_trades()
         
-        total_value = portfolio.cash + sum(
-            p.market_price * p.quantity for p in portfolio.positions
+        total_value = total_cash + sum(
+            p.market_price * p.quantity for p in all_positions
         )
         
         return {
             "account": {
                 "equity": total_value,
-                "cash": portfolio.cash,
-                "buying_power": portfolio.cash,  # Simplified — broker-specific
+                "cash": total_cash,
+                "buying_power": total_cash,  # Simplified — broker-specific
                 "day_pnl": 0.0,  # Requires extended BrokerPort
                 "day_pnl_pct": 0.0,
             },
@@ -81,7 +89,7 @@ class PositionMonitor:
                     "unrealized_pnl_pct": ((p.market_price / p.avg_cost) - 1) * 100 if p.avg_cost > 0 else 0,
                     "asset_class": ASSET_CLASS_MAP.get(p.symbol, 'Unknown'),
                 }
-                for p in portfolio.positions
+                for p in all_positions
             ],
             "pending_orders": [],  # TODO: Extend BrokerPort with get_open_orders()
             "journal_trades": journal_trades,

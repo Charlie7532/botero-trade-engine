@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class ScanOrchestrator:
     """
-    Orquesta los escaneos Core y Tactical usando el PaperTradingOrchestrator
+    Orquesta los escaneos Quality y Speculative usando el PaperTradingOrchestrator
     para verificar límites de cuenta y ejecutar las órdenes.
     """
     
@@ -41,7 +41,7 @@ class ScanOrchestrator:
                 gems.append(ticker)
         return gems
 
-    def run_core_scan(
+    def run_quality_scan(
         self,
         max_positions: int = 5,
         notional_per_trade: float = 8000.0,
@@ -51,28 +51,28 @@ class ScanOrchestrator:
     ) -> dict:
         """
         ===================================================================
-        MODO CHRISTOPHER HOHN (80% DEL CAPITAL)
+        MODO HOHN & MUNGER (80% DEL CAPITAL) — Quality Department
         ===================================================================
         1. Obtiene S&P500 + Joyas de GuruFocus.
         2. Consulta la caché fundamental (MongoDB) antes de golpear APIs.
         3. UniverseFilter evalúa la CALIDAD SUPREMA con datos frescos.
         4. Pasa los ganadores estrictos al AlphaScanner para timing de entrada.
-        5. Compra con Strategy: CORE.
+        5. Compra con Strategy: QUALITY.
         """
         from backend.modules.portfolio_management.domain.use_cases.filter_universe import UniverseFilter
         from backend.modules.portfolio_management.domain.entities.universe_candidate import UniverseCandidate
         from backend.modules.portfolio_management.domain.use_cases.scan_alpha import AlphaScanner
 
         session_start = datetime.now(UTC).isoformat()
-        logger.info(f"🏛️ INICIANDO ESCANEO CORE (Hohn Modo) — {session_start}")
+        logger.info(f"🏛️ INICIANDO ESCANEO QUALITY (Hohn & Munger Modo) — {session_start}")
 
         # 1. Chequeo de Account
         account = self.orchestrator.get_account_status()
         if 'error' in account: return {"error": account['error']}
 
         # Validamos si cabe otro core trade ($8000 en 80%) o si excedemos límite
-        if account.get("core_exposure", 0) / max(account.get("equity", 1), 1) >= 0.80:
-            logger.warning("🚫 Escaneo Core Anulado: Bucket CORE Lleno al 80%.")
+        if account.get("quality_exposure", 0) / max(account.get("equity", 1), 1) >= 0.80:
+            logger.warning("🚫 Escaneo Quality Anulado: Bucket QUALITY Lleno al 80%.")
             return {"status": "BUCKET_FULL"}
 
         current_positions = len(account.get('positions', []))
@@ -136,7 +136,7 @@ class ScanOrchestrator:
 
         # 4. AlphaScanner (Tactical Entry sobre los fuertes fundamentales)
         strong_tickers = [c.ticker for c in strong_candidates]
-        logger.info(f"🏢 Hohn seleccionó The Elite {len(strong_tickers)}. Buscando táctica con Eifert...")
+        logger.info(f"🏢 Hohn & Munger seleccionó The Elite {len(strong_tickers)}. Buscando táctica con Eifert...")
 
         scanner = AlphaScanner()
         alpha_results = scanner.scan(
@@ -150,19 +150,19 @@ class ScanOrchestrator:
         for result in alpha_results:
             ticker = result['ticker']
             score = result['alpha_score']
-            logger.info(f"📝 Orden CORE para {ticker} (Alpha={score})")
+            logger.info(f"📝 Orden QUALITY para {ticker} (Alpha={score})")
             res = self.orchestrator.open_position(
                 ticker=ticker,
                 thesis=f"Moat Confirmado. Alpha Timing Score: {score}",
-                strategy_type="CORE",
+                strategy_type="QUALITY",
                 alpha_score=score,
                 notional=notional_per_trade,
             )
             trades_attempted.append(res)
             
-        return {"status": "CORE_SCAN_COMPLETE", "trades": trades_attempted}
+        return {"status": "QUALITY_SCAN_COMPLETE", "trades": trades_attempted}
 
-    def run_tactical_scan(
+    def run_speculative_scan(
         self,
         max_positions: int = 5,
         notional_per_trade: float = 2000.0, 
@@ -171,7 +171,7 @@ class ScanOrchestrator:
     ) -> dict:
         """
         ===================================================================
-        MODO TACTICAL EIFERT/TUDOR JONES (20% DEL CAPITAL)
+        MODO EIFERT & PTJ (20% DEL CAPITAL) — Speculative Department
         ===================================================================
         Busca momentum direccional puro y asimetrías de opciones.
         Ignora calidades profundas, busca la acción del mercado de hoy.
@@ -180,13 +180,13 @@ class ScanOrchestrator:
         from backend.modules.portfolio_management.domain.use_cases.filter_universe import UniverseFilter
         from backend.modules.portfolio_management.domain.entities.universe_candidate import UniverseCandidate
 
-        logger.info(f"🔥 INICIANDO ESCANEO TÁCTICO (Eifert Modo)")
+        logger.info(f"🔥 INICIANDO ESCANEO SPECULATIVE (Eifert & PTJ Modo)")
         
         account = self.orchestrator.get_account_status()
         if 'error' in account: return {"error": account['error']}
 
-        if account.get("tactical_exposure", 0) / max(account.get("equity", 1), 1) >= 0.20:
-            logger.warning("🚫 Escaneo Táctico Anulado: Bucket TACTICAL Lleno al 20%.")
+        if account.get("speculative_exposure", 0) / max(account.get("equity", 1), 1) >= 0.20:
+            logger.warning("🚫 Escaneo Speculative Anulado: Bucket SPECULATIVE Lleno al 20%.")
             return {"status": "BUCKET_FULL"}
 
         current_positions = len(account.get('positions', []))
@@ -214,14 +214,14 @@ class ScanOrchestrator:
         for candidate in approved:
             ticker = candidate.ticker
             score = candidate.alpha_score
-            logger.info(f"📝 Orden TACTICAL para {ticker} (Alpha={score})")
+            logger.info(f"📝 Orden SPECULATIVE para {ticker} (Alpha={score})")
             res = self.orchestrator.open_position(
                 ticker=ticker,
                 thesis=f"Gamma Squeeze/ Momentum Surge hoy. Alpha: {score}",
-                strategy_type="TACTICAL",
+                strategy_type="SPECULATIVE",
                 alpha_score=score,
                 notional=notional_per_trade,
             )
             trades_attempted.append(res)
             
-        return {"status": "TACTICAL_SCAN_COMPLETE", "trades": trades_attempted}
+        return {"status": "SPECULATIVE_SCAN_COMPLETE", "trades": trades_attempted}

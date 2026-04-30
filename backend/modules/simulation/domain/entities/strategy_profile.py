@@ -1,7 +1,7 @@
 """
 Strategy Profile — Investment Category Taxonomy & Signal Composition
 =====================================================================
-Defines the dual-regime architecture (CORE/TACTICAL) with sub-categories,
+Defines the dual-regime architecture (QUALITY/SPECULATIVE) with sub-categories,
 Oracle geometry per category, and polymorphic signal composition recipes.
 
 Each StrategyProfile stores ML-discovered weights per signal, enabling
@@ -13,25 +13,25 @@ from typing import Optional
 
 
 class InvestmentCategory(str, Enum):
-    """Dual-regime taxonomy: CORE (80%) + TACTICAL (20%)."""
-    # CORE — Druckenmiller: patience, conviction, fundamental moats
-    CORE_VALUE = "CORE_VALUE"
-    CORE_GROWTH = "CORE_GROWTH"
-    CORE_DIVIDEND = "CORE_DIVIDEND"
+    """Dual-regime taxonomy: QUALITY (80%) + SPECULATIVE (20%)."""
+    # QUALITY — Hohn & Munger: patience, conviction, fundamental moats
+    QUALITY_VALUE = "QUALITY_VALUE"
+    QUALITY_GROWTH = "QUALITY_GROWTH"
+    QUALITY_DIVIDEND = "QUALITY_DIVIDEND"
 
-    # TACTICAL — Seykota/Taleb: speed, asymmetry, microstructure
-    TACTICAL_SPRING = "TACTICAL_SPRING"
-    TACTICAL_MOMENTUM = "TACTICAL_MOMENTUM"
-    TACTICAL_GAMMA = "TACTICAL_GAMMA"
-    TACTICAL_BREAKOUT = "TACTICAL_BREAKOUT"
+    # SPECULATIVE — Eifert & PTJ: speed, asymmetry, microstructure
+    SPECULATIVE_SPRING = "SPECULATIVE_SPRING"
+    SPECULATIVE_MOMENTUM = "SPECULATIVE_MOMENTUM"
+    SPECULATIVE_GAMMA = "SPECULATIVE_GAMMA"
+    SPECULATIVE_BREAKOUT = "SPECULATIVE_BREAKOUT"
 
     @property
     def bucket(self) -> str:
-        return "CORE" if self.value.startswith("CORE") else "TACTICAL"
+        return "QUALITY" if self.value.startswith("QUALITY") else "SPECULATIVE"
 
     @property
-    def is_core(self) -> bool:
-        return self.bucket == "CORE"
+    def is_quality(self) -> bool:
+        return self.bucket == "QUALITY"
 
 
 @dataclass
@@ -45,15 +45,15 @@ class OracleGeometry:
 
 # Default Oracle geometries per category
 ORACLE_GEOMETRY: dict[InvestmentCategory, OracleGeometry] = {
-    # CORE: wider barriers, more patience
-    InvestmentCategory.CORE_VALUE:    OracleGeometry(profit_mult=3.0, loss_mult=1.0, max_bars=60),
-    InvestmentCategory.CORE_GROWTH:   OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=45),
-    InvestmentCategory.CORE_DIVIDEND: OracleGeometry(profit_mult=2.0, loss_mult=0.8, max_bars=90),
-    # TACTICAL: tighter barriers, faster execution
-    InvestmentCategory.TACTICAL_SPRING:   OracleGeometry(profit_mult=2.0, loss_mult=1.0, max_bars=15),
-    InvestmentCategory.TACTICAL_MOMENTUM: OracleGeometry(profit_mult=1.5, loss_mult=1.0, max_bars=10),
-    InvestmentCategory.TACTICAL_GAMMA:    OracleGeometry(profit_mult=1.5, loss_mult=1.5, max_bars=8),
-    InvestmentCategory.TACTICAL_BREAKOUT: OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=20),
+    # QUALITY: wider barriers, more patience (Hohn & Munger)
+    InvestmentCategory.QUALITY_VALUE:    OracleGeometry(profit_mult=3.0, loss_mult=1.0, max_bars=60),
+    InvestmentCategory.QUALITY_GROWTH:   OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=45),
+    InvestmentCategory.QUALITY_DIVIDEND: OracleGeometry(profit_mult=2.0, loss_mult=0.8, max_bars=90),
+    # SPECULATIVE: tighter barriers, faster execution (Eifert & PTJ)
+    InvestmentCategory.SPECULATIVE_SPRING:   OracleGeometry(profit_mult=2.0, loss_mult=1.0, max_bars=15),
+    InvestmentCategory.SPECULATIVE_MOMENTUM: OracleGeometry(profit_mult=1.5, loss_mult=1.0, max_bars=10),
+    InvestmentCategory.SPECULATIVE_GAMMA:    OracleGeometry(profit_mult=1.5, loss_mult=1.5, max_bars=8),
+    InvestmentCategory.SPECULATIVE_BREAKOUT: OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=20),
 }
 
 
@@ -87,6 +87,7 @@ class StrategyProfile:
     """
     ticker: str
     category: InvestmentCategory
+    sector: str = "UNKNOWN"
     timeframe: str = "1d"
 
     # Oracle geometry (may be customized from defaults during calibration)

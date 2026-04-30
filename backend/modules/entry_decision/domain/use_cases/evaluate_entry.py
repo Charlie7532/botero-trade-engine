@@ -157,7 +157,7 @@ class EntryIntelligenceHub:
         # Pre-computed data (optional — if not provided, we'll fetch)
         prices_df: pd.DataFrame = None,
         vix_override: float = None,
-        strategy_bucket: str = "CORE",  # "CORE" or "TACTICAL"
+        strategy_bucket: str = "QUALITY",  # "QUALITY" or "SPECULATIVE"
     ) -> EntryIntelligenceReport:
         """
         Evaluación completa de inteligencia para un ticker.
@@ -300,7 +300,7 @@ class EntryIntelligenceHub:
 
         # Early exit if CONTRA_FLOW — but TACTICAL gets a pass if momentum is strong
         if whale_verdict.verdict == "CONTRA_FLOW":
-            if strategy_bucket == "TACTICAL":
+            if strategy_bucket == "SPECULATIVE":
                 # Tactical: Log warning but DON'T block. Let PricePhase decide.
                 logger.info(f"EntryHub {ticker}: CONTRA_FLOW detected but TACTICAL bucket — passing to phase analysis")
                 report.whale_verdict = "CONTRA_FLOW_TACTICAL"  # Mark it
@@ -342,7 +342,7 @@ class EntryIntelligenceHub:
         # STEP 5.6: Institutional Bias Gate (V9 — from VP)
         # ══════════════════════════════════════════════════════
         # CORE: Block if VP shows DISTRIBUTION with high confidence
-        if (strategy_bucket == "CORE"
+        if (strategy_bucket == "QUALITY"
                 and report.vp_institutional_bias == "DISTRIBUTION"
                 and report.vp_bias_confidence >= 75):
             report.final_verdict = "STALK"
@@ -474,7 +474,7 @@ class EntryIntelligenceHub:
             # V9 had static RSI 35-65 which blocked valid continuation trades.
             # V10: Use RSI zone classification — block only hostile zones.
             hostile_rsi_zones = {"BOUNCE_SELL", "EXTREME_BULL", "EXTREME_BEAR", "OVERBOUGHT"}
-            if strategy_bucket == "CORE" and report.rsi_zone in hostile_rsi_zones:
+            if strategy_bucket == "QUALITY" and report.rsi_zone in hostile_rsi_zones:
                 report.final_verdict = "STALK"
                 report.final_scale = 0.0
                 report.final_reason = (

@@ -2,6 +2,7 @@ import type { Field } from 'payload'
 
 import {
   BROKER_TYPES,
+  DEPARTMENTS,
   ENVIRONMENTS,
 } from './domain/rules/portfolioRules'
 
@@ -40,6 +41,18 @@ export const brokerAccountsFields: Field[] = [
     options: [...ENVIRONMENTS],
     admin: {
       position: 'sidebar',
+    },
+  },
+  {
+    name: 'department',
+    label: 'Department',
+    type: 'select',
+    required: true,
+    defaultValue: 'quality',
+    options: [...DEPARTMENTS],
+    admin: {
+      position: 'sidebar',
+      description: 'Which strategy department this broker account serves.',
     },
   },
   {

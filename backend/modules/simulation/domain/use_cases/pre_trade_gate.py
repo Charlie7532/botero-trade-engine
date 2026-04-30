@@ -5,7 +5,7 @@ Mandatory pipeline that every trade intent must pass before
 reaching the execution module.
 
 Pipeline:
-1. RiskGuardian → portfolio capacity check (80/20 CORE/TACTICAL)
+1. RiskGuardian → portfolio capacity check (80/20 QUALITY/SPECULATIVE)
 2. EntryHub → 40+ indicator evaluation
 3. SMC → market structure analysis
 4. Structure Gate → category-specific SMC filters
@@ -49,31 +49,31 @@ logger = logging.getLogger(__name__)
 
 # SMC structure rules per investment category
 STRUCTURE_RULES = {
-    InvestmentCategory.CORE_VALUE: {
+    InvestmentCategory.QUALITY_VALUE: {
         "reject_if": ["swing_trend == DOWNTREND"],
         "boost_if": ["liquidity_swept"],
     },
-    InvestmentCategory.CORE_GROWTH: {
+    InvestmentCategory.QUALITY_GROWTH: {
         "reject_if": ["choch_direction == BEARISH"],
         "boost_if": ["bos_direction == BULLISH"],
     },
-    InvestmentCategory.CORE_DIVIDEND: {
+    InvestmentCategory.QUALITY_DIVIDEND: {
         "reject_if": ["bos_direction == BEARISH and bos_bars_ago <= 5"],
         "boost_if": [],
     },
-    InvestmentCategory.TACTICAL_SPRING: {
+    InvestmentCategory.SPECULATIVE_SPRING: {
         "reject_if": [],
         "boost_if": ["liquidity_swept"],  # Spring = liquidity sweep + reversal
     },
-    InvestmentCategory.TACTICAL_MOMENTUM: {
+    InvestmentCategory.SPECULATIVE_MOMENTUM: {
         "reject_if": [],
         "boost_if": ["bos_direction == BULLISH"],  # Requires BOS
     },
-    InvestmentCategory.TACTICAL_GAMMA: {
+    InvestmentCategory.SPECULATIVE_GAMMA: {
         "reject_if": [],
         "boost_if": ["fvg_active"],  # FVG as target
     },
-    InvestmentCategory.TACTICAL_BREAKOUT: {
+    InvestmentCategory.SPECULATIVE_BREAKOUT: {
         "reject_if": ["bos_detected == False"],  # BOS mandatory
         "boost_if": ["bos_direction == BULLISH"],
     },

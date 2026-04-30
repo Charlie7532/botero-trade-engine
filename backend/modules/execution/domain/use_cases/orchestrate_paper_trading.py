@@ -45,12 +45,12 @@ class PaperTradingOrchestrator:
     
     def __init__(
         self,
-        broker: BrokerPort,
+        broker_registry: dict,
         journal: TradeJournalPort,
         market_data: EntryMarketDataPort,
         entry_hub=None,
     ):
-        self.broker = broker
+        self.broker_registry = broker_registry
         self.journal = journal
         self.market_data = market_data
         self.rs_monitor = RelativeStrengthMonitor()
@@ -60,34 +60,46 @@ class PaperTradingOrchestrator:
         self.execution = InstitutionalExecutionEngine()
         self.entry_hub = entry_hub
         self._freeze_state = {}  # {ticker: freeze_start_time}
+
+    def _broker_for(self, bucket: str) -> BrokerPort:
+        """Route to the correct broker based on strategy bucket."""
+        return self.broker_registry.get(bucket, self.broker_registry.get("QUALITY"))
     
     def get_account_status(self) -> dict:
         """Estado actual de la cuenta de Paper Trading y Exposición Estratégica."""
         import asyncio
         try:
-            try:
-                portfolio = asyncio.get_event_loop().run_until_complete(
-                    self.broker.get_portfolio()
-                )
-            except RuntimeError:
-                portfolio = asyncio.run(self.broker.get_portfolio())
-            
+            # Aggregate portfolio from all broker accounts
+            all_positions = []
+            total_cash = 0.0
+            for broker in self.broker_registry.values():
+                try:
+                    try:
+                        portfolio = asyncio.get_event_loop().run_until_complete(
+                            broker.get_portfolio()
+                        )
+                    except RuntimeError:
+                        portfolio = asyncio.run(broker.get_portfolio())
+                    all_positions.extend(portfolio.positions)
+                    total_cash += portfolio.cash
+                except Exception:
+                    continue
             # Recuperar tags de strategy_type del Journal para las posiciones abiertas
             open_trades = self.journal.get_open_trades()
             strategy_map = {t['ticker']: t.get('strategy_bucket', 'UNKNOWN') for t in open_trades}
             
-            core_exposure = 0.0
-            tactical_exposure = 0.0
+            quality_exposure = 0.0
+            speculative_exposure = 0.0
             
             mapped_positions = []
-            for p in portfolio.positions:
-                strategy = strategy_map.get(p.symbol, 'CORE')
+            for p in all_positions:
+                strategy = strategy_map.get(p.symbol, 'QUALITY')
                 market_val = p.market_price * p.quantity
                 
-                if strategy == 'CORE':
-                    core_exposure += market_val
-                elif strategy == 'TACTICAL':
-                    tactical_exposure += market_val
+                if strategy == 'QUALITY':
+                    quality_exposure += market_val
+                elif strategy == 'SPECULATIVE':
+                    speculative_exposure += market_val
                 
                 mapped_positions.append({
                     "ticker": p.symbol,
@@ -100,17 +112,17 @@ class PaperTradingOrchestrator:
                     "strategy": strategy,
                 })
             
-            total_value = portfolio.cash + sum(p.market_price * p.quantity for p in portfolio.positions)
+            total_value = total_cash + sum(p.market_price * p.quantity for p in all_positions)
             
             return {
-                "buying_power": portfolio.cash,
-                "cash": portfolio.cash,
+                "buying_power": total_cash,
+                "cash": total_cash,
                 "portfolio_value": total_value,
                 "equity": total_value,
-                "core_exposure": core_exposure,
-                "tactical_exposure": tactical_exposure,
+                "quality_exposure": quality_exposure,
+                "speculative_exposure": speculative_exposure,
                 "positions": mapped_positions,
-                "num_positions": len(portfolio.positions),
+                "num_positions": len(all_positions),
                 "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
@@ -124,12 +136,14 @@ class PaperTradingOrchestrator:
         """
         import asyncio
         try:
+            # Use first available broker for reconciliation
+            broker = next(iter(self.broker_registry.values()))
             try:
                 portfolio = asyncio.get_event_loop().run_until_complete(
-                    self.broker.get_portfolio()
+                    broker.get_portfolio()
                 )
             except RuntimeError:
-                portfolio = asyncio.run(self.broker.get_portfolio())
+                portfolio = asyncio.run(broker.get_portfolio())
             broker_tickers = {p.symbol: p for p in portfolio.positions}
             
             db_trades = self.journal.get_open_trades()
@@ -301,7 +315,7 @@ class PaperTradingOrchestrator:
         self,
         ticker: str,
         thesis: str,
-        strategy_type: str = "CORE",
+        strategy_type: str = "QUALITY",
         alpha_score: float = 0,
         qualifier_grade: str = "",
         insider_signal: str = "",
@@ -369,8 +383,8 @@ class PaperTradingOrchestrator:
             current_capital=account.get('equity', 100000),
             daily_pnl_pct=0,
             strategy_type=strategy_type,
-            core_exposure=account.get('core_exposure', 0),
-            tactical_exposure=account.get('tactical_exposure', 0),
+            quality_exposure=account.get('quality_exposure', 0),
+            speculative_exposure=account.get('speculative_exposure', 0),
             current_vix=snapshot.get('vix', 17),
         )
         
@@ -418,13 +432,14 @@ class PaperTradingOrchestrator:
             # Get current/premarket price from BrokerPort
             current_price = analysis_price
             bid, ask = None, None
+            broker = self._broker_for(strategy_type)
             try:
                 try:
                     price = asyncio.get_event_loop().run_until_complete(
-                        self.broker.get_price(ticker)
+                        broker.get_price(ticker)
                     )
                 except RuntimeError:
-                    price = asyncio.run(self.broker.get_price(ticker))
+                    price = asyncio.run(broker.get_price(ticker))
                 current_price = price
                 ask = price  # BrokerPort.get_price returns ask
             except Exception as e:
@@ -601,7 +616,7 @@ class PaperTradingOrchestrator:
             
             # Ajuste adicional según Mente (Seykota vs Druckenmiller)
             stop = decision.new_stop_price
-            if strategy == 'TACTICAL':
+            if strategy == 'SPECULATIVE':
                 # SEYKOTA MODE: Muy ajustado pero respetando Put Wall
                 seykota_stop = current_price - (atr * 2.0)
                 stop = max(stop, seykota_stop)
@@ -639,12 +654,13 @@ class PaperTradingOrchestrator:
         import asyncio
         try:
             # Get current portfolio from broker
+            broker = self._broker_for('QUALITY')  # Default to quality for closes
             try:
                 portfolio = asyncio.get_event_loop().run_until_complete(
-                    self.broker.get_portfolio()
+                    broker.get_portfolio()
                 )
             except RuntimeError:
-                portfolio = asyncio.run(self.broker.get_portfolio())
+                portfolio = asyncio.run(broker.get_portfolio())
             
             pos = next((p for p in portfolio.positions if p.symbol == ticker), None)
             
@@ -664,10 +680,10 @@ class PaperTradingOrchestrator:
             )
             try:
                 order = asyncio.get_event_loop().run_until_complete(
-                    self.broker.place_order(sell_order)
+                    broker.place_order(sell_order)
                 )
             except RuntimeError:
-                order = asyncio.run(self.broker.place_order(sell_order))
+                order = asyncio.run(broker.place_order(sell_order))
             
             # Snapshot de salida
             exit_snapshot = self.create_trade_snapshot(ticker)

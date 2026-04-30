@@ -14,25 +14,38 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def build_broker():
-    """Build the default BrokerPort implementation (Alpaca Paper)."""
+def build_quality_broker():
+    """Build the Alpaca BrokerPort for the QUALITY department (new account)."""
     from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
-    return AlpacaAdapter()
+    return AlpacaAdapter(
+        api_key=os.getenv("ALPACA_QUALITY_API_KEY", ""),
+        secret_key=os.getenv("ALPACA_QUALITY_SECRET_KEY", ""),
+        base_url=os.getenv("ALPACA_QUALITY_BASE_URL", "https://paper-api.alpaca.markets"),
+    )
+
+
+def build_speculative_broker():
+    """Build the Alpaca BrokerPort for the SPECULATIVE department (existing account)."""
+    from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
+    return AlpacaAdapter(
+        api_key=os.getenv("ALPACA_API_KEY", ""),
+        secret_key=os.getenv("ALPACA_SECRET_KEY", ""),
+        base_url=os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets"),
+    )
+
+
+def build_broker_registry() -> dict:
+    """Build a BrokerRegistry mapping department → BrokerPort."""
+    return {
+        "QUALITY": build_quality_broker(),
+        "SPECULATIVE": build_speculative_broker(),
+    }
 
 
 def build_ib_broker():
     """Build the Interactive Brokers BrokerPort implementation."""
     from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
     return IBAdapter()
-
-
-def build_broker_registry() -> dict:
-    """Build a dict mapping Broker enum → BrokerPort implementation."""
-    from backend.modules.execution.domain.entities.order_models import Broker
-    return {
-        Broker.ALPACA: build_broker(),
-        Broker.INTERACTIVE_BROKERS: build_ib_broker(),
-    }
 
 
 def build_journal():
@@ -72,10 +85,10 @@ def build_entry_hub():
 
 
 def build_orchestrator():
-    """Build a fully wired PaperTradingOrchestrator."""
+    """Build a fully wired PaperTradingOrchestrator with BrokerRegistry."""
     from backend.modules.execution.domain.use_cases.orchestrate_paper_trading import PaperTradingOrchestrator
     return PaperTradingOrchestrator(
-        broker=build_broker(),
+        broker_registry=build_broker_registry(),
         journal=build_journal(),
         market_data=build_market_data(),
         entry_hub=build_entry_hub(),
@@ -86,6 +99,6 @@ def build_position_monitor():
     """Build a fully wired PositionMonitor."""
     from backend.modules.execution.domain.use_cases.monitor_positions import PositionMonitor
     return PositionMonitor(
-        broker=build_broker(),
+        broker_registry=build_broker_registry(),
         journal=build_journal(),
     )

@@ -295,12 +295,10 @@ class PreTradeGate:
         """Build feature row for ML prediction."""
         try:
             from backend.modules.simulation.infrastructure.data_harmonizer import DataHarmonizer
-            from backend.modules.simulation.infrastructure.parquet_data_store import ParquetDataStore
-            if isinstance(self.store, ParquetDataStore):
-                harmonizer = DataHarmonizer(self.store)
-                dataset = harmonizer.build_ml_dataset(ticker, tf)
-                if not dataset.empty:
-                    return dataset.iloc[[-1]]  # Last row as single-row DataFrame
+            harmonizer = DataHarmonizer(self.store)
+            dataset = harmonizer.build_ml_dataset(ticker, tf)
+            if not dataset.empty:
+                return dataset.iloc[[-1]]  # Last row as single-row DataFrame
         except Exception as e:
             logger.warning(f"PreTradeGate: ML features failed: {e}")
         return None

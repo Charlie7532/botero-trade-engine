@@ -188,10 +188,6 @@ class StrategyCalibrator:
         """
         try:
             from backend.modules.simulation.infrastructure.data_harmonizer import DataHarmonizer
-            from backend.modules.simulation.infrastructure.parquet_data_store import ParquetDataStore
-
-            if not isinstance(self.store, ParquetDataStore):
-                return None
 
             harmonizer = DataHarmonizer(self.store)
             dataset = harmonizer.build_ml_dataset(ticker, tf)

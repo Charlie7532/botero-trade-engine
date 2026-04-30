@@ -18,7 +18,7 @@ from typing import Optional
 
 import pandas as pd
 
-from backend.modules.simulation.infrastructure.parquet_data_store import ParquetDataStore
+from backend.modules.simulation.domain.ports.time_series_port import TimeSeriesPort
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class DataHarmonizer:
     """Transforms raw vault data into ML-ready feature DataFrames."""
 
-    def __init__(self, store: ParquetDataStore):
+    def __init__(self, store: TimeSeriesPort):
         self.store = store
 
     def harmonize_uw_flow(self, ticker: str, start: str, end: str) -> pd.DataFrame:
@@ -38,7 +38,7 @@ class DataHarmonizer:
         uw_total_premium, uw_net_premium, uw_voi_avg, uw_ask_bid_ratio,
         uw_darkpool_premium, uw_persistence_grade, uw_persistence_score
         """
-        raw_entries = self.store.load_json_range("flow/alerts", ticker, start, end)
+        raw_entries = self.store.load_mcp_range("flow/alerts", ticker, start, end)
         if not raw_entries:
             return pd.DataFrame()
 
@@ -92,7 +92,7 @@ class DataHarmonizer:
             elif total_prem > 100_000: score += 5
 
             # Load darkpool if available
-            dp_data = self.store.load_json("flow/darkpool", ticker, dt)
+            dp_data = self.store.load_mcp_snapshot("flow/darkpool", ticker, dt)
             dp_premium = 0.0
             if dp_data and isinstance(dp_data, list):
                 dp_premium = sum(
@@ -124,9 +124,9 @@ class DataHarmonizer:
         Output: vault/features/_MARKET/flow_1d.parquet
         """
         rows = []
-        spy_entries = self.store.load_json_range("flow/spy", "SPY", start, end)
-        sent_entries = self.store.load_json_range("flow/sentiment", "MARKET", start, end)
-        tide_entries = self.store.load_json_range("flow/tide", "MARKET", start, end)
+        spy_entries = self.store.load_mcp_range("flow/spy", "SPY", start, end)
+        sent_entries = self.store.load_mcp_range("flow/sentiment", "MARKET", start, end)
+        tide_entries = self.store.load_mcp_range("flow/tide", "MARKET", start, end)
 
         # Index by date for joining
         spy_by_date = {dt: data for dt, data in spy_entries}

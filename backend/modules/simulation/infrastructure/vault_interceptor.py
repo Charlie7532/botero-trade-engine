@@ -13,10 +13,9 @@ Usage:
     alerts = interceptor.fetch_and_vault_flow("NVDA")
 """
 import logging
-from datetime import date
 from typing import Any, Optional
 
-from backend.modules.simulation.infrastructure.parquet_data_store import ParquetDataStore
+from backend.modules.simulation.domain.ports.time_series_port import TimeSeriesPort
 
 logger = logging.getLogger(__name__)
 
@@ -29,50 +28,45 @@ class VaultInterceptor:
     before returning them to the caller unchanged.
     """
 
-    def __init__(self, store: ParquetDataStore):
+    def __init__(self, store: TimeSeriesPort):
         self.store = store
-        self._today = date.today().isoformat()
-
-    def _today_str(self) -> str:
-        """Refreshable today string for long-running processes."""
-        return date.today().isoformat()
 
     # ── UW Flow Interception ──────────────────────────────
 
     def intercept_flow_alerts(self, ticker: str, alerts: list[dict]) -> list[dict]:
         """Vault flow alerts and return them unchanged."""
         if alerts:
-            self.store.vault_json("flow/alerts", ticker, self._today_str(), alerts)
+            self.store.save_mcp_snapshot("flow/alerts", ticker, alerts)
         return alerts
 
     def intercept_spy_flow(self, spy_ticks: list[dict]) -> list[dict]:
         """Vault SPY net-prem ticks and return them unchanged."""
         if spy_ticks:
-            self.store.vault_json("flow/spy", "SPY", self._today_str(), spy_ticks)
+            self.store.save_mcp_snapshot("flow/spy", "SPY", spy_ticks)
         return spy_ticks
 
     def intercept_market_tide(self, tide_data: list[dict]) -> list[dict]:
         """Vault market tide data and return it unchanged."""
         if tide_data:
-            self.store.vault_json("flow/tide", "MARKET", self._today_str(), tide_data)
+            self.store.save_mcp_snapshot("flow/tide", "MARKET", tide_data)
         return tide_data
 
     def intercept_darkpool(self, ticker: str, prints: list[dict]) -> list[dict]:
         """Vault darkpool prints and return them unchanged."""
         if prints:
-            self.store.vault_json("flow/darkpool", ticker, self._today_str(), prints)
+            self.store.save_mcp_snapshot("flow/darkpool", ticker, prints)
         return prints
 
     def intercept_gex(self, ticker: str, gex_data: dict) -> dict:
         """Vault GEX data and return it unchanged."""
         if gex_data:
-            self.store.vault_json("flow/gex", ticker, self._today_str(), gex_data)
+            self.store.save_mcp_snapshot("flow/gex", ticker, gex_data)
         return gex_data
 
     def intercept_sentiment(self, sentiment: dict) -> dict:
         """Vault market sentiment and return it unchanged."""
         if sentiment:
-            self.store.vault_json("flow/sentiment", "MARKET", self._today_str(), sentiment)
+            self.store.save_mcp_snapshot("flow/sentiment", "MARKET", sentiment)
         return sentiment
 
     # ── GuruFocus Interception ────────────────────────────
@@ -86,7 +80,7 @@ class VaultInterceptor:
             from dataclasses import asdict
             data = asdict(scorecard)
         if data:
-            self.store.vault_json("fundamental/qgarp", ticker, self._today_str(), data)
+            self.store.save_mcp_snapshot("fundamental/qgarp", ticker, data)
         return scorecard
 
     def intercept_risk_matrix(self, ticker: str, risk: Any) -> Any:
@@ -96,7 +90,7 @@ class VaultInterceptor:
             from dataclasses import asdict
             data = asdict(risk)
         if data:
-            self.store.vault_json("fundamental/risk", ticker, self._today_str(), data)
+            self.store.save_mcp_snapshot("fundamental/risk", ticker, data)
         return risk
 
     def intercept_insider(self, ticker: str, insider: Any) -> Any:
@@ -106,7 +100,7 @@ class VaultInterceptor:
             from dataclasses import asdict
             data = asdict(insider)
         if data:
-            self.store.vault_json("fundamental/insider", ticker, self._today_str(), data)
+            self.store.save_mcp_snapshot("fundamental/insider", ticker, data)
         return insider
 
     # ── Convenience: Vault a complete UW fetch_all result ─
@@ -140,5 +134,5 @@ class VaultInterceptor:
     def intercept_breadth(self, breadth_data: dict) -> dict:
         """Vault breadth data and return it unchanged."""
         if breadth_data:
-            self.store.vault_json("macro/breadth", "MARKET", self._today_str(), breadth_data)
+            self.store.save_mcp_snapshot("macro/breadth", "MARKET", breadth_data)
         return breadth_data

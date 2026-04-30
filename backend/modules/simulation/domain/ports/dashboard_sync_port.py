@@ -5,7 +5,7 @@ Decouples the simulation module from the Next.js/PayloadCMS frontend.
 Python pushes profiles and snapshots via REST to maintain Payload's
 schema ownership over PostgreSQL.
 
-Implementor: payload_cms_sync_adapter.py (Phase 2)
+Implementor: postgres_trading_state.py
 """
 from abc import ABC, abstractmethod
 from typing import Any

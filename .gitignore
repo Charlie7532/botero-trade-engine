@@ -1,24 +1,30 @@
 
-# Data caches
-# Payload default media upload directory
-# Python
-# Trading journal data (local only)
-*.pyc
-*.test
-.DS_Store
-.claude/
+# Node / Build
+node_modules
+.next
+.vercel
+build
+*.tsbuildinfo
+
+# Environment / Secrets
 .env
 .env*.local
 .mcp.json
-.next
-.vercel
+
+# Platform
+.DS_Store
 .vscode/
+.claude/
+
+# Python
+*.pyc
 __pycache__/
 backend/**/*.pyc
 backend/**/__pycache__
 backend/.venv
 backend/__pycache__
-build
+
+# Data (regenerable from TimescaleDB)
 data/historical/*.parquet
 data/journal/*.db
 data/journal/*.json
@@ -27,13 +33,14 @@ data/sim_7d_cache.json
 data/forensic_ml_dataset.csv
 data/forensic_signals.csv
 logs/*.log
-dist / media
+
+# MCP
 mcp_servers/**/.cache/
-node_modules
+
+# Payload media
 public/media/
 public/robots.txt
 public/sitemap*.xml
-tests/__pycache__/
 
 # Graphify knowledge graph output
 graphify-out/

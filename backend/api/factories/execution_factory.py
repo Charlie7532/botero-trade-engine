@@ -21,11 +21,10 @@ def build_broker():
 
 
 def build_journal():
-    """Build the default TradeJournalPort implementation (MongoDB)."""
-    from backend.modules.execution.infrastructure.mongo_journal_adapter import MongoTradeJournalAdapter
-    uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
-    db_name = os.getenv("MONGODB_DB_NAME", "botero_trade")
-    return MongoTradeJournalAdapter(uri=uri, db_name=db_name)
+    """Build the default TradeJournalPort implementation (PostgreSQL)."""
+    from backend.modules.execution.infrastructure.postgres_journal_adapter import PostgresTradeJournalAdapter
+    dsn = os.getenv("POSTGRES_URL", "")
+    return PostgresTradeJournalAdapter(dsn=dsn)
 
 
 def build_market_data():

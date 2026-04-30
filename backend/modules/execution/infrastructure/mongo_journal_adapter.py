@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class MongoTradeJournalAdapter(TradeJournalPort):
     """
-    Gestor del Trade Journal — MongoDB implementation.
+    G
     Persiste cada entrada en MongoDB Atlas como documento nativo.
     Implements TradeJournalPort.
     """

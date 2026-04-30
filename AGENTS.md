@@ -64,10 +64,11 @@ All skills are located in `.agents/skills/`. Key skills:
 - `clean-architecture` — Hexagonal architecture enforcement (ALWAYS ACTIVE)
 - `module-skill-map` — Maps backend modules to specialist skills
 - `cio-allocator` — Dynamic capital allocation & macro regime (Ray Dalio)
+- `rotation-analyst` — Sector/international/asset class rotation (Weinstein & Pring)
 - `fundamental-analyst` — QUALITY position evaluation (Hohn & Munger)
 - `tactical-entries` — Microstructure entry timing & dealer gamma (Eifert, Karsan & PTJ)
 - `risk-manager` — Dual-mode risk evaluation (Druckenmiller & Seykota)
-- `backtesting-trading-strategies` — Strategy validation via `backend/modules/simulation/`
+- `backtesting-trading-strategies` — Quantitative strategy validation (López de Prado)
 - `trading-analysis` — Institutional-grade investment reports
 
 ---

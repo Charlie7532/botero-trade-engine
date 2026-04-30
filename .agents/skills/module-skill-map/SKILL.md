@@ -24,6 +24,7 @@ When any agent works on a backend module, activate the skills listed for that mo
 | `pattern_recognition` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Candlestick/technical patterns — visual structure for entry timing |
 | `portfolio_management` | `clean-architecture`, `operational-purpose` | `fundamental-analyst`, `risk-manager`, `cio-allocator` | Universe filtering, alpha scanning, CIO budget allocation, position sizing |
 | `price_analysis` | `clean-architecture`, `operational-purpose` | `tactical-entries` | RSI, price phase detection — technical structure analysis |
+| `rotation_intelligence` | `clean-architecture`, `operational-purpose` | `rotation-analyst`, `cio-allocator` | Sector/international/asset class rotation via ETF RS and stage analysis — feeds CIO |
 | `shared` | `clean-architecture`, `operational-purpose` | *(none)* | Foundational types and shared ports — architecture-only |
 | `simulation` | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies` | Backtesting engine — directly maps to the backtesting skill |
 | `volume_intelligence` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Volume profile, POC/VAH/VAL — institutional volume microstructure |

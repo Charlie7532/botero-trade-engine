@@ -38,6 +38,9 @@ class CIOOrchestrator:
         yield_curve_inverted: bool = False,
         sector_flows: Optional[dict[str, float]] = None,
         news_vetoes: Optional[list[str]] = None,
+        international_flows: Optional[dict[str, float]] = None,
+        asset_class_flows: Optional[dict[str, float]] = None,
+        cycle_phase: str = "UNKNOWN",
     ) -> DailyMandate:
         """
         Synthesize macro variables to generate a dynamic capital allocation mandate.
@@ -48,6 +51,9 @@ class CIOOrchestrator:
                           Positive = capital inflow, Negative = capital outflow.
             news_vetoes:  Sectors to veto entirely due to exogenous shocks,
                           e.g. ["Healthcare"] after a major patent expiry event.
+            international_flows: International market momentum, e.g. {"Emerging": 0.6}.
+            asset_class_flows: Asset class rotation, e.g. {"Gold": 0.8, "Long Treasuries": 0.5}.
+            cycle_phase: Pring's intermarket cycle phase from RotationScanner.
         """
         today = datetime.now(UTC).strftime("%Y-%m-%d")
         
@@ -58,6 +64,8 @@ class CIOOrchestrator:
         reasoning = []
         vetoed_sectors = list(news_vetoes) if news_vetoes else []
         focus_sectors = []
+        international_focus = []
+        international_avoid = []
         
         # 1. Extreme Risk-Off (Deleveraging / Liquidity Crisis)
         if vix >= 35 or (vix >= 25 and market_breadth < 30 and macro_news_sentiment < -0.5):
@@ -95,6 +103,34 @@ class CIOOrchestrator:
             if vetoed_sectors:
                 reasoning.append(f"Sectors VETOED (outflow/shock): {', '.join(vetoed_sectors)}.")
 
+        # 5. International Rotation Intelligence (Weinstein/Pring)
+        if international_flows:
+            for market, flow_score in international_flows.items():
+                if flow_score >= 0.4:
+                    international_focus.append(market)
+                elif flow_score <= -0.4:
+                    international_avoid.append(market)
+            if international_focus:
+                reasoning.append(f"International capital inflow: {', '.join(international_focus)}.")
+            if international_avoid:
+                reasoning.append(f"International capital outflow: {', '.join(international_avoid)}.")
+
+        # 6. Asset Class Rotation — Regime Confirmation (Pring)
+        if asset_class_flows:
+            gold = asset_class_flows.get("Gold", 0)
+            treasuries = asset_class_flows.get("Long Treasuries", 0)
+            hyg = asset_class_flows.get("High Yield Bonds", 0)
+            if treasuries > 0.5 and gold > 0.3 and regime == "NEUTRAL":
+                regime = "RISK_OFF"
+                q_alloc = max(q_alloc, 0.85)
+                s_alloc = min(s_alloc, 0.15)
+                reasoning.append("Pring: Bonds AND Gold rallying — flight to safety confirmed.")
+            if hyg < -0.4 and regime != "RISK_OFF":
+                reasoning.append("WARNING: High Yield Bonds weakening — credit stress emerging.")
+
+        if cycle_phase != "UNKNOWN":
+            reasoning.append(f"Pring Cycle Phase: {cycle_phase}.")
+
         # Clamp to hard limits
         q_alloc = max(self.min_quality, min(q_alloc, 1.0))
         s_alloc = min(self.max_speculative, max(s_alloc, 0.0))
@@ -110,9 +146,13 @@ class CIOOrchestrator:
             regime=regime,
             vetoed_sectors=vetoed_sectors,
             focus_sectors=focus_sectors,
+            international_focus=international_focus,
+            international_avoid=international_avoid,
+            cycle_phase=cycle_phase,
             reasoning=" ".join(reasoning)
         )
         
         logger.info(f"CIO Mandate Set: {regime} | Quality={q_alloc*100:.0f}% | Speculative={s_alloc*100:.0f}%")
         return self._current_mandate
+
 

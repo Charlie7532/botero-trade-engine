@@ -12,6 +12,8 @@ class RotationSignal:
     momentum_60d: float   # 60-day price return %
     volume_ratio: float   # Current volume / 20-day avg volume
     stage: int = 0        # Weinstein Stage (1-4), 0 = unclassified
+    internal_breadth_score: float = 0.0  # Breadth of components participating in move
+    leading_subsector: str = ""          # e.g., "Semiconductors" within "Technology"
 
 
 @dataclass

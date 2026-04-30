@@ -26,6 +26,10 @@ class MarketContext:
     max_bars: int = 30
     freeze_stops: bool = False
     freeze_start_time: Optional[datetime] = None
+    
+    # ── Quality Track Specifics ──
+    reduce_zone: float = 0.0
+    thesis_death_flag: bool = False
 
 @dataclass
 class ExitDecision:

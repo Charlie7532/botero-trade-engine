@@ -22,7 +22,7 @@ from backend.modules.execution.domain.entities.trade_record import TradeJournalE
 from backend.modules.portfolio_management.domain.rules.relative_strength import RelativeStrengthMonitor
 from backend.modules.portfolio_management.domain.rules.risk_guardian import RiskGuardian
 from backend.modules.portfolio_management.domain.use_cases.optimize_portfolio import PortfolioOptimizer
-from backend.modules.execution.domain.rules.exit_rules import ExitEngine
+from backend.modules.execution.domain.rules.exit_rules import SpeculativeExitEngine, QualityExitEngine
 from backend.modules.execution.domain.entities.exit_context import TradeState, MarketContext
 from backend.modules.execution.domain.use_cases.execute_order import InstitutionalExecutionEngine
 from backend.modules.execution.domain.entities.trade_context import TradeContext, PositionState
@@ -54,7 +54,8 @@ class PaperTradingOrchestrator:
         self.journal = journal
         self.market_data = market_data
         self.rs_monitor = RelativeStrengthMonitor()
-        self.exit_engine = ExitEngine()
+        self.spec_exit_engine = SpeculativeExitEngine()
+        self.qual_exit_engine = QualityExitEngine()
         self.optimizer = PortfolioOptimizer()
         self.risk_guardian = RiskGuardian()
         self.execution = InstitutionalExecutionEngine()
@@ -608,22 +609,18 @@ class PaperTradingOrchestrator:
                 vix_current=vix,
                 flow_persistence_grade=flow_grade,
                 freeze_stops=ticker in self._freeze_state,
-                freeze_start_time=self._freeze_state.get(ticker)
+                freeze_start_time=self._freeze_state.get(ticker),
+                reduce_zone=trade_data.get('entry_intelligence', {}).get('reduce_zone', 0.0) if trade_data else 0.0,
+                thesis_death_flag=trade_data.get('thesis_death_flag', False) if trade_data else False
             )
             
-            # Evaluate exit using unified engine
-            decision = self.exit_engine.evaluate_exit(trade_state, market_context)
-            
-            # Ajuste adicional según Mente (Seykota vs Druckenmiller)
-            stop = decision.new_stop_price
+            # Evaluate exit using decoupled engines
             if strategy == 'SPECULATIVE':
-                # SEYKOTA MODE: Muy ajustado pero respetando Put Wall
-                seykota_stop = current_price - (atr * 2.0)
-                stop = max(stop, seykota_stop)
+                decision = self.spec_exit_engine.evaluate_exit(trade_state, market_context)
             else:
-                # DRUCKENMILLER MODE: Más espacio al ruido.
-                drucks_stop = current_price - (atr * 3.5)
-                stop = min(stop, drucks_stop)
+                decision = self.qual_exit_engine.evaluate_exit(trade_state, market_context)
+            
+            stop = decision.new_stop_price
             
             evaluations.append({
                 "ticker": ticker,

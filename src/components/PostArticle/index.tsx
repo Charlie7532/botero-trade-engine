@@ -3,8 +3,11 @@
 import React from 'react'
 import RichText from '@/components/RichText'
 import TableOfContents, { type TocPosition } from '@/components/TableOfContents'
-import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
+import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type { Post } from '@/payload-types'
+
+// Stub: RelatedPosts block not yet implemented in this project
+const RelatedPosts: React.FC<{ className?: string; docs?: unknown[] }> = () => null
 
 interface PostArticleProps {
     post: Post
@@ -18,7 +21,7 @@ export default function PostArticle({ post, tocPosition = 'none' }: PostArticleP
             <div className="flex flex-col items-center gap-4 pt-8">
                 <div className="container">
                     <div className="max-w-[48rem] mx-auto">
-                        <RichText data={post.content} enableGutter={false} />
+                        <RichText data={post.content as unknown as DefaultTypedEditorState} enableGutter={false} />
                     </div>
                     {post.relatedPosts && post.relatedPosts.length > 0 && (
                         <RelatedPosts
@@ -44,7 +47,7 @@ export default function PostArticle({ post, tocPosition = 'none' }: PostArticleP
                         </div>
                     )}
                     <div className={`max-w-[48rem] mx-auto lg:mx-0 ${tocPosition === 'left' ? 'lg:order-2' : ''}`}>
-                        <RichText data={post.content} enableGutter={false} />
+                        <RichText data={post.content as unknown as DefaultTypedEditorState} enableGutter={false} />
                     </div>
                     {tocPosition === 'right' && (
                         <div className="lg:order-2">

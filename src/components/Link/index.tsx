@@ -5,7 +5,7 @@ import { cn } from '@/utilities/ui'
 import Link from 'next/link'
 import React from 'react'
 
-import type { Page, Post } from '@/payload-types'
+type SluggedDoc = { slug?: string | null; [key: string]: unknown }
 
 type CMSLinkType = {
   appearance?: 'inline' | 'default' | 'primary' | 'secondary' | 'outline' | 'link' | 'destructive' | 'ghost' | null
@@ -15,7 +15,7 @@ type CMSLinkType = {
   newTab?: boolean | null
   reference?: {
     relationTo: 'pages' | 'posts'
-    value: Page | Post | string | number
+    value: SluggedDoc | string | number
   } | null
   size?: 'sm' | 'md' | 'lg' | null
   type?: 'custom' | 'reference' | null

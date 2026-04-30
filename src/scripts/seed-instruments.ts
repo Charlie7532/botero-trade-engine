@@ -43,15 +43,15 @@ async function seed() {
 
   for (const item of etfsAndIndex) {
     try {
-      const doc = await payload.create({
+      const doc = await (payload.create as Function)({
         collection: 'instruments',
         data: {
           ticker: item.ticker,
           name: item.name,
-          instrumentType: item.instrumentType,
-          gicsSector: item.gicsSector || undefined,
-          universe: item.universe,
-          cyclicalType: item.cyclicalType || undefined,
+          instrumentType: item.instrumentType as 'stock' | 'etf_sector' | 'etf_international' | 'etf_commodity' | 'index' | undefined,
+          gicsSector: (item.gicsSector || undefined) as 'information_technology' | 'health_care' | 'financials' | 'consumer_discretionary' | 'consumer_staples' | 'industrials' | 'energy' | 'utilities' | 'real_estate' | 'materials' | 'communication_services' | null | undefined,
+          universe: item.universe as 'sp500' | 'domestic_sector' | 'international' | 'commodity' | 'guru_gem' | null | undefined,
+          cyclicalType: (item.cyclicalType || undefined) as 'cyclical' | 'defensive' | 'mixed' | null | undefined,
           isActive: item.isActive,
           isInSP500: item.isInSP500,
         },
@@ -75,16 +75,16 @@ async function seed() {
         ? tickerToId[item.sectorETFTicker]
         : undefined
 
-      await payload.create({
+      await (payload.create as Function)({
         collection: 'instruments',
         data: {
           ticker: item.ticker,
           name: item.name,
-          instrumentType: item.instrumentType,
-          gicsSector: item.gicsSector || undefined,
+          instrumentType: item.instrumentType as 'stock' | undefined,
+          gicsSector: (item.gicsSector || undefined) as string | undefined,
           gicsIndustry: item.gicsIndustry || undefined,
-          universe: item.universe,
-          cyclicalType: item.cyclicalType || undefined,
+          universe: item.universe as 'sp500' | undefined,
+          cyclicalType: (item.cyclicalType || undefined) as 'cyclical' | 'defensive' | 'mixed' | undefined,
           marketCap: item.marketCap || undefined,
           isActive: item.isActive,
           isInSP500: item.isInSP500,

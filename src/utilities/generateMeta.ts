@@ -28,7 +28,7 @@ export const generateMeta = async (args: {
 }): Promise<Metadata> => {
   const { doc } = args
 
-  const ogImage = getImageURL(doc?.meta?.image)
+  const ogImage = getImageURL(doc?.meta?.image as Media | number | null | undefined)
 
   const title = doc?.meta?.title
     ? doc?.meta?.title + ' | Main 12 web Template'

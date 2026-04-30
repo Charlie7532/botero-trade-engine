@@ -194,7 +194,7 @@ export default async function PostgresPerformanceWidget({ req }: WidgetServerPro
           <MetricCard label="Dead Row Ratio" value={formatPercent(rowChurnRate)} />
           <MetricCard label="Node CPU Time" value={`${processCpuSeconds.toFixed(1)}s`} />
           <MetricCard label="Node RSS" value={`${formatNumber(processMemoryMb)} MB`} />
-          <MetricCard label="1m Host Load" value={oneMinuteLoad === null ? 'Unavailable' : oneMinuteLoad.toFixed(2)} />
+          <MetricCard label="1m Host Load" value={oneMinuteLoad == null ? 'Unavailable' : oneMinuteLoad.toFixed(2)} />
         </div>
 
         <div style={{ marginTop: '1.15rem' }}>

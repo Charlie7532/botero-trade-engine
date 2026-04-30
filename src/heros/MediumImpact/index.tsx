@@ -7,7 +7,7 @@ import { Media } from "@/components/Media"
 import RichText from "@/components/RichText"
 import { motion } from "framer-motion"
 
-export const MediumImpactHero: React.FC<Page["hero"]> = ({ links, media, richText }) => {
+export const MediumImpactHero: React.FC<NonNullable<Page["hero"]>> = ({ links, media, richText }) => {
   return (
     <div className="py-8 md:py-12 lg:py-16">
       <div className="container">

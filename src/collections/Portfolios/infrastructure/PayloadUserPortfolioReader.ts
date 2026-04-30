@@ -64,7 +64,7 @@ export function createPayloadUserPortfolioReader(payload: Payload): UserPortfoli
             id: portfolio.id,
             slug,
             name: String(portfolio.name || 'Untitled Portfolio'),
-            status: String((portfolio as Record<string, unknown>).status || 'active'),
+            status: String((portfolio as unknown as Record<string, unknown>).status || 'active'),
             role: roleByPortfolio.get(portfolio.id) || 'viewer',
           }
         })

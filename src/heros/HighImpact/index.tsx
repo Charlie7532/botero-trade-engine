@@ -9,7 +9,7 @@ import { Media } from "@/components/Media"
 import RichText from "@/components/RichText"
 import { motion, useScroll, useTransform } from "framer-motion"
 
-export const HighImpactHero: React.FC<Page["hero"]> = ({ links, media, richText }) => {
+export const HighImpactHero: React.FC<NonNullable<Page["hero"]>> = ({ links, media, richText }) => {
   const { setHeaderTheme } = useHeaderTheme()
   const { scrollY } = useScroll()
 

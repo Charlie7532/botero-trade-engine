@@ -52,6 +52,17 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/endpoints/seed/contact-page.ts",
+    "src/endpoints/seed/home.ts",
+    "src/endpoints/seed/home-static.ts",
+    "src/endpoints/seed/post-1.ts",
+    "src/endpoints/seed/post-2.ts",
+    "src/endpoints/seed/post-3.ts",
+    "src/endpoints/seed/contact-form.ts",
+    "src/endpoints/seed/image-1.ts",
+    "src/endpoints/seed/image-2.ts",
+    "src/endpoints/seed/image-3.ts",
+    "src/endpoints/seed/image-hero-1.ts"
   ]
 }

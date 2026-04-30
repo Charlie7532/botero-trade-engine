@@ -12,7 +12,7 @@ export const PostHero: React.FC<{
   const { categories, heroImage, populatedAuthors, publishedAt, title } = post
 
   const hasAuthors =
-    populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
+    populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors.filter((a): a is NonNullable<typeof a> => a !== null)) !== ''
 
   return (
     <div className="relative -mt-[10.4rem] min-h-[80vh] flex items-end">
@@ -59,7 +59,7 @@ export const PostHero: React.FC<{
                 <div className="flex flex-col gap-1">
                   <p className="text-sm">Author</p>
 
-                  <p>{formatAuthors(populatedAuthors)}</p>
+                  <p>{formatAuthors(populatedAuthors?.filter((a): a is NonNullable<typeof a> => a !== null) ?? [])}</p>
                 </div>
               </div>
             )}

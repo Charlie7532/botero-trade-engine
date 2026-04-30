@@ -4,11 +4,15 @@ import useClickableCard from '@/utilities/useClickableCard'
 import Link from 'next/link'
 import React, { Fragment } from 'react'
 
-import type { Post } from '@/payload-types'
-
+import type { Media as MediaType } from '@/payload-types'
 import { Media } from '@/components/Media'
 
-export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'>
+export type CardPostData = {
+  slug?: string | null
+  categories?: ({ id?: string | null; title?: string | null } | null)[] | null
+  meta?: { description?: string | null; image?: MediaType | string | number | null } | null
+  title?: string | null
+}
 
 export const Card: React.FC<{
   alignItems?: 'center'
@@ -58,7 +62,7 @@ export const Card: React.FC<{
             {showCategories && hasCategories && (
               <div>
                 {categories?.map((category, index) => {
-                  if (typeof category === 'object') {
+                  if (typeof category === 'object' && category !== null) {
                     const { title: titleFromCategory } = category
 
                     const categoryTitle = titleFromCategory || 'Untitled category'

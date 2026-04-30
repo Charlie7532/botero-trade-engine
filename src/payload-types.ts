@@ -1929,3 +1929,33 @@ export interface Auth {
 declare module 'payload' {
   export interface GeneratedTypes extends Config {}
 }
+
+// ---------------------------------------------------------------------------
+import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+// Compatibility stubs for legacy CMS blog components (no Posts/Pages collections)
+// These are overwritten by `pnpm generate` — re-add if needed after regeneration.
+// ---------------------------------------------------------------------------
+export interface Post {
+  id: string | number
+  slug?: string | null
+  title?: string | null
+  meta?: { description?: string | null; title?: string | null; image?: Media | string | number | null } | null
+  categories?: ({ id?: string | null; title?: string | null } | null)[] | null
+  publishedAt?: string | null
+  populatedAuthors?: ({ id?: string | null; name?: string | null } | null)[] | null
+  heroImage?: Media | string | number | null
+  hero?: { type?: string | null; media?: Media | string | number | null } | null
+  content?: { [k: string]: unknown } | null
+  relatedPosts?: (Post | string | number | null)[] | null
+  [k: string]: unknown
+}
+
+export interface Page {
+  id: string | number
+  slug?: string | null
+  title?: string | null
+  meta?: { description?: string | null; title?: string | null; image?: Media | string | number | null } | null
+  hero?: { type?: string | null; media?: Media | string | number | null; richText?: DefaultTypedEditorState | null; links?: { link?: { label?: string | null; url?: string | null; type?: 'custom' | 'reference' | null; newTab?: boolean | null; appearance?: 'inline' | 'default' | 'primary' | 'secondary' | 'outline' | 'link' | 'destructive' | 'ghost' | null; reference?: { relationTo: 'pages' | 'posts'; value: string | number | { slug?: string | null; [key: string]: unknown } } | null } | null }[] | null } | null
+  layout?: unknown
+  [k: string]: unknown
+}

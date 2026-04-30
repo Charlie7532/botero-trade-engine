@@ -1,24 +1,23 @@
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 
-export async function getRedirects(depth = 1) {
-  const payload = await getPayload({ config: configPromise })
+type RedirectDoc = {
+  from?: string | null
+  to?: {
+    url?: string | null
+    reference?: {
+      relationTo?: string | null
+      value?: { slug?: string | null } | string | null
+    } | null
+  } | null
+}
 
-  const { docs: redirects } = await payload.find({
-    collection: 'redirects',
-    depth,
-    limit: 0,
-    pagination: false,
-  })
-
-  return redirects
+// No Redirects collection in this project — always returns empty
+export async function getRedirects(): Promise<RedirectDoc[]> {
+  return []
 }
 
 /**
  * Returns a unstable_cache function mapped with the cache tag for 'redirects'.
- *
- * Cache all redirects together to avoid multiple fetches.
  */
 export const getCachedRedirects = () =>
   unstable_cache(async () => getRedirects(), ['redirects'], {

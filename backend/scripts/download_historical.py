@@ -26,7 +26,12 @@ from pathlib import Path
 import pandas as pd
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+_root = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(_root))
+
+# Load .env for POSTGRES_URL
+from dotenv import load_dotenv
+load_dotenv(_root / ".env")
 
 from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
 

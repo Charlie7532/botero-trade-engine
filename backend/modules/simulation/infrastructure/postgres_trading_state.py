@@ -36,7 +36,6 @@ class PostgresTradingState(TradingStatePort):
             minconn=1,
             maxconn=3,
             dsn=dsn or os.environ.get("POSTGRES_URL", ""),
-            options="-c search_path=payload,public",
         )
         self._api_url = api_url or os.getenv("PAYLOAD_API_URL", "http://localhost:3000/api")
         self._api_key = api_key or os.getenv("PAYLOAD_API_KEY", "")
@@ -63,7 +62,7 @@ class PostgresTradingState(TradingStatePort):
                     """SELECT id, ticker, name,
                               COALESCE(gics_sector, '') AS sector,
                               COALESCE(instrument_type, '') AS instrument_type
-                       FROM instruments
+                       FROM payload.instruments
                        WHERE is_active = true
                        ORDER BY ticker"""
                 )
@@ -77,7 +76,7 @@ class PostgresTradingState(TradingStatePort):
             with conn.cursor() as cur:
                 cur.execute(
                     """SELECT id, phase, start_date, confidence
-                       FROM regime_phases
+                       FROM payload.regime_phases
                        WHERE status = 'active'
                        ORDER BY start_date DESC
                        LIMIT 1"""
@@ -99,7 +98,7 @@ class PostgresTradingState(TradingStatePort):
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """SELECT * FROM calibration_profiles
+                    """SELECT * FROM payload.calibration_profiles
                        WHERE category = %s AND status = 'active'""",
                     (category,),
                 )

@@ -33,7 +33,6 @@ class TimescaleDataStore(TimeSeriesPort):
             minconn=min_conn,
             maxconn=max_conn,
             dsn=dsn or os.environ.get("POSTGRES_URL", ""),
-            options="-c search_path=market,payload,public",
         )
 
     # ── Connection helpers ────────────────────────────────

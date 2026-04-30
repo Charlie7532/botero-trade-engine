@@ -1,6 +1,6 @@
-# Botero Trade Engine — Arquitectura Institucional v9
+# Botero Trade Engine — Arquitectura Institucional v10
 
-> Última actualización: 2026-04-24 | Versión V9 (Pattern Intelligence + Volume Profile)
+> Última actualización: 2026-04-30 | Versión V10 (Clean Architecture + PostgreSQL Consolidation)
 
 ---
 
@@ -10,7 +10,7 @@
 graph TB
     subgraph EXT["🌐 Fuentes Externas — MCP Servers (8 activos, ~241 tools)"]
         UW["🐋 Unusual Whales<br/>20+ tools<br/>Flow alerts · Market Tide<br/>SPY delta · Dark Pool"]
-        FV["📊 Finviz Elite<br/>35 tools<br/>Screening · Sectores<br/>SEC filings"]
+        FV["📊 Finviz<br/>35 tools<br/>Screening · Sectores<br/>SEC filings"]
         GF["📈 GuruFocus Premium<br/>55 tools<br/>QGARP · Insiders<br/>Guru analysis"]
         FH["📅 Finnhub<br/>45 tools<br/>Earnings cal · Insiders<br/>News"]
         FR["🏛️ FRED<br/>12 tools<br/>GDP · CPI · FFR<br/>Yield curve"]
@@ -19,136 +19,208 @@ graph TB
         NS["📰 News Sentiment<br/>4 tools<br/>FinBERT scoring"]
     end
 
-    subgraph SKILLS["🔧 Skills del Agente (CLAUDE.md)"]
-        SK1["/start — Startup checklist"]
-        SK2["/context — Architecture ref"]
-        SK3["/dev — Dev cheatsheet"]
-        SK4["/add-strategy — Nueva estrategia"]
-        SK5["/add-broker — Nuevo broker"]
-        SK6["/find-finance-skills — Descubrir APIs"]
-        SK7["/proposito-practico — Anti-sesgo"]
+    subgraph SKILLS["🔧 Agent Skills (.agents/skills/)"]
+        SK1["expert-mode — Skill Router"]
+        SK2["operational-purpose — Zero-Bias"]
+        SK3["clean-architecture — Hexagonal Rules"]
+        SK4["fundamental-analyst — Hohn & Munger"]
+        SK5["tactical-entries — Eifert & PTJ"]
+        SK6["risk-manager — Druckenmiller & Seykota"]
+        SK7["backtesting — Simulation Engine"]
+        SK8["trading-analysis — Reports"]
     end
 
-    subgraph INFRA["🔌 Infrastructure Layer — data_providers/"]
-        UWI["uw_intelligence.py<br/>UnusualWhalesIntelligence<br/>parse_spy_macro_gate()<br/>parse_market_tide()<br/>parse_flow_alerts()"]
-        FPI["flow_persistence.py<br/>FlowPersistenceAnalyzer<br/>evaluate_persistence()<br/>freshness_weight · grade"]
-        EFI["event_flow_intelligence.py<br/>EventFlowIntelligence<br/>WhaleVerdict<br/>RIDE/LEAN/UNCERTAIN/CONTRA"]
-        OA["options_awareness.py<br/>OptionsAwareness<br/>put_wall · call_wall<br/>gamma_regime · max_pain"]
-        VD["volume_dynamics.py<br/>KalmanVolumeTracker<br/>wyckoff_state · velocity<br/>Kalman filter"]
-        VP["volume_profile.py ⭐NEW V9<br/>VolumeProfileAnalyzer<br/>POC · VAH · VAL (20d/50d)<br/>P/D/b shapes · POC migration"]
-        PI["pattern_intelligence.py ⭐NEW V8<br/>PatternRecognitionIntelligence<br/>Hammer · Engulfing · Morning Star<br/>Inside Bar · VCP · NumPy puro"]
-        GFI["gurufocus_intelligence.py<br/>QGARP score · Insider tracking<br/>Guru holdings"]
-        FVI["finviz_intelligence.py<br/>Sector performance<br/>Stock screening"]
-        FRI["fred_macro_intelligence.py<br/>MacroRegimeDetector<br/>Macro dashboard"]
-        FHI["finnhub_intelligence.py<br/>Earnings calendar<br/>Insider transactions"]
-        AMI["alpaca_market_data.py<br/>OHLCV · Live quotes<br/>Execution adapter"]
-        SF["sector_flow.py<br/>SectorRotationEngine<br/>Money flow analysis"]
-        MB["market_breadth.py<br/>S5TH · S5TW · F&G<br/>Market breadth"]
-        UDB["uw_data_bridge.py<br/>Data bridge adapter"]
-        FC["fundamental_cache.py<br/>Cache layer<br/>Fundamentals"]
-    end
+    subgraph MODULES["🧩 Backend Modules (11 modules · Clean Architecture)"]
 
-    subgraph APP["🧠 Application Layer — El Cerebro"]
-        UIH["entry_intelligence_hub.py ⭐CORE<br/>EntryIntelligenceHub<br/>Orquesta TODOS los módulos<br/>EntryIntelligenceReport (9D vector)"]
-        UNF["universe_filter.py<br/>4-Tier Pipeline<br/>Macro→Sector→Fund→Catalyst"]
-        ALS["alpha_scanner.py<br/>Alpha Score Ranking<br/>Multi-factor composite"]
-        PPH["price_phase_intelligence.py<br/>PricePhaseIntelligence<br/>FIRE/STALK/ABORT<br/>VP-anchored entry/stop/target"]
-        PT["paper_trading.py<br/>PaperTradingOrchestrator<br/>run_core_scan()<br/>run_tactical_scan()"]
-        PI2["portfolio_intelligence.py<br/>RiskGuardian · AdaptiveTrailingStop<br/>GammaAwareStop · PortfolioOptimizer"]
-        TJ["trade_journal.py<br/>TradeJournal (MongoDB Atlas)<br/>find_similar_trades()<br/>Atlas Vector Search 9D"]
-        TQ["ticker_qualifier.py<br/>Walk-Forward fitness test"]
-        TA["trade_autopsy.py<br/>Post-trade forensics"]
-        PM["position_monitor.py<br/>Live position tracking<br/>5 exit signals"]
-        LM["lstm_model.py<br/>QuantInstitutionalLSTM<br/>⚠️ planned → infra"]
-    end
+        subgraph MOD_ED["entry_decision"]
+            ED_D["domain/<br/>entities/ · ports/ · use_cases/<br/>EntryIntelligenceHub ⭐CORE<br/>EntryMarketDataPort · FlowDataPort"]
+            ED_I["infrastructure/<br/>MarketDataFetcher (yfinance)"]
+        end
 
-    subgraph DOM["📐 Domain Layer"]
-        ENT["entities.py<br/>Bar · Order · Position<br/>Trade · Signal · Portfolio<br/>Broker enum"]
+        subgraph MOD_FI["flow_intelligence"]
+            FI_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>analyze_whale_flow · analyze_persistence<br/>CalendarDataPort"]
+            FI_I["infrastructure/<br/>uw_adapter · uw_mcp_bridge<br/>fred_adapter · finnhub_adapter<br/>market_breadth_adapter"]
+        end
+
+        subgraph MOD_EX["execution"]
+            EX_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>orchestrate_paper_trading<br/>orchestrate_scans · monitor_positions<br/>execute_order · journal_trades<br/>BrokerPort · TradeJournalPort"]
+            EX_I["infrastructure/<br/>brokers/ (alpaca · ib · base)<br/>alpaca_data_adapter<br/>postgres_journal_adapter"]
+        end
+
+        subgraph MOD_OG["options_gamma"]
+            OG_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>analyze_gamma · OptionsDataPort<br/>black_scholes · opex_calendar"]
+            OG_I["infrastructure/<br/>yfinance_adapter"]
+        end
+
+        subgraph MOD_PM["portfolio_management"]
+            PM_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>filter_universe · scan_alpha<br/>qualify_ticker · optimize_portfolio<br/>detect_regime_change<br/>5 Ports · 7 Rules"]
+            PM_I["infrastructure/<br/>gurufocus · finviz · sector_flow<br/>macro_data · payload_instruments"]
+        end
+
+        subgraph MOD_PA["price_analysis"]
+            PA_D["domain/<br/>entities/ · rules/ · use_cases/<br/>detect_price_phase · analyze_rsi<br/>FIRE/STALK/ABORT verdicts"]
+        end
+
+        subgraph MOD_VI["volume_intelligence"]
+            VI_D["domain/<br/>entities/ · rules/ · use_cases/<br/>track_volume_dynamics (Kalman)<br/>analyze_volume_profile (POC/VAH/VAL)"]
+        end
+
+        subgraph MOD_PR["pattern_recognition"]
+            PR_D["domain/<br/>entities/ · use_cases/<br/>detect_patterns<br/>Hammer · Engulfing · VCP"]
+        end
+
+        subgraph MOD_SIM["simulation"]
+            SIM_D["domain/<br/>entities/ · ports/ · use_cases/<br/>run_backtest · oracle_backtest<br/>calibrate_strategy · pre_trade_gate<br/>engineer_features · strategy_composer<br/>10 Ports"]
+            SIM_I["infrastructure/<br/>data_harmonizer · timescale_data_store<br/>signal_adapters · smc_adapter<br/>postgres_trading_state<br/>triple_barrier · vault_interceptor"]
+        end
+
+        subgraph MOD_SH["shared"]
+            SH_D["domain/<br/>entities/ · use_cases/<br/>shared_use_cases (delegation)<br/>cache_utils"]
+        end
     end
 
     subgraph API["🔗 API Layer — FastAPI (port 8000)"]
         FAST["main.py<br/>FastAPI + CORS"]
-        R1["market_data.py router"]
-        R2["portfolio.py router"]
-        R3["strategy.py router"]
+        FAC["factories/<br/>execution_factory.py<br/>Composition Root ⭐"]
+        R1["market_data.py"]
+        R2["portfolio.py"]
+        R3["strategy.py"]
+        R4["orders.py"]
+        R5["simulation.py"]
     end
 
-    subgraph STORE["🗄️ Storage"]
-        MDB["MongoDB Atlas<br/>Trades collection<br/>Vector Search (9D)<br/>Journals"]
+    subgraph STORE["🗄️ Storage — PostgreSQL Único"]
+        PG_PAY["Neon PostgreSQL<br/>PayloadCMS tables<br/>12 collections"]
+        PG_TS["TimescaleDB<br/>OHLCV · Macro · Features<br/>engine.* schema"]
+        PG_TJ["Trade Journal<br/>engine.trade_journal<br/>engine.trade_snapshots<br/>pgvector (9D)"]
     end
 
     subgraph FE["🖥️ Frontend — Next.js 16 + PayloadCMS 3 (port 3000)"]
-        UI2["Trading Dashboard<br/>src/app/frontend"]
-        CMS2["Admin Panel<br/>src/app/payload"]
+        UI2["Trading Dashboard<br/>src/app/(frontend)"]
+        CMS2["Admin Panel<br/>src/app/(payload)<br/>12 Collections"]
+        FE_SHARED["src/shared/<br/>domain/ · application/<br/>infrastructure/ · handlers/"]
     end
 
     %% External → Infrastructure
-    UW -->|"MCP tools"| UWI
-    UW -->|"MCP tools"| FPI
-    FV -->|"MCP tools"| FVI
-    GF -->|"MCP tools"| GFI
-    FH -->|"MCP tools"| FHI
-    FR -->|"MCP tools"| FRI
-    ALP -->|"SDK"| AMI
-    YF -->|"yfinance"| UIH
+    UW -->|"MCP tools"| FI_I
+    FV -->|"MCP tools"| PM_I
+    GF -->|"MCP tools"| PM_I
+    FH -->|"MCP tools"| FI_I
+    FR -->|"MCP tools"| FI_I
+    ALP -->|"SDK"| EX_I
+    YF -->|"yfinance"| OG_I
+    YF -->|"yfinance"| ED_I
 
-    %% Infrastructure → Application
-    UWI --> UIH
-    FPI --> UIH
-    EFI --> UIH
-    OA --> UIH
-    VD --> UIH
-    VP --> UIH
-    PI --> UIH
-    PPH --> UIH
-    GFI --> UNF
-    FVI --> UNF
-    FRI --> UNF
-    FHI --> UNF
-    SF --> UNF
-    MB --> UIH
+    %% Infrastructure → Domain (via Ports)
+    ED_I -.->|"implements<br/>EntryMarketDataPort"| ED_D
+    FI_I -.->|"implements<br/>FlowDataPort · CalendarDataPort"| FI_D
+    EX_I -.->|"implements<br/>BrokerPort · TradeJournalPort"| EX_D
+    OG_I -.->|"implements<br/>OptionsDataPort"| OG_D
+    PM_I -.->|"implements<br/>5 Ports"| PM_D
+    SIM_I -.->|"implements<br/>10 Ports"| SIM_D
 
-    %% Application → Application
-    UIH --> PT
-    UNF --> ALS
-    ALS --> PT
-    TJ --> UIH
-    PI2 --> PT
-    PM --> PT
+    %% Domain → Domain (allowed cross-module)
+    ED_D --> EX_D
+    FI_D --> ED_D
+    OG_D --> ED_D
+    PA_D --> ED_D
+    VI_D --> ED_D
+    PR_D --> ED_D
+    PM_D --> EX_D
 
-    %% Application → Domain
-    UIH --> ENT
-    PT --> ENT
+    %% API → Factory → Modules
+    FAST --> R1 & R2 & R3 & R4 & R5
+    FAC -->|"builds"| EX_I
+    R1 --> ED_D
+    R3 --> EX_D
+    R4 --> EX_D
+    R5 --> SIM_D
 
-    %% Application → Storage
-    TJ --> MDB
-
-    %% API Layer
-    FAST --> R1
-    FAST --> R2
-    FAST --> R3
-    R1 --> UIH
-    R3 --> PT
+    %% Storage
+    EX_I --> PG_TJ
+    SIM_I --> PG_TS
+    PM_I --> PG_PAY
 
     %% Frontend
-    FE -->|"HTTP fetch"| API
+    FE -->|"HTTP /api"| API
+    CMS2 --> PG_PAY
 ```
 
 ---
 
-## 2. Pipeline de Decisión — EntryIntelligenceHub (V9)
+## 2. Módulos Backend — Hexagonal Architecture
+
+```mermaid
+graph LR
+    subgraph OUTER["Capa Externa"]
+        API2["API Layer<br/>FastAPI routers (5)<br/>factories/ (Composition Root)<br/>port 8000"]
+        FE2["Frontend<br/>Next.js 16 + PayloadCMS 3<br/>port 3000"]
+    end
+
+    subgraph MOD["11 Backend Modules<br/>backend/modules/"]
+        subgraph INFRA2["Infrastructure<br/>(conoce Domain · usa SDKs)"]
+            A1["entry_decision/infrastructure/<br/>MarketDataFetcher → EntryMarketDataPort"]
+            A2["flow_intelligence/infrastructure/<br/>uw_adapter → FlowDataPort<br/>finnhub_adapter · fred_adapter<br/>market_breadth_adapter"]
+            A3["execution/infrastructure/<br/>brokers/ (Alpaca · IB) → BrokerPort<br/>postgres_journal_adapter → TradeJournalPort"]
+            A4["options_gamma/infrastructure/<br/>yfinance_adapter → OptionsDataPort"]
+            A5["portfolio_management/infrastructure/<br/>gurufocus · finviz · sector_flow<br/>macro_data · payload_instruments"]
+            A6["simulation/infrastructure/<br/>data_harmonizer · timescale_data_store<br/>signal_adapters · smc_adapter<br/>postgres_trading_state"]
+        end
+
+        subgraph DOMAIN["Domain<br/>(no conoce nada externo)"]
+            D_ENT["entities/<br/>Typed dataclasses"]
+            D_PRT["ports/<br/>ABC interfaces<br/>(~20 ports total)"]
+            D_RUL["rules/<br/>Business constants<br/>& thresholds"]
+            D_UC["use_cases/<br/>Pure business logic<br/>(~25 use cases)"]
+        end
+    end
+
+    subgraph STORE2["Storage — PostgreSQL Único"]
+        PG["Neon PostgreSQL<br/>+ TimescaleDB<br/>+ pgvector"]
+    end
+
+    OUTER --> INFRA2
+    OUTER --> DOMAIN
+    INFRA2 -.->|"implements Ports"| DOMAIN
+    INFRA2 --> STORE2
+    DOMAIN --> D_ENT & D_PRT & D_RUL & D_UC
+```
+
+---
+
+## 3. Composition Root — Factory Pattern
+
+```mermaid
+flowchart TD
+    FAC["execution_factory.py<br/>🏭 Composition Root"]
+
+    FAC --> B["build_broker()<br/>→ AlpacaAdapter(BrokerPort)<br/>Lee ALPACA_API_KEY"]
+    FAC --> J["build_journal()<br/>→ PostgresTradeJournalAdapter<br/>Lee POSTGRES_URL"]
+    FAC --> M["build_market_data()<br/>→ MarketDataFetcher<br/>(EntryMarketDataPort)"]
+    FAC --> F["build_flow_data()<br/>→ UnusualWhalesIntelligence<br/>(FlowDataPort)"]
+    FAC --> O["build_options()<br/>→ OptionsAwareness<br/>(via OptionsDataPort)"]
+    FAC --> H["build_entry_hub()<br/>→ EntryIntelligenceHub<br/>(all ports injected)"]
+    FAC --> P["build_orchestrator()<br/>→ PaperTradingOrchestrator<br/>(receives all ports)"]
+    FAC --> MON["build_monitor()<br/>→ PositionMonitor<br/>(BrokerPort + TradeJournalPort)"]
+
+    style FAC fill:#f59e0b,stroke:#d97706,color:#000
+```
+
+---
+
+## 4. Pipeline de Decisión — EntryIntelligenceHub (V9)
 
 ```mermaid
 flowchart TD
     START(["🎯 evaluate(ticker, strategy_bucket)"])
 
-    S1["STEP 1: Precio<br/>yfinance 3mo OHLCV<br/>ATR · RVOL · RSI · RS vs SPY<br/>VIX (^VIX)"]
+    S1["STEP 1: Precio<br/>EntryMarketDataPort.fetch_prices()<br/>ATR · RVOL · RSI · RS vs SPY<br/>VIX"]
 
-    S2["STEP 2: Opciones — Gamma<br/>OptionsAwareness<br/>put_wall · call_wall<br/>gamma_regime · max_pain"]
+    S2["STEP 2: Opciones — Gamma<br/>OptionsDataPort.get_options_chain()<br/>put_wall · call_wall<br/>gamma_regime · max_pain"]
 
     S3["STEP 3: Volumen — Wyckoff<br/>KalmanVolumeTracker<br/>wyckoff_state · velocity<br/>Kalman Bayesian filter"]
 
-    S4["STEP 4: Flujo de Ballenas<br/>UnusualWhalesIntelligence (UW MCP)<br/>spy_cum_delta · market_tide<br/>sweep_call_pct · am_pm_divergence"]
+    S4["STEP 4: Flujo de Ballenas<br/>FlowDataPort (UW MCP)<br/>spy_cum_delta · market_tide<br/>sweep_call_pct · am_pm_divergence"]
 
     S4B["STEP 4b: Flow Persistence V7<br/>FlowPersistenceAnalyzer<br/>FRESH_ISOLATED · CONFIRMED_STREAK<br/>DECAYING · DEAD_SIGNAL"]
 
@@ -167,7 +239,7 @@ flowchart TD
 
     S6["STEP 6: PricePhaseIntelligence<br/>Fases: CORRECTION · BREAKOUT<br/>CONTRARIAN_DIP · MOMENTUM_CONT<br/>EXHAUSTION_UP · STEALTH_DIST<br/>Verdict: FIRE / STALK / ABORT<br/>Entry/Stop/Target anclados a VP"]
 
-    S6B["STEP 6b: PatternIntelligence V8 ⭐<br/>PatternRecognitionIntelligence<br/>Hammer · Bullish Engulfing · Morning Star<br/>Inside Bar · VCP · Shooting Star<br/>Bearish Engulfing · Evening Star<br/>confirmation_score -1.0 → +1.0"]
+    S6B["STEP 6b: PatternIntelligence V8 ⭐<br/>PatternRecognitionIntelligence<br/>Hammer · Engulfing · Morning Star<br/>Inside Bar · VCP · Shooting Star<br/>confirmation_score -1.0 → +1.0"]
 
     S7{"STEP 7: Dictamen Final"}
 
@@ -175,10 +247,10 @@ flowchart TD
 
     FIRE_F["Phase = FIRE"]
     RSI_GATE{"CORE RSI<br/>35-65 sweet spot?"}
-    STALK3(["⏳ STALK — RSI Quality Gate<br/>Forensic WR=23% fuera del rango"])
+    STALK3(["⏳ STALK — RSI Quality Gate"])
     PAT_VETO{"Pattern BEARISH<br/>score ≤ -0.5?"}
-    STALK4(["⏳ STALK — Pattern VETO<br/>Patrón bajista cancela FIRE"])
-    VECTOR["Vector DB Query (9D)<br/>find_similar_trades()"]
+    STALK4(["⏳ STALK — Pattern VETO"])
+    VECTOR["TradeJournalPort.find_similar()<br/>pgvector 9D query"]
     MEM{"80%+ históricos<br/>similares perdieron?"}
     BLOCK4(["❌ BLOCK — Memory Guard"])
     AMPLIFY{"Pattern BULLISH<br/>en soporte +score ≥0.5?"}
@@ -222,44 +294,7 @@ flowchart TD
 
 ---
 
-## 3. Clean Architecture — Capas y Reglas
-
-```mermaid
-graph LR
-    subgraph OUTER["Capa Externa"]
-        API2["API Layer<br/>FastAPI routers<br/>port 8000"]
-        FE2["Frontend<br/>Next.js 16<br/>PayloadCMS 3<br/>port 3000"]
-    end
-
-    subgraph INFRA2["Infrastructure<br/>(conoce Application + Domain)"]
-        DP["data_providers/<br/>• uw_intelligence ← UW MCP<br/>• flow_persistence ← UW MCP<br/>• event_flow_intelligence<br/>• options_awareness ← YF<br/>• volume_dynamics (Kalman)<br/>• volume_profile ⭐V9<br/>• pattern_intelligence ⭐V8<br/>• gurufocus_intelligence ← GF MCP<br/>• finviz_intelligence ← FV MCP<br/>• fred_macro_intelligence ← FRED MCP<br/>• finnhub_intelligence ← FH MCP<br/>• alpaca_market_data ← ALP SDK<br/>• sector_flow<br/>• market_breadth"]
-        BR["brokers/<br/>• base.py (BrokerAdapter)<br/>• alpaca_adapter.py"]
-        PORTS["ports/<br/>• market_data_port.py<br/>• ExecutionPort (IB ready)"]
-    end
-
-    subgraph APP2["Application<br/>(conoce Domain solamente)"]
-        HUB["entry_intelligence_hub.py ⭐<br/>Orquestador central V9"]
-        UNF2["universe_filter.py<br/>4-Tier pipeline"]
-        PPI["price_phase_intelligence.py<br/>FIRE/STALK/ABORT + VP"]
-        PTO["paper_trading.py<br/>Orchestrator"]
-        POI["portfolio_intelligence.py<br/>Risk + Stops"]
-        TJ2["trade_journal.py<br/>MongoDB Atlas + Vector"]
-    end
-
-    subgraph DOM2["Domain<br/>(no conoce nada externo)"]
-        ENT2["entities.py<br/>Bar · Order · Position<br/>Trade · Signal · Portfolio"]
-    end
-
-    OUTER --> INFRA2
-    OUTER --> APP2
-    INFRA2 --> APP2
-    INFRA2 --> DOM2
-    APP2 --> DOM2
-```
-
----
-
-## 4. Universe Filter — 4-Tier Pipeline
+## 5. Universe Filter — 4-Tier Pipeline
 
 ```mermaid
 flowchart LR
@@ -269,7 +304,7 @@ flowchart LR
         M1["MacroRegimeDetector<br/>GDP · CPI · FFR<br/>Yield curve · VIX<br/>Regime: RISK_ON/RISK_OFF/NEUTRAL"]
     end
 
-    subgraph T2["TIER 2 — Sector Filter<br/>Finviz Elite (35 tools)"]
+    subgraph T2["TIER 2 — Sector Filter<br/>Finviz (35 tools)"]
         M2["SectorRotationEngine<br/>Sector performance 1m/3m<br/>Money flow · Relative strength<br/>Top 3 sectors only"]
     end
 
@@ -288,139 +323,102 @@ flowchart LR
 
 ---
 
-## 5. EntryIntelligenceReport — Estructura del Dictamen (V9)
+## 6. Port / Adapter Map — Módulo por Módulo
+
+| Módulo | Port (domain) | Adapter (infrastructure) | External Source |
+|---|---|---|---|
+| **entry_decision** | `EntryMarketDataPort` | `MarketDataFetcher` | yfinance |
+| **entry_decision** | `FlowDataPort` | `UnusualWhalesIntelligence` | UW MCP |
+| **execution** | `BrokerPort` | `AlpacaAdapter` · `IBAdapter` | Alpaca SDK · IBKR |
+| **execution** | `TradeJournalPort` | `PostgresTradeJournalAdapter` | PostgreSQL |
+| **options_gamma** | `OptionsDataPort` | `YFinanceOptionsAdapter` | yfinance |
+| **flow_intelligence** | `CalendarDataPort` | `FinnhubAdapter` | Finnhub MCP |
+| **portfolio_management** | `FundamentalDataPort` | `GuruFocusAdapter` | GuruFocus MCP |
+| **portfolio_management** | `ScreenerPort` | `FinvizAdapter` | Finviz MCP |
+| **portfolio_management** | `SectorDataPort` | `SectorFlowAdapter` | Finviz + UW MCP |
+| **portfolio_management** | `MacroDataPort` | `MacroDataAdapter` | FRED MCP |
+| **portfolio_management** | `InstrumentRepoPort` | `PayloadInstrumentsAdapter` | PayloadCMS (PG) |
+| **simulation** | `HistoricalDataPort` | (TimescaleDB) | PostgreSQL |
+| **simulation** | `TimeSeriesPort` | `TimescaleDataStore` | PostgreSQL |
+| **simulation** | `DataHarmonizerPort` | `DataHarmonizer` | Internal |
+| **simulation** | `SignalPort` | `SignalAdapters` | Internal |
+| **simulation** | `TradingStatePort` | `PostgresTradingState` | PostgreSQL |
+| **simulation** | `MarketStructurePort` | `SMCAdapter` | Internal |
+| **simulation** | `BarrierLabelerPort` | `TripleBarrierAdapter` | Internal |
+| **simulation** | `MLConfidencePort` | (planned) | — |
+| **simulation** | `DashboardSyncPort` | (planned) | — |
+| **simulation** | `VolumeAnalysisPort` | (planned) | — |
+
+---
+
+## 7. Storage — PostgreSQL Consolidado
 
 ```mermaid
-classDiagram
-    class EntryIntelligenceReport {
-        +str ticker
-        +str timestamp
-        --- EventFlowIntelligence ---
-        +str whale_verdict
-        +float whale_scale
-        +float whale_confidence
-        +bool freeze_stops
-        --- PricePhaseIntelligence ---
-        +str phase
-        +str phase_verdict
-        +float entry_price
-        +float stop_price
-        +float target_price
-        +float risk_reward
-        +int dimensions_confirming
-        --- Market Data ---
-        +float current_price
-        +float vix
-        +float rsi
-        +float rvol
-        +float rs_vs_spy
-        --- Gamma Options ---
-        +float put_wall
-        +float call_wall
-        +str gamma_regime
-        +float max_pain
-        --- Wyckoff Kalman ---
-        +str wyckoff_state
-        +float wyckoff_velocity
-        --- UW Flow ---
-        +float spy_cum_delta
-        +str spy_signal
-        +float sweep_call_pct
-        +str tide_direction
-        --- Flow Persistence V7 ---
-        +str flow_persistence_grade
-        +float flow_freshness_weight
-        +int flow_consecutive_days
-        +bool flow_darkpool_confirmed
-        --- Volume Profile V9 NEW ---
-        +float vp_poc_short
-        +float vp_vah_short
-        +float vp_val_short
-        +float vp_poc_long
-        +float vp_poc_migration
-        +str vp_institutional_bias
-        +float vp_bias_confidence
-        +str vp_shape_short
-        +str vp_shape_long
-        --- Pattern Intelligence V8 NEW ---
-        +str candlestick_pattern
-        +str pattern_sentiment
-        +float pattern_score
-        +bool pattern_on_support
-        +bool pattern_confirms
-        --- Final Verdict ---
-        +str final_verdict
-        +float final_scale
-        +str final_reason
-        +list_9D vector_embedding
-    }
+graph TB
+    subgraph PG["PostgreSQL (Neon)"]
+        subgraph PAY["PayloadCMS Schema (public)"]
+            C1["Users · Portfolios · PortfolioMemberships"]
+            C2["BrokerAccounts · Instruments"]
+            C3["Bots · BotAssignments"]
+            C4["CalibrationProfiles · RegimePhases"]
+            C5["CandidateScreenings · TradeSnapshots"]
+            C6["Media"]
+        end
+
+        subgraph ENG["Engine Schema (engine.*)"]
+            T1["engine.trade_journal<br/>Trades con JSONB snapshots<br/>pgvector embeddings (9D)"]
+            T2["engine.trade_snapshots<br/>Pre/Post trade intelligence"]
+            T3["engine.ohlcv_daily<br/>TimescaleDB hypertable"]
+            T4["engine.macro_indicators<br/>FRED data series"]
+            T5["engine.features<br/>ML-ready feature store"]
+            T6["engine.trading_state<br/>Live positions & regime"]
+        end
+    end
+
+    style PAY fill:#3b82f6,stroke:#2563eb,color:#fff
+    style ENG fill:#10b981,stroke:#059669,color:#fff
 ```
 
 ---
 
-## 6. Volume Profile V9 — Lógica de Shapes
+## 8. Frontend — Next.js 16 + PayloadCMS 3
 
 ```mermaid
-flowchart TD
-    subgraph VP20["Volume Profile 20d (Short — Timing)"]
-        P1["P-shape: Volumen concentrado ARRIBA<br/>→ Institucionales acumulando<br/>✅ CORE entry válido"]
-        D1["D-shape: Distribución balanceada<br/>→ Equilibrio, esperar dirección<br/>⏳ Neutral"]
-        B1["b-shape: Volumen concentrado ABAJO<br/>→ Institucionales distribuyendo<br/>❌ Bloquear CORE entry"]
+graph TB
+    subgraph NEXT["Next.js 16 (port 3000)"]
+        subgraph ROUTES["App Router"]
+            R_FE["(frontend)/<br/>Trading Dashboard"]
+            R_PAY["(payload)/<br/>Admin Panel"]
+        end
+
+        subgraph COLLECTIONS["PayloadCMS Collections (12)"]
+            COL1["Users · Portfolios"]
+            COL2["BrokerAccounts · Instruments"]
+            COL3["Bots · BotAssignments"]
+            COL4["CalibrationProfiles · RegimePhases"]
+            COL5["CandidateScreenings · TradeSnapshots"]
+            COL6["PortfolioMemberships · Media"]
+        end
+
+        subgraph SHARED["src/shared/ (Clean Layers)"]
+            S_DOM["domain/<br/>TypeScript types only"]
+            S_APP["application/<br/>domain imports only"]
+            S_INF["infrastructure/<br/>API clients, adapters"]
+            S_HAN["handlers/<br/>Payload hook handlers"]
+        end
     end
 
-    subgraph VP50["Volume Profile 50d (Long — Estructura)"]
-        P2["P-shape: Tendencia alcista estructural"]
-        D2["D-shape: Rango amplio consolidando"]
-        B2["b-shape: Tendencia bajista estructural"]
-    end
+    R_FE -->|"uses"| S_INF
+    S_INF --> S_APP --> S_DOM
+    R_PAY --> COLLECTIONS
+    COLLECTIONS --> S_HAN
 
-    subgraph MIG["POC Migration (Short vs Long)"]
-        BUL["Short POC > Long POC<br/>→ BULLISH: acumulando a precios mayores"]
-        NEU["Short POC ≈ Long POC<br/>→ NEUTRAL: sin migración"]
-        BEA["Short POC < Long POC<br/>→ BEARISH: distribuyendo a precios menores"]
-    end
-
-    subgraph LEVELS["Niveles para Trading"]
-        L1["VAL → Entry / Stop reference<br/>Soporte institucional validado por volumen"]
-        L2["POC → Target primario<br/>Precio gravitacional del mercado"]
-        L3["VAH → Target secundario<br/>Techo institucional del 70% del volumen"]
-    end
+    NEXT -->|"HTTP /api"| FAST["FastAPI :8000"]
 ```
 
 ---
 
-## 7. Pattern Intelligence V8 — Señales Detectadas
-
-```mermaid
-flowchart LR
-    subgraph BULL["🟢 Patrones Alcistas — Confirman / Amplifican"]
-        H["Hammer / Dragonfly Doji<br/>Mecha inferior ≥ 2× cuerpo"]
-        BE["Bullish Engulfing<br/>Vela alcista > vela bajista anterior"]
-        MS["Morning Star<br/>3 velas: bajista + indecisa + alcista"]
-        PL["Piercing Line<br/>Cierra por encima del 50% anterior"]
-        IB["Inside Bar Series<br/>2+ inside bars = coil / compresión"]
-        VCP["VCP Tight<br/>3+ contracciones de volatilidad"]
-    end
-
-    subgraph BEAR["🔴 Patrones Bajistas — Vetan / Bloquean"]
-        SS["Shooting Star / Pin Bar<br/>Mecha superior ≥ 2× cuerpo"]
-        BE2["Bearish Engulfing<br/>Vela bajista > vela alcista anterior"]
-        ES["Evening Star<br/>3 velas: alcista + indecisa + bajista"]
-    end
-
-    subgraph RULES["⚡ Reglas de Aplicación"]
-        VETO["PATTERN_VETO<br/>BEARISH score ≤ -0.5 + FIRE<br/>→ Convierte FIRE a STALK"]
-        AMP["PATTERN_AMPLIFY<br/>BULLISH score ≥ +0.5 + soporte<br/>→ +25% position size"]
-        PROM["PATTERN_PROMOTE<br/>BULLISH score ≥ +0.7 + dims≥2 + RR≥3<br/>→ Eleva STALK a FIRE (75% scale)"]
-    end
-
-    BULL --> RULES
-    BEAR --> RULES
-```
-
----
-
-## 8. Exit System — 5 Señales Forenses
+## 9. Exit System — 5 Señales Forenses
 
 ```mermaid
 flowchart TD
@@ -438,7 +436,7 @@ flowchart TD
     POS --> E4
     POS --> E5
 
-    E1 --> CLOSE(["💰 Cerrar posición<br/>→ TradeJournal MongoDB<br/>→ Vector DB actualizado"])
+    E1 --> CLOSE(["💰 Cerrar posición<br/>→ TradeJournalPort<br/>→ PostgreSQL (pgvector)"])
     E2 --> CLOSE
     E3 --> CLOSE
     E4 --> CLOSE
@@ -447,40 +445,218 @@ flowchart TD
 
 ---
 
-## 9. MCP Skills Map — Herramientas por Etapa
+## 10. MCP Skills Map — Herramientas por Módulo
 
-| Etapa del Pipeline | Módulo | MCP / Skill | Tools usados |
-|---|---|---|---|
-| **Universe — Macro** | `fred_macro_intelligence.py` | FRED | `get_series`, `search_series`, `get_releases` |
-| **Universe — Sector** | `finviz_intelligence.py` | Finviz Elite | `get_sector_performance`, `get_market_overview`, `screen_stocks` |
-| **Universe — Fundamental** | `gurufocus_intelligence.py` | GuruFocus Premium | `get_financials`, `get_insider_transactions`, `get_guru_holdings` |
-| **Universe — Catalyst** | `finnhub_intelligence.py` | Finnhub | `get_earnings_calendar`, `get_insider_transactions` |
-| **Gamma / Options** | `options_awareness.py` | Yahoo Finance | `get_options_chain`, `get_options_expiry` |
-| **Wyckoff / Volume** | `volume_dynamics.py` | — (yfinance interno) | OHLCV via yfinance |
-| **Volume Profile** ⭐V9 | `volume_profile.py` | — (NumPy puro) | OHLCV de yfinance, cálculo interno |
-| **Pattern Intelligence** ⭐V8 | `pattern_intelligence.py` | — (NumPy + pandas-ta) | OHLCV de yfinance, detección interna |
-| **Whale Flow** | `uw_intelligence.py` | Unusual Whales | `get_flow_alerts`, `get_market_tide`, `get_spy_ticks`, `get_darkpool_prints` |
-| **Flow Persistence** | `flow_persistence.py` | Unusual Whales | `get_recent_flow`, `get_darkpool_prints` |
-| **Event Flow** | `event_flow_intelligence.py` | Yahoo Finance + UW | VIX, earnings calendar, flow |
-| **Alpha Score** | `alpha_scanner.py` | Finviz + GuruFocus | Screening compuesto |
-| **Market Breadth** | `market_breadth.py` | Yahoo Finance + UW | S5TH, Fear & Greed |
-| **News Sentiment** | — | News Sentiment MCP | `analyze_sentiment` (FinBERT) |
-| **Execution** | `alpaca_market_data.py` | Alpaca | `place_order`, `get_positions`, `get_portfolio` |
-| **Memory / Journal** | `trade_journal.py` | MongoDB Atlas | Vector Search 9D embedding |
+| Módulo Backend | MCP / Skill | Tools usados |
+|---|---|---|
+| **flow_intelligence** (UW) | Unusual Whales | `get_flow_alerts`, `get_market_tide`, `get_spy_ticks`, `get_darkpool_prints` |
+| **flow_intelligence** (FRED) | FRED | `get_series`, `search_series`, `get_releases` |
+| **flow_intelligence** (Finnhub) | Finnhub | `get_earnings_calendar`, `get_insider_transactions` |
+| **flow_intelligence** (Breadth) | Yahoo Finance + UW | S5TH, Fear & Greed |
+| **portfolio_management** (GuruFocus) | GuruFocus Premium | `get_financials`, `get_insider_transactions`, `get_guru_holdings` |
+| **portfolio_management** (Finviz) | Finviz | `get_sector_performance`, `get_market_overview`, `screen_stocks` |
+| **portfolio_management** (Instruments) | PayloadCMS (PG) | Direct DB read via adapter |
+| **options_gamma** | Yahoo Finance | `get_options_chain`, `get_options_expiry` |
+| **entry_decision** (Market Data) | yfinance (internal) | OHLCV, VIX |
+| **volume_intelligence** | — (NumPy puro) | OHLCV de yfinance, Kalman filter |
+| **pattern_recognition** | — (NumPy puro) | OHLCV, candlestick detection |
+| **execution** (Broker) | Alpaca SDK | `place_order`, `get_positions`, `get_portfolio` |
+| **execution** (Journal) | PostgreSQL | pgvector similarity search |
+| **simulation** | TimescaleDB | OHLCV, features, trading state |
+| **shared** | News Sentiment MCP | `analyze_sentiment` (FinBERT) |
 
 ---
 
-## 10. Resultados Empíricos — V8→V9
+## 11. Inward Dependency Rule — Verificado ✅
 
-| Métrica | V8 (pre-VP/Pattern) | V9 Final |
+```
+┌─────────────────────────────────────────────────────┐
+│  API Layer (routers, factories)                      │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  Infrastructure (adapters, SDKs, PostgreSQL)   │  │
+│  │  ┌─────────────────────────────────────────┐  │  │
+│  │  │  Domain (entities, ports, rules, use_cases)│  │  │
+│  │  │  • ZERO SDK imports                       │  │  │
+│  │  │  • ZERO os.getenv / os.environ            │  │  │
+│  │  │  • ZERO infrastructure imports            │  │  │
+│  │  │  • Dependencies injected via Ports (ABC)  │  │  │
+│  │  └─────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
+```
+
+| Check | Count | Status |
 |---|---|---|
-| **Trades / semana** | 19 | 17 |
-| CORE trades | 2 | **0** (VP bloqueó todo) |
-| TACTICAL trades | 17 | 17 |
-| **Win Rate** | 57.9% | **67%** |
-| **PnL semanal** | $849 | $721 (pure alpha) |
-| Avg MFE | — | +5.14% |
-| Pattern gate activo | ❌ No | ✅ Sí (V8) |
-| VP protection | ❌ No | ✅ Sí (V9) |
+| Infrastructure imports in domain | **0** | ✅ |
+| SDK imports in domain | **0** | ✅ |
+| `os.getenv` in domain | **0** | ✅ |
+| MongoDB references | **0** | ✅ Purged |
+| Ports defined | **~20** | ✅ |
+| Adapters implementing ports | **~15** | ✅ |
+| Composition Root | `execution_factory.py` | ✅ |
+| Clean modules (11/11) | **11** | ✅ |
 
-> **Key finding**: El Volume Profile bloqueó **todos** los trades CORE en un mercado bajista estructural (b-shape / DISTRIBUTION bias). El sistema protegió el capital sin intervención manual.
+---
+
+## 12. Diagramas de Estado
+
+### 12a. Trade Lifecycle — `TradeJournalEntry.status`
+
+```mermaid
+stateDiagram-v2
+    [*] --> CANDIDATE: Universe Filter<br/>selecciona ticker
+
+    CANDIDATE --> BLOCKED: EntryHub verdict=BLOCK<br/>o RiskGuardian rechaza
+    CANDIDATE --> STALKING: EntryHub verdict=STALK<br/>esperando mejor setup
+    CANDIDATE --> PROBING: EntryHub verdict=EXECUTE<br/>orden LIMIT enviada
+
+    STALKING --> PROBING: Pattern PROMOTE<br/>o condiciones mejoran
+    STALKING --> BLOCKED: Timeout sin mejora
+
+    PROBING --> OPEN: Orden llenada<br/>journal.open_trade()
+    PROBING --> CANCELLED: Orden no ejecutada<br/>o rechazada por SmartEntry
+
+    OPEN --> OPEN: Monitor: trailing stop sube<br/>RS tracking · MFE/MAE update
+
+    OPEN --> CLOSED_WIN: ExitEngine: PROFIT_TARGET<br/>o MA20_REVERSION
+    OPEN --> CLOSED_LOSS: ExitEngine: STOP_HIT<br/>o RS_DECAY · DISTRIBUTION · TIMEOUT
+
+    CLOSED_WIN --> LEARNING: journal.close_trade()<br/>post-mortem + grade
+    CLOSED_LOSS --> LEARNING: journal.close_trade()<br/>lesson_learned
+
+    LEARNING --> [*]: pgvector embedding<br/>actualizado para Memory Guard
+
+    BLOCKED --> [*]
+    CANCELLED --> [*]
+
+    state OPEN {
+        [*] --> Monitoring
+        Monitoring --> FreezeActive: Evento macro<br/>(FOMC/CPI/NFP < 4h)
+        FreezeActive --> Monitoring: Evento pasa<br/>(freeze_duration expira)
+        Monitoring --> ExitEvaluation: check_positions()
+        ExitEvaluation --> Monitoring: No exit signal
+    }
+```
+
+### 12b. Entry Verdict — `EntryIntelligenceReport.final_verdict`
+
+```mermaid
+stateDiagram-v2
+    [*] --> PriceData: STEP 1<br/>fetch_prices()
+
+    PriceData --> GammaAnalysis: STEP 2<br/>OptionsDataPort
+
+    GammaAnalysis --> WyckoffVolume: STEP 3<br/>KalmanVolumeTracker
+
+    WyckoffVolume --> WhaleFlow: STEP 4<br/>FlowDataPort (UW)
+
+    WhaleFlow --> FlowPersistence: STEP 4b<br/>FlowPersistenceAnalyzer
+
+    FlowPersistence --> BLOCK_DEAD: DEAD_SIGNAL<br/>señal decayó
+    FlowPersistence --> EventFlow: No dead
+
+    EventFlow --> BLOCK_CONTRA: CONTRA_FLOW (CORE)<br/>ballenas en contra
+    EventFlow --> VolumeProfile: No contra
+
+    VolumeProfile --> STALK_VP: VP DISTRIBUTION ≥75%<br/>(CORE only)
+    VolumeProfile --> PricePhase: VP OK
+
+    PricePhase --> PatternIntel: detect_price_phase()
+
+    PatternIntel --> ABORT: Phase = ABORT
+
+    PatternIntel --> FIRE_PATH: Phase = FIRE
+    PatternIntel --> STALK_PATH: Phase = STALK
+
+    state FIRE_PATH {
+        [*] --> RSI_Gate
+        RSI_Gate --> STALK_RSI: RSI fuera 35-65
+        RSI_Gate --> PatternVeto: RSI OK
+        PatternVeto --> STALK_PATTERN: score ≤ -0.5
+        PatternVeto --> MemoryGuard: No veto
+        MemoryGuard --> BLOCK_MEMORY: 80%+ similares perdieron
+        MemoryGuard --> EXECUTE: Memory OK
+    }
+
+    state STALK_PATH {
+        [*] --> PromoteCheck
+        PromoteCheck --> EXECUTE_75: score≥0.7 · dims≥2 · RR≥3
+        PromoteCheck --> STALK_WAIT: No promotion
+    }
+
+    EXECUTE --> [*]: ✅ EXECUTE (scale por whale_scale)
+    EXECUTE_75 --> [*]: ✅ EXECUTE (75% scale)
+    BLOCK_DEAD --> [*]: ❌ BLOCK
+    BLOCK_CONTRA --> [*]: ❌ BLOCK
+    BLOCK_MEMORY --> [*]: ❌ BLOCK
+    ABORT --> [*]: ❌ BLOCK
+    STALK_VP --> [*]: ⏳ STALK
+    STALK_RSI --> [*]: ⏳ STALK
+    STALK_PATTERN --> [*]: ⏳ STALK
+    STALK_WAIT --> [*]: ⏳ STALK
+```
+
+### 12c. Market Regime — `MarketRegime` enum
+
+```mermaid
+stateDiagram-v2
+    [*] --> NEUTRAL: Default
+
+    RISK_ON --> NEUTRAL: VIX sube > 18<br/>o yield spread ≤ 0
+    NEUTRAL --> RISK_ON: VIX < 18<br/>AND yield spread > 0
+
+    NEUTRAL --> RISK_OFF: VIX > 25
+    RISK_OFF --> NEUTRAL: VIX baja < 25
+
+    RISK_OFF --> CRISIS: VIX > 35
+    CRISIS --> RISK_OFF: VIX baja < 35
+
+    state RISK_ON {
+        [*] --> Cyclicals
+        Cyclicals: Cíclicos + Growth<br/>CORE + TACTICAL activos<br/>Max position sizing
+    }
+    state NEUTRAL {
+        [*] --> Selective
+        Selective: Selectivo<br/>CORE con filtros estrictos<br/>TACTICAL normal
+    }
+    state RISK_OFF {
+        [*] --> Defensive
+        Defensive: Defensivos o Cash<br/>CORE pausado (VP gate)<br/>TACTICAL solo contrarian
+    }
+    state CRISIS {
+        [*] --> CashOnly
+        CashOnly: Solo reversión extrema<br/>Todos los gates activos<br/>Position size mínimo
+    }
+```
+
+### 12d. Exit Engine — `ExitDecision.reason`
+
+```mermaid
+stateDiagram-v2
+    [*] --> StopUpdate: AdaptiveTrailingStop<br/>recalcula con VIX + RS + Flow
+
+    StopUpdate --> Frozen: freeze_stops = true<br/>(evento macro cercano)
+    Frozen --> StopUpdate: freeze expira
+
+    StopUpdate --> STOP_HIT: price ≤ stop<br/>urgency: HIGH
+    StopUpdate --> CheckMA20: price > stop
+
+    CheckMA20 --> MA20_REVERSION: price ≥ MA20<br/>AND bars ≥ 2<br/>urgency: MEDIUM
+    CheckMA20 --> CheckRS: price < MA20
+
+    CheckRS --> RS_DECAY: Alpha erosionado<br/>RS dropped > threshold<br/>urgency: varies
+    CheckRS --> CheckWyckoff: RS OK
+
+    CheckWyckoff --> DISTRIBUTION: wyckoff = DISTRIBUTION<br/>AND bars ≥ 3<br/>urgency: HIGH
+    CheckWyckoff --> CheckTimeout: No distribution
+
+    CheckTimeout --> TIMEOUT: bars ≥ max_bars<br/>urgency: MEDIUM
+    CheckTimeout --> HOLD: Ningún trigger
+
+    HOLD --> [*]: Continuar holding
+    STOP_HIT --> [*]: 🔴 Cerrar
+    MA20_REVERSION --> [*]: 🟡 Cerrar
+    RS_DECAY --> [*]: 🟡 Cerrar
+    DISTRIBUTION --> [*]: 🔴 Cerrar
+    TIMEOUT --> [*]: 🟡 Cerrar
+```

@@ -4,7 +4,8 @@ Execution — PostgreSQL Trade Journal Adapter
 Infrastructure adapter: all trade journal persistence via PostgreSQL.
 Domain code interacts via TradeJournalPort interface.
 
-Replaces MongoTradeJournalAdapter — consolidates all data in one database.
+Each department (QUALITY / SPECULATIVE) receives its own instance
+scoped to its own table via the table_name constructor parameter.
 """
 import json
 import logging
@@ -26,16 +27,29 @@ logger = logging.getLogger(__name__)
 class PostgresTradeJournalAdapter(TradeJournalPort):
     """
     Trade Journal — PostgreSQL implementation.
-    Uses engine.trade_journal, engine.trade_snapshots, engine.trade_patterns.
+    Table names are parameterized for department-scoped instances.
     Implements TradeJournalPort.
     """
 
-    def __init__(self, dsn: str | None = None, pool=None):
+    def __init__(
+        self,
+        dsn: str | None = None,
+        pool=None,
+        table_name: str = "engine.trade_journal",
+        snapshots_table: str = "engine.trade_snapshots",
+        patterns_table: str = "engine.trade_patterns",
+    ):
         """
         Args:
             dsn: PostgreSQL connection string (POSTGRES_URL).
             pool: Pre-built psycopg2 pool (for tests).
+            table_name: Journal table (department-scoped).
+            snapshots_table: Snapshots table (department-scoped).
+            patterns_table: Patterns table (department-scoped).
         """
+        self._table = table_name
+        self._snapshots_table = snapshots_table
+        self._patterns_table = patterns_table
         if pool is not None:
             self._pool = pool
             self._owns_pool = False
@@ -46,7 +60,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
                 dsn=dsn or os.environ.get("POSTGRES_URL", ""),
             )
             self._owns_pool = True
-        logger.info("Trade Journal PostgreSQL: connected")
+        logger.info(f"Trade Journal PostgreSQL: connected → {table_name}")
 
     def _conn(self):
         return self._pool.getconn()
@@ -68,7 +82,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """INSERT INTO engine.trade_journal (
+                    f"""INSERT INTO {self._table} (
                         trade_id, ticker, direction, status, strategy_bucket,
                         created_at, updated_at,
                         entry_thesis, alpha_score, qualifier_grade, qualifier_edge_score,
@@ -122,7 +136,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
                 # Snapshot as separate row
                 if entry.entry_snapshot:
                     cur.execute(
-                        """INSERT INTO engine.trade_snapshots
+                        f"""INSERT INTO {self._snapshots_table}
                            (trade_id, snapshot_type, timestamp, data)
                            VALUES (%s, 'ENTRY', %s, %s)""",
                         (entry.trade_id, entry.entry_time,
@@ -147,7 +161,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """UPDATE engine.trade_journal SET
+                    f"""UPDATE {self._table} SET
                         status = 'CLOSED', updated_at = NOW(),
                         exit_time = %s, exit_price = %s,
                         exit_order_id = %s, exit_fill_price = %s, exit_slippage = %s,
@@ -185,7 +199,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
                 # Exit snapshot
                 if entry.exit_snapshot:
                     cur.execute(
-                        """INSERT INTO engine.trade_snapshots
+                        f"""INSERT INTO {self._snapshots_table}
                            (trade_id, snapshot_type, timestamp, data)
                            VALUES (%s, 'EXIT', %s, %s)""",
                         (entry.trade_id, entry.exit_time,
@@ -196,7 +210,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
                 if entry.pattern_tags:
                     psycopg2.extras.execute_values(
                         cur,
-                        """INSERT INTO engine.trade_patterns
+                        f"""INSERT INTO {self._patterns_table}
                            (trade_id, pattern_name, context, outcome, confidence)
                            VALUES %s""",
                         [
@@ -225,15 +239,36 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
         finally:
             self._put(conn)
 
+    def update_trade(self, trade_id: str, fields: dict) -> None:
+        """Partial update of trade fields (e.g. thesis_death_flag)."""
+        if not fields:
+            return
+        conn = self._conn()
+        try:
+            set_clause = ", ".join(f"{k} = %s" for k in fields)
+            values = list(fields.values()) + [trade_id]
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"UPDATE {self._table} SET {set_clause}, updated_at = NOW() WHERE trade_id = %s",
+                    values,
+                )
+            conn.commit()
+            logger.info(f"📝 Journal UPDATE: {trade_id} → {list(fields.keys())}")
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            self._put(conn)
+
     def get_open_trades(self) -> list[dict]:
         """Return all currently open trades."""
         conn = self._conn()
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """SELECT trade_id, ticker, entry_price, entry_time,
+                    f"""SELECT trade_id, ticker, entry_price, entry_time,
                               alpha_score, qualifier_grade, strategy_bucket
-                       FROM engine.trade_journal
+                       FROM {self._table}
                        WHERE status = 'OPEN'
                        ORDER BY created_at DESC"""
                 )
@@ -248,7 +283,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """SELECT * FROM engine.trade_journal WHERE trade_id = %s""",
+                    f"""SELECT * FROM {self._table} WHERE trade_id = %s""",
                     (trade_id,),
                 )
                 row = cur.fetchone()
@@ -265,7 +300,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """SELECT
+                    f"""SELECT
                         COUNT(*)                                    AS total,
                         COUNT(*) FILTER (WHERE was_winner)          AS wins,
                         COUNT(*) FILTER (WHERE NOT was_winner)      AS losses,
@@ -274,7 +309,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
                         COALESCE(SUM(pnl_dollars), 0)               AS total_pnl,
                         COALESCE(SUM(pnl_dollars) FILTER (WHERE was_winner), 0)   AS gross_profit,
                         COALESCE(SUM(pnl_dollars) FILTER (WHERE NOT was_winner), 0) AS gross_loss
-                    FROM engine.trade_journal
+                    FROM {self._table}
                     WHERE status = 'CLOSED'"""
                 )
                 row = cur.fetchone()
@@ -302,14 +337,14 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """SELECT
+                    f"""SELECT
                         pattern_name,
                         COUNT(*)                                AS total,
                         COUNT(*) FILTER (WHERE outcome = 'WIN') AS wins,
                         ROUND(100.0 * COUNT(*) FILTER (WHERE outcome = 'WIN')
                               / NULLIF(COUNT(*), 0), 1)         AS win_rate,
                         ROUND(AVG(confidence)::numeric, 2)      AS avg_r
-                    FROM engine.trade_patterns
+                    FROM {self._patterns_table}
                     GROUP BY pattern_name
                     ORDER BY total DESC"""
                 )
@@ -324,7 +359,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """SELECT
+                    f"""SELECT
                         exit_reason,
                         COUNT(*)                                    AS total,
                         COUNT(*) FILTER (WHERE was_winner)          AS wins,
@@ -332,7 +367,7 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
                               / NULLIF(COUNT(*), 0), 1)             AS win_rate,
                         ROUND(AVG(pnl_pct)::numeric, 2)             AS avg_pnl,
                         ROUND(AVG(pnl_r_multiple)::numeric, 2)      AS avg_r
-                    FROM engine.trade_journal
+                    FROM {self._table}
                     WHERE status = 'CLOSED'
                       AND exit_reason IS NOT NULL
                       AND exit_reason != ''
@@ -351,10 +386,10 @@ class PostgresTradeJournalAdapter(TradeJournalPort):
             with conn.cursor() as cur:
                 try:
                     cur.execute(
-                        """SELECT trade_id, ticker, status, was_winner,
+                        f"""SELECT trade_id, ticker, status, was_winner,
                                   exit_reason, pnl_pct, grade, lesson_learned,
                                   1 - (entry_vector <=> %s::vector) AS score
-                           FROM engine.trade_journal
+                           FROM {self._table}
                            WHERE entry_vector IS NOT NULL
                            ORDER BY entry_vector <=> %s::vector
                            LIMIT %s""",

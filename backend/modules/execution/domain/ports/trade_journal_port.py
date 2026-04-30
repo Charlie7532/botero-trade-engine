@@ -1,26 +1,40 @@
 """
 Trade Journal Port — Interface for trade persistence.
 
-Domain Use Cases depend on this ABC, never on concrete storage (MongoDB, Postgres, etc.).
-Implementations: MongoTradeJournalAdapter (infrastructure/)
+Domain Use Cases depend on this ABC, never on concrete storage.
+Each department (QUALITY / SPECULATIVE) receives its own instance
+scoped to its own table via the JournalRegistry pattern.
+
+Implementations: PostgresTradeJournalAdapter (infrastructure/)
 """
 from abc import ABC, abstractmethod
-from typing import Optional
-
-from backend.modules.execution.domain.entities.trade_record import TradeJournalEntry
+from typing import Any, Optional
 
 
 class TradeJournalPort(ABC):
-    """Interface for trade journal persistence."""
+    """Interface for trade journal persistence (department-scoped).
+
+    Accepts TradeJournalEntry, SpeculativeTradeRecord, or QualityTradeRecord
+    via duck typing (Any) to satisfy Liskov Substitution Principle.
+    """
 
     @abstractmethod
-    def open_trade(self, entry: TradeJournalEntry) -> str:
+    def open_trade(self, entry: Any) -> str:
         """Register a new trade entry. Returns trade_id."""
         ...
 
     @abstractmethod
-    def close_trade(self, entry: TradeJournalEntry) -> None:
+    def close_trade(self, entry: Any) -> None:
         """Update a trade entry with exit data."""
+        ...
+
+    @abstractmethod
+    def update_trade(self, trade_id: str, fields: dict) -> None:
+        """Partial update of trade fields.
+
+        Used by SurveillanceLoop for thesis_death_flag signaling
+        and by forensics for post-mortem annotations.
+        """
         ...
 
     @abstractmethod

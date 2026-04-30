@@ -36,12 +36,12 @@ class PositionMonitor:
     def __init__(
         self,
         broker_registry: dict,
-        journal: TradeJournalPort,
+        journal_registry: dict,
         rs_monitor: RelativeStrengthMonitor = None,
         risk_guardian: RiskGuardian = None,
     ):
         self.broker_registry = broker_registry
-        self.journal = journal
+        self.journal_registry = journal_registry  # {QUALITY: TradeJournalPort, SPECULATIVE: TradeJournalPort}
         self.rs_monitor = rs_monitor or RelativeStrengthMonitor()
         self.trailing = AdaptiveTrailingStop()
         self.risk_guardian = risk_guardian or RiskGuardian()
@@ -64,7 +64,12 @@ class PositionMonitor:
             except Exception:
                 continue
         
-        journal_trades = self.journal.get_open_trades()
+        # Aggregate journal trades from both departments
+        journal_trades = []
+        for dept, journal in self.journal_registry.items():
+            for t in journal.get_open_trades():
+                t['department'] = dept
+                journal_trades.append(t)
         
         total_value = total_cash + sum(
             p.market_price * p.quantity for p in all_positions

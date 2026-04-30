@@ -1,6 +1,6 @@
-# Botero Trade Engine — Arquitectura Institucional v10
+# Botero Trade Engine — Arquitectura Institucional v12
 
-> Última actualización: 2026-04-30 | Versión V10 (Clean Architecture + PostgreSQL Consolidation)
+> Última actualización: 2026-04-30 | Versión V12 (JournalRegistry + BlacklistPort + Trade Forensics)
 
 ---
 
@@ -19,18 +19,23 @@ graph TB
         NS["📰 News Sentiment<br/>4 tools<br/>FinBERT scoring"]
     end
 
-    subgraph SKILLS["🔧 Agent Skills (.agents/skills/)"]
+    subgraph SKILLS["🔧 Agent Skills (.agents/skills/) — 17 skills"]
         SK1["expert-mode — Skill Router"]
         SK2["operational-purpose — Zero-Bias"]
         SK3["clean-architecture — Hexagonal Rules"]
-        SK4["fundamental-analyst — Hohn & Munger"]
-        SK5["tactical-entries — Eifert & PTJ"]
-        SK6["risk-manager — Druckenmiller & Seykota"]
-        SK7["backtesting — Simulation Engine"]
-        SK8["trading-analysis — Reports"]
+        SK4["cio-allocator — Dalio Macro Regime"]
+        SK5["rotation-analyst — Weinstein & Pring"]
+        SK6["research-intelligence — Dual-Track Sourcing"]
+        SK7["fundamental-analyst — Hohn & Munger"]
+        SK8["tactical-entries — Eifert & PTJ"]
+        SK9["risk-manager — Druckenmiller & Seykota"]
+        SK10["backtesting — Simulation Engine"]
+        SK11["trading-analysis — Reports"]
+        SK12["4× Payload CMS Skills"]
+        SK13["trade-forensics ⭐NEW — Detect→Learn→Retrain→Prevent"]
     end
 
-    subgraph MODULES["🧩 Backend Modules (11 modules · Clean Architecture)"]
+    subgraph MODULES["🧩 Backend Modules (12 modules · Clean Architecture)"]
 
         subgraph MOD_ED["entry_decision"]
             ED_D["domain/<br/>entities/ · ports/ · use_cases/<br/>EntryIntelligenceHub ⭐CORE<br/>EntryMarketDataPort · FlowDataPort"]
@@ -43,8 +48,8 @@ graph TB
         end
 
         subgraph MOD_EX["execution"]
-            EX_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>orchestrate_paper_trading<br/>orchestrate_scans · monitor_positions<br/>execute_order · journal_trades<br/>BrokerPort · TradeJournalPort"]
-            EX_I["infrastructure/<br/>brokers/ (alpaca · ib · base)<br/>alpaca_data_adapter<br/>postgres_journal_adapter"]
+            EX_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>orchestrate_paper_trading<br/>orchestrate_scans · monitor_positions<br/>execute_order · journal_trades<br/>surveillance_loop (Moat Audit + 4Q Blacklist) ⭐V12<br/>SpeculativeExitEngine (Seykota) ⭐<br/>QualityExitEngine (Druckenmiller) ⭐<br/>BrokerPort · TradeJournalPort (update_trade) ⭐V12<br/>InstrumentBlacklistPort ⭐V12<br/>SpeculativeTradeRecord ⭐V12<br/>QualityTradeRecord ⭐V12"]
+            EX_I["infrastructure/<br/>brokers/ (alpaca · ib · base)<br/>BrokerRegistry {QUALITY↔SPECULATIVE} ⭐<br/>JournalRegistry {QUALITY↔SPECULATIVE} ⭐V12<br/>alpaca_data_adapter<br/>postgres_journal_adapter (parametrized) ⭐V12<br/>postgres_blacklist_adapter ⭐V12"]
         end
 
         subgraph MOD_OG["options_gamma"]
@@ -69,6 +74,11 @@ graph TB
             PR_D["domain/<br/>entities/ · use_cases/<br/>detect_patterns<br/>Hammer · Engulfing · VCP"]
         end
 
+        subgraph MOD_RI["rotation_intelligence ⭐NEW"]
+            RI_D["domain/<br/>entities/ · ports/ · use_cases/<br/>RotationScanner (Weinstein + Pring)<br/>RotationDataPort"]
+            RI_I["infrastructure/<br/>yahoo_rotation_adapter"]
+        end
+
         subgraph MOD_SIM["simulation"]
             SIM_D["domain/<br/>entities/ · ports/ · use_cases/<br/>run_backtest · oracle_backtest<br/>calibrate_strategy · pre_trade_gate<br/>engineer_features · strategy_composer<br/>10 Ports"]
             SIM_I["infrastructure/<br/>data_harmonizer · timescale_data_store<br/>signal_adapters · smc_adapter<br/>postgres_trading_state<br/>triple_barrier · vault_interceptor"]
@@ -81,7 +91,7 @@ graph TB
 
     subgraph API["🔗 API Layer — FastAPI (port 8000)"]
         FAST["main.py<br/>FastAPI + CORS"]
-        FAC["factories/<br/>execution_factory.py<br/>Composition Root ⭐"]
+        FAC["factories/<br/>execution_factory.py<br/>Composition Root ⭐<br/>build_journal_registry() ⭐V12<br/>build_blacklist() ⭐V12<br/>build_surveillance_loop() ⭐V12"]
         R1["market_data.py"]
         R2["portfolio.py"]
         R3["strategy.py"]
@@ -110,6 +120,7 @@ graph TB
     ALP -->|"SDK"| EX_I
     YF -->|"yfinance"| OG_I
     YF -->|"yfinance"| ED_I
+    YF -->|"yfinance"| RI_I
 
     %% Infrastructure → Domain (via Ports)
     ED_I -.->|"implements<br/>EntryMarketDataPort"| ED_D
@@ -117,6 +128,7 @@ graph TB
     EX_I -.->|"implements<br/>BrokerPort · TradeJournalPort"| EX_D
     OG_I -.->|"implements<br/>OptionsDataPort"| OG_D
     PM_I -.->|"implements<br/>5 Ports"| PM_D
+    RI_I -.->|"implements<br/>RotationDataPort"| RI_D
     SIM_I -.->|"implements<br/>10 Ports"| SIM_D
 
     %% Domain → Domain (allowed cross-module)
@@ -157,7 +169,7 @@ graph LR
         FE2["Frontend<br/>Next.js 16 + PayloadCMS 3<br/>port 3000"]
     end
 
-    subgraph MOD["11 Backend Modules<br/>backend/modules/"]
+    subgraph MOD["12 Backend Modules<br/>backend/modules/"]
         subgraph INFRA2["Infrastructure<br/>(conoce Domain · usa SDKs)"]
             A1["entry_decision/infrastructure/<br/>MarketDataFetcher → EntryMarketDataPort"]
             A2["flow_intelligence/infrastructure/<br/>uw_adapter → FlowDataPort<br/>finnhub_adapter · fred_adapter<br/>market_breadth_adapter"]
@@ -165,13 +177,14 @@ graph LR
             A4["options_gamma/infrastructure/<br/>yfinance_adapter → OptionsDataPort"]
             A5["portfolio_management/infrastructure/<br/>gurufocus · finviz · sector_flow<br/>macro_data · payload_instruments"]
             A6["simulation/infrastructure/<br/>data_harmonizer · timescale_data_store<br/>signal_adapters · smc_adapter<br/>postgres_trading_state"]
+            A7["rotation_intelligence/infrastructure/<br/>yahoo_rotation_adapter → RotationDataPort"]
         end
 
         subgraph DOMAIN["Domain<br/>(no conoce nada externo)"]
             D_ENT["entities/<br/>Typed dataclasses"]
-            D_PRT["ports/<br/>ABC interfaces<br/>(~20 ports total)"]
+            D_PRT["ports/<br/>ABC interfaces<br/>(21 ports total)"]
             D_RUL["rules/<br/>Business constants<br/>& thresholds"]
-            D_UC["use_cases/<br/>Pure business logic<br/>(~25 use cases)"]
+            D_UC["use_cases/<br/>Pure business logic<br/>(~28 use cases)"]
         end
     end
 
@@ -194,14 +207,21 @@ graph LR
 flowchart TD
     FAC["execution_factory.py<br/>🏭 Composition Root"]
 
-    FAC --> B["build_broker()<br/>→ AlpacaAdapter(BrokerPort)<br/>Lee ALPACA_API_KEY"]
+    FAC --> BQ["build_quality_broker()<br/>→ AlpacaAdapter(BrokerPort)<br/>ALPACA_QUALITY_API_KEY"]
+    FAC --> BS["build_speculative_broker()<br/>→ AlpacaAdapter(BrokerPort)<br/>ALPACA_API_KEY"]
+    FAC --> BR["build_broker_registry() ⭐<br/>→ {QUALITY: broker, SPECULATIVE: broker}"]
     FAC --> J["build_journal()<br/>→ PostgresTradeJournalAdapter<br/>Lee POSTGRES_URL"]
     FAC --> M["build_market_data()<br/>→ MarketDataFetcher<br/>(EntryMarketDataPort)"]
     FAC --> F["build_flow_data()<br/>→ UnusualWhalesIntelligence<br/>(FlowDataPort)"]
-    FAC --> O["build_options()<br/>→ OptionsAwareness<br/>(via OptionsDataPort)"]
+    FAC --> O["build_options_provider()<br/>→ YFinanceOptionsAdapter<br/>(OptionsDataPort)"]
     FAC --> H["build_entry_hub()<br/>→ EntryIntelligenceHub<br/>(all ports injected)"]
-    FAC --> P["build_orchestrator()<br/>→ PaperTradingOrchestrator<br/>(receives all ports)"]
-    FAC --> MON["build_monitor()<br/>→ PositionMonitor<br/>(BrokerPort + TradeJournalPort)"]
+    FAC --> P["build_orchestrator()<br/>→ PaperTradingOrchestrator<br/>(broker_registry + all ports)"]
+    FAC --> MON["build_position_monitor()<br/>→ PositionMonitor<br/>(broker_registry + journal)"]
+
+    BQ --> BR
+    BS --> BR
+    BR --> P
+    BR --> MON
 
     style FAC fill:#f59e0b,stroke:#d97706,color:#000
 ```
@@ -338,6 +358,7 @@ flowchart LR
 | **portfolio_management** | `SectorDataPort` | `SectorFlowAdapter` | Finviz + UW MCP |
 | **portfolio_management** | `MacroDataPort` | `MacroDataAdapter` | FRED MCP |
 | **portfolio_management** | `InstrumentRepoPort` | `PayloadInstrumentsAdapter` | PayloadCMS (PG) |
+| **rotation_intelligence** | `RotationDataPort` | `YahooRotationAdapter` | yfinance |
 | **simulation** | `HistoricalDataPort` | (TimescaleDB) | PostgreSQL |
 | **simulation** | `TimeSeriesPort` | `TimescaleDataStore` | PostgreSQL |
 | **simulation** | `DataHarmonizerPort` | `DataHarmonizer` | Internal |
@@ -418,29 +439,47 @@ graph TB
 
 ---
 
-## 9. Exit System — 5 Señales Forenses
+## 9. Exit System — Dual Engine Architecture ⭐V11
 
 ```mermaid
 flowchart TD
     POS(["📍 Posición Abierta"])
+    DEPT{"strategy_bucket?"}
 
-    E1["1. STOP_HIT<br/>AdaptiveTrailingStop<br/>Adapta según VIX + Wyckoff regime"]
-    E2["2. PROFIT_TARGET<br/>TACTICAL: 2×ATR o +2%<br/>Target anclado a VP POC/VAH"]
-    E3["3. TIME_STOP_3D<br/>TACTICAL: salida a 3 días<br/>si no alcanzó target (forensic)"]
-    E4["4. SMA20_RECLAIM<br/>CONTRARIAN_DIP: salida<br/>cuando precio recupera SMA20"]
-    E5["5. MFE_LOCK<br/>Si MFE > 3%<br/>→ Lock-in 40% de la ganancia"]
+    POS --> DEPT
 
-    POS --> E1
-    POS --> E2
-    POS --> E3
-    POS --> E4
-    POS --> E5
+    DEPT -->|"SPECULATIVE"| SPEC["SpeculativeExitEngine<br/>🎯 Modo Seykota<br/>Stops mecánicos + RS + Timeouts"]
+    DEPT -->|"QUALITY"| QUAL["QualityExitEngine<br/>🏛️ Modo Druckenmiller/Hohn<br/>Sin stops mecánicos"]
 
-    E1 --> CLOSE(["💰 Cerrar posición<br/>→ TradeJournalPort<br/>→ PostgreSQL (pgvector)"])
-    E2 --> CLOSE
-    E3 --> CLOSE
-    E4 --> CLOSE
-    E5 --> CLOSE
+    subgraph SPEC_EXITS["Speculative Exits (5 señales)"]
+        SE1["1. STOP_HIT<br/>AdaptiveTrailingStop<br/>VIX + RS + Flow + Put Wall"]
+        SE2["2. MA20_REVERSION<br/>precio ≥ MA20 · bars ≥ 2"]
+        SE3["3. RS_DECAY<br/>RelativeStrengthMonitor<br/>alpha erosionado"]
+        SE4["4. DISTRIBUTION<br/>Wyckoff state · bars ≥ 3"]
+        SE5["5. TIMEOUT<br/>bars ≥ max_bars<br/>capital muerto"]
+    end
+
+    subgraph QUAL_EXITS["Quality Exits (2 señales)"]
+        QE1["1. THESIS_DEATH<br/>SurveillanceLoop detecta<br/>moat decay o SEC NLP alert"]
+        QE2["2. REDUCE_ZONE_REACHED<br/>GF Value extremo<br/>precio ≥ reduce_zone"]
+    end
+
+    subgraph SURV["SurveillanceLoop (Druckenmiller) ⭐NEW"]
+        SV1["A. Mathematical Moat Test<br/>GuruFocus: margin drop 15%<br/>Capex bloat 25% · ROIC→WACC"]
+        SV2["B. SEC NLP Risk Factors<br/>Finnhub 10-K + Gemini LLM<br/>customer concentration · moat erosion"]
+    end
+
+    SPEC --> SPEC_EXITS
+    QUAL --> QUAL_EXITS
+    SURV -->|"thesis_death_flag=True"| QE1
+
+    SE1 --> CLOSE(["💰 Cerrar posición<br/>→ TradeJournalPort<br/>→ PostgreSQL (pgvector)"])
+    SE2 --> CLOSE
+    SE3 --> CLOSE
+    SE4 --> CLOSE
+    SE5 --> CLOSE
+    QE1 --> CLOSE
+    QE2 --> CLOSE
 ```
 
 ---
@@ -458,10 +497,12 @@ flowchart TD
 | **portfolio_management** (Instruments) | PayloadCMS (PG) | Direct DB read via adapter |
 | **options_gamma** | Yahoo Finance | `get_options_chain`, `get_options_expiry` |
 | **entry_decision** (Market Data) | yfinance (internal) | OHLCV, VIX |
+| **rotation_intelligence** | Yahoo Finance (yfinance) | ETF price/volume for 26 ETFs (sector/intl/asset) |
 | **volume_intelligence** | — (NumPy puro) | OHLCV de yfinance, Kalman filter |
 | **pattern_recognition** | — (NumPy puro) | OHLCV, candlestick detection |
-| **execution** (Broker) | Alpaca SDK | `place_order`, `get_positions`, `get_portfolio` |
+| **execution** (Broker) | Alpaca SDK ×2 | QUALITY account + SPECULATIVE account |
 | **execution** (Journal) | PostgreSQL | pgvector similarity search |
+| **execution** (Surveillance) | GuruFocus + Finnhub | Moat decay audit + SEC 10-K NLP |
 | **simulation** | TimescaleDB | OHLCV, features, trading state |
 | **shared** | News Sentiment MCP | `analyze_sentiment` (FinBERT) |
 
@@ -491,10 +532,12 @@ flowchart TD
 | SDK imports in domain | **0** | ✅ |
 | `os.getenv` in domain | **0** | ✅ |
 | MongoDB references | **0** | ✅ Purged |
-| Ports defined | **~20** | ✅ |
-| Adapters implementing ports | **~15** | ✅ |
+| Ports defined | **21** | ✅ |
+| Adapters implementing ports | **~16** | ✅ |
 | Composition Root | `execution_factory.py` | ✅ |
-| Clean modules (11/11) | **11** | ✅ |
+| Clean modules (12/12) | **12** | ✅ |
+| Dual Exit Engines | Quality + Speculative | ✅ |
+| Dual Broker Accounts | QUALITY + SPECULATIVE | ✅ |
 
 ---
 

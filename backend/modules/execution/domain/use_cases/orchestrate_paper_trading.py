@@ -46,12 +46,12 @@ class PaperTradingOrchestrator:
     def __init__(
         self,
         broker_registry: dict,
-        journal: TradeJournalPort,
+        journal_registry: dict,
         market_data: EntryMarketDataPort,
         entry_hub=None,
     ):
         self.broker_registry = broker_registry
-        self.journal = journal
+        self.journal_registry = journal_registry  # {QUALITY: TradeJournalPort, SPECULATIVE: TradeJournalPort}
         self.market_data = market_data
         self.rs_monitor = RelativeStrengthMonitor()
         self.spec_exit_engine = SpeculativeExitEngine()
@@ -61,6 +61,10 @@ class PaperTradingOrchestrator:
         self.execution = InstitutionalExecutionEngine()
         self.entry_hub = entry_hub
         self._freeze_state = {}  # {ticker: freeze_start_time}
+
+    def _journal_for(self, bucket: str) -> TradeJournalPort:
+        """Route to the correct journal based on strategy bucket."""
+        return self.journal_registry.get(bucket, self.journal_registry.get("QUALITY"))
 
     def _broker_for(self, bucket: str) -> BrokerPort:
         """Route to the correct broker based on strategy bucket."""
@@ -86,7 +90,9 @@ class PaperTradingOrchestrator:
                 except Exception:
                     continue
             # Recuperar tags de strategy_type del Journal para las posiciones abiertas
-            open_trades = self.journal.get_open_trades()
+            open_trades = []
+            for journal in self.journal_registry.values():
+                open_trades.extend(journal.get_open_trades())
             strategy_map = {t['ticker']: t.get('strategy_bucket', 'UNKNOWN') for t in open_trades}
             
             quality_exposure = 0.0
@@ -131,83 +137,75 @@ class PaperTradingOrchestrator:
 
     def sync_broker_and_journal(self) -> dict:
         """
-        V7: Reconcilia el estado entre Alpaca (broker) y MongoDB (TradeJournal).
-        Identifica trades fantasma (Ghost) y adopta trades huérfanos (Orphan).
+        V12: Reconcilia CADA broker contra SU journal correspondiente.
+        Cada departamento se reconcilia independientemente.
         Debe correrse antes de cada escaneo.
         """
         import asyncio
-        try:
-            # Use first available broker for reconciliation
-            broker = next(iter(self.broker_registry.values()))
+        results = {}
+        for dept, broker in self.broker_registry.items():
+            journal = self._journal_for(dept)
             try:
-                portfolio = asyncio.get_event_loop().run_until_complete(
-                    broker.get_portfolio()
-                )
-            except RuntimeError:
-                portfolio = asyncio.run(broker.get_portfolio())
-            broker_tickers = {p.symbol: p for p in portfolio.positions}
-            
-            db_trades = self.journal.get_open_trades()
-            db_tickers = {t['ticker']: t for t in db_trades}
-            
-            ghosts_closed = 0
-            orphans_adopted = 0
-            
-            # 1. Detectar Ghost Trades (En DB pero no en Alpaca)
-            for ticker, trade in db_tickers.items():
-                if ticker not in broker_tickers:
-                    logger.warning(f"👻 Ghost Trade detectado: {ticker} cerrado en broker pero abierto en DB.")
-                    # Build a minimal entry to close via the standard API
-                    ghost_entry = TradeJournalEntry(
-                        trade_id=trade['trade_id'],
-                        ticker=ticker,
-                        direction=trade.get('direction', 'LONG'),
-                        exit_price=trade.get('current_stop_price', trade.get('entry_price', 0.0)),
-                        exit_time=datetime.now(UTC).isoformat(),
-                        exit_reason="CLOSED_BY_BROKER",
-                        exit_order_id="GHOST_RECONCILIATION",
-                        status="CLOSED",
-                        was_winner=False,
+                try:
+                    portfolio = asyncio.get_event_loop().run_until_complete(
+                        broker.get_portfolio()
                     )
-                    self.journal.close_trade(ghost_entry)
-                    ghosts_closed += 1
-                    
-            # 2. Detectar Orphan Trades (En Alpaca pero no en DB)
-            for ticker, p in broker_tickers.items():
-                if ticker not in db_tickers:
-                    logger.warning(f"🍼 Orphan Trade detectado: {ticker} abierto en broker pero sin registro en DB.")
-                    # Adoptar trade
-                    trade_id = f"BT-ORPHAN-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{ticker}"
-                    entry_price = p.avg_cost
-                    qty = p.quantity
-                    notional = entry_price * qty
-                    
-                    entry = TradeJournalEntry(
-                        trade_id=trade_id,
-                        ticker=ticker,
-                        direction="LONG" if qty > 0 else "SHORT",
-                        entry_thesis="Trade adoptado (huérfano en Alpaca)",
-                        entry_price=entry_price,
-                        entry_shares=qty,
-                        entry_notional=notional,
-                        strategy_bucket="UNCLASSIFIED",
-                        status="OPEN"
-                    )
-                    self.journal.open_trade(entry)
-                    orphans_adopted += 1
-                    
-            if ghosts_closed > 0 or orphans_adopted > 0:
-                logger.info(f"🔄 Sincronización completada: {ghosts_closed} Ghosts cerrados, {orphans_adopted} Orphans adoptados.")
-                
-            return {
-                "status": "SYNC_COMPLETE",
-                "ghosts_closed": ghosts_closed,
-                "orphans_adopted": orphans_adopted,
-            }
-            
-        except Exception as e:
-            logger.error(f"Error sincronizando broker y journal: {e}")
-            return {"error": str(e)}
+                except RuntimeError:
+                    portfolio = asyncio.run(broker.get_portfolio())
+                broker_tickers = {p.symbol: p for p in portfolio.positions}
+
+                db_trades = journal.get_open_trades()
+                db_tickers = {t['ticker']: t for t in db_trades}
+
+                ghosts_closed = 0
+                orphans_adopted = 0
+
+                # 1. Ghost Trades (in THIS journal but NOT in THIS broker)
+                for ticker, trade in db_tickers.items():
+                    if ticker not in broker_tickers:
+                        logger.warning(f"👻 [{dept}] Ghost Trade: {ticker}")
+                        ghost_entry = TradeJournalEntry(
+                            trade_id=trade['trade_id'],
+                            ticker=ticker,
+                            direction=trade.get('direction', 'LONG'),
+                            exit_price=trade.get('current_stop_price', trade.get('entry_price', 0.0)),
+                            exit_time=datetime.now(UTC).isoformat(),
+                            exit_reason="CLOSED_BY_BROKER",
+                            exit_order_id="GHOST_RECONCILIATION",
+                            status="CLOSED",
+                            was_winner=False,
+                        )
+                        journal.close_trade(ghost_entry)
+                        ghosts_closed += 1
+
+                # 2. Orphan Trades (in THIS broker but NOT in THIS journal)
+                for ticker, p in broker_tickers.items():
+                    if ticker not in db_tickers:
+                        logger.warning(f"🍼 [{dept}] Orphan Trade: {ticker}")
+                        trade_id = f"BT-ORPHAN-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{ticker}"
+                        entry = TradeJournalEntry(
+                            trade_id=trade_id,
+                            ticker=ticker,
+                            direction="LONG" if p.quantity > 0 else "SHORT",
+                            entry_thesis=f"Trade adoptado (huérfano en {dept})",
+                            entry_price=p.avg_cost,
+                            entry_shares=p.quantity,
+                            entry_notional=p.avg_cost * p.quantity,
+                            strategy_bucket=dept,
+                            status="OPEN"
+                        )
+                        journal.open_trade(entry)
+                        orphans_adopted += 1
+
+                if ghosts_closed > 0 or orphans_adopted > 0:
+                    logger.info(f"🔄 [{dept}] Sync: {ghosts_closed} ghosts, {orphans_adopted} orphans")
+
+                results[dept] = {"ghosts_closed": ghosts_closed, "orphans_adopted": orphans_adopted}
+            except Exception as e:
+                logger.error(f"Error sincronizando {dept}: {e}")
+                results[dept] = {"error": str(e)}
+
+        return results
 
     
     def create_trade_snapshot(self, ticker: str) -> dict:
@@ -497,8 +495,8 @@ class PaperTradingOrchestrator:
             # Registrar RS al entrar
             self.rs_monitor.register_entry(ticker, rs)
             
-            # Guardar en journal
-            self.journal.open_trade(entry)
+            # Guardar en journal del departamento correspondiente
+            self._journal_for(strategy_type).open_trade(entry)
             
             logger.info(
                 f"✅ LIMIT ORDEN ENVIADA: {ticker} ${adjusted_notional:,.0f} "
@@ -587,8 +585,14 @@ class PaperTradingOrchestrator:
                 entry_rs=1.0  # Would be better retrieved from journal, fallback to 1.0
             )
             
+            # FIX Defecto 3: Extract vars from snapshot (were undefined in scope)
+            atr = snapshot.get('atr', 1.0)
+            vix = snapshot.get('vix', 17.0)
+            put_wall = 0.0  # From options data if available
+            strategy = pos.get('strategy', 'QUALITY')
+
             # Retrieve flow_persistence_grade from journal entry intelligence
-            trade_data = self.journal.get_trade_full_data(pos.get('trade_id', ''))
+            trade_data = self._journal_for(strategy).get_trade_full_data(pos.get('trade_id', ''))
             flow_grade = "UNKNOWN"
             if trade_data:
                 intel = trade_data.get('entry_intelligence') or {}
@@ -650,8 +654,23 @@ class PaperTradingOrchestrator:
         """
         import asyncio
         try:
-            # Get current portfolio from broker
-            broker = self._broker_for('QUALITY')  # Default to quality for closes
+            # FIX Defecto 1: Find which department owns this ticker BEFORE choosing broker
+            bucket = None
+            trade_entry = None
+            for dept, journal in self.journal_registry.items():
+                trades = journal.get_open_trades()
+                match = next((t for t in trades if t['ticker'] == ticker), None)
+                if match:
+                    bucket = dept
+                    trade_entry = match
+                    break
+
+            if not bucket:
+                return {"error": f"No journal entry for {ticker} in any department"}
+
+            broker = self._broker_for(bucket)
+            journal = self._journal_for(bucket)
+
             try:
                 portfolio = asyncio.get_event_loop().run_until_complete(
                     broker.get_portfolio()
@@ -662,7 +681,7 @@ class PaperTradingOrchestrator:
             pos = next((p for p in portfolio.positions if p.symbol == ticker), None)
             
             if not pos:
-                return {"error": f"No hay posición abierta en {ticker}"}
+                return {"error": f"No hay posición abierta en {ticker} (cuenta {bucket})"}
             
             qty = pos.quantity
             
@@ -685,16 +704,10 @@ class PaperTradingOrchestrator:
             # Snapshot de salida
             exit_snapshot = self.create_trade_snapshot(ticker)
             
-            # Buscar trade en journal
-            open_trades = self.journal.get_open_trades()
-            trade_entry = next(
-                (t for t in open_trades if t['ticker'] == ticker), None
-            )
-            
             if trade_entry:
                 # Reconstruir entry para actualizar
                 import json
-                entry_data = self.journal.get_trade_full_data(trade_entry['trade_id'])
+                entry_data = journal.get_trade_full_data(trade_entry['trade_id'])
                 
                 if entry_data:
                     entry = TradeJournalEntry(**{
@@ -729,7 +742,7 @@ class PaperTradingOrchestrator:
                     if risk_per_share > 0:
                         entry.pnl_r_multiple = (entry.exit_price - entry.entry_price) / risk_per_share
                 
-                self.journal.close_trade(entry)
+                journal.close_trade(entry)
             
             emoji = "✅" if float(pos.unrealized_pl) > 0 else "❌"
             logger.info(
@@ -753,20 +766,28 @@ class PaperTradingOrchestrator:
             logger.error(f"Error cerrando {ticker}: {e}")
             return {"error": str(e)}
     
-    def generate_learning_report(self) -> dict:
+    def generate_learning_report(self, department: str = None) -> dict:
         """
-        Genera un reporte de aprendizaje a partir de todos los trades.
+        Genera un reporte de aprendizaje per-department.
+        Si department es None, genera para ambos.
         """
-        summary = self.journal.get_performance_summary()
-        patterns = self.journal.get_pattern_stats()
-        exit_stats = self.journal.get_exit_reason_stats()
-        
-        return {
-            "performance": summary,
-            "patterns": patterns,
-            "exit_analysis": exit_stats,
-            "recommendations": self._generate_recommendations(summary, patterns, exit_stats),
-        }
+        if department:
+            journals = {department: self._journal_for(department)}
+        else:
+            journals = self.journal_registry
+
+        reports = {}
+        for dept, journal in journals.items():
+            summary = journal.get_performance_summary()
+            patterns = journal.get_pattern_stats()
+            exit_stats = journal.get_exit_reason_stats()
+            reports[dept] = {
+                "performance": summary,
+                "patterns": patterns,
+                "exit_analysis": exit_stats,
+                "recommendations": self._generate_recommendations(summary, patterns, exit_stats),
+            }
+        return reports
     
     def _generate_recommendations(self, summary, patterns, exit_stats) -> list[str]:
         """Genera recomendaciones de ajuste basadas en los datos."""

@@ -4,6 +4,8 @@ Moat Surveillance Loop
 Ejecuta la auditoría continua (Druckenmiller) sobre las posiciones abiertas de QUALITY.
 No usa stops de precio. Si la empresa se deteriora fundamentalmente (márgenes/capex),
 levanta la bandera de 'Thesis Death' para que el QualityExitEngine liquide la posición.
+
+V12: Direct journal injection (no orchestrator dependency) + 4Q blacklist.
 """
 import logging
 from typing import List, Dict
@@ -11,10 +13,11 @@ from typing import List, Dict
 logger = logging.getLogger(__name__)
 
 class SurveillanceLoop:
-    def __init__(self, paper_orchestrator, fundamental_data_port=None, sec_adapter=None):
-        self.orchestrator = paper_orchestrator
+    def __init__(self, quality_journal, fundamental_data_port=None, sec_adapter=None, blacklist=None):
+        self.journal = quality_journal  # Direct QUALITY journal injection
         self.fundamental_data = fundamental_data_port
         self.sec_adapter = sec_adapter
+        self.blacklist = blacklist  # InstrumentBlacklistPort
         
     def _evaluate_moat_decay(self, financials: dict) -> tuple[bool, str]:
         """
@@ -53,54 +56,56 @@ class SurveillanceLoop:
 
     def run_surveillance(self) -> List[Dict]:
         """
-        Escanea todas las posiciones abiertas, filtra las de QUALITY, 
+        Escanea todas las posiciones abiertas del QUALITY journal
         y audita sus fundamentales y SEC filings para detectar deterioro estructural.
         """
         logger.info("Iniciando Surveillance Loop (Druckenmiller)...")
-        account = self.orchestrator.get_account_status()
-        if "error" in account:
-            logger.error(f"Error fetching account for surveillance: {account['error']}")
-            return []
-            
-        open_trades = self.orchestrator.journal.get_open_trades()
+        open_trades = self.journal.get_open_trades()
         surveillance_reports = []
         
         for trade in open_trades:
-            if trade.get("strategy_bucket") == "QUALITY":
-                ticker = trade["ticker"]
-                logger.info(f"Auditing Moat for {ticker}...")
-                
-                thesis_death = False
-                reason = ""
-                
-                # A. Mathematical Moat Test (GuruFocus)
-                if self.fundamental_data:
-                    financials = self.fundamental_data.get_financial_summary(ticker)
-                    thesis_death, reason = self._evaluate_moat_decay(financials)
-                
-                # B. NLP SEC Risk Factors Test (Finnhub + Gemini)
-                if not thesis_death and self.sec_adapter:
-                    logger.info(f"Checking SEC Filings for {ticker}...")
-                    # Fetch latest 10-K URL
-                    latest_10k = self.sec_adapter.get_latest_10k(ticker)
-                    if latest_10k and latest_10k.get("filingUrl"):
-                        risk_factors = self.sec_adapter.extract_risk_factors(latest_10k["filingUrl"], ticker=ticker)
-                        # The LLM outputs "No material customer concentration" if clean.
-                        # If it detects risk, it will omit that phrase and list bullet points.
-                        if "No material customer concentration" not in risk_factors and "[SEC ANALYSIS" not in risk_factors:
-                            thesis_death = True
-                            reason = f"SEC NLP Alert: Material structural risks detected in 10-K: {risk_factors[:100]}..."
-                
-                report = {
-                    "ticker": ticker,
-                    "thesis_death_flag": thesis_death,
-                    "surveillance_reason": reason
-                }
-                surveillance_reports.append(report)
-                
-                if thesis_death:
-                    logger.warning(f"🚨 THESIS DEATH DECLARADO PARA {ticker}: {reason}")
-                    # Update journal so the QualityExitEngine reads it and exits the position
-                    self.orchestrator.journal.update_trade(trade["trade_id"], {"thesis_death_flag": True})
+            ticker = trade["ticker"]
+            logger.info(f"Auditing Moat for {ticker}...")
+            
+            thesis_death = False
+            reason = ""
+            
+            # A. Mathematical Moat Test (GuruFocus)
+            if self.fundamental_data:
+                financials = self.fundamental_data.get_financial_summary(ticker)
+                thesis_death, reason = self._evaluate_moat_decay(financials)
+            
+            # B. NLP SEC Risk Factors Test (Finnhub + Gemini)
+            if not thesis_death and self.sec_adapter:
+                logger.info(f"Checking SEC Filings for {ticker}...")
+                # Fetch latest 10-K URL
+                latest_10k = self.sec_adapter.get_latest_10k(ticker)
+                if latest_10k and latest_10k.get("filingUrl"):
+                    risk_factors = self.sec_adapter.extract_risk_factors(latest_10k["filingUrl"], ticker=ticker)
+                    # The LLM outputs "No material customer concentration" if clean.
+                    # If it detects risk, it will omit that phrase and list bullet points.
+                    if "No material customer concentration" not in risk_factors and "[SEC ANALYSIS" not in risk_factors:
+                        thesis_death = True
+                        reason = f"SEC NLP Alert: Material structural risks detected in 10-K: {risk_factors[:100]}..."
+            
+            report = {
+                "ticker": ticker,
+                "thesis_death_flag": thesis_death,
+                "surveillance_reason": reason
+            }
+            surveillance_reports.append(report)
+            
+            if thesis_death:
+                logger.warning(f"🚨 THESIS DEATH DECLARADO PARA {ticker}: {reason}")
+                # Update journal via update_trade (now exists in Port)
+                self.journal.update_trade(trade["trade_id"], {
+                    "thesis_death_flag": True,
+                    "thesis_death_reason": reason,
+                    "thesis_alive": False,
+                })
+                # 4Q Blacklist (Druckenmiller: dead moat = dead for 4 quarters)
+                if self.blacklist:
+                    self.blacklist.blacklist(ticker, "QUALITY", reason, quarters=4)
                     
         return surveillance_reports
+

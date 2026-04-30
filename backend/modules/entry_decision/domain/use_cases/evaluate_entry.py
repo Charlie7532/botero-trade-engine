@@ -59,12 +59,14 @@ class EntryIntelligenceHub:
         flow_data: FlowDataPort,
         options_provider: OptionsDataPort,
         journal=None,
+        blacklist=None,
     ):
         # Ports (injected)
         self._market_data = market_data
         self._flow_data = flow_data
         self._options_provider = options_provider
-        self.journal = journal
+        self.journal = journal  # SPECULATIVE journal only (Memory Guard is tactical)
+        self._blacklist = blacklist  # InstrumentBlacklistPort
 
         # Domain use cases (cross-module — allowed by Clean Architecture)
         from backend.modules.flow_intelligence.domain.use_cases.analyze_whale_flow import EventFlowIntelligence
@@ -178,6 +180,14 @@ class EntryIntelligenceHub:
             ticker=ticker,
             timestamp=datetime.now(UTC).isoformat(),
         )
+
+        # ── Blacklist Gate (4Q THESIS_DEATH cooldown) ──────────
+        if self._blacklist and self._blacklist.is_blacklisted(ticker, strategy_bucket):
+            report.final_verdict = "BLOCK"
+            report.final_scale = 0.0
+            report.final_reason = f"BLACKLISTED: {ticker} cannot enter {strategy_bucket} pipeline (4Q cooldown after THESIS_DEATH)"
+            logger.warning(f"EntryHub {ticker}: BLOCKED by Blacklist ({strategy_bucket})")
+            return report
 
         # ══════════════════════════════════════════════════════
         # STEP 1: Datos de Precio (yfinance)
@@ -497,21 +507,24 @@ class EntryIntelligenceHub:
                 logger.info(f"EntryHub {ticker}: PATTERN_VETO → STALK ({report.candlestick_pattern})")
                 return report
 
-            # V7: Pre-Trade Memory Query
-            vector = self._vectorize_report(report)
-            similar_trades = self.journal.find_similar_trades(vector, limit=5)
+            # V7: Pre-Trade Memory Query (SPECULATIVE ONLY)
+            # Quality positions use fundamental thesis, not tactical vectors.
+            if strategy_bucket == "SPECULATIVE" and self.journal:
+                vector = self._vectorize_report(report)
+                similar_trades = self.journal.find_similar_trades(vector, limit=5)
 
-            # Analizar si los similares fracasaron
-            bad_luck = 0
-            for t in similar_trades:
-                if not t.get("was_winner", False) and "grade" in t:
-                    bad_luck += 1
+                # Analizar si los similares fracasaron
+                bad_luck = 0
+                for t in similar_trades:
+                    if not t.get("was_winner", False) and "grade" in t:
+                        bad_luck += 1
 
-            if len(similar_trades) >= 3 and bad_luck / len(similar_trades) >= 0.8:
-                report.final_verdict = "BLOCK"
-                report.final_scale = 0.0
-                report.final_reason = "BLOCK: Vector DB Query — 80%+ de setups históricos similares fracasaron sin edge."
-                logger.warning(f"EntryHub {ticker}: BLOCKED by Vector Memory! Evitando error histórico.")
+                if len(similar_trades) >= 3 and bad_luck / len(similar_trades) >= 0.8:
+                    report.final_verdict = "BLOCK"
+                    report.final_scale = 0.0
+                    report.final_reason = "BLOCK: Vector DB Query — 80%+ de setups históricos similares fracasaron sin edge."
+                    logger.warning(f"EntryHub {ticker}: BLOCKED by Vector Memory! Evitando error histórico.")
+                    return report
             else:
                 report.final_verdict = "EXECUTE"
                 base_scale = whale_verdict.position_scale

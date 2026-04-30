@@ -17,13 +17,19 @@ class OptionsDataPort(ABC):
         Fetch the full options chain for a symbol.
 
         Returns:
-            dict with 'calls' and 'puts' DataFrames/lists.
+            dict with keys: 'current_price', 'expiration', 'calls' (DataFrame),
+            'puts' (DataFrame), 'timestamp'. Empty dict on failure.
         """
         ...
 
     @abstractmethod
     def get_expirations(self, symbol: str) -> list[str]:
         """Get available expiration dates for the symbol."""
+        ...
+
+    @abstractmethod
+    def get_nearest_expiration(self, symbol: str) -> Optional[str]:
+        """Get the nearest expiration date string."""
         ...
 
     @abstractmethod

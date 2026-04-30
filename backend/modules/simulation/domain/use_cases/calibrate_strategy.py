@@ -29,6 +29,7 @@ from backend.modules.simulation.domain.use_cases.oracle_backtest import (
 from backend.modules.simulation.domain.ports.historical_data_port import HistoricalDataPort
 from backend.modules.simulation.domain.ports.signal_port import SignalPort
 from backend.modules.simulation.domain.ports.dashboard_sync_port import DashboardSyncPort
+from backend.modules.simulation.domain.ports.data_harmonizer_port import DataHarmonizerPort
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +52,13 @@ class StrategyCalibrator:
         oracle: OracleBacktester,
         signals: list[SignalPort],
         dashboard: Optional[DashboardSyncPort] = None,
+        harmonizer: Optional[DataHarmonizerPort] = None,
     ):
         self.store = store
         self.oracle = oracle
         self.signals = signals
         self.dashboard = dashboard
+        self.harmonizer = harmonizer
 
     def calibrate(
         self,
@@ -187,10 +190,11 @@ class StrategyCalibrator:
         Returns None if insufficient data or XGBoost unavailable.
         """
         try:
-            from backend.modules.simulation.infrastructure.data_harmonizer import DataHarmonizer
+            if self.harmonizer is None:
+                logger.info("Calibrator: no harmonizer provided, using Oracle-only weights")
+                return None
 
-            harmonizer = DataHarmonizer(self.store)
-            dataset = harmonizer.build_ml_dataset(ticker, tf)
+            dataset = self.harmonizer.build_ml_dataset(ticker, tf)
 
             if dataset.empty or len(dataset) < 200:
                 logger.info("Calibrator: insufficient data for XGBoost refinement")

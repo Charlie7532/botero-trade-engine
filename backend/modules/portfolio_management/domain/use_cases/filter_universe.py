@@ -19,31 +19,21 @@ class UniverseFilter:
     Output: Lista rankeada de UniverseCandidate para la LSTM.
     """
 
-    def __init__(self, data_dir: str = "/root/botero-trade/.claude/DATA"):
+    def __init__(
+        self,
+        data_dir: str = "/root/botero-trade/.claude/DATA",
+        gurufocus=None,
+        options=None,
+        breadth=None,
+    ):
         self.macro = MacroRegimeDetector()
         self.sector_ranker = SectorRanker(data_dir)
         self.fundamental = FundamentalFilter()
         self.catalyst = CatalystDetector()
-        # Opciones & Breadth
-        self._options = None
-        self._breadth = None
-        # GuruFocus Intelligence adapter (lazy init)
-        self._gurufocus = None
-
-    def _init_gurufocus(self):
-        if self._gurufocus is None:
-            from backend.infrastructure.data_providers.gurufocus_intelligence import GuruFocusIntelligence
-            self._gurufocus = GuruFocusIntelligence()
-
-    def _init_options(self):
-        if self._options is None:
-            from backend.infrastructure.data_providers.options_awareness import OptionsAwareness
-            self._options = OptionsAwareness()
-
-    def _init_breadth(self):
-        if self._breadth is None:
-            from backend.infrastructure.data_providers.market_breadth import MarketBreadthProvider
-            self._breadth = MarketBreadthProvider()
+        # Optional adapters injected from composition root
+        self._gurufocus = gurufocus
+        self._options = options
+        self._breadth = breadth
 
     def filter_universe(
         self,
@@ -114,8 +104,7 @@ class UniverseFilter:
         fear_greed_data = None
         capitulation_signal = None
 
-        if include_breadth:
-            self._init_breadth()
+        if include_breadth and self._breadth:
             fear_greed_data = self._breadth.get_fear_greed_index()
             breadth_data = self._breadth.get_sp500_breadth()
 
@@ -169,8 +158,7 @@ class UniverseFilter:
                 )
 
             # Enriquecer con Opciones (Max Pain, PCR, GEX)
-            if include_options:
-                self._init_options()
+            if include_options and self._options:
                 try:
                     opt = self._options.get_full_analysis(ticker)
                     candidate.max_pain = opt.get("max_pain", 0) or 0
@@ -189,8 +177,7 @@ class UniverseFilter:
                     logger.warning(f"Error opciones {ticker}: {e}")
 
             # Enriquecer con Sentimiento compuesto por ticker
-            if include_breadth:
-                self._init_breadth()
+            if include_breadth and self._breadth:
                 opt_data = {
                     "put_call_ratio": candidate.put_call_ratio,
                     "max_pain_distance_pct": candidate.max_pain_distance_pct,
@@ -206,8 +193,7 @@ class UniverseFilter:
                 candidate.sp500_breadth_pct = breadth_data.get("pct_above_200dma", 50) or 50
 
             # ── Enriquecer con GuruFocus Intelligence (NEW) ──
-            if any([qgarp_data, insider_data, guru_tracking_data, risk_data, analyst_data, political_data]):
-                self._init_gurufocus()
+            if any([qgarp_data, insider_data, guru_tracking_data, risk_data, analyst_data, political_data]) and self._gurufocus:
 
                 # QGARP Score — replaces ad-hoc dcf_discount scoring
                 if qgarp_data and ticker in qgarp_data:

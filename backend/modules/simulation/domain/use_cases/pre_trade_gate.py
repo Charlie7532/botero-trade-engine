@@ -42,6 +42,7 @@ from backend.modules.simulation.domain.ports.market_structure_port import (
 from backend.modules.simulation.domain.ports.ml_confidence_port import MLConfidencePort
 from backend.modules.simulation.domain.ports.signal_port import SignalPort
 from backend.modules.simulation.domain.ports.dashboard_sync_port import DashboardSyncPort
+from backend.modules.simulation.domain.ports.data_harmonizer_port import DataHarmonizerPort
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,7 @@ class PreTradeGate:
         composer: StrategyComposer,
         ml: Optional[MLConfidencePort] = None,
         dashboard: Optional[DashboardSyncPort] = None,
+        harmonizer: Optional[DataHarmonizerPort] = None,
     ):
         self.store = store
         self.structure = structure_analyzer
@@ -102,6 +104,7 @@ class PreTradeGate:
         self.composer = composer
         self.ml = ml
         self.dashboard = dashboard
+        self.harmonizer = harmonizer
 
     def evaluate(
         self,
@@ -293,10 +296,10 @@ class PreTradeGate:
 
     def _build_ml_features(self, ticker: str, tf: str):
         """Build feature row for ML prediction."""
+        if self.harmonizer is None:
+            return None
         try:
-            from backend.modules.simulation.infrastructure.data_harmonizer import DataHarmonizer
-            harmonizer = DataHarmonizer(self.store)
-            dataset = harmonizer.build_ml_dataset(ticker, tf)
+            dataset = self.harmonizer.build_ml_dataset(ticker, tf)
             if not dataset.empty:
                 return dataset.iloc[[-1]]  # Last row as single-row DataFrame
         except Exception as e:

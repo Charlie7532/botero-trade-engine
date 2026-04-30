@@ -21,7 +21,6 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score
 from dataclasses import dataclass
 from typing import Optional
-import yfinance as yf
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -171,8 +170,9 @@ class TickerQualifier:
         '1d': {'interval': '1d', 'period': '10y', 'tf_min': 1440, 'bars_day': 1},
     }
     
-    def __init__(self):
+    def __init__(self, market_data=None):
         self.results_cache = {}
+        self._market_data = market_data
     
     def qualify(
         self,
@@ -406,15 +406,13 @@ class TickerQualifier:
         return result
     
     def _download_data(self, ticker: str, tf_config: dict) -> Optional[pd.DataFrame]:
-        """Descarga datos via yfinance."""
+        """Descarga datos via market_data port."""
         try:
-            dl = yf.download(
-                ticker,
-                period=tf_config['period'],
-                interval=tf_config['interval'],
-                progress=False,
-            )
-            if dl.empty:
+            if self._market_data is None:
+                logger.warning(f"TickerQualifier: no market_data port for {ticker}")
+                return None
+            dl = self._market_data.fetch_prices(ticker)
+            if dl is None or dl.empty:
                 return None
             if isinstance(dl.columns, pd.MultiIndex):
                 dl.columns = dl.columns.get_level_values(0)

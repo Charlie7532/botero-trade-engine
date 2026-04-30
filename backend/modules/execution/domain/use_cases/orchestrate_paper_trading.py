@@ -8,16 +8,16 @@ Scanner → Qualifier → Journal(PRE) → Execution → Monitor → Journal(POS
 Cada decisión queda documentada. Cada error es una lección.
 """
 import logging
-import os
 import uuid
 import sys
 
-import yfinance as yf
 import numpy as np
 import pandas as pd
 from datetime import datetime, UTC
 
-from backend.modules.execution.domain.use_cases.journal_trades import TradeJournal
+from backend.modules.execution.domain.ports.broker_port import BrokerPort
+from backend.modules.execution.domain.ports.trade_journal_port import TradeJournalPort
+from backend.modules.entry_decision.domain.ports.market_data_port import EntryMarketDataPort
 from backend.modules.execution.domain.entities.trade_record import TradeJournalEntry
 from backend.modules.portfolio_management.domain.rules.relative_strength import RelativeStrengthMonitor
 from backend.modules.portfolio_management.domain.rules.risk_guardian import RiskGuardian
@@ -26,7 +26,6 @@ from backend.modules.execution.domain.rules.exit_rules import ExitEngine
 from backend.modules.execution.domain.entities.exit_context import TradeState, MarketContext
 from backend.modules.execution.domain.use_cases.execute_order import InstitutionalExecutionEngine
 from backend.modules.execution.domain.entities.trade_context import TradeContext, PositionState
-from backend.modules.entry_decision.domain.use_cases.evaluate_entry import EntryIntelligenceHub
 
 logger = logging.getLogger(__name__)
 
@@ -44,39 +43,34 @@ class PaperTradingOrchestrator:
     6. learn() → Analizar patrones + ajustar parámetros
     """
     
-    def __init__(self):
-        self.journal = TradeJournal()
+    def __init__(
+        self,
+        broker: BrokerPort,
+        journal: TradeJournalPort,
+        market_data: EntryMarketDataPort,
+        entry_hub=None,
+    ):
+        self.broker = broker
+        self.journal = journal
+        self.market_data = market_data
         self.rs_monitor = RelativeStrengthMonitor()
         self.exit_engine = ExitEngine()
         self.optimizer = PortfolioOptimizer()
         self.risk_guardian = RiskGuardian()
         self.execution = InstitutionalExecutionEngine()
-        self.entry_hub = EntryIntelligenceHub()
-        self._alpaca = None
+        self.entry_hub = entry_hub
         self._freeze_state = {}  # {ticker: freeze_start_time}
-    
-    def _get_alpaca(self):
-        """Lazy init del cliente Alpaca."""
-        if self._alpaca is None:
-            from alpaca.trading.client import TradingClient
-            api_key = os.getenv('ALPACA_API_KEY', '')
-            secret = os.getenv('ALPACA_SECRET_KEY', '')
-            if api_key and secret:
-                self._alpaca = TradingClient(api_key, secret, paper=True)
-                logger.info("Alpaca Paper Trading conectado.")
-            else:
-                logger.error("Alpaca credentials no configuradas.")
-        return self._alpaca
     
     def get_account_status(self) -> dict:
         """Estado actual de la cuenta de Paper Trading y Exposición Estratégica."""
-        client = self._get_alpaca()
-        if not client:
-            return {"error": "Alpaca no conectado"}
-        
+        import asyncio
         try:
-            account = client.get_account()
-            positions = client.get_all_positions()
+            try:
+                portfolio = asyncio.get_event_loop().run_until_complete(
+                    self.broker.get_portfolio()
+                )
+            except RuntimeError:
+                portfolio = asyncio.run(self.broker.get_portfolio())
             
             # Recuperar tags de strategy_type del Journal para las posiciones abiertas
             open_trades = self.journal.get_open_trades()
@@ -86,9 +80,9 @@ class PaperTradingOrchestrator:
             tactical_exposure = 0.0
             
             mapped_positions = []
-            for p in positions:
-                strategy = strategy_map.get(p.symbol, 'CORE')  # Default CORE si no hay tag
-                market_val = float(p.market_value)
+            for p in portfolio.positions:
+                strategy = strategy_map.get(p.symbol, 'CORE')
+                market_val = p.market_price * p.quantity
                 
                 if strategy == 'CORE':
                     core_exposure += market_val
@@ -97,24 +91,26 @@ class PaperTradingOrchestrator:
                 
                 mapped_positions.append({
                     "ticker": p.symbol,
-                    "qty": float(p.qty),
-                    "avg_entry": float(p.avg_entry_price),
-                    "current_price": float(p.current_price),
-                    "unrealized_pnl": float(p.unrealized_pl),
-                    "unrealized_pnl_pct": float(p.unrealized_plpc) * 100,
+                    "qty": p.quantity,
+                    "avg_entry": p.avg_cost,
+                    "current_price": p.market_price,
+                    "unrealized_pnl": (p.market_price - p.avg_cost) * p.quantity,
+                    "unrealized_pnl_pct": ((p.market_price / p.avg_cost) - 1) * 100 if p.avg_cost > 0 else 0,
                     "market_value": market_val,
                     "strategy": strategy,
                 })
             
+            total_value = portfolio.cash + sum(p.market_price * p.quantity for p in portfolio.positions)
+            
             return {
-                "buying_power": float(account.buying_power),
-                "cash": float(account.cash),
-                "portfolio_value": float(account.portfolio_value),
-                "equity": float(account.equity),
+                "buying_power": portfolio.cash,
+                "cash": portfolio.cash,
+                "portfolio_value": total_value,
+                "equity": total_value,
                 "core_exposure": core_exposure,
                 "tactical_exposure": tactical_exposure,
                 "positions": mapped_positions,
-                "num_positions": len(positions),
+                "num_positions": len(portfolio.positions),
                 "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
@@ -126,13 +122,15 @@ class PaperTradingOrchestrator:
         Identifica trades fantasma (Ghost) y adopta trades huérfanos (Orphan).
         Debe correrse antes de cada escaneo.
         """
-        client = self._get_alpaca()
-        if not client:
-            return {"error": "Alpaca no conectado"}
-            
+        import asyncio
         try:
-            alpaca_positions = client.get_all_positions()
-            alpaca_tickers = {p.symbol: p for p in alpaca_positions}
+            try:
+                portfolio = asyncio.get_event_loop().run_until_complete(
+                    self.broker.get_portfolio()
+                )
+            except RuntimeError:
+                portfolio = asyncio.run(self.broker.get_portfolio())
+            broker_tickers = {p.symbol: p for p in portfolio.positions}
             
             db_trades = self.journal.get_open_trades()
             db_tickers = {t['ticker']: t for t in db_trades}
@@ -142,7 +140,7 @@ class PaperTradingOrchestrator:
             
             # 1. Detectar Ghost Trades (En DB pero no en Alpaca)
             for ticker, trade in db_tickers.items():
-                if ticker not in alpaca_tickers:
+                if ticker not in broker_tickers:
                     logger.warning(f"👻 Ghost Trade detectado: {ticker} cerrado en broker pero abierto en DB.")
                     # Build a minimal entry to close via the standard API
                     ghost_entry = TradeJournalEntry(
@@ -160,13 +158,13 @@ class PaperTradingOrchestrator:
                     ghosts_closed += 1
                     
             # 2. Detectar Orphan Trades (En Alpaca pero no en DB)
-            for ticker, p in alpaca_tickers.items():
+            for ticker, p in broker_tickers.items():
                 if ticker not in db_tickers:
                     logger.warning(f"🍼 Orphan Trade detectado: {ticker} abierto en broker pero sin registro en DB.")
                     # Adoptar trade
                     trade_id = f"BT-ORPHAN-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{ticker}"
-                    entry_price = float(p.avg_entry_price)
-                    qty = float(p.qty)
+                    entry_price = p.avg_cost
+                    qty = p.quantity
                     notional = entry_price * qty
                     
                     entry = TradeJournalEntry(
@@ -201,16 +199,16 @@ class PaperTradingOrchestrator:
         """Captura un snapshot completo del mercado para el journal."""
         try:
             # Datos del ticker
-            data = yf.download(ticker, period='3mo', interval='1d', progress=False)
-            spy = yf.download('SPY', period='3mo', interval='1d', progress=False)
-            vix_data = yf.download('^VIX', period='5d', interval='1d', progress=False)
+            data = self.market_data.fetch_prices(ticker)
+            spy = self.market_data.fetch_prices('SPY') if hasattr(self.market_data, 'fetch_prices') else None
+            vix_val = self.market_data.fetch_vix()
             
+            if data is None or data.empty:
+                return {"error": "No price data"}
             if isinstance(data.columns, pd.MultiIndex):
                 data.columns = data.columns.get_level_values(0)
-            if isinstance(spy.columns, pd.MultiIndex):
+            if spy is not None and isinstance(spy.columns, pd.MultiIndex):
                 spy.columns = spy.columns.get_level_values(0)
-            if isinstance(vix_data.columns, pd.MultiIndex):
-                vix_data.columns = vix_data.columns.get_level_values(0)
             
             close = float(data['Close'].iloc[-1])
             prev_close = float(data['Close'].iloc[-2]) if len(data) > 1 else close
@@ -220,10 +218,10 @@ class PaperTradingOrchestrator:
             avg_vol = float(data['Volume'].rolling(20).mean().iloc[-1])
             curr_vol = float(data['Volume'].iloc[-1])
             
-            spy_close = float(spy['Close'].iloc[-1])
-            spy_prev = float(spy['Close'].iloc[-2]) if len(spy) > 1 else spy_close
+            spy_close = float(spy['Close'].iloc[-1]) if spy is not None and not spy.empty else 0
+            spy_prev = float(spy['Close'].iloc[-2]) if spy is not None and len(spy) > 1 else spy_close
             
-            vix = float(vix_data['Close'].iloc[-1]) if not vix_data.empty else 17.0
+            vix = vix_val
             
             # RS
             stock_ret_20d = close / float(data['Close'].iloc[-20]) - 1 if len(data) >= 20 else 0
@@ -251,8 +249,8 @@ class PaperTradingOrchestrator:
                 bb_pos = "lower_half"
             
             # Info del ticker
-            info = yf.Ticker(ticker).info
-            sector = info.get('sector', 'Unknown')
+            # Sector info — via market data port if available
+            sector = 'Unknown'
             
             return {
                 "timestamp": datetime.now(UTC).isoformat(),
@@ -409,36 +407,26 @@ class PaperTradingOrchestrator:
         )
         
         # 4. Smart Entry — Pre-Market Validation + Limit Order
-        client = self._get_alpaca()
-        if not client:
-            return {"error": "Alpaca no conectado"}
-        
         try:
             from _legacy.smart_entry import SmartEntryEngine
+            import asyncio
             
             smart = SmartEntryEngine()
             analysis_price = snapshot.get('price', 0)
             atr = snapshot.get('atr', 1.0)
             
-            # Get current/premarket price from Alpaca
+            # Get current/premarket price from BrokerPort
             current_price = analysis_price
             bid, ask = None, None
             try:
-                from alpaca.data.requests import StockLatestQuoteRequest
-                from alpaca.data import StockHistoricalDataClient
-                
-                data_client = StockHistoricalDataClient(
-                    os.getenv('ALPACA_API_KEY'),
-                    os.getenv('ALPACA_SECRET_KEY'),
-                )
-                quote = data_client.get_stock_latest_quote(
-                    StockLatestQuoteRequest(symbol_or_symbols=ticker)
-                )
-                if ticker in quote:
-                    q = quote[ticker]
-                    bid = float(q.bid_price) if q.bid_price else None
-                    ask = float(q.ask_price) if q.ask_price else None
-                    current_price = float(q.ask_price) if q.ask_price else analysis_price
+                try:
+                    price = asyncio.get_event_loop().run_until_complete(
+                        self.broker.get_price(ticker)
+                    )
+                except RuntimeError:
+                    price = asyncio.run(self.broker.get_price(ticker))
+                current_price = price
+                ask = price  # BrokerPort.get_price returns ask
             except Exception as e:
                 logger.warning(f"No se pudo obtener quote premarket para {ticker}: {e}")
             
@@ -466,9 +454,10 @@ class PaperTradingOrchestrator:
                     "current_price": current_price,
                 }
             
-            # Submit LIMIT order (replaces MarketOrderRequest)
+            # Submit LIMIT order via SmartEntry (still uses Alpaca client internally)
+            # TODO: Migrate SmartEntryEngine to use BrokerPort
             order = smart.submit_alpaca_limit_order(
-                client=client,
+                client=None,  # Legacy interface — needs migration
                 check=check,
                 notional=adjusted_notional,
             )
@@ -535,8 +524,8 @@ class PaperTradingOrchestrator:
         
         # ═══ V2: Auto-activate Event Freeze ═══════════════════
         try:
-            from backend.infrastructure.data_providers.event_flow_intelligence import EventFlowIntelligence
-            event_flow = self.entry_hub.event_flow if hasattr(self.entry_hub, 'event_flow') else EventFlowIntelligence()
+            from backend.modules.flow_intelligence.domain.use_cases.analyze_whale_flow import EventFlowIntelligence
+            event_flow = self.entry_hub.event_flow if (self.entry_hub and hasattr(self.entry_hub, 'event_flow')) else EventFlowIntelligence()
             # Assess current macro environment (no ticker-specific data needed)
             whale_check = event_flow.assess(
                 spy_cumulative_delta=0,
@@ -647,28 +636,38 @@ class PaperTradingOrchestrator:
         """
         Cierra una posición con journal POST-TRADE completo.
         """
-        client = self._get_alpaca()
-        if not client:
-            return {"error": "Alpaca no conectado"}
-        
+        import asyncio
         try:
-            # Cerrar en Alpaca
-            from alpaca.trading.requests import MarketOrderRequest
-            from alpaca.trading.enums import OrderSide, TimeInForce
+            # Get current portfolio from broker
+            try:
+                portfolio = asyncio.get_event_loop().run_until_complete(
+                    self.broker.get_portfolio()
+                )
+            except RuntimeError:
+                portfolio = asyncio.run(self.broker.get_portfolio())
             
-            positions = client.get_all_positions()
-            pos = next((p for p in positions if p.symbol == ticker), None)
+            pos = next((p for p in portfolio.positions if p.symbol == ticker), None)
             
             if not pos:
                 return {"error": f"No hay posición abierta en {ticker}"}
             
-            qty = float(pos.qty)
-            order = client.submit_order(MarketOrderRequest(
+            qty = pos.quantity
+            
+            # Build sell order via BrokerPort
+            from backend.modules.execution.domain.entities.order_models import Order, OrderSide, OrderType, Broker
+            sell_order = Order(
                 symbol=ticker,
-                qty=qty,
                 side=OrderSide.SELL,
-                time_in_force=TimeInForce.DAY,
-            ))
+                order_type=OrderType.MARKET,
+                broker=Broker.ALPACA,
+                quantity=qty,
+            )
+            try:
+                order = asyncio.get_event_loop().run_until_complete(
+                    self.broker.place_order(sell_order)
+                )
+            except RuntimeError:
+                order = asyncio.run(self.broker.place_order(sell_order))
             
             # Snapshot de salida
             exit_snapshot = self.create_trade_snapshot(ticker)

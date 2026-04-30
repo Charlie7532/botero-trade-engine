@@ -5,6 +5,7 @@ from datetime import datetime, UTC
 from typing import Optional
 
 from backend.modules.options_gamma.domain.entities.gamma_models import GammaRegime, OpExType, OptionsAnalysis
+from backend.modules.options_gamma.domain.ports.options_data_port import OptionsDataPort
 from backend.modules.options_gamma.domain.rules.black_scholes import bs_gamma, bs_delta
 from backend.modules.options_gamma.domain.rules.opex_calendar import detect_opex
 
@@ -22,10 +23,9 @@ class OptionsAwareness:
     - Gravity Score (-1.0 a +1.0 direccional)
     """
 
-    def __init__(self):
+    def __init__(self, options_provider: OptionsDataPort):
         self.logger = logging.getLogger(f"{__name__}.OptionsAwareness")
-        from backend.modules.options_gamma.infrastructure.yfinance_adapter import YFinanceOptionsAdapter
-        self._adapter = YFinanceOptionsAdapter()
+        self._adapter = options_provider
 
     # ─────────────────────────────────────────────────────────
     # PUBLIC API
@@ -94,12 +94,12 @@ class OptionsAwareness:
 
     def get_nearest_expiration(self, symbol: str) -> Optional[str]:
         """Obtiene la fecha de expiración más cercana."""
-        return self._adapter.fetch_nearest_expiration(symbol)
+        return self._adapter.get_nearest_expiration(symbol)
 
     def calculate_max_pain(self, symbol: str,
                            expiration_date: Optional[str] = None) -> Optional[float]:
         """Legacy: Calculate max pain for a symbol."""
-        chain_data = self._adapter.fetch_chain(symbol)
+        chain_data = self._adapter.get_options_chain(symbol)
         if not chain_data or 'calls' not in chain_data:
             return None
         try:
@@ -111,7 +111,7 @@ class OptionsAwareness:
     def get_put_call_ratio(self, symbol: str,
                            expiration_date: Optional[str] = None) -> Optional[float]:
         """Legacy: PCR for a symbol."""
-        chain_data = self._adapter.fetch_chain(symbol)
+        chain_data = self._adapter.get_options_chain(symbol)
         if not chain_data or 'calls' not in chain_data:
             return None
         try:
@@ -140,7 +140,7 @@ class OptionsAwareness:
         result = OptionsAnalysis(symbol=symbol)
 
         try:
-            chain_data = self._adapter.fetch_chain(symbol)
+            chain_data = self._adapter.get_options_chain(symbol)
             if not chain_data or 'calls' not in chain_data:
                 return result
 

@@ -1,57 +1,60 @@
+"""
+Shared Use Cases — Thin Delegation Layer
+===========================================
+These are convenience functions for API routers. They depend on
+domain ports (BrokerPort), not concrete infrastructure.
+
+The run_backtest function is a special case — it uses Backtrader
+which is infrastructure. It's kept here for API router convenience
+but should be called via the simulation module's composition root.
+"""
 from datetime import datetime
 from typing import Type
 
-import backtrader as bt
-
-from backend.modules.simulation.domain.entities.simulation_models import BacktestResult
+from backend.modules.execution.domain.ports.broker_port import BrokerPort
 from backend.modules.shared.domain.entities.market_data import Bar
-from backend.modules.execution.domain.entities.order_models import Broker, Order, Trade
+from backend.modules.execution.domain.entities.order_models import Order
 from backend.modules.portfolio_management.domain.entities.portfolio_models import Portfolio
-from backend.modules.simulation.infrastructure.backtrader.data_feeds import create_data_feed
-from backend.modules.simulation.infrastructure.backtrader.base_strategy import BaseStrategy
-from backend.modules.execution.infrastructure.brokers.base import BrokerAdapter
 
 
 async def fetch_market_data(
-    broker: BrokerAdapter,
+    broker: BrokerPort,
     symbol: str,
     timeframe: str,
     start: datetime,
     end: datetime,
 ) -> list[Bar]:
-    """Fetch historical bars from any broker via the adapter interface."""
+    """Fetch historical bars from any broker via the port interface."""
     return await broker.get_bars(symbol, timeframe, start, end)
 
 
-async def place_order(broker: BrokerAdapter, order: Order) -> Order:
-    """Submit an order through the given broker adapter."""
+async def place_order(broker: BrokerPort, order: Order) -> Order:
+    """Submit an order through the given broker port."""
     return await broker.place_order(order)
 
 
-async def get_portfolio(broker: BrokerAdapter) -> Portfolio:
+async def get_portfolio(broker: BrokerPort) -> Portfolio:
     """Retrieve the current portfolio state from the given broker."""
     return await broker.get_portfolio()
 
 
 def run_backtest(
-    strategy_class: Type[BaseStrategy],
+    strategy_class,
     bars: list[Bar],
     initial_cash: float = 100_000.0,
     commission: float = 0.001,
     strategy_params: dict | None = None,
-) -> BacktestResult:
+):
     """Run a Backtrader backtest for the given strategy and bar data.
 
-    Args:
-        strategy_class: A subclass of BaseStrategy to run.
-        bars: Historical OHLCV bars (from any broker adapter).
-        initial_cash: Starting cash for the simulation.
-        commission: Per-trade commission as a fraction (0.001 = 0.1%).
-        strategy_params: Optional kwargs forwarded to the strategy.
-
-    Returns:
-        BacktestResult with performance metrics and trade log.
+    NOTE: This function imports Backtrader infrastructure lazily.
+    It is kept in shared for API router convenience.
     """
+    import backtrader as bt
+    from backend.modules.simulation.infrastructure.backtrader.data_feeds import create_data_feed
+    from backend.modules.execution.domain.entities.order_models import Broker, Trade
+    from backend.modules.simulation.domain.entities.simulation_models import BacktestResult
+
     cerebro = bt.Cerebro()
     cerebro.broker.setcash(initial_cash)
     cerebro.broker.setcommission(commission=commission)

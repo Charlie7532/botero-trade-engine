@@ -28,6 +28,9 @@ from dataclasses import asdict
 from datetime import datetime, date, UTC
 from typing import Optional
 from backend.modules.entry_decision.domain.entities.entry_report import EntryIntelligenceReport
+from backend.modules.entry_decision.domain.ports.market_data_port import EntryMarketDataPort
+from backend.modules.entry_decision.domain.ports.flow_data_port import FlowDataPort
+from backend.modules.options_gamma.domain.ports.options_data_port import OptionsDataPort
 
 logger = logging.getLogger(__name__)
 
@@ -50,25 +53,32 @@ class EntryIntelligenceHub:
             stop = report.stop_price
     """
 
-    def __init__(self):
-        # Módulos de decisión (from modules/)
+    def __init__(
+        self,
+        market_data: EntryMarketDataPort,
+        flow_data: FlowDataPort,
+        options_provider: OptionsDataPort,
+        journal=None,
+    ):
+        # Ports (injected)
+        self._market_data = market_data
+        self._flow_data = flow_data
+        self._options_provider = options_provider
+        self.journal = journal
+
+        # Domain use cases (cross-module — allowed by Clean Architecture)
         from backend.modules.flow_intelligence.domain.use_cases.analyze_whale_flow import EventFlowIntelligence
         from backend.modules.price_analysis.domain.use_cases.detect_price_phase import PricePhaseIntelligence
         from backend.modules.flow_intelligence.domain.use_cases.analyze_persistence import FlowPersistenceAnalyzer
         from backend.modules.volume_intelligence.domain.use_cases.analyze_volume_profile import VolumeProfileAnalyzer
-        from backend.modules.entry_decision.infrastructure.market_data_fetcher import MarketDataFetcher
 
         self.event_flow = EventFlowIntelligence()
         self.price_phase = PricePhaseIntelligence()
         self.flow_persistence = FlowPersistenceAnalyzer()
         self.volume_profile = VolumeProfileAnalyzer()
-        self._market_data = MarketDataFetcher()
         self._rsi_intel = None             # RSIIntelligence (lazy)
 
-        from backend.modules.execution.domain.use_cases.journal_trades import TradeJournal
-        self.journal = TradeJournal()
-
-        # Módulos de datos vivos (existentes)
+        # Lazy-init modules
         self._options = None
         self._kalman = None
         self._uw = None
@@ -81,7 +91,7 @@ class EntryIntelligenceHub:
         if self._options is None:
             try:
                 from backend.modules.options_gamma.domain.use_cases.analyze_gamma import OptionsAwareness
-                self._options = OptionsAwareness()
+                self._options = OptionsAwareness(self._options_provider)
                 logger.info("EntryHub: OptionsAwareness conectado ✅")
             except Exception as e:
                 logger.warning(f"EntryHub: OptionsAwareness NO disponible: {e}")
@@ -99,12 +109,8 @@ class EntryIntelligenceHub:
 
     def _get_uw(self):
         if self._uw is None:
-            try:
-                from backend.modules.flow_intelligence.infrastructure.uw_adapter import UnusualWhalesIntelligence
-                self._uw = UnusualWhalesIntelligence()
-                logger.info("EntryHub: UnusualWhalesIntelligence conectado ✅")
-            except Exception as e:
-                logger.warning(f"EntryHub: UnusualWhalesIntelligence NO disponible: {e}")
+            self._uw = self._flow_data
+            logger.info("EntryHub: FlowDataPort conectado ✅")
         return self._uw
 
     def _get_pattern(self):

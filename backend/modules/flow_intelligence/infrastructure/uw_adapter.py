@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 from datetime import datetime
 
+from backend.modules.entry_decision.domain.ports.flow_data_port import FlowDataPort
+
 logger = logging.getLogger(__name__)
 
 
@@ -126,9 +128,9 @@ class MarketTide:
 # MAIN ADAPTER
 # ================================================================
 
-class UnusualWhalesIntelligence:
+class UnusualWhalesIntelligence(FlowDataPort):
     """
-    Adaptador para datos de Unusual Whales.
+    Adaptador para datos de Unusual Whales. Implements FlowDataPort.
     
     Follows MCP pattern:
     - Receives pre-fetched data from Orchestrator

@@ -19,12 +19,13 @@ from typing import Optional
 import pandas as pd
 
 from backend.modules.simulation.domain.ports.time_series_port import TimeSeriesPort
+from backend.modules.simulation.domain.ports.data_harmonizer_port import DataHarmonizerPort
 
 logger = logging.getLogger(__name__)
 
 
-class DataHarmonizer:
-    """Transforms raw vault data into ML-ready feature DataFrames."""
+class DataHarmonizer(DataHarmonizerPort):
+    """Transforms raw vault data into ML-ready feature DataFrames. Implements DataHarmonizerPort."""
 
     def __init__(self, store: TimeSeriesPort):
         self.store = store

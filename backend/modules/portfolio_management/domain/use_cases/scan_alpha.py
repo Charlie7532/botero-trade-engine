@@ -16,8 +16,8 @@ Pipeline:
 """
 import logging
 import sys
-import os
 import numpy as np
+import pandas as pd
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -126,43 +126,22 @@ class AlphaScanner:
     # Static weights kept for backward compatibility
     WEIGHTS = AdaptiveWeightManager.BASE_WEIGHTS
     
-    def __init__(self):
-        self._finnhub = None
-        self._sector_flow = None
-        self._gurufocus = None
-        self._finviz = None
-        self._uw_intel = None
+    def __init__(
+        self,
+        finnhub=None,
+        sector_flow=None,
+        gurufocus=None,
+        finviz=None,
+        uw_intel=None,
+        market_data=None,
+    ):
+        self._finnhub = finnhub
+        self._sector_flow = sector_flow
+        self._gurufocus = gurufocus
+        self._finviz = finviz
+        self._uw_intel = uw_intel
+        self._market_data = market_data
         self.weight_manager = AdaptiveWeightManager()
-    
-    def _get_finnhub(self):
-        if self._finnhub is None:
-            from backend.infrastructure.data_providers.finnhub_intelligence import FinnhubIntelligence
-            self._finnhub = FinnhubIntelligence()
-        return self._finnhub
-    
-    def _get_gurufocus(self):
-        if self._gurufocus is None:
-            from backend.infrastructure.data_providers.gurufocus_intelligence import GuruFocusIntelligence
-            self._gurufocus = GuruFocusIntelligence()
-        return self._gurufocus
-
-    def _get_finviz(self):
-        if self._finviz is None:
-            from backend.infrastructure.data_providers.finviz_intelligence import FinvizIntelligence
-            self._finviz = FinvizIntelligence()
-        return self._finviz
-    
-    def _get_sector_flow(self):
-        if self._sector_flow is None:
-            from backend.infrastructure.data_providers.sector_flow import SectorFlowEngine
-            self._sector_flow = SectorFlowEngine()
-        return self._sector_flow
-    
-    def _get_uw_intel(self):
-        if self._uw_intel is None:
-            from backend.infrastructure.data_providers.uw_intelligence import UnusualWhalesIntelligence
-            self._uw_intel = UnusualWhalesIntelligence()
-        return self._uw_intel
     
     def scan(
         self,
@@ -198,8 +177,10 @@ class AlphaScanner:
         
         # Obtener contexto sectorial
         try:
-            sector_flow = self._get_sector_flow()
-            sector_report = sector_flow.get_sector_health_report()
+            if self._sector_flow:
+                sector_report = self._sector_flow.get_sector_health_report()
+            else:
+                sector_report = {}
         except Exception as e:
             logger.error(f"Error sector flow: {e}")
             sector_report = {}
@@ -279,18 +260,19 @@ class AlphaScanner:
         analyst_mcp_data: dict = None,
     ) -> dict:
         """Calcula el Alpha Score composite para un ticker."""
-        import yfinance as yf
-        
-        # 1. Descargar datos recientes
-        data = yf.download(ticker, period='3mo', interval='1d', progress=False)
-        spy = yf.download('SPY', period='3mo', interval='1d', progress=False)
-        
-        if data.empty or spy.empty or len(data) < 20:
+        if not self._market_data:
             return None
         
-        if isinstance(data.columns, __import__('pandas').MultiIndex):
+        # 1. Descargar datos recientes
+        data = self._market_data.fetch_prices(ticker)
+        spy = self._market_data.fetch_prices('SPY')
+        
+        if data is None or data.empty or spy is None or spy.empty or len(data) < 20:
+            return None
+        
+        if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.get_level_values(0)
-        if isinstance(spy.columns, __import__('pandas').MultiIndex):
+        if isinstance(spy.columns, pd.MultiIndex):
             spy.columns = spy.columns.get_level_values(0)
         
         # 2. RS vs SPY
@@ -303,10 +285,9 @@ class AlphaScanner:
         
         # 3. Sector health + RS vs Sector ETF
         sector_health_score = 50  # Default
-        stock_info = yf.Ticker(ticker).info
-        sector = stock_info.get('sector', 'Unknown')
+        sector = 'Unknown'
         
-        # RS vs Sector ETF (fix placeholder)
+        # RS vs Sector ETF
         SECTOR_ETFS = {
             'Technology': 'XLK', 'Healthcare': 'XLV', 'Financial Services': 'XLF',
             'Consumer Cyclical': 'XLY', 'Industrials': 'XLI', 'Energy': 'XLE',
@@ -317,9 +298,9 @@ class AlphaScanner:
         sector_etf = SECTOR_ETFS.get(sector)
         if sector_etf:
             try:
-                etf_data = yf.download(sector_etf, period='3mo', interval='1d', progress=False)
-                if not etf_data.empty and len(etf_data) >= 20:
-                    if isinstance(etf_data.columns, __import__('pandas').MultiIndex):
+                etf_data = self._market_data.fetch_prices(sector_etf)
+                if etf_data is not None and not etf_data.empty and len(etf_data) >= 20:
+                    if isinstance(etf_data.columns, pd.MultiIndex):
                         etf_data.columns = etf_data.columns.get_level_values(0)
                     etf_ret_20d = float(etf_data['Close'].iloc[-1] / etf_data['Close'].iloc[-20] - 1)
                     rs_sector = (1 + stock_ret_20d) / (1 + etf_ret_20d) if etf_ret_20d != -1 else 1.0
@@ -338,9 +319,9 @@ class AlphaScanner:
         insider_score = 50  # Neutral
         earnings_safe = True
         try:
-            fh = self._get_finnhub()
-            intel = fh.get_ticker_intelligence(ticker)
-            insider_sig = intel.get('insiders', {}).get('signal', 'neutral')
+            if self._finnhub:
+                intel = self._finnhub.get_ticker_intelligence(ticker)
+                insider_sig = intel.get('insiders', {}).get('signal', 'neutral')
             if insider_sig == 'strong_buy':
                 insider_score = 90
             elif insider_sig == 'buy':
@@ -376,11 +357,10 @@ class AlphaScanner:
         # 7. Guru / Analyst from MCP
         guru_score = 50
         analyst_score_val = 50
-        if insider_mcp_data and ticker in insider_mcp_data:
+        if insider_mcp_data and ticker in insider_mcp_data and self._gurufocus:
             try:
-                gf = self._get_gurufocus()
                 idata = insider_mcp_data[ticker]
-                insider_parsed = gf.parse_insider_conviction(
+                insider_parsed = self._gurufocus.parse_insider_conviction(
                     ticker,
                     cluster_data=idata.get("cluster"),
                     ceo_data=idata.get("ceo"),
@@ -389,17 +369,15 @@ class AlphaScanner:
                 insider_score = max(insider_score, insider_parsed.conviction_score)
             except Exception:
                 pass
-        if guru_mcp_data and ticker in guru_mcp_data:
+        if guru_mcp_data and ticker in guru_mcp_data and self._gurufocus:
             try:
-                gf = self._get_gurufocus()
-                guru = gf.parse_guru_tracking(ticker, guru_mcp_data[ticker])
+                guru = self._gurufocus.parse_guru_tracking(ticker, guru_mcp_data[ticker])
                 guru_score = guru.net_buying_score
             except Exception:
                 pass
-        if analyst_mcp_data and ticker in analyst_mcp_data:
+        if analyst_mcp_data and ticker in analyst_mcp_data and self._gurufocus:
             try:
-                gf = self._get_gurufocus()
-                analyst = gf.parse_analyst_intelligence(ticker, analyst_mcp_data[ticker])
+                analyst = self._gurufocus.parse_analyst_intelligence(ticker, analyst_mcp_data[ticker])
                 analyst_map = {"strong_buy": 90, "buy": 70, "hold": 50, "sell": 30, "strong_sell": 10}
                 analyst_score_val = analyst_map.get(analyst.consensus, 50)
             except Exception:

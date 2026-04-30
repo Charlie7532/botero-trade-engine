@@ -220,32 +220,53 @@ PYTHONPATH=backend python3 -m compileall backend/
 
 The following are acknowledged violations of the architecture that exist in the current codebase. They should be incrementally fixed but must NEVER be used as precedent for new code.
 
-### Domain → Infrastructure Imports (14 violations)
+### Domain → Infrastructure Imports (18 violations)
 Use Cases that directly import infrastructure adapters instead of going through Ports:
 
 | File | Violation |
 |---|---|
-| `options_gamma/domain/use_cases/analyze_gamma.py` | Imports `infrastructure.yfinance_adapter` |
-| `entry_decision/domain/use_cases/evaluate_entry.py` | Imports `infrastructure.market_data_fetcher` |
-| `entry_decision/domain/use_cases/evaluate_entry.py` | Imports `flow_intelligence/infrastructure.uw_adapter` |
-| `simulation/domain/use_cases/run_backtest.py` | Imports `infrastructure.data_providers` |
-| `execution/domain/use_cases/orchestrate_paper_trading.py` | Imports `infrastructure.data_providers` |
-| `execution/domain/use_cases/orchestrate_scans.py` | Imports `infrastructure.data_providers` |
-| `portfolio_management/domain/use_cases/scan_alpha.py` | Imports `infrastructure.data_providers` (×5) |
-| `portfolio_management/domain/use_cases/filter_universe.py` | Imports `infrastructure.data_providers` (×3) |
+| `options_gamma/domain/use_cases/analyze_gamma.py` | Imports `infrastructure.yfinance_adapter` (Port exists — unwired) |
+| `entry_decision/domain/use_cases/evaluate_entry.py` | Imports `infrastructure.market_data_fetcher` (Port exists — unwired) |
+| `entry_decision/domain/use_cases/evaluate_entry.py` | Imports `flow_intelligence/infrastructure.uw_adapter` (Port exists — unwired) |
+| `execution/domain/use_cases/orchestrate_paper_trading.py` | Imports Alpaca SDK directly + `infrastructure.data_providers` + `os.getenv` |
+| `execution/domain/use_cases/orchestrate_scans.py` | Imports `backend.infrastructure.data_providers.fundamental_cache` |
+| `execution/domain/use_cases/monitor_positions.py` | Imports Alpaca SDK directly + `os.environ` |
+| `execution/domain/use_cases/journal_trades.py` | Reads `os.getenv('MONGODB_URI')` — domain must not know DB credentials |
+| `portfolio_management/domain/use_cases/scan_alpha.py` | Imports `backend.infrastructure.data_providers.*` (×5) + `yfinance` |
+| `portfolio_management/domain/use_cases/filter_universe.py` | Imports `backend.infrastructure.data_providers.*` (×3) |
+| `portfolio_management/domain/use_cases/qualify_ticker.py` | `import yfinance as yf` at top level |
+| `simulation/domain/use_cases/calibrate_strategy.py` | Imports `infrastructure.data_harmonizer` |
+| `simulation/domain/use_cases/pre_trade_gate.py` | Imports `infrastructure.data_harmonizer` |
+| `shared/domain/use_cases/shared_use_cases.py` | Imports `backtrader`, `simulation/infrastructure/backtrader/*`, `execution/infrastructure/brokers/base` |
 
 **Fix pattern:** Define a Port ABC in `domain/ports/`, make the adapter implement it, inject the Port into the Use Case constructor.
 
-### Legacy Import Paths (8 violations)
-Files still using `from modules.` instead of `from backend.modules.`:
-- `shared/use_cases.py` (×3)
-- `execution/infrastructure/brokers/alpaca_adapter.py`
-- `execution/infrastructure/brokers/ib_adapter.py`
-- `entry_decision/domain/use_cases/evaluate_entry.py` (×2)
-- `portfolio_management/domain/use_cases/qualify_ticker.py`
+### External SDK Imports in Domain (7 violations)
+Domain layer imports external libraries that should only exist in infrastructure:
 
-### Empty Ports Directories
-All 9 module `domain/ports/` directories contain only empty `__init__.py` files. The only real Port definition exists at `shared/ports/market_data_port.py`. Each module with infrastructure adapters should eventually define Ports for its adapters.
+| File | Import |
+|---|---|
+| `execution/domain/use_cases/orchestrate_paper_trading.py` | `yfinance`, `alpaca.trading.client`, `alpaca.data` |
+| `execution/domain/use_cases/monitor_positions.py` | `alpaca.trading.client`, `alpaca.trading.enums` |
+| `portfolio_management/domain/use_cases/qualify_ticker.py` | `yfinance` |
+| `portfolio_management/domain/use_cases/scan_alpha.py` | `yfinance` |
+| `shared/domain/use_cases/shared_use_cases.py` | `backtrader` |
+
+### Legacy Import Paths
+✅ **Resolved.** No remaining `from modules.` (without `backend.` prefix) imports found.
+
+### Ports Status
+7 of 10 modules now have real Port definitions with abstract methods. Remaining modules without ports:
+- `price_analysis` — pure domain, no infra needed ✅
+- `volume_intelligence` — pure domain, no infra needed ✅
+- `pattern_recognition` — pure domain, no infra needed ✅
+
+### God Files (>500 LOC in domain)
+| File | LOC |
+|---|---|
+| `execution/domain/use_cases/orchestrate_paper_trading.py` | 793 |
+| `entry_decision/domain/use_cases/evaluate_entry.py` | 682 |
+| `portfolio_management/domain/use_cases/qualify_ticker.py` | 601 |
 
 ---
 

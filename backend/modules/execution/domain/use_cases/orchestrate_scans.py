@@ -85,15 +85,10 @@ class ScanOrchestrator:
         raw_tickers = list(set(sp500 + guru_gems))
         logger.info(f"🔍 Evaluando Universo ESTRUCTURAL: {len(raw_tickers)} activos (SP500 + Guru).")
 
-        # 2.5. Inicializar caché fundamental (MongoDB)
+        # 2.5. Fundamental cache — TODO: inject via FundamentalCachePort
         cache = None
         cache_hits = 0
         cache_misses = 0
-        try:
-            from backend.infrastructure.data_providers.fundamental_cache import FundamentalCache
-            cache = FundamentalCache()
-        except Exception as e:
-            logger.warning(f"Caché fundamental no disponible: {e}. Continuando sin caché.")
 
         # 3. Flujo HOHN: Primero filtramos la CALIDAD ESTRUCTURAL
         uf = UniverseFilter()

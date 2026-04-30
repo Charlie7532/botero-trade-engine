@@ -1,11 +1,8 @@
-import os
 import logging
 from datetime import datetime, UTC
-from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import GetOrdersRequest
-from alpaca.trading.enums import QueryOrderStatus
 
-from backend.modules.execution.domain.use_cases.journal_trades import TradeJournal
+from backend.modules.execution.domain.ports.broker_port import BrokerPort
+from backend.modules.execution.domain.ports.trade_journal_port import TradeJournalPort
 from backend.modules.portfolio_management.domain.rules.relative_strength import RelativeStrengthMonitor
 from backend.modules.portfolio_management.domain.rules.risk_guardian import RiskGuardian
 from backend.modules.execution.domain.rules.exit_rules import AdaptiveTrailingStop
@@ -36,57 +33,57 @@ ASSET_CLASS_MAP = {
 class PositionMonitor:
     """Monitor de posiciones en tiempo real."""
     
-    def __init__(self):
-        self.client = TradingClient(
-            os.environ.get('ALPACA_API_KEY', ''),
-            os.environ.get('ALPACA_SECRET_KEY', ''),
-            paper=True,
-        )
-        self.journal = TradeJournal()
-        self.rs_monitor = RelativeStrengthMonitor()
+    def __init__(
+        self,
+        broker: BrokerPort,
+        journal: TradeJournalPort,
+        rs_monitor: RelativeStrengthMonitor = None,
+        risk_guardian: RiskGuardian = None,
+    ):
+        self.broker = broker
+        self.journal = journal
+        self.rs_monitor = rs_monitor or RelativeStrengthMonitor()
         self.trailing = AdaptiveTrailingStop()
-        self.risk_guardian = RiskGuardian()
+        self.risk_guardian = risk_guardian or RiskGuardian()
     
     def get_full_status(self) -> dict:
-        """Estado completo del portafolio."""
-        account = self.client.get_account()
-        positions = self.client.get_all_positions()
-        orders = self.client.get_orders(GetOrdersRequest(status=QueryOrderStatus.OPEN))
+        """Estado completo del portafolio via BrokerPort."""
+        import asyncio
+        try:
+            portfolio = asyncio.get_event_loop().run_until_complete(
+                self.broker.get_portfolio()
+            )
+        except RuntimeError:
+            portfolio = asyncio.run(self.broker.get_portfolio())
+        
         journal_trades = self.journal.get_open_trades()
+        
+        total_value = portfolio.cash + sum(
+            p.market_price * p.quantity for p in portfolio.positions
+        )
         
         return {
             "account": {
-                "equity": float(account.equity),
-                "cash": float(account.cash),
-                "buying_power": float(account.buying_power),
-                "day_pnl": float(account.equity) - float(account.last_equity),
-                "day_pnl_pct": (float(account.equity) / float(account.last_equity) - 1) * 100 if float(account.last_equity) > 0 else 0,
+                "equity": total_value,
+                "cash": portfolio.cash,
+                "buying_power": portfolio.cash,  # Simplified — broker-specific
+                "day_pnl": 0.0,  # Requires extended BrokerPort
+                "day_pnl_pct": 0.0,
             },
             "positions": [
                 {
                     "ticker": p.symbol,
-                    "qty": float(p.qty),
-                    "avg_entry": float(p.avg_entry_price),
-                    "current_price": float(p.current_price),
-                    "market_value": float(p.market_value),
-                    "unrealized_pnl": float(p.unrealized_pl),
-                    "unrealized_pnl_pct": float(p.unrealized_plpc) * 100,
+                    "qty": p.quantity,
+                    "avg_entry": p.avg_cost,
+                    "current_price": p.market_price,
+                    "market_value": p.market_price * p.quantity,
+                    "unrealized_pnl": (p.market_price - p.avg_cost) * p.quantity,
+                    "unrealized_pnl_pct": ((p.market_price / p.avg_cost) - 1) * 100 if p.avg_cost > 0 else 0,
                     "asset_class": ASSET_CLASS_MAP.get(p.symbol, 'Unknown'),
                 }
-                for p in positions
+                for p in portfolio.positions
             ],
-            "pending_orders": [
-                {
-                    "ticker": o.symbol,
-                    "side": str(o.side),
-                    "type": str(o.type),
-                    "notional": float(o.notional) if o.notional else None,
-                    "qty": float(o.qty) if o.qty else None,
-                    "status": str(o.status),
-                    "asset_class": ASSET_CLASS_MAP.get(o.symbol, 'Unknown'),
-                }
-                for o in orders
-            ],
+            "pending_orders": [],  # TODO: Extend BrokerPort with get_open_orders()
             "journal_trades": journal_trades,
         }
     

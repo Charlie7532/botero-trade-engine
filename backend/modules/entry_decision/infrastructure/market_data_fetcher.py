@@ -3,17 +3,20 @@ Entry Decision — Market Data Adapter
 ======================================
 Infrastructure adapter: all yfinance downloads live HERE.
 The hub receives pure DataFrames, never touches yfinance.
+Implements EntryMarketDataPort.
 """
 import logging
 import pandas as pd
 from datetime import date
 from typing import Optional
 
+from backend.modules.entry_decision.domain.ports.market_data_port import EntryMarketDataPort
+
 logger = logging.getLogger(__name__)
 
 
-class MarketDataFetcher:
-    """Fetches price data, VIX, and SPY from yfinance."""
+class MarketDataFetcher(EntryMarketDataPort):
+    """Fetches price data, VIX, and SPY from yfinance. Implements EntryMarketDataPort."""
 
     def __init__(self):
         self._spy_cache: Optional[pd.DataFrame] = None

@@ -7,7 +7,7 @@ import { Icon } from "@iconify/react"
 import { motion } from "framer-motion"
 import { useSetPasswordFlow } from "@/modules/auth"
 import { Logo } from "@/components/Logo/Logo"
-import { PoweredBy } from "@/components/PoweredBy"
+import { PoweredBy } from "@/components/PoweredBy/PoweredBy"
 
 function SetPasswordContent() {
     const searchParams = useSearchParams()

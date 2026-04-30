@@ -62,6 +62,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    routes: {
+      login: '/login',
+    },
     dashboard: dashboardConfig,
     user: Users.slug,
     livePreview: {

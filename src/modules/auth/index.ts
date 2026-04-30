@@ -164,8 +164,9 @@ export function useLoginFlow({ redirectTo }: UseLoginFlowOptions) {
     }, [])
 
     const handleGoogleLogin = useCallback(() => {
-        setError('Google login is not configured yet.')
-    }, [])
+        const state = encodeURIComponent(redirectTo || '/account')
+        window.location.assign(`/api/users/oauth/google?state=${state}`)
+    }, [redirectTo])
 
     return {
         step,

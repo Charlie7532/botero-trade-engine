@@ -68,7 +68,6 @@ export interface Config {
   blocks: {};
   collections: {
     media: Media;
-    users: User;
     'user-avatar': UserAvatar;
     portfolios: Portfolio;
     'portfolio-memberships': PortfolioMembership;
@@ -82,6 +81,7 @@ export interface Config {
     'trade-snapshots': TradeSnapshot;
     forms: Form;
     'form-submissions': FormSubmission;
+    users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -104,7 +104,6 @@ export interface Config {
   };
   collectionsSelect: {
     media: MediaSelect<false> | MediaSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
     'user-avatar': UserAvatarSelect<false> | UserAvatarSelect<true>;
     portfolios: PortfoliosSelect<false> | PortfoliosSelect<true>;
     'portfolio-memberships': PortfolioMembershipsSelect<false> | PortfolioMembershipsSelect<true>;
@@ -118,6 +117,7 @@ export interface Config {
     'trade-snapshots': TradeSnapshotsSelect<false> | TradeSnapshotsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -252,42 +252,6 @@ export interface Media {
   };
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  nickname?: string | null;
-  preferredLanguage?: ('en' | 'es') | null;
-  authProvider?: ('payload' | 'google') | null;
-  passwordSetAt?: string | null;
-  otpCode?: string | null;
-  otpExpiry?: string | null;
-  otpAttempts?: number | null;
-  login_count?: number | null;
-  avatar?: (number | null) | UserAvatar;
-  role: 'superadmin' | 'admin' | 'user';
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
-}
-/**
  * User profile avatars and profile pictures
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -335,6 +299,43 @@ export interface UserAvatar {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  nickname?: string | null;
+  preferredLanguage?: ('en' | 'es') | null;
+  authProvider?: ('payload' | 'google') | null;
+  passwordSetAt?: string | null;
+  otpCode?: string | null;
+  otpExpiry?: string | null;
+  otpAttempts?: number | null;
+  login_count?: number | null;
+  avatar?: (number | null) | UserAvatar;
+  role: 'superadmin' | 'admin' | 'user';
+  sub?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1067,10 +1068,6 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
         relationTo: 'user-avatar';
         value: number | UserAvatar;
       } | null)
@@ -1121,6 +1118,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'form-submissions';
         value: number | FormSubmission;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1256,39 +1257,6 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
- */
-export interface UsersSelect<T extends boolean = true> {
-  name?: T;
-  nickname?: T;
-  preferredLanguage?: T;
-  authProvider?: T;
-  passwordSetAt?: T;
-  otpCode?: T;
-  otpExpiry?: T;
-  otpAttempts?: T;
-  login_count?: T;
-  avatar?: T;
-  role?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
       };
 }
 /**
@@ -1715,6 +1683,40 @@ export interface FormSubmissionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  nickname?: T;
+  preferredLanguage?: T;
+  authProvider?: T;
+  passwordSetAt?: T;
+  otpCode?: T;
+  otpExpiry?: T;
+  otpAttempts?: T;
+  login_count?: T;
+  avatar?: T;
+  role?: T;
+  sub?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1838,6 +1840,10 @@ export interface SiteSetting {
         }[]
       | null;
   };
+  /**
+   * When disabled, new public users cannot sign up and the Sign up option is hidden from login.
+   */
+  allowNewUsers?: boolean | null;
   seo?: {
     /**
      * Default meta description for pages that don't have one set
@@ -1907,6 +1913,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  allowNewUsers?: T;
   seo?:
     | T
     | {
@@ -1928,34 +1935,4 @@ export interface Auth {
 
 declare module 'payload' {
   export interface GeneratedTypes extends Config {}
-}
-
-// ---------------------------------------------------------------------------
-import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
-// Compatibility stubs for legacy CMS blog components (no Posts/Pages collections)
-// These are overwritten by `pnpm generate` — re-add if needed after regeneration.
-// ---------------------------------------------------------------------------
-export interface Post {
-  id: string | number
-  slug?: string | null
-  title?: string | null
-  meta?: { description?: string | null; title?: string | null; image?: Media | string | number | null } | null
-  categories?: ({ id?: string | null; title?: string | null } | null)[] | null
-  publishedAt?: string | null
-  populatedAuthors?: ({ id?: string | null; name?: string | null } | null)[] | null
-  heroImage?: Media | string | number | null
-  hero?: { type?: string | null; media?: Media | string | number | null } | null
-  content?: { [k: string]: unknown } | null
-  relatedPosts?: (Post | string | number | null)[] | null
-  [k: string]: unknown
-}
-
-export interface Page {
-  id: string | number
-  slug?: string | null
-  title?: string | null
-  meta?: { description?: string | null; title?: string | null; image?: Media | string | number | null } | null
-  hero?: { type?: string | null; media?: Media | string | number | null; richText?: DefaultTypedEditorState | null; links?: { link?: { label?: string | null; url?: string | null; type?: 'custom' | 'reference' | null; newTab?: boolean | null; appearance?: 'inline' | 'default' | 'primary' | 'secondary' | 'outline' | 'link' | 'destructive' | 'ghost' | null; reference?: { relationTo: 'pages' | 'posts'; value: string | number | { slug?: string | null; [key: string]: unknown } } | null } | null }[] | null } | null
-  layout?: unknown
-  [k: string]: unknown
 }

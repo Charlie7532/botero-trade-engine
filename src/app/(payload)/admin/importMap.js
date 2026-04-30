@@ -8,8 +8,8 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { LinkFeatureClient as LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { UserAvatarCell as UserAvatarCell_9fe0515a029c6b0db4b878b795bf4916 } from '@/collections/Users/components/UserAvatarCell'
 import { HeadingFeatureClient as HeadingFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { UserAvatarCell as UserAvatarCell_9fe0515a029c6b0db4b878b795bf4916 } from '@/collections/Users/components/UserAvatarCell'
 import { PolicyRowLabel as PolicyRowLabel_5207e1226c827f6c9a0849ee6839f8ee } from '@/globals/SiteSettings/PolicyRowLabel'
 import { default as default_2ca85bfe37efa5ce70ec84687778c385 } from '@/components/fields/ColorPicker'
 import { RowLabel as RowLabel_b0b703649be0f5e367ab51fa1273eea2 } from '@/globals/SiteSettings/RowLabel'
@@ -35,8 +35,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#LinkFeatureClient": LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "@/collections/Users/components/UserAvatarCell#UserAvatarCell": UserAvatarCell_9fe0515a029c6b0db4b878b795bf4916,
   "@payloadcms/richtext-lexical/client#HeadingFeatureClient": HeadingFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/collections/Users/components/UserAvatarCell#UserAvatarCell": UserAvatarCell_9fe0515a029c6b0db4b878b795bf4916,
   "@/globals/SiteSettings/PolicyRowLabel#PolicyRowLabel": PolicyRowLabel_5207e1226c827f6c9a0849ee6839f8ee,
   "@/components/fields/ColorPicker#default": default_2ca85bfe37efa5ce70ec84687778c385,
   "@/globals/SiteSettings/RowLabel#RowLabel": RowLabel_b0b703649be0f5e367ab51fa1273eea2,

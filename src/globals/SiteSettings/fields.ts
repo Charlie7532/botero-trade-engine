@@ -306,6 +306,16 @@ const seo: Field = {
     ],
 }
 
+const allowNewUsers: Field = {
+    name: 'allowNewUsers',
+    type: 'checkbox',
+    label: 'Allow New User Registration',
+    defaultValue: true,
+    admin: {
+        description: 'When disabled, new public users cannot sign up and the Sign up option is hidden from login.',
+    },
+}
+
 const legalPolicies: Field = {
     name: 'legalPolicies',
     type: 'array',
@@ -413,6 +423,7 @@ export const siteSettingsFields: Field[] = [
             {
                 label: 'Advance Settings',
                 fields: [
+                    allowNewUsers,
                     seo,
                 ],
             },

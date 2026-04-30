@@ -47,11 +47,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           themeMode={themeMode as 'light-only' | 'dark-only' | 'both'}
           defaultTheme={defaultTheme as 'light' | 'dark' | 'system'}
         >
-          <AdminBar
+          {/* <AdminBar
             adminBarProps={{
               preview: isEnabled,
             }}
-          />
+          /> */}
 
           {children}
         </Providers>

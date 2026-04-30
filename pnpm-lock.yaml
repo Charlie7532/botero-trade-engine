@@ -116,6 +116,9 @@ importers:
       payload:
         specifier: ^3.75.0
         version: 3.75.0(bufferutil@4.1.0)(graphql@16.11.0)(typescript@5.7.3)(utf-8-validate@6.0.6)
+      payload-oauth2:
+        specifier: ^1.0.20
+        version: 1.0.20(payload@3.75.0(bufferutil@4.1.0)(graphql@16.11.0)(typescript@5.7.3)(utf-8-validate@6.0.6))
       prism-react-renderer:
         specifier: ^2.3.1
         version: 2.4.1(react@19.2.4)
@@ -5240,6 +5243,12 @@ packages:
   path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
+
+  payload-oauth2@1.0.20:
+    resolution: {integrity: sha512-N7HH94EVdHkIKB4IRv2qJcjyhYUfg1XXZsOkuZXJ7H6SHDnlwAMDs98Y8+YRaiHVi/fRnanU+GOiE0f6a0aSxg==}
+    hasBin: true
+    peerDependencies:
+      payload: ^3
 
   payload@3.75.0:
     resolution: {integrity: sha512-JYJ545zu6URTMlhst1SBXW8WOAMeSfaIXffKluPUgzNfwWB/NcyzXjea+H7AGnL4nZiWJQhfbaRxvGherByXew==}
@@ -12417,6 +12426,10 @@ snapshots:
   path-to-regexp@6.3.0: {}
 
   path-type@4.0.0: {}
+
+  payload-oauth2@1.0.20(payload@3.75.0(bufferutil@4.1.0)(graphql@16.11.0)(typescript@5.7.3)(utf-8-validate@6.0.6)):
+    dependencies:
+      payload: 3.75.0(bufferutil@4.1.0)(graphql@16.11.0)(typescript@5.7.3)(utf-8-validate@6.0.6)
 
   payload@3.75.0(bufferutil@4.1.0)(graphql@16.11.0)(typescript@5.7.3)(utf-8-validate@6.0.6):
     dependencies:

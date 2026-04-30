@@ -8,7 +8,7 @@ import { Icon } from "@iconify/react"
 import { motion } from "framer-motion"
 import { useVerifyOtpFlow } from "@/modules/auth"
 import { Logo } from "@/components/Logo/Logo"
-import { PoweredBy } from "@/components/PoweredBy"
+import { PoweredBy } from "@/components/PoweredBy/PoweredBy"
 
 function VerifyOtpContent() {
     const searchParams = useSearchParams()

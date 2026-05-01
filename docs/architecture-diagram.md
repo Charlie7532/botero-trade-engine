@@ -1,6 +1,15 @@
-# Botero Trade Engine — Arquitectura Institucional v12
+# Botero Trade Engine — Arquitectura Institucional v13
 
-> Última actualización: 2026-04-30 | Versión V12 (JournalRegistry + BlacklistPort + Trade Forensics)
+> Última actualización: 2026-05-01 | Versión V13 (Expert Committee + Module Internals + Graphyfi)
+> Verificado con Graphyfi: 3387 nodos, 512 archivos, 12 módulos
+
+### 📚 Documentación Expandida (V13)
+
+| Documento | Contenido |
+|---|---|
+| **[architecture-diagram.md](./architecture-diagram.md)** | Este archivo — mapa general del sistema |
+| **[architecture-expert-committee.md](./architecture-expert-committee.md)** | Expert Committee, 6-Gate Protocol, Skill→Module→Decision map |
+| **[architecture-modules-internal.md](./architecture-modules-internal.md)** | Detalle interno de cada módulo: entities, ports, rules, use_cases |
 
 ---
 
@@ -20,72 +29,82 @@ graph TB
     end
 
     subgraph SKILLS["🔧 Agent Skills (.agents/skills/) — 17 skills"]
-        SK1["expert-mode — Skill Router"]
-        SK2["operational-purpose — Zero-Bias"]
-        SK3["clean-architecture — Hexagonal Rules"]
-        SK4["cio-allocator — Dalio Macro Regime"]
-        SK5["rotation-analyst — Weinstein & Pring"]
-        SK6["research-intelligence — Dual-Track Sourcing"]
-        SK7["fundamental-analyst — Hohn & Munger"]
-        SK8["tactical-entries — Eifert & PTJ"]
-        SK9["risk-manager — Druckenmiller & Seykota"]
-        SK10["backtesting — Simulation Engine"]
-        SK11["trading-analysis — Reports"]
-        SK12["4× Payload CMS Skills"]
-        SK13["trade-forensics ⭐NEW — Detect→Learn→Retrain→Prevent"]
+        SK_ALWAYS["🔒 ALWAYS ACTIVE<br/>operational-purpose (Zero-Bias)<br/>clean-architecture (Hexagonal Rules)"]
+        SK_CIO["🏛️ cio-allocator — Ray Dalio<br/>Capital allocation · Regime · Meritocracy"]
+        SK_ROT["🌍 rotation-analyst — Weinstein & Pring<br/>Stage Analysis · Intermarket cycles"]
+        SK_RI["🔍 research-intelligence<br/>Dual-track: Quality watchlist + Speculative opps"]
+        SK_FA["🎩 fundamental-analyst — Hohn & Munger<br/>Tollkeeper · Moat Stress Test · Valuation"]
+        SK_TE["🎯 tactical-entries — Eifert, Karsan & PTJ<br/>GEX · Vanna/Charm · 5:1 R:R · tape"]
+        SK_RM["📊 risk-manager — Druckenmiller & Seykota<br/>QUALITY: thesis exits · SPEC: mechanical stops"]
+        SK_BT["🧪 backtesting — López de Prado<br/>Triple Barrier · Meta-Label · Purged CV"]
+        SK_TA["📋 trading-analysis — Reports"]
+        SK_TF["🔬 trade-forensics<br/>Detect→Learn→Retrain→Prevent"]
+        SK_PL["⚙️ 4× Payload CMS skills<br/>Access · Hooks · Lifecycle · Routes"]
     end
 
     subgraph MODULES["🧩 Backend Modules (12 modules · Clean Architecture)"]
 
         subgraph MOD_ED["entry_decision"]
-            ED_D["domain/<br/>entities/ · ports/ · use_cases/<br/>EntryIntelligenceHub ⭐CORE<br/>EntryMarketDataPort · FlowDataPort"]
+            ED_D["domain/ entities · ports · rules<br/>EntryMarketDataPort"]
+            ED_A["application/ use_cases/<br/>EntryIntelligenceHub ⭐CORE<br/>9-step pipeline · Memory Guard"]
             ED_I["infrastructure/<br/>MarketDataFetcher (yfinance)"]
         end
 
         subgraph MOD_FI["flow_intelligence"]
-            FI_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>analyze_whale_flow · analyze_persistence<br/>CalendarDataPort"]
+            FI_D["domain/ entities · ports · rules<br/>CalendarDataPort · macro_calendar"]
+            FI_A["application/ use_cases/<br/>analyze_whale_flow · analyze_persistence<br/>WhaleVerdict · FlowPersistence"]
             FI_I["infrastructure/<br/>uw_adapter · uw_mcp_bridge<br/>fred_adapter · finnhub_adapter<br/>market_breadth_adapter"]
         end
 
         subgraph MOD_EX["execution"]
-            EX_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>orchestrate_paper_trading<br/>orchestrate_scans · monitor_positions<br/>execute_order · journal_trades<br/>surveillance_loop (Moat Audit + 4Q Blacklist) ⭐V12<br/>SpeculativeExitEngine (Seykota) ⭐<br/>QualityExitEngine (Druckenmiller) ⭐<br/>BrokerPort · TradeJournalPort (update_trade) ⭐V12<br/>InstrumentBlacklistPort ⭐V12<br/>SpeculativeTradeRecord ⭐V12<br/>QualityTradeRecord ⭐V12"]
-            EX_I["infrastructure/<br/>brokers/ (alpaca · ib · base)<br/>BrokerRegistry {QUALITY↔SPECULATIVE} ⭐<br/>JournalRegistry {QUALITY↔SPECULATIVE} ⭐V12<br/>alpaca_data_adapter<br/>postgres_journal_adapter (parametrized) ⭐V12<br/>postgres_blacklist_adapter ⭐V12"]
+            EX_D["domain/ entities · ports · rules<br/>BrokerPort · TradeJournalPort<br/>InstrumentBlacklistPort ⭐<br/>SpeculativeExitEngine (Seykota) ⭐<br/>QualityExitEngine (Druckenmiller) ⭐"]
+            EX_A["application/ use_cases/<br/>orchestrate_paper_trading ⭐CORE<br/>execute_order · journal_trades<br/>monitor_positions · orchestrate_scans<br/>surveillance_loop ⭐"]
+            EX_I["infrastructure/<br/>brokers/ (Alpaca · IB · base)<br/>BrokerRegistry {Q↔S} ⭐<br/>JournalRegistry {Q↔S} ⭐<br/>postgres_journal_adapter<br/>postgres_blacklist_adapter"]
         end
 
         subgraph MOD_OG["options_gamma"]
-            OG_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>analyze_gamma · OptionsDataPort<br/>black_scholes · opex_calendar"]
+            OG_D["domain/ entities · ports · rules<br/>OptionsDataPort · black_scholes · opex_calendar"]
+            OG_A["application/ use_cases/<br/>analyze_gamma<br/>GEX · put_wall · call_wall · max_pain"]
             OG_I["infrastructure/<br/>yfinance_adapter"]
         end
 
         subgraph MOD_PM["portfolio_management"]
-            PM_D["domain/<br/>entities/ · ports/ · rules/ · use_cases/<br/>filter_universe · scan_alpha<br/>qualify_ticker · optimize_portfolio<br/>detect_regime_change<br/>5 Ports · 7 Rules"]
-            PM_I["infrastructure/<br/>gurufocus · finviz · sector_flow<br/>macro_data · payload_instruments"]
+            PM_D["domain/ entities · ports · rules<br/>5 Ports · 7 Rules<br/>MacroRegimeDetector · RiskGuardian"]
+            PM_A["application/ use_cases/<br/>cio_orchestrator ⭐ · filter_universe<br/>scan_alpha · qualify_ticker<br/>optimize_portfolio · detect_regime_change"]
+            PM_I["infrastructure/<br/>gurufocus · finviz · sector_flow<br/>macro_data · payload_instruments<br/>sec_filings · sec_nlp_analyzer"]
         end
 
         subgraph MOD_PA["price_analysis"]
-            PA_D["domain/<br/>entities/ · rules/ · use_cases/<br/>detect_price_phase · analyze_rsi<br/>FIRE/STALK/ABORT verdicts"]
+            PA_D["domain/ entities · rules<br/>price_rules.py"]
+            PA_A["application/ use_cases/<br/>detect_price_phase (FIRE/STALK/ABORT)<br/>analyze_rsi (Cardwell/Brown)"]
         end
 
         subgraph MOD_VI["volume_intelligence"]
-            VI_D["domain/<br/>entities/ · rules/ · use_cases/<br/>track_volume_dynamics (Kalman)<br/>analyze_volume_profile (POC/VAH/VAL)"]
+            VI_D["domain/ entities · rules<br/>volume_rules.py"]
+            VI_A["application/ use_cases/<br/>track_volume_dynamics (Kalman)<br/>analyze_volume_profile (POC/VAH/VAL)"]
         end
 
         subgraph MOD_PR["pattern_recognition"]
-            PR_D["domain/<br/>entities/ · use_cases/<br/>detect_patterns<br/>Hammer · Engulfing · VCP"]
+            PR_D["domain/ entities<br/>PatternVerdict"]
+            PR_A["application/ use_cases/<br/>detect_patterns<br/>Hammer · Engulfing · VCP"]
         end
 
-        subgraph MOD_RI["rotation_intelligence ⭐NEW"]
-            RI_D["domain/<br/>entities/ · ports/ · use_cases/<br/>RotationScanner (Weinstein + Pring)<br/>RotationDataPort"]
+        subgraph MOD_RI["rotation_intelligence"]
+            RI_D["domain/ entities · ports<br/>RotationDataPort · rotation_snapshot"]
+            RI_A["application/ use_cases/<br/>rotation_scanner (Weinstein + Pring)"]
             RI_I["infrastructure/<br/>yahoo_rotation_adapter"]
         end
 
         subgraph MOD_SIM["simulation"]
-            SIM_D["domain/<br/>entities/ · ports/ · use_cases/<br/>run_backtest · oracle_backtest<br/>calibrate_strategy · pre_trade_gate<br/>engineer_features · strategy_composer<br/>10 Ports"]
-            SIM_I["infrastructure/<br/>data_harmonizer · timescale_data_store<br/>signal_adapters · smc_adapter<br/>postgres_trading_state<br/>triple_barrier · vault_interceptor"]
+            SIM_D["domain/ entities · ports (10)<br/>HistoricalData · TimeSeries · Signal<br/>BarrierLabeler · MarketStructure"]
+            SIM_A["application/ use_cases/<br/>run_backtest · oracle_backtest<br/>calibrate_strategy · pre_trade_gate<br/>engineer_features · strategy_composer<br/>retrain_trigger · analyze_trades"]
+            SIM_I["infrastructure/<br/>timescale_data_store · data_harmonizer<br/>signal_adapters · smc_adapter<br/>postgres_trading_state<br/>triple_barrier · vault_interceptor"]
         end
 
         subgraph MOD_SH["shared"]
-            SH_D["domain/<br/>entities/ · use_cases/<br/>shared_use_cases (delegation)<br/>cache_utils"]
+            SH_D["domain/ entities<br/>Bar · market_data types"]
+            SH_A["application/ use_cases/<br/>shared_use_cases (delegation)"]
+            SH_I["infrastructure/<br/>cache_utils (TTL + retry)"]
         end
     end
 
@@ -160,7 +179,7 @@ graph TB
 
 ---
 
-## 2. Módulos Backend — Hexagonal Architecture
+## 2. Módulos Backend — Hexagonal Architecture (post-refactoring)
 
 ```mermaid
 graph LR
@@ -170,21 +189,24 @@ graph LR
     end
 
     subgraph MOD["12 Backend Modules<br/>backend/modules/"]
-        subgraph INFRA2["Infrastructure<br/>(conoce Domain · usa SDKs)"]
+        subgraph INFRA2["Infrastructure<br/>(conoce Domain+App · usa SDKs)"]
             A1["entry_decision/infrastructure/<br/>MarketDataFetcher → EntryMarketDataPort"]
-            A2["flow_intelligence/infrastructure/<br/>uw_adapter → FlowDataPort<br/>finnhub_adapter · fred_adapter<br/>market_breadth_adapter"]
-            A3["execution/infrastructure/<br/>brokers/ (Alpaca · IB) → BrokerPort<br/>postgres_journal_adapter → TradeJournalPort"]
+            A2["flow_intelligence/infrastructure/<br/>uw_adapter → FlowDataPort<br/>finnhub · fred · market_breadth"]
+            A3["execution/infrastructure/<br/>brokers/ (Alpaca · IB) → BrokerPort<br/>postgres_journal → TradeJournalPort<br/>postgres_blacklist → InstrumentBlacklistPort"]
             A4["options_gamma/infrastructure/<br/>yfinance_adapter → OptionsDataPort"]
-            A5["portfolio_management/infrastructure/<br/>gurufocus · finviz · sector_flow<br/>macro_data · payload_instruments"]
-            A6["simulation/infrastructure/<br/>data_harmonizer · timescale_data_store<br/>signal_adapters · smc_adapter<br/>postgres_trading_state"]
+            A5["portfolio_management/infrastructure/<br/>gurufocus · finviz · sector_flow<br/>macro_data · payload · sec_filings"]
+            A6["simulation/infrastructure/<br/>timescale · data_harmonizer<br/>signal_adapters · smc · triple_barrier"]
             A7["rotation_intelligence/infrastructure/<br/>yahoo_rotation_adapter → RotationDataPort"]
+        end
+
+        subgraph APPLICATION["Application<br/>(conoce Domain · orquesta use_cases)"]
+            APP_UC["use_cases/ (~30 use cases)<br/>dtos/ (boundary contracts)"]
         end
 
         subgraph DOMAIN["Domain<br/>(no conoce nada externo)"]
             D_ENT["entities/<br/>Typed dataclasses"]
             D_PRT["ports/<br/>ABC interfaces<br/>(21 ports total)"]
             D_RUL["rules/<br/>Business constants<br/>& thresholds"]
-            D_UC["use_cases/<br/>Pure business logic<br/>(~28 use cases)"]
         end
     end
 
@@ -192,11 +214,11 @@ graph LR
         PG["Neon PostgreSQL<br/>+ TimescaleDB<br/>+ pgvector"]
     end
 
-    OUTER --> INFRA2
-    OUTER --> DOMAIN
+    OUTER --> APPLICATION
+    APPLICATION --> DOMAIN
     INFRA2 -.->|"implements Ports"| DOMAIN
     INFRA2 --> STORE2
-    DOMAIN --> D_ENT & D_PRT & D_RUL & D_UC
+    DOMAIN --> D_ENT & D_PRT & D_RUL
 ```
 
 ---
@@ -508,7 +530,7 @@ flowchart TD
 
 ---
 
-## 11. Inward Dependency Rule — Verificado ✅
+## 11. Inward Dependency Rule — Verificado ✅ (Graphyfi-verified)
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -516,11 +538,14 @@ flowchart TD
 │  ┌───────────────────────────────────────────────┐  │
 │  │  Infrastructure (adapters, SDKs, PostgreSQL)   │  │
 │  │  ┌─────────────────────────────────────────┐  │  │
-│  │  │  Domain (entities, ports, rules, use_cases)│  │  │
-│  │  │  • ZERO SDK imports                       │  │  │
-│  │  │  • ZERO os.getenv / os.environ            │  │  │
-│  │  │  • ZERO infrastructure imports            │  │  │
-│  │  │  • Dependencies injected via Ports (ABC)  │  │  │
+│  │  │  Application (use_cases, dtos)           │  │  │
+│  │  │  ┌───────────────────────────────────┐  │  │  │
+│  │  │  │  Domain (entities, ports, rules)   │  │  │  │
+│  │  │  │  • ZERO SDK imports               │  │  │  │
+│  │  │  │  • ZERO os.getenv / os.environ    │  │  │  │
+│  │  │  │  • ZERO infrastructure imports    │  │  │  │
+│  │  │  │  • Dependencies via Ports (ABC)   │  │  │  │
+│  │  │  └───────────────────────────────────┘  │  │  │
 │  │  └─────────────────────────────────────────┘  │  │
 │  └───────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
@@ -536,8 +561,12 @@ flowchart TD
 | Adapters implementing ports | **~16** | ✅ |
 | Composition Root | `execution_factory.py` | ✅ |
 | Clean modules (12/12) | **12** | ✅ |
+| Application layer separated | **12/12** | ✅ V13 |
+| Use cases in application/ | **~30** | ✅ V13 |
 | Dual Exit Engines | Quality + Speculative | ✅ |
 | Dual Broker Accounts | QUALITY + SPECULATIVE | ✅ |
+| Graphyfi nodes indexed | **3387** | ✅ V13 |
+| Agent skills active | **17** | ✅ V13 |
 
 ---
 

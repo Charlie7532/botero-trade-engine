@@ -23,7 +23,7 @@ from backend.modules.simulation.domain.entities.strategy_profile import (
     InvestmentCategory, StrategyProfile, SignalConfig,
     OracleGeometry, ORACLE_GEOMETRY, GatingCriteria,
 )
-from backend.modules.simulation.domain.use_cases.oracle_backtest import (
+from backend.modules.simulation.application.use_cases.oracle_backtest import (
     OracleBacktester, SignalRanking,
 )
 from backend.modules.simulation.domain.ports.historical_data_port import HistoricalDataPort

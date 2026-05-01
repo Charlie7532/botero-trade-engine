@@ -123,7 +123,7 @@ def build_entry_hub():
     Memory Guard (pgvector) uses SPECULATIVE journal only —
     the 9D tactical vector has no meaning for QUALITY positions.
     """
-    from backend.modules.entry_decision.domain.use_cases.evaluate_entry import EntryIntelligenceHub
+    from backend.modules.entry_decision.application.use_cases.evaluate_entry import EntryIntelligenceHub
     return EntryIntelligenceHub(
         market_data=build_market_data(),
         flow_data=build_flow_data(),
@@ -137,7 +137,7 @@ def build_entry_hub():
 
 def build_orchestrator():
     """Build a fully wired PaperTradingOrchestrator with dual registries."""
-    from backend.modules.execution.domain.use_cases.orchestrate_paper_trading import PaperTradingOrchestrator
+    from backend.modules.execution.application.use_cases.orchestrate_paper_trading import PaperTradingOrchestrator
     return PaperTradingOrchestrator(
         broker_registry=build_broker_registry(),
         journal_registry=build_journal_registry(),
@@ -150,7 +150,7 @@ def build_orchestrator():
 
 def build_position_monitor():
     """Build a fully wired PositionMonitor."""
-    from backend.modules.execution.domain.use_cases.monitor_positions import PositionMonitor
+    from backend.modules.execution.application.use_cases.monitor_positions import PositionMonitor
     return PositionMonitor(
         broker_registry=build_broker_registry(),
         journal_registry=build_journal_registry(),
@@ -161,7 +161,7 @@ def build_position_monitor():
 
 def build_surveillance_loop():
     """Build SurveillanceLoop wired to QUALITY journal + blacklist."""
-    from backend.modules.execution.domain.use_cases.surveillance_loop import SurveillanceLoop
+    from backend.modules.execution.application.use_cases.surveillance_loop import SurveillanceLoop
     return SurveillanceLoop(
         quality_journal=build_quality_journal(),
         blacklist=build_blacklist(),

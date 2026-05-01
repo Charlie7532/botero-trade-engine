@@ -115,8 +115,8 @@ class OptionsDataPort(ABC):
 ```
 
 ```python
-# 2. USE the Port in domain/use_cases/ (constructor injection)
-# backend/modules/options_gamma/domain/use_cases/analyze_gamma.py
+# 2. USE the Port in application/use_cases/ (constructor injection)
+# backend/modules/options_gamma/application/use_cases/analyze_gamma.py
 class OptionsAwareness:
     def __init__(self, options_provider: OptionsDataPort):
         self._provider = options_provider  # Interface, not concrete class
@@ -158,13 +158,13 @@ result = engine.analyze("AAPL")
 | **domain/entities** | ✅ | ❌ | ❌ | ❌ | ❌ | ⚠️ Shared only | ❌ | ❌ | ✅ |
 | **domain/rules** | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | **domain/ports** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| **domain/use_cases** | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
+| **application/use_cases** | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
 | **infrastructure** | ✅ | ✅ | ❌ | ✅ (implements) | ✅ | ✅ | ❌ | ❌ | ✅ |
 | **API routers** | ✅ | ❌ | ✅ | ❌ | ✅ (wiring) | ✅ | ✅ | ✅ (wiring) | ✅ |
 
 **Key rules:**
-- `domain/use_cases/` → ❌ NEVER imports from any `infrastructure/` (use Ports instead)
-- `infrastructure/` → ❌ NEVER imports from `domain/use_cases/` (adapters don't orchestrate)
+- `application/use_cases/` → ❌ NEVER imports from any `infrastructure/` (use Ports instead)
+- `infrastructure/` → ❌ NEVER imports from `application/use_cases/` (adapters don't orchestrate)
 - Cross-module infrastructure imports are ALWAYS forbidden
 
 ---
@@ -174,10 +174,10 @@ result = engine.analyze("AAPL")
 - **Always use absolute imports** starting from `backend.modules.`:
   ```python
   # ✅ CORRECT
-  from backend.modules.price_analysis.domain.use_cases.detect_price_phase import PricePhaseIntelligence
+  from backend.modules.price_analysis.application.use_cases.detect_price_phase import PricePhaseIntelligence
 
   # ❌ WRONG — legacy pattern, must be migrated
-  from modules.price_analysis.domain.use_cases.detect_price_phase import PricePhaseIntelligence
+  from modules.price_analysis.application.use_cases.detect_price_phase import PricePhaseIntelligence
   ```
 - **Never use relative imports** spanning across modules.
 - **Never use `from modules.` without the `backend.` prefix** — this is a legacy pattern that must be eliminated.
@@ -225,19 +225,19 @@ Use Cases that directly import infrastructure adapters instead of going through 
 
 | File | Violation |
 |---|---|
-| `options_gamma/domain/use_cases/analyze_gamma.py` | Imports `infrastructure.yfinance_adapter` (Port exists — unwired) |
-| `entry_decision/domain/use_cases/evaluate_entry.py` | Imports `infrastructure.market_data_fetcher` (Port exists — unwired) |
-| `entry_decision/domain/use_cases/evaluate_entry.py` | Imports `flow_intelligence/infrastructure.uw_adapter` (Port exists — unwired) |
-| `execution/domain/use_cases/orchestrate_paper_trading.py` | Imports Alpaca SDK directly + `infrastructure.data_providers` + `os.getenv` |
-| `execution/domain/use_cases/orchestrate_scans.py` | Imports `backend.infrastructure.data_providers.fundamental_cache` |
-| `execution/domain/use_cases/monitor_positions.py` | Imports Alpaca SDK directly + `os.environ` |
-| `execution/domain/use_cases/journal_trades.py` | Reads `os.getenv('MONGODB_URI')` — domain must not know DB credentials |
-| `portfolio_management/domain/use_cases/scan_alpha.py` | Imports `backend.infrastructure.data_providers.*` (×5) + `yfinance` |
-| `portfolio_management/domain/use_cases/filter_universe.py` | Imports `backend.infrastructure.data_providers.*` (×3) |
-| `portfolio_management/domain/use_cases/qualify_ticker.py` | `import yfinance as yf` at top level |
-| `simulation/domain/use_cases/calibrate_strategy.py` | Imports `infrastructure.data_harmonizer` |
-| `simulation/domain/use_cases/pre_trade_gate.py` | Imports `infrastructure.data_harmonizer` |
-| `shared/domain/use_cases/shared_use_cases.py` | Imports `backtrader`, `simulation/infrastructure/backtrader/*`, `execution/infrastructure/brokers/base` |
+| `options_gamma/application/use_cases/analyze_gamma.py` | Imports `infrastructure.yfinance_adapter` (Port exists — unwired) |
+| `entry_decision/application/use_cases/evaluate_entry.py` | Imports `infrastructure.market_data_fetcher` (Port exists — unwired) |
+| `entry_decision/application/use_cases/evaluate_entry.py` | Imports `flow_intelligence/infrastructure.uw_adapter` (Port exists — unwired) |
+| `execution/application/use_cases/orchestrate_paper_trading.py` | Imports Alpaca SDK directly + `infrastructure.data_providers` + `os.getenv` |
+| `execution/application/use_cases/orchestrate_scans.py` | Imports `backend.infrastructure.data_providers.fundamental_cache` |
+| `execution/application/use_cases/monitor_positions.py` | Imports Alpaca SDK directly + `os.environ` |
+| `execution/application/use_cases/journal_trades.py` | Reads `os.getenv('MONGODB_URI')` — domain must not know DB credentials |
+| `portfolio_management/application/use_cases/scan_alpha.py` | Imports `backend.infrastructure.data_providers.*` (×5) + `yfinance` |
+| `portfolio_management/application/use_cases/filter_universe.py` | Imports `backend.infrastructure.data_providers.*` (×3) |
+| `portfolio_management/application/use_cases/qualify_ticker.py` | `import yfinance as yf` at top level |
+| `simulation/application/use_cases/calibrate_strategy.py` | Imports `infrastructure.data_harmonizer` |
+| `simulation/application/use_cases/pre_trade_gate.py` | Imports `infrastructure.data_harmonizer` |
+| `shared/application/use_cases/shared_use_cases.py` | Imports `backtrader`, `simulation/infrastructure/backtrader/*`, `execution/infrastructure/brokers/base` |
 
 **Fix pattern:** Define a Port ABC in `domain/ports/`, make the adapter implement it, inject the Port into the Use Case constructor.
 
@@ -246,11 +246,11 @@ Domain layer imports external libraries that should only exist in infrastructure
 
 | File | Import |
 |---|---|
-| `execution/domain/use_cases/orchestrate_paper_trading.py` | `yfinance`, `alpaca.trading.client`, `alpaca.data` |
-| `execution/domain/use_cases/monitor_positions.py` | `alpaca.trading.client`, `alpaca.trading.enums` |
-| `portfolio_management/domain/use_cases/qualify_ticker.py` | `yfinance` |
-| `portfolio_management/domain/use_cases/scan_alpha.py` | `yfinance` |
-| `shared/domain/use_cases/shared_use_cases.py` | `backtrader` |
+| `execution/application/use_cases/orchestrate_paper_trading.py` | `yfinance`, `alpaca.trading.client`, `alpaca.data` |
+| `execution/application/use_cases/monitor_positions.py` | `alpaca.trading.client`, `alpaca.trading.enums` |
+| `portfolio_management/application/use_cases/qualify_ticker.py` | `yfinance` |
+| `portfolio_management/application/use_cases/scan_alpha.py` | `yfinance` |
+| `shared/application/use_cases/shared_use_cases.py` | `backtrader` |
 
 ### Legacy Import Paths
 ✅ **Resolved.** No remaining `from modules.` (without `backend.` prefix) imports found.
@@ -264,9 +264,9 @@ Domain layer imports external libraries that should only exist in infrastructure
 ### God Files (>500 LOC in domain)
 | File | LOC |
 |---|---|
-| `execution/domain/use_cases/orchestrate_paper_trading.py` | 793 |
-| `entry_decision/domain/use_cases/evaluate_entry.py` | 682 |
-| `portfolio_management/domain/use_cases/qualify_ticker.py` | 601 |
+| `execution/application/use_cases/orchestrate_paper_trading.py` | 793 |
+| `entry_decision/application/use_cases/evaluate_entry.py` | 682 |
+| `portfolio_management/application/use_cases/qualify_ticker.py` | 601 |
 
 ---
 
@@ -283,7 +283,7 @@ Is it an interface for external data/services?
   → domain/ports/ (ABC with abstract methods)
 
 Is it business logic orchestrating rules and entities?
-  → domain/use_cases/ (receives Ports via constructor)
+  → application/use_cases/ (receives Ports via constructor)
 
 Is it a connection to an external API, DB, or SDK?
   → infrastructure/ (implements a Port from domain/ports/)

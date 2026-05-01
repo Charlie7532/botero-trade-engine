@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, UTC
-from backend.modules.execution.domain.use_cases.orchestrate_paper_trading import PaperTradingOrchestrator
-from backend.modules.portfolio_management.domain.use_cases.cio_orchestrator import CIOOrchestrator
+from backend.modules.execution.application.use_cases.orchestrate_paper_trading import PaperTradingOrchestrator
+from backend.modules.portfolio_management.application.use_cases.cio_orchestrator import CIOOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +66,9 @@ class ScanOrchestrator:
         5. Pasa los ganadores estrictos al AlphaScanner para timing de entrada.
         6. Compra con Strategy: QUALITY.
         """
-        from backend.modules.portfolio_management.domain.use_cases.filter_universe import UniverseFilter
+        from backend.modules.portfolio_management.application.use_cases.filter_universe import UniverseFilter
         from backend.modules.portfolio_management.domain.entities.universe_candidate import UniverseCandidate
-        from backend.modules.portfolio_management.domain.use_cases.scan_alpha import AlphaScanner
+        from backend.modules.portfolio_management.application.use_cases.scan_alpha import AlphaScanner
 
         session_start = datetime.now(UTC).isoformat()
         logger.info(f"🏛️ INICIANDO ESCANEO QUALITY (Hohn & Munger Modo) — {session_start}")
@@ -197,8 +197,8 @@ class ScanOrchestrator:
         Busca momentum direccional puro y asimetrías de opciones.
         Respeta implacablemente el presupuesto dictado por el CIO (Ray Dalio).
         """
-        from backend.modules.portfolio_management.domain.use_cases.scan_alpha import AlphaScanner
-        from backend.modules.portfolio_management.domain.use_cases.filter_universe import UniverseFilter
+        from backend.modules.portfolio_management.application.use_cases.scan_alpha import AlphaScanner
+        from backend.modules.portfolio_management.application.use_cases.filter_universe import UniverseFilter
         from backend.modules.portfolio_management.domain.entities.universe_candidate import UniverseCandidate
 
         logger.info(f"🔥 INICIANDO ESCANEO SPECULATIVE (Eifert & PTJ Modo)")

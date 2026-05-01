@@ -100,7 +100,7 @@ class PricePhaseIntelligence:
         rsi_conviction = 0.0
         try:
             if PricePhaseIntelligence._rsi_intel is None:
-                from backend.modules.price_analysis.domain.use_cases.analyze_rsi import RSIIntelligence
+                from backend.modules.price_analysis.application.use_cases.analyze_rsi import RSIIntelligence
                 PricePhaseIntelligence._rsi_intel = RSIIntelligence()
 
             # Derive regime hint from VP if available
@@ -423,7 +423,7 @@ class PricePhaseIntelligence:
         rsi_zone = "NEUTRAL"
         try:
             if PricePhaseIntelligence._rsi_intel is None:
-                from backend.modules.price_analysis.domain.use_cases.analyze_rsi import RSIIntelligence
+                from backend.modules.price_analysis.application.use_cases.analyze_rsi import RSIIntelligence
                 PricePhaseIntelligence._rsi_intel = RSIIntelligence()
             regime_hint = "NEUTRAL"
             if vp_result is not None:

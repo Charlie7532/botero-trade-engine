@@ -346,7 +346,7 @@ class AlphaScanner:
         qualifier_grade = 'N/A'
         if include_qualifier:
             try:
-                from backend.modules.portfolio_management.domain.use_cases.qualify_ticker import TickerQualifier
+                from backend.modules.portfolio_management.application.use_cases.qualify_ticker import TickerQualifier
                 q = TickerQualifier()
                 result = q.qualify(ticker, '1h', min_bars=200)
                 qualifier_score = result.edge_score

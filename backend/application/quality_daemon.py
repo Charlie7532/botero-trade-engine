@@ -3,7 +3,7 @@ import logging
 import argparse
 from datetime import datetime, UTC
 from backend.api.factories.execution_factory import build_orchestrator
-from backend.modules.execution.domain.use_cases.orchestrate_scans import ScanOrchestrator
+from backend.modules.execution.application.use_cases.orchestrate_scans import ScanOrchestrator
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("QualityDaemon")

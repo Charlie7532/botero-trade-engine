@@ -25,7 +25,7 @@ class KalmanSignalAdapter(SignalPort):
         return "kalman_wyckoff"
 
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
-        from backend.modules.volume_intelligence.domain.use_cases.track_volume_dynamics import (
+        from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import (
             KalmanVolumeTracker,
         )
         tracker = KalmanVolumeTracker(dt=1.0, process_noise=0.05, obs_noise=0.2)
@@ -99,7 +99,7 @@ class VolumeQualitySignalAdapter(SignalPort):
         return "volume_quality"
 
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
-        from backend.modules.simulation.domain.use_cases.run_backtest import WalkForwardBacktester
+        from backend.modules.simulation.application.use_cases.run_backtest import WalkForwardBacktester
 
         signals = []
         for i in range(len(ohlc)):

@@ -28,7 +28,7 @@ Si NO pasan, el sistema NO avanza a Shadow Mode.
 Dependencias:
   - data/historical/market_context_5y.parquet  (descargado por download_historical.py)
   - backend/modules/volume_intelligence/       (KalmanVolumeTracker, SectorRegimeDetector)
-  - backend/modules/simulation/domain/use_cases/engineer_features.py (QuantFeatureEngineer)
+  - backend/modules/simulation/application/use_cases/engineer_features.py (QuantFeatureEngineer)
   - backend/application/trade_autopsy.py        (TradeAutopsy para post-mortem)
 """
 import logging
@@ -40,8 +40,8 @@ from datetime import datetime, UTC
 from typing import Optional
 
 from backend.modules.simulation.domain.entities.simulation_models import WindowResult, BacktestReport
-from backend.modules.simulation.domain.use_cases.analyze_trades import TradeAutopsy
-from backend.modules.volume_intelligence.domain.use_cases.track_volume_dynamics import (
+from backend.modules.simulation.application.use_cases.analyze_trades import TradeAutopsy
+from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import (
     KalmanVolumeTracker,
 )
 from backend.modules.volume_intelligence.domain.rules.volume_rules import (

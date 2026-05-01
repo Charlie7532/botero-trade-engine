@@ -247,7 +247,7 @@ def run_all_tests():
 
     print("\n🔮 7. ORACLE BACKTEST")
 
-    from backend.modules.simulation.domain.use_cases.oracle_backtest import OracleBacktester
+    from backend.modules.simulation.application.use_cases.oracle_backtest import OracleBacktester
     from backend.modules.simulation.domain.entities.strategy_profile import (
         InvestmentCategory, ORACLE_GEOMETRY,
     )
@@ -279,7 +279,7 @@ def run_all_tests():
 
     print("\n🎼 8. STRATEGY COMPOSER")
 
-    from backend.modules.simulation.domain.use_cases.strategy_composer import StrategyComposer
+    from backend.modules.simulation.application.use_cases.strategy_composer import StrategyComposer
     from backend.modules.simulation.domain.entities.strategy_profile import (
         StrategyProfile, SignalConfig,
     )
@@ -393,7 +393,7 @@ def run_all_tests():
 
     print("\n🚧 10. PRE-TRADE GATE")
 
-    from backend.modules.simulation.domain.use_cases.pre_trade_gate import PreTradeGate
+    from backend.modules.simulation.application.use_cases.pre_trade_gate import PreTradeGate
 
     @test("Gate rejects on insufficient data")
     def _():
@@ -436,8 +436,8 @@ def run_all_tests():
 
     print("\n🔄 11. FEEDBACK LOOP")
 
-    from backend.modules.simulation.domain.use_cases.analyze_indicators import IndicatorAnalyzer
-    from backend.modules.simulation.domain.use_cases.retrain_trigger import RetrainTrigger
+    from backend.modules.simulation.application.use_cases.analyze_indicators import IndicatorAnalyzer
+    from backend.modules.simulation.application.use_cases.retrain_trigger import RetrainTrigger
 
     @test("IndicatorAnalyzer quality report (empty)")
     def _():
@@ -496,8 +496,8 @@ def run_all_tests():
     @test("Domain use cases import only ports (not adapters)")
     def _():
         use_cases = [
-            "backend/modules/simulation/domain/use_cases/oracle_backtest.py",
-            "backend/modules/simulation/domain/use_cases/strategy_composer.py",
+            "backend/modules/simulation/application/use_cases/oracle_backtest.py",
+            "backend/modules/simulation/application/use_cases/strategy_composer.py",
         ]
         for uc_path in use_cases:
             content = Path(uc_path).read_text()

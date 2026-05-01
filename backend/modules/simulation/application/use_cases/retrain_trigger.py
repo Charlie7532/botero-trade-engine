@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, UTC
 from typing import Optional
 
-from backend.modules.simulation.domain.use_cases.analyze_indicators import (
+from backend.modules.simulation.application.use_cases.analyze_indicators import (
     IndicatorAnalyzer, QualityReport,
 )
 from backend.modules.simulation.domain.ports.historical_data_port import HistoricalDataPort

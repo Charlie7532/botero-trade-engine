@@ -32,7 +32,7 @@ from backend.modules.simulation.domain.entities.trade_snapshot import (
     TradeSnapshot, MarketStructureSnapshot, SignalSnapshot,
 )
 from backend.modules.simulation.domain.entities.execution_intent import ExecutionIntent
-from backend.modules.simulation.domain.use_cases.strategy_composer import (
+from backend.modules.simulation.application.use_cases.strategy_composer import (
     StrategyComposer, CompositeDecision,
 )
 from backend.modules.simulation.domain.ports.historical_data_port import HistoricalDataPort

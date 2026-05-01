@@ -69,10 +69,10 @@ class EntryIntelligenceHub:
         self._blacklist = blacklist  # InstrumentBlacklistPort
 
         # Domain use cases (cross-module — allowed by Clean Architecture)
-        from backend.modules.flow_intelligence.domain.use_cases.analyze_whale_flow import EventFlowIntelligence
-        from backend.modules.price_analysis.domain.use_cases.detect_price_phase import PricePhaseIntelligence
-        from backend.modules.flow_intelligence.domain.use_cases.analyze_persistence import FlowPersistenceAnalyzer
-        from backend.modules.volume_intelligence.domain.use_cases.analyze_volume_profile import VolumeProfileAnalyzer
+        from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
+        from backend.modules.price_analysis.application.use_cases.detect_price_phase import PricePhaseIntelligence
+        from backend.modules.flow_intelligence.application.use_cases.analyze_persistence import FlowPersistenceAnalyzer
+        from backend.modules.volume_intelligence.application.use_cases.analyze_volume_profile import VolumeProfileAnalyzer
 
         self.event_flow = EventFlowIntelligence()
         self.price_phase = PricePhaseIntelligence()
@@ -92,7 +92,7 @@ class EntryIntelligenceHub:
     def _get_options(self):
         if self._options is None:
             try:
-                from backend.modules.options_gamma.domain.use_cases.analyze_gamma import OptionsAwareness
+                from backend.modules.options_gamma.application.use_cases.analyze_gamma import OptionsAwareness
                 self._options = OptionsAwareness(self._options_provider)
                 logger.info("EntryHub: OptionsAwareness conectado ✅")
             except Exception as e:
@@ -102,7 +102,7 @@ class EntryIntelligenceHub:
     def _get_kalman(self):
         if self._kalman is None:
             try:
-                from backend.modules.volume_intelligence.domain.use_cases.track_volume_dynamics import KalmanVolumeTracker
+                from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import KalmanVolumeTracker
                 self._kalman = KalmanVolumeTracker()
                 logger.info("EntryHub: KalmanVolumeTracker conectado ✅")
             except Exception as e:
@@ -118,7 +118,7 @@ class EntryIntelligenceHub:
     def _get_pattern(self):
         if self._pattern is None:
             try:
-                from backend.modules.pattern_recognition.domain.use_cases.detect_patterns import PatternRecognitionIntelligence
+                from backend.modules.pattern_recognition.application.use_cases.detect_patterns import PatternRecognitionIntelligence
                 self._pattern = PatternRecognitionIntelligence()
                 logger.info("EntryHub: PatternRecognitionIntelligence conectado ✅")
             except Exception as e:
@@ -441,7 +441,7 @@ class EntryIntelligenceHub:
         # ══════════════════════════════════════════════════════
         try:
             if self._rsi_intel is None:
-                from backend.modules.price_analysis.domain.use_cases.analyze_rsi import RSIIntelligence
+                from backend.modules.price_analysis.application.use_cases.analyze_rsi import RSIIntelligence
                 self._rsi_intel = RSIIntelligence()
 
             close_arr = prices['Close'].values.astype(float)

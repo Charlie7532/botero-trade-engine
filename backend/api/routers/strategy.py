@@ -5,8 +5,9 @@ from pydantic import BaseModel
 
 from backend.modules.execution.domain.entities.order_models import Broker
 from backend.api.factories.execution_factory import build_broker_registry
-from backend.modules.shared.use_cases import fetch_market_data, run_backtest
-from backend.modules.simulation.infrastructure.backtrader.base_strategy import BaseStrategy
+from backend.modules.shared.use_cases import fetch_market_data
+from backend.modules.simulation.infrastructure.backtest_runner import run_backtest
+from backend._legacy.backtrader.base_strategy import BaseStrategy
 
 router = APIRouter(prefix="/strategy", tags=["Strategy"])
 

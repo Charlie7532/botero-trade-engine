@@ -26,7 +26,7 @@ warnings.filterwarnings('ignore')
 
 import sys
 
-from backend.modules.simulation.domain.use_cases.engineer_features import QuantFeatureEngineer
+from backend.modules.simulation.application.use_cases.engineer_features import QuantFeatureEngineer
 from _legacy.sequence_modeling import (
     TripleBarrierLabeler, MetaLabeler, SampleWeighter, QuantSequenceDataset
 )

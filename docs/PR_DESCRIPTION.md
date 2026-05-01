@@ -126,7 +126,7 @@ pie title Architecture Compliance
 - **FIX**: 6 legacy `from modules.` imports → `from backend.modules.` across `shared/use_cases.py`, `alpaca_adapter.py`, `ib_adapter.py`, `evaluate_entry.py`, `qualify_ticker.py`
 - **FIX**: Dead import path in `qualify_ticker.py` pointing to non-existent `modules.simulation.domain.feature_engineering`
 - **ADD**: `__init__.py` public API exports for 6 modules: `execution`, `flow_intelligence`, `options_gamma`, `pattern_recognition`, `portfolio_management`, `shared`
-- **RESTRUCTURE**: `shared/` module migrated to standard 5-folder domain layout (`domain/dtos`, `domain/entities`, `domain/ports`, `domain/rules`, `domain/use_cases`)
+- **RESTRUCTURE**: `shared/` module migrated to standard 5-folder domain layout (`domain/dtos`, `domain/entities`, `domain/ports`, `domain/rules`, `application/use_cases`)
 
 ### Phase 2: Rules Layer Purity
 - **EXTRACT**: `import yfinance` and FRED infrastructure import removed from `portfolio_management/domain/rules/macro_regime.py` → data fetching moved to new `infrastructure/macro_data_adapter.py`

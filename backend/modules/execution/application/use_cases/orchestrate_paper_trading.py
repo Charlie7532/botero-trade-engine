@@ -21,10 +21,10 @@ from backend.modules.entry_decision.domain.ports.market_data_port import EntryMa
 from backend.modules.execution.domain.entities.trade_record import TradeJournalEntry
 from backend.modules.portfolio_management.domain.rules.relative_strength import RelativeStrengthMonitor
 from backend.modules.portfolio_management.domain.rules.risk_guardian import RiskGuardian
-from backend.modules.portfolio_management.domain.use_cases.optimize_portfolio import PortfolioOptimizer
+from backend.modules.portfolio_management.application.use_cases.optimize_portfolio import PortfolioOptimizer
 from backend.modules.execution.domain.rules.exit_rules import SpeculativeExitEngine, QualityExitEngine
 from backend.modules.execution.domain.entities.exit_context import TradeState, MarketContext
-from backend.modules.execution.domain.use_cases.execute_order import InstitutionalExecutionEngine
+from backend.modules.execution.application.use_cases.execute_order import InstitutionalExecutionEngine
 from backend.modules.execution.domain.entities.trade_context import TradeContext, PositionState
 
 logger = logging.getLogger(__name__)
@@ -538,7 +538,7 @@ class PaperTradingOrchestrator:
         
         # ═══ V2: Auto-activate Event Freeze ═══════════════════
         try:
-            from backend.modules.flow_intelligence.domain.use_cases.analyze_whale_flow import EventFlowIntelligence
+            from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
             event_flow = self.entry_hub.event_flow if (self.entry_hub and hasattr(self.entry_hub, 'event_flow')) else EventFlowIntelligence()
             # Assess current macro environment (no ticker-specific data needed)
             whale_check = event_flow.assess(

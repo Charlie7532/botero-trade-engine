@@ -617,7 +617,7 @@ class SectorFlowEngine:
         # ── 3. Enriquecer con dinámica Kalman (velocidad + aceleración) ──
         if include_dynamics:
             try:
-                from backend.modules.volume_intelligence.domain.use_cases.track_volume_dynamics import KalmanVolumeTracker
+                from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import KalmanVolumeTracker
                 tracker = KalmanVolumeTracker()
                 velocities, accels, states = [], [], []
                 for _, row in df.iterrows():

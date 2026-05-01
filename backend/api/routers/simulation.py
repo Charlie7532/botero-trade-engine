@@ -62,8 +62,8 @@ async def calibrate_strategy(req: CalibrateRequest):
         from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
         from backend.modules.simulation.infrastructure.triple_barrier_adapter import TripleBarrierAdapter
         from backend.modules.simulation.infrastructure.signal_adapters import create_all_signals
-        from backend.modules.simulation.domain.use_cases.oracle_backtest import OracleBacktester
-        from backend.modules.simulation.domain.use_cases.calibrate_strategy import StrategyCalibrator
+        from backend.modules.simulation.application.use_cases.oracle_backtest import OracleBacktester
+        from backend.modules.simulation.application.use_cases.calibrate_strategy import StrategyCalibrator
 
         store = TimescaleDataStore()
         labeler = TripleBarrierAdapter()
@@ -96,8 +96,8 @@ async def evaluate_gate(req: GateRequest):
         from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
         from backend.modules.simulation.infrastructure.smc_adapter import SMCAdapter
         from backend.modules.simulation.infrastructure.signal_adapters import create_all_signals
-        from backend.modules.simulation.domain.use_cases.strategy_composer import StrategyComposer
-        from backend.modules.simulation.domain.use_cases.pre_trade_gate import PreTradeGate
+        from backend.modules.simulation.application.use_cases.strategy_composer import StrategyComposer
+        from backend.modules.simulation.application.use_cases.pre_trade_gate import PreTradeGate
 
         store = TimescaleDataStore()
         category = InvestmentCategory(req.category)
@@ -154,7 +154,7 @@ async def quality_report(
     """Get per-signal quality report from vaulted trade history."""
     try:
         from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
-        from backend.modules.simulation.domain.use_cases.analyze_indicators import IndicatorAnalyzer
+        from backend.modules.simulation.application.use_cases.analyze_indicators import IndicatorAnalyzer
 
         store = TimescaleDataStore()
         analyzer = IndicatorAnalyzer(store)
@@ -186,8 +186,8 @@ async def check_retrain(ticker: str, category: str):
     """Check if recalibration is needed."""
     try:
         from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
-        from backend.modules.simulation.domain.use_cases.analyze_indicators import IndicatorAnalyzer
-        from backend.modules.simulation.domain.use_cases.retrain_trigger import RetrainTrigger
+        from backend.modules.simulation.application.use_cases.analyze_indicators import IndicatorAnalyzer
+        from backend.modules.simulation.application.use_cases.retrain_trigger import RetrainTrigger
 
         store = TimescaleDataStore()
         analyzer = IndicatorAnalyzer(store)

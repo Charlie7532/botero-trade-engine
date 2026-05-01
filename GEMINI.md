@@ -71,6 +71,7 @@ All skills are located in `.agents/skills/`. Key skills:
 - `tactical-entries` — Microstructure entry timing & dealer gamma (Eifert, Karsan & PTJ)
 - `risk-manager` — Dual-mode risk evaluation (Druckenmiller & Seykota)
 - `backtesting-trading-strategies` — Quantitative strategy validation (López de Prado)
+- `signal-miner` — Non-intuitive statistical signal discovery (Jim Simons)
 - `trading-analysis` — Institutional-grade investment reports
 
 ---

@@ -79,6 +79,17 @@ For EVERY barrier claimed, apply the **Moat Stress Test**:
 - Evaluate how management allocates capital. Are they buying back shares at attractive prices? Investing in organic growth with high ROIC? Or empire-building with dilutive acquisitions?
 - If management is destroying value, push for change. Hohn is an activist — he forces the issue.
 
+### 6b. Incentive Alignment Filter (Munger)
+"Show me the incentive, and I will show you the outcome."
+
+Before classifying any company as QUALITY, verify:
+1. **CEO Compensation Structure**: Is it tied to long-term value (ROIC, FCF per share) or short-term metrics (revenue growth, stock price, EPS which can be gamed by buybacks)?
+2. **Insider Ownership**: Does the CEO own meaningful stock (>1% of net worth in the company)? Skin in the game is non-negotiable.
+3. **Capital Allocation Track Record**: Has management historically deployed capital at returns above cost of capital? Or are they empire-building with dilutive acquisitions?
+4. **The Perverse Incentive Test**: If management were TRYING to maximize their personal compensation at shareholders' expense, what would they do? Are they doing it?
+
+If incentives are misaligned → downgrade to CONDITIONAL QUALITY regardless of moat strength. A great business with bad incentives is a ticking time bomb.
+
 ### 7. Latticework of Mental Models (Munger)
 Apply multiple disciplinary lenses simultaneously — never rely on finance alone:
 - **Psychology**: Does the CEO have perverse incentives? Is the market in a herd frenzy?

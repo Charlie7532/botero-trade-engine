@@ -62,6 +62,19 @@ Integer differencing (d=1) makes data stationary but destroys ALL memory. Non-di
 
 **Rule**: Never feed raw price data to ML. Never use fully differenced data. Find the minimum d that achieves ADF stationarity (p < 0.05).
 
+### 3b. Information-Driven Bars (Not Time Bars)
+
+Standard time-based bars (1-min, 5-min, daily) sample at fixed intervals regardless of market activity. This is statistically inefficient — it oversamples during quiet periods (noise) and undersamples during active periods (lost information).
+
+López de Prado advocates three alternative bar types:
+- **Volume Bars**: New bar every N shares traded. Samples proportionally to activity.
+- **Dollar Bars**: New bar every $N transacted. Normalizes for price changes over time.
+- **Tick Bars**: New bar every N trades. Captures transaction frequency.
+
+**Rule**: For ML features, prefer dollar bars or volume bars over time bars. This produces more uniform statistical properties (closer to i.i.d.) and improves model stability.
+
+The `QuantFeatureEngineer` should offer a `bar_type` parameter: `time` (default), `volume`, `dollar`, `tick`.
+
 ### 4. Purged & Embargoed Cross-Validation
 
 Standard k-fold CV is FORBIDDEN for financial data. It leaks future information into training.

@@ -55,6 +55,13 @@ Applicable to structural positions (Value / Growth / Dividend — Hohn & Munger)
 7. **Maximum Flexibility**:
    Druckenmiller is not married to any asset class. If the QUALITY thesis breaks but bonds or commodities offer better risk/reward, recommend reallocation — not just "sell."
 
+8. **Liquidity Over Earnings — The Real Driver**:
+   Markets are not driven by corporate earnings reports. They are driven by CENTRAL BANK LIQUIDITY. When the Fed expands, assets inflate — regardless of fundamentals. When the Fed contracts, assets deflate — regardless of how good the earnings are.
+
+   Before evaluating any QUALITY thesis, first ask: "Is the liquidity environment supportive or hostile?" If hostile (QT, rate hikes, credit tightening), even the best tollkeeper will face headwinds. Adjust sizing DOWN in hostile liquidity, UP in supportive liquidity.
+
+   **Operational translation:** Check FRED data (M2, Fed balance sheet, credit spreads) before the CIO mandate. Liquidity is the tide — earnings are the waves.
+
 ---
 
 ## 2. SPECULATIVE Mind — Seykota Mode
@@ -86,6 +93,15 @@ Applicable to microstructure opportunities, Gamma Walls, and short-term institut
    - Risk per trade as % of speculative equity
    - Calculate probability of reaching 50% drawdown given these parameters
    - If risk of ruin > 5%, REDUCE position size until it's below 5%.
+
+5. **Dynamic Sizing by Trading Rhythm (PTJ)**:
+   Adjust risk per trade based on recent performance:
+   - Rolling Win Rate (last 10 trades) > 60%: SIZE UP — you are in rhythm. Multiply base risk by 1.25x.
+   - Rolling Win Rate 40-60%: STANDARD sizing — no adjustment.
+   - Rolling Win Rate < 40%: SIZE DOWN — you are out of rhythm. Multiply base risk by 0.5x.
+   - After 3 consecutive losses: MANDATORY COOLDOWN (already implemented via Psychology Gate).
+
+   The engine must track this rolling metric in `engine.trade_journal_speculative` and pass it to the sizing function. This is not emotional — it is mechanical adaptation to the current signal quality regime.
 
 ### Psychology Gate (Seykota's Trading Tribe)
 

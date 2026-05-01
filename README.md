@@ -1,6 +1,22 @@
 # Botero Trade
 
-An algorithmic trading system built as a monorepo, combining a **Next.js + PayloadCMS** frontend with a **Python FastAPI + Backtrader** trading engine. Connect to Interactive Brokers and Alpaca, run backtests, and visualize your portfolios — all from a single repository.
+> **Misión:** Superar consistentemente los retornos del mercado y lograr un crecimiento exponencial del capital (10x) a través de una ejecución institucional impecable. Para **QUALITY**, identificar monopolios naturales inexpugnables, entrar con máxima convicción en el punto de inflexión del ciclo, y permitir que la calidad del negocio genere compounding masivo. Para **SPECULATIVE**, extraer retornos absolutos agresivos capitalizando las dislocaciones temporales, la ignorancia del retail y las obligaciones mecánicas de los dealers, operando siempre bajo un mandato de asimetría 5:1 y riesgo de ruina cero.
+
+> **Visión:** Ser el estándar global de fondos de inversión algorítmicos — reproducible solo por quienes codifiquen principios con la misma disciplina. Una máquina libre de sesgo emocional, gobernada por los modelos decisionales de los mejores inversores de la historia, que se alinea matemáticamente con las leyes físicas del mercado para extraer riqueza de manera predecible, segura e implacable.
+
+### Valores Institucionales
+
+| Valor                          | Definición                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| **Zero-Bias**                  | La verdad está en los hechos, no en las opiniones.                                    |
+| **Concentración Radical**      | 5000 → 5-10. La diversificación excesiva es para quienes no saben qué poseen.         |
+| **Defensa Primero**            | El capital debe sobrevivir antes de crecer. Esperar ES una posición.                  |
+| **Asimetría o Nada**           | Si no hay 5:1, no hay trade.                                                          |
+| **Verdad Matemática**          | Nada llega a producción sin validación walk-forward.                                  |
+| **Forensia Implacable**        | Detect → Learn → Retrain → Prevent. Los éxitos se cuestionan tanto como los fracasos. |
+| **Reconocimiento de Patrones** | Todo se repite. Cada evento es "another one of those".                                |
+| **Anti-Estupidez Sistemática** | Invertir siempre: ¿qué garantiza que fracasemos? Evitar eso primero.                  |
+| **Pureza Arquitectónica**      | Clean Architecture Hexagonal. Las dependencias apuntan hacia adentro.                 |
 
 ---
 
@@ -215,12 +231,12 @@ pnpm dev:all
 [api] ▶ Uvicorn running on http://0.0.0.0:8000
 ```
 
-| Service | URL |
-|---|---|
-| Frontend + CMS | http://localhost:3000 |
-| PayloadCMS admin | http://localhost:3000/admin |
-| Trading Engine API | http://localhost:8000 |
-| API docs (Swagger) | http://localhost:8000/docs |
+| Service            | URL                         |
+| ------------------ | --------------------------- |
+| Frontend + CMS     | http://localhost:3000       |
+| PayloadCMS admin   | http://localhost:3000/admin |
+| Trading Engine API | http://localhost:8000       |
+| API docs (Swagger) | http://localhost:8000/docs  |
 
 ### 2b. Docker Compose (containerized)
 
@@ -238,14 +254,15 @@ PostgreSQL is hosted **externally** — not inside Docker — so your data is ne
 
 Recommended providers:
 
-| Provider | Free tier | Notes |
-|---|---|---|
-| [Vercel Postgres](https://vercel.com/storage/postgres) | Yes | Best for Vercel deployments — zero config |
-| [Neon](https://neon.tech) | Yes | Serverless, branching support |
-| [Supabase](https://supabase.com) | Yes | Includes auth, storage, realtime |
-| Local instance | — | `postgres://postgres:<pw>@127.0.0.1:5432/botero_trade` |
+| Provider                                               | Free tier | Notes                                                  |
+| ------------------------------------------------------ | --------- | ------------------------------------------------------ |
+| [Vercel Postgres](https://vercel.com/storage/postgres) | Yes       | Best for Vercel deployments — zero config              |
+| [Neon](https://neon.tech)                              | Yes       | Serverless, branching support                          |
+| [Supabase](https://supabase.com)                       | Yes       | Includes auth, storage, realtime                       |
+| Local instance                                         | —         | `postgres://postgres:<pw>@127.0.0.1:5432/botero_trade` |
 
 Set the connection string in `.env`:
+
 ```
 POSTGRES_URL=postgres://user:password@host:5432/database
 ```
@@ -256,18 +273,18 @@ POSTGRES_URL=postgres://user:password@host:5432/database
 
 Copy `.env.example` to `.env` and fill in the values:
 
-| Variable | Description |
-|---|---|
-| `POSTGRES_URL` | External PostgreSQL connection string |
-| `PAYLOAD_SECRET` | Secret key for JWT encryption |
-| `NEXT_PUBLIC_SERVER_URL` | Public URL of the frontend |
-| `TRADING_API_URL` | URL of the Python trading engine |
-| `IB_HOST` | IB TWS/Gateway host (default `127.0.0.1`) |
-| `IB_PORT` | IB TWS/Gateway port (default `7497`) |
-| `IB_CLIENT_ID` | IB client ID (default `1`) |
-| `ALPACA_API_KEY` | Alpaca API key |
-| `ALPACA_SECRET_KEY` | Alpaca secret key |
-| `ALPACA_BASE_URL` | Alpaca endpoint (default: paper trading) |
+| Variable                 | Description                               |
+| ------------------------ | ----------------------------------------- |
+| `POSTGRES_URL`           | External PostgreSQL connection string     |
+| `PAYLOAD_SECRET`         | Secret key for JWT encryption             |
+| `NEXT_PUBLIC_SERVER_URL` | Public URL of the frontend                |
+| `TRADING_API_URL`        | URL of the Python trading engine          |
+| `IB_HOST`                | IB TWS/Gateway host (default `127.0.0.1`) |
+| `IB_PORT`                | IB TWS/Gateway port (default `7497`)      |
+| `IB_CLIENT_ID`           | IB client ID (default `1`)                |
+| `ALPACA_API_KEY`         | Alpaca API key                            |
+| `ALPACA_SECRET_KEY`      | Alpaca secret key                         |
+| `ALPACA_BASE_URL`        | Alpaca endpoint (default: paper trading)  |
 
 > **Interactive Brokers note:** TWS or IB Gateway must run on your local machine — it cannot run inside Docker. The `api` container connects to it via `host.docker.internal` or your machine's LAN IP.
 
@@ -379,32 +396,32 @@ Set `TRADING_API_URL` in your Vercel environment variables to point to your serv
 
 ### Scripts reference
 
-| Command | Description |
-|---|---|
-| `pnpm dev:all` | Start frontend + Python API together (recommended for local dev) |
-| `pnpm dev` | Frontend only (Next.js dev server) |
-| `pnpm dev:api` | Python API only (uvicorn with hot reload) |
-| `pnpm start` | Start Next.js production server |
-| `pnpm build` | Build Next.js for production |
-| `pnpm docker:up` | Start web + api via Docker Compose |
-| `pnpm docker:build` | Rebuild Docker images |
-| `pnpm docker:down` | Stop all Docker services |
+| Command             | Description                                                      |
+| ------------------- | ---------------------------------------------------------------- |
+| `pnpm dev:all`      | Start frontend + Python API together (recommended for local dev) |
+| `pnpm dev`          | Frontend only (Next.js dev server)                               |
+| `pnpm dev:api`      | Python API only (uvicorn with hot reload)                        |
+| `pnpm start`        | Start Next.js production server                                  |
+| `pnpm build`        | Build Next.js for production                                     |
+| `pnpm docker:up`    | Start web + api via Docker Compose                               |
+| `pnpm docker:build` | Rebuild Docker images                                            |
+| `pnpm docker:down`  | Stop all Docker services                                         |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend framework | Next.js 16 (App Router) |
-| CMS | PayloadCMS 3 |
-| UI components | HeroUI, Radix UI, Tailwind CSS |
-| Language (frontend) | TypeScript |
-| Trading engine | Python 3.12 + FastAPI |
-| Backtesting | Backtrader |
-| Interactive Brokers | ib_insync |
-| Alpaca | alpaca-py |
-| Data processing | pandas, numpy |
-| Database | PostgreSQL 16 |
-| Container orchestration | Docker Compose |
-| Frontend deployment | Vercel |
+| Layer                   | Technology                     |
+| ----------------------- | ------------------------------ |
+| Frontend framework      | Next.js 16 (App Router)        |
+| CMS                     | PayloadCMS 3                   |
+| UI components           | HeroUI, Radix UI, Tailwind CSS |
+| Language (frontend)     | TypeScript                     |
+| Trading engine          | Python 3.12 + FastAPI          |
+| Backtesting             | Backtrader                     |
+| Interactive Brokers     | ib_insync                      |
+| Alpaca                  | alpaca-py                      |
+| Data processing         | pandas, numpy                  |
+| Database                | PostgreSQL 16                  |
+| Container orchestration | Docker Compose                 |
+| Frontend deployment     | Vercel                         |

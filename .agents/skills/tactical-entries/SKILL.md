@@ -29,6 +29,7 @@ Benn Eifert is a volatility specialist, NOT a simple GEX follower. His approach:
   - **"WHO is on the other side of this flow?"** — Pension rebalancing? Retail option FOMO? Corporate hedging?
   - **"WHY are they trading?"** — Are they price-insensitive (structural alpha) or sophisticated (no edge)?
 - **Convexity Traps**: Understand that selling certain options creates negatively asymmetric risks. Never assume "selling premium always works." Path dependency and regime changes destroy naive vol-selling strategies.
+- **Warehousing Risk (The Real Edge)**: Eifert's alpha comes not from PREDICTING flow, but from ABSORBING the risk that price-insensitive end-users want to transfer. When pension funds systematically overpay for put protection, someone must take the other side. That "someone" collects a structural premium. When Unusual Whales shows massive unidirectional put buying from institutional hedgers (not speculation), the structural edge is on the OTHER side of that trade. The flow itself IS the signal — not because it predicts direction, but because it creates a risk premium for the counterparty.
 
 Eifert's role: **Quality control.** He prevents the team from acting on false signals.
 
@@ -48,6 +49,8 @@ Cem Karsan (Kai Volatility Advisors) maps the exact mechanical forces that MOVE 
 - **"Potential Energy" Mapping**: By mapping open interest across strikes, Karsan identifies where the market has **stored energy** — where large forced dealer flows MUST occur when price crosses key levels (Put Walls, Call Walls, Max Pain). These flows are NON-DISCRETIONARY — dealers MUST hedge.
 
 - **OpEx Gravity**: As expiration approaches, gamma effects intensify. The last 48 hours before OpEx create maximum pin risk (positive gamma) or maximum explosion risk (negative gamma). Plan entries and exits around this calendar.
+
+- **0DTE Revolution — Accelerated Mechanics**: With the explosive growth of zero-days-to-expiration options, Charm and Vanna cycles now operate on INTRADAY timeframes, not just weekly. Gamma effects that previously accumulated over days now materialize in hours. Practical implications: Gamma Flip can shift WITHIN a trading session. Pin risk/explosion risk cycles compress to same-day. Dealer hedging flows create intraday mean-reversion AND breakout windows. The engine must track 0DTE OI separately from standard monthly/weekly OI.
 
 Karsan's role: **The map.** He shows WHERE the mechanical forces will push price.
 

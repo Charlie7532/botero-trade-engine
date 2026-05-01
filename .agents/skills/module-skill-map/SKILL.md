@@ -27,6 +27,7 @@ When any agent works on a backend module, activate the skills listed for that mo
 | `rotation_intelligence` | `clean-architecture`, `operational-purpose` | `rotation-analyst`, `cio-allocator` | Sector/international/asset class rotation via ETF RS and stage analysis — feeds CIO |
 | `shared` | `clean-architecture`, `operational-purpose` | *(none)* | Foundational types and shared ports — architecture-only |
 | `simulation` | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies` | Backtesting engine — directly maps to the backtesting skill |
+| `signal_discovery` | `clean-architecture`, `operational-purpose` | `signal-miner`, `backtesting-trading-strategies` | Statistical anomaly mining → validated via simulation pipeline |
 | `volume_intelligence` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Volume profile, POC/VAH/VAL — institutional volume microstructure |
 
 ---
@@ -84,4 +85,5 @@ When creating a new module, add it to this map and assign the appropriate skills
 | `price_analysis` | RSI regime-aware interpretation (Cardwell/Brown), price phase detection | `analyze_rsi`, `detect_price_phase` |
 | `shared` | Cross-cutting types: `Bar`, `MarketDataPort`, `ExecutionPort` | Foundation for all modules |
 | `simulation` | Walk-forward backtesting, trade autopsy, feature engineering | `run_backtest`, `analyze_trades`, `engineer_features` |
+| `signal_discovery` | Non-intuitive statistical signal mining (Simons methodology) | `discover_anomalies`, `monitor_signal_decay`, `scan_cross_asset` |
 | `volume_intelligence` | Volume Profile analysis (POC, VAH, VAL, shapes), volume dynamics tracking | `analyze_volume_profile`, `track_volume_dynamics` |

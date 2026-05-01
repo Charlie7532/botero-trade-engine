@@ -46,6 +46,7 @@ Based on the prompt's topic, activate the appropriate specialist skills:
 |---|---|---|
 | Backtesting | `.agents/skills/backtesting-trading-strategies/SKILL.md` | Strategy testing, backtesting, validation, calibration, walk-forward, Oracle ceiling, signal weights, overfitting, ML features |
 | Trading Analysis | `.agents/skills/trading-analysis/SKILL.md` | Investment reports, market analysis, stock/ETF analysis, sector performance |
+| Signal Miner | `.agents/skills/signal-miner/SKILL.md` | Anomaly detection, signal discovery, cross-asset correlations, statistical patterns, new alpha sources, signal decay |
 
 #### Payload CMS (Frontend Infrastructure)
 

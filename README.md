@@ -22,139 +22,46 @@
 
 ## Architecture
 
-### System Overview
+> 📐 Full architecture diagrams: [`docs/architecture-diagram.md`](docs/architecture-diagram.md) (V14 — Graphify verified: 2821 nodes, 524 files)
 
-```mermaid
-graph TB
-    subgraph Frontend ["Frontend — Next.js + PayloadCMS (port 3000)"]
-        UI["Trading Dashboard\n(src/app/frontend)"]
-        CMS["Admin Panel\n(src/app/payload)"]
-    end
+### Dual-Mandate Architecture
 
-    subgraph Backend ["Trading Engine — Python FastAPI (port 8000)"]
-        API["FastAPI\n/api/market-data\n/api/portfolio\n/api/strategy"]
-        UC["Use Cases\napplication/use_cases.py"]
-        BT["Backtrader\nbacktest engine"]
-        BA["Broker Adapters"]
-    end
+The engine operates two **fully independent** trading departments with zero cross-contamination:
 
-    subgraph Brokers ["External Brokers"]
-        IB["Interactive Brokers\nTWS / IB Gateway"]
-        ALP["Alpaca\npaper & live"]
-    end
+| | QUALITY (80%) | SPECULATIVE (20%) |
+|---|---|---|
+| **Philosophy** | Hohn · Munger · Druckenmiller | Karsan · Eifert · PTJ · Seykota |
+| **Selection** | `QualityResearchPipeline` — fundamental only | `SpeculativeScanner` — microstructure only |
+| **Qualification** | `QualityQualifier` — daily bars, Grade A | `SpeculativeQualifier` — hourly bars, Grade B |
+| **Entry Gate** | `QualityEntryGate` — VP · RSI · Pattern | `SpeculativeEntryHub` — Gamma · Flow · Memory Guard |
+| **Orchestrator** | `QualityOrchestrator` — daily cadence | `SpeculativeOrchestrator` — 15min cadence |
+| **Surveillance** | `SurveillanceLoop` — moat decay | `SpeculativeSurveillance` — ATR · time · RS stops |
+| **Exit Engine** | `QualityExitEngine` — thesis death | `SpeculativeExitEngine` — mechanical stops |
+| **Broker** | Alpaca (QUALITY account) | Alpaca (SPECULATIVE account) |
 
-    subgraph Infra ["Infrastructure"]
-        PG["PostgreSQL\n(port 5432)"]
-    end
+### Clean Architecture — 12 Modules
 
-    UI -->|HTTP / fetch| API
-    API --> UC
-    UC --> BT
-    UC --> BA
-    BA -->|ib_insync| IB
-    BA -->|alpaca-py| ALP
-    Frontend -->|Payload DB| PG
 ```
-
-### Clean Architecture Layers
-
-```mermaid
-graph LR
-    subgraph Python Backend
-        D["Domain\nentities.py\nPortfolio · Order · Signal · Bar"]
-        A["Application\nuse_cases.py\nrun_backtest · place_order"]
-        I["Infrastructure\nbrokers/ · backtrader/"]
-        API2["API Layer\nFastAPI routers"]
-
-        API2 --> I
-        API2 --> A
-        A --> I
-        A --> D
-        I --> D
-    end
-
-    subgraph TypeScript Frontend
-        TD["Domain\nTS types / interfaces"]
-        TA["Application\nstate · UI use cases"]
-        TI["Infrastructure\nAPI client · storage"]
-        TUI["UI Layer\nReact components"]
-
-        TUI --> TI
-        TUI --> TA
-        TA --> TI
-        TA --> TD
-        TI --> TD
-    end
+backend/modules/
+├── portfolio_management/    # Selection & qualification (QUALITY + SPECULATIVE)
+├── entry_decision/          # Entry gates (QualityEntryGate + SpeculativeEntryHub)
+├── execution/               # Orchestrators, surveillance, smart entry, journal
+├── flow_intelligence/       # Whale flow, persistence, event calendar
+├── options_gamma/           # GEX, max pain, gamma regime
+├── price_analysis/          # Price phase detection, RSI intelligence
+├── volume_intelligence/     # Kalman volume, volume profile
+├── pattern_recognition/     # Candlestick, VCP detection
+├── rotation_intelligence/   # Weinstein stages, Pring cycles
+├── simulation/              # Walk-forward, triple barrier, LSTM, features
+├── shared/                  # Cross-module entities, cache
+└── (8 MCP Servers)          # ~241 tools — Alpaca, GuruFocus, Finviz, Finnhub, FRED, Yahoo, UW, News
 ```
-
-### Broker Adapter Pattern
-
-```mermaid
-classDiagram
-    class BrokerAdapter {
-        <<abstract>>
-        +broker() Broker
-        +get_price(symbol) float
-        +get_bars(symbol, timeframe, start, end) list[Bar]
-        +place_order(order) Order
-        +cancel_order(order_id) bool
-        +get_portfolio() Portfolio
-        +is_connected() bool
-    }
-
-    class IBAdapter {
-        -host: str
-        -port: int
-        -client_id: int
-        +broker() INTERACTIVE_BROKERS
-    }
-
-    class AlpacaAdapter {
-        -api_key: str
-        -secret_key: str
-        -base_url: str
-        +broker() ALPACA
-    }
-
-    BrokerAdapter <|-- IBAdapter
-    BrokerAdapter <|-- AlpacaAdapter
-
-    class UseCase {
-        +fetch_market_data(broker, symbol)
-        +place_order(broker, order)
-        +run_backtest(strategy, bars)
-    }
-
-    UseCase --> BrokerAdapter : depends on interface
-```
-
-### Request Flow — Backtest
-
-```mermaid
-sequenceDiagram
-    participant UI as Dashboard (Next.js)
-    participant API as FastAPI
-    participant UC as Use Cases
-    participant Broker as BrokerAdapter
-    participant BT as Backtrader
-
-    UI->>API: POST /api/strategy/backtest
-    API->>UC: run_backtest(strategy, bars, ...)
-    UC->>Broker: get_bars(symbol, timeframe, start, end)
-    Broker-->>UC: list[Bar]
-    UC->>BT: cerebro.run()
-    BT-->>UC: BacktestResult + metrics
-    UC-->>API: BacktestResult
-    API-->>UI: BacktestResponse (JSON)
-```
-
----
 
 ## Project Structure
 
 ```
 botero-trade/
-├── src/                              # Next.js + PayloadCMS (TypeScript)
+├── src/                              # Next.js 16 + PayloadCMS 3 (TypeScript)
 │   ├── app/
 │   │   ├── (frontend)/              # Trading dashboard UI
 │   │   └── (payload)/               # CMS admin panel
@@ -163,37 +70,27 @@ botero-trade/
 │   │   ├── application/             # UI use cases
 │   │   ├── infrastructure/          # API clients, adapters
 │   │   └── handlers/
-│   ├── collections/                 # PayloadCMS collections
+│   ├── collections/                 # PayloadCMS collections (12)
 │   ├── globals/                     # Header, Footer, SiteSettings
 │   └── components/                  # Shared React components
 │
 ├── backend/                         # Python trading engine
-│   ├── domain/
-│   │   └── entities.py              # Portfolio, Order, Signal, Bar, Trade
-│   ├── application/
-│   │   └── use_cases.py             # run_backtest, fetch_market_data, place_order
-│   ├── infrastructure/
-│   │   ├── brokers/
-│   │   │   ├── base.py              # Abstract BrokerAdapter
-│   │   │   ├── ib_adapter.py        # Interactive Brokers (ib_insync)
-│   │   │   └── alpaca_adapter.py    # Alpaca (alpaca-py)
-│   │   └── backtrader/
-│   │       ├── base_strategy.py     # BaseStrategy — extend this for new strategies
-│   │       └── data_feeds.py        # Bar → Backtrader PandasData bridge
+│   ├── modules/                     # 12 Clean Architecture modules
+│   │   ├── */domain/                # entities/ · ports/ · rules/
+│   │   ├── */application/           # use_cases/ · dtos/
+│   │   └── */infrastructure/        # adapters (SDKs, PostgreSQL)
 │   ├── api/
 │   │   ├── main.py                  # FastAPI app + CORS
-│   │   └── routers/
-│   │       ├── market_data.py       # GET /api/market-data/{symbol}
-│   │       ├── portfolio.py         # GET /api/portfolio/{broker}
-│   │       └── strategy.py          # POST /api/strategy/backtest
+│   │   ├── factories/               # Composition Root (DI)
+│   │   └── routers/                 # market_data · portfolio · strategy · orders · simulation
 │   ├── requirements.txt
 │   └── Dockerfile
 │
-├── docker-compose.yml               # Orchestrates web + api (DB is external)
-├── Dockerfile                       # Next.js production image (standalone)
-├── package.json                     # pnpm root — pnpm start runs Next.js
-├── .env.example                     # All required environment variables
-└── next.config.js
+├── docs/                            # Architecture diagrams (V14)
+├── .agents/skills/                  # 17 AI agent skills
+├── docker-compose.yml               # Orchestrates web + api
+├── graphify-out/                    # Codebase knowledge graph
+└── package.json                     # pnpm root
 ```
 
 ---
@@ -411,17 +308,20 @@ Set `TRADING_API_URL` in your Vercel environment variables to point to your serv
 
 ## Tech Stack
 
-| Layer                   | Technology                     |
-| ----------------------- | ------------------------------ |
-| Frontend framework      | Next.js 16 (App Router)        |
-| CMS                     | PayloadCMS 3                   |
-| UI components           | HeroUI, Radix UI, Tailwind CSS |
-| Language (frontend)     | TypeScript                     |
-| Trading engine          | Python 3.12 + FastAPI          |
-| Backtesting             | Backtrader                     |
-| Interactive Brokers     | ib_insync                      |
-| Alpaca                  | alpaca-py                      |
-| Data processing         | pandas, numpy                  |
-| Database                | PostgreSQL 16                  |
-| Container orchestration | Docker Compose                 |
-| Frontend deployment     | Vercel                         |
+| Layer                   | Technology                         |
+| ----------------------- | ---------------------------------- |
+| Frontend framework      | Next.js 16 (App Router)            |
+| CMS                     | PayloadCMS 3                       |
+| UI components           | HeroUI, Radix UI, Tailwind CSS     |
+| Language (frontend)     | TypeScript                         |
+| Trading engine          | Python 3.12 + FastAPI              |
+| Architecture            | Modular Clean / Hexagonal (12 mod) |
+| ML Pipeline             | PyTorch LSTM + GradientBoosting    |
+| Data processing         | pandas, numpy, scikit-learn        |
+| Market data             | 8 MCP Servers (~241 tools)         |
+| Broker                  | Alpaca × 2 (QUALITY + SPECULATIVE) |
+| Database                | PostgreSQL 16 + TimescaleDB        |
+| Vector search           | pgvector (9D embeddings)           |
+| Codebase graph          | Graphify (2821 nodes)              |
+| Container orchestration | Docker Compose                     |
+| Frontend deployment     | Vercel                             |

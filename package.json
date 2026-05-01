@@ -22,7 +22,9 @@
     "dev:all": "concurrently --names \"web,api\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail \"pnpm dev\" \"pnpm dev:api\"",
     "docker:up": "docker compose up",
     "docker:build": "docker compose build",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "graphify": "graphify scan .",
+    "graphify:update": "graphify update ."
   },
   "dependencies": {
     "@heroui/react": "^3.0.1",

@@ -421,7 +421,7 @@ class PaperTradingOrchestrator:
         
         # 4. Smart Entry — Pre-Market Validation + Limit Order
         try:
-            from _legacy.smart_entry import SmartEntryEngine
+            from backend.modules.execution.application.use_cases.smart_entry import SmartEntryEngine
             import asyncio
             
             smart = SmartEntryEngine()

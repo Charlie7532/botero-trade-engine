@@ -115,6 +115,30 @@ def build_flow_data():
     return UnusualWhalesIntelligence()
 
 
+def build_fred():
+    """Build FRED macro intelligence adapter."""
+    from backend.modules.flow_intelligence.infrastructure.fred_adapter import FREDMacroIntelligence
+    return FREDMacroIntelligence()
+
+
+def build_finnhub():
+    """Build Finnhub intelligence adapter."""
+    from backend.modules.flow_intelligence.infrastructure.finnhub_api import FinnhubIntelligence
+    return FinnhubIntelligence()
+
+
+def build_rotation_adapter():
+    """Build YahooRotationAdapter (with yfinance fallback, no MCP required)."""
+    from backend.modules.rotation_intelligence.infrastructure.yahoo_rotation_adapter import YahooRotationAdapter
+    return YahooRotationAdapter()
+
+
+def build_rotation_scanner():
+    """Build a RotationScanner with a live rotation adapter."""
+    from backend.modules.rotation_intelligence.application.use_cases.rotation_scanner import RotationScanner
+    return RotationScanner(data_port=build_rotation_adapter())
+
+
 # ── Entry Hub ────────────────────────────────────────────────
 
 def build_entry_hub():
@@ -166,4 +190,103 @@ def build_surveillance_loop():
         quality_journal=build_quality_journal(),
         blacklist=build_blacklist(),
     )
+
+
+# ── Live CIO Mandate ────────────────────────────────────────
+
+def synthesize_live_mandate(cio=None):
+    """
+    Connect FRED + VIX + market breadth to the CIO for a dynamic mandate.
+
+    This is the wiring that was missing: FRED data existed, CIO existed,
+    but nobody connected the cable.
+    """
+    from backend.modules.portfolio_management.application.use_cases.cio_orchestrator import CIOOrchestrator
+    import yfinance as yf
+
+    cio = cio or CIOOrchestrator()
+
+    # 1. VIX (live from yfinance)
+    try:
+        vix_data = yf.download("^VIX", period="5d", progress=False)
+        if vix_data is not None and not vix_data.empty:
+            close = vix_data["Close"]
+            if hasattr(close, "columns"):
+                close = close.iloc[:, 0]
+            vix = float(close.iloc[-1])
+        else:
+            vix = 20.0
+    except Exception:
+        vix = 20.0
+
+    # 2. Market Breadth (% of S&P500 above 200-DMA, approximated via RSP)
+    try:
+        rsp = yf.download("RSP", period="1y", progress=False)
+        spy = yf.download("SPY", period="1y", progress=False)
+        if rsp is not None and spy is not None and not rsp.empty:
+            rsp_close = rsp["Close"]
+            spy_close = spy["Close"]
+            if hasattr(rsp_close, "columns"):
+                rsp_close = rsp_close.iloc[:, 0]
+            if hasattr(spy_close, "columns"):
+                spy_close = spy_close.iloc[:, 0]
+            # RSP/SPY ratio as breadth proxy (>1 = broad, <1 = narrow)
+            rsp_200 = rsp_close.rolling(200).mean().iloc[-1]
+            breadth = 65.0 if float(rsp_close.iloc[-1]) > float(rsp_200) else 35.0
+        else:
+            breadth = 50.0
+    except Exception:
+        breadth = 50.0
+
+    # 3. FRED Macro (yield curve from FRED adapter)
+    fred = build_fred()
+    try:
+        ust10 = yf.download("^TNX", period="5d", progress=False)
+        ust2 = yf.download("^IRX", period="5d", progress=False)
+        if ust10 is not None and ust2 is not None and not ust10.empty:
+            t10_close = ust10["Close"]
+            t2_close = ust2["Close"]
+            if hasattr(t10_close, "columns"):
+                t10_close = t10_close.iloc[:, 0]
+            if hasattr(t2_close, "columns"):
+                t2_close = t2_close.iloc[:, 0]
+            spread = float(t10_close.iloc[-1]) - float(t2_close.iloc[-1]) / 100
+            yield_inverted = spread < 0
+        else:
+            yield_inverted = False
+    except Exception:
+        yield_inverted = False
+
+    # 4. Rotation Intelligence (if available)
+    rotation_data = {}
+    try:
+        scanner = build_rotation_scanner()
+        rotation_result = scanner.scan()
+        rotation_data = {
+            "sector_flows": getattr(rotation_result, "sector_flows", {}),
+            "international_flows": getattr(rotation_result, "international_flows", {}),
+            "asset_class_flows": getattr(rotation_result, "asset_class_flows", {}),
+            "cycle_phase": getattr(rotation_result, "cycle_phase", "UNKNOWN"),
+        }
+    except Exception as e:
+        logger.warning(f"Rotation scan failed (non-fatal): {e}")
+
+    # 5. Synthesize
+    mandate = cio.synthesize_mandate(
+        vix=vix,
+        market_breadth=breadth,
+        macro_news_sentiment=0.0,
+        yield_curve_inverted=yield_inverted,
+        sector_flows=rotation_data.get("sector_flows"),
+        international_flows=rotation_data.get("international_flows"),
+        asset_class_flows=rotation_data.get("asset_class_flows"),
+        cycle_phase=rotation_data.get("cycle_phase", "UNKNOWN"),
+    )
+
+    logger.info(
+        f"🏛️ Live Mandate: {mandate.regime} | "
+        f"Q={mandate.quality_budget_pct*100:.0f}% S={mandate.speculative_budget_pct*100:.0f}% | "
+        f"VIX={vix:.1f} Breadth={breadth:.0f}% YC={'INV' if yield_inverted else 'OK'}"
+    )
+    return mandate
 

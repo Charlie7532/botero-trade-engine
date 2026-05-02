@@ -1,11 +1,13 @@
 """
 Yahoo Finance Rotation Adapter — RotationDataPort implementation.
 
-Fetches ETF price/volume data via pre-fetched Yahoo Finance MCP data.
-Per rule #7: adapters receive pre-fetched data.
+Primary: pre-fetched MCP data.
+Fallback: direct yfinance fetch when MCP data is unavailable.
 """
 import logging
 from typing import Any
+
+import pandas as pd
 
 from backend.modules.rotation_intelligence.domain.ports.rotation_data_port import (
     RotationDataPort,
@@ -16,56 +18,124 @@ logger = logging.getLogger(__name__)
 
 class YahooRotationAdapter(RotationDataPort):
     """
-    Implements RotationDataPort using Yahoo Finance MCP pre-fetched data.
+    Implements RotationDataPort.
 
-    Receives data already fetched by the orchestration layer.
+    Uses pre-fetched MCP data when available, falls back to
+    yfinance direct fetch when MCP data is missing.
     """
 
     def __init__(self, mcp_data: dict[str, Any] | None = None):
         self._mcp_data = mcp_data or {}
-        self._available = bool(self._mcp_data)
+        self._available = True  # Always available via yfinance fallback
 
     def update_data(self, mcp_data: dict[str, Any]) -> None:
         """Update with fresh MCP data."""
         self._mcp_data = mcp_data
-        self._available = bool(mcp_data)
 
     def fetch_etf_data(
         self, symbols: list[str], period: str = "3mo"
     ) -> dict[str, dict]:
         """
         Extract ETF data from pre-fetched MCP payload.
-
-        Expected MCP data structure per symbol:
-        {
-            "symbol": {
-                "prices": [float, ...],
-                "volumes": [float, ...],
-                "current": float
-            }
-        }
+        Falls back to Neon DB, then yfinance direct fetch.
         """
         result = {}
+        missing = []
+
+        # 1. Try MCP data first
         for symbol in symbols:
             data = self._mcp_data.get(symbol)
-            if not data:
-                logger.debug(f"No MCP data for {symbol}, skipping.")
-                continue
+            if data:
+                prices = data.get("prices", [])
+                volumes = data.get("volumes", [])
+                current = data.get("current", prices[-1] if prices else 0)
+                if prices:
+                    result[symbol] = {
+                        "prices": prices,
+                        "volumes": volumes,
+                        "current": current,
+                    }
+                    continue
+            missing.append(symbol)
 
-            prices = data.get("prices", [])
-            volumes = data.get("volumes", [])
-            current = data.get("current", prices[-1] if prices else 0)
+        # 2. Try Neon DB
+        if missing:
+            still_missing = []
+            try:
+                from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+                from datetime import date, timedelta
+                store = TimescaleDataStore()
+                start_date = date.today() - timedelta(days=100) # approx 3mo
+                for symbol in missing:
+                    df = store.load_bars(symbol, "1d", start=start_date)
+                    if not df.empty and len(df) >= 20:
+                        result[symbol] = {
+                            "prices": df["close"].values.tolist(),
+                            "volumes": df["volume"].values.tolist(),
+                            "current": float(df["close"].iloc[-1]),
+                        }
+                    else:
+                        still_missing.append(symbol)
+                store.close()
+            except Exception as e:
+                logger.debug(f"DB rotation fetch failed: {e}")
+                still_missing = missing
+            
+            missing = still_missing
 
-            if prices:
-                result[symbol] = {
-                    "prices": prices,
-                    "volumes": volumes,
-                    "current": current,
-                }
+        # 3. Fallback: yfinance direct fetch for missing symbols
+        if missing:
+            result.update(self._fetch_yfinance(missing, period))
 
+        return result
+
+    def _fetch_yfinance(
+        self, symbols: list[str], period: str = "3mo"
+    ) -> dict[str, dict]:
+        """Direct yfinance fetch as fallback."""
+        try:
+            import yfinance as yf
+        except ImportError:
+            logger.error("yfinance not installed — cannot fetch rotation data")
+            return {}
+
+        result = {}
+        try:
+            data = yf.download(
+                symbols, period=period, progress=False, threads=True
+            )
+            if data is None or data.empty:
+                return result
+
+            for symbol in symbols:
+                try:
+                    if len(symbols) > 1:
+                        close = data["Close"][symbol].dropna()
+                        vol = data["Volume"][symbol].dropna()
+                    else:
+                        close = data["Close"].dropna()
+                        vol = data["Volume"].dropna()
+
+                    if len(close) < 20:
+                        continue
+
+                    result[symbol] = {
+                        "prices": close.values.tolist(),
+                        "volumes": vol.values.tolist(),
+                        "current": float(close.iloc[-1]),
+                    }
+                except Exception as e:
+                    logger.debug(f"Error extracting {symbol}: {e}")
+        except Exception as e:
+            logger.error(f"yfinance batch download failed: {e}")
+
+        if result:
+            logger.info(
+                f"Rotation fallback: fetched {len(result)}/{len(symbols)} ETFs via yfinance"
+            )
         return result
 
     @property
     def is_available(self) -> bool:
-        """Whether MCP data has been loaded."""
-        return self._available
+        """Always available via yfinance fallback."""
+        return True

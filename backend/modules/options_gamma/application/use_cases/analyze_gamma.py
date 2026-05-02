@@ -6,7 +6,7 @@ from typing import Optional
 
 from backend.modules.options_gamma.domain.entities.gamma_models import GammaRegime, OpExType, OptionsAnalysis
 from backend.modules.options_gamma.domain.ports.options_data_port import OptionsDataPort
-from backend.modules.options_gamma.domain.rules.black_scholes import bs_gamma, bs_delta
+from backend.modules.options_gamma.domain.rules.black_scholes import bs_gamma, bs_delta, bs_vanna, bs_charm
 from backend.modules.options_gamma.domain.rules.opex_calendar import detect_opex
 
 logger = logging.getLogger(__name__)
@@ -71,6 +71,10 @@ class OptionsAwareness:
             # NEW: Gravity
             "gravity_score": round(analysis.gravity_score, 4),
             "gravity_strength": round(analysis.gravity_strength, 1),
+            # NEW: Vanna & Charm (Karsan)
+            "vanna_exposure": round(analysis.gamma_regime.vanna_exposure, 2),
+            "charm_exposure": round(analysis.gamma_regime.charm_exposure, 4),
+            "charm_direction": analysis.gamma_regime.charm_direction,
             # NEW: OpEx
             "opex_type": analysis.opex.opex_type,
             "is_opex_day": analysis.opex.is_opex_day,
@@ -267,6 +271,17 @@ class OptionsAwareness:
             if total_gamma < 1000:  # Negligible gamma
                 regime.regime = "DRIFT"
 
+            # Vanna & Charm (Karsan's hidden forces)
+            regime.vanna_exposure, regime.charm_exposure = self._calc_vanna_charm(
+                S, calls, puts, T
+            )
+            if regime.charm_exposure > 0.01:
+                regime.charm_direction = "BUYING"
+            elif regime.charm_exposure < -0.01:
+                regime.charm_direction = "SELLING"
+            else:
+                regime.charm_direction = "NEUTRAL"
+
         except Exception as e:
             self.logger.error(f"Error calculando gamma regime: {e}")
 
@@ -343,6 +358,46 @@ class OptionsAwareness:
                 break
 
         return flip_up, flip_down
+
+    def _calc_vanna_charm(
+        self, S: float, calls: pd.DataFrame,
+        puts: pd.DataFrame, T: float, r: float = 0.05
+    ) -> tuple[float, float]:
+        """
+        Aggregate Vanna and Charm across the options chain.
+
+        Vanna: if positive, an IV drop will create buying pressure (dealers get longer delta).
+        Charm: if positive, time decay will create buying pressure (dealers must buy as OTM deltas decay).
+
+        Both are weighted by OI × 100 (contract multiplier).
+        """
+        net_vanna = 0.0
+        net_charm = 0.0
+
+        for _, row in calls.iterrows():
+            K = row['strike']
+            oi = row.get('openInterest', 0)
+            iv = row.get('impliedVolatility', 0.30)
+            if oi <= 0 or iv <= 0:
+                continue
+            v = bs_vanna(S, K, T, iv, r)
+            c = bs_charm(S, K, T, iv, r)
+            net_vanna += v * oi * 100
+            net_charm += c * oi * 100
+
+        for _, row in puts.iterrows():
+            K = row['strike']
+            oi = row.get('openInterest', 0)
+            iv = row.get('impliedVolatility', 0.30)
+            if oi <= 0 or iv <= 0:
+                continue
+            v = bs_vanna(S, K, T, iv, r)
+            c = bs_charm(S, K, T, iv, r)
+            # Put vanna/charm: opposite dealer exposure
+            net_vanna -= v * oi * 100
+            net_charm -= c * oi * 100
+
+        return net_vanna, net_charm
 
     # ─────────────────────────────────────────────────────────
     # GRAVITY SCORE

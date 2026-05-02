@@ -185,7 +185,7 @@ class FlowPersistenceAnalyzer:
             sorted_flow = sorted(
                 recent_flow, 
                 key=lambda x: datetime.fromisoformat(
-                    (x.get('timestamp') or x.get('created_at') or x.get('date', now.isoformat()[:10]))[:10] + "T16:00:00+00:00"
+                    (x.get('executed_at') or x.get('timestamp') or x.get('created_at') or x.get('date', now.isoformat()[:10]))[:10] + "T16:00:00+00:00"
                 ), 
                 reverse=True
             )
@@ -193,7 +193,7 @@ class FlowPersistenceAnalyzer:
             logger.error(f"Error sorting flow for {ticker}: {e}")
             sorted_flow = recent_flow
 
-        latest_time_str = sorted_flow[0].get('timestamp') or sorted_flow[0].get('created_at') or sorted_flow[0].get('date')
+        latest_time_str = sorted_flow[0].get('executed_at') or sorted_flow[0].get('timestamp') or sorted_flow[0].get('created_at') or sorted_flow[0].get('date')
         if latest_time_str:
             try:
                 # Si viene solo la fecha 'YYYY-MM-DD', agregar la hora
@@ -212,16 +212,36 @@ class FlowPersistenceAnalyzer:
         days_with_flow = set()
         bullish_count = 0
         bearish_count = 0
+        sweep_count = 0
+        max_single_premium = 0.0
         
         for alert in sorted_flow:
-            ts = alert.get('timestamp') or alert.get('created_at')
+            ts = alert.get('executed_at') or alert.get('timestamp') or alert.get('created_at')
             if ts:
                 day_str = ts[:10]
                 days_with_flow.add(day_str)
             
-            # Simple heuristic: Calls at Ask/Above Ask are bullish
-            # Puts at Ask/Above Ask are bearish
+            # Determine side: UW flow-recent uses tags array ("ask_side", "bid_side")
+            # while other formats use a "side" field directly
             side = alert.get('side', '').upper()
+            if not side:
+                tags = alert.get('tags', [])
+                if isinstance(tags, list):
+                    if 'ask_side' in tags:
+                        side = 'ASK'
+                    elif 'bid_side' in tags:
+                        side = 'BID'
+            
+            # Count sweeps from tags
+            tags = alert.get('tags', []) if isinstance(alert.get('tags'), list) else []
+            if 'sweep' in tags:
+                sweep_count += 1
+            
+            # Track single-trade premium for institutional override
+            prem = float(alert.get('premium', 0) or 0)
+            if prem > max_single_premium:
+                max_single_premium = prem
+            
             contract_type = alert.get('option_type', alert.get('type', '')).upper()
             
             if contract_type == 'CALL' and side == 'ASK':
@@ -249,13 +269,19 @@ class FlowPersistenceAnalyzer:
         grade = "UNKNOWN"
         score = 50.0
         
+        # Single-trade institutional override: >$2M in one trade = conviction
+        institutional_override = max_single_premium >= 2_000_000
+        
         if hours_old > 96: # Older than 4 days
             grade = "DEAD_SIGNAL"
             score = 10.0
-        elif consecutive_days >= 3 and consistency >= 0.7:
+        elif institutional_override and hours_old < 24:
+            grade = "INSTITUTIONAL_CONVICTION"
+            score = 88.0
+        elif consecutive_days >= 3 and consistency >= 0.60:
             grade = "CONFIRMED_STREAK"
             score = 90.0
-        elif consecutive_days >= 2 and hours_old < 12 and consistency >= 0.8:
+        elif consecutive_days >= 2 and hours_old < 12 and consistency >= 0.70:
             grade = "FRESH_ACCUMULATION"
             score = 85.0
         elif consecutive_days == 1 and hours_old < 12:
@@ -267,6 +293,9 @@ class FlowPersistenceAnalyzer:
         else:
             grade = "STALE_UNCONFIRMED"
             score = 30.0
+        
+        if sweep_count >= 3:
+            score = min(100.0, score + 10.0)  # Sweep cluster bonus
             
         return FlowPersistenceSignal(
             ticker=ticker,

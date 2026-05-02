@@ -184,12 +184,12 @@ class UnusualWhalesIntelligence(FlowDataPort):
         # Use the most recent 5 trading days
         recent = sorted(aggregates, key=lambda x: x.get('date', ''), reverse=True)[:5]
         
-        total_call_vol = sum(int(r.get('call_volume', 0) or 0) for r in recent)
-        total_put_vol = sum(int(r.get('put_volume', 0) or 0) for r in recent)
-        call_ask_vol = sum(int(r.get('call_volume_ask_side', 0) or 0) for r in recent)
-        put_ask_vol = sum(int(r.get('put_volume_ask_side', 0) or 0) for r in recent)
-        call_bid_vol = sum(int(r.get('call_volume_bid_side', 0) or 0) for r in recent)
-        put_bid_vol = sum(int(r.get('put_volume_bid_side', 0) or 0) for r in recent)
+        total_call_vol = sum(int(float(r.get('call_volume', 0) or 0)) for r in recent)
+        total_put_vol = sum(int(float(r.get('put_volume', 0) or 0)) for r in recent)
+        call_ask_vol = sum(int(float(r.get('call_volume_ask_side', 0) or 0)) for r in recent)
+        put_ask_vol = sum(int(float(r.get('put_volume_ask_side', 0) or 0)) for r in recent)
+        call_bid_vol = sum(int(float(r.get('call_volume_bid_side', 0) or 0)) for r in recent)
+        put_bid_vol = sum(int(float(r.get('put_volume_bid_side', 0) or 0)) for r in recent)
         
         call_premium = sum(float(r.get('call_premium', 0) or 0) for r in recent)
         put_premium = sum(float(r.get('put_premium', 0) or 0) for r in recent)
@@ -208,7 +208,7 @@ class UnusualWhalesIntelligence(FlowDataPort):
         
         # Synthetic sweep count from volume spikes
         # If ask-side call volume dominates strongly, it's equivalent to sweep activity
-        avg_daily_call_vol = sum(int(r.get('avg_30_day_call_volume', 0) or 0) for r in recent[:1])
+        avg_daily_call_vol = sum(int(float(r.get('avg_30_day_call_volume', 0) or 0)) for r in recent[:1])
         n_sweeps = 0
         if avg_daily_call_vol > 0 and total_call_vol / len(recent) > avg_daily_call_vol * 1.5:
             n_sweeps = max(1, int((total_call_vol / len(recent) / avg_daily_call_vol - 1) * 10))

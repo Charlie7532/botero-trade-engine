@@ -1,3 +1,5 @@
+# DEPRECATED — Dead code. No module imports or instantiates RotationEngine.
+# Rotation logic consolidated in rotation_intelligence/application/use_cases/rotation_scanner.py
 from backend.modules.portfolio_management.domain.rules.relative_strength import RelativeStrengthMonitor
 
 class RotationEngine:

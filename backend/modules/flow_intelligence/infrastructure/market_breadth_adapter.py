@@ -1,3 +1,6 @@
+# DEPRECATED — Math absorbed into rotation_intelligence/application/use_cases/rotation_scanner.py
+# This file is dead code. No module instantiates or imports MarketBreadthProvider.
+# Retained for reference only. Will be removed in a future cleanup.
 import logging
 import requests
 import numpy as np

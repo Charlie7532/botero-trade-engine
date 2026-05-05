@@ -27,7 +27,7 @@ class UniverseFilter:
         breadth=None,
     ):
         self.macro = MacroRegimeDetector()
-        self.sector_ranker = SectorRanker(data_dir)
+        self.sector_ranker = SectorRanker()
         self.fundamental = FundamentalFilter()
         self.catalyst = CatalystDetector()
         # Optional adapters injected from composition root
@@ -52,6 +52,7 @@ class UniverseFilter:
         analyst_data: dict = None,         # {ticker: mcp_response}
         political_data: dict = None,       # {ticker: mcp_response}
         fred_mcp_data: dict = None,        # FRED MCP get_economic_indicators
+        rotation_snapshot=None,            # RotationSnapshot from unified scanner
     ) -> list[UniverseCandidate]:
         """
         Ejecuta el pipeline completo de filtrado.
@@ -86,8 +87,8 @@ class UniverseFilter:
 
         logger.info(f"Tier 0 → Régimen: {regime.value} (VIX={self.macro.vix_level:.1f})")
 
-        # ── TIER 1: Sector Ranking ──
-        rankings = self.sector_ranker.rank_sectors(regime)
+        # ── TIER 1: Sector Ranking (uses RotationSnapshot if available) ──
+        rankings = self.sector_ranker.rank_sectors(rotation_snapshot)
         eligible_sectors = [r for r in rankings if r["eligible"]]
         logger.info(
             f"Tier 1 → {len(eligible_sectors)}/{len(rankings)} sectores elegibles"

@@ -72,6 +72,8 @@ export interface Config {
     portfolios: Portfolio;
     'portfolio-memberships': PortfolioMembership;
     'broker-accounts': BrokerAccount;
+    'mcp-servers': McpServer;
+    'agent-skills': AgentSkill;
     bots: Bot;
     'bot-assignments': BotAssignment;
     instruments: Instrument;
@@ -106,6 +108,8 @@ export interface Config {
     portfolios: PortfoliosSelect<false> | PortfoliosSelect<true>;
     'portfolio-memberships': PortfolioMembershipsSelect<false> | PortfolioMembershipsSelect<true>;
     'broker-accounts': BrokerAccountsSelect<false> | BrokerAccountsSelect<true>;
+    'mcp-servers': McpServersSelect<false> | McpServersSelect<true>;
+    'agent-skills': AgentSkillsSelect<false> | AgentSkillsSelect<true>;
     bots: BotsSelect<false> | BotsSelect<true>;
     'bot-assignments': BotAssignmentsSelect<false> | BotAssignmentsSelect<true>;
     instruments: InstrumentsSelect<false> | InstrumentsSelect<true>;
@@ -432,6 +436,10 @@ export interface Bot {
   id: number;
   name: string;
   portfolio: number | Portfolio;
+  /**
+   * AI Agent = Claude-powered. Strategy = traditional algorithm running in the Python backend.
+   */
+  executionType: 'agent' | 'strategy';
   strategyType: 'qgarp' | 'momentum' | 'mean_reversion' | 'trend_following' | 'custom';
   status: 'active' | 'paused' | 'stopped' | 'error';
   description?: string | null;
@@ -447,11 +455,119 @@ export interface Bot {
     | number
     | boolean
     | null;
+  /**
+   * Claude Agent ID (auto-synced on save).
+   */
+  agentId?: string | null;
+  /**
+   * Current agent version in Anthropic.
+   */
+  agentVersion?: number | null;
+  agentSyncStatus?: ('not_created' | 'synced' | 'pending' | 'error') | null;
+  agentSyncError?: string | null;
+  /**
+   * Which Claude model powers this agent.
+   */
+  model?: ('claude-opus-4-7' | 'claude-sonnet-4-6' | 'claude-haiku-4') | null;
+  /**
+   * The system prompt that defines this agent's behavior and expertise.
+   */
+  systemPrompt?: string | null;
+  /**
+   * Select which MCP servers this agent can access.
+   */
+  mcpServers?: (number | McpServer)[] | null;
+  /**
+   * Select which skills this agent has.
+   */
+  skills?: (number | AgentSkill)[] | null;
+  /**
+   * Arbitrary metadata stored on the Claude agent.
+   */
+  agentMetadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   assignments?: {
     docs?: (number | BotAssignment)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mcp-servers".
+ */
+export interface McpServer {
+  id: number;
+  /**
+   * Display name (e.g., "Alpaca Trading", "Yahoo Finance").
+   */
+  name: string;
+  /**
+   * Auto-generated identifier used in agent configs.
+   */
+  slug?: string | null;
+  /**
+   * What capabilities does this MCP provide?
+   */
+  description?: string | null;
+  /**
+   * Only "URL" works with Claude Cloud agents.
+   */
+  type: 'url' | 'stdio';
+  /**
+   * Remote MCP endpoint (e.g., https://mcp.example.com/mcp).
+   */
+  url?: string | null;
+  category: 'broker' | 'data' | 'analytics' | 'macro' | 'news';
+  /**
+   * Disable to prevent agents from using this MCP.
+   */
+  isActive?: boolean | null;
+  defaultPermissionPolicy?: ('always_allow' | 'ask_user') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agent-skills".
+ */
+export interface AgentSkill {
+  id: number;
+  /**
+   * Skill name (e.g., "Fundamental Analyst", "Web Search").
+   */
+  name: string;
+  /**
+   * Auto-generated identifier.
+   */
+  slug?: string | null;
+  /**
+   * What capability does this skill give the agent?
+   */
+  description?: string | null;
+  /**
+   * Built-in: Anthropic-provided skill. Custom: prompt injected into system prompt.
+   */
+  type: 'builtin' | 'custom';
+  category: 'analysis' | 'execution' | 'risk' | 'research' | 'general';
+  isActive?: boolean | null;
+  /**
+   * Anthropic skill ID (e.g., "web_search"). Only for built-in type.
+   */
+  builtinId?: string | null;
+  /**
+   * Skill instructions injected into the agent system prompt.
+   */
+  promptContent?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -892,6 +1008,14 @@ export interface PayloadLockedDocument {
         value: number | BrokerAccount;
       } | null)
     | ({
+        relationTo: 'mcp-servers';
+        value: number | McpServer;
+      } | null)
+    | ({
+        relationTo: 'agent-skills';
+        value: number | AgentSkill;
+      } | null)
+    | ({
         relationTo: 'bots';
         value: number | Bot;
       } | null)
@@ -1172,15 +1296,57 @@ export interface BrokerAccountsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mcp-servers_select".
+ */
+export interface McpServersSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  type?: T;
+  url?: T;
+  category?: T;
+  isActive?: T;
+  defaultPermissionPolicy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agent-skills_select".
+ */
+export interface AgentSkillsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  type?: T;
+  category?: T;
+  isActive?: T;
+  builtinId?: T;
+  promptContent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "bots_select".
  */
 export interface BotsSelect<T extends boolean = true> {
   name?: T;
   portfolio?: T;
+  executionType?: T;
   strategyType?: T;
   status?: T;
   description?: T;
   config?: T;
+  agentId?: T;
+  agentVersion?: T;
+  agentSyncStatus?: T;
+  agentSyncError?: T;
+  model?: T;
+  systemPrompt?: T;
+  mcpServers?: T;
+  skills?: T;
+  agentMetadata?: T;
   assignments?: T;
   updatedAt?: T;
   createdAt?: T;

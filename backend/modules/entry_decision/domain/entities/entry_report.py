@@ -101,6 +101,11 @@ class EntryIntelligenceReport:
     rsi_conviction: float = 0.0          # -1.0 → +1.0 composite
     rsi_diagnosis: str = ""
 
+    # ── Helmer Protocol: Expectations Engine (Reverse DCF) ─────
+    market_implied_growth_rate: float = 0.0
+    historical_growth_rate: float = 0.0
+    expectations_assessment: str = "UNKNOWN" # PRICED_FOR_PERFECTION, PRICED_FOR_FAILURE, FAIRLY_PRICED
+
     # ── Dictamen Final ─────────────────────────────────────────
     final_verdict: str = "PASS"          # EXECUTE, STALK, PASS, BLOCK
     final_scale: float = 0.0            # 0-1

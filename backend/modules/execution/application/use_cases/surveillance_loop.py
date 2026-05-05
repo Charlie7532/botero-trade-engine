@@ -13,11 +13,12 @@ from typing import List, Dict
 logger = logging.getLogger(__name__)
 
 class SurveillanceLoop:
-    def __init__(self, quality_journal, fundamental_data_port=None, sec_adapter=None, blacklist=None):
+    def __init__(self, quality_journal, fundamental_data_port=None, sec_adapter=None, blacklist=None, thesis_repo=None):
         self.journal = quality_journal  # Direct QUALITY journal injection
         self.fundamental_data = fundamental_data_port
         self.sec_adapter = sec_adapter
         self.blacklist = blacklist  # InstrumentBlacklistPort
+        self.thesis_repo = thesis_repo
         
     def _evaluate_moat_decay(self, financials: dict) -> tuple[bool, str]:
         """
@@ -74,6 +75,19 @@ class SurveillanceLoop:
             if self.fundamental_data:
                 financials = self.fundamental_data.get_financial_summary(ticker)
                 thesis_death, reason = self._evaluate_moat_decay(financials)
+
+                # Helmer Protocol: Dynamic Checkpoints Evaluation
+                if not thesis_death and self.thesis_repo:
+                    from backend.modules.portfolio_management.application.use_cases.validate_thesis import validate_thesis
+                    thesis = self.thesis_repo.get_active_thesis(ticker)
+                    if thesis:
+                        validated_thesis = validate_thesis(thesis, financials)
+                        if validated_thesis.thesis_status == "INVALIDATED":
+                            thesis_death = True
+                            breached_cp = next((cp for cp in validated_thesis.checkpoints if cp.is_breached), None)
+                            notes = breached_cp.evidence_notes if breached_cp else "Unknown Checkpoint Breached"
+                            reason = f"FALSIFICATION PROTOCOL: {notes}"
+                            self.thesis_repo.save_thesis(validated_thesis)
             
             # B. NLP SEC Risk Factors Test (Finnhub + Gemini)
             if not thesis_death and self.sec_adapter:

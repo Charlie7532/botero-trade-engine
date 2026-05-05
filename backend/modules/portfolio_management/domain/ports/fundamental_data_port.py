@@ -49,3 +49,38 @@ class FundamentalDataPort(ABC):
             Dict with financial summary data.
         """
         ...
+
+    @abstractmethod
+    def get_financial_statements(self, ticker: str, period_type: str = "annual") -> dict:
+        """Fetch Income + Balance + Cash Flow statements."""
+        ...
+
+    @abstractmethod
+    def get_growth_profile(self, ticker: str) -> dict:
+        """Fetch CAGR growth rates (1/3/5/10yr)."""
+        ...
+
+    @abstractmethod
+    def get_operating_kpis(self, ticker: str) -> dict:
+        """Fetch SaaS/Operating metrics (ARPU, NRR, etc)."""
+        ...
+
+    @abstractmethod
+    def get_segment_breakdown(self, ticker: str) -> dict:
+        """Fetch revenue by business segment and geography."""
+        ...
+
+    @abstractmethod
+    def get_wacc(self, ticker: str) -> float:
+        """Fetch Weighted Average Cost of Capital."""
+        ...
+
+    @abstractmethod
+    def get_full_qgarp(self, ticker: str) -> dict:
+        """Fetch complete QGARP with Rule #1 valuations + moat areas."""
+        ...
+
+    @abstractmethod
+    def get_warning_signs(self, ticker: str) -> dict:
+        """Fetch good signs + warning signs (from summary company_data)."""
+        ...

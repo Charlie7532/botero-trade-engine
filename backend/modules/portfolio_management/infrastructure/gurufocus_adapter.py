@@ -108,6 +108,32 @@ class AnalystIntelligence:
     raw_data: dict = field(default_factory=dict)
 
 
+# ═══════════════════════════════════════════════════════════
+# HELMER PROTOCOL DATACLASSES
+# ═══════════════════════════════════════════════════════════
+# Canonical definitions live in domain/entities/helmer_entities.py
+# QGARPFullAnalysis stays here because it depends on QGARPScorecard (pre-existing tech debt)
+
+from backend.modules.portfolio_management.domain.entities.helmer_entities import (
+    FinancialSnapshot,
+    GrowthProfile,
+    OperatingKPIs,
+    SegmentBreakdown,
+    WarningSignals,
+)
+
+
+@dataclass
+class QGARPFullAnalysis:
+    """Complete QGARP output including Rule #1 valuations."""
+    ticker: str
+    scorecard: QGARPScorecard
+    intrinsic_value: float = 0.0
+    margin_of_safety: float = 0.0
+    moat_areas: list = field(default_factory=list)
+    raw_data: dict = field(default_factory=dict)
+
+
 class GuruFocusIntelligence:
     """
     Adapter for GuruFocus MCP tools.
@@ -559,6 +585,178 @@ class GuruFocusIntelligence:
         except Exception as e:
             self.logger.error(f"Error parsing guru valuation for {ticker}: {e}")
             return result
+
+    # ═══════════════════════════════════════════════════════════
+    # HELMER PROTOCOL PARSERS (PHASE 1)
+    # ═══════════════════════════════════════════════════════════
+
+    def parse_financial_statements(self, ticker: str, mcp_response: dict) -> list[FinancialSnapshot]:
+        """Parse MCP: get_stock_financials."""
+        snapshots = []
+        try:
+            financials = mcp_response.get("financials", {})
+            annuals = financials.get("annuals", {})
+            
+            # Assuming typical GuruFocus format where period is a list.
+            periods = annuals.get("Fiscal Year", [])
+            revenue = annuals.get("Revenue", [])
+            net_income = annuals.get("Net Income", [])
+            fcf = annuals.get("Free Cash Flow", [])
+            total_assets = annuals.get("Total Assets", [])
+            total_liabilities = annuals.get("Total Liabilities", [])
+            
+            for i, period in enumerate(periods):
+                snap = FinancialSnapshot(
+                    ticker=ticker,
+                    period=str(period),
+                    revenue=self._safe_float(revenue[i] if i < len(revenue) else 0.0),
+                    net_income=self._safe_float(net_income[i] if i < len(net_income) else 0.0),
+                    fcf=self._safe_float(fcf[i] if i < len(fcf) else 0.0),
+                    total_assets=self._safe_float(total_assets[i] if i < len(total_assets) else 0.0),
+                    total_liabilities=self._safe_float(total_liabilities[i] if i < len(total_liabilities) else 0.0),
+                    raw_data={"index": i}
+                )
+                snapshots.append(snap)
+            
+            if not snapshots:
+                # Fallback if structure is different
+                snapshots.append(FinancialSnapshot(ticker=ticker, period="unknown", raw_data=mcp_response))
+                
+        except Exception as e:
+            self.logger.error(f"Error parsing financial statements for {ticker}: {e}")
+            snapshots.append(FinancialSnapshot(ticker=ticker, period="error", raw_data={"error": str(e)}))
+            
+        return snapshots
+
+    def parse_growth_profile(self, ticker: str, mcp_response: dict) -> GrowthProfile:
+        """Parse MCP: get_stock_keyratios -> growth section."""
+        try:
+            ratios = mcp_response.get("key_ratios", {})
+            if "growth" in ratios:
+                growth_data = ratios["growth"]
+            else:
+                growth_data = ratios  # maybe it was passed directly
+            
+            return GrowthProfile(
+                ticker=ticker,
+                revenue_cagr={"1y": self._safe_float(growth_data.get("Revenue Growth (1Y)", 0)), 
+                              "3y": self._safe_float(growth_data.get("Revenue Growth (3Y)", 0))},
+                eps_cagr={"1y": self._safe_float(growth_data.get("EPS Growth (1Y)", 0)),
+                          "3y": self._safe_float(growth_data.get("EPS Growth (3Y)", 0))},
+                fcf_cagr={"1y": self._safe_float(growth_data.get("FCF Growth (1Y)", 0)),
+                          "3y": self._safe_float(growth_data.get("FCF Growth (3Y)", 0))},
+                raw_data=growth_data
+            )
+        except Exception as e:
+            self.logger.error(f"Error parsing growth profile for {ticker}: {e}")
+            return GrowthProfile(ticker=ticker, raw_data={"error": str(e)})
+
+    def parse_full_qgarp(self, ticker: str, mcp_response: dict) -> QGARPFullAnalysis:
+        """Parse MCP: compute_qgarp_analysis."""
+        try:
+            scorecard = self.parse_qgarp_scorecard(ticker, mcp_response)
+            return QGARPFullAnalysis(
+                ticker=ticker,
+                scorecard=scorecard,
+                intrinsic_value=self._safe_float(mcp_response.get("intrinsic_value", 0.0)),
+                margin_of_safety=self._safe_float(mcp_response.get("margin_of_safety", 0.0)),
+                moat_areas=mcp_response.get("moat_areas", []),
+                raw_data=mcp_response
+            )
+        except Exception as e:
+            self.logger.error(f"Error parsing full QGARP for {ticker}: {e}")
+            return QGARPFullAnalysis(ticker=ticker, scorecard=QGARPScorecard(ticker=ticker))
+
+    def parse_operating_kpis(self, ticker: str, mcp_response: dict) -> OperatingKPIs:
+        """Parse MCP: get_stock_operating_data.
+        
+        Real structure: {"CRM": {"remaining_performance_obligations_mil": {"name": ..., "data": {"annual": {...}}}, ...}}
+        """
+        try:
+            # Unwrap ticker key if present (GuruFocus wraps operating data per ticker)
+            data = mcp_response.get(ticker, mcp_response)
+            if not isinstance(data, dict):
+                data = mcp_response
+            return OperatingKPIs(
+                ticker=ticker,
+                kpis=data,
+                raw_data=mcp_response
+            )
+        except Exception as e:
+            self.logger.error(f"Error parsing operating KPIs for {ticker}: {e}")
+            return OperatingKPIs(ticker=ticker)
+
+    def parse_segment_breakdown(self, ticker: str, mcp_response: dict) -> SegmentBreakdown:
+        """Parse MCP: get_stock_segments_data."""
+        try:
+            data = mcp_response.get("segments_data", mcp_response)
+            return SegmentBreakdown(
+                ticker=ticker,
+                business_segments=data.get("business_segments", {}),
+                geographic_segments=data.get("geographic_segments", {}),
+                raw_data=mcp_response
+            )
+        except Exception as e:
+            self.logger.error(f"Error parsing segment breakdown for {ticker}: {e}")
+            return SegmentBreakdown(ticker=ticker)
+
+    def parse_wacc(self, ticker: str, mcp_response) -> float:
+        """Parse MCP: get_stock_indicator("wacc").
+        
+        Real cache structure: [["2024-09-28", 10.62], ["2025-09-28", 9.86]]
+        Also handles dict format: {"wacc": [{"date": ..., "value": 8.5}]}
+        """
+        try:
+            # Format 1: list[list[str, float]] — verified from .cache/gurufocus/cache.db
+            if isinstance(mcp_response, list) and len(mcp_response) > 0:
+                latest = mcp_response[-1]
+                if isinstance(latest, list) and len(latest) >= 2:
+                    return self._safe_float(latest[1])
+                return self._safe_float(latest)
+            # Format 2: dict with nested data
+            if isinstance(mcp_response, dict):
+                wacc_data = mcp_response.get("wacc", [])
+                if wacc_data and isinstance(wacc_data, list):
+                    latest = wacc_data[-1]
+                    if isinstance(latest, dict) and "value" in latest:
+                        return self._safe_float(latest["value"])
+                    if isinstance(latest, list) and len(latest) >= 2:
+                        return self._safe_float(latest[1])
+                    return self._safe_float(latest)
+            return self._safe_float(mcp_response)
+        except Exception as e:
+            self.logger.error(f"Error parsing wacc for {ticker}: {e}")
+            return 0.0
+
+    def parse_warning_signs(self, ticker: str, mcp_response: dict) -> WarningSignals:
+        """Parse MCP: get_stock_summary -> company_data."""
+        try:
+            summary = mcp_response.get("summary", mcp_response)
+            company_data = summary.get("company_data", {})
+            
+            good_signs = list(company_data.get("good_details", {}).values())
+            warning_signs = list(company_data.get("warning_details", {}).values())
+            
+            num_good = int(company_data.get("num_good_signs", 0))
+            num_warn_med = int(company_data.get("num_warning_signs_meidum", 0))  # typo in API
+            num_warn_sev = int(company_data.get("num_warning_signs_severe", 0))
+            
+            # Calculate a normalized score: good vs bad
+            score = float(num_good) - (float(num_warn_med) + 2.0 * float(num_warn_sev))
+            
+            return WarningSignals(
+                ticker=ticker,
+                num_good_signs=num_good,
+                num_warnings_medium=num_warn_med,
+                num_warnings_severe=num_warn_sev,
+                good_signs=good_signs,
+                warning_signs=warning_signs,
+                net_signal_score=score,
+                raw_data=company_data
+            )
+        except Exception as e:
+            self.logger.error(f"Error parsing warning signs for {ticker}: {e}")
+            return WarningSignals(ticker=ticker)
 
     # ═══════════════════════════════════════════════════════════
     # UTILITIES

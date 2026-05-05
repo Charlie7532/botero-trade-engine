@@ -139,6 +139,12 @@ def build_rotation_scanner():
     return RotationScanner(data_port=build_rotation_adapter())
 
 
+def build_fundamental_data():
+    """Build FundamentalDataPort (GuruFocus cache → parser bridge)."""
+    from backend.modules.portfolio_management.infrastructure.gurufocus_fundamental_adapter import GuruFocusFundamentalAdapter
+    return GuruFocusFundamentalAdapter()
+
+
 # ── Entry Hub ────────────────────────────────────────────────
 
 def build_entry_hub():
@@ -154,6 +160,7 @@ def build_entry_hub():
         options_provider=build_options_provider(),
         journal=build_speculative_journal(),
         blacklist=build_blacklist(),
+        fundamental_data=build_fundamental_data(),
     )
 
 
@@ -184,10 +191,15 @@ def build_position_monitor():
 # ── Surveillance Loop ───────────────────────────────────────
 
 def build_surveillance_loop():
-    """Build SurveillanceLoop wired to QUALITY journal + blacklist."""
+    """Build SurveillanceLoop wired to QUALITY journal, SEC adapter, and blacklist."""
     from backend.modules.execution.application.use_cases.surveillance_loop import SurveillanceLoop
+    from backend.modules.portfolio_management.infrastructure.sec_filings_adapter import SecFilingsAdapter
+    
+    sec_adapter = SecFilingsAdapter()
+    
     return SurveillanceLoop(
         quality_journal=build_quality_journal(),
+        sec_adapter=sec_adapter,
         blacklist=build_blacklist(),
     )
 

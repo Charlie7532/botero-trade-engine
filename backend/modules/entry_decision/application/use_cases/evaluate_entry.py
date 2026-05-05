@@ -60,6 +60,7 @@ class EntryIntelligenceHub:
         options_provider: OptionsDataPort,
         journal=None,
         blacklist=None,
+        fundamental_data=None,
     ):
         # Ports (injected)
         self._market_data = market_data
@@ -67,17 +68,20 @@ class EntryIntelligenceHub:
         self._options_provider = options_provider
         self.journal = journal  # SPECULATIVE journal only (Memory Guard is tactical)
         self._blacklist = blacklist  # InstrumentBlacklistPort
+        self._fundamental_data = fundamental_data
 
         # Domain use cases (cross-module — allowed by Clean Architecture)
         from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
         from backend.modules.price_analysis.application.use_cases.detect_price_phase import PricePhaseIntelligence
         from backend.modules.flow_intelligence.application.use_cases.analyze_persistence import FlowPersistenceAnalyzer
         from backend.modules.volume_intelligence.application.use_cases.analyze_volume_profile import VolumeProfileAnalyzer
+        from backend.modules.portfolio_management.application.use_cases.analyze_expectations import AnalyzeExpectations
 
         self.event_flow = EventFlowIntelligence()
         self.price_phase = PricePhaseIntelligence()
         self.flow_persistence = FlowPersistenceAnalyzer()
         self.volume_profile = VolumeProfileAnalyzer()
+        self.expectations_analyzer = AnalyzeExpectations(self._fundamental_data, self._market_data) if self._fundamental_data else None
         self._rsi_intel = None             # RSIIntelligence (lazy)
 
         # Lazy-init modules
@@ -221,6 +225,22 @@ class EntryIntelligenceHub:
 
         # RS vs SPY
         report.rs_vs_spy = self._market_data.calc_rs_vs_spy(prices)
+
+        # ══════════════════════════════════════════════════════
+        # STEP 1.5: Expectations Engine (Helmer Protocol)
+        # ══════════════════════════════════════════════════════
+        if strategy_bucket == "QUALITY" and getattr(self, 'expectations_analyzer', None):
+            expectations = self.expectations_analyzer.execute(ticker)
+            report.market_implied_growth_rate = expectations.market_implied_growth_rate
+            report.historical_growth_rate = expectations.historical_growth_rate
+            report.expectations_assessment = expectations.assessment
+            
+            if expectations.assessment == "PRICED_FOR_PERFECTION":
+                report.final_verdict = "BLOCK"
+                report.final_scale = 0.0
+                report.final_reason = f"BLOCK: Expectations Engine — Market implies {expectations.market_implied_growth_rate:.1%} growth, historical is {expectations.historical_growth_rate:.1%} (PRICED FOR PERFECTION)"
+                logger.warning(f"EntryHub {ticker}: BLOCKED by Expectations Engine (PRICED FOR PERFECTION)")
+                return report
 
         # ══════════════════════════════════════════════════════
         # STEP 2: Opciones — Gamma Regime, Put/Call Walls

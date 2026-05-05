@@ -591,60 +591,102 @@ class GuruFocusIntelligence:
     # ═══════════════════════════════════════════════════════════
 
     def parse_financial_statements(self, ticker: str, mcp_response: dict) -> list[FinancialSnapshot]:
-        """Parse MCP: get_stock_financials."""
+        """Parse MCP: get_stock_financials.
+        
+        Real structure: {financials: {annuals: {
+            Fiscal Year: [...],
+            income_statement: {Revenue: [...], Net Income: [...]},
+            balance_sheet: {Total Assets: [...], Total Liabilities: [...]},
+            cashflow_statement: {Cash Flow from Operations: [...], Purchase Of Property, Plant, Equipment: [...]}
+        }}}
+        """
         snapshots = []
         try:
-            financials = mcp_response.get("financials", {})
+            financials = mcp_response.get("financials", mcp_response)
             annuals = financials.get("annuals", {})
             
-            # Assuming typical GuruFocus format where period is a list.
             periods = annuals.get("Fiscal Year", [])
-            revenue = annuals.get("Revenue", [])
-            net_income = annuals.get("Net Income", [])
-            fcf = annuals.get("Free Cash Flow", [])
-            total_assets = annuals.get("Total Assets", [])
-            total_liabilities = annuals.get("Total Liabilities", [])
+            if not periods:
+                return snapshots
+
+            income = annuals.get("income_statement", {})
+            balance = annuals.get("balance_sheet", {})
+            cashflow = annuals.get("cashflow_statement", {})
             
-            for i, period in enumerate(periods):
+            revenue = income.get("Revenue", [])
+            net_income = income.get("Net Income", income.get("Net Income from Continuing Operations", []))
+            total_assets = balance.get("Total Assets", [])
+            total_liabilities = balance.get("Total Liabilities", [])
+            operating_cf = cashflow.get("Cash Flow from Operations", [])
+            capex = cashflow.get("Purchase Of Property, Plant, Equipment", [])
+            
+            # Only take recent periods (last 10 years)
+            start_idx = max(0, len(periods) - 10)
+            
+            for i in range(start_idx, len(periods)):
+                # FCF = Operating CF + CapEx (CapEx is negative in the data)
+                op_cf = self._safe_float(operating_cf[i] if i < len(operating_cf) else 0.0)
+                cx = self._safe_float(capex[i] if i < len(capex) else 0.0)
+                fcf = op_cf + cx  # capex is already negative
+
                 snap = FinancialSnapshot(
                     ticker=ticker,
-                    period=str(period),
+                    period=str(periods[i]),
                     revenue=self._safe_float(revenue[i] if i < len(revenue) else 0.0),
                     net_income=self._safe_float(net_income[i] if i < len(net_income) else 0.0),
-                    fcf=self._safe_float(fcf[i] if i < len(fcf) else 0.0),
+                    fcf=fcf,
                     total_assets=self._safe_float(total_assets[i] if i < len(total_assets) else 0.0),
                     total_liabilities=self._safe_float(total_liabilities[i] if i < len(total_liabilities) else 0.0),
-                    raw_data={"index": i}
+                    raw_data={"index": i, "period": str(periods[i])}
                 )
                 snapshots.append(snap)
-            
-            if not snapshots:
-                # Fallback if structure is different
-                snapshots.append(FinancialSnapshot(ticker=ticker, period="unknown", raw_data=mcp_response))
                 
         except Exception as e:
             self.logger.error(f"Error parsing financial statements for {ticker}: {e}")
-            snapshots.append(FinancialSnapshot(ticker=ticker, period="error", raw_data={"error": str(e)}))
             
         return snapshots
 
     def parse_growth_profile(self, ticker: str, mcp_response: dict) -> GrowthProfile:
-        """Parse MCP: get_stock_keyratios -> growth section."""
+        """Parse MCP: get_stock_keyratios -> growth section.
+        
+        Real structure: {Growth: {
+            '1-Year Total Revenue Growth Rate': 12.80,
+            '3-Year Total Revenue Growth Rate': 1.80,
+            '5-Year Total Revenue Growth Rate': 6.70,
+            '10-Year Total Revenue Growth Rate': 7.50,
+            '1-Year EPS without NRI Growth Rate': 16.60,
+            ...
+            '1-Year FCF Growth Rate (Per Share)': 34.50,
+            ...
+        }}
+        """
         try:
-            ratios = mcp_response.get("key_ratios", {})
-            if "growth" in ratios:
-                growth_data = ratios["growth"]
-            else:
-                growth_data = ratios  # maybe it was passed directly
+            # key_ratios data has Growth at top level, not under 'key_ratios'
+            growth_data = mcp_response.get("Growth", {})
+            if not growth_data:
+                # Fallback: maybe nested under key_ratios
+                growth_data = mcp_response.get("key_ratios", {}).get("growth", {})
             
             return GrowthProfile(
                 ticker=ticker,
-                revenue_cagr={"1y": self._safe_float(growth_data.get("Revenue Growth (1Y)", 0)), 
-                              "3y": self._safe_float(growth_data.get("Revenue Growth (3Y)", 0))},
-                eps_cagr={"1y": self._safe_float(growth_data.get("EPS Growth (1Y)", 0)),
-                          "3y": self._safe_float(growth_data.get("EPS Growth (3Y)", 0))},
-                fcf_cagr={"1y": self._safe_float(growth_data.get("FCF Growth (1Y)", 0)),
-                          "3y": self._safe_float(growth_data.get("FCF Growth (3Y)", 0))},
+                revenue_cagr={
+                    "1y": self._safe_float(growth_data.get("1-Year Total Revenue Growth Rate", 0)),
+                    "3y": self._safe_float(growth_data.get("3-Year Total Revenue Growth Rate", 0)),
+                    "5y": self._safe_float(growth_data.get("5-Year Total Revenue Growth Rate", 0)),
+                    "10y": self._safe_float(growth_data.get("10-Year Total Revenue Growth Rate", 0)),
+                },
+                eps_cagr={
+                    "1y": self._safe_float(growth_data.get("1-Year EPS without NRI Growth Rate", 0)),
+                    "3y": self._safe_float(growth_data.get("3-Year EPS without NRI Growth Rate", 0)),
+                    "5y": self._safe_float(growth_data.get("5-Year EPS without NRI Growth Rate", 0)),
+                    "10y": self._safe_float(growth_data.get("10-Year EPS without NRI Growth Rate", 0)),
+                },
+                fcf_cagr={
+                    "1y": self._safe_float(growth_data.get("1-Year FCF Growth Rate (Per Share)", 0)),
+                    "3y": self._safe_float(growth_data.get("3-Year FCF Growth Rate (Per Share)", 0)),
+                    "5y": self._safe_float(growth_data.get("5-Year FCF Growth Rate (Per Share)", 0)),
+                    "10y": self._safe_float(growth_data.get("10-Year FCF Growth Rate (Per Share)", 0)),
+                },
                 raw_data=growth_data
             )
         except Exception as e:

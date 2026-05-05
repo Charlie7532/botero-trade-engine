@@ -75,4 +75,23 @@ export const agentSkillsFields: Field[] = [
       condition: (data) => data?.type === 'custom',
     },
   },
+  // Sync tracking fields (populated by cascade hooks)
+  {
+    name: 'lastSyncedAt',
+    type: 'date',
+    admin: {
+      readOnly: true,
+      position: 'sidebar',
+      description: 'Last time dependent bots were resynced.',
+    },
+  },
+  {
+    name: 'syncedBotCount',
+    type: 'number',
+    admin: {
+      readOnly: true,
+      position: 'sidebar',
+      description: 'Number of bots resynced on last change.',
+    },
+  },
 ]

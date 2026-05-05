@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { isAdmin } from '@/access'
 import { mcpServersFields } from './fields'
+import { resyncDependentBotsOnMcpChange } from './infrastructure/hooks/resyncDependentBotsOnMcpChange'
 
 export const McpServers: CollectionConfig = {
   slug: 'mcp-servers',
@@ -28,6 +29,7 @@ export const McpServers: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [resyncDependentBotsOnMcpChange],
   },
   fields: mcpServersFields,
   timestamps: true,

@@ -81,6 +81,7 @@ export interface Config {
     'calibration-profiles': CalibrationProfile;
     'candidate-screenings': CandidateScreening;
     'trade-snapshots': TradeSnapshot;
+    'project-vaults': ProjectVault;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -117,6 +118,7 @@ export interface Config {
     'calibration-profiles': CalibrationProfilesSelect<false> | CalibrationProfilesSelect<true>;
     'candidate-screenings': CandidateScreeningsSelect<false> | CandidateScreeningsSelect<true>;
     'trade-snapshots': TradeSnapshotsSelect<false> | TradeSnapshotsSelect<true>;
+    'project-vaults': ProjectVaultsSelect<false> | ProjectVaultsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -378,6 +380,10 @@ export interface BrokerAccount {
   name: string;
   brokerType: 'alpaca' | 'interactive_brokers';
   environment: 'paper' | 'live';
+  /**
+   * Which strategy department this broker account serves.
+   */
+  department: 'quality' | 'speculative' | 'mixed';
   isActive?: boolean | null;
   /**
    * Required for Alpaca. Enter your API Key here.
@@ -425,6 +431,18 @@ export interface BrokerAccount {
   secretKeyEncrypted?: string | null;
   secretKeyIv?: string | null;
   secretKeyAuthTag?: string | null;
+  /**
+   * Vault ID storing this broker account credentials.
+   */
+  vaultId?: string | null;
+  /**
+   * Credential ID inside the vault.
+   */
+  credentialId?: string | null;
+  /**
+   * Sync status of vault credentials.
+   */
+  vaultSyncStatus?: ('unsynced' | 'synced' | 'error') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -444,7 +462,15 @@ export interface Bot {
    * AI Agent = Claude-powered. Strategy = traditional algorithm running in the Python backend.
    */
   executionType: 'agent' | 'strategy';
-  strategyType: 'qgarp' | 'momentum' | 'mean_reversion' | 'trend_following' | 'custom';
+  strategyType:
+    | 'quality_value'
+    | 'quality_growth'
+    | 'quality_dividend'
+    | 'speculative_momentum'
+    | 'speculative_gamma'
+    | 'speculative_breakout'
+    | 'speculative_spring'
+    | 'custom';
   status: 'active' | 'paused' | 'stopped' | 'error';
   description?: string | null;
   /**
@@ -531,12 +557,32 @@ export interface McpServer {
    * Remote MCP endpoint (e.g., https://mcp.example.com/mcp).
    */
   url?: string | null;
-  category: 'broker' | 'data' | 'analytics' | 'macro' | 'news';
+  category: 'data' | 'analytics' | 'macro' | 'news';
   /**
    * Disable to prevent agents from using this MCP.
    */
   isActive?: boolean | null;
   defaultPermissionPolicy?: ('always_allow' | 'ask_user') | null;
+  /**
+   * Scope of credentials – shared platform or per-portfolio.
+   */
+  credentialScope: 'platform' | 'portfolio';
+  /**
+   * Env var name that stores the API key for platform-wide MCPs.
+   */
+  platformApiKeyEnvVar?: string | null;
+  /**
+   * Broker type this MCP is linked to (e.g., alpaca). Leave empty for generic MCPs.
+   */
+  linkedBrokerType?: string | null;
+  /**
+   * Last time dependent bots were resynced.
+   */
+  lastSyncedAt?: string | null;
+  /**
+   * Number of bots resynced on last change.
+   */
+  syncedBotCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -572,6 +618,14 @@ export interface AgentSkill {
    * Skill instructions injected into the agent system prompt.
    */
   promptContent?: string | null;
+  /**
+   * Last time dependent bots were resynced.
+   */
+  lastSyncedAt?: string | null;
+  /**
+   * Number of bots resynced on last change.
+   */
+  syncedBotCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -969,6 +1023,31 @@ export interface TradeSnapshot {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-vaults".
+ */
+export interface ProjectVault {
+  id: number;
+  /**
+   * Human‑readable vault identifier (e.g., "Platform MCP Vault").
+   */
+  name: string;
+  /**
+   * External vault ID returned by the provider.
+   */
+  vaultId: string;
+  /**
+   * Current sync status.
+   */
+  status?: ('pending' | 'ready' | 'error') | null;
+  /**
+   * When the vault was last successfully updated.
+   */
+  lastSyncedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1046,6 +1125,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'trade-snapshots';
         value: number | TradeSnapshot;
+      } | null)
+    | ({
+        relationTo: 'project-vaults';
+        value: number | ProjectVault;
       } | null)
     | ({
         relationTo: 'users';
@@ -1278,6 +1361,7 @@ export interface BrokerAccountsSelect<T extends boolean = true> {
   name?: T;
   brokerType?: T;
   environment?: T;
+  department?: T;
   isActive?: T;
   apiKeyPlaintext?: T;
   apiKeyMasked?: T;
@@ -1295,6 +1379,9 @@ export interface BrokerAccountsSelect<T extends boolean = true> {
   secretKeyEncrypted?: T;
   secretKeyIv?: T;
   secretKeyAuthTag?: T;
+  vaultId?: T;
+  credentialId?: T;
+  vaultSyncStatus?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1311,6 +1398,11 @@ export interface McpServersSelect<T extends boolean = true> {
   category?: T;
   isActive?: T;
   defaultPermissionPolicy?: T;
+  credentialScope?: T;
+  platformApiKeyEnvVar?: T;
+  linkedBrokerType?: T;
+  lastSyncedAt?: T;
+  syncedBotCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1327,6 +1419,8 @@ export interface AgentSkillsSelect<T extends boolean = true> {
   isActive?: T;
   builtinId?: T;
   promptContent?: T;
+  lastSyncedAt?: T;
+  syncedBotCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1500,6 +1594,18 @@ export interface TradeSnapshotsSelect<T extends boolean = true> {
   openedAt?: T;
   closedAt?: T;
   portfolio?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-vaults_select".
+ */
+export interface ProjectVaultsSelect<T extends boolean = true> {
+  name?: T;
+  vaultId?: T;
+  status?: T;
+  lastSyncedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

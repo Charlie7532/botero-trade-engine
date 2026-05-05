@@ -36,7 +36,7 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { messages } = body
+    const { messages, sessionId } = body
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'messages array required' }, { status: 400 })
@@ -56,7 +56,85 @@ export async function POST(
       }
     }
 
-    // Call Anthropic Messages API with the bot's config
+    // Resolve vault IDs for Managed Agent Session
+    const vaultIds: string[] = []
+
+    // 1. Broker vault from active BotAssignment
+    const assignments = await payload.find({
+      collection: 'bot-assignments',
+      where: {
+        bot: { equals: bot.id },
+        isActive: { equals: true },
+      },
+      limit: 1,
+      depth: 1,
+      overrideAccess: true,
+    })
+
+    if (assignments.totalDocs > 0) {
+      const assignment = assignments.docs[0] as any
+      const brokerAccount =
+        typeof assignment.brokerAccount === 'object'
+          ? assignment.brokerAccount
+          : null
+
+      if (brokerAccount?.vaultId) {
+        vaultIds.push(brokerAccount.vaultId)
+      }
+    }
+
+    // 2. Platform vault (global project vault, if configured)
+    const platformVaults = await payload.find({
+      collection: 'project-vaults',
+      where: { status: { equals: 'ready' } },
+      limit: 10,
+      overrideAccess: true,
+    })
+    for (const pv of platformVaults.docs) {
+      const pvDoc = pv as any
+      if (pvDoc.vaultId) {
+        vaultIds.push(pvDoc.vaultId)
+      }
+    }
+
+    // Use Managed Agent Session if bot has an agentId and we have vault IDs
+    if (bot.agentId && vaultIds.length > 0) {
+      // Create or resume a Managed Agent Session
+      const sessionPayload: Record<string, any> = {
+        agent_id: bot.agentId,
+        messages,
+        vault_ids: vaultIds,
+      }
+
+      if (sessionId) {
+        sessionPayload.session_id = sessionId
+      }
+
+      const sessionRes = await fetch('https://api.anthropic.com/v1/agent/sessions', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-beta': 'managed-agents-2026-04-01',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(sessionPayload),
+      })
+
+      if (!sessionRes.ok) {
+        const errorText = await sessionRes.text().catch(() => '')
+        console.error('[AgentChat] Session error:', sessionRes.status, errorText.slice(0, 300))
+        return NextResponse.json(
+          { error: `Agent session error (${sessionRes.status})` },
+          { status: 502 },
+        )
+      }
+
+      const data = await sessionRes.json()
+      return NextResponse.json(data)
+    }
+
+    // Fallback: standard Messages API (no vaults needed)
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {

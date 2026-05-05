@@ -10,8 +10,10 @@ export function createPayloadPortfolioCreator(payload: Payload): PortfolioCreato
         collection: 'portfolios',
         data: {
           name,
-          owner: ownerId,
+          owner: Number(ownerId),
+          status: 'active',
         },
+        draft: false,
         overrideAccess: true,
       })
 

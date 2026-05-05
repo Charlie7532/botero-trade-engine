@@ -320,15 +320,13 @@ export const useUser = () => {
 
   // Compute isAdmin based on user role
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
-  // Compute isOperator based on user role (operators, admins, and superadmins can access operator console)
-  const isOperator = user?.role === 'operator' || user?.role === 'admin' || user?.role === 'superadmin'
 
   // Memoize the user object to prevent creating a new reference on every render.
   // Without this, every consumer that uses `user` in a dependency array
   // (e.g. useCallback, useEffect) would re-run on every render, causing infinite loops.
   const userWithRoles = useMemo(
-    () => (user ? { ...user, isAdmin, isOperator } : null),
-    [user, isAdmin, isOperator],
+    () => (user ? { ...user, isAdmin } : null),
+    [user, isAdmin],
   )
 
   return useMemo(

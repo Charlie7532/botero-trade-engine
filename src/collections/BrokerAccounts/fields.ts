@@ -231,4 +231,33 @@ export const brokerAccountsFields: Field[] = [
       hidden: true,
     },
   },
-]
+  {
+    name: 'vaultId',
+    type: 'text',
+    admin: {
+      description: 'Vault ID storing this broker account credentials.',
+      hidden: true,
+    },
+  },
+  {
+    name: 'credentialId',
+    type: 'text',
+    admin: {
+      description: 'Credential ID inside the vault.',
+      hidden: true,
+    },
+  },
+  {
+    name: 'vaultSyncStatus',
+    type: 'select',
+    defaultValue: 'unsynced',
+    options: [
+      { label: 'Unsynced', value: 'unsynced' },
+      { label: 'Synced', value: 'synced' },
+      { label: 'Error', value: 'error' },
+    ],
+    admin: {
+      description: 'Sync status of vault credentials.',
+    },
+  },
+];

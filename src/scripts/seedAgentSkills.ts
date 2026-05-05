@@ -26,27 +26,27 @@ function parseFrontmatter(content: string): { name: string; description: string;
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/)
   if (!match) return { name: '', description: '', body: content }
 
-  const frontmatter = match[1]
-  const body = match[2].trim()
+  const frontmatter = match[1]!
+  const body = match[2]!.trim()
 
   let name = ''
   let description = ''
 
   // Extract name
   const nameMatch = frontmatter.match(/^name:\s*(.+)$/m)
-  if (nameMatch) name = nameMatch[1].trim()
+  if (nameMatch) name = nameMatch[1]!.trim()
 
   // Extract description (may be multi-line with |)
   const descMatch = frontmatter.match(/description:\s*\|?\s*\r?\n([\s\S]*?)(?=\r?\n\w|\r?\n---|\r?\n$|$)/)
   if (descMatch) {
-    description = descMatch[1]
+    description = descMatch[1]!
       .split(/\r?\n/)
       .map((l) => l.replace(/^\s{2}/, ''))
       .join(' ')
       .trim()
   } else {
     const singleDescMatch = frontmatter.match(/^description:\s*(.+)$/m)
-    if (singleDescMatch) description = singleDescMatch[1].trim()
+    if (singleDescMatch) description = singleDescMatch[1]!.trim()
   }
 
   return { name, description, body }

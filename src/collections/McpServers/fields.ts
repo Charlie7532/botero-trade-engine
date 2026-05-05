@@ -78,4 +78,50 @@ export const mcpServersFields: Field[] = [
       position: 'sidebar',
     },
   },
+  {
+    name: 'credentialScope',
+    type: 'select',
+    required: true,
+    defaultValue: 'platform',
+    options: [
+      { label: 'Platform (shared)', value: 'platform' },
+      { label: 'Portfolio (per-portfolio)', value: 'portfolio' },
+    ],
+    admin: {
+      description: 'Scope of credentials – shared platform or per-portfolio.',
+    },
+  },
+  {
+    name: 'platformApiKeyEnvVar',
+    type: 'text',
+    admin: {
+      description: 'Env var name that stores the API key for platform-wide MCPs.',
+    },
+  },
+  {
+    name: 'linkedBrokerType',
+    type: 'text',
+    admin: {
+      description: 'Broker type this MCP is linked to (e.g., alpaca). Leave empty for generic MCPs.',
+    },
+  },
+  // Sync tracking fields (populated by cascade hooks)
+  {
+    name: 'lastSyncedAt',
+    type: 'date',
+    admin: {
+      readOnly: true,
+      position: 'sidebar',
+      description: 'Last time dependent bots were resynced.',
+    },
+  },
+  {
+    name: 'syncedBotCount',
+    type: 'number',
+    admin: {
+      readOnly: true,
+      position: 'sidebar',
+      description: 'Number of bots resynced on last change.',
+    },
+  },
 ]

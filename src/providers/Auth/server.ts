@@ -61,17 +61,14 @@ export async function requireUser(): Promise<User> {
 export const userSession = cache(async (): Promise<{
     user: User | null
     isAdmin: boolean
-    isOperator: boolean
     isAuthenticated: boolean
 }> => {
     const user = await getUser()
     const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
-    const isOperator = user?.role === 'operator' || user?.role === 'admin' || user?.role === 'superadmin'
 
     return {
         user,
         isAdmin,
-        isOperator,
         isAuthenticated: user !== null,
     }
 })

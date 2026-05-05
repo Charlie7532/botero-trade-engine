@@ -1,5 +1,6 @@
 import { handleAfterChangeHook, handleBeforeChangeHook } from '@/shared/handlers'
 import { encryptCredential } from './domain/useCases/encryptCredential'
+import { syncVaultOnSave } from './infrastructure/hooks/syncVaultOnSave'
 import {
   BROKER_CREDENTIAL_PROFILES,
   defaultConnectionValues,
@@ -150,5 +151,5 @@ const encryptPlaintextValue = handleBeforeChangeHook({
 
 export const brokerAccountsLifecycle = {
   beforeChange: [encryptPlaintextValue],
-  afterChange: [],
+  afterChange: [syncVaultOnSave],
 }

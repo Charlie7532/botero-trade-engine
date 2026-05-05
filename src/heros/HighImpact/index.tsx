@@ -7,8 +7,13 @@ import { CMSLink } from "@/components/Link"
 import { Media } from "@/components/Media"
 import RichText from "@/components/RichText"
 import { motion, useScroll, useTransform } from "framer-motion"
+import type { Media as MediaType } from "@/payload-types"
 
-type HeroProps = { links?: unknown[] | null; media?: unknown; richText?: unknown }
+type HeroProps = {
+  links?: { link: Record<string, unknown> }[] | null
+  media?: MediaType | string | number | null
+  richText?: Parameters<typeof RichText>[0]['data']
+}
 
 export const HighImpactHero: React.FC<HeroProps> = ({ links, media, richText }) => {
   const { setHeaderTheme } = useHeaderTheme()

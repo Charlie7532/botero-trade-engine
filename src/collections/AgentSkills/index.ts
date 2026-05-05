@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { isAdmin } from '@/access'
 import { agentSkillsFields } from './fields'
+import { resyncDependentBotsOnSkillChange } from './infrastructure/hooks/resyncDependentBotsOnSkillChange'
 
 export const AgentSkills: CollectionConfig = {
   slug: 'agent-skills',
@@ -28,6 +29,7 @@ export const AgentSkills: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [resyncDependentBotsOnSkillChange],
   },
   fields: agentSkillsFields,
   timestamps: true,

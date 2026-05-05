@@ -90,7 +90,7 @@ export function AgentChat({ botSlug, botName, botDescription, modelName }: Props
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Chip size="sm" variant="flat" className="font-mono text-[11px]">
+          <Chip size="sm" variant="soft" className="font-mono text-[11px]">
             {modelName}
           </Chip>
           <IconThemeSwitch />
@@ -167,9 +167,8 @@ export function AgentChat({ botSlug, botName, botDescription, modelName }: Props
             type="submit"
             isDisabled={loading || !input.trim()}
             isIconOnly
-            color="primary"
             size="lg"
-            radius="lg"
+            className="rounded-xl bg-primary text-primary-foreground"
           >
             <Icon icon="lucide:arrow-up" className="w-5 h-5" />
           </Button>

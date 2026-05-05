@@ -21,6 +21,7 @@ import { RegimePhases } from './collections/RegimePhases'
 import { CalibrationProfiles } from './collections/CalibrationProfiles'
 import { CandidateScreenings } from './collections/CandidateScreenings'
 import { TradeSnapshots } from './collections/TradeSnapshots'
+import { ProjectVaults } from './collections/ProjectVaults'
 import { SiteSettings } from './globals/SiteSettings/index'
 import { plugins } from './plugins'
 import { dashboardConfig } from './widgets'
@@ -112,6 +113,8 @@ export default buildConfig({
     Bots, BotAssignments,
     // Trading Engine — Lifecycle & Calibration
     Instruments, RegimePhases, CalibrationProfiles, CandidateScreenings, TradeSnapshots,
+    // Credential Vault
+    ProjectVaults,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [SiteSettings],

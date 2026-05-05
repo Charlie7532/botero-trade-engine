@@ -108,7 +108,8 @@ export async function uploadUserAvatar(userId: number | string, formData: FormDa
 
   const uploaded = await payload.create({
     collection: 'user-avatar',
-    data: { alt: `avatar-${userId}` },
+    data: { alt: `avatar-${userId}`, user: Number(userId) },
+    draft: false,
     file: {
       data: buffer,
       mimetype: file.type,

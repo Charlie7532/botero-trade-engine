@@ -101,6 +101,48 @@ export const syncAgentOnSave: CollectionAfterChangeHook = async ({ doc, req, con
     systemPrompt += '\n\n---\n\n# Active Skills\n\n' + customSkillPrompts.join('\n\n')
   }
 
+  // Resolve broker-specific MCP from active BotAssignment
+  const { BROKER_MCP_ENDPOINTS, hasBrokerMcp } = await import(
+    '@/collections/BrokerAccounts/domain/rules/portfolioRules'
+  )
+
+  const assignments = await req.payload.find({
+    collection: 'bot-assignments',
+    where: {
+      bot: { equals: typeof doc.id === 'object' ? (doc.id as any).id : doc.id },
+      isActive: { equals: true },
+    },
+    limit: 1,
+    depth: 1,
+    overrideAccess: true,
+  })
+
+  let brokerVaultId: string | undefined
+  if (assignments.totalDocs > 0) {
+    const assignment = assignments.docs[0] as any
+    const brokerAccount =
+      typeof assignment.brokerAccount === 'object'
+        ? assignment.brokerAccount
+        : null
+
+    if (brokerAccount) {
+      const brokerType = brokerAccount.brokerType as import('@/collections/BrokerAccounts/domain/rules/portfolioRules').BrokerType
+      if (hasBrokerMcp(brokerType)) {
+        const mcpSlug = BROKER_MCP_ENDPOINTS[brokerType as keyof typeof BROKER_MCP_ENDPOINTS]
+        // Only add if not already in the list
+        if (mcpSlug && !mcpConfigs.find((m) => m.name === mcpSlug)) {
+          mcpConfigs.push({
+            name: mcpSlug,
+            type: 'url',
+            url: `https://mcp.${brokerType}.botero.trade/mcp`,
+          })
+        }
+      }
+      // Capture vault ID for session injection
+      brokerVaultId = brokerAccount.vaultId || undefined
+    }
+  }
+
   const agentConfig = {
     name: doc.name,
     model: doc.model || 'claude-sonnet-4-6',

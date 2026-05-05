@@ -39,3 +39,18 @@ export const DEPARTMENTS = [
 ] as const
 
 export type Department = 'quality' | 'speculative' | 'mixed'
+
+// Mapping of broker types to their dedicated MCP endpoint identifiers
+export const BROKER_MCP_ENDPOINTS = {
+  alpaca: 'alpaca-mcp',
+  interactive_brokers: 'ib-mcp',
+} as const
+
+type BrokerMcpKey = keyof typeof BROKER_MCP_ENDPOINTS
+
+/**
+ * Returns true if the given broker type has a dedicated MCP endpoint.
+ */
+export function hasBrokerMcp(brokerType: BrokerType): boolean {
+  return Object.keys(BROKER_MCP_ENDPOINTS).includes(brokerType as string)
+}

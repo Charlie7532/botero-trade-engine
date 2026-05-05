@@ -15,14 +15,28 @@ export const BOT_STATUSES = [
 export type BotStatus = 'active' | 'paused' | 'stopped' | 'error'
 
 export const STRATEGY_TYPES = [
-  { label: 'QGARP', value: 'qgarp' },
-  { label: 'Momentum', value: 'momentum' },
-  { label: 'Mean Reversion', value: 'mean_reversion' },
-  { label: 'Trend Following', value: 'trend_following' },
+  // Quality Department (Hohn & Munger — 80%)
+  { label: 'Quality: Value', value: 'quality_value' },
+  { label: 'Quality: Growth', value: 'quality_growth' },
+  { label: 'Quality: Dividend', value: 'quality_dividend' },
+  // Speculative Department (Eifert & PTJ — 20%)
+  { label: 'Speculative: Momentum', value: 'speculative_momentum' },
+  { label: 'Speculative: Gamma', value: 'speculative_gamma' },
+  { label: 'Speculative: Breakout', value: 'speculative_breakout' },
+  { label: 'Speculative: Spring', value: 'speculative_spring' },
+  // Legacy
   { label: 'Custom', value: 'custom' },
 ] as const
 
-export type StrategyType = 'qgarp' | 'momentum' | 'mean_reversion' | 'trend_following' | 'custom'
+export type StrategyType =
+  | 'quality_value'
+  | 'quality_growth'
+  | 'quality_dividend'
+  | 'speculative_momentum'
+  | 'speculative_gamma'
+  | 'speculative_breakout'
+  | 'speculative_spring'
+  | 'custom'
 
 export const CLAUDE_MODELS = [
   { label: 'Claude Opus 4.7', value: 'claude-opus-4-7' },

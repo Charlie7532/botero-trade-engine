@@ -1,135 +1,82 @@
 # Botero Trade
 
-An algorithmic trading system built as a monorepo, combining a **Next.js + PayloadCMS** frontend with a **Python FastAPI + Backtrader** trading engine. Connect to Interactive Brokers and Alpaca, run backtests, and visualize your portfolios — all from a single repository.
+> **Misión:** Superar consistentemente los retornos del mercado y lograr un crecimiento exponencial del capital (10x) a través de una ejecución institucional impecable. Para **QUALITY**, identificar monopolios naturales inexpugnables, entrar con máxima convicción en el punto de inflexión del ciclo, y permitir que la calidad del negocio genere compounding masivo. Para **SPECULATIVE**, extraer retornos absolutos agresivos capitalizando las dislocaciones temporales, la ignorancia del retail y las obligaciones mecánicas de los dealers, operando siempre bajo un mandato de asimetría 5:1 y riesgo de ruina cero.
+
+> **Visión:** Ser el estándar global de fondos de inversión algorítmicos — reproducible solo por quienes codifiquen principios con la misma disciplina. Una máquina libre de sesgo emocional, gobernada por los modelos decisionales de los mejores inversores de la historia, que se alinea matemáticamente con las leyes físicas del mercado para extraer riqueza de manera predecible, segura e implacable.
+
+### Institutional Values
+
+| Value                          | Definition                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| **Zero-Bias**                  | Truth is in the facts, not in opinions.                                               |
+| **Radical Concentration**      | 5000 → 5-10. Over-diversification is for those who don't know what they own.          |
+| **Defense First**              | Capital must survive before it grows. Waiting IS a position.                          |
+| **Asymmetry or Nothing**       | If there's no 5:1, there's no trade.                                                  |
+| **Mathematical Truth**         | Nothing reaches production without walk-forward validation.                           |
+| **Relentless Forensics**       | Detect → Learn → Retrain → Prevent. Wins are questioned as much as losses.            |
+| **Pattern Recognition**        | Everything repeats. Every event is "another one of those."                            |
+| **Systematic Anti-Stupidity**  | Always invert: what guarantees failure? Avoid that first.                             |
+| **Architectural Purity**       | Clean Hexagonal Architecture. Dependencies point inward.                             |
 
 ---
 
 ## Architecture
 
-### System Overview
+> 📐 Full architecture documentation: [`docs/architecture-diagram.md`](docs/architecture-diagram.md)
+> 🧩 Module internals: [`docs/architecture-modules-internal.md`](docs/architecture-modules-internal.md)
+> 🧠 Expert committee: [`docs/architecture-expert-committee.md`](docs/architecture-expert-committee.md)
+
+### Dual-Mandate System
+
+The engine operates two **fully independent** trading departments with zero cross-contamination:
+
+| | QUALITY (80%) | SPECULATIVE (20%) |
+|---|---|---|
+| **Philosophy** | Hohn · Munger · Druckenmiller | Karsan · Eifert · PTJ · Seykota |
+| **Selection** | `QualityResearchPipeline` — fundamental only | `SpeculativeScanner` — microstructure only |
+| **Qualification** | `QualityQualifier` — daily bars, Grade A | `SpeculativeQualifier` — hourly bars, Grade B |
+| **Entry Gate** | `QualityEntryGate` — VP · RSI · Pattern | `SpeculativeEntryHub` — Gamma · Flow · Memory Guard |
+| **Orchestrator** | `QualityOrchestrator` — daily cadence | `SpeculativeOrchestrator` — 15min cadence |
+| **Surveillance** | `SurveillanceLoop` — moat decay | `SpeculativeSurveillance` — ATR · time · RS stops |
+| **Exit Engine** | `QualityExitEngine` — thesis death | `SpeculativeExitEngine` — mechanical stops |
+| **Broker** | Alpaca (QUALITY account) | Alpaca (SPECULATIVE account) |
 
 ```mermaid
 graph TB
-    subgraph Frontend ["Frontend — Next.js + PayloadCMS (port 3000)"]
-        UI["Trading Dashboard\n(src/app/frontend)"]
-        CMS["Admin Panel\n(src/app/payload)"]
+    subgraph CIO["🏛️ CIO (Dalio) — Budget Allocation"]
+        MANDATE["DailyMandate<br/>80% QUALITY / 20% SPECULATIVE<br/>Regime-aware rebalancing"]
     end
 
-    subgraph Backend ["Trading Engine — Python FastAPI (port 8000)"]
-        API["FastAPI\n/api/market-data\n/api/portfolio\n/api/strategy"]
-        UC["Use Cases\napplication/use_cases.py"]
-        BT["Backtrader\nbacktest engine"]
-        BA["Broker Adapters"]
+    subgraph QUALITY["QUALITY Department"]
+        QR["Research"] --> QQ["Qualifier"] --> QE["Entry Gate"] --> QO["Orchestrator"]
     end
 
-    subgraph Brokers ["External Brokers"]
-        IB["Interactive Brokers\nTWS / IB Gateway"]
-        ALP["Alpaca\npaper & live"]
+    subgraph SPECULATIVE["SPECULATIVE Department"]
+        SS["Scanner"] --> SQ["Qualifier"] --> SE["Entry Hub"] --> SO["Orchestrator"]
     end
 
-    subgraph Infra ["Infrastructure"]
-        PG["PostgreSQL\n(port 5432)"]
-    end
-
-    UI -->|HTTP / fetch| API
-    API --> UC
-    UC --> BT
-    UC --> BA
-    BA -->|ib_insync| IB
-    BA -->|alpaca-py| ALP
-    Frontend -->|Payload DB| PG
+    MANDATE -->|"80% budget"| QR
+    MANDATE -->|"20% budget"| SS
 ```
 
-### Clean Architecture Layers
+### Hexagonal Architecture — Dependency Rule
 
-```mermaid
-graph LR
-    subgraph Python Backend
-        D["Domain\nentities.py\nPortfolio · Order · Signal · Bar"]
-        A["Application\nuse_cases.py\nrun_backtest · place_order"]
-        I["Infrastructure\nbrokers/ · backtrader/"]
-        API2["API Layer\nFastAPI routers"]
-
-        API2 --> I
-        API2 --> A
-        A --> I
-        A --> D
-        I --> D
-    end
-
-    subgraph TypeScript Frontend
-        TD["Domain\nTS types / interfaces"]
-        TA["Application\nstate · UI use cases"]
-        TI["Infrastructure\nAPI client · storage"]
-        TUI["UI Layer\nReact components"]
-
-        TUI --> TI
-        TUI --> TA
-        TA --> TI
-        TA --> TD
-        TI --> TD
-    end
 ```
-
-### Broker Adapter Pattern
-
-```mermaid
-classDiagram
-    class BrokerAdapter {
-        <<abstract>>
-        +broker() Broker
-        +get_price(symbol) float
-        +get_bars(symbol, timeframe, start, end) list[Bar]
-        +place_order(order) Order
-        +cancel_order(order_id) bool
-        +get_portfolio() Portfolio
-        +is_connected() bool
-    }
-
-    class IBAdapter {
-        -host: str
-        -port: int
-        -client_id: int
-        +broker() INTERACTIVE_BROKERS
-    }
-
-    class AlpacaAdapter {
-        -api_key: str
-        -secret_key: str
-        -base_url: str
-        +broker() ALPACA
-    }
-
-    BrokerAdapter <|-- IBAdapter
-    BrokerAdapter <|-- AlpacaAdapter
-
-    class UseCase {
-        +fetch_market_data(broker, symbol)
-        +place_order(broker, order)
-        +run_backtest(strategy, bars)
-    }
-
-    UseCase --> BrokerAdapter : depends on interface
-```
-
-### Request Flow — Backtest
-
-```mermaid
-sequenceDiagram
-    participant UI as Dashboard (Next.js)
-    participant API as FastAPI
-    participant UC as Use Cases
-    participant Broker as BrokerAdapter
-    participant BT as Backtrader
-
-    UI->>API: POST /api/strategy/backtest
-    API->>UC: run_backtest(strategy, bars, ...)
-    UC->>Broker: get_bars(symbol, timeframe, start, end)
-    Broker-->>UC: list[Bar]
-    UC->>BT: cerebro.run()
-    BT-->>UC: BacktestResult + metrics
-    UC-->>API: BacktestResult
-    API-->>UI: BacktestResponse (JSON)
+┌─────────────────────────────────────────────────┐
+│  API / Daemons (outer — delivery mechanisms)     │
+│  ┌───────────────────────────────────────────┐  │
+│  │  Infrastructure (adapters, SDKs, PG)       │  │
+│  │  ┌─────────────────────────────────────┐  │  │
+│  │  │  Application (use_cases, dtos)       │  │  │
+│  │  │  ┌───────────────────────────────┐  │  │  │
+│  │  │  │  Domain (entities, ports, rules)│  │  │  │
+│  │  │  │  • ZERO SDK imports            │  │  │  │
+│  │  │  │  • ZERO infrastructure imports │  │  │  │
+│  │  │  │  • Dependencies via Ports (ABC)│  │  │  │
+│  │  │  └───────────────────────────────┘  │  │  │
+│  │  └─────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
 ```
 
 ---
@@ -138,47 +85,84 @@ sequenceDiagram
 
 ```
 botero-trade/
-├── src/                              # Next.js + PayloadCMS (TypeScript)
+├── src/                              # Next.js 16 + PayloadCMS 3 (TypeScript)
 │   ├── app/
 │   │   ├── (frontend)/              # Trading dashboard UI
 │   │   └── (payload)/               # CMS admin panel
 │   ├── shared/                      # Clean Architecture (TS)
-│   │   ├── domain/                  # Domain types and rules
-│   │   ├── application/             # UI use cases
+│   │   ├── domain/                  # Types, ports, rules
+│   │   ├── application/             # Use cases
 │   │   ├── infrastructure/          # API clients, adapters
-│   │   └── handlers/
-│   ├── collections/                 # PayloadCMS collections
-│   ├── globals/                     # Header, Footer, SiteSettings
+│   │   └── handlers/                # Shared lifecycle handlers
+│   ├── collections/                 # PayloadCMS collections (12)
+│   │   ├── Users/                   # Authentication + roles
+│   │   ├── Portfolios/              # Portfolio management
+│   │   ├── PortfolioMemberships/    # Multi-tenant access
+│   │   ├── BrokerAccounts/          # Encrypted broker credentials
+│   │   ├── Bots/                    # Trading bot definitions
+│   │   ├── BotAssignments/          # Bot ↔ Portfolio mapping
+│   │   ├── Instruments/             # Tracked securities
+│   │   ├── CalibrationProfiles/     # Strategy calibration
+│   │   ├── CandidateScreenings/     # Research pipeline results
+│   │   ├── RegimePhases/            # Market regime tracking
+│   │   ├── TradeSnapshots/          # Execution snapshots
+│   │   └── Media/                   # File uploads
+│   ├── globals/                     # Header, SiteSettings
+│   ├── modules/                     # Feature modules (TS)
 │   └── components/                  # Shared React components
 │
 ├── backend/                         # Python trading engine
-│   ├── domain/
-│   │   └── entities.py              # Portfolio, Order, Signal, Bar, Trade
-│   ├── application/
-│   │   └── use_cases.py             # run_backtest, fetch_market_data, place_order
-│   ├── infrastructure/
-│   │   ├── brokers/
-│   │   │   ├── base.py              # Abstract BrokerAdapter
-│   │   │   ├── ib_adapter.py        # Interactive Brokers (ib_insync)
-│   │   │   └── alpaca_adapter.py    # Alpaca (alpaca-py)
-│   │   └── backtrader/
-│   │       ├── base_strategy.py     # BaseStrategy — extend this for new strategies
-│   │       └── data_feeds.py        # Bar → Backtrader PandasData bridge
-│   ├── api/
+│   ├── modules/                     # 11 Clean Architecture modules
+│   │   ├── portfolio_management/    # Selection & qualification (QUALITY + SPECULATIVE)
+│   │   ├── entry_decision/          # Entry gates (QualityEntryGate + SpeculativeEntryHub)
+│   │   ├── execution/               # Orchestrators, surveillance, journal
+│   │   ├── flow_intelligence/       # Whale flow, event calendar, FRED macro
+│   │   ├── options_gamma/           # GEX, max pain, gamma regime
+│   │   ├── price_analysis/          # Price phase detection, RSI intelligence
+│   │   ├── volume_intelligence/     # Kalman volume, volume profile
+│   │   ├── pattern_recognition/     # Candlestick, VCP detection
+│   │   ├── rotation_intelligence/   # Weinstein stages, Pring cycles
+│   │   ├── simulation/              # Walk-forward, triple barrier, LSTM
+│   │   └── shared/                  # Cross-module entities, cache utilities
+│   ├── api/                         # FastAPI delivery mechanism
 │   │   ├── main.py                  # FastAPI app + CORS
-│   │   └── routers/
-│   │       ├── market_data.py       # GET /api/market-data/{symbol}
-│   │       ├── portfolio.py         # GET /api/portfolio/{broker}
-│   │       └── strategy.py          # POST /api/strategy/backtest
-│   ├── requirements.txt
-│   └── Dockerfile
+│   │   ├── factories/               # Composition Root (dependency injection)
+│   │   └── routers/                 # market_data · portfolio · strategy · orders · simulation
+│   ├── daemons/                     # Background runners (delivery mechanism)
+│   │   ├── quality_daemon.py        # Daily QUALITY scan loop
+│   │   └── speculative_daemon.py    # 5-minute SPECULATIVE scan loop
+│   ├── sql/                         # Database migrations
+│   ├── scripts/                     # Operational utilities
+│   ├── tests/                       # Backend test suite
+│   ├── _legacy/                     # Deprecated experimental code
+│   ├── requirements.txt             # Python dependencies
+│   └── Dockerfile                   # API container definition
 │
-├── docker-compose.yml               # Orchestrates web + api (DB is external)
-├── Dockerfile                       # Next.js production image (standalone)
-├── package.json                     # pnpm root — pnpm start runs Next.js
-├── .env.example                     # All required environment variables
-└── next.config.js
+├── docs/                            # Extended documentation (see below)
+├── .agents/skills/                  # 18 AI agent specialist skills
+├── tests/                           # Root test suite
+├── docker-compose.yml               # Orchestrates api + Cloudflare tunnel
+├── graphify-out/                    # Codebase knowledge graph
+└── package.json                     # pnpm workspace root
 ```
+
+### Backend Module Architecture
+
+Each module follows the same internal structure (some layers optional for pure-computation modules):
+
+```
+backend/modules/<module_name>/
+├── domain/
+│   ├── entities/        # Pure Python dataclasses — business concepts
+│   ├── ports/           # Abstract interfaces (ABC) — dependency contracts
+│   └── rules/           # Business constants and validation rules
+├── application/
+│   ├── use_cases/       # Orchestration logic — domain + ports, no infrastructure
+│   └── dtos/            # Data transfer objects for cross-layer communication
+└── infrastructure/      # Adapters implementing ports — SDKs, databases, APIs
+```
+
+**Pure computation modules** (`price_analysis`, `volume_intelligence`, `pattern_recognition`) have no `infrastructure/` folder — they receive data as input and return computed results with zero I/O.
 
 ---
 
@@ -186,15 +170,17 @@ botero-trade/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org) `>=20.9.0`
+- [Node.js](https://nodejs.org) `>=20.9.0` (tested on 22.x)
 - [pnpm](https://pnpm.io) `>=9`
 - [Python](https://python.org) `3.12+`
-- [Docker + Docker Compose](https://docs.docker.com/compose/) (optional)
+- [Docker + Docker Compose](https://docs.docker.com/compose/) (optional — for containerized API)
 - An external PostgreSQL database (see [Database](#database) below)
 
 ### 1. Clone and configure environment
 
 ```bash
+git clone https://github.com/Charlie7532/botero-trade-engine.git
+cd botero-trade-engine
 cp .env.example .env
 ```
 
@@ -215,37 +201,44 @@ pnpm dev:all
 [api] ▶ Uvicorn running on http://0.0.0.0:8000
 ```
 
-| Service | URL |
-|---|---|
-| Frontend + CMS | http://localhost:3000 |
-| PayloadCMS admin | http://localhost:3000/admin |
-| Trading Engine API | http://localhost:8000 |
-| API docs (Swagger) | http://localhost:8000/docs |
+| Service            | URL                         |
+| ------------------ | --------------------------- |
+| Frontend + CMS     | http://localhost:3000       |
+| PayloadCMS admin   | http://localhost:3000/admin |
+| Trading Engine API | http://localhost:8000       |
+| API docs (Swagger) | http://localhost:8000/docs  |
 
-### 2b. Docker Compose (containerized)
+### 2b. Docker Compose (containerized API)
 
 ```bash
 docker compose up
 ```
 
-Starts `web` (port 3000) and `api` (port 8000). The database is not managed by Docker — set `POSTGRES_URL` in `.env` to your external database.
+Starts the `api` service (port 8000) and optionally a Cloudflare tunnel for remote access. The database is **not** managed by Docker — set `POSTGRES_URL` in `.env` to your external database.
+
+> **Note:** The frontend (Next.js) is deployed separately to Vercel and is not included in the Docker Compose setup.
 
 ---
 
 ## Database
 
-PostgreSQL is hosted **externally** — not inside Docker — so your data is never tied to this project's containers and survives migrations, rebuilds, and deployments.
+PostgreSQL is hosted **externally** (Neon) — not inside Docker — so your data survives container rebuilds and deployments.
 
-Recommended providers:
+The database stores:
+- **PayloadCMS data** (`public.*`) — 12 collections, users, CMS content
+- **Trading engine data** (`engine.*`) — trade journals, OHLCV bars (662K+), macro indicators, features, trading state
+- **TimescaleDB** — time-series optimized hypertables for market data
+- **pgvector** — 9-dimensional embeddings for trade similarity search
 
-| Provider | Free tier | Notes |
-|---|---|---|
-| [Vercel Postgres](https://vercel.com/storage/postgres) | Yes | Best for Vercel deployments — zero config |
-| [Neon](https://neon.tech) | Yes | Serverless, branching support |
-| [Supabase](https://supabase.com) | Yes | Includes auth, storage, realtime |
-| Local instance | — | `postgres://postgres:<pw>@127.0.0.1:5432/botero_trade` |
+| Provider                                               | Free tier | Notes                                     |
+| ------------------------------------------------------ | --------- | ----------------------------------------- |
+| [Neon](https://neon.tech)                              | Yes       | Serverless, branching (current setup)     |
+| [Vercel Postgres](https://vercel.com/storage/postgres) | Yes       | Best for Vercel deployments               |
+| [Supabase](https://supabase.com)                       | Yes       | Includes auth, storage, realtime          |
+| Local instance                                         | —         | `postgres://user:pw@127.0.0.1:5432/botero`|
 
 Set the connection string in `.env`:
+
 ```
 POSTGRES_URL=postgres://user:password@host:5432/database
 ```
@@ -254,102 +247,126 @@ POSTGRES_URL=postgres://user:password@host:5432/database
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in the values:
+Copy `.env.example` to `.env` and fill in the values. Key variables grouped by service:
 
-| Variable | Description |
-|---|---|
-| `POSTGRES_URL` | External PostgreSQL connection string |
-| `PAYLOAD_SECRET` | Secret key for JWT encryption |
-| `NEXT_PUBLIC_SERVER_URL` | Public URL of the frontend |
-| `TRADING_API_URL` | URL of the Python trading engine |
-| `IB_HOST` | IB TWS/Gateway host (default `127.0.0.1`) |
-| `IB_PORT` | IB TWS/Gateway port (default `7497`) |
-| `IB_CLIENT_ID` | IB client ID (default `1`) |
-| `ALPACA_API_KEY` | Alpaca API key |
-| `ALPACA_SECRET_KEY` | Alpaca secret key |
-| `ALPACA_BASE_URL` | Alpaca endpoint (default: paper trading) |
+### Core Infrastructure
 
-> **Interactive Brokers note:** TWS or IB Gateway must run on your local machine — it cannot run inside Docker. The `api` container connects to it via `host.docker.internal` or your machine's LAN IP.
+| Variable                 | Description                               |
+| ------------------------ | ----------------------------------------- |
+| `POSTGRES_URL`           | External PostgreSQL connection string     |
+| `DATABASE_URL`           | Neon pooled connection (PayloadCMS)       |
+| `DATABASE_URL_UNPOOLED`  | Neon direct connection (migrations)       |
+| `PAYLOAD_SECRET`         | Secret key for JWT encryption             |
+| `NEXT_PUBLIC_SERVER_URL` | Public URL of the frontend                |
+| `TRADING_API_URL`        | URL of the Python trading engine          |
 
----
+### Broker Credentials
 
-## Adding a Trading Strategy
+| Variable                          | Description                               |
+| --------------------------------- | ----------------------------------------- |
+| `ALPACA_API_KEY`                  | Alpaca API key                            |
+| `ALPACA_SECRET_KEY`               | Alpaca secret key                         |
+| `ALPACA_BASE_URL`                 | Alpaca endpoint (default: paper trading)  |
+| `IB_HOST` / `IB_PORT` / `IB_CLIENT_ID` | Interactive Brokers TWS/Gateway     |
+| `BROKER_CREDENTIAL_ENCRYPTION_KEY`| AES key for broker credential storage     |
 
-1. Create a new file in `backend/infrastructure/backtrader/strategies/`:
+### MCP Data Providers
 
-```python
-# backend/infrastructure/backtrader/strategies/sma_crossover.py
-import backtrader as bt
-from infrastructure.backtrader.base_strategy import BaseStrategy
+| Variable                 | Description                               |
+| ------------------------ | ----------------------------------------- |
+| `FINNHUB_API_KEY`        | Finnhub API key                           |
+| `FINVIZ_API_KEY`         | Finviz Elite API key                      |
+| `GURUFOCUS_API_TOKEN`    | GuruFocus Premium API token               |
+| `FRED_API_KEY`           | FRED (Federal Reserve) API key            |
 
-class SMACrossover(BaseStrategy):
-    """Simple Moving Average crossover strategy."""
+### Deployment
 
-    params = (
-        ("fast", 10),
-        ("slow", 30),
-    )
-
-    def __init__(self):
-        super().__init__()
-        self.fast_ma = bt.indicators.SMA(period=self.params.fast)
-        self.slow_ma = bt.indicators.SMA(period=self.params.slow)
-        self.crossover = bt.indicators.CrossOver(self.fast_ma, self.slow_ma)
-
-    def next(self):
-        if not self.position and self.crossover > 0:
-            self.order = self.buy()
-        elif self.position and self.crossover < 0:
-            self.order = self.sell()
-```
-
-2. Register it in `backend/api/routers/strategy.py`:
-
-```python
-from infrastructure.backtrader.strategies.sma_crossover import SMACrossover
-
-_strategy_registry["sma_crossover"] = SMACrossover
-```
-
-3. Run a backtest via the API:
-
-```bash
-curl -X POST http://localhost:8000/api/strategy/backtest \
-  -H "Content-Type: application/json" \
-  -d '{
-    "strategy_name": "sma_crossover",
-    "symbol": "AAPL",
-    "broker": "alpaca",
-    "timeframe": "1d",
-    "start": "2023-01-01T00:00:00",
-    "end": "2024-01-01T00:00:00",
-    "initial_cash": 100000,
-    "params": { "fast": 10, "slow": 30 }
-  }'
-```
+| Variable                      | Description                               |
+| ----------------------------- | ----------------------------------------- |
+| `CLOUDFLARE_TUNNEL_TOKEN`     | Cloudflare tunnel for API exposure        |
+| `BLOB_READ_WRITE_TOKEN`       | Vercel Blob storage token                 |
+| `BREVO_API_KEY`               | Transactional email (Brevo)               |
 
 ---
 
-## Adding a Broker
+## MCP Servers (8 active)
 
-1. Create a new adapter extending `BrokerAdapter`:
+All configured in `.mcp.json` with secrets via environment variables.
 
-```python
-# backend/infrastructure/brokers/my_broker_adapter.py
-from infrastructure.brokers.base import BrokerAdapter
+| Server | Tools | Plan | Primary Use |
+|---|:-:|---|---|
+| **Finviz** | 35 | Elite | Screening, sector performance, SEC filings |
+| **GuruFocus** | 55 | Premium (USA) | QGARP scoring, insider tracking, guru analysis |
+| **Alpaca** | 61 | Free (paper) | Execution + OHLCV data |
+| **Finnhub** | 45 | Free | Earnings calendar, insider transactions, news |
+| **FRED** | 12 | Free | Macro indicators (GDP, CPI, FFR, yield curve) |
+| **Yahoo Finance** | 9 | Free | VIX, options chains, fallback data |
+| **News Sentiment** | 4 | Free | FinBERT sentiment scoring |
+| **Unusual Whales** | 20+ | Premium | Institutional flow, market tide, SPY delta, options alerts |
 
-class MyBrokerAdapter(BrokerAdapter):
-    @property
-    def broker(self) -> Broker:
-        return Broker.MY_BROKER
+### Data Provider Hierarchy
 
-    async def get_price(self, symbol: str) -> float: ...
-    # implement all abstract methods
-```
+1. **Finviz Elite** → PRIMARY for screening, sectors, market overview
+2. **GuruFocus Premium** → PRIMARY for fundamentals, insiders, gurus (USA only)
+3. **FRED** → PRIMARY for macro indicators
+4. **Finnhub** → Earnings calendar + insider redundancy
+5. **Unusual Whales** → Institutional flow, macro gates, market sentiment
+6. **Alpaca** → Execution only (future: migrate to Interactive Brokers)
+7. **Yahoo Finance** → Last resort fallback
 
-2. Add the broker to the `Broker` enum in `backend/domain/entities.py`.
+---
 
-3. Register the adapter in the relevant routers (`market_data.py`, `portfolio.py`, `strategy.py`).
+## API Endpoints (port 8000)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/health` | Health check |
+| GET | `/api/market-data/{symbol}` | Historical OHLCV bars |
+| GET | `/api/market-data/{symbol}/price` | Current price |
+| GET | `/api/portfolio/{broker}` | Portfolio from one broker |
+| GET | `/api/portfolio/` | All connected broker portfolios |
+| GET | `/api/strategy/list` | Registered strategies |
+| POST | `/api/strategy/backtest` | Run backtest |
+| POST | `/api/orders/` | Submit an order |
+| — | `/api/docs` | Swagger UI |
+
+---
+
+## Port / Adapter Map
+
+| Module | Port (domain) | Adapter (infrastructure) | Source |
+|---|---|---|---|
+| **entry_decision** | `EntryMarketDataPort` | `MarketDataFetcher` | yfinance |
+| **entry_decision** | `FlowDataPort` | `UnusualWhalesIntelligence` | UW MCP |
+| **execution** | `BrokerPort` | `AlpacaAdapter` × 2 | Alpaca SDK |
+| **execution** | `TradeJournalPort` | `PostgresTradeJournalAdapter` | PostgreSQL |
+| **execution** | `InstrumentBlacklistPort` | `PostgresBlacklistAdapter` | PostgreSQL |
+| **options_gamma** | `OptionsDataPort` | `YFinanceOptionsAdapter` | yfinance |
+| **flow_intelligence** | `CalendarDataPort` | `FinnhubAdapter` | Finnhub MCP |
+| **portfolio_management** | `FundamentalDataPort` | `GuruFocusAdapter` | GuruFocus MCP |
+| **portfolio_management** | `ScreenerPort` | `FinvizAdapter` | Finviz MCP |
+| **portfolio_management** | `SectorDataPort` | `SectorFlowAdapter` | Finviz + UW |
+| **portfolio_management** | `MacroDataPort` | `MacroDataAdapter` | FRED MCP |
+| **portfolio_management** | `InstrumentRepoPort` | `PayloadInstrumentsAdapter` | PayloadCMS |
+| **rotation_intelligence** | `RotationDataPort` | `YahooRotationAdapter` | yfinance |
+| **simulation** | `HistoricalDataPort` + 9 more | TimescaleDB adapters | PostgreSQL |
+
+---
+
+## Scripts Reference
+
+| Command             | Description                                                      |
+| ------------------- | ---------------------------------------------------------------- |
+| `pnpm dev:all`      | Start frontend + Python API together (recommended for local dev) |
+| `pnpm dev`          | Frontend only (Next.js dev server with Turbopack)                |
+| `pnpm dev:api`      | Python API only (uvicorn with hot reload)                        |
+| `pnpm build`        | Build Next.js for production                                     |
+| `pnpm start`        | Start Next.js production server                                  |
+| `pnpm generate`     | Regenerate PayloadCMS types + importmap                          |
+| `pnpm docker:up`    | Start API via Docker Compose                                     |
+| `pnpm docker:build` | Rebuild Docker images                                            |
+| `pnpm docker:down`  | Stop all Docker services                                         |
+| `pnpm graphify`     | Scan codebase and generate knowledge graph                       |
 
 ---
 
@@ -357,7 +374,7 @@ class MyBrokerAdapter(BrokerAdapter):
 
 ### Frontend → Vercel
 
-The frontend (Next.js + PayloadCMS) deploys to Vercel out of the box:
+The frontend (Next.js + PayloadCMS) deploys to Vercel:
 
 1. Push this repo to GitHub
 2. Import it on [vercel.com](https://vercel.com)
@@ -365,11 +382,11 @@ The frontend (Next.js + PayloadCMS) deploys to Vercel out of the box:
 4. Add all environment variables from `.env.example` in the Vercel dashboard
 5. Vercel handles builds and deploys automatically on push
 
-The template is already configured for `@payloadcms/db-vercel-postgres` and `@payloadcms/storage-vercel-blob`.
+The project is configured for `@payloadcms/db-vercel-postgres` and `@payloadcms/storage-vercel-blob`.
 
 ### Trading Engine → Self-hosted
 
-The Python `api` service requires persistent server infrastructure (it connects to broker APIs and runs long-lived processes). Deploy it to any VPS, DigitalOcean Droplet, or similar:
+The Python `api` service requires persistent server infrastructure (it connects to broker APIs and runs long-lived daemon processes):
 
 ```bash
 docker compose up -d api
@@ -377,34 +394,58 @@ docker compose up -d api
 
 Set `TRADING_API_URL` in your Vercel environment variables to point to your server's public IP/domain.
 
-### Scripts reference
+For remote access without a static IP, the included Cloudflare tunnel service exposes the API through your domain:
 
-| Command | Description |
-|---|---|
-| `pnpm dev:all` | Start frontend + Python API together (recommended for local dev) |
-| `pnpm dev` | Frontend only (Next.js dev server) |
-| `pnpm dev:api` | Python API only (uvicorn with hot reload) |
-| `pnpm start` | Start Next.js production server |
-| `pnpm build` | Build Next.js for production |
-| `pnpm docker:up` | Start web + api via Docker Compose |
-| `pnpm docker:build` | Rebuild Docker images |
-| `pnpm docker:down` | Stop all Docker services |
+```bash
+docker compose up -d  # starts api + tunnel
+```
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
+| Layer                   | Technology                           |
+| ----------------------- | ------------------------------------ |
+| Frontend framework      | Next.js 16.1 (App Router, Turbopack)|
+| CMS                     | PayloadCMS 3                         |
+| UI components           | HeroUI, Radix UI, Tailwind CSS       |
+| Language (frontend)     | TypeScript                           |
+| Trading engine          | Python 3.12 + FastAPI                |
+| Architecture            | Modular Clean / Hexagonal (11 mod)   |
+| ML Pipeline             | PyTorch LSTM + GradientBoosting      |
+| Data processing         | pandas, numpy, scikit-learn          |
+| Market data             | 8 MCP Servers (~241 tools)           |
+| Broker                  | Alpaca × 2 (QUALITY + SPECULATIVE)   |
+| Database                | PostgreSQL 16 (Neon) + TimescaleDB   |
+| Vector search           | pgvector (9D embeddings)             |
+| Codebase graph          | Graphify                             |
+| Container orchestration | Docker Compose                       |
+| Frontend deployment     | Vercel                               |
+| API tunneling           | Cloudflare Tunnel                    |
+
+---
+
+## Documentation Index
+
+Detailed documentation lives in [`docs/`](docs/):
+
+| Document | Description |
 |---|---|
-| Frontend framework | Next.js 16 (App Router) |
-| CMS | PayloadCMS 3 |
-| UI components | HeroUI, Radix UI, Tailwind CSS |
-| Language (frontend) | TypeScript |
-| Trading engine | Python 3.12 + FastAPI |
-| Backtesting | Backtrader |
-| Interactive Brokers | ib_insync |
-| Alpaca | alpaca-py |
-| Data processing | pandas, numpy |
-| Database | PostgreSQL 16 |
-| Container orchestration | Docker Compose |
-| Frontend deployment | Vercel |
+| [architecture-diagram.md](docs/architecture-diagram.md) | System-level architecture: dual-mandate flow, composition root, entry/exit pipelines, storage layout, port/adapter map |
+| [architecture-modules-internal.md](docs/architecture-modules-internal.md) | Internal structure of each backend module: entities, ports, adapters, cross-module dependencies |
+| [architecture-expert-committee.md](docs/architecture-expert-committee.md) | Expert personas (Dalio, Hohn, Munger, Druckenmiller, Karsan, Eifert, PTJ, Seykota, Weinstein, Pring), decision chains, and skill mappings |
+| [CLEAN-Payload.md](docs/CLEAN-Payload.md) | Clean Architecture patterns for PayloadCMS: lifecycle manifests, hook extraction, route boundaries |
+| [PR_DESCRIPTION.md](docs/PR_DESCRIPTION.md) | Hexagonal architecture migration changelog (Phases 1-3) |
+| [dynamic-font-strategy.md](docs/dynamic-font-strategy.md) | Dynamic Google Fonts integration via SiteSettings |
+| [how-to-add-blocks.md](docs/how-to-add-blocks.md) | Guide for adding new PayloadCMS content blocks |
+| [session-portfolio-intelligence.md](docs/session-portfolio-intelligence.md) | Historical session notes: portfolio intelligence system implementation |
+
+### AI Agent Context Files
+
+| File | Loaded by |
+|---|---|
+| [AGENTS.md](AGENTS.md) | OpenAI Codex CLI |
+| [GEMINI.md](GEMINI.md) | Gemini CLI / Code Assist |
+| [CLAUDE.md](CLAUDE.md) | Claude Code |
+
+These files contain the same core rules (Clean Architecture, security, coding standards) tailored to each AI agent's format. See `.agents/skills/` for 18 specialist skill definitions.

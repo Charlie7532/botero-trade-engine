@@ -17,6 +17,10 @@ class GammaRegime:
     put_wall_oi: int = 0
     pin_range_low: float = 0.0      # Rango esperado de pin (bajo)
     pin_range_high: float = 0.0     # Rango esperado de pin (alto)
+    # Vanna & Charm (Karsan's hidden forces)
+    vanna_exposure: float = 0.0     # Net vanna: >0 = IV drop → buying pressure
+    charm_exposure: float = 0.0     # Net charm/day: >0 = time decay → buying pressure
+    charm_direction: str = "NEUTRAL"  # BUYING, SELLING, NEUTRAL
 
 
 @dataclass

@@ -5,15 +5,11 @@ from pydantic import BaseModel
 
 from backend.modules.shared.domain.entities.market_data import Bar
 from backend.modules.execution.domain.entities.order_models import Broker
-from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
-from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
+from backend.api.factories.execution_factory import build_broker_registry
 
 router = APIRouter(prefix="/market-data", tags=["Market Data"])
 
-_brokers = {
-    Broker.ALPACA: AlpacaAdapter(),
-    Broker.INTERACTIVE_BROKERS: IBAdapter(),
-}
+_brokers = build_broker_registry()
 
 
 class BarResponse(BaseModel):

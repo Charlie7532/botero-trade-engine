@@ -1,0 +1,826 @@
+"""
+PAPER TRADING ORCHESTRATOR
+============================
+El director de orquesta que conecta TODOS los subsistemas:
+
+Scanner → Qualifier → Journal(PRE) → Execution → Monitor → Journal(POST)
+
+Cada decisión queda documentada. Cada error es una lección.
+"""
+import logging
+import uuid
+import sys
+
+import numpy as np
+import pandas as pd
+from datetime import datetime, UTC
+
+from backend.modules.execution.domain.ports.broker_port import BrokerPort
+from backend.modules.execution.domain.ports.trade_journal_port import TradeJournalPort
+from backend.modules.entry_decision.domain.ports.market_data_port import EntryMarketDataPort
+from backend.modules.execution.domain.entities.trade_record import TradeJournalEntry
+from backend.modules.portfolio_management.domain.rules.relative_strength import RelativeStrengthMonitor
+from backend.modules.portfolio_management.domain.rules.risk_guardian import RiskGuardian
+from backend.modules.portfolio_management.application.use_cases.optimize_portfolio import PortfolioOptimizer
+from backend.modules.execution.domain.rules.exit_rules import SpeculativeExitEngine, QualityExitEngine
+from backend.modules.execution.domain.entities.exit_context import TradeState, MarketContext
+from backend.modules.execution.application.use_cases.execute_order import InstitutionalExecutionEngine
+from backend.modules.execution.domain.entities.trade_context import TradeContext, PositionState
+
+logger = logging.getLogger(__name__)
+
+
+class PaperTradingOrchestrator:
+    """
+    Orquestador de Paper Trading con Alpaca.
+    
+    Flujo:
+    1. scan() → Encontrar candidatos
+    2. evaluate() → Fitness test + Journal PRE-TRADE
+    3. execute() → Enviar orden a Alpaca Paper
+    4. monitor() → Trailing stop + RS monitoring
+    5. close() → Cerrar + Journal POST-TRADE + Lecciones
+    6. learn() → Analizar patrones + ajustar parámetros
+    """
+    
+    def __init__(
+        self,
+        broker_registry: dict,
+        journal_registry: dict,
+        market_data: EntryMarketDataPort,
+        entry_hub=None,
+    ):
+        self.broker_registry = broker_registry
+        self.journal_registry = journal_registry  # {QUALITY: TradeJournalPort, SPECULATIVE: TradeJournalPort}
+        self.market_data = market_data
+        self.rs_monitor = RelativeStrengthMonitor()
+        self.spec_exit_engine = SpeculativeExitEngine()
+        self.qual_exit_engine = QualityExitEngine()
+        self.optimizer = PortfolioOptimizer()
+        self.risk_guardian = RiskGuardian()
+        self.execution = InstitutionalExecutionEngine()
+        self.entry_hub = entry_hub
+        self._freeze_state = {}  # {ticker: freeze_start_time}
+
+    def _journal_for(self, bucket: str) -> TradeJournalPort:
+        """Route to the correct journal based on strategy bucket."""
+        return self.journal_registry.get(bucket, self.journal_registry.get("QUALITY"))
+
+    def _broker_for(self, bucket: str) -> BrokerPort:
+        """Route to the correct broker based on strategy bucket."""
+        return self.broker_registry.get(bucket, self.broker_registry.get("QUALITY"))
+    
+    def get_account_status(self) -> dict:
+        """Estado actual de la cuenta de Paper Trading y Exposición Estratégica."""
+        import asyncio
+        try:
+            # Aggregate portfolio from all broker accounts
+            all_positions = []
+            total_cash = 0.0
+            for broker in self.broker_registry.values():
+                try:
+                    try:
+                        portfolio = asyncio.get_event_loop().run_until_complete(
+                            broker.get_portfolio()
+                        )
+                    except RuntimeError:
+                        portfolio = asyncio.run(broker.get_portfolio())
+                    all_positions.extend(portfolio.positions)
+                    total_cash += portfolio.cash
+                except Exception:
+                    continue
+            # Recuperar tags de strategy_type del Journal para las posiciones abiertas
+            open_trades = []
+            for journal in self.journal_registry.values():
+                open_trades.extend(journal.get_open_trades())
+            strategy_map = {t['ticker']: t.get('strategy_bucket', 'UNKNOWN') for t in open_trades}
+            
+            quality_exposure = 0.0
+            speculative_exposure = 0.0
+            
+            mapped_positions = []
+            for p in all_positions:
+                strategy = strategy_map.get(p.symbol, 'QUALITY')
+                market_val = p.market_price * p.quantity
+                
+                if strategy == 'QUALITY':
+                    quality_exposure += market_val
+                elif strategy == 'SPECULATIVE':
+                    speculative_exposure += market_val
+                
+                mapped_positions.append({
+                    "ticker": p.symbol,
+                    "qty": p.quantity,
+                    "avg_entry": p.avg_cost,
+                    "current_price": p.market_price,
+                    "unrealized_pnl": (p.market_price - p.avg_cost) * p.quantity,
+                    "unrealized_pnl_pct": ((p.market_price / p.avg_cost) - 1) * 100 if p.avg_cost > 0 else 0,
+                    "market_value": market_val,
+                    "strategy": strategy,
+                })
+            
+            total_value = total_cash + sum(p.market_price * p.quantity for p in all_positions)
+            
+            return {
+                "buying_power": total_cash,
+                "cash": total_cash,
+                "portfolio_value": total_value,
+                "equity": total_value,
+                "quality_exposure": quality_exposure,
+                "speculative_exposure": speculative_exposure,
+                "positions": mapped_positions,
+                "num_positions": len(all_positions),
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    def sync_broker_and_journal(self) -> dict:
+        """
+        V12: Reconcilia CADA broker contra SU journal correspondiente.
+        Cada departamento se reconcilia independientemente.
+        Debe correrse antes de cada escaneo.
+        """
+        import asyncio
+        results = {}
+        for dept, broker in self.broker_registry.items():
+            journal = self._journal_for(dept)
+            try:
+                try:
+                    portfolio = asyncio.get_event_loop().run_until_complete(
+                        broker.get_portfolio()
+                    )
+                except RuntimeError:
+                    portfolio = asyncio.run(broker.get_portfolio())
+                broker_tickers = {p.symbol: p for p in portfolio.positions}
+
+                db_trades = journal.get_open_trades()
+                db_tickers = {t['ticker']: t for t in db_trades}
+
+                ghosts_closed = 0
+                orphans_adopted = 0
+
+                # 1. Ghost Trades (in THIS journal but NOT in THIS broker)
+                for ticker, trade in db_tickers.items():
+                    if ticker not in broker_tickers:
+                        logger.warning(f"👻 [{dept}] Ghost Trade: {ticker}")
+                        ghost_entry = TradeJournalEntry(
+                            trade_id=trade['trade_id'],
+                            ticker=ticker,
+                            direction=trade.get('direction', 'LONG'),
+                            exit_price=trade.get('current_stop_price', trade.get('entry_price', 0.0)),
+                            exit_time=datetime.now(UTC).isoformat(),
+                            exit_reason="CLOSED_BY_BROKER",
+                            exit_order_id="GHOST_RECONCILIATION",
+                            status="CLOSED",
+                            was_winner=False,
+                        )
+                        journal.close_trade(ghost_entry)
+                        ghosts_closed += 1
+
+                # 2. Orphan Trades (in THIS broker but NOT in THIS journal)
+                for ticker, p in broker_tickers.items():
+                    if ticker not in db_tickers:
+                        logger.warning(f"🍼 [{dept}] Orphan Trade: {ticker}")
+                        trade_id = f"BT-ORPHAN-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{ticker}"
+                        entry = TradeJournalEntry(
+                            trade_id=trade_id,
+                            ticker=ticker,
+                            direction="LONG" if p.quantity > 0 else "SHORT",
+                            entry_thesis=f"Trade adoptado (huérfano en {dept})",
+                            entry_price=p.avg_cost,
+                            entry_shares=p.quantity,
+                            entry_notional=p.avg_cost * p.quantity,
+                            strategy_bucket=dept,
+                            status="OPEN"
+                        )
+                        journal.open_trade(entry)
+                        orphans_adopted += 1
+
+                if ghosts_closed > 0 or orphans_adopted > 0:
+                    logger.info(f"🔄 [{dept}] Sync: {ghosts_closed} ghosts, {orphans_adopted} orphans")
+
+                results[dept] = {"ghosts_closed": ghosts_closed, "orphans_adopted": orphans_adopted}
+            except Exception as e:
+                logger.error(f"Error sincronizando {dept}: {e}")
+                results[dept] = {"error": str(e)}
+
+        return results
+
+    
+    def create_trade_snapshot(self, ticker: str) -> dict:
+        """Captura un snapshot completo del mercado para el journal."""
+        try:
+            # Datos del ticker
+            data = self.market_data.fetch_prices(ticker)
+            spy = self.market_data.fetch_prices('SPY') if hasattr(self.market_data, 'fetch_prices') else None
+            vix_val = self.market_data.fetch_vix()
+            
+            if data is None or data.empty:
+                return {"error": "No price data"}
+            if isinstance(data.columns, pd.MultiIndex):
+                data.columns = data.columns.get_level_values(0)
+            if spy is not None and isinstance(spy.columns, pd.MultiIndex):
+                spy.columns = spy.columns.get_level_values(0)
+            
+            close = float(data['Close'].iloc[-1])
+            prev_close = float(data['Close'].iloc[-2]) if len(data) > 1 else close
+            sma20 = float(data['Close'].rolling(20).mean().iloc[-1])
+            high_52w = float(data['High'].rolling(252).max().iloc[-1]) if len(data) >= 252 else float(data['High'].max())
+            atr = float((data['High'] - data['Low']).rolling(14).mean().iloc[-1])
+            avg_vol = float(data['Volume'].rolling(20).mean().iloc[-1])
+            curr_vol = float(data['Volume'].iloc[-1])
+            
+            spy_close = float(spy['Close'].iloc[-1]) if spy is not None and not spy.empty else 0
+            spy_prev = float(spy['Close'].iloc[-2]) if spy is not None and len(spy) > 1 else spy_close
+            
+            vix = vix_val
+            
+            # RS
+            stock_ret_20d = close / float(data['Close'].iloc[-20]) - 1 if len(data) >= 20 else 0
+            spy_ret_20d = spy_close / float(spy['Close'].iloc[-20]) - 1 if len(spy) >= 20 else 0
+            rs = (1 + stock_ret_20d) / (1 + spy_ret_20d) if spy_ret_20d != -1 else 1.0
+            
+            # RSI 14
+            delta = data['Close'].diff()
+            gain = delta.where(delta > 0, 0).rolling(14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+            rsi_val = float(100 - (100 / (1 + gain.iloc[-1] / loss.iloc[-1]))) if loss.iloc[-1] != 0 else 50
+            
+            # Bollinger
+            bb_sma = float(data['Close'].rolling(20).mean().iloc[-1])
+            bb_std = float(data['Close'].rolling(20).std().iloc[-1])
+            bb_upper = bb_sma + 2 * bb_std
+            bb_lower = bb_sma - 2 * bb_std
+            if close > bb_upper:
+                bb_pos = "above_upper"
+            elif close < bb_lower:
+                bb_pos = "below_lower"
+            elif close > bb_sma:
+                bb_pos = "upper_half"
+            else:
+                bb_pos = "lower_half"
+            
+            # Info del ticker
+            # Sector info — via market data port if available
+            sector = 'Unknown'
+            
+            return {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "price": close,
+                "daily_change_pct": round((close / prev_close - 1) * 100, 2),
+                "distance_from_20sma_pct": round((close / sma20 - 1) * 100, 2),
+                "distance_from_52w_high_pct": round((close / high_52w - 1) * 100, 2),
+                "volume": curr_vol,
+                "relative_volume": round(curr_vol / avg_vol, 2) if avg_vol > 0 else 1.0,
+                "volume_trend": "accumulation" if curr_vol > avg_vol * 1.5 else "distribution" if curr_vol < avg_vol * 0.5 else "neutral",
+                "atr": round(atr, 2),
+                "atr_pct": round(atr / close * 100, 2),
+                "rsi_14": round(rsi_val, 1),
+                "bollinger_position": bb_pos,
+                "vix": round(vix, 1),
+                "spy_daily_change_pct": round((spy_close / spy_prev - 1) * 100, 2),
+                "rs_vs_spy_20d": round(rs, 4),
+                "stock_return_20d_pct": round(stock_ret_20d * 100, 2),
+                "spy_return_20d_pct": round(spy_ret_20d * 100, 2),
+                "sector": sector,
+            }
+        except Exception as e:
+            logger.error(f"Error creating snapshot for {ticker}: {e}")
+            return {"timestamp": datetime.now(UTC).isoformat(), "error": str(e)}
+    
+    def inject_whale_data(
+        self,
+        spy_ticks: list = None,
+        flow_alerts: list = None,
+        tide_data: list = None,
+        recent_flow: list = None,
+        darkpool_prints: list = None,
+    ):
+        """
+        Inyecta datos de Unusual Whales pre-obtenidos via MCP.
+        Llamar ANTES de run_core_scan() o run_tactical_scan().
+        """
+        self.entry_hub.inject_uw_data(
+            spy_ticks=spy_ticks or [],
+            flow_alerts=flow_alerts or [],
+            tide_data=tide_data or [],
+            recent_flow=recent_flow or [],
+            darkpool_prints=darkpool_prints or [],
+        )
+        logger.info("🐋 Datos de ballenas inyectados en EntryHub")
+
+    def open_position(
+        self,
+        ticker: str,
+        thesis: str,
+        strategy_type: str = "QUALITY",
+        alpha_score: float = 0,
+        qualifier_grade: str = "",
+        insider_signal: str = "",
+        sector_alignment: str = "",
+        notional: float = 5000.0,
+        pattern_tags: list = None,
+        skip_intelligence: bool = False,
+    ) -> dict:
+        """
+        Abre una posición en Paper Trading con journal completo.
+        
+        V2: Ejecuta el EntryIntelligenceHub ANTES de enviar la orden.
+        El hub conecta OptionsAwareness, Kalman Wyckoff, UW Intelligence,
+        EventFlowIntelligence y PricePhaseIntelligence para decidir.
+        """
+        trade_id = f"BT-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}-{ticker}"
+        
+        # ═══ V2: Entry Intelligence Pipeline ═══════════════════
+        if not skip_intelligence:
+            intel = self.entry_hub.evaluate(ticker)
+            
+            if intel.final_verdict == "BLOCK":
+                logger.warning(
+                    f"⛔ {ticker} BLOQUEADO por EntryHub: {intel.final_reason}"
+                )
+                return {
+                    "action": "BLOCKED",
+                    "reason": f"EntryHub: {intel.final_reason}",
+                    "whale_verdict": intel.whale_verdict,
+                    "phase": intel.phase,
+                    "intelligence": intel.to_dict(),
+                }
+            
+            if intel.final_verdict == "STALK":
+                logger.info(
+                    f"⏳ {ticker} en STALK: {intel.final_reason}"
+                )
+                return {
+                    "action": "STALKING",
+                    "reason": f"EntryHub: {intel.final_reason}",
+                    "whale_verdict": intel.whale_verdict,
+                    "phase": intel.phase,
+                    "risk_reward": intel.risk_reward,
+                    "intelligence": intel.to_dict(),
+                }
+            
+            # EXECUTE: adjust sizing by whale scale
+            notional *= intel.final_scale
+            logger.info(
+                f"✅ {ticker} APROBADO: {intel.final_verdict} "
+                f"(whale={intel.whale_verdict}, phase={intel.phase}, "
+                f"R:R={intel.risk_reward}:1, scale={intel.final_scale:.0%})"
+            )
+        
+        # 1. Snapshot pre-trade
+        logger.info(f"Capturando snapshot para {ticker}...")
+        snapshot = self.create_trade_snapshot(ticker)
+        
+        # 2. Risk Guardian check
+        account = self.get_account_status()
+        if 'error' in account:
+            return {"error": account['error']}
+        
+        risk_check = self.risk_guardian.evaluate(
+            current_capital=account.get('equity', 100000),
+            daily_pnl_pct=0,
+            strategy_type=strategy_type,
+            quality_exposure=account.get('quality_exposure', 0),
+            speculative_exposure=account.get('speculative_exposure', 0),
+            current_vix=snapshot.get('vix', 17),
+        )
+        
+        if not risk_check['can_trade']:
+            return {
+                "action": "BLOCKED",
+                "reason": f"Risk Guardian: {risk_check['alerts']}",
+            }
+        
+        # Ajustar sizing por risk guardian
+        adjusted_notional = notional * risk_check['position_scale']
+        
+        # 3. Journal PRE-TRADE (incluye strategy bucket pseudo-inyectado en pattern_tags por compatibilidad)
+        tags = pattern_tags or []
+        tags.append(f"bucket_{strategy_type.lower()}")
+        
+        entry = TradeJournalEntry(
+            trade_id=trade_id,
+            ticker=ticker,
+            direction="LONG",
+            entry_thesis=f"[{strategy_type}] {thesis}",
+            alpha_score=alpha_score,
+            qualifier_grade=qualifier_grade,
+            insider_signal=insider_signal,
+            sector_alignment=sector_alignment,
+            entry_snapshot=snapshot,
+            entry_price=snapshot.get('price', 0),
+            entry_time=datetime.now(UTC).isoformat(),
+            entry_notional=adjusted_notional,
+            rs_vs_spy=snapshot.get('rs_vs_spy_20d', 1.0),
+            pattern_tags=tags,
+            # V2: Capture full intelligence report for ML & post-mortem
+            entry_intelligence=intel.to_dict() if (not skip_intelligence and intel) else None,
+        )
+        
+        # 4. Smart Entry — Pre-Market Validation + Limit Order
+        try:
+            from backend.modules.execution.application.use_cases.smart_entry import SmartEntryEngine
+            import asyncio
+            
+            smart = SmartEntryEngine()
+            analysis_price = snapshot.get('price', 0)
+            atr = snapshot.get('atr', 1.0)
+            
+            # Get current/premarket price from BrokerPort
+            current_price = analysis_price
+            bid, ask = None, None
+            broker = self._broker_for(strategy_type)
+            try:
+                try:
+                    price = asyncio.get_event_loop().run_until_complete(
+                        broker.get_price(ticker)
+                    )
+                except RuntimeError:
+                    price = asyncio.run(broker.get_price(ticker))
+                current_price = price
+                ask = price  # BrokerPort.get_price returns ask
+            except Exception as e:
+                logger.warning(f"No se pudo obtener quote premarket para {ticker}: {e}")
+            
+            # Validate entry
+            vix = snapshot.get('vix', 17)
+            if vix > 25:
+                smart = SmartEntryEngine(rules=smart.adaptive_rules(vix=vix))
+            
+            check = smart.validate_entry(
+                ticker=ticker,
+                analysis_price=analysis_price,
+                current_price=current_price,
+                bid=bid,
+                ask=ask,
+                atr=atr,
+            )
+            
+            if not check.is_valid:
+                logger.warning(f"❌ ENTRADA RECHAZADA: {ticker} — {check.rejection_reason}")
+                return {
+                    "action": "REJECTED",
+                    "reason": check.rejection_reason,
+                    "gap_pct": check.gap_pct,
+                    "analysis_price": analysis_price,
+                    "current_price": current_price,
+                }
+            
+            # Submit LIMIT order via SmartEntry (still uses Alpaca client internally)
+            # TODO: Migrate SmartEntryEngine to use BrokerPort
+            order = smart.submit_alpaca_limit_order(
+                client=None,  # Legacy interface — needs migration
+                check=check,
+                notional=adjusted_notional,
+            )
+            
+            entry.entry_order_id = str(order.id)
+            entry.status = "OPEN"
+            entry.entry_price = check.recommended_limit  # Limit price, not market
+            
+            # V2: Prefer gamma-anchored stop from EntryHub if available
+            rs = snapshot.get('rs_vs_spy_20d', 1.0)
+            if not skip_intelligence and intel and intel.stop_price > 0:
+                # Hub calculated stop using Put Wall + VIX + phase awareness
+                stop = intel.stop_price
+                logger.info(f"   🛡️ Using gamma-anchored stop: ${stop:.2f} (Put Wall: ${intel.put_wall:.2f})")
+            else:
+                stop = check.recommended_stop
+            entry.initial_stop_price = stop
+            entry.current_stop_price = stop
+            entry.highest_price = current_price
+            
+            # Registrar RS al entrar
+            self.rs_monitor.register_entry(ticker, rs)
+            
+            # Guardar en journal del departamento correspondiente
+            self._journal_for(strategy_type).open_trade(entry)
+            
+            logger.info(
+                f"✅ LIMIT ORDEN ENVIADA: {ticker} ${adjusted_notional:,.0f} "
+                f"Limit=${check.recommended_limit:.2f} "
+                f"(Gap={check.gap_pct:+.1f}%, Stop=${stop:.2f}) "
+                f"Order ID: {order.id}"
+            )
+            
+            return {
+                "action": "BUY",
+                "trade_id": trade_id,
+                "ticker": ticker,
+                "order_type": "LIMIT",
+                "limit_price": check.recommended_limit,
+                "notional": adjusted_notional,
+                "order_id": str(order.id),
+                "initial_stop": stop,
+                "gap_pct": check.gap_pct,
+                "analysis_price": analysis_price,
+                "current_price": current_price,
+                "snapshot": snapshot,
+                "risk_scale": risk_check['position_scale'],
+            }
+            
+        except Exception as e:
+            logger.error(f"Error ejecutando orden {ticker}: {e}")
+            return {"error": str(e)}
+    
+    def check_positions(self) -> list[dict]:
+        """
+        Revisa todas las posiciones abiertas y evalúa exits.
+        
+        V2: Auto-activates Event Freeze when FOMC/CPI/NFP is < 4 hours away.
+        Uses EventFlowIntelligence to detect macro events.
+        """
+        account = self.get_account_status()
+        if 'error' in account:
+            return [{'error': account['error']}]
+        
+        # ═══ V2: Auto-activate Event Freeze ═══════════════════
+        try:
+            from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
+            event_flow = self.entry_hub.event_flow if (self.entry_hub and hasattr(self.entry_hub, 'event_flow')) else EventFlowIntelligence()
+            # Assess current macro environment (no ticker-specific data needed)
+            whale_check = event_flow.assess(
+                spy_cumulative_delta=0,
+                spy_signal="NEUTRAL",
+                tide_direction="NEUTRAL",
+                tide_accelerating=False,
+                sweeps_count=0,
+                calls_pct=50,
+                am_pm_divergence=False,
+            )
+            if whale_check.freeze_stops:
+                for pos in account.get('positions', []):
+                    t = pos['ticker']
+                    if t not in self._freeze_state:
+                        self._freeze_state[t] = datetime.now(UTC)
+                        logger.warning(
+                            f"🧊 Event Freeze ACTIVADO para {t}: "
+                            f"{whale_check.nearest_event} en {whale_check.hours_to_event:.0f}h"
+                        )
+        except Exception as e:
+            logger.debug(f"Event freeze check skipped: {e}")
+        
+        evaluations = []
+        for pos in account.get('positions', []):
+            ticker = pos['ticker']
+            current_price = pos['current_price']
+            
+            # RS actual
+            snapshot = self.create_trade_snapshot(ticker)
+            current_rs = snapshot.get('rs_vs_spy_20d', 1.0)
+            
+            # Alpha Decay Evaluator (Solo influye fuerte si es CORE)
+            decay = self.rs_monitor.calculate_alpha_decay(ticker, current_rs)
+            exit_eval = self.rs_monitor.should_exit(ticker, current_rs)
+            
+            # Build TradeState
+            trade_state = TradeState(
+                ticker=ticker,
+                entry_price=pos.get('avg_entry_price', current_price),
+                highest_price=pos.get('highest_price', current_price),
+                current_stop=pos.get('current_stop_price', 0.0),
+                bars_held=int(pos.get('bars_held', 0)),
+                entry_rs=1.0  # Would be better retrieved from journal, fallback to 1.0
+            )
+            
+            # FIX Defecto 3: Extract vars from snapshot (were undefined in scope)
+            atr = snapshot.get('atr', 1.0)
+            vix = snapshot.get('vix', 17.0)
+            put_wall = 0.0  # From options data if available
+            strategy = pos.get('strategy', 'QUALITY')
+
+            # Retrieve flow_persistence_grade from journal entry intelligence
+            trade_data = self._journal_for(strategy).get_trade_full_data(pos.get('trade_id', ''))
+            flow_grade = "UNKNOWN"
+            if trade_data:
+                intel = trade_data.get('entry_intelligence') or {}
+                flow_grade = intel.get('flow_persistence_grade', 'UNKNOWN')
+                trade_state.entry_rs = trade_data.get('rs_vs_spy', 1.0)
+                if trade_state.current_stop == 0.0:
+                    trade_state.current_stop = trade_data.get('initial_stop_price', current_price * 0.9)
+                trade_state.highest_price = max(trade_state.highest_price, trade_data.get('highest_price', current_price))
+            
+            # Build MarketContext
+            market_context = MarketContext(
+                current_price=current_price,
+                current_atr=atr,
+                ma20=snapshot.get('distance_from_20sma_pct', 0) / 100 * current_price + current_price, # Approx
+                rs_vs_spy=current_rs,
+                wyckoff_state="UNKNOWN", # Paper trading doesn't track Kalman continuously yet
+                put_wall=put_wall,
+                vix_current=vix,
+                flow_persistence_grade=flow_grade,
+                freeze_stops=ticker in self._freeze_state,
+                freeze_start_time=self._freeze_state.get(ticker),
+                reduce_zone=trade_data.get('entry_intelligence', {}).get('reduce_zone', 0.0) if trade_data else 0.0,
+                thesis_death_flag=trade_data.get('thesis_death_flag', False) if trade_data else False
+            )
+            
+            # Evaluate exit using decoupled engines
+            if strategy == 'SPECULATIVE':
+                decision = self.spec_exit_engine.evaluate_exit(trade_state, market_context)
+            else:
+                decision = self.qual_exit_engine.evaluate_exit(trade_state, market_context)
+            
+            stop = decision.new_stop_price
+            
+            evaluations.append({
+                "ticker": ticker,
+                "strategy": strategy,
+                "current_price": current_price,
+                "unrealized_pnl_pct": pos.get('unrealized_pnl_pct', 0.0),
+                "rs_vs_spy": current_rs,
+                "alpha_decay": decay,
+                "trailing_stop": stop,
+                "exit_signal": {"should_exit": decision.should_exit, "reason": decision.reason, "urgency": decision.urgency},
+                "vix": snapshot.get('vix', 17),
+            })
+        
+        return evaluations
+    
+    def close_position(
+        self,
+        ticker: str,
+        exit_reason: str,
+        lesson: str = "",
+        grade: str = "",
+        what_right: str = "",
+        what_wrong: str = "",
+    ) -> dict:
+        """
+        Cierra una posición con journal POST-TRADE completo.
+        """
+        import asyncio
+        try:
+            # FIX Defecto 1: Find which department owns this ticker BEFORE choosing broker
+            bucket = None
+            trade_entry = None
+            for dept, journal in self.journal_registry.items():
+                trades = journal.get_open_trades()
+                match = next((t for t in trades if t['ticker'] == ticker), None)
+                if match:
+                    bucket = dept
+                    trade_entry = match
+                    break
+
+            if not bucket:
+                return {"error": f"No journal entry for {ticker} in any department"}
+
+            broker = self._broker_for(bucket)
+            journal = self._journal_for(bucket)
+
+            try:
+                portfolio = asyncio.get_event_loop().run_until_complete(
+                    broker.get_portfolio()
+                )
+            except RuntimeError:
+                portfolio = asyncio.run(broker.get_portfolio())
+            
+            pos = next((p for p in portfolio.positions if p.symbol == ticker), None)
+            
+            if not pos:
+                return {"error": f"No hay posición abierta en {ticker} (cuenta {bucket})"}
+            
+            qty = pos.quantity
+            
+            # Build sell order via BrokerPort
+            from backend.modules.execution.domain.entities.order_models import Order, OrderSide, OrderType, Broker
+            sell_order = Order(
+                symbol=ticker,
+                side=OrderSide.SELL,
+                order_type=OrderType.MARKET,
+                broker=Broker.ALPACA,
+                quantity=qty,
+            )
+            try:
+                order = asyncio.get_event_loop().run_until_complete(
+                    broker.place_order(sell_order)
+                )
+            except RuntimeError:
+                order = asyncio.run(broker.place_order(sell_order))
+            
+            # Snapshot de salida
+            exit_snapshot = self.create_trade_snapshot(ticker)
+            
+            if trade_entry:
+                # Reconstruir entry para actualizar
+                import json
+                entry_data = journal.get_trade_full_data(trade_entry['trade_id'])
+                
+                if entry_data:
+                    entry = TradeJournalEntry(**{
+                        k: v for k, v in entry_data.items()
+                        if k in TradeJournalEntry.__dataclass_fields__
+                    })
+                else:
+                    entry = TradeJournalEntry(
+                        trade_id=trade_entry['trade_id'],
+                        ticker=ticker,
+                        direction="LONG",
+                    )
+                
+                # Actualizar con datos de cierre
+                entry.exit_price = float(pos.current_price)
+                entry.exit_time = datetime.now(UTC).isoformat()
+                entry.exit_reason = exit_reason
+                entry.exit_order_id = str(order.id)
+                entry.exit_snapshot = exit_snapshot
+                entry.pnl_dollars = float(pos.unrealized_pl)
+                entry.pnl_pct = float(pos.unrealized_plpc) * 100
+                entry.was_winner = float(pos.unrealized_pl) > 0
+                entry.what_went_right = what_right
+                entry.what_went_wrong = what_wrong
+                entry.lesson_learned = lesson
+                entry.grade = grade
+                entry.status = "CLOSED"
+                
+                # R-multiple
+                if entry.entry_price > 0 and entry.initial_stop_price > 0:
+                    risk_per_share = abs(entry.entry_price - entry.initial_stop_price)
+                    if risk_per_share > 0:
+                        entry.pnl_r_multiple = (entry.exit_price - entry.entry_price) / risk_per_share
+                
+                journal.close_trade(entry)
+            
+            emoji = "✅" if float(pos.unrealized_pl) > 0 else "❌"
+            logger.info(
+                f"{emoji} POSICIÓN CERRADA: {ticker} "
+                f"PnL: {float(pos.unrealized_plpc)*100:+.2f}% "
+                f"(${float(pos.unrealized_pl):+,.0f}) "
+                f"Reason: {exit_reason}"
+            )
+            
+            return {
+                "action": "SELL",
+                "ticker": ticker,
+                "qty": qty,
+                "pnl_pct": float(pos.unrealized_plpc) * 100,
+                "pnl_dollars": float(pos.unrealized_pl),
+                "exit_reason": exit_reason,
+                "order_id": str(order.id),
+            }
+            
+        except Exception as e:
+            logger.error(f"Error cerrando {ticker}: {e}")
+            return {"error": str(e)}
+    
+    def generate_learning_report(self, department: str = None) -> dict:
+        """
+        Genera un reporte de aprendizaje per-department.
+        Si department es None, genera para ambos.
+        """
+        if department:
+            journals = {department: self._journal_for(department)}
+        else:
+            journals = self.journal_registry
+
+        reports = {}
+        for dept, journal in journals.items():
+            summary = journal.get_performance_summary()
+            patterns = journal.get_pattern_stats()
+            exit_stats = journal.get_exit_reason_stats()
+            reports[dept] = {
+                "performance": summary,
+                "patterns": patterns,
+                "exit_analysis": exit_stats,
+                "recommendations": self._generate_recommendations(summary, patterns, exit_stats),
+            }
+        return reports
+    
+    def _generate_recommendations(self, summary, patterns, exit_stats) -> list[str]:
+        """Genera recomendaciones de ajuste basadas en los datos."""
+        recs = []
+        
+        if summary.get('total_trades', 0) < 5:
+            recs.append("Datos insuficientes: necesitamos mínimo 20 trades para conclusiones válidas.")
+            return recs
+        
+        wr = summary.get('win_rate', 0)
+        pf = summary.get('profit_factor', 0)
+        
+        if wr < 45:
+            recs.append(f"Win Rate {wr:.0f}% < 45%. Considerar: tightear criterio de entrada o ampliar trailing stop.")
+        
+        if pf < 1.5:
+            recs.append(f"Profit Factor {pf:.2f} < 1.5. El edge es delgado. Verificar que los stops no son demasiado tight.")
+        
+        # Análisis de exit reasons
+        for er in exit_stats:
+            if er['total'] >= 3 and er['win_rate'] < 30:
+                recs.append(
+                    f"Exit '{er['exit_reason']}' tiene WR de {er['win_rate']:.0f}% en {er['total']} trades. "
+                    f"Revisar este trigger de salida."
+                )
+        
+        # Análisis de patrones
+        for p in patterns:
+            if p['total'] >= 3:
+                if p['win_rate'] > 70:
+                    recs.append(f"Patrón '{p['pattern']}' tiene WR de {p['win_rate']:.0f}%. Buscar más de estos.")
+                elif p['win_rate'] < 30:
+                    recs.append(f"Patrón '{p['pattern']}' tiene WR de {p['win_rate']:.0f}%. Evitar o ajustar.")
+        
+        return recs
+

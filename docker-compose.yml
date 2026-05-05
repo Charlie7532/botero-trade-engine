@@ -1,16 +1,4 @@
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=production
-      - TRADING_API_URL=http://api:8000
-
   api:
     build:
       context: ./backend
@@ -24,7 +12,7 @@ services:
     environment:
       - PYTHONPATH=/app
 
-  # Cloudflare Tunnel — exposes the app to the internet via your domain
+  # Cloudflare Tunnel — exposes the API to the internet via your domain
   # 1. Create a tunnel:  cloudflared tunnel create botero-trade
   # 2. Add your token to .env:  CLOUDFLARE_TUNNEL_TOKEN=your-token
   # 3. Configure DNS in Cloudflare dashboard to point your domain to this tunnel
@@ -32,7 +20,6 @@ services:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     depends_on:
-      - web
       - api
     command: tunnel run
     environment:

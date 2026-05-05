@@ -119,7 +119,8 @@ class TradeJournalEntry:
     
     # ─── META ───
     status: str = "OPEN"  # OPEN, CLOSED, CANCELLED
-    strategy_bucket: str = "CORE"  # CORE, TACTICAL, UNCLASSIFIED
+    strategy_bucket: str = "QUALITY"  # QUALITY, SPECULATIVE, UNCLASSIFIED
+    sector: str = "UNKNOWN"
     
     # ─── V2: Entry Intelligence Context ───
     # Full EntryIntelligenceReport captured for ML and post-mortem analysis.

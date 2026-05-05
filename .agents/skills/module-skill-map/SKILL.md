@@ -18,14 +18,16 @@ When any agent works on a backend module, activate the skills listed for that mo
 | Module | Always | Domain-Specific Skills | Why |
 |---|---|---|---|
 | `entry_decision` | `clean-architecture`, `operational-purpose` | `fundamental-analyst`, `tactical-entries`, `risk-manager` | Hub that gates all entries — needs fundamental quality, tactical precision, AND risk assessment |
-| `execution` | `clean-architecture`, `operational-purpose` | `risk-manager` | Order lifecycle, broker adapters, position monitoring — risk is the governing constraint |
+| `execution` | `clean-architecture`, `operational-purpose` | `risk-manager`, `cio-allocator` | Order lifecycle, broker adapters, position monitoring — risk + CIO budget governance |
 | `flow_intelligence` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Whale flows, sweeps, institutional positioning — pure microstructure |
 | `options_gamma` | `clean-architecture`, `operational-purpose` | `tactical-entries`, `risk-manager` | GEX, Max Pain, gamma regime — drives entry timing AND risk regime detection |
 | `pattern_recognition` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Candlestick/technical patterns — visual structure for entry timing |
-| `portfolio_management` | `clean-architecture`, `operational-purpose` | `fundamental-analyst`, `risk-manager` | Universe filtering, alpha scanning, position sizing — quality + risk governance |
+| `portfolio_management` | `clean-architecture`, `operational-purpose` | `research-intelligence`, `fundamental-analyst`, `risk-manager`, `cio-allocator` | Universe filtering, alpha scanning, CIO budget allocation, position sizing, watchlist management |
 | `price_analysis` | `clean-architecture`, `operational-purpose` | `tactical-entries` | RSI, price phase detection — technical structure analysis |
+| `rotation_intelligence` | `clean-architecture`, `operational-purpose` | `rotation-analyst`, `cio-allocator` | Sector/international/asset class rotation via ETF RS and stage analysis — feeds CIO |
 | `shared` | `clean-architecture`, `operational-purpose` | *(none)* | Foundational types and shared ports — architecture-only |
 | `simulation` | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies` | Backtesting engine — directly maps to the backtesting skill |
+| `signal_discovery` | `clean-architecture`, `operational-purpose` | `signal-miner`, `backtesting-trading-strategies` | Statistical anomaly mining → validated via simulation pipeline |
 | `volume_intelligence` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Volume profile, POC/VAH/VAL — institutional volume microstructure |
 
 ---
@@ -83,4 +85,5 @@ When creating a new module, add it to this map and assign the appropriate skills
 | `price_analysis` | RSI regime-aware interpretation (Cardwell/Brown), price phase detection | `analyze_rsi`, `detect_price_phase` |
 | `shared` | Cross-cutting types: `Bar`, `MarketDataPort`, `ExecutionPort` | Foundation for all modules |
 | `simulation` | Walk-forward backtesting, trade autopsy, feature engineering | `run_backtest`, `analyze_trades`, `engineer_features` |
+| `signal_discovery` | Non-intuitive statistical signal mining (Simons methodology) | `discover_anomalies`, `monitor_signal_decay`, `scan_cross_asset` |
 | `volume_intelligence` | Volume Profile analysis (POC, VAH, VAL, shapes), volume dynamics tracking | `analyze_volume_profile`, `track_volume_dynamics` |

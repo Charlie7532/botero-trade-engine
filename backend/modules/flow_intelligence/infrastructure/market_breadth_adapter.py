@@ -1,3 +1,6 @@
+# DEPRECATED — Math absorbed into rotation_intelligence/application/use_cases/rotation_scanner.py
+# This file is dead code. No module instantiates or imports MarketBreadthProvider.
+# Retained for reference only. Will be removed in a future cleanup.
 import logging
 import requests
 import numpy as np
@@ -38,7 +41,7 @@ class MarketBreadthProvider:
     def _get_finviz_mcp(self):
         """Lazy init del Finviz MCP adapter."""
         if self._finviz_mcp is None:
-            from backend.infrastructure.data_providers.finviz_intelligence import FinvizIntelligence
+            from backend.modules.portfolio_management.infrastructure.finviz_adapter import FinvizIntelligence
             self._finviz_mcp = FinvizIntelligence()
         return self._finviz_mcp
 

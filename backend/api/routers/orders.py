@@ -5,15 +5,11 @@ from pydantic import BaseModel, model_validator
 
 from backend.modules.shared.use_cases import place_order
 from backend.modules.execution.domain.entities.order_models import Broker, Order, OrderSide, OrderStatus, OrderType
-from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
-from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
+from backend.api.factories.execution_factory import build_broker_registry
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
-_brokers = {
-    Broker.ALPACA: AlpacaAdapter(),
-    Broker.INTERACTIVE_BROKERS: IBAdapter(),
-}
+_brokers = build_broker_registry()
 
 
 class PlaceOrderRequest(BaseModel):

@@ -25,7 +25,7 @@ class KalmanSignalAdapter(SignalPort):
         return "kalman_wyckoff"
 
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
-        from backend.modules.volume_intelligence.domain.use_cases.track_volume_dynamics import (
+        from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import (
             KalmanVolumeTracker,
         )
         tracker = KalmanVolumeTracker(dt=1.0, process_noise=0.05, obs_noise=0.2)
@@ -98,9 +98,44 @@ class VolumeQualitySignalAdapter(SignalPort):
     def name(self) -> str:
         return "volume_quality"
 
-    def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
-        from backend.modules.simulation.domain.use_cases.run_backtest import WalkForwardBacktester
+    @staticmethod
+    def volume_quality_score(
+        close: float,
+        high: float,
+        low: float,
+        volume: float,
+        avg_volume: float,
+        prev_close: float,
+    ) -> float:
+        score = 0.0
+        price_range = high - low
+        if price_range <= 0 or volume <= 0 or avg_volume <= 0:
+            return 0.0
 
+        abs_return = abs(close - prev_close) / prev_close if prev_close > 0 else 0
+        dollar_volume = volume * close
+        amihud = abs_return / (dollar_volume / 1e9) if dollar_volume > 0 else 0
+
+        if amihud > 0.5:
+            score += 1.0
+        elif amihud > 0.1:
+            score += 0.5
+
+        close_position = (close - low) / price_range
+        if close_position > 0.6:
+            score += 1.0
+        elif close_position > 0.3:
+            score += 0.5
+
+        rvol = volume / avg_volume
+        if rvol > 2.0:
+            score += 1.0
+        elif rvol > 1.5:
+            score += 0.5
+
+        return score
+
+    def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
         signals = []
         for i in range(len(ohlc)):
             if i < 20:
@@ -109,9 +144,13 @@ class VolumeQualitySignalAdapter(SignalPort):
 
             window = ohlc.iloc[max(0, i - 20):i + 1]
             try:
-                vq = WalkForwardBacktester.volume_quality_score(
-                    volumes=window["volume"].values,
-                    closes=window["close"].values,
+                vq = self.volume_quality_score(
+                    close=float(ohlc.iloc[i]["close"]),
+                    high=float(ohlc.iloc[i]["high"]),
+                    low=float(ohlc.iloc[i]["low"]),
+                    volume=float(ohlc.iloc[i]["volume"]),
+                    avg_volume=float(window["volume"].mean()),
+                    prev_close=float(ohlc.iloc[i-1]["close"]),
                 )
                 threshold = context.get("vq_threshold", 1.0) if context else 1.0
                 signals.append(1 if vq >= threshold else 0)

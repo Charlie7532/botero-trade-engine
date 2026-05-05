@@ -110,6 +110,57 @@ All new code follows Clean Architecture boundaries:
 
 ---
 
+## Changelog
+
+### Phase 1: Import Hygiene & Module Init
+- **FIX**: 6 legacy `from modules.` imports → `from backend.modules.` across `shared/use_cases.py`, `alpaca_adapter.py`, `ib_adapter.py`, `evaluate_entry.py`, `qualify_ticker.py`
+- **FIX**: Dead import path in `qualify_ticker.py` pointing to non-existent `modules.simulation.domain.feature_engineering`
+- **ADD**: `__init__.py` public API exports for 6 modules: `execution`, `flow_intelligence`, `options_gamma`, `pattern_recognition`, `portfolio_management`, `shared`
+- **RESTRUCTURE**: `shared/` module migrated to standard 5-folder domain layout (`domain/dtos`, `domain/entities`, `domain/ports`, `domain/rules`, `application/use_cases`)
+
+### Phase 2: Rules Layer Purity
+- **EXTRACT**: `import yfinance` and FRED infrastructure import removed from `portfolio_management/domain/rules/macro_regime.py` → data fetching moved to new `infrastructure/macro_data_adapter.py`
+- **EXTRACT**: Finnhub adapter import removed from `flow_intelligence/domain/rules/macro_calendar.py` → now accepts injectable `external_events_fetcher` parameter
+- **ADD**: `portfolio_management/infrastructure/macro_data_adapter.py` — `YFinanceMacroAdapter` and `FREDMacroAdapter`
+
+### Phase 3: Port Definitions (Hexagonal Backbone)
+- **ADD**: 9 new Port ABCs across 5 modules:
+  - `options_gamma/domain/ports/options_data_port.py` — `OptionsDataPort`
+  - `entry_decision/domain/ports/market_data_port.py` — `EntryMarketDataPort`
+  - `entry_decision/domain/ports/flow_data_port.py` — `FlowDataPort`
+  - `execution/domain/ports/broker_port.py` — `BrokerPort`
+  - `portfolio_management/domain/ports/screener_port.py` — `ScreenerPort`
+  - `portfolio_management/domain/ports/fundamental_data_port.py` — `FundamentalDataPort`
+  - `portfolio_management/domain/ports/macro_data_port.py` — `MacroDataPort`
+  - `flow_intelligence/domain/ports/calendar_data_port.py` — `CalendarDataPort`
+  - `flow_intelligence/domain/ports/whale_flow_port.py` — `WhaleFlowPort`
+- **MOVE**: `BrokerAdapter` ABC relocated from `infrastructure/brokers/base.py` → `domain/ports/broker_port.py` (old location kept as re-export alias)
+
+### Global Entity Distribution (prior session)
+- **DELETE**: `backend/domain/entities.py` (monolithic entity file)
+- **DISTRIBUTE**: Entities into their owning modules:
+  - `Order`, `Trade`, `Broker` → `execution/domain/entities/order_models.py`
+  - `Position`, `Portfolio` → `portfolio_management/domain/entities/portfolio_models.py`
+  - `Bar` → `shared/domain/entities/market_data.py`
+  - `Signal` → `entry_decision/domain/entities/signal.py`
+  - `BacktestResult` → `simulation/domain/entities/simulation_models.py`
+
+### Documentation & Agent Skills
+- **ADD**: `.agent/clean_architecture_skill.md` — Comprehensive Hexagonal Architecture skill with import matrix, Port/Adapter patterns, and known violations registry
+- **ADD**: `docs/phase4_dependency_injection_plan.md` — Detailed handoff document for Phase 4 completion
+- **UPDATE**: `CLAUDE.md` — Reflects new modular architecture, updated layer rules and project structure
+
+---
+
+## Files Changed
+
+| Category | Count |
+|---|---|
+| Modified | 15 |
+| New files | ~35 |
+| Deleted | ~20 |
+| **Total** | ~70 |
+
 ## How to Test
 
 ```bash

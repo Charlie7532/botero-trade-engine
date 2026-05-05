@@ -38,7 +38,8 @@ Git remote: `https://github.com/Charlie7532/botero-trade-engine`
 | Layer | Location | Allowed imports | Forbidden |
 |---|---|---|---|
 | **Module Domain** | `backend/modules/*/domain/` | stdlib, pandas, numpy, own entities/rules/ports | any external API or SDK (e.g. yfinance, requests, finnhub) |
-| **Module Infra** | `backend/modules/*/infrastructure/` | module domain, any library | — |
+| **Module Application** | `backend/modules/*/application/` | stdlib, pandas, numpy, own domain, other modules' domain/application | any infrastructure |
+| **Module Infra** | `backend/modules/*/infrastructure/` | module domain, module application, any library | — |
 | **Domain Ports** | `backend/modules/*/domain/ports/` | stdlib, ABC | any infrastructure |
 | **API** | `backend/api/` | modules, fastapi | direct broker SDK calls |
 
@@ -63,10 +64,14 @@ All skills are located in `.agents/skills/`. Key skills:
 - `operational-purpose` — Zero-bias behavioral alignment (ALWAYS ACTIVE)
 - `clean-architecture` — Hexagonal architecture enforcement (ALWAYS ACTIVE)
 - `module-skill-map` — Maps backend modules to specialist skills
-- `fundamental-analyst` — CORE position evaluation (Hohn & Munger)
-- `tactical-entries` — Microstructure entry timing (Eifert & PTJ)
+- `cio-allocator` — Dynamic capital allocation & macro regime (Ray Dalio)
+- `rotation-analyst` — Sector/international/asset class rotation (Weinstein & Pring)
+- `research-intelligence` — Dual-track candidate sourcing & investigation (Quality watchlist + Speculative opportunities)
+- `fundamental-analyst` — QUALITY position evaluation (Hohn & Munger)
+- `tactical-entries` — Microstructure entry timing & dealer gamma (Eifert, Karsan & PTJ)
 - `risk-manager` — Dual-mode risk evaluation (Druckenmiller & Seykota)
-- `backtesting-trading-strategies` — Strategy validation via `backend/modules/simulation/`
+- `backtesting-trading-strategies` — Quantitative strategy validation (López de Prado)
+- `signal-miner` — Non-intuitive statistical signal discovery (Jim Simons)
 - `trading-analysis` — Institutional-grade investment reports
 
 ---

@@ -17,6 +17,17 @@ export const botsFields: Field[] = [
     required: true,
   },
   {
+    name: 'botSlug',
+    type: 'text',
+    unique: true,
+    index: true,
+    admin: {
+      readOnly: true,
+      position: 'sidebar',
+      description: 'Public identifier for agent URLs (auto-generated).',
+    },
+  },
+  {
     name: 'portfolio',
     type: 'relationship',
     relationTo: 'portfolios',

@@ -19,6 +19,7 @@ export const Media: CollectionConfig = {
     update: authenticated,
   },
   admin: {
+    hidden: true,
     group: 'Website',
   },
   fields: mediaFields,

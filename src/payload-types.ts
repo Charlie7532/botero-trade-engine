@@ -435,6 +435,10 @@ export interface BrokerAccount {
 export interface Bot {
   id: number;
   name: string;
+  /**
+   * Public identifier for agent URLs (auto-generated).
+   */
+  botSlug?: string | null;
   portfolio: number | Portfolio;
   /**
    * AI Agent = Claude-powered. Strategy = traditional algorithm running in the Python backend.
@@ -1332,6 +1336,7 @@ export interface AgentSkillsSelect<T extends boolean = true> {
  */
 export interface BotsSelect<T extends boolean = true> {
   name?: T;
+  botSlug?: T;
   portfolio?: T;
   executionType?: T;
   strategyType?: T;

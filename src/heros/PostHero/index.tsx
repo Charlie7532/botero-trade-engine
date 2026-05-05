@@ -4,9 +4,11 @@ import React from 'react'
 import { Media } from '@/components/Media'
 import { formatAuthors } from '@/utilities/formatAuthors'
 
+import type { Media as MediaType } from '@/payload-types'
+
 type PostDoc = {
   categories?: ({ title?: string | null } | string)[] | null
-  heroImage?: unknown
+  heroImage?: MediaType | string | null
   populatedAuthors?: ({ name?: string | null } | null)[] | null
   publishedAt?: string | null
   title?: string | null

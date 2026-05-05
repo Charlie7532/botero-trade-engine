@@ -4,7 +4,8 @@ import type { NextRequest } from 'next/server'
 export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname === '/admin/login') {
     const url = new URL('/login', request.url)
-    url.searchParams.set('redirect', '/admin')
+    const existingRedirect = request.nextUrl.searchParams.get('redirect')
+    url.searchParams.set('redirect', existingRedirect ?? '/portafolio')
     return NextResponse.redirect(url)
   }
 

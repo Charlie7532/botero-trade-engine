@@ -88,19 +88,29 @@ botero-trade/
 ├── src/                              # Next.js 16 + PayloadCMS 3 (TypeScript)
 │   ├── app/
 │   │   ├── (frontend)/              # Trading dashboard UI
-│   │   └── (payload)/               # CMS admin panel
+│   │   ├── (payload)/               # CMS admin panel
+│   │   └── api/agent/[slug]/        # Managed Agent Sessions API (streaming)
 │   ├── shared/                      # Clean Architecture (TS)
 │   │   ├── domain/                  # Types, ports, rules
+│   │   │   ├── ports/               # IVaultAdapter, CacheRevalidator
+│   │   │   └── rules/               # publishStateRules
 │   │   ├── application/             # Use cases
+│   │   │   └── useCases/            # assignDefaultPublishTimestamp, revalidateRedirectsState
 │   │   ├── infrastructure/          # API clients, adapters
-│   │   └── handlers/                # Shared lifecycle handlers
-│   ├── collections/                 # PayloadCMS collections (12)
+│   │   │   ├── vault/               # claudeVaultAdapter (AES-256-GCM encrypted credentials)
+│   │   │   ├── next/                # NextCacheRevalidator
+│   │   │   └── vaultFactory.ts      # Vault adapter composition root
+│   │   └── handlers/                # Shared lifecycle hook wrappers (operation-filtered, guarded)
+│   ├── collections/                 # PayloadCMS collections (15)
 │   │   ├── Users/                   # Authentication + roles
-│   │   ├── Portfolios/              # Portfolio management
+│   │   ├── Portfolios/              # Portfolio management (lifecycle manifest)
 │   │   ├── PortfolioMemberships/    # Multi-tenant access
 │   │   ├── BrokerAccounts/          # Encrypted broker credentials
-│   │   ├── Bots/                    # Trading bot definitions
+│   │   ├── Bots/                    # AI trading bots (domain/infrastructure/interface layers)
 │   │   ├── BotAssignments/          # Bot ↔ Portfolio mapping
+│   │   ├── AgentSkills/             # Skill definitions synced to agent personas
+│   │   ├── McpServers/              # MCP server registry (domain rules + sync hooks)
+│   │   ├── ProjectVaults/           # Encrypted credential vaults per project
 │   │   ├── Instruments/             # Tracked securities
 │   │   ├── CalibrationProfiles/     # Strategy calibration
 │   │   ├── CandidateScreenings/     # Research pipeline results
@@ -108,8 +118,14 @@ botero-trade/
 │   │   ├── TradeSnapshots/          # Execution snapshots
 │   │   └── Media/                   # File uploads
 │   ├── globals/                     # Header, SiteSettings
-│   ├── modules/                     # Feature modules (TS)
+│   ├── modules/                     # Feature modules (auth)
 │   └── components/                  # Shared React components
+│       ├── AgentChat/               # Managed agent chat (Markdown + Mermaid rendering)
+│       ├── Admin/                   # Dashboard customizations
+│       ├── BeforeDashboard/         # Admin dashboard widgets
+│       ├── ConfigurableLogo/        # Dynamic logo from SiteSettings
+│       ├── DynamicColors/           # Theme-aware color system
+│       └── ...                      # 25+ reusable components
 │
 ├── backend/                         # Python trading engine
 │   ├── modules/                     # 11 Clean Architecture modules
@@ -142,7 +158,6 @@ botero-trade/
 ├── .agents/skills/                  # 18 AI agent specialist skills
 ├── tests/                           # Root test suite
 ├── docker-compose.yml               # Orchestrates api + Cloudflare tunnel
-├── graphify-out/                    # Codebase knowledge graph
 └── package.json                     # pnpm workspace root
 ```
 
@@ -163,6 +178,25 @@ backend/modules/<module_name>/
 ```
 
 **Pure computation modules** (`price_analysis`, `volume_intelligence`, `pattern_recognition`) have no `infrastructure/` folder — they receive data as input and return computed results with zero I/O.
+
+### PayloadCMS Collection Architecture
+
+Complex collections follow Clean Architecture internally with domain/infrastructure/interface layers:
+
+```
+src/collections/<CollectionName>/
+├── index.ts             # Payload collection config (hooks, access, fields)
+├── fields.ts            # Field definitions
+├── lifecycle.ts         # Lifecycle manifest (hook composition)
+├── domain/
+│   └── rules/           # Business rules and validation
+├── infrastructure/
+│   └── hooks/           # Side-effect hooks (sync, cascade, adapters)
+└── interface/
+    └── hooks/           # UI-layer hooks (admin customizations)
+```
+
+Collections with this layered structure: **Bots**, **McpServers**, **AgentSkills**.
 
 ---
 
@@ -225,7 +259,7 @@ Starts the `api` service (port 8000) and optionally a Cloudflare tunnel for remo
 PostgreSQL is hosted **externally** (Neon) — not inside Docker — so your data survives container rebuilds and deployments.
 
 The database stores:
-- **PayloadCMS data** (`public.*`) — 12 collections, users, CMS content
+- **PayloadCMS data** (`public.*`) — 15 collections, users, CMS content
 - **Trading engine data** (`engine.*`) — trade journals, OHLCV bars (662K+), macro indicators, features, trading state
 - **TimescaleDB** — time-series optimized hypertables for market data
 - **pgvector** — 9-dimensional embeddings for trade similarity search
@@ -279,6 +313,13 @@ Copy `.env.example` to `.env` and fill in the values. Key variables grouped by s
 | `GURUFOCUS_API_TOKEN`    | GuruFocus Premium API token               |
 | `FRED_API_KEY`           | FRED (Federal Reserve) API key            |
 
+### AI & Agent Infrastructure
+
+| Variable                 | Description                               |
+| ------------------------ | ----------------------------------------- |
+| `ANTHROPIC_API_KEY`      | Anthropic API key for managed agent sessions |
+| `ANTHROPIC_ADMIN_KEY`    | Admin key for usage dashboard widget      |
+
 ### Deployment
 
 | Variable                      | Description                               |
@@ -286,6 +327,43 @@ Copy `.env.example` to `.env` and fill in the values. Key variables grouped by s
 | `CLOUDFLARE_TUNNEL_TOKEN`     | Cloudflare tunnel for API exposure        |
 | `BLOB_READ_WRITE_TOKEN`       | Vercel Blob storage token                 |
 | `BREVO_API_KEY`               | Transactional email (Brevo)               |
+
+---
+
+## Managed Agent Sessions
+
+The platform integrates **Anthropic Claude** as the backbone for AI-powered trading bots. Each bot is a managed agent with its own encrypted credential vault and skill configuration.
+
+```mermaid
+graph LR
+    subgraph CMS["PayloadCMS Collections"]
+        BOTS["Bots"] --> SKILLS["AgentSkills"]
+        BOTS --> MCP["McpServers"]
+        BOTS --> VAULT["ProjectVaults"]
+    end
+
+    subgraph SHARED["Shared Infrastructure"]
+        VPORT["IVaultAdapter (port)"] --> VADAPT["claudeVaultAdapter"]
+        VADAPT --> ENC["AES-256-GCM encryption"]
+    end
+
+    subgraph API["Next.js API"]
+        ROUTE["/api/agent/[slug]"] --> VADAPT
+    end
+
+    BOTS -->|"lifecycle hooks"| VADAPT
+```
+
+| Component | Location | Role |
+|---|---|---|
+| **Bots** collection | `src/collections/Bots/` | Bot definitions with domain rules, Anthropic adapter, lifecycle hooks |
+| **AgentSkills** collection | `src/collections/AgentSkills/` | Skill definitions synced from `.agents/skills/` |
+| **McpServers** collection | `src/collections/McpServers/` | MCP server registry with domain rules and sync hooks |
+| **ProjectVaults** collection | `src/collections/ProjectVaults/` | Encrypted credential vaults per project |
+| **IVaultAdapter** port | `src/shared/domain/ports/` | Abstract vault interface |
+| **claudeVaultAdapter** | `src/shared/infrastructure/vault/` | AES-256-GCM encrypted credential injection |
+| **AgentChat** component | `src/components/AgentChat/` | Streaming chat UI with Markdown + Mermaid rendering |
+| **Agent API** | `src/app/api/agent/[slug]/` | Managed agent session endpoint |
 
 ---
 
@@ -330,6 +408,12 @@ All configured in `.mcp.json` with secrets via environment variables.
 | POST | `/api/orders/` | Submit an order |
 | — | `/api/docs` | Swagger UI |
 
+### Next.js API Routes
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/agent/[slug]` | Managed agent session (streaming Anthropic chat) |
+
 ---
 
 ## Port / Adapter Map
@@ -350,6 +434,13 @@ All configured in `.mcp.json` with secrets via environment variables.
 | **portfolio_management** | `InstrumentRepoPort` | `PayloadInstrumentsAdapter` | PayloadCMS |
 | **rotation_intelligence** | `RotationDataPort` | `YahooRotationAdapter` | yfinance |
 | **simulation** | `HistoricalDataPort` + 9 more | TimescaleDB adapters | PostgreSQL |
+
+### TypeScript Port / Adapter Map
+
+| Layer | Port (domain) | Adapter (infrastructure) | Source |
+|---|---|---|---|
+| **Vault** | `IVaultAdapter` | `claudeVaultAdapter` | PayloadCMS + AES-256-GCM |
+| **Cache** | `CacheRevalidator` | `NextCacheRevalidator` | Next.js `revalidateTag` |
 
 ---
 
@@ -404,24 +495,30 @@ docker compose up -d  # starts api + tunnel
 
 ## Tech Stack
 
-| Layer                   | Technology                           |
-| ----------------------- | ------------------------------------ |
-| Frontend framework      | Next.js 16.1 (App Router, Turbopack)|
-| CMS                     | PayloadCMS 3                         |
-| UI components           | HeroUI, Radix UI, Tailwind CSS       |
-| Language (frontend)     | TypeScript                           |
-| Trading engine          | Python 3.12 + FastAPI                |
-| Architecture            | Modular Clean / Hexagonal (11 mod)   |
-| ML Pipeline             | PyTorch LSTM + GradientBoosting      |
-| Data processing         | pandas, numpy, scikit-learn          |
-| Market data             | 8 MCP Servers (~241 tools)           |
-| Broker                  | Alpaca × 2 (QUALITY + SPECULATIVE)   |
-| Database                | PostgreSQL 16 (Neon) + TimescaleDB   |
-| Vector search           | pgvector (9D embeddings)             |
-| Codebase graph          | Graphify                             |
-| Container orchestration | Docker Compose                       |
-| Frontend deployment     | Vercel                               |
-| API tunneling           | Cloudflare Tunnel                    |
+| Layer                   | Technology                                |
+| ----------------------- | ----------------------------------------- |
+| Frontend framework      | Next.js 16.1 (App Router, Turbopack)      |
+| CMS                     | PayloadCMS 3                              |
+| UI components           | HeroUI 3, Radix UI, Tailwind CSS 4        |
+| Animations              | Framer Motion                             |
+| Language (frontend)     | TypeScript 5.7                            |
+| React                   | React 19.2                                |
+| Trading engine          | Python 3.12 + FastAPI                     |
+| Architecture            | Modular Clean / Hexagonal (11 modules)    |
+| ML Pipeline             | PyTorch LSTM + GradientBoosting           |
+| Data processing         | pandas, numpy, scikit-learn               |
+| Market data             | 8 MCP Servers (~241 tools)                |
+| AI agents               | Anthropic Claude (managed sessions)       |
+| Broker                  | Alpaca × 2 (QUALITY + SPECULATIVE)        |
+| Database                | PostgreSQL 16 (Neon) + TimescaleDB        |
+| Vector search           | pgvector (9D embeddings)                  |
+| Credential security     | AES-256-GCM vault encryption              |
+| Codebase graph          | Graphify                                  |
+| Container orchestration | Docker Compose                            |
+| Frontend deployment     | Vercel                                    |
+| API tunneling           | Cloudflare Tunnel                         |
+| Email                   | Brevo (transactional)                     |
+| Rich text rendering     | react-markdown + remark-gfm + Mermaid     |
 
 ---
 

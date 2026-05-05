@@ -4,13 +4,17 @@ import React from 'react'
 import RichText from '@/components/RichText'
 import TableOfContents, { type TocPosition } from '@/components/TableOfContents'
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
-import type { Post } from '@/payload-types'
+
+type PostDoc = {
+    content?: unknown
+    relatedPosts?: unknown[] | null
+}
 
 // Stub: RelatedPosts block not yet implemented in this project
 const RelatedPosts: React.FC<{ className?: string; docs?: unknown[] }> = () => null
 
 interface PostArticleProps {
-    post: Post
+    post: PostDoc
     tocPosition?: TocPosition
 }
 

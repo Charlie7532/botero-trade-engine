@@ -108,7 +108,7 @@ export function PasswordStep({
                     type="submit"
                     fullWidth
                     size="lg"
-                    className="h-12 font-semibold text-gray-900 data-[loading=true]:text-gray-900"
+                    className="h-12 font-semibold"
                     variant="primary"
                     isPending={isLoading}
                 >

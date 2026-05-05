@@ -1,33 +1,11 @@
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
-import { seoPlugin } from '@payloadcms/plugin-seo'
 import { Plugin } from 'payload'
-import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 
-import { getServerSideURL } from '@/utilities/getURL'
 import { OAuth2Plugin } from 'payload-oauth2'
 
-type SeoDoc = {
-  title?: string | null
-  slug?: string | null
-}
-
-const generateTitle: GenerateTitle<SeoDoc> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | Main 12 web Template` : 'Main 12 web Template'
-}
-
-const generateURL: GenerateURL<SeoDoc> = ({ doc }) => {
-  const url = getServerSideURL()
-
-  return doc?.slug ? `${url}/${doc.slug}` : url
-}
-
 export const plugins: Plugin[] = [
-  seoPlugin({
-    generateTitle,
-    generateURL,
-  }),
   formBuilderPlugin({
     fields: {
       payment: false,
@@ -89,7 +67,7 @@ export const plugins: Plugin[] = [
         name: user.name,
       };
     },
-    successRedirect: (req) => req.searchParams.get('state') || '/account',
+    successRedirect: (req) => req.searchParams.get('state') || '/portafolio',
     failureRedirect: (req) => {
       const fallback = req.searchParams.get('state') || '/login'
       const separator = fallback.includes('?') ? '&' : '?'

@@ -3,13 +3,14 @@
 import { useHeaderTheme } from "@/providers/HeaderTheme"
 import type React from "react"
 import { useEffect } from "react"
-import type { Page } from "@/payload-types"
 import { CMSLink } from "@/components/Link"
 import { Media } from "@/components/Media"
 import RichText from "@/components/RichText"
 import { motion, useScroll, useTransform } from "framer-motion"
 
-export const HighImpactHero: React.FC<NonNullable<Page["hero"]>> = ({ links, media, richText }) => {
+type HeroProps = { links?: unknown[] | null; media?: unknown; richText?: unknown }
+
+export const HighImpactHero: React.FC<HeroProps> = ({ links, media, richText }) => {
   const { setHeaderTheme } = useHeaderTheme()
   const { scrollY } = useScroll()
 

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { AgentChat } from './AgentChat'
+import { AgentChat } from '@/components/AgentChat'
 
 export default async function AgentPage({
   params,

@@ -25,7 +25,7 @@ class MarketDataFetcher(EntryMarketDataPort):
     def fetch_prices(self, ticker: str) -> Optional[pd.DataFrame]:
         """Download 3-month OHLCV for a ticker. Tries Neon DB first, falls back to yf."""
         try:
-            from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             from datetime import timedelta
             store = TimescaleDataStore()
             start_date = date.today() - timedelta(days=100)
@@ -53,7 +53,7 @@ class MarketDataFetcher(EntryMarketDataPort):
     def fetch_vix(self) -> float:
         """Get current VIX level. Tries Neon DB first, falls back to yf."""
         try:
-            from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             store = TimescaleDataStore()
             df = store.load_macro("vix_close")
             store.close()
@@ -78,7 +78,7 @@ class MarketDataFetcher(EntryMarketDataPort):
             if self._spy_cache is None or self._spy_cache_date != today:
                 df = None
                 try:
-                    from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+                    from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
                     from datetime import timedelta
                     store = TimescaleDataStore()
                     db_spy = store.load_bars("SPY", "1d", start=today - timedelta(days=100))

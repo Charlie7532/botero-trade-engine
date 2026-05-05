@@ -33,7 +33,7 @@ sys.path.insert(0, str(_root))
 from dotenv import load_dotenv
 load_dotenv(_root / ".env")
 
-from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")

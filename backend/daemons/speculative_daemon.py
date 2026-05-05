@@ -15,7 +15,7 @@ def _prefetch_uw_data() -> dict:
     """Pre-fetch Unusual Whales flow data for speculative scanning and vault it."""
     try:
         from backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge import UWDataBridge
-        from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
         from backend.modules.simulation.infrastructure.vault_interceptor import VaultInterceptor
         from dataclasses import asdict
 

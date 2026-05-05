@@ -23,7 +23,7 @@
     "docker:up": "docker compose up",
     "docker:build": "docker compose build",
     "docker:down": "docker compose down",
-    "graphify": "graphify scan .",
+    "graphify": "graphify update .",
     "graphify:update": "graphify update ."
   },
   "dependencies": {

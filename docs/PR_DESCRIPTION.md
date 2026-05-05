@@ -1,121 +1,111 @@
-# Hexagonal Architecture Migration — Phases 1-3
+# Payload Dashboard — Portfolio, Agents & Theme Overhaul
 
 ## Summary
 
-This PR migrates the Botero Trade Engine backend from a loosely-structured modular monolith to a **Hexagonal (Ports & Adapters) Architecture**, bringing Clean Architecture compliance from **62% → 78%**.
+Full-stack feature branch that delivers **four major capabilities** on top of the existing Hexagonal Architecture backend:
 
-## Architecture Diagram
+1. **Portfolio Management** — Clean Architecture collection with settings UI, membership hooks, and auth provider refactor.
+2. **AI Agent Infrastructure** — Bots × AgentSkills × McpServers collections with Anthropic integration, agent lifecycle sync, and a real-time chat interface.
+3. **Admin Dashboard Widgets** — Claude token consumption and Postgres performance monitoring panels.
+4. **UI Polish** — HeroUI theme variables, hero type safety, auth button streamlining, and 404 page improvements.
 
-```mermaid
-graph TB
-    subgraph "API Layer (Driving Side)"
-        R1["api/routers/portfolio.py"]
-        R2["api/routers/strategy.py"]
-        R3["api/routers/orders.py"]
-        R4["api/routers/market_data.py"]
-    end
+---
 
-    subgraph "Domain Layer (Core)"
-        subgraph "Entities"
-            E1["execution/entities/order_models.py"]
-            E2["portfolio_mgmt/entities/portfolio_models.py"]
-            E3["shared/entities/market_data.py"]
-            E4["entry_decision/entities/signal.py"]
-        end
-        subgraph "Ports (ABCs)"
-            P1["BrokerPort"]
-            P2["OptionsDataPort"]
-            P3["EntryMarketDataPort"]
-            P4["FlowDataPort"]
-            P5["FundamentalDataPort"]
-            P6["ScreenerPort"]
-            P7["MacroDataPort"]
-            P8["CalendarDataPort"]
-            P9["WhaleFlowPort"]
-            P10["MarketDataPort"]
-            P11["ExecutionPort"]
-        end
-        subgraph "Use Cases"
-            UC1["EntryIntelligenceHub"]
-            UC2["OptionsAwareness"]
-            UC3["AlphaScanner"]
-            UC4["UniverseFilter"]
-        end
-    end
+## What Changed
 
-    subgraph "Infrastructure Layer (Driven Side)"
-        A1["AlpacaAdapter"]
-        A2["IBAdapter"]
-        A3["YFinanceOptionsAdapter"]
-        A4["MarketDataFetcher"]
-        A5["FinnhubAdapter"]
-        A6["FinvizIntelligence"]
-        A7["GuruFocusIntelligence"]
-        A8["UnusualWhalesIntelligence"]
-    end
+### 1. Portfolio Collection & Auth Refactor
+> Commits: `165268f`, `a01a66d`, `371da0c`
 
-    R1 --> UC1
-    R2 --> UC2
-    UC1 -.->|depends on| P3
-    UC1 -.->|depends on| P4
-    UC2 -.->|depends on| P2
-    UC3 -.->|depends on| P5
-    UC3 -.->|depends on| P6
-    UC4 -.->|depends on| P5
-    A1 -->|implements| P1
-    A2 -->|implements| P1
-    A3 -->|implements| P2
-    A4 -->|implements| P3
-    A5 -->|implements| P8
-    A6 -->|implements| P6
-    A7 -->|implements| P5
-    A8 -->|implements| P9
+- **New settings routes**: `portafolio/[slug]/settings/` with rename form, profile form, and member management pages.
+- **Clean Architecture lifecycle**: slug + owner auto-generation hook, owner membership creation hook, and `PayloadPortfolioCreator` adapter implementing `PortfolioCreator` port.
+- **Auth provider rewrite**: Monolithic `Auth.ts` → `Auth/index.tsx` (client provider) + `Auth/server.ts` (server utility). Improved `getMeUser` with proper redirect handling.
+- **Hero components**: Added explicit TypeScript generics for `Page` and `Post` media types; removed unsafe type assertions.
+- **Auth pages**: Standardized all 7 auth pages to use `variant="shadow"` button styling and corrected redirect paths.
 
-    style P1 fill:#4CAF50,color:white
-    style P2 fill:#4CAF50,color:white
-    style P3 fill:#4CAF50,color:white
-    style P4 fill:#4CAF50,color:white
-    style P5 fill:#4CAF50,color:white
-    style P6 fill:#4CAF50,color:white
-    style P7 fill:#4CAF50,color:white
-    style P8 fill:#4CAF50,color:white
-    style P9 fill:#4CAF50,color:white
-    style P10 fill:#4CAF50,color:white
-    style P11 fill:#4CAF50,color:white
-```
+### 2. AI Agent & Bot Infrastructure
+> Commits: `f0c68c9`, `f8629c6`, `5bf9c43`, `8a82c36`
 
-## Module Structure (Screaming Architecture)
+- **3 new Payload collections**:
+  - `AgentSkills` — skill definitions with domain validation rules
+  - `McpServers` — MCP server registry with connection config and tool manifests
+  - `Bots` (extended) — added `slug`, `systemPrompt`, `model`, `maxTokens`, `mcpServers` relationship, and `agentStatus` fields
+- **Anthropic adapter** (`anthropicAgentAdapter.ts`): Handles agent creation, synchronization, and archival against the Anthropic API.
+- **Lifecycle hooks**: `syncAgentOnSave` (provisions/updates agent on Anthropic), `archiveAgentOnDelete`, `generateBotSlug`.
+- **Chat API route** (`/api/agent/[slug]/chat`): Streaming endpoint that looks up the bot, validates auth, and proxies to Anthropic.
+- **AgentChat component** (`src/components/AgentChat/`):
+  - Real-time streaming chat with `MarkdownRenderer` (react-markdown + syntax highlighting)
+  - `MermaidBlock` for rendering Mermaid diagrams in agent responses
+  - Moved from page-level to shared component for reuse
 
-```mermaid
-graph LR
-    subgraph "backend/modules/&lt;module&gt;/"
-        subgraph "domain/"
-            D1["entities/"]
-            D2["rules/"]
-            D3["ports/"]
-            D4["use_cases/"]
-            D5["dtos/"]
-        end
-        I["infrastructure/"]
-    end
+### 3. Admin Dashboard Widgets
+> Commit: `7383504`
 
-    D4 -->|depends on| D1
-    D4 -->|depends on| D2
-    D4 -->|depends on| D3
-    I -->|implements| D3
-    I -->|uses| D1
+- **ClaudeTokenConsumptionWidget**: Refactored for cleaner data flow, added model breakdown, and improved chart styling.
+- **PostgresPerformanceWidget**: Refactored with better connection pool visualization and query latency metrics.
+- Both widgets updated env example with required API keys.
 
-    style D3 fill:#4CAF50,color:white
-    style I fill:#FF9800,color:white
-```
+### 4. Theme & UI Polish
+> Commits: `165268f`, `5bf9c43`, `8a82c36`
 
-## Compliance Progress
+- **HeroUI theme CSS**: Comprehensive light/dark mode CSS custom properties covering surfaces, foregrounds, borders, focus rings, dividers, and content layers.
+- **404 page**: Enhanced layout and styling for the frontend not-found page.
+- **Payload admin**: Added `custom.scss` for admin panel visual tweaks.
 
-```mermaid
-pie title Architecture Compliance
-    "Compliant (78%)" : 78
-    "Phase 4 Remaining (14%)" : 14
-    "Test Architecture (8%)" : 8
+---
+
+## New Files
+
+| Path | Purpose |
+|------|---------|
+| `src/collections/AgentSkills/` | Skill collection + domain rules |
+| `src/collections/McpServers/` | MCP server registry collection |
+| `src/collections/Bots/infrastructure/` | Anthropic adapter + lifecycle hooks |
+| `src/components/AgentChat/` | Chat UI with Markdown & Mermaid rendering |
+| `src/app/api/agent/[slug]/chat/route.ts` | Streaming chat API endpoint |
+| `src/app/(frontend)/agent/` | Agent chat frontend pages |
+| `src/app/(frontend)/(settings)/portafolio/[slug]/settings/` | Portfolio settings UI (7 files) |
+| `src/collections/Portfolios/interface/` | Service + hooks (slug, ownership) |
+| `src/collections/Portfolios/infrastructure/PayloadPortfolioCreator.ts` | Port adapter |
+| `src/collections/Portfolios/domain/ports/PortfolioCreator.ts` | Domain port |
+| `src/providers/Auth/index.tsx` | Client-side auth provider |
+| `src/providers/Auth/server.ts` | Server-side auth utility |
+| `src/scripts/seedAgentSkills.ts` | Seed script for default agent skills |
+
+## Deleted Files
+
+| Path | Reason |
+|------|--------|
+| `src/providers/Auth.ts` | Replaced by `Auth/index.tsx` + `Auth/server.ts` |
+| `src/collections/Portfolios/domain/useCases/createOwnerMembership.ts` | Moved to `interface/hooks/` |
+
+---
+
+## Architecture Compliance
+
+All new code follows Clean Architecture boundaries:
+
+| Component | Layer | Compliance |
+|-----------|-------|------------|
+| `AgentSkills/domain/rules/` | Domain | ✅ No infrastructure imports |
+| `McpServers/domain/rules/` | Domain | ✅ No infrastructure imports |
+| `Bots/domain/rules/` | Domain | ✅ No infrastructure imports |
+| `Bots/infrastructure/` | Infrastructure | ✅ Depends on domain only |
+| `Portfolios/domain/ports/` | Domain | ✅ ABC only |
+| `Portfolios/infrastructure/` | Infrastructure | ✅ Implements port |
+| `AgentChat` component | UI | ✅ Delegates to API route |
+| Auth provider | Infrastructure | ✅ No direct Payload imports in client |
+
+---
+
+## Dependencies Added
+
+```json
+{
+  "react-markdown": "^9.x",
+  "remark-gfm": "^4.x",
+  "react-syntax-highlighter": "^15.x",
+  "mermaid": "^11.x"
+}
 ```
 
 ---
@@ -171,31 +161,29 @@ pie title Architecture Compliance
 | Deleted | ~20 |
 | **Total** | ~70 |
 
-## Testing
+## How to Test
 
 ```bash
-# Compilation verification (all pass)
-PYTHONPATH=backend python3 -m compileall backend/
+# 1. Start dev server
+pnpm dev
 
-# Import hygiene (0 legacy imports)
-grep -rn "^from modules\." backend/modules/ --include="*.py" | grep -v __pycache__
-# Result: 0
+# 2. Verify portfolio settings pages
+# Navigate to /portafolio/<slug>/settings
 
-# Rules purity (0 violations)
-grep -rn "^import yfinance\|^from.*infrastructure" backend/modules/*/domain/rules/ --include="*.py"
-# Result: 0
+# 3. Verify agent chat
+# Create a Bot in admin → navigate to /agent/<slug>
 
-# Port ABCs defined
-grep -rn "class.*ABC" backend/modules/*/domain/ports/ --include="*.py"
-# Result: 11 ABCs
+# 4. Verify dashboard widgets
+# Open Payload admin dashboard — Claude & Postgres widgets should render
+
+# 5. Verify theme
+# Toggle light/dark mode — all HeroUI components should respect theme variables
 ```
 
 ## Breaking Changes
 
-> ⚠️ **`backend/domain/entities.py` has been deleted.** All imports referencing this file must use the new module-specific locations. See entity distribution table above.
+> ⚠️ **Auth provider import path changed**: `src/providers/Auth.ts` → `src/providers/Auth/index.tsx`. All existing imports of `Auth` from providers should auto-resolve via directory index.
 
-> ⚠️ **`MacroRegimeDetector.detect_from_market()` removed.** This method (which fetched live yfinance data) was moved to `infrastructure/macro_data_adapter.py`. Callers should now use `detect_from_data(vix, yield_spread)` and fetch the data separately via `YFinanceMacroAdapter`.
+> ⚠️ **New env variables required**: `ANTHROPIC_API_KEY`, `CLAUDE_API_KEY`, `PG_CONNECTION_STRING` — see `.env.example`.
 
-## Next Steps
-
-See `docs/phase4_dependency_injection_plan.md` for the remaining 17 domain→infrastructure violations that need dependency injection wiring (estimated ~3 hours of work).
+> ⚠️ **Payload config updated**: Three new collections (`AgentSkills`, `McpServers` updated `Bots`) registered. Run `pnpm generate` to regenerate types and importMap.

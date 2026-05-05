@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { AuthProvider } from './Auth'
 import { HeaderThemeProvider } from './HeaderTheme'
 import { ThemeProvider, type ThemeProviderProps } from './Theme'
 
@@ -14,7 +15,11 @@ export const Providers: React.FC<ProvidersProps> = ({
 }) => {
   return (
     <ThemeProvider themeMode={themeMode} defaultTheme={defaultTheme}>
-      <HeaderThemeProvider>{children}</HeaderThemeProvider>
+      <AuthProvider>
+        <HeaderThemeProvider>
+          {children}
+        </HeaderThemeProvider>
+      </AuthProvider>
     </ThemeProvider>
   )
 }

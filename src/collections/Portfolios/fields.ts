@@ -1,7 +1,7 @@
 import type { Field } from 'payload'
 
 import { isAdminFieldLevel } from '@/access'
-import { isValidPortfolioSlug, PORTFOLIO_STATUSES } from './domain/rules/accountRules'
+import { isValidSlug, PORTFOLIO_STATUSES } from './domain/rules/accountRules'
 
 export const portfoliosFields: Field[] = [
   {
@@ -16,10 +16,11 @@ export const portfoliosFields: Field[] = [
     index: true,
     validate: (value: unknown) => {
       if (typeof value !== 'string' || !value) return 'Slug is required.'
-      return isValidPortfolioSlug(value) || 'Slug must be a valid UUID v4.'
+      return isValidSlug(value) || 'Slug must be a valid portfolio ID.'
     },
     admin: {
       readOnly: true,
+      description: 'Auto-generated. Cannot be changed.',
     },
   },
   {

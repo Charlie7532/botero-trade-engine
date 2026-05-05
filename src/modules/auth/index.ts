@@ -164,7 +164,7 @@ export function useLoginFlow({ redirectTo }: UseLoginFlowOptions) {
     }, [])
 
     const handleGoogleLogin = useCallback(() => {
-        const state = encodeURIComponent(redirectTo || '/account')
+        const state = encodeURIComponent(redirectTo || '/portafolio')
         window.location.assign(`/api/users/oauth/google?state=${state}`)
     }, [redirectTo])
 
@@ -212,7 +212,7 @@ export function useForgotPasswordFlow() {
             const params = new URLSearchParams({
                 email,
                 purpose: 'password-reset',
-                redirect: '/account',
+                redirect: '/portafolio',
             })
             router.push(`/verify-otp?${params.toString()}`)
         } catch (err) {

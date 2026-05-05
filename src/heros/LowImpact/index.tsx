@@ -1,18 +1,10 @@
 import React from 'react'
 
-import type { Page } from '@/payload-types'
-
 import RichText from '@/components/RichText'
 
 type LowImpactHeroType =
-  | {
-      children?: React.ReactNode
-      richText?: never
-    }
-    | (Omit<NonNullable<Page['hero']>, 'richText'> & {
-      children?: never
-      richText?: NonNullable<Page['hero']>['richText']
-    })
+  | { children?: React.ReactNode; richText?: never }
+  | { children?: never; richText?: Parameters<typeof RichText>[0]['data'] }
 
 export const LowImpactHero: React.FC<LowImpactHeroType> = ({ children, richText }) => {
   return (

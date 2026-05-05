@@ -18,56 +18,26 @@ type DatabaseOverview = {
   }>
 }
 
-const shellStyle = {
-  background: 'linear-gradient(145deg, rgba(27, 19, 9, 0.98), rgba(49, 30, 12, 0.95))',
-  border: '1px solid rgba(255, 185, 88, 0.22)',
-  borderRadius: '22px',
-  boxShadow: '0 18px 48px rgba(23, 12, 4, 0.26)',
-  color: '#fff4dd',
-  overflow: 'hidden',
-}
-
-const metricGridStyle = {
-  display: 'grid',
-  gap: '0.85rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-  marginTop: '1.1rem',
-}
-
-const metricStyle = {
-  background: 'rgba(255, 255, 255, 0.06)',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
-  borderRadius: '16px',
-  padding: '0.9rem 1rem',
-}
-
-function numberFromValue(value: number | string | undefined): number {
-  if (typeof value === 'number') {
-    return value
+function num(v: unknown): number {
+  if (typeof v === 'number' && Number.isFinite(v)) return v
+  if (typeof v === 'string') {
+    const p = Number.parseInt(v, 10)
+    return Number.isFinite(p) ? p : 0
   }
-
-  if (typeof value === 'string') {
-    const parsed = Number.parseInt(value, 10)
-    return Number.isFinite(parsed) ? parsed : 0
-  }
-
   return 0
 }
 
-function formatNumber(value: number): string {
+function fmt(value: number): string {
   return new Intl.NumberFormat('en-US').format(value)
 }
 
-function formatPercent(value: number): string {
+function pct(value: number): string {
   return `${(value * 100).toFixed(1)}%`
 }
 
 async function getDatabaseOverview(req: WidgetServerProps['req']): Promise<DatabaseOverview | null> {
   const adapter = req.payload.db as unknown as Partial<VercelPostgresAdapter>
-
-  if (!adapter.pool || typeof adapter.pool.query !== 'function') {
-    return null
-  }
+  if (!adapter.pool || typeof adapter.pool.query !== 'function') return null
 
   const summaryResult = await adapter.pool.query<{
     database_size: string
@@ -106,127 +76,146 @@ async function getDatabaseOverview(req: WidgetServerProps['req']): Promise<Datab
   `)
 
   const summary = summaryResult.rows[0]
-
-  if (!summary) {
-    return null
-  }
+  if (!summary) return null
 
   return {
-    tableCount: numberFromValue(summary.table_count),
-    seqScans: numberFromValue(summary.seq_scans),
-    idxScans: numberFromValue(summary.idx_scans),
-    liveRows: numberFromValue(summary.live_rows),
-    deadRows: numberFromValue(summary.dead_rows),
+    tableCount: num(summary.table_count),
+    seqScans: num(summary.seq_scans),
+    idxScans: num(summary.idx_scans),
+    liveRows: num(summary.live_rows),
+    deadRows: num(summary.dead_rows),
     databaseSize: summary.database_size,
     topTables: topTablesResult.rows.map((row) => ({
       name: row.table_name,
-      seqScans: numberFromValue(row.seq_scans),
-      idxScans: numberFromValue(row.idx_scans),
-      liveRows: numberFromValue(row.live_rows),
-      deadRows: numberFromValue(row.n_dead_tup),
+      seqScans: num(row.seq_scans),
+      idxScans: num(row.idx_scans),
+      liveRows: num(row.live_rows),
+      deadRows: num(row.n_dead_tup),
     })),
   }
 }
 
-function MetricCard(props: { label: string; value: string }) {
+function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div style={metricStyle}>
-      <div style={{ color: 'rgba(255, 244, 221, 0.72)', fontSize: '0.76rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-        {props.label}
+    <div
+      style={{
+        background: 'var(--theme-elevation-50)',
+        borderRadius: '8px',
+        padding: '0.75rem 0.85rem',
+      }}
+    >
+      <div style={{ color: 'var(--theme-elevation-500)', fontSize: '0.7rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        {label}
       </div>
-      <div style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '0.35rem' }}>{props.value}</div>
+      <div style={{ fontSize: '1.15rem', fontWeight: 600, marginTop: '0.2rem' }}>
+        {value}
+      </div>
     </div>
   )
 }
 
-export default async function PostgresPerformanceWidget({ req }: WidgetServerProps) {
-  const databaseOverview = await getDatabaseOverview(req)
-  const processCpuSeconds = (process.cpuUsage().system + process.cpuUsage().user) / 1_000_000
-  const processMemoryMb = Math.round(process.memoryUsage().rss / (1024 * 1024))
-  const oneMinuteLoad = os.platform() === 'win32' ? null : os.loadavg()[0]
+const cellStyle = { fontSize: '0.82rem', padding: '0.55rem 0.7rem' }
+const headerCellStyle = {
+  ...cellStyle,
+  color: 'var(--theme-elevation-500)',
+  fontSize: '0.7rem',
+  fontWeight: 600 as const,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase' as const,
+}
 
-  if (!databaseOverview) {
+export default async function PostgresPerformanceWidget({ req }: WidgetServerProps) {
+  const db = await getDatabaseOverview(req)
+  const cpuSec = (process.cpuUsage().system + process.cpuUsage().user) / 1_000_000
+  const rssMb = Math.round(process.memoryUsage().rss / (1024 * 1024))
+  const load1m = os.platform() === 'win32' ? null : os.loadavg()[0]
+
+  if (!db) {
     return (
-      <section style={shellStyle}>
-        <div style={{ padding: '1.35rem 1.4rem 1.5rem' }}>
-          <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-            <div>
-              <div style={{ color: '#ffcc7a', fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                Postgres observability
-              </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0.35rem 0 0' }}>Database metrics unavailable</h3>
-            </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.08)', borderRadius: '999px', fontSize: '0.78rem', padding: '0.35rem 0.7rem' }}>
-              Adapter offline
-            </div>
-          </div>
-          <p style={{ color: 'rgba(255, 244, 221, 0.76)', lineHeight: 1.55, margin: '1rem 0 0' }}>
-            The dashboard could not access the active Payload Postgres pool. Check the database adapter connection and runtime database permissions.
-          </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between' }}>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>Database unavailable</h4>
+          <span
+            style={{
+              background: 'var(--theme-elevation-100)',
+              borderRadius: '4px',
+              color: 'var(--theme-elevation-500)',
+              fontSize: '0.7rem',
+              padding: '0.2rem 0.5rem',
+            }}
+          >
+            Adapter offline
+          </span>
         </div>
-      </section>
+        <p style={{ color: 'var(--theme-elevation-500)', fontSize: '0.82rem', lineHeight: 1.5, margin: 0 }}>
+          Could not reach the Postgres pool. Check database connection and runtime permissions.
+        </p>
+      </div>
     )
   }
 
-  const totalScans = databaseOverview.seqScans + databaseOverview.idxScans
-  const indexedScanRate = totalScans === 0 ? 0 : databaseOverview.idxScans / totalScans
-  const rowChurnRate = databaseOverview.liveRows === 0 ? 0 : databaseOverview.deadRows / databaseOverview.liveRows
+  const totalScans = db.seqScans + db.idxScans
+  const indexedRate = totalScans === 0 ? 0 : db.idxScans / totalScans
+  const churnRate = db.liveRows === 0 ? 0 : db.deadRows / db.liveRows
 
   return (
-    <section style={shellStyle}>
-      <div style={{ padding: '1.35rem 1.4rem 1.5rem' }}>
-        <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-          <div>
-            <div style={{ color: '#ffcc7a', fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-              Postgres observability
-            </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0.35rem 0 0' }}>Table performance and process pressure</h3>
-          </div>
-          <div style={{ background: 'rgba(255, 255, 255, 0.08)', borderRadius: '999px', fontSize: '0.78rem', padding: '0.35rem 0.7rem' }}>
-            Live adapter
-          </div>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between' }}>
+        <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>Postgres performance</h4>
+        <span
+          style={{
+            background: 'var(--theme-elevation-100)',
+            borderRadius: '4px',
+            color: 'var(--theme-elevation-500)',
+            fontSize: '0.7rem',
+            padding: '0.2rem 0.5rem',
+          }}
+        >
+          Live
+        </span>
+      </div>
 
-        <div style={metricGridStyle}>
-          <MetricCard label="Tables" value={formatNumber(databaseOverview.tableCount)} />
-          <MetricCard label="Database Size" value={databaseOverview.databaseSize} />
-          <MetricCard label="Indexed Scan Rate" value={formatPercent(indexedScanRate)} />
-          <MetricCard label="Dead Row Ratio" value={formatPercent(rowChurnRate)} />
-          <MetricCard label="Node CPU Time" value={`${processCpuSeconds.toFixed(1)}s`} />
-          <MetricCard label="Node RSS" value={`${formatNumber(processMemoryMb)} MB`} />
-          <MetricCard label="1m Host Load" value={oneMinuteLoad == null ? 'Unavailable' : oneMinuteLoad.toFixed(2)} />
-        </div>
+      <div style={{ display: 'grid', gap: '0.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))' }}>
+        <Metric label="Tables" value={fmt(db.tableCount)} />
+        <Metric label="DB Size" value={db.databaseSize} />
+        <Metric label="Idx Scan Rate" value={pct(indexedRate)} />
+        <Metric label="Dead Row %" value={pct(churnRate)} />
+        <Metric label="CPU Time" value={`${cpuSec.toFixed(1)}s`} />
+        <Metric label="RSS" value={`${fmt(rssMb)} MB`} />
+        <Metric label="1m Load" value={load1m == null ? 'N/A' : load1m.toFixed(2)} />
+      </div>
 
-        <div style={{ marginTop: '1.15rem' }}>
-          <div style={{ color: 'rgba(255, 244, 221, 0.72)', fontSize: '0.76rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+      {db.topTables.length > 0 && (
+        <div>
+          <div style={{ color: 'var(--theme-elevation-500)', fontSize: '0.7rem', letterSpacing: '0.04em', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
             Busiest tables
           </div>
-          <div style={{ border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', marginTop: '0.7rem', overflow: 'hidden' }}>
+          <div style={{ border: '1px solid var(--theme-elevation-100)', borderRadius: '8px', overflow: 'hidden' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead>
-                <tr style={{ background: 'rgba(255, 255, 255, 0.05)', textAlign: 'left' }}>
-                  <th style={{ padding: '0.8rem 0.95rem' }}>Table</th>
-                  <th style={{ padding: '0.8rem 0.95rem' }}>Seq</th>
-                  <th style={{ padding: '0.8rem 0.95rem' }}>Idx</th>
-                  <th style={{ padding: '0.8rem 0.95rem' }}>Live</th>
-                  <th style={{ padding: '0.8rem 0.95rem' }}>Dead</th>
+                <tr style={{ background: 'var(--theme-elevation-50)' }}>
+                  <th style={{ ...headerCellStyle, textAlign: 'left' }}>Table</th>
+                  <th style={headerCellStyle}>Seq</th>
+                  <th style={headerCellStyle}>Idx</th>
+                  <th style={headerCellStyle}>Live</th>
+                  <th style={headerCellStyle}>Dead</th>
                 </tr>
               </thead>
               <tbody>
-                {databaseOverview.topTables.map((table) => (
-                  <tr key={table.name} style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                    <td style={{ padding: '0.8rem 0.95rem' }}>{table.name}</td>
-                    <td style={{ padding: '0.8rem 0.95rem' }}>{formatNumber(table.seqScans)}</td>
-                    <td style={{ padding: '0.8rem 0.95rem' }}>{formatNumber(table.idxScans)}</td>
-                    <td style={{ padding: '0.8rem 0.95rem' }}>{formatNumber(table.liveRows)}</td>
-                    <td style={{ padding: '0.8rem 0.95rem' }}>{formatNumber(table.deadRows)}</td>
+                {db.topTables.map((t) => (
+                  <tr key={t.name} style={{ borderTop: '1px solid var(--theme-elevation-100)' }}>
+                    <td style={{ ...cellStyle, fontWeight: 500 }}>{t.name}</td>
+                    <td style={{ ...cellStyle, textAlign: 'center' }}>{fmt(t.seqScans)}</td>
+                    <td style={{ ...cellStyle, textAlign: 'center' }}>{fmt(t.idxScans)}</td>
+                    <td style={{ ...cellStyle, textAlign: 'center' }}>{fmt(t.liveRows)}</td>
+                    <td style={{ ...cellStyle, textAlign: 'center' }}>{fmt(t.deadRows)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
-      </div>
-    </section>
+      )}
+    </div>
   )
 }

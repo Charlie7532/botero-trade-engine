@@ -1,13 +1,21 @@
 import { formatDateTime } from 'src/utilities/formatDateTime'
 import React from 'react'
 
-import type { Post } from '@/payload-types'
-
 import { Media } from '@/components/Media'
 import { formatAuthors } from '@/utilities/formatAuthors'
 
+import type { Media as MediaType } from '@/payload-types'
+
+type PostDoc = {
+  categories?: ({ title?: string | null } | string)[] | null
+  heroImage?: MediaType | string | null
+  populatedAuthors?: ({ name?: string | null } | null)[] | null
+  publishedAt?: string | null
+  title?: string | null
+}
+
 export const PostHero: React.FC<{
-  post: Post
+  post: PostDoc
 }> = ({ post }) => {
   const { categories, heroImage, populatedAuthors, publishedAt, title } = post
 

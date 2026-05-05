@@ -1,10 +1,10 @@
 import React from 'react'
 
-import type { Page } from '@/payload-types'
-
 import { HighImpactHero } from '@/heros/HighImpact'
 import { LowImpactHero } from '@/heros/LowImpact'
 import { MediumImpactHero } from '@/heros/MediumImpact'
+
+type HeroProps = { type?: string | null; [key: string]: unknown }
 
 const heroes = {
   highImpact: HighImpactHero,
@@ -12,7 +12,7 @@ const heroes = {
   mediumImpact: MediumImpactHero,
 }
 
-export const RenderHero: React.FC<NonNullable<Page['hero']>> = (props) => {
+export const RenderHero: React.FC<HeroProps> = (props) => {
   const { type } = props || {}
 
   if (!type || type === 'none') return null
@@ -21,5 +21,5 @@ export const RenderHero: React.FC<NonNullable<Page['hero']>> = (props) => {
 
   if (!HeroToRender) return null
 
-  return <HeroToRender {...props} />
+  return <HeroToRender {...(props as any)} />
 }

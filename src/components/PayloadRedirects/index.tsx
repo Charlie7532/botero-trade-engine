@@ -1,10 +1,11 @@
 import type { Config } from '@/payload-types'
 import type React from 'react'
-import type { Page, Post } from '@/payload-types'
 
 import { getCachedDocument } from '@/utilities/getDocument'
 import { getCachedRedirects } from '@/utilities/getRedirects'
 import { notFound, redirect } from 'next/navigation'
+
+type SlugDocument = { slug?: string | null }
 
 interface Props {
   disableNotFound?: boolean
@@ -28,7 +29,7 @@ export const PayloadRedirects: React.FC<Props> = async ({ disableNotFound, url }
       const collection = redirectItem.to?.reference?.relationTo as keyof Config['collections']
       const id = redirectItem.to?.reference?.value as string
 
-      const document = (await getCachedDocument(collection, id)()) as unknown as Page | Post
+      const document = (await getCachedDocument(collection, id)()) as unknown as SlugDocument
       redirectUrl = `${redirectItem.to?.reference?.relationTo !== 'pages' ? `/${redirectItem.to?.reference?.relationTo}` : ''}/${
         document?.slug
       }`

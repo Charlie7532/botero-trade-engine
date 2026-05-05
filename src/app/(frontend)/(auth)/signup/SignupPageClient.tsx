@@ -177,7 +177,7 @@ export default function SignupPageClient() {
                                     type="submit"
                                     fullWidth
                                     size="lg"
-                                    className="h-12 font-semibold rounded-full text-gray-900 data-[loading=true]:text-gray-900"
+                                    className="h-12 font-semibold rounded-full"
                                     variant="primary"
                                     isPending={isLoading}
                                 >

@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     const params = await searchParams
     const siteSettings = await getCachedSiteSettings(0)()
     const allowNewUsers = siteSettings?.allowNewUsers !== false
-    const redirectTo = params?.redirect || '/account'
+    const redirectTo = params?.redirect || '/portafolio'
 
     return <LoginPageClient redirectTo={redirectTo} allowNewUsers={allowNewUsers} />
 }

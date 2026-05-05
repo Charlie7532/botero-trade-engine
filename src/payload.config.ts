@@ -14,6 +14,8 @@ import { PortfolioMemberships } from './collections/PortfolioMemberships/index'
 import { BrokerAccounts } from './collections/BrokerAccounts/index'
 import { Bots } from './collections/Bots/index'
 import { BotAssignments } from './collections/BotAssignments/index'
+import { McpServers } from './collections/McpServers/index'
+import { AgentSkills } from './collections/AgentSkills/index'
 import { Instruments } from './collections/Instruments'
 import { RegimePhases } from './collections/RegimePhases'
 import { CalibrationProfiles } from './collections/CalibrationProfiles'
@@ -103,7 +105,11 @@ export default buildConfig({
     // Users
     Users, UserAvatar,
     // Multi-Tenant Trading
-    Portfolios, PortfolioMemberships, BrokerAccounts, Bots, BotAssignments,
+    Portfolios, PortfolioMemberships, BrokerAccounts,
+    // AI Agent Resources (must be before Bots — Bots references these)
+    McpServers, AgentSkills,
+    // Bots & Assignments
+    Bots, BotAssignments,
     // Trading Engine — Lifecycle & Calibration
     Instruments, RegimePhases, CalibrationProfiles, CandidateScreenings, TradeSnapshots,
   ],

@@ -1,13 +1,19 @@
 "use client"
 
 import type React from "react"
-import type { Page } from "@/payload-types"
 import { CMSLink } from "@/components/Link"
 import { Media } from "@/components/Media"
 import RichText from "@/components/RichText"
 import { motion } from "framer-motion"
+import type { Media as MediaType } from "@/payload-types"
 
-export const MediumImpactHero: React.FC<NonNullable<Page["hero"]>> = ({ links, media, richText }) => {
+type HeroProps = {
+  links?: { link: Record<string, unknown> }[] | null
+  media?: MediaType | string | number | null
+  richText?: Parameters<typeof RichText>[0]['data']
+}
+
+export const MediumImpactHero: React.FC<HeroProps> = ({ links, media, richText }) => {
   return (
     <div className="py-8 md:py-12 lg:py-16">
       <div className="container">

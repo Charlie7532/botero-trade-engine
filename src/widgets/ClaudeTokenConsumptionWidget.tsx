@@ -1,166 +1,217 @@
 import type { WidgetServerProps } from 'payload'
 
-type TokenSnapshot = {
-  cacheCreationTokens: number
-  cacheReadTokens: number
-  inputTokens: number
-  model: null | string
-  outputTokens: number
-  updatedAt: null | string
+type UsageBucket = {
+  cache_creation_input_tokens: number
+  cache_read_input_tokens: number
+  output_tokens: number
+  started_at: string
+  uncached_input_tokens: number
 }
 
-const cardStyle = {
-  background: 'linear-gradient(135deg, rgba(8, 51, 68, 0.96), rgba(18, 27, 36, 0.96))',
-  border: '1px solid rgba(108, 214, 255, 0.2)',
-  borderRadius: '20px',
-  boxShadow: '0 18px 48px rgba(4, 14, 24, 0.28)',
-  color: '#e9f7ff',
-  overflow: 'hidden',
+type UsageResponse = {
+  data: UsageBucket[]
 }
 
-const headerStyle = {
-  alignItems: 'center',
-  display: 'flex',
-  justifyContent: 'space-between',
-  gap: '1rem',
+type CostBucket = {
+  cost_cents: string
+  started_at: string
 }
 
-const gridStyle = {
-  display: 'grid',
-  gap: '0.85rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-  marginTop: '1.25rem',
+type CostResponse = {
+  data: CostBucket[]
 }
 
-const metricStyle = {
-  background: 'rgba(255, 255, 255, 0.06)',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
-  borderRadius: '16px',
-  padding: '0.9rem 1rem',
-}
-
-function readIntegerEnv(name: keyof NodeJS.ProcessEnv): number {
-  const value = process.env[name]
-
-  if (!value) {
-    return 0
+function num(v: unknown): number {
+  if (typeof v === 'number' && Number.isFinite(v)) return v
+  if (typeof v === 'string') {
+    const p = Number(v)
+    return Number.isFinite(p) ? p : 0
   }
-
-  const parsed = Number.parseInt(value, 10)
-  return Number.isFinite(parsed) ? parsed : 0
+  return 0
 }
 
-function getTokenSnapshot(): TokenSnapshot | null {
-  const inputTokens = readIntegerEnv('CLAUDE_CODE_INPUT_TOKENS')
-  const outputTokens = readIntegerEnv('CLAUDE_CODE_OUTPUT_TOKENS')
-  const cacheCreationTokens = readIntegerEnv('CLAUDE_CODE_CACHE_CREATION_TOKENS')
-  const cacheReadTokens = readIntegerEnv('CLAUDE_CODE_CACHE_READ_TOKENS')
-
-  if (inputTokens + outputTokens + cacheCreationTokens + cacheReadTokens === 0) {
-    return null
-  }
-
-  return {
-    inputTokens,
-    outputTokens,
-    cacheCreationTokens,
-    cacheReadTokens,
-    model: process.env.CLAUDE_CODE_MODEL ?? null,
-    updatedAt: process.env.CLAUDE_CODE_UPDATED_AT ?? null,
-  }
-}
-
-function formatNumber(value: number): string {
+function formatTokens(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`
   return new Intl.NumberFormat('en-US').format(value)
 }
 
-function formatRelativeDate(value: null | string): null | string {
-  if (!value) {
-    return null
+async function fetchUsage(): Promise<{ buckets: UsageBucket[]; error: string | null }> {
+  const adminKey = process.env.ANTHROPIC_ADMIN_KEY
+  if (!adminKey) return { buckets: [], error: 'ANTHROPIC_ADMIN_KEY not set' }
+
+  const now = new Date()
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const params = new URLSearchParams({
+    starting_at: sevenDaysAgo.toISOString(),
+    ending_at: now.toISOString(),
+    bucket_width: '1d',
+  })
+
+  try {
+    const res = await fetch(
+      `https://api.anthropic.com/v1/organizations/usage_report/messages?${params}`,
+      {
+        headers: { 'anthropic-version': '2023-06-01', 'x-api-key': adminKey },
+        next: { revalidate: 300 },
+      },
+    )
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      return { buckets: [], error: `API ${res.status}: ${text.slice(0, 120)}` }
+    }
+    const json = (await res.json()) as UsageResponse
+    return { buckets: json.data ?? [], error: null }
+  } catch (err) {
+    return { buckets: [], error: err instanceof Error ? err.message : 'Fetch error' }
   }
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return null
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
 }
 
-function MetricCard(props: { label: string; value: string }) {
+async function fetchCost(): Promise<{ costCents7d: number; costCentsToday: number }> {
+  const adminKey = process.env.ANTHROPIC_ADMIN_KEY
+  if (!adminKey) return { costCents7d: 0, costCentsToday: 0 }
+
+  const now = new Date()
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const params = new URLSearchParams({
+    starting_at: sevenDaysAgo.toISOString(),
+    ending_at: now.toISOString(),
+    bucket_width: '1d',
+  })
+
+  try {
+    const res = await fetch(
+      `https://api.anthropic.com/v1/organizations/cost_report?${params}`,
+      {
+        headers: { 'anthropic-version': '2023-06-01', 'x-api-key': adminKey },
+        next: { revalidate: 300 },
+      },
+    )
+    if (!res.ok) return { costCents7d: 0, costCentsToday: 0 }
+    const json = (await res.json()) as CostResponse
+    const buckets = json.data ?? []
+    const costCents7d = buckets.reduce((s, b) => s + num(b.cost_cents), 0)
+    const costCentsToday = buckets
+      .filter((b) => new Date(b.started_at) >= todayStart)
+      .reduce((s, b) => s + num(b.cost_cents), 0)
+    return { costCents7d, costCentsToday }
+  } catch {
+    return { costCents7d: 0, costCentsToday: 0 }
+  }
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div style={metricStyle}>
-      <div style={{ color: 'rgba(233, 247, 255, 0.72)', fontSize: '0.76rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-        {props.label}
+    <div
+      style={{
+        background: 'var(--theme-elevation-50)',
+        borderRadius: '8px',
+        padding: '0.75rem 0.85rem',
+      }}
+    >
+      <div style={{ color: 'var(--theme-elevation-500)', fontSize: '0.7rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        {label}
       </div>
-      <div style={{ fontSize: '1.3rem', fontWeight: 700, marginTop: '0.35rem' }}>{props.value}</div>
+      <div style={{ fontSize: '1.15rem', fontWeight: 600, marginTop: '0.2rem' }}>
+        {value}
+      </div>
     </div>
   )
 }
 
 export default async function ClaudeTokenConsumptionWidget({ widgetSlug }: WidgetServerProps) {
-  const snapshot = getTokenSnapshot()
+  const [{ buckets, error }, { costCents7d, costCentsToday }] = await Promise.all([
+    fetchUsage(),
+    fetchCost(),
+  ])
 
-  if (!snapshot) {
+  if (error) {
+    const isMissingKey = error.includes('not set')
+
     return (
-      <section style={cardStyle}>
-        <div style={{ padding: '1.35rem 1.4rem 1.5rem' }}>
-          <div style={headerStyle}>
-            <div>
-              <div style={{ color: '#8fdfff', fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                {widgetSlug.replace(/-/g, ' ')}
-              </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0.35rem 0 0' }}>Instrumentation pending</h3>
-            </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.08)', borderRadius: '999px', fontSize: '0.78rem', padding: '0.35rem 0.7rem' }}>
-              No token feed
-            </div>
-          </div>
-          <p style={{ color: 'rgba(233, 247, 255, 0.76)', lineHeight: 1.55, margin: '1rem 0 0' }}>
-            Set CLAUDE_CODE_INPUT_TOKENS, CLAUDE_CODE_OUTPUT_TOKENS, CLAUDE_CODE_CACHE_CREATION_TOKENS,
-            and CLAUDE_CODE_CACHE_READ_TOKENS in the runtime environment to surface live Claude usage here.
-          </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between' }}>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>
+            {isMissingKey ? 'Admin key required' : 'Usage unavailable'}
+          </h4>
+          <span
+            style={{
+              background: 'var(--theme-elevation-100)',
+              borderRadius: '4px',
+              color: 'var(--theme-elevation-500)',
+              fontSize: '0.7rem',
+              padding: '0.2rem 0.5rem',
+            }}
+          >
+            {isMissingKey ? 'Not configured' : 'Error'}
+          </span>
         </div>
-      </section>
+        <p style={{ color: 'var(--theme-elevation-500)', fontSize: '0.82rem', lineHeight: 1.5, margin: 0 }}>
+          {isMissingKey
+            ? 'Add ANTHROPIC_ADMIN_KEY to .env — generate at console.anthropic.com → Settings → Admin Keys (sk-ant-admin…).'
+            : error}
+        </p>
+      </div>
     )
   }
 
-  const totalTokens = snapshot.inputTokens + snapshot.outputTokens + snapshot.cacheCreationTokens + snapshot.cacheReadTokens
-  const updatedAt = formatRelativeDate(snapshot.updatedAt)
+  const totals = buckets.reduce(
+    (acc, b) => ({
+      input: acc.input + num(b.uncached_input_tokens),
+      output: acc.output + num(b.output_tokens),
+      cacheWrite: acc.cacheWrite + num(b.cache_creation_input_tokens),
+      cacheRead: acc.cacheRead + num(b.cache_read_input_tokens),
+    }),
+    { cacheRead: 0, cacheWrite: 0, input: 0, output: 0 },
+  )
+
+  const totalTokens = totals.input + totals.output + totals.cacheWrite + totals.cacheRead
+  const cacheHitRate =
+    totals.cacheRead + totals.cacheWrite + totals.input > 0
+      ? totals.cacheRead / (totals.cacheRead + totals.cacheWrite + totals.input)
+      : 0
+
+  const spend7d = (costCents7d / 100).toFixed(2)
+  const spendToday = (costCentsToday / 100).toFixed(2)
+  const daysWithData = buckets.filter(
+    (b) => num(b.uncached_input_tokens) + num(b.output_tokens) + num(b.cache_creation_input_tokens) + num(b.cache_read_input_tokens) > 0,
+  ).length
 
   return (
-    <section style={cardStyle}>
-      <div style={{ padding: '1.35rem 1.4rem 1.5rem' }}>
-        <div style={headerStyle}>
-          <div>
-            <div style={{ color: '#8fdfff', fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-              Claude session telemetry
-            </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0.35rem 0 0' }}>
-              {snapshot.model ?? 'Claude'} token consumption
-            </h3>
-          </div>
-          <div style={{ background: 'rgba(255, 255, 255, 0.08)', borderRadius: '999px', fontSize: '0.78rem', padding: '0.35rem 0.7rem' }}>
-            Env source
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'space-between' }}>
+        <div>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>Claude usage</h4>
+          <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.72rem' }}>Last 7 days</span>
         </div>
-
-        <div style={gridStyle}>
-          <MetricCard label="Total" value={formatNumber(totalTokens)} />
-          <MetricCard label="Input" value={formatNumber(snapshot.inputTokens)} />
-          <MetricCard label="Output" value={formatNumber(snapshot.outputTokens)} />
-          <MetricCard label="Cache Write" value={formatNumber(snapshot.cacheCreationTokens)} />
-          <MetricCard label="Cache Read" value={formatNumber(snapshot.cacheReadTokens)} />
-        </div>
-
-        <p style={{ color: 'rgba(233, 247, 255, 0.76)', lineHeight: 1.55, margin: '1rem 0 0' }}>
-          {updatedAt ? `Last updated ${updatedAt}.` : 'Updated timestamp not provided.'}
-        </p>
+        <span
+          style={{
+            background: 'var(--theme-elevation-100)',
+            borderRadius: '4px',
+            color: 'var(--theme-elevation-500)',
+            fontSize: '0.7rem',
+            padding: '0.2rem 0.5rem',
+          }}
+        >
+          Admin API
+        </span>
       </div>
-    </section>
+
+      <div style={{ display: 'grid', gap: '0.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))' }}>
+        <Metric label="7d Spend" value={`$${spend7d}`} />
+        <Metric label="Today" value={`$${spendToday}`} />
+        <Metric label="Tokens" value={formatTokens(totalTokens)} />
+        <Metric label="Input" value={formatTokens(totals.input)} />
+        <Metric label="Output" value={formatTokens(totals.output)} />
+        <Metric label="Cache Write" value={formatTokens(totals.cacheWrite)} />
+        <Metric label="Cache Read" value={formatTokens(totals.cacheRead)} />
+        <Metric label="Cache Hit" value={`${(cacheHitRate * 100).toFixed(1)}%`} />
+      </div>
+
+      <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.72rem' }}>
+        {daysWithData > 0 ? `${daysWithData} active day${daysWithData > 1 ? 's' : ''} · refreshes every 5 min` : 'No usage in this period'}
+      </span>
+    </div>
   )
 }

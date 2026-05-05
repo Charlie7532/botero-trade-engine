@@ -59,7 +59,7 @@ async def calibrate_strategy(req: CalibrateRequest):
     """Run full calibration pipeline for a ticker × category."""
     try:
         from backend.modules.simulation.domain.entities.strategy_profile import InvestmentCategory
-        from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
         from backend.modules.simulation.infrastructure.triple_barrier_adapter import TripleBarrierAdapter
         from backend.modules.simulation.infrastructure.signal_adapters import create_all_signals
         from backend.modules.simulation.application.use_cases.oracle_backtest import OracleBacktester
@@ -93,7 +93,7 @@ async def evaluate_gate(req: GateRequest):
     """Run pre-trade gate evaluation."""
     try:
         from backend.modules.simulation.domain.entities.strategy_profile import InvestmentCategory
-        from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
         from backend.modules.simulation.infrastructure.smc_adapter import SMCAdapter
         from backend.modules.simulation.infrastructure.signal_adapters import create_all_signals
         from backend.modules.simulation.application.use_cases.strategy_composer import StrategyComposer
@@ -153,7 +153,7 @@ async def quality_report(
 ):
     """Get per-signal quality report from vaulted trade history."""
     try:
-        from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
         from backend.modules.simulation.application.use_cases.analyze_indicators import IndicatorAnalyzer
 
         store = TimescaleDataStore()
@@ -185,7 +185,7 @@ async def quality_report(
 async def check_retrain(ticker: str, category: str):
     """Check if recalibration is needed."""
     try:
-        from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
         from backend.modules.simulation.application.use_cases.analyze_indicators import IndicatorAnalyzer
         from backend.modules.simulation.application.use_cases.retrain_trigger import RetrainTrigger
 

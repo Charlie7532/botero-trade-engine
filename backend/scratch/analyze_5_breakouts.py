@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"))
 import pandas as pd
 from datetime import date
-from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.simulation.application.use_cases.engineer_features import QuantFeatureEngineer
 
 logging.basicConfig(level=logging.WARNING)

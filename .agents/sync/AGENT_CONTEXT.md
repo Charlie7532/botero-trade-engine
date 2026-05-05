@@ -1,7 +1,3 @@
-# Botero Trade — Agent Context
-
-This file is auto-loaded by OpenAI Codex CLI at the start of every session. Read it fully before writing any code.
-
 
 ---
 

@@ -43,11 +43,11 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
         try:
             import os
             import sqlite3
-            path = self._cache_path or os.path.join(
+            self._cache_dir = self._cache_path or os.path.join(
                 os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))),
                 ".cache", "gurufocus"
             )
-            db_file = os.path.join(path, "cache.db")
+            db_file = os.path.join(self._cache_dir, "cache.db")
             if os.path.exists(db_file):
                 self._db_conn = sqlite3.connect(db_file)
                 logger.info(f"GuruFocusFundamentalAdapter: cache loaded from {db_file}")
@@ -57,18 +57,35 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
             logger.warning(f"GuruFocusFundamentalAdapter: cache init failed: {e}")
 
     def _fetch_cached(self, key: str, default=None):
-        """Fetch from diskcache sqlite3 by key. Values are pickled."""
+        """Fetch from diskcache sqlite3 by key.
+
+        diskcache stores small values inline (value column) and large values
+        as pickled files on disk (value=NULL, filename column has relative path).
+        This method handles both modes.
+        """
         self._ensure_db()
         if self._db_conn is None:
             return default
         try:
+            import os
             import pickle
             cursor = self._db_conn.cursor()
-            cursor.execute("SELECT value FROM Cache WHERE key = ?", (key,))
+            cursor.execute("SELECT value, filename FROM Cache WHERE key = ?", (key,))
             row = cursor.fetchone()
-            if row is None or row[0] is None:
+            if row is None:
                 return default
-            return pickle.loads(row[0])
+            value_blob, filename = row
+            # Mode 1: inline blob in SQLite
+            if value_blob is not None:
+                return pickle.loads(value_blob)
+            # Mode 2: large value stored as file on disk
+            if filename:
+                file_path = os.path.join(self._cache_dir, filename)
+                if os.path.exists(file_path):
+                    with open(file_path, "rb") as f:
+                        return pickle.loads(f.read())
+                logger.debug(f"Cache file missing for {key}: {file_path}")
+            return default
         except Exception as e:
             logger.debug(f"Cache miss for {key}: {e}")
             return default
@@ -94,9 +111,32 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
 
     def get_financial_summary(self, ticker: str) -> dict:
         raw = self._fetch_cached(f"summary:{ticker}", None)
-        if raw:
-            return self._parser.parse_quality_metrics(ticker, raw)
-        return {}
+        if not raw:
+            return {}
+        # Unwrap: cached data is {summary: {ratio: {...}, general: {...}}}
+        summary = raw.get("summary", raw)
+        ratio = summary.get("ratio", {})
+
+        def _val(key):
+            """Extract 'value' from complex ratio entries like {value: X, status: N}."""
+            v = ratio.get(key)
+            if isinstance(v, dict):
+                return v.get("value", 0)
+            return v if v is not None else 0
+
+        # Map to the flat keys parse_quality_metrics expects
+        flat = {
+            "piotroski_f_score": _val("fscore"),
+            "altman_z_score": _val("zscore"),
+            "beneish_m_score": _val("mscore"),
+            "roic": _val("ROIC (%)"),
+            "roe": _val("ROE (%)"),
+            "gross_margin": _val("Gross Margin (%)"),
+            "operating_margin": _val("Operating margin (%)"),
+            "debt_to_equity": _val("Debt-to-Equity"),
+            "current_ratio": _val("Current Ratio"),
+        }
+        return self._parser.parse_quality_metrics(ticker, flat)
 
     def get_financial_statements(self, ticker: str, period_type: str = "annual") -> dict:
         raw = self._fetch_cached(f"financials:{ticker}:{period_type}", None)

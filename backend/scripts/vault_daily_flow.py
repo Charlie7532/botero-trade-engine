@@ -22,7 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.simulation.infrastructure.vault_interceptor import VaultInterceptor
 
 logger = logging.getLogger(__name__)

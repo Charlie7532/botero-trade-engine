@@ -2,6 +2,7 @@
 
 This file is auto-loaded by Claude Code at the start of every session. Read it fully before writing any code.
 
+
 ---
 
 ## CRITICAL DIRECTIVE: ZERO-BIAS TRADING

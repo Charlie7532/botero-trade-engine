@@ -62,7 +62,7 @@ class YahooRotationAdapter(RotationDataPort):
         if missing:
             still_missing = []
             try:
-                from backend.modules.simulation.infrastructure.timescale_data_store import TimescaleDataStore
+                from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
                 from datetime import date, timedelta
                 store = TimescaleDataStore()
                 start_date = date.today() - timedelta(days=100) # approx 3mo

@@ -38,7 +38,7 @@ class MarketBreadthProvider:
     def _get_finviz_mcp(self):
         """Lazy init del Finviz MCP adapter."""
         if self._finviz_mcp is None:
-            from backend.infrastructure.data_providers.finviz_intelligence import FinvizIntelligence
+            from backend.modules.portfolio_management.infrastructure.finviz_adapter import FinvizIntelligence
             self._finviz_mcp = FinvizIntelligence()
         return self._finviz_mcp
 

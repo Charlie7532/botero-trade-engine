@@ -1,1 +1,2 @@
-from backend.modules.shared.domain.ports.market_data_port import MarketDataPort, ExecutionPort
+# Shared ports — superseded ports (MarketDataPort, ExecutionPort) have been removed.
+# Use EntryMarketDataPort and BrokerPort from their respective modules.

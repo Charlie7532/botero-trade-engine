@@ -113,6 +113,7 @@ botero-trade/
 │   │   ├── simulation/          # Backtester, Autopsy (Domain) + Backtrader (Infra)
 │   │   └── shared/              # Cache Utils, Global Ports, Market Data entities
 │   ├── _legacy/                 # Deprecated / Experimental code (LSTM, Sequence modeling)
+│   ├── daemons/                 # Background runners (Quality, Speculative — delivery mechanism)
 │   └── api/
 │       ├── main.py              # FastAPI app + CORS
 │       └── routers/
@@ -270,6 +271,4 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
 12. **Surgical changes.** Every changed line must trace directly to the user's request. Don't "improve" adjacent code, comments, or formatting. Match existing style. If you notice unrelated dead code, mention it — don't delete it. Remove only imports/variables/functions that YOUR changes made unused.
 
-### Known Layer Violations
-
-- `backend/application/lstm_model.py` — ML model in Application layer (should be in `infrastructure/models/`). Planned for future refactor.
+- `backend/daemons/` — Delivery mechanism (daemon entry points). Not a Clean Architecture application layer — these are background runners equivalent to API routers.

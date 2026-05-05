@@ -87,10 +87,10 @@ class AdaptiveTrailingStop:
         return elapsed < freeze_duration_min
 
 
-class ExitEngine:
+class SpeculativeExitEngine:
     """
-    Motor unificado que evalúa si un trade debe cerrarse
-    y actualiza sus niveles de trailing stop.
+    Motor Especulativo (Modo Seykota).
+    Evalúa si un trade táctico debe cerrarse usando stops mecánicos (ATR), RS Decay y Timeouts.
     """
     def __init__(self):
         self.trailing = AdaptiveTrailingStop()
@@ -169,4 +169,31 @@ class ExitEngine:
             decision.urgency = 'medium'
             return decision
 
+        return decision
+
+
+class QualityExitEngine:
+    """
+    Motor Fundamental/Calidad (Modo Druckenmiller / Hohn).
+    NO usa stops mecánicos ni trailing ATR.
+    Las salidas están dictadas por valuación (GF Value) o por la muerte de la tesis (Moat Decay).
+    """
+    def evaluate_exit(self, state: TradeState, context: MarketContext) -> ExitDecision:
+        decision = ExitDecision(should_exit=False, new_stop_price=state.current_stop)
+        
+        # 1. THESIS DEATH (Alta Prioridad - El moat estructural se ha roto)
+        if context.thesis_death_flag:
+            decision.should_exit = True
+            decision.reason = 'THESIS_DEATH'
+            decision.urgency = 'high'
+            return decision
+            
+        # 2. VALUATION EXTREME (El precio alcanzó la zona de reducción calculada)
+        if context.reduce_zone > 0 and context.current_price >= context.reduce_zone:
+            decision.should_exit = True
+            decision.reason = 'REDUCE_ZONE_REACHED'
+            decision.urgency = 'medium'
+            return decision
+            
+        # No hay actualización de stop mecánico para Quality (buy and hold)
         return decision

@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 
 from backend.modules.execution.domain.entities.order_models import Broker, Order, OrderSide, OrderStatus, OrderType
@@ -10,14 +9,14 @@ from backend.modules.execution.infrastructure.brokers.base import BrokerAdapter
 class AlpacaAdapter(BrokerAdapter):
     """Alpaca broker adapter using alpaca-py.
 
-    Set ALPACA_API_KEY, ALPACA_SECRET_KEY, ALPACA_BASE_URL in environment.
-    Defaults to paper trading endpoint.
+    Credentials are injected by the composition root (execution_factory.py).
+    Each strategy department (QUALITY / SPECULATIVE) gets its own instance.
     """
 
-    def __init__(self):
-        self._api_key = os.getenv("ALPACA_API_KEY", "")
-        self._secret_key = os.getenv("ALPACA_SECRET_KEY", "")
-        self._base_url = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
+    def __init__(self, api_key: str, secret_key: str, base_url: str = "https://paper-api.alpaca.markets"):
+        self._api_key = api_key
+        self._secret_key = secret_key
+        self._base_url = base_url
         self._trading_client = None
         self._data_client = None
 

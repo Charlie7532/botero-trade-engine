@@ -1,0 +1,110 @@
+/root/botero-trade/backend/modules/simulation/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
+/root/botero-trade/backend/modules/simulation/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
+/root/botero-trade/backend/modules/simulation/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
+/root/botero-trade/backend/modules/simulation/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
+/root/botero-trade/backend/modules/simulation/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
+
+================================================================================
+  FORENSICS (1h DB Data): AMD
+================================================================================
+
+  📅 Breakout trigger date: 2026-01-09 16:30:00+00:00
+  💰 Trigger price: $206.15 → Current: $360.55 (+74.9%)
+
+  ────────────────────────────────────────────────────────────
+  INSTITUTIONAL FEATURES AT TRIGGER (1h resolution)
+  ────────────────────────────────────────────────────────────
+  🔹 VWAP Z-Score:         -1.06  (>0 = precio soportado por VWAP)
+  🔹 Order Flow Z-Score:   -0.90  (>1 = presión compradora agresiva)
+  🔹 Rel Volume Z-Score:   -0.68  (>1 = actividad institucional anómala)
+  🔹 Vol Accel Z-Score:    -0.45  (>0 = volumen acelerando)
+  🔹 Cum Delta Z-Score:     1.53  (>1 = acumulación constante)
+  🔹 Volatility Ratio:      0.71  (<1 = SQUEEZE/VCP, >1 = expansión)
+
+  🎯 INSTITUTIONAL T-SCORE: 2/6
+  ⚠️ VERDICT: Partial footprint. Mixed signals.
+
+================================================================================
+  FORENSICS (1h DB Data): MU
+================================================================================
+
+  📅 Breakout trigger date: 2026-01-13 14:30:00+00:00
+  💰 Trigger price: $339.43 → Current: $542.32 (+59.8%)
+
+  ────────────────────────────────────────────────────────────
+  INSTITUTIONAL FEATURES AT TRIGGER (1h resolution)
+  ────────────────────────────────────────────────────────────
+  🔹 VWAP Z-Score:          0.06  (>0 = precio soportado por VWAP)
+  🔹 Order Flow Z-Score:   -2.61  (>1 = presión compradora agresiva)
+  🔹 Rel Volume Z-Score:    1.46  (>1 = actividad institucional anómala)
+  🔹 Vol Accel Z-Score:    -0.67  (>0 = volumen acelerando)
+  🔹 Cum Delta Z-Score:    -0.85  (>1 = acumulación constante)
+  🔹 Volatility Ratio:      0.38  (<1 = SQUEEZE/VCP, >1 = expansión)
+
+  🎯 INSTITUTIONAL T-SCORE: 3/6
+  ⚠️ VERDICT: Partial footprint. Mixed signals.
+
+================================================================================
+  FORENSICS (1h DB Data): MSTR
+================================================================================
+
+  📅 Breakout trigger date: 2026-01-09 20:30:00+00:00
+  💰 Trigger price: $157.33 → Current: $177.28 (+12.7%)
+
+  ────────────────────────────────────────────────────────────
+  INSTITUTIONAL FEATURES AT TRIGGER (1h resolution)
+  ────────────────────────────────────────────────────────────
+  🔹 VWAP Z-Score:         -1.41  (>0 = precio soportado por VWAP)
+  🔹 Order Flow Z-Score:   -0.55  (>1 = presión compradora agresiva)
+  🔹 Rel Volume Z-Score:   -0.62  (>1 = actividad institucional anómala)
+  🔹 Vol Accel Z-Score:    -1.69  (>0 = volumen acelerando)
+  🔹 Cum Delta Z-Score:     0.88  (>1 = acumulación constante)
+  🔹 Volatility Ratio:      1.11  (<1 = SQUEEZE/VCP, >1 = expansión)
+
+  🎯 INSTITUTIONAL T-SCORE: 0/6
+  ❌ VERDICT: No clear institutional accumulation detected on 1h timeframe.
+
+================================================================================
+  FORENSICS (1h DB Data): IONQ
+================================================================================
+
+  📅 Breakout trigger date: 2026-02-19 14:30:00+00:00
+  💰 Trigger price: $32.74 → Current: $46.20 (+41.1%)
+
+  ────────────────────────────────────────────────────────────
+  INSTITUTIONAL FEATURES AT TRIGGER (1h resolution)
+  ────────────────────────────────────────────────────────────
+  🔹 VWAP Z-Score:         -1.09  (>0 = precio soportado por VWAP)
+  🔹 Order Flow Z-Score:    0.58  (>1 = presión compradora agresiva)
+  🔹 Rel Volume Z-Score:    2.48  (>1 = actividad institucional anómala)
+  🔹 Vol Accel Z-Score:     0.34  (>0 = volumen acelerando)
+  🔹 Cum Delta Z-Score:    -0.68  (>1 = acumulación constante)
+  🔹 Volatility Ratio:      0.93  (<1 = SQUEEZE/VCP, >1 = expansión)
+
+  🎯 INSTITUTIONAL T-SCORE: 4/6
+  ✅ VERDICT: Strong institutional footprint DETECTED before breakout.
+
+================================================================================
+  FORENSICS (1h DB Data): AFRM
+================================================================================
+
+  📅 Breakout trigger date: 2026-02-27 15:30:00+00:00
+  💰 Trigger price: $46.28 → Current: $67.55 (+46.0%)
+
+  ────────────────────────────────────────────────────────────
+  INSTITUTIONAL FEATURES AT TRIGGER (1h resolution)
+  ────────────────────────────────────────────────────────────
+  🔹 VWAP Z-Score:         -1.52  (>0 = precio soportado por VWAP)
+  🔹 Order Flow Z-Score:   -1.15  (>1 = presión compradora agresiva)
+  🔹 Rel Volume Z-Score:    0.10  (>1 = actividad institucional anómala)
+  🔹 Vol Accel Z-Score:     0.15  (>0 = volumen acelerando)
+  🔹 Cum Delta Z-Score:    -1.44  (>1 = acumulación constante)
+  🔹 Volatility Ratio:      1.45  (<1 = SQUEEZE/VCP, >1 = expansión)
+
+  🎯 INSTITUTIONAL T-SCORE: 1/6
+  ❌ VERDICT: No clear institutional accumulation detected on 1h timeframe.

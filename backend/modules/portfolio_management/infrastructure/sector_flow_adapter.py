@@ -87,7 +87,7 @@ class SectorFlowEngine:
     def _get_finviz_mcp(self):
         """Lazy init del Finviz MCP adapter."""
         if self._finviz_mcp is None:
-            from backend.infrastructure.data_providers.finviz_intelligence import FinvizIntelligence
+            from backend.modules.portfolio_management.infrastructure.finviz_adapter import FinvizIntelligence
             self._finviz_mcp = FinvizIntelligence()
         return self._finviz_mcp
 
@@ -617,7 +617,7 @@ class SectorFlowEngine:
         # ── 3. Enriquecer con dinámica Kalman (velocidad + aceleración) ──
         if include_dynamics:
             try:
-                from backend.infrastructure.data_providers.volume_dynamics import KalmanVolumeTracker
+                from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import KalmanVolumeTracker
                 tracker = KalmanVolumeTracker()
                 velocities, accels, states = [], [], []
                 for _, row in df.iterrows():

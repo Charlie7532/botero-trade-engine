@@ -57,7 +57,7 @@ class FREDMacroAdapter:
 
     def _get_fred(self):
         if self._fred is None:
-            from backend.infrastructure.data_providers.fred_macro_intelligence import FREDMacroIntelligence
+            from backend.modules.flow_intelligence.infrastructure.fred_adapter import FREDMacroIntelligence
             self._fred = FREDMacroIntelligence()
         return self._fred
 

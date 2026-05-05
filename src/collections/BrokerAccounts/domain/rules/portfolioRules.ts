@@ -31,3 +31,11 @@ export const ALPACA_BASE_URLS = {
 export const IB_DEFAULT_HOST = '127.0.0.1'
 export const IB_DEFAULT_PORT_PAPER = 7497
 export const IB_DEFAULT_PORT_LIVE = 7496
+
+export const DEPARTMENTS = [
+  { label: 'Quality', value: 'quality' },
+  { label: 'Speculative', value: 'speculative' },
+  { label: 'Mixed', value: 'mixed' },
+] as const
+
+export type Department = 'quality' | 'speculative' | 'mixed'

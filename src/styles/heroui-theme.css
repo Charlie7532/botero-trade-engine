@@ -57,8 +57,7 @@
   /* Theme Colors (Dark Mode) */
   --accent: oklch(44.34% 0.0767 238.49);
   --accent-foreground: oklch(99.11% 0 0);
-  --background: oklch(15.24% 0 0);
-  /* #141414 — matches Payload admin */
+  --background: #141414; /* matches Payload admin */
   --border: oklch(28.00% 0.0015 238.49);
   --danger: oklch(59.40% 0.1973 22.79);
   --danger-foreground: oklch(99.11% 0 0);

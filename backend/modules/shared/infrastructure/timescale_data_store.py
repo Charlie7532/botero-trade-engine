@@ -180,15 +180,22 @@ class TimescaleDataStore(TimeSeriesPort):
 
     # ── MCP Snapshots ─────────────────────────────────────
 
-    def save_mcp_snapshot(self, category: str, ticker: str, data: Any) -> None:
+    def save_mcp_snapshot(self, category: str, ticker: str, data: Any, timestamp: str = None) -> None:
         conn = self._conn()
         try:
             with conn.cursor() as cur:
-                cur.execute(
-                    """INSERT INTO market.mcp_snapshots (category, ticker, data)
-                       VALUES (%s, %s, %s)""",
-                    (category, ticker.upper(), json.dumps(data, default=str)),
-                )
+                if timestamp:
+                    cur.execute(
+                        """INSERT INTO market.mcp_snapshots (time, category, ticker, data)
+                           VALUES (%s, %s, %s, %s)""",
+                        (timestamp, category, ticker.upper(), json.dumps(data, default=str)),
+                    )
+                else:
+                    cur.execute(
+                        """INSERT INTO market.mcp_snapshots (category, ticker, data)
+                           VALUES (%s, %s, %s)""",
+                        (category, ticker.upper(), json.dumps(data, default=str)),
+                    )
             conn.commit()
             logger.debug(f"TimescaleDB: mcp/{category}/{ticker} — snapshot saved")
         except Exception as e:

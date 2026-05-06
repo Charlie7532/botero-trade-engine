@@ -12,39 +12,38 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger("SpeculativeDaemon")
 
 def _prefetch_uw_data() -> dict:
-    """Pre-fetch Unusual Whales flow data for speculative scanning and vault it."""
+    """Load latest UW flow data from Neon (populated by data_vault_daemon)."""
     try:
-        from backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge import UWDataBridge
         from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-        from backend.modules.simulation.infrastructure.vault_interceptor import VaultInterceptor
-        from dataclasses import asdict
+        from datetime import date
 
         uw = build_flow_data()
-        
-        bridge = UWDataBridge()
-        if not bridge.is_configured():
-            logger.warning("UW_API_KEY not configured — mocking flow data")
-            return {}
-
         store = TimescaleDataStore()
-        interceptor = VaultInterceptor(store)
+        today = date.today().isoformat()
 
-        # 1. Fetch & Vault SPY Flow
-        spy_ticks = bridge.fetch_spy_flow()
-        interceptor.intercept_spy_flow(spy_ticks)
-        spy_gate = uw.parse_spy_macro_gate(spy_ticks)
+        # Read from Neon instead of fetching from UW API
+        spy_ticks = store.load_mcp_snapshot("flow/spy", "SPY", today) or []
+        tide_data = store.load_mcp_snapshot("flow/tide", "MARKET", today) or []
+        sentiment_data = store.load_mcp_snapshot("flow/sentiment", "MARKET", today) or {}
 
-        # 2. Fetch & Vault Market Tide
-        tide_data = bridge.fetch_market_tide()
-        interceptor.intercept_market_tide(tide_data)
-        market_tide = uw.parse_market_tide(tide_data)
+        spy_gate = uw.parse_spy_macro_gate(spy_ticks) if spy_ticks else None
+        market_tide = uw.parse_market_tide(tide_data) if tide_data else None
 
-        # 3. Fetch & Vault Market Sentiment (flow alerts)
-        all_alerts = bridge.fetch_flow_alerts(limit=200)
-        sentiment = uw.parse_market_sentiment(all_alerts)
-        interceptor.intercept_sentiment(asdict(sentiment))
+        # Reconstruct sentiment from stored data
+        from backend.modules.flow_intelligence.infrastructure.uw_adapter import MarketSentiment
+        if sentiment_data:
+            sentiment = MarketSentiment(**{k: v for k, v in sentiment_data.items() if k in MarketSentiment.__dataclass_fields__})
+        else:
+            sentiment = MarketSentiment()
 
-        logger.info(f"UW pre-fetch complete: SPY gate={spy_gate.signal}, tide={market_tide.tide_direction}, sentiment={sentiment.regime}")
+        # Load market-wide alerts for downstream use
+        all_alerts = store.load_mcp_snapshot("flow/alerts", "MARKET", today) or []
+
+        logger.info(
+            f"UW data loaded from Neon: SPY={'ok' if spy_gate else 'none'}, "
+            f"tide={'ok' if market_tide else 'none'}, sentiment={sentiment.regime}, "
+            f"alerts={len(all_alerts)}"
+        )
         return {
             "spy_gate": spy_gate,
             "market_tide": market_tide,
@@ -52,7 +51,7 @@ def _prefetch_uw_data() -> dict:
             "all_alerts": all_alerts,
         }
     except Exception as e:
-        logger.warning(f"UW pre-fetch failed (non-fatal): {e}")
+        logger.warning(f"UW Neon load failed (non-fatal): {e}")
         return {}
 
 def run(loop_seconds: int = 300):

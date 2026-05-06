@@ -37,6 +37,7 @@ class AdaptiveTrailingStop:
         put_wall: float = 0.0,
         vix_current: float = 17.0,
         flow_persistence_grade: str = "UNKNOWN",
+        gex_regime: str = "UNKNOWN",
     ) -> float:
         if rs_vs_spy > 1.05:
             mult = self.atr_multiplier_trend
@@ -59,6 +60,14 @@ class AdaptiveTrailingStop:
             mult *= 1.15
         elif flow_persistence_grade == "DEAD_SIGNAL":
             mult *= 0.90
+
+        # 8 Forces: GEX Regime Adaptation (Karsan/Seykota)
+        # PIN (GEX+): dealers suppress movement → tighter stops
+        # DRIFT (GEX-): dealers amplify movement → wider stops
+        if gex_regime == "PIN":
+            mult *= 0.75
+        elif gex_regime in ("DRIFT", "SQUEEZE_UP", "SQUEEZE_DOWN"):
+            mult *= 1.25
         
         atr_stop = highest_since_entry - (mult * current_atr)
         fixed_stop_low = highest_since_entry * (1 - self.fixed_floor_pct)
@@ -118,7 +127,8 @@ class SpeculativeExitEngine:
                 rs_vs_spy=context.rs_vs_spy,
                 put_wall=context.put_wall,
                 vix_current=context.vix_current,
-                flow_persistence_grade=context.flow_persistence_grade
+                flow_persistence_grade=context.flow_persistence_grade,
+                gex_regime=context.gex_regime,
             )
             # El stop solo puede subir
             decision.new_stop_price = max(state.current_stop, calculated_stop)

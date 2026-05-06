@@ -615,7 +615,8 @@ class PaperTradingOrchestrator:
                 freeze_stops=ticker in self._freeze_state,
                 freeze_start_time=self._freeze_state.get(ticker),
                 reduce_zone=trade_data.get('entry_intelligence', {}).get('reduce_zone', 0.0) if trade_data else 0.0,
-                thesis_death_flag=trade_data.get('thesis_death_flag', False) if trade_data else False
+                thesis_death_flag=trade_data.get('thesis_death_flag', False) if trade_data else False,
+                gex_regime=intel.get('gamma_regime', 'UNKNOWN') if trade_data else 'UNKNOWN',
             )
             
             # Evaluate exit using decoupled engines

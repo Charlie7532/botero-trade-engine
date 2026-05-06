@@ -238,3 +238,73 @@ class TimescaleDataStore(TimeSeriesPort):
                 return [(row[0], row[1]) for row in cur.fetchall()]
         finally:
             self._put(conn)
+
+    def load_indicator_history(
+        self, category: str, ticker: str, field_path: str, days: int = 90,
+    ) -> list[tuple[str, float]]:
+        """
+        Extract a time-series of a specific JSON field from mcp_snapshots.
+
+        Args:
+            category: Snapshot category (e.g. "macro/fred")
+            ticker: Snapshot ticker (e.g. "SUMMARY")
+            field_path: Dot-notation path into JSON data.
+                        Examples: "VIX.close", "score", "VVIX.close"
+            days: Number of days to look back.
+
+        Returns:
+            [(date_str, float_value), ...] chronologically ordered.
+            Rows where the field is missing or non-numeric are skipped.
+        """
+        from datetime import date, timedelta
+        end = date.today().isoformat()
+        start = (date.today() - timedelta(days=days)).isoformat()
+
+        raw = self.load_mcp_range(category, ticker, start, end)
+        result = []
+        parts = field_path.split(".")
+
+        for dt, data in raw:
+            try:
+                val = data
+                for part in parts:
+                    val = val[part]
+                result.append((dt, float(val)))
+            except (KeyError, TypeError, ValueError):
+                continue
+
+        # Deduplicate by date (keep last per day)
+        seen = {}
+        for dt, val in result:
+            seen[dt] = val
+        return sorted(seen.items())
+
+    def load_all_latest_closes(self, days: int = 200) -> dict[str, list[float]]:
+        """
+        Load last N days of close prices for ALL tickers in OHLCV.
+        Used for S5TH/S5TW breadth calculation.
+
+        Returns:
+            {ticker: [close_day1, close_day2, ...]} chronologically ordered.
+
+        Performance: Single query, ~531 tickers × 200 days ≈ 106K rows.
+                     Typically completes in <1s on Neon.
+        """
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """SELECT ticker, time::date, close
+                       FROM market.ohlcv_bars
+                       WHERE timeframe = '1d'
+                       AND time >= NOW() - INTERVAL '%s days'
+                       ORDER BY ticker, time""",
+                    (days,),
+                )
+                result: dict[str, list[float]] = {}
+                for ticker, dt, close in cur.fetchall():
+                    if close is not None:
+                        result.setdefault(ticker, []).append(float(close))
+                return result
+        finally:
+            self._put(conn)

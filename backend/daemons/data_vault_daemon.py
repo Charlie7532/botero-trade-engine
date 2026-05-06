@@ -152,19 +152,22 @@ def vault_yahoo_data(interceptor: VaultInterceptor, tickers: list[str]) -> dict:
         return {"status": "skipped", "reason": "no_yfinance"}
 
     try:
-        # 1. VIX snapshot
+        # 1. VIX snapshot (full OHLCV — high/low needed for intraday spike detection)
         vix = yf.Ticker("^VIX")
         vix_hist = vix.history(period="1d")
         if not vix_hist.empty:
             if isinstance(vix_hist.columns, pd.MultiIndex):
                 vix_hist.columns = vix_hist.columns.get_level_values(0)
-            vix_close = float(vix_hist["Close"].iloc[-1])
+            row = vix_hist.iloc[-1]
             interceptor.store.save_mcp_snapshot("yahoo/vix", "VIX", {
-                "close": vix_close,
+                "open": float(row["Open"]),
+                "high": float(row["High"]),
+                "low": float(row["Low"]),
+                "close": float(row["Close"]),
                 "timestamp": datetime.now(UTC).isoformat(),
             })
             stats["vix"] = True
-            logger.info(f"📊 VIX snapshot: {vix_close:.2f}")
+            logger.info(f"📊 VIX snapshot: O={row['Open']:.2f} H={row['High']:.2f} L={row['Low']:.2f} C={row['Close']:.2f}")
 
         # 2. Options chains per ticker
         for ticker in tickers:
@@ -279,6 +282,7 @@ def vault_fred_data(store: TimescaleDataStore) -> dict:
             "GC=F": "GOLD",      # Gold futures
             "CL=F": "OIL_WTI",   # WTI crude
             "^SKEW": "SKEW",     # CBOE Skew Index (tail risk)
+            "^VVIX": "VVIX",     # Volatility of VIX (dealer early warning)
         }
 
         macro_snapshot = {}
@@ -577,6 +581,45 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
+# 9. MARKET BREADTH — S5TH / S5TW (daily, calculated from OHLCV)
+# ═══════════════════════════════════════════════════════════════
+
+def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
+    """Calculate S5TH and S5TW from existing OHLCV bars. Runs 1x/day."""
+    if _already_vaulted_today(store, "macro/breadth", "SP500"):
+        logger.info("📊 Breadth already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    try:
+        from backend.modules.shared.domain.rules.macro_trend_calculator import calculate_breadth
+
+        all_closes = store.load_all_latest_closes(days=200)
+        if not all_closes:
+            logger.warning("Breadth: no OHLCV data available")
+            return {"status": "error", "reason": "no_data"}
+
+        s5th = calculate_breadth(all_closes, ma_length=200)
+        s5tw = calculate_breadth(all_closes, ma_length=20)
+
+        snapshot = {
+            "s5th": s5th,
+            "s5tw": s5tw,
+            "tickers_counted": len(all_closes),
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+        store.save_mcp_snapshot("macro/breadth", "SP500", snapshot)
+        logger.info(
+            f"📊 Breadth vault: S5TH={s5th:.1f}% S5TW={s5tw:.1f}% "
+            f"({len(all_closes)} tickers)"
+        )
+        return {"status": "ok", "s5th": s5th, "s5tw": s5tw}
+
+    except Exception as e:
+        logger.warning(f"Breadth vault failed (non-critical): {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
 # CYCLE ORCHESTRATOR
 # ═══════════════════════════════════════════════════════════════
 
@@ -613,6 +656,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["fear_greed"] = vault_fear_greed(store)
     results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
     results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)
+    results["breadth"] = vault_breadth_indicators(store)
 
     summary = " | ".join(f"{k}={v.get('status', '?')}" for k, v in results.items())
     logger.info(f"═══ Vault cycle complete: {summary} ═══")

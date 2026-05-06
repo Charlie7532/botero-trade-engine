@@ -268,7 +268,19 @@ def synthesize_live_mandate(cio=None):
     except Exception:
         yield_inverted = False
 
-    # 4. Synthesize
+    # 4. GEX Regime from Neon vault (8 Forces → CIO budget gate)
+    gex_regime = "UNKNOWN"
+    try:
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+        from datetime import date as _date
+        store = TimescaleDataStore()
+        gamma_snap = store.load_mcp_snapshot("options/gamma", "SPY", _date.today().isoformat())
+        if gamma_snap and isinstance(gamma_snap, dict):
+            gex_regime = gamma_snap.get("gamma_regime", "UNKNOWN")
+    except Exception as e:
+        logger.debug(f"GEX regime load skipped: {e}")
+
+    # 5. Synthesize
     mandate = cio.synthesize_mandate(
         vix=vix,
         market_breadth=breadth,
@@ -278,6 +290,7 @@ def synthesize_live_mandate(cio=None):
         international_flows=rotation_data.get("international_flows"),
         asset_class_flows=rotation_data.get("asset_class_flows"),
         cycle_phase=rotation_data.get("cycle_phase", "UNKNOWN"),
+        gex_regime=gex_regime,
     )
 
     cap_level = rotation_data.get("capitulation_level", 0)

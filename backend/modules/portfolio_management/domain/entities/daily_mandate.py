@@ -20,4 +20,5 @@ class DailyMandate:
     international_avoid: list[str] = field(default_factory=list)
     cycle_phase: str = "UNKNOWN"
     reasoning: str = ""
+    gex_regime: str = "UNKNOWN"  # PIN, DRIFT, SQUEEZE_UP, SQUEEZE_DOWN
 

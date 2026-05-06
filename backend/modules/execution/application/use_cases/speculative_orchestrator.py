@@ -234,6 +234,7 @@ class SpeculativeOrchestrator:
                 put_wall=0.0,
                 vix_current=snapshot.get('vix', 17.0),
                 flow_persistence_grade=intel.get('flow_persistence_grade', 'UNKNOWN'),
+                gex_regime=intel.get('gamma_regime', 'UNKNOWN'),
             )
 
             decision = self.exit_engine.evaluate_exit(trade_state, market_context)

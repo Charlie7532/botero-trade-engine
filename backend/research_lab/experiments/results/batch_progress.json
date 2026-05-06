@@ -1,0 +1,48 @@
+{
+  "started_at": "2026-05-06T16:24:08.280623+00:00",
+  "last_updated": "2026-05-06T16:28:18.328712+00:00",
+  "total_tickers": 541,
+  "completed_tickers": 17,
+  "tickers_done": [
+    "A",
+    "AAPL",
+    "ABBV",
+    "ABNB",
+    "ABT",
+    "A",
+    "AAPL",
+    "ABBV",
+    "ABNB",
+    "ABT",
+    "ACGL",
+    "ACN",
+    "ADBE",
+    "ADI",
+    "ADM",
+    "ADP",
+    "ADSK"
+  ],
+  "tickers_promoted": [
+    "AAPL",
+    "ABNB",
+    "AAPL",
+    "ABNB",
+    "ACN",
+    "ADI",
+    "ADM",
+    "ADSK"
+  ],
+  "tickers_rejected": [
+    "A",
+    "ABBV",
+    "ABT",
+    "A",
+    "ABBV",
+    "ABT",
+    "ACGL",
+    "ADBE",
+    "ADP"
+  ],
+  "current_ticker": "AEE",
+  "status": "running"
+}

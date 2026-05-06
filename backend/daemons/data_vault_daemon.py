@@ -273,6 +273,8 @@ def vault_fred_data(store: TimescaleDataStore) -> dict:
         import yfinance as yf
 
         # Fetch key macro indicators via yfinance (free, no API key)
+        # NOTE: SKEW and VVIX are fetched directly from CBOE CSV
+        # (vault_cboe_indices). Yahoo delisted these tickers.
         macro_tickers = {
             "^VIX": "VIX",
             "^TNX": "YIELD_10Y",  # 10Y Treasury
@@ -281,8 +283,6 @@ def vault_fred_data(store: TimescaleDataStore) -> dict:
             "DX-Y.NYB": "DXY",   # Dollar Index
             "GC=F": "GOLD",      # Gold futures
             "CL=F": "OIL_WTI",   # WTI crude
-            "^SKEW": "SKEW",     # CBOE Skew Index (tail risk)
-            "^VVIX": "VVIX",     # Volatility of VIX (dealer early warning)
         }
 
         macro_snapshot = {}
@@ -620,6 +620,126 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
+# 10. CBOE INDICES — SKEW + VVIX (daily, authoritative source)
+# ═══════════════════════════════════════════════════════════════
+
+def vault_cboe_indices(store: TimescaleDataStore) -> dict:
+    """
+    Download SKEW and VVIX historical data directly from CBOE
+    (Chicago Board Options Exchange) — the authoritative source.
+
+    Yahoo Finance delisted these tickers. CBOE publishes free daily CSVs
+    with full history back to 1990 (SKEW) and 2006 (VVIX).
+
+    On first run: backfills entire history.
+    On subsequent runs: only inserts new dates (ON CONFLICT DO NOTHING).
+
+    Stores as OHLCV bars in market.ohlcv_bars with open=high=low=close=value.
+    """
+    if _already_vaulted_today(store, "cboe/indices", "BATCH_DONE"):
+        logger.info("📉 CBOE indices already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    import pandas as pd
+    import requests
+
+    CBOE_BASE = "https://cdn.cboe.com/api/global/us_indices/daily_prices"
+    indices = {
+        "SKEW": f"{CBOE_BASE}/SKEW_History.csv",
+        "VVIX": f"{CBOE_BASE}/VVIX_History.csv",
+    }
+
+    stats = {"indices_updated": 0, "total_bars": 0}
+
+    for ticker, url in indices.items():
+        try:
+            resp = requests.get(url, timeout=15)
+            resp.raise_for_status()
+
+            df = pd.read_csv(
+                pd.io.common.StringIO(resp.text),
+                parse_dates=["DATE"],
+                dayfirst=False,
+            )
+
+            if df.empty:
+                logger.warning(f"CBOE {ticker}: empty CSV")
+                continue
+
+            # Rename columns to OHLCV format (single value → all equal)
+            value_col = [c for c in df.columns if c != "DATE"][0]
+            df = df.rename(columns={"DATE": "timestamp", value_col: "close"})
+            df["open"] = df["close"]
+            df["high"] = df["close"]
+            df["low"] = df["close"]
+            df["volume"] = 0
+
+            # Set timezone-aware UTC index
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            df = df.set_index("timestamp")
+            if df.index.tz is None:
+                df.index = df.index.tz_localize("UTC")
+            df = df[["open", "high", "low", "close", "volume"]]
+            df.dropna(subset=["close"], inplace=True)
+
+            # Only insert dates we don't already have
+            last_date = store.bars_last_date(ticker, "1d")
+            if last_date:
+                cutoff = pd.Timestamp(last_date, tz="UTC")
+                df = df[df.index > cutoff]
+
+            if df.empty:
+                logger.debug(f"CBOE {ticker}: already up to date")
+                stats["indices_updated"] += 1
+                continue
+
+            store.save_bars(ticker, "1d", df)
+            stats["indices_updated"] += 1
+            stats["total_bars"] += len(df)
+            logger.info(f"📉 CBOE {ticker}: {len(df)} new bars stored")
+
+        except Exception as e:
+            logger.warning(f"CBOE {ticker} fetch failed: {e}")
+
+    # Also update the macro snapshot with today's close for quick access
+    try:
+        for ticker in indices:
+            last = store.bars_last_date(ticker, "1d")
+            if last:
+                bars = store.load_bars(ticker, "1d", start=last, end=last)
+                if not bars.empty:
+                    close_val = float(bars["close"].iloc[-1])
+                    # Inject into macro/fred snapshot for backward compat
+                    existing = store.load_mcp_snapshot(
+                        "macro/fred", "SUMMARY", date.today().isoformat()
+                    )
+                    if existing and isinstance(existing, dict):
+                        existing[ticker] = {
+                            "close": close_val,
+                            "high": close_val,
+                            "low": close_val,
+                            "volume": 0,
+                        }
+                        existing["timestamp"] = datetime.now(UTC).isoformat()
+                        store.save_mcp_snapshot("macro/fred", "SUMMARY", existing)
+    except Exception as e:
+        logger.debug(f"CBOE macro snapshot enrichment skipped: {e}")
+
+    # Mark done for today
+    if stats["indices_updated"] > 0:
+        store.save_mcp_snapshot("cboe/indices", "BATCH_DONE", {
+            "timestamp": datetime.now(UTC).isoformat(),
+            **stats,
+        })
+
+    logger.info(
+        f"📉 CBOE vault: {stats['indices_updated']} indices, "
+        f"{stats['total_bars']} new bars"
+    )
+    return {"status": "ok", **stats}
+
+
+# ═══════════════════════════════════════════════════════════════
 # CYCLE ORCHESTRATOR
 # ═══════════════════════════════════════════════════════════════
 
@@ -653,6 +773,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
     # 1x per day (internal check):
     results["fred"] = vault_fred_data(store)
+    results["cboe"] = vault_cboe_indices(store)
     results["fear_greed"] = vault_fear_greed(store)
     results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
     results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)

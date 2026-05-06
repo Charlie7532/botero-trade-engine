@@ -10145,3 +10145,57 @@ nohup: ignoring input
 2026-05-06 15:06:50,664 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
 2026-05-06 15:06:50,665 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
 2026-05-06 15:06:50,793 [DataVaultDaemon] INFO — 📊 VIX snapshot: 16.95
+2026-05-06 15:09:18,588 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/540 chains captured
+2026-05-06 15:09:18,754 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 15:09:18,757 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 15:09:20,751 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 27 tickers with news
+2026-05-06 15:09:20,789 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 15:09:20,823 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 15:09:20,858 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 15:09:20,892 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 15:09:20,892 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 15:09:20,892 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 15:14:20,893 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T15:14:20.892939+00:00 ═══
+2026-05-06 15:14:21,077 [DataVaultDaemon] INFO — 📊 Neon universe: 540 tickers
+2026-05-06 15:14:21,209 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:15:21,248 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:16:21,287 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:17:21,343 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 15:17:21,343 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 15:17:21,469 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.04
+2026-05-06 15:19:40,616 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/540 chains captured
+2026-05-06 15:19:40,773 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 15:19:40,776 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 15:19:42,965 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 27 tickers with news
+2026-05-06 15:19:43,009 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 15:19:43,045 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 15:19:43,082 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 15:19:43,119 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 15:19:43,119 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 15:19:43,119 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 15:24:43,120 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T15:24:43.120561+00:00 ═══
+2026-05-06 15:24:43,312 [DataVaultDaemon] INFO — 📊 Neon universe: 540 tickers
+2026-05-06 15:24:43,456 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:25:43,494 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:26:43,537 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:27:43,592 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 15:27:43,592 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 15:27:43,724 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.11
+2026-05-06 15:30:07,581 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/540 chains captured
+2026-05-06 15:30:07,748 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 15:30:07,752 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 15:30:56,049 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 27 tickers with news
+2026-05-06 15:30:56,088 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 15:30:56,123 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 15:30:56,157 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 15:30:56,194 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 15:30:56,195 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 15:30:56,195 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 15:35:56,195 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T15:35:56.195393+00:00 ═══
+2026-05-06 15:35:56,382 [DataVaultDaemon] INFO — 📊 Neon universe: 540 tickers
+2026-05-06 15:35:56,510 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:36:56,553 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:37:56,597 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 15:38:56,659 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 15:38:56,659 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 15:38:56,773 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.13

@@ -494,20 +494,21 @@ class RotationScanner:
     @staticmethod
     def _fetch_fear_greed() -> float:
         """
-        Fetch CNN Fear & Greed Index (best-effort, non-blocking).
-        Returns 50.0 (neutral) on failure.
+        Read CNN Fear & Greed Index from the Neon Vault.
+        Captured daily by the Vault Daemon's vault_fear_greed() task.
+        Returns 50.0 (neutral) if not available.
         """
         try:
-            import requests
-            url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata/2026-01-01"
-            headers = {"User-Agent": "Mozilla/5.0"}
-            r = requests.get(url, timeout=5, headers=headers)
-            r.raise_for_status()
-            data = r.json()
-            score = data.get("fear_and_greed", {}).get("score", 50.0)
-            return round(float(score), 1)
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            snapshot = store.load_mcp_snapshot("macro/fear_greed", "MARKET")
+            store.close()
+            if snapshot and isinstance(snapshot, dict):
+                score = snapshot.get("score", 50.0)
+                return round(float(score), 1)
         except Exception:
-            return 50.0
+            pass
+        return 50.0
 
     # ══════════════════════════════════════════════════════════
     # ETF CLASSIFICATION

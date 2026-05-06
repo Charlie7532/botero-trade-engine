@@ -92,7 +92,7 @@ class TimescaleDataStore(TimeSeriesPort):
         conn = self._conn()
         try:
             query = (
-                "SELECT time, open, high, low, close, volume "
+                "SELECT time, open, high, low, close, volume, vwap, trade_count "
                 "FROM market.ohlcv_bars "
                 "WHERE ticker = %s AND timeframe = %s"
             )

@@ -77,6 +77,71 @@ def harmonize_yfinance(df: pd.DataFrame, ticker: str) -> pd.DataFrame:
     return df
 
 
+def enrich_with_alpaca(ticker: str, start, end, store: TimescaleDataStore) -> int:
+    """Enrich existing bars with trade_count + vwap from Alpaca SDK."""
+    import os
+    from datetime import datetime, UTC
+
+    api_key = os.environ.get("ALPACA_API_KEY", "")
+    if not api_key:
+        logger.debug("ALPACA_API_KEY not set — skipping enrichment")
+        return 0
+
+    try:
+        from alpaca.data.historical import StockHistoricalDataClient
+        from alpaca.data.requests import StockBarsRequest
+        from alpaca.data.timeframe import TimeFrame
+
+        client = StockHistoricalDataClient(
+            api_key, os.environ.get("ALPACA_SECRET_KEY", "")
+        )
+        request = StockBarsRequest(
+            symbol_or_symbols=ticker,
+            timeframe=TimeFrame.Day,
+            start=datetime.combine(start, datetime.min.time()).replace(tzinfo=UTC),
+            end=datetime.combine(end, datetime.max.time()).replace(tzinfo=UTC),
+            limit=10000,
+        )
+        bars = client.get_stock_bars(request)
+        if not bars or ticker not in bars.data:
+            return 0
+
+        conn = store._conn()
+        updated = 0
+        try:
+            with conn.cursor() as cur:
+                for bar in bars.data[ticker]:
+                    vwap = float(bar.vwap) if hasattr(bar, 'vwap') and bar.vwap else None
+                    tc = int(bar.trade_count) if hasattr(bar, 'trade_count') and bar.trade_count else None
+                    if vwap is None and tc is None:
+                        continue
+                    cur.execute(
+                        """UPDATE market.ohlcv_bars
+                           SET vwap = %s, trade_count = %s
+                           WHERE ticker = %s AND timeframe = '1d'
+                           AND time::date = %s""",
+                        (vwap, tc, ticker, bar.timestamp.date()),
+                    )
+                    updated += cur.rowcount
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            store._put(conn)
+
+        if updated > 0:
+            logger.info(f"  ↳ Alpaca enrichment: {updated} bars got trade_count + vwap")
+        return updated
+
+    except ImportError:
+        logger.debug("alpaca-py not installed — skipping enrichment")
+        return 0
+    except Exception as e:
+        logger.warning(f"  ↳ Alpaca enrichment failed for {ticker}: {e}")
+        return 0
+
+
 def download_ticker(ticker: str, tf: str, years: int, store: TimescaleDataStore) -> int:
     """Download and vault a single ticker/timeframe."""
     try:
@@ -115,6 +180,13 @@ def download_ticker(ticker: str, tf: str, years: int, store: TimescaleDataStore)
 
     df = harmonize_yfinance(df, ticker)
     store.save_bars(ticker, tf, df)
+
+    # Enrich with Alpaca trade_count + vwap (yfinance doesn't provide these)
+    if tf == "1d":
+        first_date = df.index.min().date() if hasattr(df.index.min(), 'date') else df.index.min()
+        last_date = df.index.max().date() if hasattr(df.index.max(), 'date') else df.index.max()
+        enrich_with_alpaca(ticker, first_date, last_date, store)
+
     return len(df)
 
 

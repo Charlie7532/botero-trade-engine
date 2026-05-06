@@ -272,4 +272,6 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
 12. **Surgical changes.** Every changed line must trace directly to the user's request. Don't "improve" adjacent code, comments, or formatting. Match existing style. If you notice unrelated dead code, mention it — don't delete it. Remove only imports/variables/functions that YOUR changes made unused.
 
+13. **Vault-First data access.** Production modules (everything under `backend/modules/`) MUST read market data exclusively from `TimescaleDataStore` (Neon PostgreSQL). Direct calls to yfinance, requests, httpx, or any external API for market data are FORBIDDEN in modules. Only `backend/daemons/` and `backend/scripts/` may call external APIs. The Vault Daemon is the single writer; modules are readers only.
+
 - `backend/daemons/` — Delivery mechanism (daemon entry points). Not a Clean Architecture application layer — these are background runners equivalent to API routers.

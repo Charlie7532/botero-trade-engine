@@ -278,6 +278,7 @@ def vault_fred_data(store: TimescaleDataStore) -> dict:
             "DX-Y.NYB": "DXY",   # Dollar Index
             "GC=F": "GOLD",      # Gold futures
             "CL=F": "OIL_WTI",   # WTI crude
+            "^SKEW": "SKEW",     # CBOE Skew Index (tail risk)
         }
 
         macro_snapshot = {}
@@ -413,6 +414,169 @@ def vault_gurufocus_screening(store: TimescaleDataStore, tickers: list[str]) -> 
 
 
 # ═══════════════════════════════════════════════════════════════
+# 7. OHLCV BARS — Daily update (yfinance + Alpaca enrichment)
+# ═══════════════════════════════════════════════════════════════
+
+def vault_ohlcv_bars(store: TimescaleDataStore, tickers: list[str]) -> dict:
+    """Update OHLCV bars with today's candle. 1x/day after market close."""
+    stats = {"updated": 0, "enriched": 0}
+
+    # Only run once per day
+    if _already_vaulted_today(store, "ohlcv/update", "BATCH_DONE"):
+        logger.info("📈 OHLCV bars already updated today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    try:
+        import yfinance as yf
+        import pandas as pd
+        import os
+    except ImportError:
+        return {"status": "skipped", "reason": "no_yfinance"}
+
+    # Process in batches of 20 to avoid yfinance rate limits
+    batch_size = 20
+    for i in range(0, len(tickers), batch_size):
+        batch = tickers[i:i + batch_size]
+        for ticker in batch:
+            try:
+                # Get last date in Neon
+                last = store.bars_last_date(ticker, "1d")
+                if not last:
+                    continue
+
+                from datetime import timedelta
+                start_str = (last + timedelta(days=1)).strftime("%Y-%m-%d")
+
+                # Download new bars from yfinance
+                df = yf.download(ticker, start=start_str, interval="1d",
+                                 progress=False, auto_adjust=True)
+                if df.empty:
+                    continue
+
+                # Harmonize
+                if isinstance(df.columns, pd.MultiIndex):
+                    df = df.xs(ticker, level=1, axis=1)
+                df.columns = [c.lower() for c in df.columns]
+                required = ["open", "high", "low", "close", "volume"]
+                available = [c for c in required if c in df.columns]
+                df = df[available].copy()
+                if df.index.tz is not None:
+                    df.index = df.index.tz_convert("UTC")
+                else:
+                    df.index = df.index.tz_localize("UTC")
+                df.index.name = "timestamp"
+                df.dropna(subset=["open", "high", "low", "close"], inplace=True)
+
+                if df.empty:
+                    continue
+
+                store.save_bars(ticker, "1d", df)
+                stats["updated"] += 1
+
+                # Enrich with Alpaca trade_count + vwap
+                api_key = os.environ.get("ALPACA_API_KEY", "")
+                if api_key:
+                    try:
+                        from alpaca.data.historical import StockHistoricalDataClient
+                        from alpaca.data.requests import StockBarsRequest
+                        from alpaca.data.timeframe import TimeFrame
+
+                        client = StockHistoricalDataClient(
+                            api_key, os.environ.get("ALPACA_SECRET_KEY", "")
+                        )
+                        first_date = df.index.min()
+                        last_date = df.index.max()
+                        request = StockBarsRequest(
+                            symbol_or_symbols=ticker,
+                            timeframe=TimeFrame.Day,
+                            start=first_date,
+                            end=last_date + pd.Timedelta(days=1),
+                            limit=10,
+                        )
+                        alpaca_bars = client.get_stock_bars(request)
+                        if alpaca_bars and ticker in alpaca_bars.data:
+                            conn = store._conn()
+                            try:
+                                with conn.cursor() as cur:
+                                    for bar in alpaca_bars.data[ticker]:
+                                        vwap = float(bar.vwap) if hasattr(bar, 'vwap') and bar.vwap else None
+                                        tc = int(bar.trade_count) if hasattr(bar, 'trade_count') and bar.trade_count else None
+                                        if vwap or tc:
+                                            cur.execute(
+                                                """UPDATE market.ohlcv_bars
+                                                   SET vwap = %s, trade_count = %s
+                                                   WHERE ticker = %s AND timeframe = '1d'
+                                                   AND time::date = %s""",
+                                                (vwap, tc, ticker, bar.timestamp.date()),
+                                            )
+                                conn.commit()
+                                stats["enriched"] += 1
+                            except Exception:
+                                conn.rollback()
+                            finally:
+                                store._put(conn)
+                    except Exception:
+                        pass  # Enrichment is best-effort
+
+            except Exception as e:
+                logger.debug(f"  {ticker} OHLCV update failed: {e}")
+
+    # Mark as done for today
+    if stats["updated"] > 0:
+        store.save_mcp_snapshot("ohlcv/update", "BATCH_DONE", {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "tickers_updated": stats["updated"],
+            "tickers_enriched": stats["enriched"],
+        })
+
+    logger.info(
+        f"📈 OHLCV vault: {stats['updated']} tickers updated, "
+        f"{stats['enriched']} enriched with trade_count+vwap"
+    )
+    return {"status": "ok", **stats}
+
+
+# ═══════════════════════════════════════════════════════════════
+# 8. CNN FEAR & GREED — Market Sentiment (daily)
+# ═══════════════════════════════════════════════════════════════
+
+def vault_fear_greed(store: TimescaleDataStore) -> dict:
+    """Vault CNN Fear & Greed Index (1x per day)."""
+    if _already_vaulted_today(store, "macro/fear_greed", "MARKET"):
+        logger.info("😱 Fear & Greed already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    try:
+        import requests as req
+        url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
+        headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
+        r = req.get(url, timeout=10, headers=headers)
+        r.raise_for_status()
+        data = r.json()
+
+        fg = data.get("fear_and_greed", {})
+        hist = data.get("fear_and_greed_historical", {})
+
+        snapshot = {
+            "score": fg.get("score", 50.0),
+            "rating": fg.get("rating", "neutral"),
+            "previous_close": hist.get("previousClose", {}).get("score"),
+            "one_week_ago": hist.get("oneWeekAgo", {}).get("score"),
+            "one_month_ago": hist.get("oneMonthAgo", {}).get("score"),
+            "one_year_ago": hist.get("oneYearAgo", {}).get("score"),
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+
+        store.save_mcp_snapshot("macro/fear_greed", "MARKET", snapshot)
+        logger.info(f"😱 Fear & Greed vault: {snapshot['score']:.1f} ({snapshot['rating']})")
+        return {"status": "ok", "score": snapshot["score"]}
+
+    except Exception as e:
+        logger.warning(f"Fear & Greed vault failed (non-critical): {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
 # CYCLE ORCHESTRATOR
 # ═══════════════════════════════════════════════════════════════
 
@@ -446,7 +610,9 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
     # 1x per day (internal check):
     results["fred"] = vault_fred_data(store)
+    results["fear_greed"] = vault_fear_greed(store)
     results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
+    results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)
 
     summary = " | ".join(f"{k}={v.get('status', '?')}" for k, v in results.items())
     logger.info(f"═══ Vault cycle complete: {summary} ═══")

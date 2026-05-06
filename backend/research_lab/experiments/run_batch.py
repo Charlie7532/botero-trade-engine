@@ -10,7 +10,6 @@ Launch and forget:
 
 Check progress:
     tail -f quaternion_batch.log
-    # Or check the summary at any time:
     cat backend/research_lab/experiments/results/batch_progress.json
 
 Stop gracefully:
@@ -37,16 +36,11 @@ from backend.research_lab.experiments.feature_discovery_runner import (
 from backend.research_lab.experiments.quaternion_signal import QuaternionSignalAdapter
 from backend.research_lab.models.quaternion_core import MarketQuaternion
 
+# ── Logging ──
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(name)s] %(levelname)s — %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(
-            Path(__file__).resolve().parent.parent.parent.parent / "quaternion_batch.log",
-            mode="a",
-        ),
-    ],
+    handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger("QuaternionBatch")
 
@@ -77,6 +71,7 @@ def _load_progress() -> dict:
         "completed_tickers": 0,
         "tickers_done": [],
         "tickers_promoted": [],
+        "tickers_observation": [],
         "tickers_rejected": [],
         "current_ticker": None,
         "status": "not_started",
@@ -119,6 +114,7 @@ def run_ticker_pipeline(
         "oracle_quality_sharpe": 0.0,
         "discovery_full_sharpe": 0.0,
         "discovery_optimized_sharpe": 0.0,
+        "discovery_full_dims": 0,
         "optimal_dimensions": [],
         "verdict": "REJECTED",
     }
@@ -162,22 +158,22 @@ def run_ticker_pipeline(
                 macro_extras = _load_macro_extras(store, ohlcv)
                 features = build_enriched_features(ohlcv, macro_extras or None)
                 labels = label_next_bar(ohlcv)
+                result_summary["discovery_full_dims"] = features.shape[1]
 
                 # Full model
                 importance, full_acc = run_xgboost_importance(features, labels)
                 if importance:
-                    # Calculate full model Sharpe
                     _, sharpe_full, pf_full, wr_full, mdd_full, nt_full = _evaluate_subset(
                         features, labels, ohlcv,
                     )
                     result_summary["discovery_full_sharpe"] = sharpe_full
 
                     registry.record(
-                        description=f"Full enriched {ticker} ({features.shape[1]}D)",
+                        description=f"Full {ticker} ({features.shape[1]}D)",
                         dimensions_used=list(features.columns),
                         dimensions_excluded=[],
                         ticker=ticker, timeframe=timeframe,
-                        n_samples=len(features.dropna()),
+                        n_samples=len(features),
                         accuracy=full_acc, sharpe=sharpe_full,
                         profit_factor=pf_full, win_rate=wr_full,
                         max_drawdown=mdd_full, n_trades=nt_full,
@@ -195,15 +191,17 @@ def run_ticker_pipeline(
 
                     excluded = [f for f in features.columns if f not in optimal_features]
                     registry.record(
-                        description=f"Optimized {ticker} ({len(optimal_features)}D)",
+                        description=f"Opt {ticker} ({len(optimal_features)}D)",
                         dimensions_used=optimal_features,
                         dimensions_excluded=excluded,
                         ticker=ticker, timeframe=timeframe,
-                        n_samples=len(features.dropna()),
+                        n_samples=len(features),
                         accuracy=optimal_acc, sharpe=sharpe_opt,
                         profit_factor=pf_opt, win_rate=wr_opt,
                         max_drawdown=mdd_opt, n_trades=nt_opt,
                     )
+                else:
+                    logger.info(f"  XGBoost returned empty importances for {ticker}")
         except Exception as e:
             logger.warning(f"  Feature Discovery failed for {ticker}: {e}")
 
@@ -277,10 +275,11 @@ def run_batch(
         store.close()
         return
 
-    # Filter out already-done tickers
+    # Filter out already-done tickers (use set for O(1) lookup)
     if skip_done and progress["tickers_done"]:
-        remaining = [t for t in all_tickers if t not in progress["tickers_done"]]
-        logger.info(f"Resuming: {len(progress['tickers_done'])} done, {len(remaining)} remaining")
+        done_set = set(progress["tickers_done"])
+        remaining = [t for t in all_tickers if t not in done_set]
+        logger.info(f"Resuming: {len(done_set)} done, {len(remaining)} remaining")
     else:
         remaining = all_tickers
 
@@ -310,10 +309,17 @@ def run_batch(
             summary = run_ticker_pipeline(ticker, timeframe, store, registry)
             elapsed = time.time() - t0
 
+            # Best sharpe across ALL phases (not just two)
+            best_sharpe = max(
+                summary["oracle_speculative_sharpe"],
+                summary["oracle_quality_sharpe"],
+                summary["discovery_optimized_sharpe"],
+            )
+
             emoji = {"PROMOTED": "🟢", "OBSERVATION": "🟡", "REJECTED": "🔴"}[summary["verdict"]]
             logger.info(
-                f"  {emoji} {ticker}: best_sharpe="
-                f"{max(summary['oracle_quality_sharpe'], summary['discovery_optimized_sharpe']):.2f} "
+                f"  {emoji} {ticker}: best_sharpe={best_sharpe:.2f} "
+                f"dims={summary['discovery_full_dims']}→{len(summary['optimal_dimensions'])} "
                 f"({summary['verdict']}) [{elapsed:.1f}s]"
             )
 
@@ -322,7 +328,9 @@ def run_batch(
             progress["completed_tickers"] = len(progress["tickers_done"])
             if summary["verdict"] == "PROMOTED":
                 progress["tickers_promoted"].append(ticker)
-            elif summary["verdict"] == "REJECTED":
+            elif summary["verdict"] == "OBSERVATION":
+                progress.setdefault("tickers_observation", []).append(ticker)
+            else:
                 progress["tickers_rejected"].append(ticker)
 
         except Exception as e:
@@ -337,11 +345,12 @@ def run_batch(
     progress["current_ticker"] = None
     _save_progress(progress)
 
+    n_obs = progress["completed_tickers"] - len(progress["tickers_promoted"]) - len(progress["tickers_rejected"])
     logger.info("\n" + "=" * 70)
     logger.info(f"BATCH COMPLETE: {progress['completed_tickers']}/{progress['total_tickers']} tickers")
     logger.info(f"  🟢 PROMOTED:    {len(progress['tickers_promoted'])} → {progress['tickers_promoted'][:20]}")
+    logger.info(f"  🟡 OBSERVATION: {n_obs}")
     logger.info(f"  🔴 REJECTED:    {len(progress['tickers_rejected'])}")
-    logger.info(f"  🟡 OBSERVATION: {progress['completed_tickers'] - len(progress['tickers_promoted']) - len(progress['tickers_rejected'])}")
     logger.info("\n" + registry.summary_table())
 
     store.close()

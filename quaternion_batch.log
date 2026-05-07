@@ -1,124 +1,31 @@
 nohup: ignoring input
-2026-05-07 00:56:40,869 [backend.research_lab.experiments.experiment_registry] INFO — Loaded 0 previous experiments
-2026-05-07 00:56:41,193 [QuaternionBatch] INFO — ═══ QUATERNION BATCH: 541 tickers to process ═══
-2026-05-07 00:56:41,194 [QuaternionBatch] INFO — 
+2026-05-07 01:05:07,326 [backend.research_lab.experiments.experiment_registry] INFO — Loaded 11 previous experiments
+2026-05-07 01:05:07,824 [QuaternionBatch] INFO — ═══ QUATERNION BATCH: 541 tickers to process ═══
+2026-05-07 01:05:07,825 [QuaternionBatch] INFO — 
 [1/541] ── A ──
 /root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:56:41,361 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 17 entries labeled (profit=2, loss=15, time=0)
-2026-05-07 00:56:41,362 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=-6.8176 WR=11.76% PF=0.2273 Entries=17
-2026-05-07 00:56:41,364 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0001: Oracle SPECULATIVE_SPRING A → Sharpe=-6.82, DSR p=1.0000, Verdict=REJECTED
+2026-05-07 01:05:08,171 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 17 entries labeled (profit=2, loss=15, time=0)
+2026-05-07 01:05:08,172 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=-6.8176 WR=11.76% PF=0.2273 Entries=17
+2026-05-07 01:05:08,175 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0012: Oracle SPECULATIVE_SPRING A → Sharpe=-6.82, DSR p=1.0000, Verdict=REJECTED
 /root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:56:41,518 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 17 entries labeled (profit=1, loss=16, time=0)
-2026-05-07 00:56:41,519 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=-6.6107 WR=5.88% PF=0.1752 Entries=17
-2026-05-07 00:56:41,527 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0002: Oracle QUALITY_VALUE A → Sharpe=-6.61, DSR p=1.0000, Verdict=REJECTED
-2026-05-07 00:56:41,528 [QuaternionBatch] INFO —   🔴 A: best_sharpe=0.00 dims=0→0 (REJECTED) [0.3s]
-2026-05-07 00:56:41,529 [QuaternionBatch] INFO — 
+2026-05-07 01:05:08,312 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 17 entries labeled (profit=1, loss=16, time=0)
+2026-05-07 01:05:08,312 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=-6.6107 WR=5.88% PF=0.1752 Entries=17
+2026-05-07 01:05:08,316 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0013: Oracle QUALITY_VALUE A → Sharpe=-6.61, DSR p=1.0000, Verdict=REJECTED
+2026-05-07 01:05:08,316 [QuaternionBatch] INFO —   🔴 A: best_sharpe=0.00 dims=0→0 (REJECTED) [0.5s]
+2026-05-07 01:05:08,317 [QuaternionBatch] INFO — 
 [2/541] ── AAPL ──
 /root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:56:41,669 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 22 entries labeled (profit=8, loss=13, time=1)
-2026-05-07 00:56:41,670 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=0.0106 WR=36.36% PF=1.0029 Entries=22
-2026-05-07 00:56:41,674 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0003: Oracle SPECULATIVE_SPRING AAPL → Sharpe=0.01, DSR p=1.0000, Verdict=REJECTED
+2026-05-07 01:05:08,447 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 22 entries labeled (profit=8, loss=13, time=1)
+2026-05-07 01:05:08,448 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=0.0106 WR=36.36% PF=1.0029 Entries=22
+2026-05-07 01:05:08,451 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0014: Oracle SPECULATIVE_SPRING AAPL → Sharpe=0.01, DSR p=1.0000, Verdict=REJECTED
 /root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:56:41,806 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 22 entries labeled (profit=7, loss=15, time=0)
-2026-05-07 00:56:41,807 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=0.6617 WR=31.82% PF=1.2577 Entries=22
-2026-05-07 00:56:41,809 [backend.research_lab.experiments.experiment_registry] INFO — 🟡 EXP-0004: Oracle QUALITY_VALUE AAPL → Sharpe=0.66, DSR p=0.9665, Verdict=OBSERVATION
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:56:42,781 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features fraccionales (d_price=0.4, d_vol=0.6)...
-2026-05-07 00:56:42,836 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de microestructura normalizada...
-2026-05-07 00:56:42,854 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de estructura temporal...
-2026-05-07 00:56:42,866 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de corriente de volumen...
-2026-05-07 00:56:42,884 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de volumen orgánico (MAD-trimmed OLS)...
-2026-05-07 00:56:43,023 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de calendario mecánico...
-2026-05-07 00:56:43,058 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de rotación inter-mercado...
-2026-05-07 00:56:43,095 [FeatureDiscovery] INFO — QFE added 29 features → total 45D
-2026-05-07 00:56:57,922 [backend.research_lab.experiments.experiment_registry] INFO — 🟡 EXP-0005: Full AAPL (45D) → Sharpe=0.62, DSR p=1.0000, Verdict=OBSERVATION
-2026-05-07 00:57:00,777 [FeatureDiscovery] INFO — Baseline: 45 features, accuracy=0.4947
-2026-05-07 00:57:04,356 [FeatureDiscovery] INFO —   KEEP TS_ATR_Pct (imp=0.0176): removing drops accuracy by 0.0238
-2026-05-07 00:57:08,119 [FeatureDiscovery] INFO —   DROP MS_Amihud_ZScore (imp=0.0181): accuracy change=-0.0026
-2026-05-07 00:57:19,722 [FeatureDiscovery] INFO —   DROP IM_SectorVolRS_ZScore (imp=0.0183): accuracy change=-0.0079
-2026-05-07 00:57:23,142 [FeatureDiscovery] INFO —   KEEP VF_RelVolume_ZScore (imp=0.0184): removing drops accuracy by 0.0159
-2026-05-07 00:57:25,871 [FeatureDiscovery] INFO —   DROP IM_SectorRS_ZScore (imp=0.0185): accuracy change=-0.0000
-2026-05-07 00:57:32,514 [FeatureDiscovery] INFO —   DROP TS_Return_15 (imp=0.0186): accuracy change=-0.0026
-2026-05-07 00:57:41,403 [FeatureDiscovery] INFO —   DROP Q_w (imp=0.0189): accuracy change=-0.0026
-2026-05-07 00:57:43,766 [FeatureDiscovery] INFO —   DROP TS_RealVol_Slow (imp=0.0193): accuracy change=-0.0000
-2026-05-07 00:57:45,894 [FeatureDiscovery] INFO —   KEEP Q_w_delta (imp=0.0195): removing drops accuracy by 0.0476
-2026-05-07 00:57:48,234 [FeatureDiscovery] INFO —   DROP Q_rotation_angle (imp=0.0201): accuracy change=+0.0132
-2026-05-07 00:57:50,352 [FeatureDiscovery] INFO —   DROP TS_VolRatio (imp=0.0205): accuracy change=+0.0079
-2026-05-07 00:57:52,492 [FeatureDiscovery] INFO —   DROP Q_x (imp=0.0205): accuracy change=-0.0053
-2026-05-07 00:57:54,860 [FeatureDiscovery] INFO —   KEEP TS_Return_1 (imp=0.0210): removing drops accuracy by 0.0132
-2026-05-07 00:57:56,905 [FeatureDiscovery] INFO —   DROP OV_SectorBeta_ZScore (imp=0.0211): accuracy change=+0.0053
-2026-05-07 00:57:59,089 [FeatureDiscovery] INFO —   DROP Q_norm (imp=0.0212): accuracy change=+0.0106
-2026-05-07 00:58:01,167 [FeatureDiscovery] INFO —   KEEP VF_VolAccel_ZScore (imp=0.0212): removing drops accuracy by 0.0132
-2026-05-07 00:58:03,563 [FeatureDiscovery] INFO —   KEEP MS_Spread_ZScore (imp=0.0212): removing drops accuracy by 0.0238
-2026-05-07 00:58:05,809 [FeatureDiscovery] INFO —   DROP OV_OrganicRatio (imp=0.0216): accuracy change=-0.0000
-2026-05-07 00:58:07,983 [FeatureDiscovery] INFO —   DROP IM_YieldDelta_ZScore (imp=0.0219): accuracy change=-0.0053
-2026-05-07 00:58:10,089 [FeatureDiscovery] INFO —   DROP IM_CreditSpread_ZScore (imp=0.0220): accuracy change=+0.0265
-2026-05-07 00:58:13,034 [FeatureDiscovery] INFO —   KEEP Q_divergence (imp=0.0221): removing drops accuracy by 0.0238
-2026-05-07 00:58:15,103 [FeatureDiscovery] INFO —   KEEP vvix_zscore (imp=0.0223): removing drops accuracy by 0.0265
-2026-05-07 00:58:17,480 [FeatureDiscovery] INFO —   KEEP TS_RealVol_Fast (imp=0.0223): removing drops accuracy by 0.0132
-2026-05-07 00:58:19,290 [FeatureDiscovery] INFO —   KEEP skew_delta (imp=0.0223): removing drops accuracy by 0.0238
-2026-05-07 00:58:21,029 [FeatureDiscovery] INFO —   KEEP skew_zscore (imp=0.0226): removing drops accuracy by 0.0238
-2026-05-07 00:58:22,901 [FeatureDiscovery] INFO —   KEEP TS_Return_5 (imp=0.0228): removing drops accuracy by 0.0344
-2026-05-07 00:58:25,961 [FeatureDiscovery] INFO —   KEEP vvix_delta (imp=0.0229): removing drops accuracy by 0.0185
-2026-05-07 00:58:28,025 [FeatureDiscovery] INFO —   DROP OV_IndexBeta_ZScore (imp=0.0233): accuracy change=-0.0026
-2026-05-07 00:58:30,352 [FeatureDiscovery] INFO —   KEEP CAL_DaysToOPEX (imp=0.0236): removing drops accuracy by 0.0238
-2026-05-07 00:58:33,561 [FeatureDiscovery] INFO —   KEEP Q_money_flow (imp=0.0239): removing drops accuracy by 0.0212
-2026-05-07 00:58:35,450 [FeatureDiscovery] INFO —   KEEP Q_y (imp=0.0241): removing drops accuracy by 0.0106
-2026-05-07 00:58:37,205 [FeatureDiscovery] INFO —   KEEP CAL_MonthEnd (imp=0.0243): removing drops accuracy by 0.0185
-2026-05-07 00:58:39,374 [FeatureDiscovery] INFO —   KEEP TS_ATR_14 (imp=0.0246): removing drops accuracy by 0.0238
-2026-05-07 00:58:41,584 [FeatureDiscovery] INFO —   DROP VF_VolPriceDivergence (imp=0.0252): accuracy change=-0.0053
-2026-05-07 00:58:44,001 [FeatureDiscovery] INFO —   DROP Q_z (imp=0.0252): accuracy change=-0.0079
-2026-05-07 00:58:46,169 [FeatureDiscovery] INFO —   DROP Q_x_delta (imp=0.0255): accuracy change=-0.0053
-2026-05-07 00:58:47,920 [FeatureDiscovery] INFO —   KEEP MS_OrderFlow_ZScore (imp=0.0260): removing drops accuracy by 0.0132
-2026-05-07 00:58:49,653 [FeatureDiscovery] INFO —   KEEP Q_z_delta (imp=0.0265): removing drops accuracy by 0.0185
-2026-05-07 00:58:51,527 [FeatureDiscovery] INFO —   DROP CAL_QuarterEnd (imp=0.0269): accuracy change=+0.0053
-2026-05-07 00:58:53,591 [FeatureDiscovery] INFO —   KEEP TS_Return_50 (imp=0.0272): removing drops accuracy by 0.0317
-2026-05-07 00:58:55,420 [FeatureDiscovery] INFO —   DROP FD_LogVolume (imp=0.0272): accuracy change=+0.0106
-2026-05-07 00:58:57,226 [FeatureDiscovery] INFO —   KEEP VF_CumDelta_ZScore (imp=0.0275): removing drops accuracy by 0.0212
-2026-05-07 00:58:59,079 [FeatureDiscovery] INFO —   KEEP MS_VWAP_ZScore (imp=0.0305): removing drops accuracy by 0.0291
-2026-05-07 00:59:01,014 [FeatureDiscovery] INFO —   KEEP Q_y_delta (imp=0.0318): removing drops accuracy by 0.0106
-2026-05-07 00:59:02,842 [backend.research_lab.experiments.experiment_registry] INFO — 🟢 EXP-0006: Opt AAPL (25D) → Sharpe=1.50, DSR p=0.0000, Verdict=PROMOTED
-2026-05-07 00:59:02,843 [QuaternionBatch] INFO —   🟢 AAPL: best_sharpe=1.50 dims=45→25 (PROMOTED) [141.3s]
-2026-05-07 00:59:02,854 [QuaternionBatch] INFO — 
-[3/541] ── ABBV ──
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:59:03,019 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → only 5 entries (min=10)
-2026-05-07 00:59:03,022 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0007: Oracle SPECULATIVE_SPRING ABBV → Sharpe=0.00, DSR p=1.0000, Verdict=REJECTED
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:59:03,157 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → only 5 entries (min=10)
-2026-05-07 00:59:03,159 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0008: Oracle QUALITY_VALUE ABBV → Sharpe=0.00, DSR p=1.0000, Verdict=REJECTED
-2026-05-07 00:59:03,159 [QuaternionBatch] INFO —   🔴 ABBV: best_sharpe=0.00 dims=0→0 (REJECTED) [0.3s]
-2026-05-07 00:59:03,161 [QuaternionBatch] INFO — 
-[4/541] ── ABNB ──
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:59:03,303 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 15 entries labeled (profit=6, loss=8, time=1)
-2026-05-07 00:59:03,304 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=1.5469 WR=40.0% PF=1.7529 Entries=15
-2026-05-07 00:59:03,307 [backend.research_lab.experiments.experiment_registry] INFO — 🟡 EXP-0009: Oracle SPECULATIVE_SPRING ABNB → Sharpe=1.55, DSR p=0.4597, Verdict=OBSERVATION
-/root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:59:03,471 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 15 entries labeled (profit=5, loss=10, time=0)
-2026-05-07 00:59:03,472 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=0.6792 WR=33.33% PF=1.3749 Entries=15
-2026-05-07 00:59:03,475 [backend.research_lab.experiments.experiment_registry] INFO — 🟡 EXP-0010: Oracle QUALITY_VALUE ABNB → Sharpe=0.68, DSR p=0.9997, Verdict=OBSERVATION
+2026-05-07 01:05:08,582 [backend.modules.simulation.infrastructure.triple_barrier_adapter] INFO — TripleBarrier: 22 entries labeled (profit=7, loss=15, time=0)
+2026-05-07 01:05:08,583 [backend.modules.simulation.application.use_cases.oracle_backtest] INFO — Oracle: quaternion_state → Sharpe=0.6617 WR=31.82% PF=1.2577 Entries=22
+2026-05-07 01:05:08,589 [backend.research_lab.experiments.experiment_registry] INFO — 🟡 EXP-0015: Oracle QUALITY_VALUE AAPL → Sharpe=0.66, DSR p=1.0000, Verdict=OBSERVATION
 /root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
 /root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
@@ -133,37 +40,30 @@ nohup: ignoring input
   df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
 /root/botero-trade/backend/modules/shared/infrastructure/timescale_data_store.py:110: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
-2026-05-07 00:59:04,439 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features fraccionales (d_price=0.4, d_vol=0.6)...
-2026-05-07 00:59:04,494 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de microestructura normalizada...
-2026-05-07 00:59:04,513 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de estructura temporal...
-2026-05-07 00:59:04,525 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de corriente de volumen...
-2026-05-07 00:59:04,544 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de volumen orgánico (MAD-trimmed OLS)...
-2026-05-07 00:59:04,699 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de calendario mecánico...
-2026-05-07 00:59:04,745 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de rotación inter-mercado...
-2026-05-07 00:59:04,879 [FeatureDiscovery] INFO — QFE added 29 features → total 45D
-2026-05-07 00:59:10,914 [backend.research_lab.experiments.experiment_registry] INFO — 🔴 EXP-0011: Full ABNB (45D) → Sharpe=0.03, DSR p=1.0000, Verdict=REJECTED
-2026-05-07 00:59:13,600 [FeatureDiscovery] INFO — Baseline: 45 features, accuracy=0.4762
-2026-05-07 00:59:16,489 [FeatureDiscovery] INFO —   DROP CAL_MonthEnd (imp=0.0077): accuracy change=-0.0053
-2026-05-07 00:59:19,378 [FeatureDiscovery] INFO —   DROP Q_rotation_angle (imp=0.0168): accuracy change=+0.0106
-2026-05-07 00:59:27,861 [FeatureDiscovery] INFO —   DROP VF_CumDelta_ZScore (imp=0.0171): accuracy change=-0.0053
-2026-05-07 00:59:31,691 [FeatureDiscovery] INFO —   KEEP VF_VolPriceDivergence (imp=0.0179): removing drops accuracy by 0.0106
-2026-05-07 00:59:35,427 [FeatureDiscovery] INFO —   DROP TS_VolRatio (imp=0.0180): accuracy change=+0.0053
-2026-05-07 00:59:38,028 [FeatureDiscovery] INFO —   KEEP TS_RealVol_Fast (imp=0.0183): removing drops accuracy by 0.0159
-2026-05-07 00:59:40,964 [FeatureDiscovery] INFO —   DROP FD_LogVolume (imp=0.0183): accuracy change=-0.0053
-2026-05-07 00:59:43,654 [FeatureDiscovery] INFO —   DROP Q_w_delta (imp=0.0190): accuracy change=-0.0000
-2026-05-07 00:59:46,181 [FeatureDiscovery] INFO —   DROP MS_VWAP_ZScore (imp=0.0190): accuracy change=-0.0053
-2026-05-07 00:59:48,382 [FeatureDiscovery] INFO —   DROP CAL_QuarterEnd (imp=0.0191): accuracy change=-0.0026
-2026-05-07 00:59:51,170 [FeatureDiscovery] INFO —   DROP Q_w (imp=0.0193): accuracy change=+0.0026
-2026-05-07 00:59:53,127 [FeatureDiscovery] INFO —   DROP skew_delta (imp=0.0202): accuracy change=-0.0026
-2026-05-07 00:59:55,318 [FeatureDiscovery] INFO —   DROP Q_z (imp=0.0206): accuracy change=+0.0079
-2026-05-07 00:59:57,534 [FeatureDiscovery] INFO —   DROP IM_SectorRS_ZScore (imp=0.0208): accuracy change=-0.0026
-2026-05-07 01:00:00,605 [FeatureDiscovery] INFO —   DROP OV_OrganicRatio (imp=0.0212): accuracy change=+0.0053
-2026-05-07 01:00:04,964 [FeatureDiscovery] INFO —   DROP Q_x_delta (imp=0.0214): accuracy change=+0.0079
-2026-05-07 01:00:08,261 [FeatureDiscovery] INFO —   DROP Q_z_delta (imp=0.0215): accuracy change=+0.0053
-2026-05-07 01:00:10,571 [FeatureDiscovery] INFO —   KEEP TS_Return_15 (imp=0.0216): removing drops accuracy by 0.0106
-2026-05-07 01:00:13,293 [FeatureDiscovery] INFO —   DROP TS_RealVol_Slow (imp=0.0218): accuracy change=-0.0026
-2026-05-07 01:00:15,378 [FeatureDiscovery] INFO —   DROP MS_Amihud_ZScore (imp=0.0220): accuracy change=-0.0026
-2026-05-07 01:00:17,388 [FeatureDiscovery] INFO —   KEEP TS_Return_5 (imp=0.0228): removing drops accuracy by 0.0265
-2026-05-07 01:00:20,246 [FeatureDiscovery] INFO —   KEEP vvix_zscore (imp=0.0229): removing drops accuracy by 0.0212
-2026-05-07 01:00:22,764 [FeatureDiscovery] INFO —   KEEP VF_VolAccel_ZScore (imp=0.0230): removing drops accuracy by 0.0106
-2026-05-07 01:00:24,869 [FeatureDiscovery] INFO —   DROP MS_Spread_ZScore (imp=0.0230): accuracy change=+0.0238
+2026-05-07 01:05:09,492 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features fraccionales (d_price=0.4, d_vol=0.6)...
+2026-05-07 01:05:09,549 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de microestructura normalizada...
+2026-05-07 01:05:09,567 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de estructura temporal...
+2026-05-07 01:05:09,578 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de corriente de volumen...
+2026-05-07 01:05:09,594 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de volumen orgánico (MAD-trimmed OLS)...
+2026-05-07 01:05:09,740 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de calendario mecánico...
+2026-05-07 01:05:09,779 [backend.modules.simulation.application.use_cases.engineer_features] INFO — Calculando features de rotación inter-mercado...
+2026-05-07 01:05:09,820 [FeatureDiscovery] INFO — QFE added 29 features → total 45D
+2026-05-07 01:05:17,777 [backend.research_lab.experiments.experiment_registry] INFO — 🟡 EXP-0016: Full AAPL (45D) → Sharpe=0.62, DSR p=1.0000, Verdict=OBSERVATION
+2026-05-07 01:05:22,122 [FeatureDiscovery] INFO — Baseline: 45 features, accuracy=0.4947
+2026-05-07 01:05:25,572 [FeatureDiscovery] INFO —   KEEP TS_ATR_Pct (imp=0.0176): removing drops accuracy by 0.0238
+2026-05-07 01:05:28,851 [FeatureDiscovery] INFO —   DROP MS_Amihud_ZScore (imp=0.0181): accuracy change=-0.0026
+2026-05-07 01:05:33,853 [FeatureDiscovery] INFO —   DROP IM_SectorVolRS_ZScore (imp=0.0183): accuracy change=-0.0079
+2026-05-07 01:05:38,488 [FeatureDiscovery] INFO —   KEEP VF_RelVolume_ZScore (imp=0.0184): removing drops accuracy by 0.0159
+2026-05-07 01:05:42,699 [FeatureDiscovery] INFO —   DROP IM_SectorRS_ZScore (imp=0.0185): accuracy change=-0.0000
+2026-05-07 01:05:45,778 [FeatureDiscovery] INFO —   DROP TS_Return_15 (imp=0.0186): accuracy change=-0.0026
+2026-05-07 01:05:48,829 [FeatureDiscovery] INFO —   DROP Q_w (imp=0.0189): accuracy change=-0.0026
+2026-05-07 01:05:51,948 [FeatureDiscovery] INFO —   DROP TS_RealVol_Slow (imp=0.0193): accuracy change=-0.0000
+2026-05-07 01:05:55,274 [FeatureDiscovery] INFO —   KEEP Q_w_delta (imp=0.0195): removing drops accuracy by 0.0476
+2026-05-07 01:05:58,531 [FeatureDiscovery] INFO —   DROP Q_rotation_angle (imp=0.0201): accuracy change=+0.0132
+2026-05-07 01:06:01,482 [FeatureDiscovery] INFO —   DROP TS_VolRatio (imp=0.0205): accuracy change=+0.0079
+2026-05-07 01:06:04,805 [FeatureDiscovery] INFO —   DROP Q_x (imp=0.0205): accuracy change=-0.0053
+2026-05-07 01:06:08,054 [FeatureDiscovery] INFO —   KEEP TS_Return_1 (imp=0.0210): removing drops accuracy by 0.0132
+2026-05-07 01:06:11,006 [FeatureDiscovery] INFO —   DROP OV_SectorBeta_ZScore (imp=0.0211): accuracy change=+0.0053
+2026-05-07 01:06:13,530 [FeatureDiscovery] INFO —   DROP Q_norm (imp=0.0212): accuracy change=+0.0106
+2026-05-07 01:06:16,368 [FeatureDiscovery] INFO —   KEEP VF_VolAccel_ZScore (imp=0.0212): removing drops accuracy by 0.0132
+2026-05-07 01:06:18,809 [FeatureDiscovery] INFO —   KEEP MS_Spread_ZScore (imp=0.0212): removing drops accuracy by 0.0238

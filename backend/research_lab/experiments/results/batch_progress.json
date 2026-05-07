@@ -1,23 +1,25 @@
 {
-  "started_at": "2026-05-07T00:56:41.191693+00:00",
-  "last_updated": "2026-05-07T01:05:08.316928+00:00",
+  "started_at": "2026-05-07T01:57:02.209515+00:00",
+  "last_updated": "2026-05-07T02:00:10.955511+00:00",
   "total_tickers": 541,
-  "completed_tickers": 4,
+  "completed_tickers": 5,
   "tickers_done": [
     "A",
     "AAPL",
     "ABBV",
-    "A"
+    "ABNB",
+    "ABT"
   ],
   "tickers_promoted": [
-    "AAPL"
+    "AAPL",
+    "ABNB"
   ],
   "tickers_observation": [],
   "tickers_rejected": [
     "A",
     "ABBV",
-    "A"
+    "ABT"
   ],
-  "current_ticker": "AAPL",
-  "status": "running"
+  "current_ticker": null,
+  "status": "completed"
 }

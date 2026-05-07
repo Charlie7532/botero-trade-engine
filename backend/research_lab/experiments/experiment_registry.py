@@ -161,7 +161,9 @@ class ExperimentRegistry:
         returns_std: float = 1.0,
     ) -> ExperimentRecord:
         """Record a new experiment with automatic DSR calculation."""
-        n_trials = self.n_trials + 1
+        # DSR penalizes multiple tests on the SAME dataset (ticker),
+        # not unrelated experiments on different instruments.
+        n_trials = sum(1 for r in self._records if r.ticker == ticker) + 1
 
         dsr = deflated_sharpe_ratio(
             observed_sharpe=sharpe,

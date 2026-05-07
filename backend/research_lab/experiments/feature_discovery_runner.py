@@ -198,10 +198,15 @@ def backward_elimination(
     y: pd.Series,
     importance: dict[str, float],
     accuracy_drop_threshold: float = 0.01,
+    max_features: int = 25,
 ) -> tuple[list[str], float]:
     """
     Remove features one at a time (least important first).
     Stop when removing any feature drops accuracy by > threshold.
+
+    After the main loop, enforce a hard cap on feature count to
+    guard against the curse of dimensionality (V2 has 45D starting
+    point vs V1's 35D — the 1% threshold is too loose at high D).
 
     Returns:
         (optimal_features, final_accuracy)
@@ -234,13 +239,37 @@ def backward_elimination(
             current_features = candidate
             baseline_acc = new_acc
 
+    # Hard cap: if still above max_features, force-remove least important
+    if len(current_features) > max_features:
+        logger.info(
+            f"  Hard cap: {len(current_features)}D > {max_features}D — "
+            f"force-removing {len(current_features) - max_features} lowest-importance features"
+        )
+        # Re-rank survivors by their original importance
+        survivors_ranked = sorted(
+            [(f, importance.get(f, 0.0)) for f in current_features],
+            key=lambda x: x[1],
+            reverse=True,
+        )
+        current_features = [f for f, _ in survivors_ranked[:max_features]]
+        _, baseline_acc = run_xgboost_importance(X[current_features], y)
+        logger.info(f"  After cap: {len(current_features)}D, accuracy={baseline_acc:.4f}")
+
     return current_features, baseline_acc
 
 
 def _evaluate_subset(
     X: pd.DataFrame, y: pd.Series, ohlcv: pd.DataFrame,
 ) -> tuple[float, float, float, float, float, int]:
-    """Evaluate a feature subset, return (accuracy, sharpe, pf, wr, mdd, n_trades)."""
+    """
+    Evaluate a feature subset with full Long/Short Sharpe.
+
+    Strategy: LONG on BULLISH (pred=2), SHORT on BEARISH (pred=0),
+    FLAT on NEUTRAL (pred=1). This measures the model's complete
+    signal quality — not just its BULLISH precision.
+
+    Returns (accuracy, sharpe, profit_factor, win_rate, max_drawdown, n_trades).
+    """
     from sklearn.model_selection import train_test_split
     from xgboost import XGBClassifier
 
@@ -264,18 +293,28 @@ def _evaluate_subset(
     acc = float(m.score(X_te, y_te))
     preds = m.predict(X_te)
 
+    # Full L/S: LONG on BULLISH, SHORT on BEARISH, FLAT on NEUTRAL
     returns = ohlcv["close"].pct_change().reindex(X_te.index).shift(-1)
-    sr = returns[preds == 2].dropna()
-    if len(sr) > 10:
-        sharpe = float(sr.mean() / sr.std() * np.sqrt(252))
-        pf = float(sr[sr > 0].sum() / max(abs(sr[sr < 0].sum()), 1e-8))
-        mdd = float(sr.cumsum().min())
+    position = pd.Series(0.0, index=X_te.index)
+    position[preds == 2] = 1.0     # BULLISH → long
+    position[preds == 0] = -1.0    # BEARISH → short
+    strategy_returns = (position * returns).dropna()
+
+    n_active = int((position != 0).sum())
+    if len(strategy_returns) > 10 and strategy_returns.std() > 1e-8:
+        sharpe = float(strategy_returns.mean() / strategy_returns.std() * np.sqrt(252))
+        gains = strategy_returns[strategy_returns > 0].sum()
+        losses = abs(strategy_returns[strategy_returns < 0].sum())
+        pf = float(gains / max(losses, 1e-8))
+        cumulative = strategy_returns.cumsum()
+        running_max = cumulative.cummax()
+        drawdown = cumulative - running_max
+        mdd = float(drawdown.min())
     else:
         sharpe, pf, mdd = 0.0, 0.0, 0.0
 
-    wr = float((preds == 2).sum() / max(len(preds), 1))
-    nt = int((preds == 2).sum())
-    return acc, sharpe, pf, wr, mdd, nt
+    wr = float((strategy_returns > 0).sum() / max(n_active, 1))
+    return acc, sharpe, pf, wr, mdd, n_active
 
 
 def run_discovery(

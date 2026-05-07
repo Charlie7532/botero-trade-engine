@@ -41,18 +41,26 @@ logger = logging.getLogger("FeatureDiscovery")
 def build_enriched_features(
     ohlcv: pd.DataFrame,
     macro_extras: dict[str, pd.Series] | None = None,
+    market_data: dict[str, pd.DataFrame] | None = None,
 ) -> pd.DataFrame:
     """
     Build the full enriched feature matrix:
       - Quaternion 4D base + 8 derivatives (12 dims)
-      - QuantFeatureEngineer features (~19 dims)
+      - QuantFeatureEngineer features (~30+ dims)
       - Macro extras from Vault (SKEW, VVIX)
+
+    V2 additions (via market_data dict):
+      - Organic Volume Decomposition (SPY + Sector ETF)
+      - Calendar Mechanical Forces (OPEX, Month-End, Quarter-End)
+      - Intermarket Rotation (Sector RS, Yield Delta, Credit Spread)
 
     Each QFE family is extracted independently — a failure in one
     family does not block the others.
 
     Returns a single DataFrame with all candidate dimensions.
     """
+    market_data = market_data or {}
+
     # 1. Quaternion base + derivatives
     q = MarketQuaternion.compute(ohlcv, extras=macro_extras)
 
@@ -65,6 +73,7 @@ def build_enriched_features(
         qfe = QuantFeatureEngineer(ohlcv, tf_minutes)
 
         # Extract each family independently — one failure doesn't kill the rest
+        # V1 families (no external data needed)
         for method_name in [
             "extract_fractional_features",
             "extract_microstructure_features",
@@ -75,6 +84,30 @@ def build_enriched_features(
                 getattr(qfe, method_name)()
             except Exception as e:
                 logger.debug(f"QFE.{method_name} failed: {e}")
+
+        # V2 families (require external market data)
+        try:
+            qfe.extract_organic_volume_features(
+                spy_df=market_data.get("spy"),
+                sector_etf_df=market_data.get("sector_etf"),
+            )
+        except Exception as e:
+            logger.debug(f"QFE.extract_organic_volume_features failed: {e}")
+
+        try:
+            qfe.extract_calendar_features()
+        except Exception as e:
+            logger.debug(f"QFE.extract_calendar_features failed: {e}")
+
+        try:
+            qfe.extract_intermarket_features(
+                spy_df=market_data.get("spy"),
+                sector_etf_df=market_data.get("sector_etf"),
+                bond_df=market_data.get("bond"),
+                hyg_df=market_data.get("hyg"),
+            )
+        except Exception as e:
+            logger.debug(f"QFE.extract_intermarket_features failed: {e}")
 
         # Merge QFE columns into quaternion DataFrame
         original_cols = {"open", "high", "low", "close", "volume", "vwap", "trade_count"}

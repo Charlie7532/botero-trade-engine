@@ -156,7 +156,8 @@ def run_ticker_pipeline(
             if len(ohlcv) >= 300:
                 # Build enriched features
                 macro_extras = _load_macro_extras(store, ohlcv)
-                features = build_enriched_features(ohlcv, macro_extras or None)
+                market_data = _load_market_data(store, ticker)
+                features = build_enriched_features(ohlcv, macro_extras or None, market_data)
                 labels = label_next_bar(ohlcv)
                 result_summary["discovery_full_dims"] = features.shape[1]
 
@@ -237,6 +238,63 @@ def _load_macro_extras(store, ohlcv) -> dict:
         except Exception:
             pass
     return extras
+
+
+def _load_market_data(store, ticker: str) -> dict:
+    """
+    Load V2 market data for organic volume decomposition and intermarket features.
+
+    Returns dict with keys: spy, sector_etf, bond, hyg (each a DataFrame or None).
+    """
+    data = {}
+
+    # SPY (broad market)
+    try:
+        spy = store.load_bars("SPY", "1d")
+        if not spy.empty:
+            data["spy"] = spy
+    except Exception:
+        pass
+
+    # Sector ETF for this ticker
+    try:
+        from backend.modules.shared.domain.constants.ticker_sector_map import sector_etf_for
+        # Try to resolve sector from instruments or use a heuristic
+        # For now, we try common sector mappings via PayloadCMS
+        sector_etf_ticker = _resolve_sector_etf(store, ticker)
+        if sector_etf_ticker:
+            sector_df = store.load_bars(sector_etf_ticker, "1d")
+            if not sector_df.empty:
+                data["sector_etf"] = sector_df
+    except Exception:
+        pass
+
+    # TLT (bonds / yield delta)
+    try:
+        tlt = store.load_bars("TLT", "1d")
+        if not tlt.empty:
+            data["bond"] = tlt
+    except Exception:
+        pass
+
+    # HYG (credit spread)
+    try:
+        hyg = store.load_bars("HYG", "1d")
+        if not hyg.empty:
+            data["hyg"] = hyg
+    except Exception:
+        pass
+
+    return data
+
+
+def _resolve_sector_etf(store, ticker: str) -> str | None:
+    """
+    Resolve the sector ETF for a given ticker.
+    Uses static O(1) lookup — no DB queries.
+    """
+    from backend.modules.shared.domain.constants.ticker_sector_map import get_sector_etf
+    return get_sector_etf(ticker)
 
 
 def run_batch(

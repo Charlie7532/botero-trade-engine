@@ -24,3 +24,1617 @@
 2026-05-06 17:06:21,416 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
 2026-05-06 17:06:21,416 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
 2026-05-06 17:06:21,520 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.24
+2026-05-06 17:08:41,757 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 17:08:42,024 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 17:08:42,029 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 17:08:45,489 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 28 tickers with news
+2026-05-06 17:08:45,539 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 17:08:45,583 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 17:08:45,627 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 17:08:45,673 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 17:08:45,673 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 17:08:45,673 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 17:13:45,673 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T17:13:45.673651+00:00 ═══
+2026-05-06 17:13:45,892 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 17:13:46,048 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:14:46,091 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:15:46,136 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:16:46,201 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 17:16:46,201 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 17:16:46,368 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.15
+2026-05-06 17:19:43,734 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 17:19:43,946 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 17:19:43,951 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 17:19:46,346 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 28 tickers with news
+2026-05-06 17:19:46,400 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 17:19:46,447 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 17:19:46,491 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 17:19:46,537 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 17:19:46,537 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 17:19:46,539 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 17:24:46,539 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T17:24:46.539403+00:00 ═══
+2026-05-06 17:24:46,765 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 17:24:46,952 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:25:46,995 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:26:47,039 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:27:47,098 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 17:27:47,098 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 17:27:47,246 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.12
+2026-05-06 17:30:30,326 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 17:30:30,598 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 17:30:30,605 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 17:31:09,244 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 28 tickers with news
+2026-05-06 17:31:09,293 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 17:31:09,339 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 17:31:09,384 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 17:31:09,430 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 17:31:09,430 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 17:31:09,430 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 17:36:09,430 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T17:36:09.430888+00:00 ═══
+2026-05-06 17:36:09,661 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 17:36:09,825 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:37:09,867 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:38:09,908 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:39:09,966 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 17:39:09,966 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 17:39:10,096 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.09
+2026-05-06 17:41:51,493 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 17:41:51,718 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 17:41:51,723 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 17:41:53,602 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 28 tickers with news
+2026-05-06 17:41:53,711 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 17:41:53,774 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 17:41:53,831 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 17:41:53,878 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 17:41:53,878 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 17:41:53,878 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 17:46:53,879 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T17:46:53.879422+00:00 ═══
+2026-05-06 17:46:54,117 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 17:46:54,335 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:47:54,380 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:48:54,424 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:49:54,485 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 17:49:54,485 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 17:49:54,631 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.07
+2026-05-06 17:52:35,933 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 17:52:36,156 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 17:52:36,160 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 17:52:38,254 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 28 tickers with news
+2026-05-06 17:52:38,304 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 17:52:38,348 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 17:52:38,400 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 17:52:38,462 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 17:52:38,462 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 17:52:38,462 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 17:57:38,463 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T17:57:38.462999+00:00 ═══
+2026-05-06 17:57:38,685 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 17:57:38,841 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:58:38,885 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 17:59:38,928 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:00:38,985 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 18:00:38,986 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 18:00:39,125 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.01
+2026-05-06 18:03:18,445 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 18:03:18,637 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 18:03:18,642 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 18:03:28,835 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news A: HTTPSConnectionPool(host='api.finnhub.io', port=443): Read timed out. (read timeout=10)
+2026-05-06 18:03:38,929 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AAPL: HTTPSConnectionPool(host='api.finnhub.io', port=443): Read timed out. (read timeout=10)
+2026-05-06 18:03:49,021 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ABBV: HTTPSConnectionPool(host='api.finnhub.io', port=443): Read timed out. (read timeout=10)
+2026-05-06 18:03:57,762 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ABNB: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:57,971 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ABT: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,015 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ACGL: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,049 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ACN: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,073 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ADBE: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,098 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ADI: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,119 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ADM: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,140 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ADP: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,166 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ADSK: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,196 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AEE: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,221 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AEP: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,240 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AES: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,255 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AFL: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,270 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AFRM: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,281 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AIG: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,289 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AIZ: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,307 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AJG: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,318 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AKAM: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,324 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ALB: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,329 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ALGN: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,349 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ALL: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,356 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news ALLE: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,381 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AMAT: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,408 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AMCR: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,439 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AMD: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,451 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AME: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,460 [backend.modules.flow_intelligence.infrastructure.finnhub_api] ERROR — Error news AMGN: FinnhubAPIException(status_code: 502): JSON error message from Finnhub: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0</center>
+</body>
+</html>
+
+2026-05-06 18:03:58,460 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 0 tickers with news
+2026-05-06 18:03:58,508 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 18:03:58,556 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 18:03:58,603 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 18:03:58,646 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 18:03:58,646 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 18:03:58,646 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 18:08:58,647 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T18:08:58.647412+00:00 ═══
+2026-05-06 18:08:58,875 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 18:08:59,083 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:09:59,126 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:10:59,169 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:11:59,230 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 18:11:59,230 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 18:11:59,383 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.01
+2026-05-06 18:14:42,572 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 18:14:42,759 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 18:14:42,764 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 18:14:44,884 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 18:14:44,991 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 18:14:45,086 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 18:14:45,159 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 18:14:45,201 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 18:14:45,201 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 18:14:45,201 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 18:19:45,202 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T18:19:45.202138+00:00 ═══
+2026-05-06 18:19:45,430 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 18:19:45,568 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:20:45,614 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:21:45,663 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:22:45,719 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 18:22:45,719 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 18:22:45,847 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.00
+2026-05-06 18:25:25,715 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 18:25:25,897 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 18:25:25,902 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 18:25:27,780 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 18:25:27,832 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 18:25:27,877 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 18:25:27,920 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 18:25:27,964 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 18:25:27,965 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 18:25:27,965 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 18:30:27,965 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T18:30:27.965495+00:00 ═══
+2026-05-06 18:30:28,199 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 18:30:28,400 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:31:28,444 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:32:28,490 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:33:28,548 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 18:33:28,548 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 18:33:28,709 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.01
+2026-05-06 18:36:19,632 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 18:36:19,817 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 18:36:19,823 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 18:36:22,031 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 18:36:22,079 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 18:36:22,123 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 18:36:22,165 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 18:36:22,209 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 18:36:22,209 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 18:36:22,209 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 18:41:22,210 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T18:41:22.209966+00:00 ═══
+2026-05-06 18:41:22,540 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 18:41:22,699 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:42:22,742 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:43:22,790 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:44:22,847 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 18:44:22,847 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 18:44:22,974 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.04
+2026-05-06 18:47:07,413 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 18:47:07,613 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 18:47:07,617 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 18:47:10,030 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 18:47:10,082 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 18:47:10,124 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 18:47:10,174 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 18:47:10,219 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 18:47:10,219 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 18:47:10,219 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 18:52:10,220 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T18:52:10.219959+00:00 ═══
+2026-05-06 18:52:10,450 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 18:52:10,631 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:53:10,678 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:54:10,722 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 18:55:10,780 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 18:55:10,780 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 18:55:10,931 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.13
+2026-05-06 18:57:55,271 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 18:57:55,438 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 18:57:55,441 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 18:58:13,791 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 18:58:13,843 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 18:58:13,888 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 18:58:13,933 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 18:58:13,983 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 18:58:13,984 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 18:58:13,984 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 19:03:13,984 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T19:03:13.984407+00:00 ═══
+2026-05-06 19:03:14,297 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 19:03:14,443 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:04:14,492 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:05:14,534 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:06:14,594 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 19:06:14,595 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 19:06:14,735 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.15
+2026-05-06 19:08:54,817 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 19:08:55,006 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 19:08:55,010 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 19:08:58,209 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 19:08:58,261 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 19:08:58,310 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 19:08:58,354 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 19:08:58,413 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 19:08:58,413 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 19:08:58,413 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 19:13:58,413 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T19:13:58.413764+00:00 ═══
+2026-05-06 19:13:58,643 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 19:13:58,867 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:14:58,913 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:15:58,958 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:16:59,015 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 19:16:59,015 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 19:16:59,188 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.16
+2026-05-06 19:19:44,643 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 19:19:44,885 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 19:19:44,890 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 19:19:46,921 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 19:19:46,973 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 19:19:47,018 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 19:19:47,061 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 19:19:47,106 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 19:19:47,107 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 19:19:47,107 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 19:24:47,107 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T19:24:47.107409+00:00 ═══
+2026-05-06 19:24:47,322 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 19:24:47,522 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:25:47,564 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:26:47,611 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:27:47,667 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 19:27:47,667 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 19:27:47,809 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.19
+2026-05-06 19:30:28,887 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 19:30:29,069 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 19:30:29,076 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 19:31:03,921 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 19:31:04,053 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 19:31:04,114 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 19:31:04,159 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 19:31:04,205 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 19:31:04,205 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 19:31:04,205 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 19:36:04,205 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T19:36:04.205691+00:00 ═══
+2026-05-06 19:36:04,864 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 19:36:05,076 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:37:05,124 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:38:05,169 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:39:05,238 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 19:39:05,238 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 19:39:05,402 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.20
+2026-05-06 19:41:48,857 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 19:41:49,032 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 19:41:49,035 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 19:41:50,919 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 19:41:50,972 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 19:41:51,017 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 19:41:51,063 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 19:41:51,107 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 19:41:51,107 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 19:41:51,107 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 19:46:51,108 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T19:46:51.108157+00:00 ═══
+2026-05-06 19:46:51,345 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 19:46:51,535 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:47:51,582 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:48:51,624 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:49:51,682 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 19:49:51,682 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 19:49:51,821 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.28
+2026-05-06 19:52:37,934 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 19:52:38,095 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 19:52:38,099 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 19:52:40,076 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 19:52:40,125 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 19:52:40,168 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 19:52:40,216 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 19:52:40,259 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 19:52:40,260 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 19:52:40,260 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 19:57:40,262 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T19:57:40.262399+00:00 ═══
+2026-05-06 19:57:40,511 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 19:57:40,645 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:58:40,687 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 19:59:40,734 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:00:40,792 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 20:00:40,792 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 20:00:40,924 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.33
+2026-05-06 20:03:43,277 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 20:03:43,469 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 20:03:43,475 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 20:03:45,718 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 20:03:45,791 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 20:03:45,855 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 20:03:45,923 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 20:03:45,991 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 20:03:45,991 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 20:03:45,992 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 20:08:45,992 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T20:08:45.992297+00:00 ═══
+2026-05-06 20:08:46,232 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 20:08:46,396 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:09:46,444 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:10:46,493 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:11:46,554 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 20:11:46,554 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 20:11:46,769 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.35
+2026-05-06 20:14:50,315 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 20:14:50,555 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 20:14:50,560 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 20:14:52,629 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 20:14:52,700 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 20:14:52,791 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 20:14:52,868 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 20:14:52,928 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 20:14:52,928 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 20:14:52,928 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 20:19:52,929 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T20:19:52.929022+00:00 ═══
+2026-05-06 20:19:53,159 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 20:19:53,360 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:20:53,402 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:21:53,447 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:22:53,506 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 20:22:53,507 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 20:22:53,647 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.41
+2026-05-06 20:25:39,382 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 20:25:39,601 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 20:25:39,606 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 20:25:42,441 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 20:25:42,510 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 20:25:42,571 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 20:25:42,635 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 20:25:42,699 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 20:25:42,699 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 20:25:42,700 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 20:30:42,700 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T20:30:42.700624+00:00 ═══
+2026-05-06 20:30:42,922 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 20:30:43,081 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:31:43,128 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:32:43,169 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:33:43,229 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 20:33:43,229 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 20:33:43,389 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 20:36:27,161 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 20:36:27,365 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 20:36:27,370 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 20:36:29,780 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 20:36:29,844 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 20:36:29,903 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 20:36:29,993 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 20:36:30,091 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 20:36:30,091 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 20:36:30,091 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 20:41:30,092 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T20:41:30.092149+00:00 ═══
+2026-05-06 20:41:30,328 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 20:41:30,486 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:42:30,529 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:43:30,577 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:44:30,634 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 20:44:30,634 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 20:44:30,780 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 20:47:13,409 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 20:47:13,579 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 20:47:13,583 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 20:47:15,687 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 20:47:15,862 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 20:47:15,941 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 20:47:16,002 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 20:47:16,059 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 20:47:16,059 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 20:47:16,059 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 20:52:16,060 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T20:52:16.059950+00:00 ═══
+2026-05-06 20:52:16,298 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 20:52:16,486 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:53:16,528 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:54:16,568 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 20:55:16,632 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 20:55:16,632 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 20:55:16,804 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 20:57:55,712 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 20:57:55,937 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 20:57:55,942 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 20:57:58,172 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 20:57:58,233 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 20:57:58,289 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 20:57:58,346 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 20:57:58,413 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 20:57:58,413 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 20:57:58,413 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 21:02:58,413 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T21:02:58.413886+00:00 ═══
+2026-05-06 21:02:58,636 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 21:02:58,772 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:03:58,817 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:04:58,858 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:05:58,916 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 21:05:58,916 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 21:05:59,082 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 21:08:38,653 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 21:08:38,801 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 21:08:38,803 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 21:08:41,171 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 21:08:41,239 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 21:08:41,307 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 21:08:41,367 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 21:08:41,428 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 21:08:41,428 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 21:08:41,429 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 21:13:41,431 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T21:13:41.431407+00:00 ═══
+2026-05-06 21:13:41,664 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 21:13:41,802 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:14:41,849 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:15:41,913 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:16:41,981 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 21:16:41,982 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 21:16:42,144 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 21:19:20,797 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 21:19:20,973 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 21:19:20,977 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 21:19:23,380 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 21:19:23,447 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 21:19:23,505 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 21:19:23,580 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 21:19:23,645 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 21:19:23,645 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 21:19:23,645 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 21:24:23,645 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T21:24:23.645677+00:00 ═══
+2026-05-06 21:24:23,950 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 21:24:24,170 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:25:24,215 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:26:24,263 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:27:24,321 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 21:27:24,321 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 21:27:24,460 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 21:30:02,198 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 21:30:02,433 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 21:30:02,438 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 21:30:20,609 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 21:30:20,678 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 21:30:20,740 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 21:30:20,799 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 21:30:20,876 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 21:30:20,876 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 21:30:20,876 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 21:35:20,876 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T21:35:20.876917+00:00 ═══
+2026-05-06 21:35:21,105 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 21:35:21,296 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:36:21,338 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:37:21,384 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:38:21,441 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 21:38:21,441 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 21:38:21,576 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 21:41:01,968 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 21:41:02,184 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 21:41:02,188 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 21:41:04,306 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 21:41:04,376 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 21:41:04,436 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 21:41:04,499 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 21:41:04,561 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 21:41:04,562 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 21:41:04,562 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 21:46:04,563 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T21:46:04.563419+00:00 ═══
+2026-05-06 21:46:04,888 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 21:46:05,161 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:47:05,205 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:48:05,249 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:49:05,315 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 21:49:05,317 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 21:49:05,493 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 21:51:45,389 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 21:51:45,619 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 21:51:45,623 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 21:51:47,562 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 21:51:47,627 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 21:51:47,690 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 21:51:47,751 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 21:51:47,811 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 21:51:47,812 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 21:51:47,812 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 21:56:47,813 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T21:56:47.813398+00:00 ═══
+2026-05-06 21:56:48,047 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 21:56:48,186 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:57:48,232 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:58:48,272 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 21:59:48,326 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 21:59:48,328 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 21:59:48,466 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 22:02:32,261 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 22:02:32,429 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 22:02:32,435 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 22:02:35,081 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 22:02:35,145 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 22:02:35,203 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 22:02:35,261 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 22:02:35,317 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 22:02:35,319 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 22:02:35,319 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 22:07:35,321 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T22:07:35.321297+00:00 ═══
+2026-05-06 22:07:35,569 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 22:07:35,771 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:08:35,814 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:09:35,858 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:10:35,919 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 22:10:35,920 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 22:10:36,182 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 22:13:31,622 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 22:13:31,864 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 22:13:31,868 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 22:13:34,427 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 22:13:34,496 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 22:13:34,553 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 22:13:34,610 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 22:13:34,667 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 22:13:34,669 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 22:13:34,670 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 22:18:34,670 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T22:18:34.670406+00:00 ═══
+2026-05-06 22:18:34,931 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 22:18:35,097 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:19:35,143 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:20:35,194 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:21:35,260 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 22:21:35,261 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 22:21:35,470 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 22:24:28,696 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 22:24:28,988 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 22:24:28,993 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 22:24:31,072 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 22:24:31,138 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 22:24:31,200 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 22:24:31,260 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 22:24:31,318 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 22:24:31,319 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 22:24:31,320 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 22:29:31,323 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T22:29:31.323390+00:00 ═══
+2026-05-06 22:29:31,577 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 22:29:31,781 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:30:31,824 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:31:31,870 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:32:31,947 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 22:32:31,948 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 22:32:32,142 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 22:35:37,855 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 22:35:38,131 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 22:35:38,136 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 22:35:40,552 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 22:35:40,625 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 22:35:40,691 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 22:35:40,760 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 22:35:40,827 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 22:35:40,828 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 22:35:40,828 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 22:40:40,828 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T22:40:40.828749+00:00 ═══
+2026-05-06 22:40:41,049 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 22:40:41,285 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:41:41,330 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:42:41,375 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:43:41,433 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 22:43:41,433 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 22:43:41,635 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 22:46:24,258 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 22:46:24,516 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 22:46:24,521 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 22:46:26,414 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 22:46:26,484 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 22:46:26,545 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 22:46:26,606 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 22:46:26,678 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 22:46:26,678 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 22:46:26,678 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 22:51:26,679 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T22:51:26.679495+00:00 ═══
+2026-05-06 22:51:26,909 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 22:51:27,143 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:52:27,188 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:53:27,232 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 22:54:27,292 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 22:54:27,294 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 22:54:27,468 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 22:57:23,450 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 22:57:23,787 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 22:57:23,792 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 22:57:26,231 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 22:57:26,303 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 22:57:26,366 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 22:57:26,428 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 22:57:26,488 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 22:57:26,489 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 22:57:26,489 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 23:02:26,490 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T23:02:26.490410+00:00 ═══
+2026-05-06 23:02:26,823 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 23:02:27,110 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:03:27,156 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:04:27,204 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:05:27,263 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 23:05:27,263 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 23:05:27,443 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 23:08:18,080 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 23:08:18,335 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 23:08:18,343 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 23:08:20,660 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 23:08:20,734 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 23:08:20,796 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 23:08:20,858 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 23:08:20,919 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 23:08:20,920 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 23:08:20,921 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 23:13:20,922 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T23:13:20.922018+00:00 ═══
+2026-05-06 23:13:21,158 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 23:13:21,382 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:14:21,423 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:15:21,467 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:16:21,527 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 23:16:21,528 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 23:16:21,675 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 23:19:07,983 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 23:19:08,216 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 23:19:08,221 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 23:19:10,196 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 23:19:10,265 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 23:19:10,326 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 23:19:10,385 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 23:19:10,449 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 23:19:10,449 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 23:19:10,449 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 23:24:10,450 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T23:24:10.450105+00:00 ═══
+2026-05-06 23:24:10,677 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 23:24:10,847 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:25:10,892 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:26:10,939 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:27:11,007 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 23:27:11,007 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 23:27:11,238 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 23:30:03,608 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 23:30:03,916 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 23:30:03,922 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 23:30:12,311 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 23:30:12,390 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 23:30:12,458 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 23:30:12,522 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 23:30:12,587 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 23:30:12,587 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 23:30:12,588 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 23:35:12,588 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T23:35:12.588227+00:00 ═══
+2026-05-06 23:35:12,818 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 23:35:12,955 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:36:13,000 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:37:13,042 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:38:13,141 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 23:38:13,144 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 23:38:13,281 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 23:41:06,637 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 23:41:06,934 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 23:41:06,940 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 23:41:09,109 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 23:41:09,178 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 23:41:09,241 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 23:41:09,301 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 23:41:09,363 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 23:41:09,364 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 23:41:09,364 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 23:46:09,466 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T23:46:09.413391+00:00 ═══
+2026-05-06 23:46:10,004 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 23:46:11,774 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:47:11,827 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:48:11,880 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:49:11,970 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-06 23:49:11,973 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-06 23:49:14,866 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-06 23:52:09,643 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-06 23:52:10,181 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-06 23:52:10,191 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-06 23:52:13,094 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 29 tickers with news
+2026-05-06 23:52:13,168 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-06 23:52:13,232 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-06 23:52:13,357 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-06 23:52:13,419 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-06 23:52:13,423 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-06 23:52:13,424 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-06 23:57:13,427 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-06T23:57:13.427406+00:00 ═══
+2026-05-06 23:57:13,655 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-06 23:57:13,851 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:58:13,892 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-06 23:59:13,936 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-07 00:00:14,040 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-07 00:00:14,043 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-07 00:00:14,605 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.39
+2026-05-07 00:03:36,187 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-07 00:03:36,449 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-07 00:03:36,455 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-07 00:03:37,161 [DataVaultDaemon] INFO — 📅 Finnhub earnings: 1500 events (next 14 days)
+2026-05-07 00:04:04,222 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=✓, 27 tickers with news
+2026-05-07 00:04:05,048 [DataVaultDaemon] INFO — 📊 FRED macro vault: 8 series captured
+2026-05-07 00:04:05,294 [DataVaultDaemon] INFO — 😱 Fear & Greed vault: 68.4 (greed)
+2026-05-07 00:04:05,356 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-07 00:04:05,993 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: A/1d — inserted 1 bars
+2026-05-07 00:04:07,046 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AAPL/1d — inserted 1 bars
+2026-05-07 00:04:07,559 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ABBV/1d — inserted 1 bars
+2026-05-07 00:04:07,987 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ABNB/1d — inserted 1 bars
+2026-05-07 00:04:08,447 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ABT/1d — inserted 1 bars
+2026-05-07 00:04:08,815 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ACGL/1d — inserted 1 bars
+2026-05-07 00:04:09,251 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ACN/1d — inserted 1 bars
+2026-05-07 00:04:09,614 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ADBE/1d — inserted 1 bars
+2026-05-07 00:04:10,082 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ADI/1d — inserted 1 bars
+2026-05-07 00:04:12,196 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ADM/1d — inserted 1 bars
+2026-05-07 00:04:12,643 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ADP/1d — inserted 1 bars
+2026-05-07 00:04:13,083 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ADSK/1d — inserted 1 bars
+2026-05-07 00:04:13,471 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AEE/1d — inserted 1 bars
+2026-05-07 00:04:13,979 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AEP/1d — inserted 1 bars
+2026-05-07 00:04:14,521 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AES/1d — inserted 1 bars
+2026-05-07 00:04:15,076 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AFL/1d — inserted 1 bars
+2026-05-07 00:04:15,527 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AFRM/1d — inserted 1 bars
+2026-05-07 00:04:15,998 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AIG/1d — inserted 1 bars
+2026-05-07 00:04:16,474 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AIZ/1d — inserted 1 bars
+2026-05-07 00:04:16,984 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AJG/1d — inserted 1 bars
+2026-05-07 00:04:17,431 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AKAM/1d — inserted 1 bars
+2026-05-07 00:04:17,911 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ALB/1d — inserted 1 bars
+2026-05-07 00:04:18,327 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ALGN/1d — inserted 1 bars
+2026-05-07 00:04:18,790 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ALL/1d — inserted 1 bars
+2026-05-07 00:04:19,232 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ALLE/1d — inserted 1 bars
+2026-05-07 00:04:19,625 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AMAT/1d — inserted 1 bars
+2026-05-07 00:04:20,045 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AMCR/1d — inserted 1 bars
+2026-05-07 00:04:20,471 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AMD/1d — inserted 1 bars
+2026-05-07 00:04:20,914 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AME/1d — inserted 1 bars
+2026-05-07 00:04:21,437 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AMGN/1d — inserted 1 bars
+2026-05-07 00:04:21,912 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AMP/1d — inserted 1 bars
+2026-05-07 00:04:22,333 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AMT/1d — inserted 1 bars
+2026-05-07 00:04:22,708 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AMZN/1d — inserted 1 bars
+2026-05-07 00:04:23,154 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ANET/1d — inserted 1 bars
+2026-05-07 00:04:23,633 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AON/1d — inserted 1 bars
+2026-05-07 00:04:24,160 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AOS/1d — inserted 1 bars
+2026-05-07 00:04:24,639 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: APA/1d — inserted 1 bars
+2026-05-07 00:04:25,038 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: APD/1d — inserted 1 bars
+2026-05-07 00:04:25,472 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: APH/1d — inserted 1 bars
+2026-05-07 00:04:25,999 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: APO/1d — inserted 1 bars
+2026-05-07 00:04:26,450 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: APP/1d — inserted 1 bars
+2026-05-07 00:04:26,840 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: APTV/1d — inserted 1 bars
+2026-05-07 00:04:27,255 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ARE/1d — inserted 1 bars
+2026-05-07 00:04:27,653 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ARES/1d — inserted 1 bars
+2026-05-07 00:04:28,065 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ATO/1d — inserted 1 bars
+2026-05-07 00:04:28,540 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AVB/1d — inserted 1 bars
+2026-05-07 00:04:28,997 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AVGO/1d — inserted 1 bars
+2026-05-07 00:04:29,461 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AVY/1d — inserted 1 bars
+2026-05-07 00:04:29,892 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AWK/1d — inserted 1 bars
+2026-05-07 00:04:30,304 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AXON/1d — inserted 1 bars
+2026-05-07 00:04:30,835 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AXP/1d — inserted 1 bars
+2026-05-07 00:04:31,228 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: AZO/1d — inserted 1 bars
+2026-05-07 00:04:31,664 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BA/1d — inserted 1 bars
+2026-05-07 00:04:32,072 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BAC/1d — inserted 1 bars
+2026-05-07 00:04:32,489 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BALL/1d — inserted 1 bars
+2026-05-07 00:04:33,002 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BAX/1d — inserted 1 bars
+2026-05-07 00:04:33,383 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BBY/1d — inserted 1 bars
+2026-05-07 00:04:33,833 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BDX/1d — inserted 1 bars
+2026-05-07 00:04:34,291 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BEN/1d — inserted 1 bars
+2026-05-07 00:04:34,737 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BF-B/1d — inserted 1 bars
+2026-05-07 00:04:35,089 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BG/1d — inserted 1 bars
+2026-05-07 00:04:35,527 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BIIB/1d — inserted 1 bars
+2026-05-07 00:04:36,010 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BK/1d — inserted 1 bars
+2026-05-07 00:04:36,496 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BKNG/1d — inserted 1 bars
+2026-05-07 00:04:37,005 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BKR/1d — inserted 1 bars
+2026-05-07 00:04:37,458 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BLDR/1d — inserted 1 bars
+2026-05-07 00:04:37,987 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BLK/1d — inserted 1 bars
+2026-05-07 00:04:38,592 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BMY/1d — inserted 1 bars
+2026-05-07 00:04:39,171 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BR/1d — inserted 1 bars
+2026-05-07 00:04:39,737 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BRK-B/1d — inserted 1 bars
+2026-05-07 00:04:40,353 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BRO/1d — inserted 1 bars
+2026-05-07 00:04:40,935 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BSX/1d — inserted 1 bars
+2026-05-07 00:04:41,583 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BX/1d — inserted 1 bars
+2026-05-07 00:04:42,238 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: BXP/1d — inserted 1 bars
+2026-05-07 00:04:42,647 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: C/1d — inserted 1 bars
+2026-05-07 00:04:43,069 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CAG/1d — inserted 1 bars
+2026-05-07 00:04:43,508 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CAH/1d — inserted 1 bars
+2026-05-07 00:04:43,933 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CARR/1d — inserted 1 bars
+2026-05-07 00:04:44,372 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CASY/1d — inserted 1 bars
+2026-05-07 00:04:44,903 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CAT/1d — inserted 1 bars
+2026-05-07 00:04:45,327 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CB/1d — inserted 1 bars
+2026-05-07 00:04:45,736 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CBOE/1d — inserted 1 bars
+2026-05-07 00:04:46,188 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CBRE/1d — inserted 1 bars
+2026-05-07 00:04:46,603 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CCI/1d — inserted 1 bars
+2026-05-07 00:04:47,096 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CCL/1d — inserted 1 bars
+2026-05-07 00:04:47,472 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CDNS/1d — inserted 1 bars
+2026-05-07 00:04:47,868 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CDW/1d — inserted 1 bars
+2026-05-07 00:04:48,341 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CEG/1d — inserted 1 bars
+2026-05-07 00:04:48,769 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CF/1d — inserted 1 bars
+2026-05-07 00:04:49,146 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CFG/1d — inserted 1 bars
+2026-05-07 00:04:49,644 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CHD/1d — inserted 1 bars
+2026-05-07 00:04:50,136 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CHRW/1d — inserted 1 bars
+2026-05-07 00:04:50,552 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CHTR/1d — inserted 1 bars
+2026-05-07 00:04:51,005 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CI/1d — inserted 1 bars
+2026-05-07 00:04:51,482 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CIEN/1d — inserted 1 bars
+2026-05-07 00:04:51,885 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CINF/1d — inserted 1 bars
+2026-05-07 00:04:52,334 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CL/1d — inserted 1 bars
+2026-05-07 00:04:52,788 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CLX/1d — inserted 1 bars
+2026-05-07 00:04:53,262 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CMCSA/1d — inserted 1 bars
+2026-05-07 00:04:53,710 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CME/1d — inserted 1 bars
+2026-05-07 00:04:54,158 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CMG/1d — inserted 1 bars
+2026-05-07 00:04:54,639 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CMI/1d — inserted 1 bars
+2026-05-07 00:04:55,147 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CMS/1d — inserted 1 bars
+2026-05-07 00:04:55,563 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CNC/1d — inserted 1 bars
+2026-05-07 00:04:55,990 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CNP/1d — inserted 1 bars
+2026-05-07 00:04:56,490 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: COF/1d — inserted 1 bars
+2026-05-07 00:04:56,934 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: COHR/1d — inserted 1 bars
+2026-05-07 00:04:57,439 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: COIN/1d — inserted 1 bars
+2026-05-07 00:04:57,848 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: COO/1d — inserted 1 bars
+2026-05-07 00:04:58,348 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: COP/1d — inserted 1 bars
+2026-05-07 00:04:58,761 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: COR/1d — inserted 1 bars
+2026-05-07 00:04:59,227 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: COST/1d — inserted 1 bars
+2026-05-07 00:04:59,667 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CPAY/1d — inserted 1 bars
+2026-05-07 00:05:00,145 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CPB/1d — inserted 1 bars
+2026-05-07 00:05:00,601 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CPRT/1d — inserted 1 bars
+2026-05-07 00:05:01,137 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CPT/1d — inserted 1 bars
+2026-05-07 00:05:01,702 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CRH/1d — inserted 1 bars
+2026-05-07 00:05:02,216 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CRL/1d — inserted 1 bars
+2026-05-07 00:05:02,752 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CRM/1d — inserted 1 bars
+2026-05-07 00:05:03,248 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CRWD/1d — inserted 1 bars
+2026-05-07 00:05:03,756 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CSCO/1d — inserted 1 bars
+2026-05-07 00:05:04,176 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CSGP/1d — inserted 1 bars
+2026-05-07 00:05:04,667 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CSX/1d — inserted 1 bars
+2026-05-07 00:05:05,273 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CTAS/1d — inserted 1 bars
+2026-05-07 00:05:05,792 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CTRA/1d — inserted 1 bars
+2026-05-07 00:05:06,588 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CTSH/1d — inserted 1 bars
+2026-05-07 00:05:07,076 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CTVA/1d — inserted 1 bars
+2026-05-07 00:05:07,440 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CVNA/1d — inserted 1 bars
+2026-05-07 00:05:08,004 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CVS/1d — inserted 1 bars
+2026-05-07 00:05:08,552 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: CVX/1d — inserted 1 bars
+2026-05-07 00:05:09,068 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: D/1d — inserted 1 bars
+2026-05-07 00:05:09,549 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DAL/1d — inserted 1 bars
+2026-05-07 00:05:09,904 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DASH/1d — inserted 1 bars
+2026-05-07 00:05:10,402 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DD/1d — inserted 1 bars
+2026-05-07 00:05:10,814 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DDOG/1d — inserted 1 bars
+2026-05-07 00:05:11,249 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DE/1d — inserted 1 bars
+2026-05-07 00:05:11,667 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DECK/1d — inserted 1 bars
+2026-05-07 00:05:12,120 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DELL/1d — inserted 1 bars
+2026-05-07 00:05:12,550 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DG/1d — inserted 1 bars
+2026-05-07 00:05:13,054 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DGX/1d — inserted 1 bars
+2026-05-07 00:05:13,532 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DHI/1d — inserted 1 bars
+2026-05-07 00:05:13,984 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DHR/1d — inserted 1 bars
+2026-05-07 00:05:14,479 [yfinance] ERROR — $DIA: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112314")
+2026-05-07 00:05:14,483 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:05:14,483 [yfinance] ERROR — ['DIA']: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112314")
+2026-05-07 00:05:14,844 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DIS/1d — inserted 1 bars
+2026-05-07 00:05:15,255 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DLR/1d — inserted 1 bars
+2026-05-07 00:05:15,669 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DLTR/1d — inserted 1 bars
+2026-05-07 00:05:16,169 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DOC/1d — inserted 1 bars
+2026-05-07 00:05:16,674 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DOV/1d — inserted 1 bars
+2026-05-07 00:05:17,110 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DOW/1d — inserted 1 bars
+2026-05-07 00:05:17,575 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DPZ/1d — inserted 1 bars
+2026-05-07 00:05:18,031 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DRI/1d — inserted 1 bars
+2026-05-07 00:05:18,622 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DTE/1d — inserted 1 bars
+2026-05-07 00:05:19,046 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DUK/1d — inserted 1 bars
+2026-05-07 00:05:19,430 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DVA/1d — inserted 1 bars
+2026-05-07 00:05:19,831 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DVN/1d — inserted 1 bars
+2026-05-07 00:05:20,283 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: DXCM/1d — inserted 1 bars
+2026-05-07 00:05:20,725 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EA/1d — inserted 1 bars
+2026-05-07 00:05:21,121 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EBAY/1d — inserted 1 bars
+2026-05-07 00:05:21,498 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ECL/1d — inserted 1 bars
+2026-05-07 00:05:21,963 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ED/1d — inserted 1 bars
+2026-05-07 00:05:22,395 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EEM/1d — inserted 1 bars
+2026-05-07 00:05:22,709 [yfinance] ERROR — $EFA: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112322")
+2026-05-07 00:05:22,710 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:05:22,714 [yfinance] ERROR — ['EFA']: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112322")
+2026-05-07 00:05:23,052 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EFX/1d — inserted 1 bars
+2026-05-07 00:05:23,530 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EG/1d — inserted 1 bars
+2026-05-07 00:05:24,091 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EIX/1d — inserted 1 bars
+2026-05-07 00:05:24,515 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EL/1d — inserted 1 bars
+2026-05-07 00:05:24,956 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ELV/1d — inserted 1 bars
+2026-05-07 00:05:25,422 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EME/1d — inserted 1 bars
+2026-05-07 00:05:25,851 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EMR/1d — inserted 1 bars
+2026-05-07 00:05:26,358 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EOG/1d — inserted 1 bars
+2026-05-07 00:05:26,798 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EPAM/1d — inserted 1 bars
+2026-05-07 00:05:27,436 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EQIX/1d — inserted 1 bars
+2026-05-07 00:05:28,059 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EQR/1d — inserted 1 bars
+2026-05-07 00:05:28,733 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EQT/1d — inserted 1 bars
+2026-05-07 00:05:29,387 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ERIE/1d — inserted 1 bars
+2026-05-07 00:05:29,988 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ES/1d — inserted 1 bars
+2026-05-07 00:05:30,647 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ESS/1d — inserted 1 bars
+2026-05-07 00:05:31,344 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ETN/1d — inserted 1 bars
+2026-05-07 00:05:31,971 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ETR/1d — inserted 1 bars
+2026-05-07 00:05:32,576 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EVRG/1d — inserted 1 bars
+2026-05-07 00:05:33,114 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EW/1d — inserted 1 bars
+2026-05-07 00:05:33,739 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EWG/1d — inserted 1 bars
+2026-05-07 00:05:34,510 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EWJ/1d — inserted 1 bars
+2026-05-07 00:05:35,113 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EWT/1d — inserted 1 bars
+2026-05-07 00:05:35,732 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EWU/1d — inserted 1 bars
+2026-05-07 00:05:36,240 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EWY/1d — inserted 1 bars
+2026-05-07 00:05:36,871 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EWZ/1d — inserted 1 bars
+2026-05-07 00:05:37,491 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EXC/1d — inserted 1 bars
+2026-05-07 00:05:38,056 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EXE/1d — inserted 1 bars
+2026-05-07 00:05:38,675 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EXPD/1d — inserted 1 bars
+2026-05-07 00:05:39,242 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EXPE/1d — inserted 1 bars
+2026-05-07 00:05:39,913 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: EXR/1d — inserted 1 bars
+2026-05-07 00:05:40,410 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: F/1d — inserted 1 bars
+2026-05-07 00:05:40,882 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FANG/1d — inserted 1 bars
+2026-05-07 00:05:41,305 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FAST/1d — inserted 1 bars
+2026-05-07 00:05:41,726 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FCX/1d — inserted 1 bars
+2026-05-07 00:05:42,175 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FDS/1d — inserted 1 bars
+2026-05-07 00:05:42,640 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FDX/1d — inserted 1 bars
+2026-05-07 00:05:43,095 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FE/1d — inserted 1 bars
+2026-05-07 00:05:43,469 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FFIV/1d — inserted 1 bars
+2026-05-07 00:05:43,919 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FICO/1d — inserted 1 bars
+2026-05-07 00:05:44,379 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FIS/1d — inserted 1 bars
+2026-05-07 00:05:44,843 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FISV/1d — inserted 1 bars
+2026-05-07 00:05:45,317 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FITB/1d — inserted 1 bars
+2026-05-07 00:05:45,742 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FIX/1d — inserted 1 bars
+2026-05-07 00:05:46,224 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FOX/1d — inserted 1 bars
+2026-05-07 00:05:46,598 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FOXA/1d — inserted 1 bars
+2026-05-07 00:05:47,072 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FRT/1d — inserted 1 bars
+2026-05-07 00:05:47,497 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FSLR/1d — inserted 1 bars
+2026-05-07 00:05:47,950 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FTNT/1d — inserted 1 bars
+2026-05-07 00:05:48,338 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FTV/1d — inserted 1 bars
+2026-05-07 00:05:48,805 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: FXI/1d — inserted 1 bars
+2026-05-07 00:05:49,271 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GD/1d — inserted 1 bars
+2026-05-07 00:05:49,743 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GDDY/1d — inserted 1 bars
+2026-05-07 00:05:50,254 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GE/1d — inserted 1 bars
+2026-05-07 00:05:50,732 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GEHC/1d — inserted 1 bars
+2026-05-07 00:05:51,153 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GEN/1d — inserted 1 bars
+2026-05-07 00:05:51,584 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GEV/1d — inserted 1 bars
+2026-05-07 00:05:51,958 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GILD/1d — inserted 1 bars
+2026-05-07 00:05:52,406 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GIS/1d — inserted 1 bars
+2026-05-07 00:05:52,912 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GL/1d — inserted 1 bars
+2026-05-07 00:05:53,360 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GLD/1d — inserted 1 bars
+2026-05-07 00:05:53,896 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GLW/1d — inserted 1 bars
+2026-05-07 00:05:54,356 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GM/1d — inserted 1 bars
+2026-05-07 00:05:54,754 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GNRC/1d — inserted 1 bars
+2026-05-07 00:05:55,195 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GOOG/1d — inserted 1 bars
+2026-05-07 00:05:55,610 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GOOGL/1d — inserted 1 bars
+2026-05-07 00:05:56,233 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GPC/1d — inserted 1 bars
+2026-05-07 00:05:56,662 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GPN/1d — inserted 1 bars
+2026-05-07 00:05:57,157 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GRMN/1d — inserted 1 bars
+2026-05-07 00:05:57,643 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GS/1d — inserted 1 bars
+2026-05-07 00:05:58,187 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: GWW/1d — inserted 1 bars
+2026-05-07 00:05:58,658 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HAL/1d — inserted 1 bars
+2026-05-07 00:05:59,163 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HAS/1d — inserted 1 bars
+2026-05-07 00:05:59,568 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HBAN/1d — inserted 1 bars
+2026-05-07 00:05:59,973 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HCA/1d — inserted 1 bars
+2026-05-07 00:06:00,495 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HD/1d — inserted 1 bars
+2026-05-07 00:06:00,919 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HIG/1d — inserted 1 bars
+2026-05-07 00:06:01,332 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HII/1d — inserted 1 bars
+2026-05-07 00:06:01,801 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HLT/1d — inserted 1 bars
+2026-05-07 00:06:02,370 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HON/1d — inserted 1 bars
+2026-05-07 00:06:02,827 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HOOD/1d — inserted 1 bars
+2026-05-07 00:06:03,215 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HPE/1d — inserted 1 bars
+2026-05-07 00:06:03,706 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HPQ/1d — inserted 1 bars
+2026-05-07 00:06:04,181 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HRL/1d — inserted 1 bars
+2026-05-07 00:06:04,764 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HSIC/1d — inserted 1 bars
+2026-05-07 00:06:05,214 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HST/1d — inserted 1 bars
+2026-05-07 00:06:05,696 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HSY/1d — inserted 1 bars
+2026-05-07 00:06:06,096 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HUBB/1d — inserted 1 bars
+2026-05-07 00:06:06,568 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HUM/1d — inserted 1 bars
+2026-05-07 00:06:07,000 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: HWM/1d — inserted 1 bars
+2026-05-07 00:06:07,438 [yfinance] ERROR — $HYG: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112367")
+2026-05-07 00:06:07,448 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:06:07,448 [yfinance] ERROR — ['HYG']: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112367")
+2026-05-07 00:06:07,718 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IBKR/1d — inserted 1 bars
+2026-05-07 00:06:08,166 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IBM/1d — inserted 1 bars
+2026-05-07 00:06:08,612 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ICE/1d — inserted 1 bars
+2026-05-07 00:06:08,969 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IDXX/1d — inserted 1 bars
+2026-05-07 00:06:09,394 [yfinance] ERROR — $IEF: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112369")
+2026-05-07 00:06:09,395 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:06:09,399 [yfinance] ERROR — ['IEF']: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112369")
+2026-05-07 00:06:09,677 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IEX/1d — inserted 1 bars
+2026-05-07 00:06:10,143 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IFF/1d — inserted 1 bars
+2026-05-07 00:06:10,626 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: INCY/1d — inserted 1 bars
+2026-05-07 00:06:11,099 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: INDA/1d — inserted 1 bars
+2026-05-07 00:06:11,609 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: INTC/1d — inserted 1 bars
+2026-05-07 00:06:12,076 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: INTU/1d — inserted 1 bars
+2026-05-07 00:06:12,416 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: INVH/1d — inserted 1 bars
+2026-05-07 00:06:12,789 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IONQ/1d — inserted 1 bars
+2026-05-07 00:06:13,194 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IP/1d — inserted 1 bars
+2026-05-07 00:06:13,514 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IQV/1d — inserted 1 bars
+2026-05-07 00:06:13,939 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IR/1d — inserted 1 bars
+2026-05-07 00:06:14,441 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IRM/1d — inserted 1 bars
+2026-05-07 00:06:14,865 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ISRG/1d — inserted 1 bars
+2026-05-07 00:06:15,229 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IT/1d — inserted 1 bars
+2026-05-07 00:06:15,763 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ITW/1d — inserted 1 bars
+2026-05-07 00:06:16,179 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: IVZ/1d — inserted 1 bars
+2026-05-07 00:06:16,559 [yfinance] ERROR — $IWM: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112376")
+2026-05-07 00:06:16,563 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:06:16,564 [yfinance] ERROR — ['IWM']: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112376")
+2026-05-07 00:06:16,825 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: J/1d — inserted 1 bars
+2026-05-07 00:06:17,353 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: JBHT/1d — inserted 1 bars
+2026-05-07 00:06:17,817 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: JBL/1d — inserted 1 bars
+2026-05-07 00:06:18,250 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: JCI/1d — inserted 1 bars
+2026-05-07 00:06:18,662 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: JKHY/1d — inserted 1 bars
+2026-05-07 00:06:19,143 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: JNJ/1d — inserted 1 bars
+2026-05-07 00:06:19,657 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: JPM/1d — inserted 1 bars
+2026-05-07 00:06:20,038 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KDP/1d — inserted 1 bars
+2026-05-07 00:06:20,582 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KEY/1d — inserted 1 bars
+2026-05-07 00:06:21,013 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KEYS/1d — inserted 1 bars
+2026-05-07 00:06:21,399 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KHC/1d — inserted 1 bars
+2026-05-07 00:06:21,817 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KIM/1d — inserted 1 bars
+2026-05-07 00:06:22,244 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KKR/1d — inserted 1 bars
+2026-05-07 00:06:22,654 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KLAC/1d — inserted 1 bars
+2026-05-07 00:06:23,108 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KMB/1d — inserted 1 bars
+2026-05-07 00:06:23,605 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KMI/1d — inserted 1 bars
+2026-05-07 00:06:24,112 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KO/1d — inserted 1 bars
+2026-05-07 00:06:24,681 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KR/1d — inserted 1 bars
+2026-05-07 00:06:25,157 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: KVUE/1d — inserted 1 bars
+2026-05-07 00:06:25,631 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: L/1d — inserted 1 bars
+2026-05-07 00:06:26,157 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LDOS/1d — inserted 1 bars
+2026-05-07 00:06:26,593 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LEN/1d — inserted 1 bars
+2026-05-07 00:06:26,995 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LH/1d — inserted 1 bars
+2026-05-07 00:06:27,493 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LHX/1d — inserted 1 bars
+2026-05-07 00:06:27,964 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LII/1d — inserted 1 bars
+2026-05-07 00:06:28,503 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LIN/1d — inserted 1 bars
+2026-05-07 00:06:28,952 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LITE/1d — inserted 1 bars
+2026-05-07 00:06:29,463 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LLY/1d — inserted 1 bars
+2026-05-07 00:06:29,924 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LMT/1d — inserted 1 bars
+2026-05-07 00:06:30,349 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LNT/1d — inserted 1 bars
+2026-05-07 00:06:30,836 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LOW/1d — inserted 1 bars
+2026-05-07 00:06:31,325 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LRCX/1d — inserted 1 bars
+2026-05-07 00:06:31,690 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LULU/1d — inserted 1 bars
+2026-05-07 00:06:32,114 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LUV/1d — inserted 1 bars
+2026-05-07 00:06:32,499 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LVS/1d — inserted 1 bars
+2026-05-07 00:06:32,948 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LYB/1d — inserted 1 bars
+2026-05-07 00:06:33,325 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: LYV/1d — inserted 1 bars
+2026-05-07 00:06:33,701 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MA/1d — inserted 1 bars
+2026-05-07 00:06:34,244 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MAA/1d — inserted 1 bars
+2026-05-07 00:06:34,690 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MAR/1d — inserted 1 bars
+2026-05-07 00:06:35,159 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MAS/1d — inserted 1 bars
+2026-05-07 00:06:35,662 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MCD/1d — inserted 1 bars
+2026-05-07 00:06:36,203 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MCHP/1d — inserted 1 bars
+2026-05-07 00:06:36,793 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MCK/1d — inserted 1 bars
+2026-05-07 00:06:37,325 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MCO/1d — inserted 1 bars
+2026-05-07 00:06:37,735 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MDLZ/1d — inserted 1 bars
+2026-05-07 00:06:38,225 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MDT/1d — inserted 1 bars
+2026-05-07 00:06:38,675 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MET/1d — inserted 1 bars
+2026-05-07 00:06:39,142 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: META/1d — inserted 1 bars
+2026-05-07 00:06:39,605 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MGM/1d — inserted 1 bars
+2026-05-07 00:06:40,042 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MKC/1d — inserted 1 bars
+2026-05-07 00:06:40,514 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MLM/1d — inserted 1 bars
+2026-05-07 00:06:41,026 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MMM/1d — inserted 1 bars
+2026-05-07 00:06:41,490 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MNST/1d — inserted 1 bars
+2026-05-07 00:06:42,109 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MO/1d — inserted 1 bars
+2026-05-07 00:06:42,609 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MOS/1d — inserted 1 bars
+2026-05-07 00:06:43,037 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MPC/1d — inserted 1 bars
+2026-05-07 00:06:43,547 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MPWR/1d — inserted 1 bars
+2026-05-07 00:06:44,049 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MRK/1d — inserted 1 bars
+2026-05-07 00:06:44,523 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MRNA/1d — inserted 1 bars
+2026-05-07 00:06:45,141 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MRSH/1d — inserted 1 bars
+2026-05-07 00:06:45,587 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MS/1d — inserted 1 bars
+2026-05-07 00:06:46,000 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MSCI/1d — inserted 1 bars
+2026-05-07 00:06:46,429 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MSFT/1d — inserted 1 bars
+2026-05-07 00:06:46,993 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MSI/1d — inserted 1 bars
+2026-05-07 00:06:47,418 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MSTR/1d — inserted 1 bars
+2026-05-07 00:06:47,920 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MTB/1d — inserted 1 bars
+2026-05-07 00:06:48,331 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MTD/1d — inserted 1 bars
+2026-05-07 00:06:48,767 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: MU/1d — inserted 1 bars
+2026-05-07 00:06:49,271 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NCLH/1d — inserted 1 bars
+2026-05-07 00:06:49,729 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NDAQ/1d — inserted 1 bars
+2026-05-07 00:06:50,171 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NDSN/1d — inserted 1 bars
+2026-05-07 00:06:50,630 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NEE/1d — inserted 1 bars
+2026-05-07 00:06:51,139 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NEM/1d — inserted 1 bars
+2026-05-07 00:06:51,573 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NFLX/1d — inserted 1 bars
+2026-05-07 00:06:52,134 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NI/1d — inserted 1 bars
+2026-05-07 00:06:52,587 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NKE/1d — inserted 1 bars
+2026-05-07 00:06:53,007 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NOC/1d — inserted 1 bars
+2026-05-07 00:06:53,359 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NOW/1d — inserted 1 bars
+2026-05-07 00:06:53,767 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NRG/1d — inserted 1 bars
+2026-05-07 00:06:54,325 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NSC/1d — inserted 1 bars
+2026-05-07 00:06:54,738 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NTAP/1d — inserted 1 bars
+2026-05-07 00:06:55,170 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NTRS/1d — inserted 1 bars
+2026-05-07 00:06:55,708 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NUE/1d — inserted 1 bars
+2026-05-07 00:06:56,132 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NVDA/1d — inserted 1 bars
+2026-05-07 00:06:56,620 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NVR/1d — inserted 1 bars
+2026-05-07 00:06:57,060 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NWS/1d — inserted 1 bars
+2026-05-07 00:06:57,481 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NWSA/1d — inserted 1 bars
+2026-05-07 00:06:57,894 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: NXPI/1d — inserted 1 bars
+2026-05-07 00:06:58,365 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: O/1d — inserted 1 bars
+2026-05-07 00:06:58,801 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ODFL/1d — inserted 1 bars
+2026-05-07 00:06:59,294 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: OKE/1d — inserted 1 bars
+2026-05-07 00:06:59,768 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: OMC/1d — inserted 1 bars
+2026-05-07 00:07:00,329 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ON/1d — inserted 1 bars
+2026-05-07 00:07:00,867 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ORCL/1d — inserted 1 bars
+2026-05-07 00:07:01,407 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ORLY/1d — inserted 1 bars
+2026-05-07 00:07:01,936 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: OTIS/1d — inserted 1 bars
+2026-05-07 00:07:02,509 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: OXY/1d — inserted 1 bars
+2026-05-07 00:07:03,053 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PANW/1d — inserted 1 bars
+2026-05-07 00:07:03,630 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PAYX/1d — inserted 1 bars
+2026-05-07 00:07:04,122 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PCAR/1d — inserted 1 bars
+2026-05-07 00:07:04,503 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PCG/1d — inserted 1 bars
+2026-05-07 00:07:04,933 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PEG/1d — inserted 1 bars
+2026-05-07 00:07:05,485 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PEP/1d — inserted 1 bars
+2026-05-07 00:07:05,954 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PFE/1d — inserted 1 bars
+2026-05-07 00:07:06,396 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PFG/1d — inserted 1 bars
+2026-05-07 00:07:06,850 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PG/1d — inserted 1 bars
+2026-05-07 00:07:07,246 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PGR/1d — inserted 1 bars
+2026-05-07 00:07:07,658 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PH/1d — inserted 1 bars
+2026-05-07 00:07:08,051 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PHM/1d — inserted 1 bars
+2026-05-07 00:07:08,435 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PKG/1d — inserted 1 bars
+2026-05-07 00:07:08,850 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PLD/1d — inserted 1 bars
+2026-05-07 00:07:09,166 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PLTR/1d — inserted 1 bars
+2026-05-07 00:07:09,536 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PM/1d — inserted 1 bars
+2026-05-07 00:07:09,963 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PNC/1d — inserted 1 bars
+2026-05-07 00:07:10,389 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PNR/1d — inserted 1 bars
+2026-05-07 00:07:10,830 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PNW/1d — inserted 1 bars
+2026-05-07 00:07:11,190 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PODD/1d — inserted 1 bars
+2026-05-07 00:07:11,582 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: POOL/1d — inserted 1 bars
+2026-05-07 00:07:12,024 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PPG/1d — inserted 1 bars
+2026-05-07 00:07:12,362 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PPL/1d — inserted 1 bars
+2026-05-07 00:07:12,684 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PRU/1d — inserted 1 bars
+2026-05-07 00:07:13,037 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PSA/1d — inserted 1 bars
+2026-05-07 00:07:13,345 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PSKY/1d — inserted 1 bars
+2026-05-07 00:07:13,681 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PSX/1d — inserted 1 bars
+2026-05-07 00:07:13,998 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PTC/1d — inserted 1 bars
+2026-05-07 00:07:14,303 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PWR/1d — inserted 1 bars
+2026-05-07 00:07:14,593 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: PYPL/1d — inserted 1 bars
+2026-05-07 00:07:14,912 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: Q/1d — inserted 1 bars
+2026-05-07 00:07:15,258 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: QCOM/1d — inserted 1 bars
+2026-05-07 00:07:15,652 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: RCL/1d — inserted 1 bars
+2026-05-07 00:07:16,001 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: REG/1d — inserted 1 bars
+2026-05-07 00:07:16,326 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: REGN/1d — inserted 1 bars
+2026-05-07 00:07:16,654 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: RF/1d — inserted 1 bars
+2026-05-07 00:07:17,044 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: RJF/1d — inserted 1 bars
+2026-05-07 00:07:17,381 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: RL/1d — inserted 1 bars
+2026-05-07 00:07:17,697 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: RMD/1d — inserted 1 bars
+2026-05-07 00:07:18,042 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ROK/1d — inserted 1 bars
+2026-05-07 00:07:18,392 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ROL/1d — inserted 1 bars
+2026-05-07 00:07:18,719 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ROP/1d — inserted 1 bars
+2026-05-07 00:07:19,201 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ROST/1d — inserted 1 bars
+2026-05-07 00:07:19,543 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: RSG/1d — inserted 1 bars
+2026-05-07 00:07:19,863 [yfinance] ERROR — $RSP: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112439")
+2026-05-07 00:07:19,867 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:07:19,868 [yfinance] ERROR — ['RSP']: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112439")
+2026-05-07 00:07:20,108 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: RTX/1d — inserted 1 bars
+2026-05-07 00:07:20,444 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: RVTY/1d — inserted 1 bars
+2026-05-07 00:07:20,759 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SATS/1d — inserted 1 bars
+2026-05-07 00:07:21,037 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SBAC/1d — inserted 1 bars
+2026-05-07 00:07:21,352 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SBUX/1d — inserted 1 bars
+2026-05-07 00:07:21,753 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SCHW/1d — inserted 1 bars
+2026-05-07 00:07:22,113 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SHW/1d — inserted 1 bars
+2026-05-07 00:07:22,436 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SJM/1d — inserted 1 bars
+2026-05-07 00:07:22,907 [yfinance] ERROR — HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SKEW"}}}
+2026-05-07 00:07:22,989 [yfinance] ERROR — $SKEW: possibly delisted; no timezone found
+2026-05-07 00:07:22,994 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:07:22,995 [yfinance] ERROR — ['SKEW']: possibly delisted; no timezone found
+2026-05-07 00:07:23,233 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SLB/1d — inserted 1 bars
+2026-05-07 00:07:23,519 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SLV/1d — inserted 1 bars
+2026-05-07 00:07:23,818 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SMCI/1d — inserted 1 bars
+2026-05-07 00:07:24,159 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SNA/1d — inserted 1 bars
+2026-05-07 00:07:24,442 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SNDK/1d — inserted 1 bars
+2026-05-07 00:07:24,715 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SNPS/1d — inserted 1 bars
+2026-05-07 00:07:25,092 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SO/1d — inserted 1 bars
+2026-05-07 00:07:25,386 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SOLV/1d — inserted 1 bars
+2026-05-07 00:07:25,715 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SPG/1d — inserted 1 bars
+2026-05-07 00:07:26,048 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SPGI/1d — inserted 1 bars
+2026-05-07 00:07:26,379 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SPY/1d — inserted 1 bars
+2026-05-07 00:07:26,695 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SRE/1d — inserted 1 bars
+2026-05-07 00:07:27,018 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: STE/1d — inserted 1 bars
+2026-05-07 00:07:27,348 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: STLD/1d — inserted 1 bars
+2026-05-07 00:07:27,677 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: STT/1d — inserted 1 bars
+2026-05-07 00:07:27,987 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: STX/1d — inserted 1 bars
+2026-05-07 00:07:28,278 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: STZ/1d — inserted 1 bars
+2026-05-07 00:07:28,603 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SW/1d — inserted 1 bars
+2026-05-07 00:07:28,933 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SWK/1d — inserted 1 bars
+2026-05-07 00:07:29,231 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SWKS/1d — inserted 1 bars
+2026-05-07 00:07:29,518 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SYF/1d — inserted 1 bars
+2026-05-07 00:07:29,825 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SYK/1d — inserted 1 bars
+2026-05-07 00:07:30,151 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: SYY/1d — inserted 1 bars
+2026-05-07 00:07:30,506 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: T/1d — inserted 1 bars
+2026-05-07 00:07:30,874 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TAP/1d — inserted 1 bars
+2026-05-07 00:07:31,211 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TDG/1d — inserted 1 bars
+2026-05-07 00:07:31,513 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TDY/1d — inserted 1 bars
+2026-05-07 00:07:31,833 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TECH/1d — inserted 1 bars
+2026-05-07 00:07:32,129 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TEL/1d — inserted 1 bars
+2026-05-07 00:07:32,445 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TER/1d — inserted 1 bars
+2026-05-07 00:07:32,773 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TFC/1d — inserted 1 bars
+2026-05-07 00:07:33,105 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TGT/1d — inserted 1 bars
+2026-05-07 00:07:33,458 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TJX/1d — inserted 1 bars
+2026-05-07 00:07:33,805 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TKO/1d — inserted 1 bars
+2026-05-07 00:07:34,134 [yfinance] ERROR — $TLT: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112453")
+2026-05-07 00:07:34,135 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:07:34,135 [yfinance] ERROR — ['TLT']: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112453")
+2026-05-07 00:07:34,354 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TMO/1d — inserted 1 bars
+2026-05-07 00:07:34,664 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TMUS/1d — inserted 1 bars
+2026-05-07 00:07:35,023 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TPL/1d — inserted 1 bars
+2026-05-07 00:07:35,346 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TPR/1d — inserted 1 bars
+2026-05-07 00:07:35,684 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TRGP/1d — inserted 1 bars
+2026-05-07 00:07:35,987 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TRMB/1d — inserted 3 bars
+2026-05-07 00:07:36,326 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TROW/1d — inserted 1 bars
+2026-05-07 00:07:36,679 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TRV/1d — inserted 1 bars
+2026-05-07 00:07:36,988 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TSCO/1d — inserted 1 bars
+2026-05-07 00:07:37,274 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TSLA/1d — inserted 1 bars
+2026-05-07 00:07:37,621 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TSN/1d — inserted 1 bars
+2026-05-07 00:07:37,988 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TT/1d — inserted 1 bars
+2026-05-07 00:07:38,311 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TTD/1d — inserted 1 bars
+2026-05-07 00:07:38,625 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TTWO/1d — inserted 1 bars
+2026-05-07 00:07:38,996 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TXN/1d — inserted 1 bars
+2026-05-07 00:07:39,374 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TXT/1d — inserted 1 bars
+2026-05-07 00:07:39,691 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: TYL/1d — inserted 1 bars
+2026-05-07 00:07:40,029 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: UAL/1d — inserted 1 bars
+2026-05-07 00:07:40,306 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: UBER/1d — inserted 1 bars
+2026-05-07 00:07:40,659 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: UDR/1d — inserted 1 bars
+2026-05-07 00:07:40,989 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: UHS/1d — inserted 1 bars
+2026-05-07 00:07:41,273 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ULTA/1d — inserted 1 bars
+2026-05-07 00:07:41,608 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: UNH/1d — inserted 1 bars
+2026-05-07 00:07:41,954 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: UNP/1d — inserted 1 bars
+2026-05-07 00:07:42,291 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: UPS/1d — inserted 1 bars
+2026-05-07 00:07:42,580 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: URI/1d — inserted 1 bars
+2026-05-07 00:07:42,927 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: USB/1d — inserted 1 bars
+2026-05-07 00:07:43,217 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: USO/1d — inserted 1 bars
+2026-05-07 00:07:43,547 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: V/1d — inserted 1 bars
+2026-05-07 00:07:43,858 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VEA/1d — inserted 1 bars
+2026-05-07 00:07:44,186 [yfinance] ERROR — $VGK: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112464")
+2026-05-07 00:07:44,186 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:07:44,187 [yfinance] ERROR — ['VGK']: possibly delisted; no price data found  (1d 2026-05-07 -> 2026-05-06) (Yahoo error = "Invalid input - start date cannot be after end date. startDate = 1778126400, endDate = 1778112464")
+2026-05-07 00:07:44,387 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VICI/1d — inserted 1 bars
+2026-05-07 00:07:44,756 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VLO/1d — inserted 1 bars
+2026-05-07 00:07:45,112 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VLTO/1d — inserted 1 bars
+2026-05-07 00:07:45,467 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VMC/1d — inserted 1 bars
+2026-05-07 00:07:45,758 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VRSK/1d — inserted 1 bars
+2026-05-07 00:07:46,062 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VRSN/1d — inserted 1 bars
+2026-05-07 00:07:46,359 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VRT/1d — inserted 1 bars
+2026-05-07 00:07:46,662 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VRTX/1d — inserted 1 bars
+2026-05-07 00:07:46,974 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VST/1d — inserted 1 bars
+2026-05-07 00:07:47,302 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VTR/1d — inserted 1 bars
+2026-05-07 00:07:47,630 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VTRS/1d — inserted 1 bars
+2026-05-07 00:07:48,098 [yfinance] ERROR — HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: VVIX"}}}
+2026-05-07 00:07:48,176 [yfinance] ERROR — $VVIX: possibly delisted; no timezone found
+2026-05-07 00:07:48,177 [yfinance] ERROR — 
+1 Failed download:
+2026-05-07 00:07:48,177 [yfinance] ERROR — ['VVIX']: possibly delisted; no timezone found
+2026-05-07 00:07:48,442 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: VZ/1d — inserted 1 bars
+2026-05-07 00:07:48,782 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WAB/1d — inserted 1 bars
+2026-05-07 00:07:49,062 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WAT/1d — inserted 1 bars
+2026-05-07 00:07:49,345 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WBD/1d — inserted 1 bars
+2026-05-07 00:07:49,645 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WDAY/1d — inserted 1 bars
+2026-05-07 00:07:49,938 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WDC/1d — inserted 1 bars
+2026-05-07 00:07:50,281 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WEC/1d — inserted 1 bars
+2026-05-07 00:07:50,630 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WELL/1d — inserted 1 bars
+2026-05-07 00:07:51,004 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WFC/1d — inserted 1 bars
+2026-05-07 00:07:51,338 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WM/1d — inserted 1 bars
+2026-05-07 00:07:51,879 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WMB/1d — inserted 1 bars
+2026-05-07 00:07:52,256 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WMT/1d — inserted 1 bars
+2026-05-07 00:07:52,595 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WRB/1d — inserted 1 bars
+2026-05-07 00:07:52,933 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WSM/1d — inserted 1 bars
+2026-05-07 00:07:53,267 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WST/1d — inserted 1 bars
+2026-05-07 00:07:53,564 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WTW/1d — inserted 1 bars
+2026-05-07 00:07:53,931 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WY/1d — inserted 1 bars
+2026-05-07 00:07:54,254 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: WYNN/1d — inserted 1 bars
+2026-05-07 00:07:54,613 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XEL/1d — inserted 1 bars
+2026-05-07 00:07:54,947 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLB/1d — inserted 1 bars
+2026-05-07 00:07:55,399 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLC/1d — inserted 1 bars
+2026-05-07 00:07:55,728 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLE/1d — inserted 1 bars
+2026-05-07 00:07:56,073 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLF/1d — inserted 1 bars
+2026-05-07 00:07:56,401 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLI/1d — inserted 1 bars
+2026-05-07 00:07:56,734 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLK/1d — inserted 1 bars
+2026-05-07 00:07:57,050 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLP/1d — inserted 1 bars
+2026-05-07 00:07:57,380 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLRE/1d — inserted 1 bars
+2026-05-07 00:07:57,706 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLU/1d — inserted 1 bars
+2026-05-07 00:07:58,086 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLV/1d — inserted 1 bars
+2026-05-07 00:07:58,415 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XLY/1d — inserted 1 bars
+2026-05-07 00:07:58,827 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XOM/1d — inserted 1 bars
+2026-05-07 00:07:59,148 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XYL/1d — inserted 1 bars
+2026-05-07 00:07:59,441 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: XYZ/1d — inserted 1 bars
+2026-05-07 00:07:59,745 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: YUM/1d — inserted 1 bars
+2026-05-07 00:08:00,055 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ZBH/1d — inserted 1 bars
+2026-05-07 00:08:00,357 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ZBRA/1d — inserted 1 bars
+2026-05-07 00:08:00,675 [backend.modules.shared.infrastructure.timescale_data_store] INFO — TimescaleDB: ZTS/1d — inserted 1 bars
+2026-05-07 00:08:00,818 [DataVaultDaemon] INFO — 📈 OHLCV vault: 531 tickers updated, 0 enriched with trade_count+vwap
+2026-05-07 00:08:00,824 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=ok | fear_greed=ok | gurufocus=ok | ohlcv=ok ═══
+2026-05-07 00:08:00,826 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-07 00:13:00,827 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-07T00:13:00.827309+00:00 ═══
+2026-05-07 00:13:01,072 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-07 00:13:01,224 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 SPY flow: 1 ticks fetched
+2026-05-07 00:13:01,300 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🌊 Market tide: 81 data points
+2026-05-07 00:13:01,474 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 500 fetched
+2026-05-07 00:13:01,669 [DataVaultDaemon] INFO — 🐋 162 unique tickers detected in flow
+2026-05-07 00:13:01,737 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for AAOI
+2026-05-07 00:13:01,942 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for AAPL
+2026-05-07 00:13:02,156 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ABSI
+2026-05-07 00:13:02,316 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for AER
+2026-05-07 00:13:02,491 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ALNT
+2026-05-07 00:13:02,651 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for AMD
+2026-05-07 00:13:02,873 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for AMPX
+2026-05-07 00:13:03,090 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for AMZN
+2026-05-07 00:13:03,294 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ANGI
+2026-05-07 00:13:03,449 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for APLD
+2026-05-07 00:13:03,653 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for APP
+2026-05-07 00:13:03,863 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for APPX
+2026-05-07 00:13:04,026 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ARKK
+2026-05-07 00:13:04,200 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ARM
+2026-05-07 00:13:04,395 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ARRY
+2026-05-07 00:13:04,556 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ASTS
+2026-05-07 00:13:04,769 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for AVGO
+2026-05-07 00:13:04,966 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for AXON
+2026-05-07 00:13:05,144 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BABA
+2026-05-07 00:13:05,367 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BB
+2026-05-07 00:13:05,553 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BCRX
+2026-05-07 00:13:05,716 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BCS
+2026-05-07 00:13:05,875 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BDX
+2026-05-07 00:13:06,042 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BE
+2026-05-07 00:13:06,240 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BIDU
+2026-05-07 00:13:06,420 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BKSY
+2026-05-07 00:13:06,587 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BMNR
+2026-05-07 00:13:06,796 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BNO
+2026-05-07 00:13:06,971 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BWA
+2026-05-07 00:13:07,143 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for BYND
+2026-05-07 00:13:07,304 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CC
+2026-05-07 00:13:07,458 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CCL
+2026-05-07 00:13:07,654 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CDW
+2026-05-07 00:13:07,835 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CELH
+2026-05-07 00:13:08,010 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CNS
+2026-05-07 00:13:08,171 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for COHR
+2026-05-07 00:13:08,366 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for COIN
+2026-05-07 00:13:08,569 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for COPX
+2026-05-07 00:13:08,735 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CRCL
+2026-05-07 00:13:08,941 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CRDO
+2026-05-07 00:13:09,137 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CRWV
+2026-05-07 00:13:09,328 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CTSH
+2026-05-07 00:13:09,493 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for CW
+2026-05-07 00:13:09,656 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for DAVE
+2026-05-07 00:13:09,819 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for DDOG
+2026-05-07 00:13:09,997 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for DE
+2026-05-07 00:13:10,207 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for DELL
+2026-05-07 00:13:10,400 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for DGXX
+2026-05-07 00:13:10,560 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for DKNG
+2026-05-07 00:13:10,714 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 22 fetched for DRAM
+2026-05-07 00:13:10,911 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for DRI
+2026-05-07 00:13:11,102 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for DVA
+2026-05-07 00:13:11,282 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for EEM
+2026-05-07 00:13:11,478 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for EME
+2026-05-07 00:13:11,646 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for EWY
+2026-05-07 00:13:11,846 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for FSLY
+2026-05-07 00:13:12,017 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for FTAI
+2026-05-07 00:13:12,193 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for FTNT
+2026-05-07 00:13:12,359 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GDX
+2026-05-07 00:13:12,434 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-07 00:14:12,488 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GDYN
+2026-05-07 00:14:12,663 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GLD
+2026-05-07 00:14:12,903 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GLW
+2026-05-07 00:14:13,098 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GLXY
+2026-05-07 00:14:13,261 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GME
+2026-05-07 00:14:13,430 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GOOG
+2026-05-07 00:14:13,641 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GOOGL
+2026-05-07 00:14:13,851 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GS
+2026-05-07 00:14:14,080 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for GXO
+2026-05-07 00:14:14,241 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for HD
+2026-05-07 00:14:14,441 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for HPQ
+2026-05-07 00:14:14,617 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for HTZ
+2026-05-07 00:14:14,770 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for HUBS
+2026-05-07 00:14:14,932 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for HYG
+2026-05-07 00:14:15,127 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for IGV
+2026-05-07 00:14:15,321 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for INSM
+2026-05-07 00:14:15,481 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for INSW
+2026-05-07 00:14:15,635 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for INTC
+2026-05-07 00:14:15,837 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for IONQ
+2026-05-07 00:14:16,037 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for IPGP
+2026-05-07 00:14:16,197 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for IREN
+2026-05-07 00:14:16,396 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for JBL
+2026-05-07 00:14:16,633 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for KWEB
+2026-05-07 00:14:16,888 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for LAES
+2026-05-07 00:14:17,044 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for LION
+2026-05-07 00:14:17,201 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for LITE
+2026-05-07 00:14:17,396 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for LUMN
+2026-05-07 00:14:17,553 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for LVS
+2026-05-07 00:14:17,713 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for LYG
+2026-05-07 00:14:17,865 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for MARA
+2026-05-07 00:14:18,053 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for MDB
+2026-05-07 00:14:18,211 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for META
+2026-05-07 00:14:18,407 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for MGNI
+2026-05-07 00:14:18,561 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for MSTR
+2026-05-07 00:14:18,763 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for MSTU
+2026-05-07 00:14:18,923 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for MU
+2026-05-07 00:14:19,118 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for MUX
+2026-05-07 00:14:19,275 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for NBIS
+2026-05-07 00:14:19,469 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for NEM
+2026-05-07 00:14:19,672 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for NFLX
+2026-05-07 00:14:19,866 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for NOW
+2026-05-07 00:14:20,060 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for NVDA
+2026-05-07 00:14:20,252 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for NVO
+2026-05-07 00:14:20,446 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for OKLO
+2026-05-07 00:14:20,639 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for OPEN
+2026-05-07 00:14:20,808 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ORBS
+2026-05-07 00:14:20,962 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for ORCL
+2026-05-07 00:14:21,161 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for OXY
+2026-05-07 00:14:21,345 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for PANW
+2026-05-07 00:14:21,522 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for PAYC
+2026-05-07 00:14:21,681 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for PEP
+2026-05-07 00:14:21,850 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for PGY
+2026-05-07 00:14:22,009 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for POET
+2026-05-07 00:14:22,186 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for PONY
+2026-05-07 00:14:22,362 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for PRCT
+2026-05-07 00:14:22,518 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for PYPL
+2026-05-07 00:14:22,690 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for QCOM
+2026-05-07 00:14:22,897 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for QS
+2026-05-07 00:14:23,060 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for RDW
+2026-05-07 00:14:23,223 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] INFO — 🐋 Flow alerts: 100 fetched for RIOT
+2026-05-07 00:14:23,401 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s

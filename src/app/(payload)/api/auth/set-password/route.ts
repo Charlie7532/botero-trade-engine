@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import configPromise from '@payload-config'
 import { generatePasswordChangedEmail, type SupportedLanguage } from '@/utilities/email'
+import type { User } from '@/payload-types'
 
 interface SetPasswordRequest {
     password: string
@@ -68,6 +69,14 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Ensure user is a User (not an API key)
+        if (!('email' in user) || !('id' in user)) {
+            return NextResponse.json(
+                { success: false, error: 'Invalid user type' },
+                { status: 401 }
+            )
+        }
+
         // Update user with new password
         await payload.update({
             collection: 'users',
@@ -81,12 +90,13 @@ export async function POST(request: NextRequest) {
 
         // Send password changed confirmation email
         try {
-            const userName = user.name || user.nickname || 'there'
-            const language = (user.preferredLanguage as SupportedLanguage) || 'en'
+            const typedUser = user as User
+            const userName = typedUser.name || typedUser.nickname || 'there'
+            const language = (typedUser.preferredLanguage as SupportedLanguage) || 'en'
             const emailData = generatePasswordChangedEmail({ userName, language })
 
             await payload.sendEmail({
-                to: user.email,
+                to: typedUser.email,
                 subject: emailData.subject,
                 html: emailData.html,
             })

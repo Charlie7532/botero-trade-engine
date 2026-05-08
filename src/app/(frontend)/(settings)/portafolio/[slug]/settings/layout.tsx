@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Home } from 'lucide-react'
 
@@ -20,9 +20,11 @@ const NAV_ITEMS = [
 export default async function SettingsLayout({ children, params }: LayoutProps) {
   const { slug } = await params
 
-  const { user } = await getMeUser({
-    nullUserRedirect: '/admin/login?redirect=%2Fportafolio',
-  })
+  const { user } = await getMeUser()
+
+  if (!user) {
+    redirect('/login?redirect=%2Fportafolio')
+  }
 
   const portfolios = await getUserPortfolios(user.id)
   const portfolio = portfolios.find((p) => p.slug === slug)

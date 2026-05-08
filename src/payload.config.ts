@@ -115,7 +115,12 @@ export default buildConfig({
     // Credential Vault
     ProjectVaults,
   ],
-  cors: [getServerSideURL()].filter(Boolean),
+  cors: process.env.NODE_ENV === 'production' ? '*' : [getServerSideURL()].filter(Boolean),
+  csrf: [
+    getServerSideURL(),
+    process.env.NEXT_PUBLIC_SERVER_URL || '',
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : '',
+  ].filter(Boolean) as string[],
   globals: [SiteSettings],
   plugins: [...plugins,],
   secret: process.env.PAYLOAD_SECRET,

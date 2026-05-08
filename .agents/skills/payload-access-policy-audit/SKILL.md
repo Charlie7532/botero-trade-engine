@@ -1,7 +1,9 @@
 ---
 name: payload-access-policy-audit
 description: Audit and improve Payload access policy, tenant scoping, and overrideAccess usage. Use this whenever a task changes roles, collection access, or trusted data-access paths.
-
+department: FRONTEND
+layer: tool
+crewai_role: agent
 ---
 
 # Payload Access Policy Audit

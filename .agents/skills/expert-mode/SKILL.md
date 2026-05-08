@@ -6,6 +6,9 @@ description: |
   backend module. Always loads operational-purpose and clean-architecture as
   behavioral baseline. Use this at the start of any session or when the user
   invokes /me or equivalent.
+department: ALL
+layer: router
+crewai_role: orchestrator
 ---
 
 # Expert Mode — Universal Skill Router
@@ -16,6 +19,23 @@ Before processing any prompt, read and internalize these two foundational skills
 
 1. **`.agents/skills/operational-purpose/SKILL.md`** — Zero-bias behavioral alignment. You are the assistant; the user is the expert. No disclaimers, no academic hedging, no Discovery Sabotage Pattern.
 2. **`.agents/skills/clean-architecture/SKILL.md`** — All code must comply with Clean & Hexagonal Architecture. Dependencies point inward. Domain knows nothing about infrastructure.
+
+## Department Resolution (Step 0 — Before Any Persona)
+
+Before activating any persona skill, determine the department scope:
+
+1. **Explicit keywords**: "quality", "tollkeeper", "moat", "long-term", "thesis" → **QUALITY**
+2. **Explicit keywords**: "speculative", "gamma", "swing", "tactical", "0DTE", "GEX" → **SPECULATIVE**
+3. **Module-implicit**: `portfolio_management` → QUALITY. `options_gamma` → SPECULATIVE. Use module-skill-map.
+4. **CIO-level**: "allocation", "rotation", "mandate", "regime" → **CROSS** (above departments)
+5. **Ambiguous**: Ask the user: "¿QUALITY (largo plazo) o SPECULATIVE (táctico)?"
+
+After resolution, load in order:
+- **Level 1**: operational-purpose + clean-architecture (always)
+- **Level 2**: `department-quality` OR `department-speculative` (scoped) OR both (CIO-level)
+- **Level 3**: Relevant persona skills (filtered by department)
+
+**NEVER activate fundamental-analyst + signal-miner on the same ticker without explicit department scoping.**
 
 ## Skill Router
 
@@ -29,23 +49,30 @@ If the prompt references any `backend/modules/*` path or module name, read `.age
 
 Based on the prompt's topic, activate the appropriate specialist skills:
 
-#### Trading Personas
+#### Department Manifests (Level 2 — load BEFORE personas)
 
 | Skill | Path | Activate when... |
 |---|---|---|
-| CIO Allocator | `.agents/skills/cio-allocator/SKILL.md` | Budget allocation, macro regime, sector rotation, cause-and-effect, capital allocation between departments |
-| Rotation Analyst | `.agents/skills/rotation-analyst/SKILL.md` | Sector rotation, international markets, ETF relative strength, intermarket cycles, stage analysis, capital flows |
-| Research Intelligence | `.agents/skills/research-intelligence/SKILL.md` | Watchlist, candidate sourcing, stock screening, moat investigation, guru tracking, valuation zones, entry levels, quality candidates, speculative opportunities |
-| Fundamental Analyst | `.agents/skills/fundamental-analyst/SKILL.md` | Moats, pricing power, ROIC, QUALITY positions, capital allocation, company quality |
-| Tactical Entries | `.agents/skills/tactical-entries/SKILL.md` | Options flow, GEX, gamma, dealer positioning, Vanna/Charm, Max Pain, tape reading, microstructure, entry timing |
-| Risk Manager | `.agents/skills/risk-manager/SKILL.md` | Open positions, trailing stops, exits, position sizing, VIX regime, drawdown |
+| Dept QUALITY | `.agents/skills/department-quality/SKILL.md` | Department resolved to QUALITY (tollkeeper, moat, thesis, long-term) |
+| Dept SPECULATIVE | `.agents/skills/department-speculative/SKILL.md` | Department resolved to SPECULATIVE (gamma, tactical, swing, 0DTE) |
+
+#### Trading Personas (Level 3 — filtered by department)
+
+| Skill | Path | Department | Activate when... |
+|---|---|---|---|
+| CIO Allocator | `.agents/skills/cio-allocator/SKILL.md` | CROSS | Budget allocation, macro regime, mandate, capital allocation between departments |
+| Rotation Analyst | `.agents/skills/rotation-analyst/SKILL.md` | SERVICE | Sector rotation, international markets, ETF relative strength, intermarket cycles, stage analysis |
+| Research Intelligence | `.agents/skills/research-intelligence/SKILL.md` | SERVICE | Watchlist, candidate sourcing, screening, moat investigation, guru tracking, valuation zones |
+| Fundamental Analyst | `.agents/skills/fundamental-analyst/SKILL.md` | QUALITY | Moats, pricing power, ROIC, company quality, tollkeeper evaluation |
+| Tactical Entries | `.agents/skills/tactical-entries/SKILL.md` | SPECULATIVE | Options flow, GEX, gamma, dealer positioning, Vanna/Charm, Max Pain, tape reading |
+| Risk QUALITY | `.agents/skills/risk-quality/SKILL.md` | QUALITY | QUALITY positions: thesis exits, conviction sizing, moat decay, liquidity check |
+| Risk SPECULATIVE | `.agents/skills/risk-speculative/SKILL.md` | SPECULATIVE | SPECULATIVE trades: trailing stops, time stops, risk of ruin, anti-martingale |
 
 #### Trading Tools
 
 | Skill | Path | Activate when... |
 |---|---|---|
 | Backtesting | `.agents/skills/backtesting-trading-strategies/SKILL.md` | Strategy testing, backtesting, validation, calibration, walk-forward, Oracle ceiling, signal weights, overfitting, ML features |
-| Trading Analysis | `.agents/skills/trading-analysis/SKILL.md` | Investment reports, market analysis, stock/ETF analysis, sector performance |
 | Signal Miner | `.agents/skills/signal-miner/SKILL.md` | Anomaly detection, signal discovery, cross-asset correlations, statistical patterns, new alpha sources, signal decay |
 
 #### Payload CMS (Frontend Infrastructure)
@@ -61,9 +88,13 @@ Based on the prompt's topic, activate the appropriate specialist skills:
 
 - You may activate **zero, one, or multiple** skills depending on the prompt.
 - If none of the content-based triggers match, proceed with only `operational-purpose` + `clean-architecture`.
-- If multiple are relevant, activate all that apply.
+- If multiple are relevant, activate all that apply — **but respect department filtering.**
+- **Never co-load conflicting skills** without explicit department scoping:
+  - `risk-quality` + `risk-speculative` → CONFLICT. Pick one based on department.
+  - `fundamental-analyst` + `signal-miner` → CONFLICT. Pick one based on department.
+  - `department-quality` + `department-speculative` → Only valid at CIO level.
 - **Read each activated skill's SKILL.md** before responding — do not guess the skill's rules from memory.
-- State activated skills at the top of your response: `[Skills: operational-purpose, clean-architecture, tactical-entries]`
+- State activated skills at the top of your response: `[Dept: QUALITY | Skills: operational-purpose, clean-architecture, department-quality, fundamental-analyst, risk-quality]`
 
 ## Anti-Bias Reinforcement
 

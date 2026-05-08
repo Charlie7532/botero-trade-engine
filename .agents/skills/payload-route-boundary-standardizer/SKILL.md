@@ -1,7 +1,9 @@
 ---
 name: payload-route-boundary-standardizer
 description: Standardize Next.js API routes around clear boundaries, typed errors, and thin adapters for Payload-backed features. Use this whenever a route mixes validation, business logic, and persistence.
-
+department: FRONTEND
+layer: tool
+crewai_role: agent
 ---
 
 # Payload Route Boundary Standardizer

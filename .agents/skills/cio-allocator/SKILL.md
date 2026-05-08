@@ -5,6 +5,12 @@ description: |
   credit cycles, and the delayed cause-and-effect relationship between news/macro events 
   and market flows. Orchestrates capital allocation (Quality vs Speculative), prioritizes 
   sectors, and governs through an Idea Meritocracy of believability-weighted disagreement.
+department: CROSS
+layer: persona
+requires: [operational-purpose, clean-architecture]
+modules: [execution, portfolio_management, rotation_intelligence]
+mcp_servers: [fred]
+crewai_role: manager
 ---
 
 # CIO Allocator — Ray Dalio Mindset

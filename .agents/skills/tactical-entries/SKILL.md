@@ -6,6 +6,13 @@ description: |
   Karsan maps dealer gamma mechanics (GEX, Vanna, Charm) to predict forced hedging flows.
   PTJ brings macro tape reading, 5:1 asymmetric risk/reward, 200-DMA, and time stops.
   Use when evaluating tactical trade entries, options flow, or intraday microstructure.
+department: SPECULATIVE
+layer: persona
+requires: [operational-purpose, clean-architecture, department-speculative]
+conflicts_with: [fundamental-analyst]
+modules: [options_gamma, flow_intelligence, pattern_recognition, price_analysis, volume_intelligence, entry_decision]
+mcp_servers: [unusual-whales, yahoo-finance]
+crewai_role: agent
 ---
 
 # Tactical Entry Executor — Eifert, Karsan & PTJ Mindset

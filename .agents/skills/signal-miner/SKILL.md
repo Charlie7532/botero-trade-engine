@@ -6,6 +6,13 @@ description: |
   Uses pure mathematical/statistical methods without requiring causal understanding.
   Feeds discovered signal candidates to López de Prado's validation pipeline.
   Use when searching for new alpha sources, anomaly detection, or cross-asset correlations.
+department: SPECULATIVE
+layer: persona
+requires: [operational-purpose, clean-architecture, department-speculative]
+conflicts_with: [fundamental-analyst]
+modules: [signal_discovery, simulation]
+mcp_servers: []
+crewai_role: agent
 ---
 
 # Signal Miner — Jim Simons Mindset
@@ -69,7 +76,7 @@ For each active signal:
 | `simulation/` module | Discovered signals → OracleBacktester for alpha ceiling |
 | `StrategyCalibrator` | Signals that pass Oracle → walk-forward validation |
 | `QuantFeatureEngineer` | New signal features fed into the feature pipeline |
-| `EntryIntelligenceHub` | Validated signals become new intelligence dimensions |
+| `SpeculativeEntryHub` | Validated signals become new intelligence dimensions |
 | MCP Data Sources | Raw material: Yahoo Finance, Unusual Whales, FRED, Finnhub |
 
 ## Mandatory Output Format

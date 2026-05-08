@@ -1,7 +1,9 @@
 ---
 name: payload-hook-first-use-case
 description: Extract business logic from Payload hooks, routes, and jobs into rules, use cases, and adapters. Use this whenever a hook or endpoint mixes orchestration, persistence, and side-effects.
-
+department: FRONTEND
+layer: tool
+crewai_role: agent
 ---
 
 # Payload Hook-First Use Case

@@ -1,4 +1,10 @@
 """
+⚠️ DEPRECATED — Use QualityEntryGate or SpeculativeEntryHub instead.
+This monolithic hub is superseded by department-specific entry pipelines:
+  - QualityEntryGate (quality_entry_gate.py) — for QUALITY positions
+  - SpeculativeEntryHub (speculative_entry_hub.py) — for SPECULATIVE trades
+Kept for backward compatibility with legacy factory wiring.
+
 ENTRY INTELLIGENCE HUB — El Puente que Conecta Todas las Piezas
 ================================================================
 "Los componentes individuales son órganos.

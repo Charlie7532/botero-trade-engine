@@ -266,7 +266,7 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
 9. **All MCP adapters receive pre-fetched data.** Infrastructure adapters (`gurufocus_intelligence.py`, `finviz_intelligence.py`, `fred_macro_intelligence.py`) never call MCP tools directly. The orchestrator fetches MCP data and passes it to adapters for structured interpretation. This maintains Clean Architecture boundaries.
 
-10. **Data providers use fallback chains.** Every data method should try MCP first (when data is provided), then fall back to SDK/scraper. Never fail silently — always log the fallback.
+10. **Daemon data providers use fallback chains.** Code in `backend/daemons/` and `backend/scripts/` should try MCP first, then fall back to SDK/scraper. Never fail silently — always log the fallback. Module infrastructure adapters (`backend/modules/*/infrastructure/`) read ONLY from the Vault (Neon PostgreSQL via TimescaleDataStore). They do NOT have fallback chains to external APIs. See Rule 13.
 
 11. **Simplicity first.** No features beyond what was asked. No abstractions for single-use code. No speculative "flexibility" or "configurability." If 200 lines could be 50, rewrite it. The test: would a senior engineer say this is overcomplicated? If yes, simplify.
 

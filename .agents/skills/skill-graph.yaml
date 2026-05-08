@@ -1,0 +1,156 @@
+# Skill System Dependency Graph
+# Used for agent composition validation and conflict detection.
+# When CrewAI arrives, this file drives skill → system prompt mapping.
+#
+# Layers (bottom → top):
+#   baseline → department → persona → tool → router
+#
+# Department scopes:
+#   ALL      = active in every context
+#   QUALITY  = tollkeeper long-term positions (80%)
+#   SPECULATIVE = tactical asymmetric trades (20%)
+#   CROSS    = above departments (CIO level)
+#   SERVICE  = serves both departments neutrally
+#   VALIDATION = post-trade scientific validation
+
+version: "1.0"
+
+# ─── Baseline Layer ─────────────────────────────────────────────
+baselines:
+  - operational-purpose    # Zero-bias behavioral alignment
+  - clean-architecture     # Hexagonal architecture enforcement
+
+# ─── Department Layer ───────────────────────────────────────────
+departments:
+  quality:
+    skill: department-quality
+    allocation: 80%
+    entry_class: QualityEntryGate
+    orchestrator: QualityOrchestrator
+    risk_skill: risk-quality
+    personas: [fundamental-analyst]
+
+  speculative:
+    skill: department-speculative
+    allocation: 20%
+    entry_class: SpeculativeEntryHub
+    orchestrator: SpeculativeOrchestrator
+    risk_skill: risk-speculative
+    personas: [tactical-entries, signal-miner]
+
+# ─── Persona Layer ──────────────────────────────────────────────
+personas:
+  fundamental-analyst:
+    department: QUALITY
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture, department-quality]
+    conflicts: [signal-miner]
+    mcp_servers: [gurufocus, finnhub]
+
+  tactical-entries:
+    department: SPECULATIVE
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture, department-speculative]
+    conflicts: [fundamental-analyst]
+    mcp_servers: [unusual-whales, yahoo-finance]
+
+  signal-miner:
+    department: SPECULATIVE
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture, department-speculative]
+    conflicts: [fundamental-analyst]
+    mcp_servers: []
+
+  risk-quality:
+    department: QUALITY
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture, department-quality]
+    conflicts: [risk-speculative]
+    mcp_servers: [fred]
+
+  risk-speculative:
+    department: SPECULATIVE
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture, department-speculative]
+    conflicts: [risk-quality]
+    mcp_servers: [unusual-whales, yahoo-finance]
+
+  cio-allocator:
+    department: CROSS
+    crewai_role: manager
+    requires: [operational-purpose, clean-architecture]
+    conflicts: []
+    mcp_servers: [fred]
+
+  rotation-analyst:
+    department: SERVICE
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture]
+    conflicts: []
+    mcp_servers: [yahoo-finance]
+
+  research-intelligence:
+    department: SERVICE
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture]
+    conflicts: []
+    mcp_servers: [gurufocus, finnhub, finviz, unusual-whales]
+
+# ─── Tool Layer ─────────────────────────────────────────────────
+tools:
+  backtesting-trading-strategies:
+    department: VALIDATION
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture]
+    mcp_servers: []
+
+  trade-forensics:
+    department: VALIDATION
+    crewai_role: agent
+    requires: [operational-purpose, clean-architecture]
+    mcp_servers: []
+
+# ─── Router Layer ───────────────────────────────────────────────
+router:
+  expert-mode:
+    crewai_role: orchestrator
+    manages: [departments, personas, tools]
+
+# ─── Conflict Pairs ────────────────────────────────────────────
+# These skills must NEVER be co-loaded without explicit CIO-level context.
+conflicts:
+  - [fundamental-analyst, signal-miner]
+  - [risk-quality, risk-speculative]
+  - [fundamental-analyst, tactical-entries]  # valid ONLY at CIO level with both depts
+  - [department-quality, department-speculative]  # valid ONLY at CIO level
+
+# ─── CrewAI Agent Blueprint (Future) ───────────────────────────
+# When CrewAI is implemented, each entry here becomes an agent config.
+# system_prompt = baselines + department_manifest + persona_skill
+# tools = mcp_servers listed above
+# memory = Neon PostgreSQL (engine.agent_messages)
+agents:
+  quality_agent:
+    system_prompt_skills: [operational-purpose, clean-architecture, department-quality, fundamental-analyst, risk-quality]
+    mcp_servers: [gurufocus, finnhub, fred]
+    department: QUALITY
+
+  speculative_agent:
+    system_prompt_skills: [operational-purpose, clean-architecture, department-speculative, tactical-entries, risk-speculative]
+    mcp_servers: [unusual-whales, yahoo-finance]
+    department: SPECULATIVE
+
+  research_agent:
+    system_prompt_skills: [operational-purpose, clean-architecture, research-intelligence]
+    mcp_servers: [gurufocus, finnhub, finviz, unusual-whales]
+    department: SERVICE
+
+  cio_agent:
+    system_prompt_skills: [operational-purpose, clean-architecture, cio-allocator, rotation-analyst]
+    mcp_servers: [fred, yahoo-finance]
+    department: CROSS
+
+  validation_agent:
+    system_prompt_skills: [operational-purpose, clean-architecture, backtesting-trading-strategies, trade-forensics, signal-miner]
+    mcp_servers: []
+    department: VALIDATION

@@ -1,7 +1,9 @@
 ---
 name: payload-lifecycle-manifest
 description: Create or normalize Payload lifecycle manifests and shared hook handlers so collection behavior is explicit, wrapped, and easy to trace. Use this whenever a task changes hooks, lifecycle composition, or shared Payload handlers.
-
+department: FRONTEND
+layer: tool
+crewai_role: agent
 ---
 
 # Payload Lifecycle Manifest

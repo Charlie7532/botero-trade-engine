@@ -18595,3 +18595,41 @@
 2026-05-08 20:14:45,997 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
 2026-05-08 20:14:45,997 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
 2026-05-08 20:14:45,997 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-08 20:19:45,997 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-08T20:19:45.997829+00:00 ═══
+2026-05-08 20:19:46,243 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-08 20:19:46,415 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-08 20:20:46,462 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-08 20:21:46,505 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-08 20:22:46,560 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-08 20:22:46,560 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-08 20:22:46,678 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.16
+2026-05-08 20:23:18,131 [yfinance] ERROR — $CTRA: possibly delisted; no price data found  (period=1d)
+2026-05-08 20:25:02,741 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-08 20:25:02,948 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-08 20:25:02,952 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-08 20:25:04,888 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 27 tickers with news
+2026-05-08 20:25:04,920 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-08 20:25:04,968 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-08 20:25:05,084 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-08 20:25:05,126 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-08 20:25:05,126 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-08 20:25:05,126 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...
+2026-05-08 20:30:05,127 [DataVaultDaemon] INFO — ═══ Vault cycle started at 2026-05-08T20:30:05.127212+00:00 ═══
+2026-05-08 20:30:05,349 [DataVaultDaemon] INFO — 📊 Neon universe: 542 tickers
+2026-05-08 20:30:05,585 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-08 20:31:05,626 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-08 20:32:05,672 [backend.modules.flow_intelligence.infrastructure.uw_mcp_bridge] WARNING — UW API rate limited — backing off 60s
+2026-05-08 20:33:05,737 [DataVaultDaemon] INFO — 🐋 0 unique tickers detected in flow
+2026-05-08 20:33:05,737 [DataVaultDaemon] INFO — 🐋 UW vault complete: SPY=0 ticks, tide=0 pts, 0/0 tickers captured
+2026-05-08 20:33:05,862 [DataVaultDaemon] INFO — 📊 VIX snapshot: 17.19
+2026-05-08 20:33:38,900 [yfinance] ERROR — $CTRA: possibly delisted; no price data found  (period=1d)
+2026-05-08 20:35:25,845 [DataVaultDaemon] INFO — 📊 Yahoo vault complete: VIX=✓, 539/542 chains captured
+2026-05-08 20:35:26,014 [DataVaultDaemon] INFO — 💼 Portfolio vault: 0 positions, $100,029 cash
+2026-05-08 20:35:26,017 [backend.modules.flow_intelligence.infrastructure.finnhub_api] INFO — Finnhub Intelligence inicializado correctamente.
+2026-05-08 20:35:28,210 [DataVaultDaemon] INFO — 📰 Finnhub vault complete: earnings=skip, 27 tickers with news
+2026-05-08 20:35:28,240 [DataVaultDaemon] INFO — 📊 FRED macro already vaulted today — skipping
+2026-05-08 20:35:28,281 [DataVaultDaemon] INFO — 😱 Fear & Greed already vaulted today — skipping
+2026-05-08 20:35:28,369 [DataVaultDaemon] INFO — 🔬 GuruFocus screening: 0/20 tickers
+2026-05-08 20:35:28,409 [DataVaultDaemon] INFO — 📈 OHLCV bars already updated today — skipping
+2026-05-08 20:35:28,410 [DataVaultDaemon] INFO — ═══ Vault cycle complete: uw=ok | yahoo=ok | portfolio=ok | finnhub=ok | fred=skipped | fear_greed=skipped | gurufocus=ok | ohlcv=skipped ═══
+2026-05-08 20:35:28,410 [DataVaultDaemon] INFO — Sleeping 300s until next cycle...

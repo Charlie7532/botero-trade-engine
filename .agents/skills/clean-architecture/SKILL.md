@@ -1,6 +1,9 @@
 ---
 name: clean-architecture
 description: Enforce Clean & Hexagonal Architecture rules across the Botero Trade Engine codebase. Use this whenever writing new modules, refactoring existing code, or reviewing architecture compliance.
+department: ALL
+layer: baseline
+crewai_role: injected
 ---
 
 # Botero Trade Engine: Clean & Hexagonal Architecture Standard
@@ -220,37 +223,34 @@ PYTHONPATH=backend python3 -m compileall backend/
 
 The following are acknowledged violations of the architecture that exist in the current codebase. They should be incrementally fixed but must NEVER be used as precedent for new code.
 
-### Domain → Infrastructure Imports (18 violations)
+### Domain → Infrastructure Imports (4 remaining — 9 fixed since original audit)
 Use Cases that directly import infrastructure adapters instead of going through Ports:
 
-| File | Violation |
-|---|---|
-| `options_gamma/application/use_cases/analyze_gamma.py` | Imports `infrastructure.yfinance_adapter` (Port exists — unwired) |
-| `entry_decision/application/use_cases/evaluate_entry.py` | Imports `infrastructure.market_data_fetcher` (Port exists — unwired) |
-| `entry_decision/application/use_cases/evaluate_entry.py` | Imports `flow_intelligence/infrastructure.uw_adapter` (Port exists — unwired) |
-| `execution/application/use_cases/orchestrate_paper_trading.py` | Imports Alpaca SDK directly + `infrastructure.data_providers` + `os.getenv` |
-| `execution/application/use_cases/orchestrate_scans.py` | Imports `backend.infrastructure.data_providers.fundamental_cache` |
-| `execution/application/use_cases/monitor_positions.py` | Imports Alpaca SDK directly + `os.environ` |
-| `execution/application/use_cases/journal_trades.py` | Reads `os.getenv('MONGODB_URI')` — domain must not know DB credentials |
-| `portfolio_management/application/use_cases/scan_alpha.py` | Imports `backend.infrastructure.data_providers.*` (×5) + `yfinance` |
-| `portfolio_management/application/use_cases/filter_universe.py` | Imports `backend.infrastructure.data_providers.*` (×3) |
-| `portfolio_management/application/use_cases/qualify_ticker.py` | `import yfinance as yf` at top level |
-| `simulation/application/use_cases/calibrate_strategy.py` | Imports `infrastructure.data_harmonizer` |
-| `simulation/application/use_cases/pre_trade_gate.py` | Imports `infrastructure.data_harmonizer` |
-| `shared/application/use_cases/shared_use_cases.py` | Imports `backtrader`, `simulation/infrastructure/backtrader/*`, `execution/infrastructure/brokers/base` |
+| File | Violation | Status |
+|---|---|---|
+| ~~`options_gamma/application/use_cases/analyze_gamma.py`~~ | ~~Imports `infrastructure.yfinance_adapter`~~ | ✅ FIXED — now uses Port |
+| `entry_decision/application/use_cases/evaluate_entry.py` | Imports `infrastructure.market_data_fetcher` + `flow_intelligence/infrastructure.uw_adapter` | ⚠️ DEPRECATED — use `QualityEntryGate` or `SpeculativeEntryHub` instead |
+| ~~`execution/application/use_cases/orchestrate_paper_trading.py`~~ | ~~Imports Alpaca SDK directly~~ | ✅ FIXED — now uses Port |
+| ~~`execution/application/use_cases/orchestrate_scans.py`~~ | ~~Imports `infrastructure.data_providers`~~ | ✅ FIXED |
+| ~~`execution/application/use_cases/monitor_positions.py`~~ | ~~Imports Alpaca SDK directly~~ | ✅ FIXED — now uses Port |
+| ~~`execution/application/use_cases/journal_trades.py`~~ | ~~Reads `os.getenv('MONGODB_URI')`~~ | ✅ FIXED |
+| ~~`portfolio_management/application/use_cases/scan_alpha.py`~~ | ~~Imports `infrastructure.data_providers` + `yfinance`~~ | ✅ FIXED |
+| `portfolio_management/application/use_cases/filter_universe.py` | Imports infrastructure adapter | ⚠️ REMAINING |
+| `portfolio_management/application/use_cases/qualify_ticker.py` | `from backend.modules.simulation.infrastructure.lstm_model import QuantInstitutionalLSTM` | ⚠️ REMAINING — cross-module infrastructure import |
+| ~~`simulation/application/use_cases/calibrate_strategy.py`~~ | ~~Imports `infrastructure.data_harmonizer`~~ | ✅ FIXED |
+| ~~`simulation/application/use_cases/pre_trade_gate.py`~~ | ~~Imports `infrastructure.data_harmonizer`~~ | ✅ FIXED |
+| ~~`shared/application/use_cases/shared_use_cases.py`~~ | ~~Imports `backtrader`~~ | ✅ FIXED |
 
-**Fix pattern:** Define a Port ABC in `domain/ports/`, make the adapter implement it, inject the Port into the Use Case constructor.
-
-### External SDK Imports in Domain (7 violations)
+### External SDK Imports in Domain (1 remaining — 4 fixed)
 Domain layer imports external libraries that should only exist in infrastructure:
 
-| File | Import |
-|---|---|
-| `execution/application/use_cases/orchestrate_paper_trading.py` | `yfinance`, `alpaca.trading.client`, `alpaca.data` |
-| `execution/application/use_cases/monitor_positions.py` | `alpaca.trading.client`, `alpaca.trading.enums` |
-| `portfolio_management/application/use_cases/qualify_ticker.py` | `yfinance` |
-| `portfolio_management/application/use_cases/scan_alpha.py` | `yfinance` |
-| `shared/application/use_cases/shared_use_cases.py` | `backtrader` |
+| File | Import | Status |
+|---|---|---|
+| ~~`execution/application/use_cases/orchestrate_paper_trading.py`~~ | ~~`yfinance`, `alpaca`~~ | ✅ FIXED |
+| ~~`execution/application/use_cases/monitor_positions.py`~~ | ~~`alpaca.trading`~~ | ✅ FIXED |
+| ~~`portfolio_management/application/use_cases/qualify_ticker.py`~~ | ~~`yfinance`~~ | ✅ FIXED |
+| ~~`portfolio_management/application/use_cases/scan_alpha.py`~~ | ~~`yfinance`~~ | ✅ FIXED |
+| `execution/application/use_cases/smart_entry.py` | `alpaca.trading.requests`, `alpaca.trading.enums` | ⚠️ NEW — Alpaca SDK in use case |
 
 ### Legacy Import Paths
 ✅ **Resolved.** No remaining `from modules.` (without `backend.` prefix) imports found.

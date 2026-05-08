@@ -5,6 +5,12 @@ description: >
   Speculative (Seykota): Detect pattern failures → calibrate stops → retrain Memory Guard.
   Quality (Druckenmiller): Detect thesis inaccuracy → measure surveillance lag → enforce blacklist.
   Runs the Detect → Learn → Retrain → Prevent cycle.
+department: VALIDATION
+layer: tool
+requires: [operational-purpose, clean-architecture]
+modules: [simulation, execution]
+mcp_servers: []
+crewai_role: agent
 ---
 
 # Trade Forensics — Closed-Loop Learning System

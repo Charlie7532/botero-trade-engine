@@ -6,6 +6,12 @@ description: |
   a service department with two independent tracks, each with distinct criteria,
   tools, and output formats. The department does NOT decide capital allocation —
   it delivers researched candidates to the CIO and department heads for decision.
+department: SERVICE
+layer: persona
+requires: [operational-purpose, clean-architecture]
+modules: [portfolio_management]
+mcp_servers: [gurufocus, finnhub, finviz, unusual-whales]
+crewai_role: agent
 ---
 
 # Research & Intelligence Department
@@ -84,7 +90,7 @@ Calculate price levels using MULTIPLE modules:
 #### Step 4: Technical Structure Check
 Use `PricePhaseIntelligence` from `price_analysis/detect_price_phase.py`:
 - What phase? CORRECTION (buy opportunity), BREAKOUT (momentum entry), CONSOLIDATION (wait), EXHAUSTION (avoid)
-- Use `EntryIntelligenceHub` for gamma structure (Put Wall, Call Wall, Volume Profile)
+- Use `QualityEntryGate` for volume profile structure (VP Institutional Bias) or `SpeculativeEntryHub` for gamma structure (Put Wall, Call Wall)
 - Use `PatternDetector` for candlestick confirmation at key levels
 - This does NOT determine IF we invest — only WHEN
 
@@ -154,6 +160,12 @@ Activate the `tactical-entries` skill:
 - **Never skip the Moat Stress Test**: For Quality track, no candidate bypasses Section 3b. Popular stocks get EXTRA scrutiny, not less.
 - **Never use analyst consensus as research**: Analyst targets are consensus — they are the BASELINE to beat, not the conclusion.
 - **Never present a watchlist without price levels**: Every Quality candidate MUST have Buy Zone, Add Zone, Fair Value, and Reduce Zone calculated.
+
+
+> [!IMPORTANT]
+> The "Primary MCP" and "Fallback" columns below describe where **daemons** source raw data.
+> Module code (`backend/modules/*/`) reads ONLY from the Neon Vault (Rule 13).
+> MCP data is fetched by daemons, persisted to Neon, and consumed by modules as stored data.
 
 ## Data Sources Matrix
 

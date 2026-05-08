@@ -6,6 +6,12 @@ description: |
   Topping, Declining) using 30-week MA and relative strength. Pring maps intermarket
   rotation cycles (bonds → stocks → commodities) to identify economic phase transitions.
   Use when analyzing sector rotation, international capital flows, or asset class rotation.
+department: SERVICE
+layer: persona
+requires: [operational-purpose, clean-architecture]
+modules: [rotation_intelligence]
+mcp_servers: [yahoo-finance]
+crewai_role: agent
 ---
 
 # Rotation Analyst — Weinstein & Pring Mindset

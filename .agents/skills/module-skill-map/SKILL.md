@@ -4,6 +4,9 @@ description: |
   Maps each backend module to the skills that should be activated when that
   module is referenced. Use this to ensure consistent context, architecture
   compliance, and domain-specific expertise whenever working on any module.
+department: ALL
+layer: router
+crewai_role: lookup
 ---
 
 # Module → Skill Activation Map
@@ -15,20 +18,20 @@ When any agent works on a backend module, activate the skills listed for that mo
 
 ## Activation Matrix
 
-| Module | Always | Domain-Specific Skills | Why |
-|---|---|---|---|
-| `entry_decision` | `clean-architecture`, `operational-purpose` | `fundamental-analyst`, `tactical-entries`, `risk-manager` | Hub that gates all entries — needs fundamental quality, tactical precision, AND risk assessment |
-| `execution` | `clean-architecture`, `operational-purpose` | `risk-manager`, `cio-allocator` | Order lifecycle, broker adapters, position monitoring — risk + CIO budget governance |
-| `flow_intelligence` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Whale flows, sweeps, institutional positioning — pure microstructure |
-| `options_gamma` | `clean-architecture`, `operational-purpose` | `tactical-entries`, `risk-manager` | GEX, Max Pain, gamma regime — drives entry timing AND risk regime detection |
-| `pattern_recognition` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Candlestick/technical patterns — visual structure for entry timing |
-| `portfolio_management` | `clean-architecture`, `operational-purpose` | `research-intelligence`, `fundamental-analyst`, `risk-manager`, `cio-allocator` | Universe filtering, alpha scanning, CIO budget allocation, position sizing, watchlist management |
-| `price_analysis` | `clean-architecture`, `operational-purpose` | `tactical-entries` | RSI, price phase detection — technical structure analysis |
-| `rotation_intelligence` | `clean-architecture`, `operational-purpose` | `rotation-analyst`, `cio-allocator` | Sector/international/asset class rotation via ETF RS and stage analysis — feeds CIO |
-| `shared` | `clean-architecture`, `operational-purpose` | *(none)* | Foundational types and shared ports — architecture-only |
-| `simulation` | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies` | Backtesting engine — directly maps to the backtesting skill |
-| `signal_discovery` | `clean-architecture`, `operational-purpose` | `signal-miner`, `backtesting-trading-strategies` | Statistical anomaly mining → validated via simulation pipeline |
-| `volume_intelligence` | `clean-architecture`, `operational-purpose` | `tactical-entries` | Volume profile, POC/VAH/VAL — institutional volume microstructure |
+| Module | Department | Always | Domain-Specific Skills | Why |
+|---|---|---|---|---|
+| `entry_decision` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `fundamental-analyst`, `risk-quality`. SPECULATIVE: `tactical-entries`, `risk-speculative` | Separate pipelines — `QualityEntryGate` vs `SpeculativeEntryHub` |
+| `execution` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `risk-quality`, `cio-allocator`. SPECULATIVE: `risk-speculative` | Order lifecycle, broker adapters — department-scoped risk |
+| `flow_intelligence` | SPECULATIVE | `clean-architecture`, `operational-purpose` | `tactical-entries` | Whale flows, sweeps, institutional positioning — pure microstructure |
+| `options_gamma` | SPECULATIVE | `clean-architecture`, `operational-purpose` | `tactical-entries`, `risk-speculative` | GEX, Max Pain, gamma regime — Speculative entry timing + risk |
+| `pattern_recognition` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `department-quality` (Gate 5). SPECULATIVE: `tactical-entries` | Candlestick/technical patterns — QUALITY uses as veto gate, SPECULATIVE uses for timing |
+| `portfolio_management` | QUALITY | `clean-architecture`, `operational-purpose` | `research-intelligence`, `fundamental-analyst`, `risk-quality`, `cio-allocator` | Universe filtering, alpha scanning, CIO budget, watchlist |
+| `price_analysis` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `department-quality` (Gates 3-4). SPECULATIVE: `tactical-entries` | RSI + phase — QUALITY uses as binary gate, SPECULATIVE uses for tactical timing |
+| `rotation_intelligence` | SERVICE | `clean-architecture`, `operational-purpose` | `rotation-analyst`, `cio-allocator` | Sector/international rotation — feeds CIO |
+| `shared` | — | `clean-architecture`, `operational-purpose` | *(none)* | Foundational types and shared ports |
+| `simulation` | VALIDATION | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies` | Backtesting engine — López de Prado validation |
+| `signal_discovery` | SPECULATIVE | `clean-architecture`, `operational-purpose` | `signal-miner`, `backtesting-trading-strategies` | Statistical anomaly mining → validated via simulation |
+| `volume_intelligence` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `department-quality` (Gate 1). SPECULATIVE: `tactical-entries` | VP analysis — QUALITY uses for institutional bias check, SPECULATIVE uses for POC/VAH/VAL |
 
 ---
 
@@ -41,20 +44,24 @@ When any agent works on a backend module, activate the skills listed for that mo
                         │  operational-purpose │
                         └────────┬────────────┘
                                  │
-        ┌────────────────────────┼────────────────────────┐
-        │                        │                        │
-  ┌─────▼──────┐          ┌─────▼──────┐          ┌─────▼──────┐
-  │ FUNDAMENTAL │          │  TACTICAL   │          │    RISK     │
-  │  ANALYST    │          │  ENTRIES    │          │  MANAGER    │
-  └─────┬──────┘          └─────┬──────┘          └─────┬──────┘
-        │                       │                       │
-  ┌─────┘                 ┌─────┼─────┐           ┌────┘
-  │                       │     │     │           │
-  ▼                       ▼     ▼     ▼           ▼
-portfolio_mgmt    flow_intel  price  volume    execution
-entry_decision    options_γ  pattern  entry    options_γ
-                  entry_dec          decision  portfolio_mgmt
-                                               entry_decision
+                    ┌────────────┼────────────┐
+                    │                         │
+              ┌─────▼──────┐           ┌─────▼──────┐
+              │ DEPARTMENT │           │ DEPARTMENT │
+              │  QUALITY   │           │ SPECULATIVE│
+              └─────┬──────┘           └─────┬──────┘
+                    │                        │
+         ┌─────────┼─────────┐    ┌──────────┼──────────┐
+         │         │         │    │          │          │
+   ┌─────▼───┐ ┌───▼────┐ ┌─▼──┐ ┌▼─────┐ ┌──▼──┐ ┌────▼────┐
+   │FUND.    │ │RISK    │ │CIO │ │TACT. │ │RISK │ │SIGNAL   │
+   │ANALYST  │ │QUALITY │ │    │ │ENTRY │ │SPEC │ │MINER    │
+   └────┬────┘ └───┬────┘ └─┬──┘ └──┬───┘ └──┬──┘ └────┬────┘
+        │          │        │       │        │         │
+  portfolio_mgmt  exec    rotation flow    exec     signal_disc
+  entry_decision  port_m   intel   opt_γ   opt_γ    simulation
+                                   price   entry
+                                   volume
 ```
 
 ---
@@ -76,7 +83,7 @@ When creating a new module, add it to this map and assign the appropriate skills
 
 | Module | Purpose | Key Use Cases |
 |---|---|---|
-| `entry_decision` | Central gate for all trade entries — aggregates signals from all intelligence modules | `evaluate_entry` |
+| `entry_decision` | Department-scoped entry gate — `QualityEntryGate` (QUALITY) and `SpeculativeEntryHub` (SPECULATIVE) | `quality_entry_gate`, `speculative_entry_hub` |
 | `execution` | Order management, broker adapters (Alpaca, IB), trade journaling, position monitoring | `execute_order`, `orchestrate_paper_trading`, `journal_trades` |
 | `flow_intelligence` | Whale flow analysis (Unusual Whales), macro event calendar, flow persistence signals | `analyze_whale_flow`, `analyze_persistence` |
 | `options_gamma` | Gamma regime detection (PIN/DRIFT/SQUEEZE), Max Pain, GEX, Black-Scholes, OpEx calendar | `analyze_gamma` |

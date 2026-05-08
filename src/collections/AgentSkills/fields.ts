@@ -2,7 +2,7 @@ import type { Field } from 'payload'
 
 import { SKILL_TYPES, SKILL_CATEGORIES } from './domain/rules/skillRules'
 
-export const agentSkillsFields: Field[] = [
+export const agentSkillsFields: Field[] = [ 
   {
     name: 'name',
     type: 'text',

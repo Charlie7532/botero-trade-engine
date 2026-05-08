@@ -6,14 +6,14 @@ export const dashboardWidgets: DashboardConfig['widgets'] = [
   {
     slug: 'claude-token-consumption',
     label: 'Claude Token Consumption',
-    ComponentPath: '@/widgets/ClaudeTokenConsumptionWidget',
+    Component: '@/widgets/ClaudeTokenConsumptionWidget',
     minWidth: 'small',
     maxWidth: 'large',
   },
   {
     slug: 'postgres-performance',
     label: 'Postgres Performance',
-    ComponentPath: '@/widgets/PostgresPerformanceWidget',
+    Component: '@/widgets/PostgresPerformanceWidget',
     minWidth: 'large',
     maxWidth: 'full',
   },

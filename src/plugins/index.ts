@@ -43,10 +43,10 @@ export const plugins: Plugin[] = [
   payloadCloudPlugin(),
   mcpPlugin({
     collections: {
-      AgentSkills: { enabled: true },
-      Portfolios: { enabled: true },
-      Bots: { enabled: true },
-      McpServers: { enabled: true },
+      'agent-skills': { enabled: true },
+      portfolios: { enabled: true },
+      bots: { enabled: true },
+      'mcp-servers': { enabled: true },
     },
   }),
   vercelBlobStorage({

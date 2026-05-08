@@ -32,12 +32,14 @@
     "@heroui/react": "^3.0.1",
     "@heroui/styles": "^3.0.1",
     "@iconify/react": "^6.0.2",
+    "@modelcontextprotocol/sdk": "1.26.0",
     "@payloadcms/admin-bar": "^3.75.0",
     "@payloadcms/db-vercel-postgres": "^3.75.0",
     "@payloadcms/live-preview-react": "^3.75.0",
     "@payloadcms/next": "^3.75.0",
     "@payloadcms/payload-cloud": "^3.75.0",
     "@payloadcms/plugin-form-builder": "^3.75.0",
+    "@payloadcms/plugin-mcp": "3.75.0",
     "@payloadcms/plugin-nested-docs": "^3.75.0",
     "@payloadcms/plugin-redirects": "^3.75.0",
     "@payloadcms/plugin-search": "^3.75.0",
@@ -109,6 +111,7 @@
     ]
   },
   "overrides": {
+    "@modelcontextprotocol/sdk": "1.26.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3"
   }

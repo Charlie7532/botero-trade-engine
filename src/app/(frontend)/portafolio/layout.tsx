@@ -6,12 +6,10 @@ import { getMeUser } from '@/utilities/getMeUser'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 
 export default async function PortafolioLayout({ children }: { children: ReactNode }) {
-  const { user } = await getMeUser({
-    nullUserRedirect: '/admin/login?redirect=%2Fportafolio',
-  })
+  const { user } = await getMeUser()
 
   if (!user) {
-    redirect('/admin/login?redirect=%2Fportafolio')
+    redirect('/login?redirect=%2Fportafolio')
   }
 
   const portfolios = await getUserPortfolios(user.id)

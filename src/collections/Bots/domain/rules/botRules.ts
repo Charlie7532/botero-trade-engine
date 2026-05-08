@@ -24,6 +24,11 @@ export const STRATEGY_TYPES = [
   { label: 'Speculative: Gamma', value: 'speculative_gamma' },
   { label: 'Speculative: Breakout', value: 'speculative_breakout' },
   { label: 'Speculative: Spring', value: 'speculative_spring' },
+  // Legacy (compatibility with existing DB rows)
+  { label: 'Legacy: QGARP', value: 'qgarp' },
+  { label: 'Legacy: Momentum', value: 'momentum' },
+  { label: 'Legacy: Mean Reversion', value: 'mean_reversion' },
+  { label: 'Legacy: Trend Following', value: 'trend_following' },
   // Legacy
   { label: 'Custom', value: 'custom' },
 ] as const
@@ -36,6 +41,10 @@ export type StrategyType =
   | 'speculative_gamma'
   | 'speculative_breakout'
   | 'speculative_spring'
+  | 'qgarp'
+  | 'momentum'
+  | 'mean_reversion'
+  | 'trend_following'
   | 'custom'
 
 export const CLAUDE_MODELS = [

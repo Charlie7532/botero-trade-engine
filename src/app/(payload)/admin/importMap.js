@@ -23,6 +23,7 @@ import { default as default_e61c8db85f0955b7e4bcefbe8d06795c } from '@/widgets/C
 import { default as default_29570d79de02fb25d32a6a0ccd82f0b2 } from '@/widgets/PostgresPerformanceWidget'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
+/** @type import('payload').ImportMap */
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,

@@ -7,5 +7,5 @@ export const isSuperAdmin: Access = ({ req: { user } }) => {
 }
 
 export const isSuperAdminFieldLevel: FieldAccess<User> = ({ req: { user } }) => {
-  return Boolean(user?.role === 'superadmin')
+  return Boolean(user && 'role' in user && user.role === 'superadmin')
 }

@@ -31,7 +31,7 @@ const formatAvatarData = handleBeforeChangeHook({
     // Auto-generate alt text if not provided
     if (!data.alt) {
       const user = req?.user
-      const userName = user?.name || user?.email || 'user'
+      const userName = (user && 'name' in user && user.name) || (user && 'email' in user && user.email) || 'user'
       data.alt = `${userName} - avatar`
     }
 

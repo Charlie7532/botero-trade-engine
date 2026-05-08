@@ -64,6 +64,7 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    'payload-mcp-api-keys': PayloadMcpApiKeyAuthOperations;
   };
   blocks: {};
   collections: {
@@ -83,6 +84,7 @@ export interface Config {
     'trade-snapshots': TradeSnapshot;
     'project-vaults': ProjectVault;
     users: User;
+    'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -120,6 +122,7 @@ export interface Config {
     'trade-snapshots': TradeSnapshotsSelect<false> | TradeSnapshotsSelect<true>;
     'project-vaults': ProjectVaultsSelect<false> | ProjectVaultsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -136,13 +139,36 @@ export interface Config {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: null;
-  user: User;
+  widgets: {
+    'claude-token-consumption': ClaudeTokenConsumptionWidget;
+    'postgres-performance': PostgresPerformanceWidget;
+    collections: CollectionsWidget;
+  };
+  user: User | PayloadMcpApiKey;
   jobs: {
     tasks: unknown;
     workflows: unknown;
   };
 }
 export interface UserAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
+export interface PayloadMcpApiKeyAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -470,6 +496,10 @@ export interface Bot {
     | 'speculative_gamma'
     | 'speculative_breakout'
     | 'speculative_spring'
+    | 'qgarp'
+    | 'momentum'
+    | 'mean_reversion'
+    | 'trend_following'
     | 'custom';
   status: 'active' | 'paused' | 'stopped' | 'error';
   description?: string | null;
@@ -1047,6 +1077,105 @@ export interface ProjectVault {
   createdAt: string;
 }
 /**
+ * API keys control which collections, resources, tools, and prompts MCP clients can access
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys".
+ */
+export interface PayloadMcpApiKey {
+  id: number;
+  /**
+   * The user that the API key is associated with.
+   */
+  user: number | User;
+  /**
+   * A useful label for the API key.
+   */
+  label?: string | null;
+  /**
+   * The purpose of the API key.
+   */
+  description?: string | null;
+  agentSkills?: {
+    /**
+     * Allow clients to find agent-skills.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create agent-skills.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update agent-skills.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete agent-skills.
+     */
+    delete?: boolean | null;
+  };
+  portfolios?: {
+    /**
+     * Allow clients to find portfolios.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create portfolios.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update portfolios.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete portfolios.
+     */
+    delete?: boolean | null;
+  };
+  bots?: {
+    /**
+     * Allow clients to find bots.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create bots.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update bots.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete bots.
+     */
+    delete?: boolean | null;
+  };
+  mcpServers?: {
+    /**
+     * Allow clients to find mcp-servers.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create mcp-servers.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update mcp-servers.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete mcp-servers.
+     */
+    delete?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
+  collection: 'payload-mcp-api-keys';
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1133,12 +1262,21 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -1148,10 +1286,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   key?: string | null;
   value?:
     | {
@@ -1645,6 +1788,52 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys_select".
+ */
+export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
+  user?: T;
+  label?: T;
+  description?: T;
+  agentSkills?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  portfolios?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  bots?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  mcpServers?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1851,6 +2040,36 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "claude-token-consumption_widget".
+ */
+export interface ClaudeTokenConsumptionWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'small' | 'medium' | 'large';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "postgres-performance_widget".
+ */
+export interface PostgresPerformanceWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

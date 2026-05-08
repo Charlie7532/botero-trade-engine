@@ -12,6 +12,21 @@ services:
     environment:
       - PYTHONPATH=/app
 
+  vault:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+    environment:
+      - PYTHONPATH=/app
+    command: ["python", "-m", "daemons.data_vault_daemon", "--loop", "300"]
+    restart: unless-stopped
+    depends_on:
+      - api
+
   # Cloudflare Tunnel — exposes the API to the internet via your domain
   # 1. Create a tunnel:  cloudflared tunnel create botero-trade
   # 2. Add your token to .env:  CLOUDFLARE_TUNNEL_TOKEN=your-token

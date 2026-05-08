@@ -8,6 +8,7 @@ from backend.modules.options_gamma.domain.entities.gamma_models import GammaRegi
 from backend.modules.options_gamma.domain.ports.options_data_port import OptionsDataPort
 from backend.modules.options_gamma.domain.rules.black_scholes import bs_gamma, bs_delta, bs_vanna, bs_charm
 from backend.modules.options_gamma.domain.rules.opex_calendar import detect_opex
+from backend.modules.shared.domain.entities.indicator_trend import IndicatorTrend
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +32,29 @@ class OptionsAwareness:
     # PUBLIC API
     # ─────────────────────────────────────────────────────────
 
-    def get_full_analysis(self, symbol: str) -> dict:
+    def get_full_analysis(self, symbol: str, vix_trend: Optional[IndicatorTrend] = None) -> dict:
         """
         Análisis completo de opciones para un ticker.
         Backward-compatible con la interfaz anterior +
         nuevos campos de gamma regime.
+
+        Args:
+            vix_trend: Optional IndicatorTrend for VIX. When provided and
+                       |ΔVIX| > 2pts, vanna_event is triggered.
         """
         analysis = self._analyze(symbol)
+
+        # Vanna Event Detection (8 Forces)
+        regime = analysis.gamma_regime
+        if vix_trend is not None:
+            regime.vix_delta_1d = vix_trend.delta_1d
+            if abs(vix_trend.delta_1d) > 2.0:
+                regime.vanna_event = True
+                # VIX fell → calls gain delta → dealers must buy
+                regime.vanna_event_direction = (
+                    "BUYING" if vix_trend.delta_1d < 0 else "SELLING"
+                )
+
         return {
             # Legacy fields (backward compat with UniverseFilter)
             "symbol": analysis.symbol,
@@ -46,7 +63,7 @@ class OptionsAwareness:
             "max_pain_distance_pct": round(analysis.max_pain_distance_pct, 2),
             "put_call_ratio": round(analysis.put_call_ratio, 3),
             "gex": {
-                "gex_net_contracts": int(analysis.gamma_regime.net_gex),
+                "gex_net_contracts": int(regime.net_gex),
                 "gex_positive": analysis.gex_positive,
                 "atm_calls_oi": 0,
                 "atm_puts_oi": 0,
@@ -56,26 +73,29 @@ class OptionsAwareness:
             "expiration": analysis.expiration,
             "timestamp": analysis.timestamp,
             # NEW: Gamma Regime
-            "gamma_regime": analysis.gamma_regime.regime,
-            "net_gex_dollars": analysis.gamma_regime.net_gex,
-            "gamma_shares_per_dollar": analysis.gamma_regime.gamma_shares_per_dollar,
-            "hedge_dollars_per_dollar": analysis.gamma_regime.hedge_dollars_per_dollar,
-            "flip_up": analysis.gamma_regime.flip_up,
-            "flip_down": analysis.gamma_regime.flip_down,
-            "call_wall": analysis.gamma_regime.call_wall,
-            "call_wall_oi": analysis.gamma_regime.call_wall_oi,
-            "put_wall": analysis.gamma_regime.put_wall,
-            "put_wall_oi": analysis.gamma_regime.put_wall_oi,
-            "pin_range": [analysis.gamma_regime.pin_range_low,
-                          analysis.gamma_regime.pin_range_high],
-            # NEW: Gravity
+            "gamma_regime": regime.regime,
+            "net_gex_dollars": regime.net_gex,
+            "gamma_shares_per_dollar": regime.gamma_shares_per_dollar,
+            "hedge_dollars_per_dollar": regime.hedge_dollars_per_dollar,
+            "flip_up": regime.flip_up,
+            "flip_down": regime.flip_down,
+            "call_wall": regime.call_wall,
+            "call_wall_oi": regime.call_wall_oi,
+            "put_wall": regime.put_wall,
+            "put_wall_oi": regime.put_wall_oi,
+            "pin_range": [regime.pin_range_low, regime.pin_range_high],
+            # Gravity
             "gravity_score": round(analysis.gravity_score, 4),
             "gravity_strength": round(analysis.gravity_strength, 1),
-            # NEW: Vanna & Charm (Karsan)
-            "vanna_exposure": round(analysis.gamma_regime.vanna_exposure, 2),
-            "charm_exposure": round(analysis.gamma_regime.charm_exposure, 4),
-            "charm_direction": analysis.gamma_regime.charm_direction,
-            # NEW: OpEx
+            # Vanna & Charm (Karsan)
+            "vanna_exposure": round(regime.vanna_exposure, 2),
+            "charm_exposure": round(regime.charm_exposure, 4),
+            "charm_direction": regime.charm_direction,
+            # 8 Forces: Vanna Event
+            "vanna_event": regime.vanna_event,
+            "vanna_event_direction": regime.vanna_event_direction,
+            "vix_delta_1d": regime.vix_delta_1d,
+            # OpEx
             "opex_type": analysis.opex.opex_type,
             "is_opex_day": analysis.opex.is_opex_day,
             "opex_time_weight": analysis.opex.time_weight,

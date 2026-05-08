@@ -41,6 +41,7 @@ class CIOOrchestrator:
         international_flows: Optional[dict[str, float]] = None,
         asset_class_flows: Optional[dict[str, float]] = None,
         cycle_phase: str = "UNKNOWN",
+        gex_regime: str = "UNKNOWN",
     ) -> DailyMandate:
         """
         Synthesize macro variables to generate a dynamic capital allocation mandate.
@@ -90,6 +91,23 @@ class CIOOrchestrator:
             
         else:
             reasoning.append("Baseline regime. Maintaining standard 80/20 allocation.")
+
+        # 3.5 GEX Regime Gate (Karsan → Dalio)
+        # PIN = dealers suppress movement → no breakout opportunities → cut speculative
+        # DRIFT = amplification → favorable for tactical entries
+        if gex_regime == "PIN" and regime == "NEUTRAL":
+            s_alloc = min(s_alloc, 0.10)
+            q_alloc = max(q_alloc, 0.90)
+            reasoning.append(
+                f"GEX PIN regime — market compressed by dealer hedging. "
+                f"Speculative capped at {s_alloc*100:.0f}%."
+            )
+        elif gex_regime in ("DRIFT", "SQUEEZE_UP") and regime == "RISK_ON":
+            s_alloc = min(self.max_speculative, s_alloc * 1.3)
+            reasoning.append(
+                f"GEX {gex_regime} — dealer amplification regime. "
+                f"Speculative expanded to {s_alloc*100:.0f}%."
+            )
 
         # 4. Sector Rotation Intelligence (Cause → Effect)
         if sector_flows:
@@ -149,7 +167,8 @@ class CIOOrchestrator:
             international_focus=international_focus,
             international_avoid=international_avoid,
             cycle_phase=cycle_phase,
-            reasoning=" ".join(reasoning)
+            reasoning=" ".join(reasoning),
+            gex_regime=gex_regime,
         )
         
         logger.info(f"CIO Mandate Set: {regime} | Quality={q_alloc*100:.0f}% | Speculative={s_alloc*100:.0f}%")

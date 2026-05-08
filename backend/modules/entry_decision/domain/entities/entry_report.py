@@ -106,6 +106,29 @@ class EntryIntelligenceReport:
     historical_growth_rate: float = 0.0
     expectations_assessment: str = "UNKNOWN" # PRICED_FOR_PERFECTION, PRICED_FOR_FAILURE, FAIRLY_PRICED
 
+    # ── 8 Forces: Charm Calendar (deterministic) ───────────────
+    opex_proximity: str = "NONE"             # "48H_PRE_OPEX", "OPEX_DAY", "NONE"
+    charm_direction: str = "NEUTRAL"          # "BUYING", "SELLING", "NEUTRAL"
+    charm_volume_estimate: float = 0.0        # Shares/day from charm
+
+    # ── 8 Forces: Vanna Event (|ΔVIX| > 2pts) ─────────────────
+    vanna_event: bool = False
+    vanna_event_direction: str = "NONE"       # "BUYING" (VIX fell), "SELLING" (VIX rose)
+
+    # ── 8 Forces: VIX Trend Context ────────────────────────────
+    vix_trend_direction: str = "FLAT"         # "RISING", "FALLING", "FLAT"
+    vix_ma5: float = 0.0
+    vix_ma20: float = 0.0
+    vix_percentile_90d: float = 50.0
+
+    # ── Research Fields (SIG-003 — pending López de Prado validation) ──
+    mm_regime: str = "UNKNOWN"                # MM_DOMINANT, MIXED, INSTITUTIONAL
+    avg_trade_size: float = 0.0
+    breakout_energy: bool = False             # True when MM dominant 3+ days
+
+    # ── Research Fields (SIG-001 — pending López de Prado validation) ──
+    force_confluence: str = "NONE"            # "MELT_UP", "MELT_DOWN", "NONE"
+
     # ── Dictamen Final ─────────────────────────────────────────
     final_verdict: str = "PASS"          # EXECUTE, STALK, PASS, BLOCK
     final_scale: float = 0.0            # 0-1

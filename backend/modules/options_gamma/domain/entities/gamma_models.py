@@ -21,6 +21,10 @@ class GammaRegime:
     vanna_exposure: float = 0.0     # Net vanna: >0 = IV drop → buying pressure
     charm_exposure: float = 0.0     # Net charm/day: >0 = time decay → buying pressure
     charm_direction: str = "NEUTRAL"  # BUYING, SELLING, NEUTRAL
+    # Vanna Event Detection (8 Forces — Eifert/Karsan)
+    vanna_event: bool = False           # True when |ΔVIX| > 2pts → forced dealer flow
+    vanna_event_direction: str = "NONE" # "BUYING" (VIX fell) or "SELLING" (VIX rose)
+    vix_delta_1d: float = 0.0           # ΔVIX for context
 
 
 @dataclass

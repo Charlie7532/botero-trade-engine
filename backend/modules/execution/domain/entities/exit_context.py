@@ -31,6 +31,9 @@ class MarketContext:
     reduce_zone: float = 0.0
     thesis_death_flag: bool = False
 
+    # ── 8 Forces: Gamma Regime ──
+    gex_regime: str = "UNKNOWN"  # PIN, DRIFT, SQUEEZE_UP, SQUEEZE_DOWN, UNKNOWN
+
 @dataclass
 class ExitDecision:
     """Decisión de salida."""

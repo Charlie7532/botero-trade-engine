@@ -1,48 +1,52 @@
 """
-Macro Data Adapter — Fetches VIX and yield curve data from external sources.
+Macro Data Adapter — Reads VIX and yield curve data from the Neon Vault.
 
 Implements MacroDataPort for the portfolio_management domain.
+All data is sourced from TimescaleDataStore (populated by the Vault Daemon).
 """
 import logging
-import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
-class YFinanceMacroAdapter:
+class VaultMacroAdapter:
     """
-    Fetches macro indicators (VIX, yield curve) via yfinance.
-    Used as a fallback when FRED MCP data is not available.
+    Reads macro indicators (VIX, yield curve) from the Neon Vault.
+    Data is captured daily by the Vault Daemon's vault_fred_data() task.
     """
 
     def fetch_vix(self) -> float:
-        """Download current VIX level."""
+        """Read current VIX from the vault's macro/fred summary."""
         try:
-            import yfinance as yf
-            vix_data = yf.download("^VIX", period="5d", progress=False)
-            if not vix_data.empty:
-                if isinstance(vix_data.columns, pd.MultiIndex):
-                    vix_data.columns = vix_data.columns.get_level_values(0)
-                return float(vix_data['Close'].iloc[-1])
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            snapshot = store.load_mcp_snapshot("macro/fred", "SUMMARY")
+            store.close()
+            if snapshot and isinstance(snapshot, dict):
+                vix_data = snapshot.get("VIX", {})
+                if isinstance(vix_data, dict) and vix_data.get("close"):
+                    return float(vix_data["close"])
         except Exception as e:
-            logger.warning(f"YFinanceMacroAdapter: Error fetching VIX: {e}")
+            logger.warning(f"VaultMacroAdapter: Error reading VIX from vault: {e}")
         return 20.0  # Safe default
 
     def fetch_yield_spread(self) -> float:
-        """Download yield curve spread (10Y - 13W T-Bill)."""
+        """Read yield curve spread (10Y - 3M) from the vault's macro/fred summary."""
         try:
-            import yfinance as yf
-            tny = yf.download("^TNX", period="5d", progress=False)
-            twy = yf.download("^IRX", period="5d", progress=False)
-
-            if not tny.empty and not twy.empty:
-                if isinstance(tny.columns, pd.MultiIndex):
-                    tny.columns = tny.columns.get_level_values(0)
-                if isinstance(twy.columns, pd.MultiIndex):
-                    twy.columns = twy.columns.get_level_values(0)
-                return float(tny['Close'].iloc[-1] - twy['Close'].iloc[-1])
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            snapshot = store.load_mcp_snapshot("macro/fred", "SUMMARY")
+            store.close()
+            if snapshot and isinstance(snapshot, dict):
+                y10 = snapshot.get("YIELD_10Y", {})
+                y3m = snapshot.get("YIELD_3M", {})
+                if isinstance(y10, dict) and isinstance(y3m, dict):
+                    close_10y = y10.get("close", 0)
+                    close_3m = y3m.get("close", 0)
+                    if close_10y and close_3m:
+                        return float(close_10y) - float(close_3m)
         except Exception as e:
-            logger.warning(f"YFinanceMacroAdapter: Error fetching yield spread: {e}")
+            logger.warning(f"VaultMacroAdapter: Error reading yield spread from vault: {e}")
         return 0.5  # Safe default
 
 

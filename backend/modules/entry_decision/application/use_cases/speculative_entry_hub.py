@@ -21,6 +21,7 @@ from backend.modules.entry_decision.domain.entities.entry_report import EntryInt
 from backend.modules.entry_decision.domain.ports.market_data_port import EntryMarketDataPort
 from backend.modules.entry_decision.domain.ports.flow_data_port import FlowDataPort
 from backend.modules.options_gamma.domain.ports.options_data_port import OptionsDataPort
+from backend.modules.shared.domain.entities.indicator_trend import IndicatorTrend
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,7 @@ class SpeculativeEntryHub:
         reference_date: Optional[date] = None,
         prices_df: pd.DataFrame = None,
         vix_override: float = None,
+        vix_trend: Optional[IndicatorTrend] = None,
     ) -> EntryIntelligenceReport:
         """
         Evaluación SPECULATIVE: rápida, microestructural.
@@ -118,11 +120,28 @@ class SpeculativeEntryHub:
         report.rs_vs_spy = self._market_data.calc_rs_vs_spy(prices)
 
         # ── Step 2: Gamma Regime (Karsan) ──
-        opts = self._fetch_options_data(ticker)
+        opts = self._fetch_options_data(ticker, vix_trend=vix_trend)
         report.put_wall = opts.get("put_wall", 0.0)
         report.call_wall = opts.get("call_wall", 0.0)
         report.gamma_regime = opts.get("gamma_regime", "UNKNOWN")
         report.max_pain = opts.get("max_pain", 0.0)
+
+        # 8 Forces: Vanna Event + Charm
+        report.vanna_event = opts.get("vanna_event", False)
+        report.vanna_event_direction = opts.get("vanna_event_direction", "NONE")
+        report.charm_direction = opts.get("charm_direction", "NEUTRAL")
+        report.opex_proximity = (
+            "OPEX_DAY" if opts.get("is_opex_day", False)
+            else "48H_PRE_OPEX" if opts.get("opex_time_weight", 0) > 0
+            else "NONE"
+        )
+
+        # 8 Forces: VIX Trend Context
+        if vix_trend:
+            report.vix_trend_direction = vix_trend.direction
+            report.vix_ma5 = vix_trend.ma5
+            report.vix_ma20 = vix_trend.ma20
+            report.vix_percentile_90d = vix_trend.percentile_90d
 
         # ── Step 3: Wyckoff Volume (Kalman) ──
         wyckoff = self._run_kalman(ticker, prices)
@@ -267,7 +286,7 @@ class SpeculativeEntryHub:
             float(getattr(report, 'pattern_score', 0.0)),
         ]
 
-    def _fetch_options_data(self, ticker: str) -> dict:
+    def _fetch_options_data(self, ticker: str, vix_trend: Optional[IndicatorTrend] = None) -> dict:
         if self._options is None:
             try:
                 from backend.modules.options_gamma.application.use_cases.analyze_gamma import OptionsAwareness
@@ -275,8 +294,8 @@ class SpeculativeEntryHub:
             except Exception:
                 return {}
         try:
-            analysis = self._options.get_full_analysis(ticker)
-            return {k: analysis.get(k, 0.0) for k in ("put_wall", "call_wall", "gamma_regime", "max_pain")}
+            analysis = self._options.get_full_analysis(ticker, vix_trend=vix_trend)
+            return analysis
         except Exception:
             return {}
 

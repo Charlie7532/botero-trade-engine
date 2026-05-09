@@ -56,6 +56,10 @@ class TimeSeriesPort(ABC):
         """Load single MCP snapshot for a specific date."""
 
     @abstractmethod
+    def load_mcp_latest(self, category: str, ticker: str) -> Optional[Any]:
+        """Load the most recent MCP snapshot regardless of date."""
+
+    @abstractmethod
     def load_mcp_range(
         self, category: str, ticker: str,
         start: str, end: str,

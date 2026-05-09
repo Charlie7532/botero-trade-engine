@@ -96,8 +96,13 @@ class ScanOrchestrator:
         raw_tickers = list(set(sp500 + guru_gems))
         logger.info(f"🔍 Evaluando Universo ESTRUCTURAL: {len(raw_tickers)} activos (SP500 + Guru).")
 
-        # 2.5. Fundamental cache — TODO: inject via FundamentalCachePort
-        cache = None
+        # 2.5. Fundamental data — read from vault via adapter
+        try:
+            from backend.modules.portfolio_management.infrastructure.gurufocus_fundamental_adapter import GuruFocusFundamentalAdapter
+            fundamental_adapter = GuruFocusFundamentalAdapter()
+        except Exception as e:
+            logger.warning(f"Fundamental adapter init failed: {e}")
+            fundamental_adapter = None
         cache_hits = 0
         cache_misses = 0
 
@@ -106,35 +111,35 @@ class ScanOrchestrator:
         if macro_mcp_data: uf.update_macro_regime(macro_mcp_data)
         
         # Filtraremos simulando Candidates, etiquetando Gemas
-        # y enriqueciendo con datos de la caché si están disponibles
+        # y enriqueciendo con datos del vault si están disponibles
         base_candidates = []
         sp500_set = set(sp500)
         for t in raw_tickers:
             is_gem = t not in sp500_set
             candidate = UniverseCandidate(ticker=t, sector="Unknown", is_emerging_gem=is_gem)
             
-            # Intentar enriquecer desde la caché
-            if cache:
-                cached = cache.get_cached_data(t)
-                if cached and cached.get("status") == "fresh":
-                    data = cached.get("data", {})
-                    candidate.qgarp_score = data.get("qgarp_score", 0.0)
-                    candidate.piotroski_f_score = data.get("piotroski_f_score", 0)
-                    candidate.altman_z_score = data.get("altman_z_score", 0.0)
-                    candidate.guru_conviction_score = data.get("guru_conviction_score", 0.0)
-                    candidate.insider_conviction_score = data.get("insider_conviction_score", 0.0)
-                    candidate.fcf_margin = data.get("fcf_margin", 0.0)
-                    candidate.price_to_gf_value = data.get("price_to_gf_value", 0.0)
-                    candidate.beneish_m_score = data.get("beneish_m_score", -3.0)
-                    candidate.guru_accumulation = data.get("guru_accumulation", False)
+            # Enriquecer desde vault fundamental data
+            if fundamental_adapter:
+                summary = fundamental_adapter.get_financial_summary(t)
+                if summary and summary.get("piotroski_f_score"):
+                    candidate.piotroski_f_score = summary.get("piotroski_f_score", 0)
+                    candidate.altman_z_score = summary.get("altman_z_score", 0.0)
+                    candidate.beneish_m_score = summary.get("beneish_m_score", -3.0)
+                    candidate.price_to_gf_value = summary.get("price_to_gf_value", 0.0)
+                    candidate.fcf_margin = summary.get("net_margin", 0.0)
+
+                    guru = fundamental_adapter.get_guru_analysis(t)
+                    if guru:
+                        candidate.guru_conviction_score = guru.get("guru_buy_pct", 0.0)
+                        candidate.qgarp_score = guru.get("gf_score", 0.0)
                     cache_hits += 1
                 else:
                     cache_misses += 1
             
             base_candidates.append(candidate)
         
-        if cache:
-            logger.info(f"💾 Caché: {cache_hits} hits, {cache_misses} misses de {len(raw_tickers)} tickers.")
+        if fundamental_adapter:
+            logger.info(f"💾 Vault: {cache_hits} hits, {cache_misses} misses de {len(raw_tickers)} tickers.")
         
         strong_candidates = uf.filter_and_rank(
             base_candidates,

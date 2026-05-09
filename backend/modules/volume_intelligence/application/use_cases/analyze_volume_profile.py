@@ -50,6 +50,11 @@ class VolumeProfileAnalyzer:
         if isinstance(prices.columns, pd.MultiIndex):
             prices.columns = prices.columns.get_level_values(0)
         
+        # Normalize column case: vault returns lowercase, we need Title Case
+        col_map = {c: c.capitalize() for c in prices.columns if c.islower() and c in ("open", "high", "low", "close", "volume")}
+        if col_map:
+            prices = prices.rename(columns=col_map)
+        
         current_price = float(prices['Close'].iloc[-1])
         
         # Compute both profiles

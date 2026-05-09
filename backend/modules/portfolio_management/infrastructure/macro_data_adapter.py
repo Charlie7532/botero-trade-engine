@@ -20,7 +20,7 @@ class VaultMacroAdapter:
         try:
             from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             store = TimescaleDataStore()
-            snapshot = store.load_mcp_snapshot("macro/fred", "SUMMARY")
+            snapshot = store.load_mcp_latest("macro/fred", "SUMMARY")
             store.close()
             if snapshot and isinstance(snapshot, dict):
                 vix_data = snapshot.get("VIX", {})
@@ -35,7 +35,7 @@ class VaultMacroAdapter:
         try:
             from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             store = TimescaleDataStore()
-            snapshot = store.load_mcp_snapshot("macro/fred", "SUMMARY")
+            snapshot = store.load_mcp_latest("macro/fred", "SUMMARY")
             store.close()
             if snapshot and isinstance(snapshot, dict):
                 y10 = snapshot.get("YIELD_10Y", {})

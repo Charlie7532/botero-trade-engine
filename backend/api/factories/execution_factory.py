@@ -272,9 +272,9 @@ def synthesize_live_mandate(cio=None):
     gex_regime = "UNKNOWN"
     try:
         from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-        from datetime import date as _date
         store = TimescaleDataStore()
-        gamma_snap = store.load_mcp_snapshot("options/gamma", "SPY", _date.today().isoformat())
+        gamma_snap = store.load_mcp_latest("flow/gex", "SPY")
+        store.close()
         if gamma_snap and isinstance(gamma_snap, dict):
             gex_regime = gamma_snap.get("gamma_regime", "UNKNOWN")
     except Exception as e:

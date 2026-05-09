@@ -501,7 +501,7 @@ class RotationScanner:
         try:
             from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             store = TimescaleDataStore()
-            snapshot = store.load_mcp_snapshot("macro/fear_greed", "MARKET")
+            snapshot = store.load_mcp_latest("macro/fear_greed", "MARKET")
             store.close()
             if snapshot and isinstance(snapshot, dict):
                 score = snapshot.get("score", 50.0)

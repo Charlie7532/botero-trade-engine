@@ -221,6 +221,22 @@ class TimescaleDataStore(TimeSeriesPort):
         finally:
             self._put(conn)
 
+    def load_mcp_latest(self, category: str, ticker: str) -> Optional[Any]:
+        """Load the most recent MCP snapshot regardless of date."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """SELECT data FROM market.mcp_snapshots
+                       WHERE category = %s AND ticker = %s
+                       ORDER BY time DESC LIMIT 1""",
+                    (category, ticker.upper()),
+                )
+                row = cur.fetchone()
+                return row[0] if row else None
+        finally:
+            self._put(conn)
+
     def load_mcp_range(
         self, category: str, ticker: str,
         start: str, end: str,

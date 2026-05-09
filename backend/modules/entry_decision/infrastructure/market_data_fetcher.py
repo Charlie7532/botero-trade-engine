@@ -54,7 +54,7 @@ class MarketDataFetcher(EntryMarketDataPort):
             store = TimescaleDataStore()
 
             # Primary: macro/fred SUMMARY snapshot
-            snapshot = store.load_mcp_snapshot("macro/fred", "SUMMARY")
+            snapshot = store.load_mcp_latest("macro/fred", "SUMMARY")
             store.close()
             if snapshot and isinstance(snapshot, dict):
                 vix_data = snapshot.get("VIX", {})

@@ -19,7 +19,9 @@ def _prefetch_guru_data(tickers: list[str]) -> dict:
         data = {}
         for t in tickers[:20]:  # Cap to avoid rate limits
             try:
-                data[t] = bridge.get_stock_gurus(t)
+                screening = bridge.fetch_quality_screening(t)
+                if screening:
+                    data[t] = screening
             except Exception as e:
                 logger.debug(f"GuruFocus fetch failed for {t}: {e}")
         logger.info(f"GuruFocus pre-fetch: {len(data)}/{len(tickers)} tickers")

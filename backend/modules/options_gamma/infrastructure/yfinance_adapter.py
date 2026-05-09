@@ -29,7 +29,7 @@ class YFinanceOptionsAdapter(OptionsDataPort):
         try:
             from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             store = TimescaleDataStore()
-            snapshot = store.load_mcp_snapshot("yahoo/options", symbol)
+            snapshot = store.load_mcp_latest("yahoo/options", symbol)
             store.close()
 
             if not snapshot or not isinstance(snapshot, dict):
@@ -120,7 +120,7 @@ class YFinanceOptionsAdapter(OptionsDataPort):
         try:
             from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             store = TimescaleDataStore()
-            snapshot = store.load_mcp_snapshot("yahoo/options", symbol)
+            snapshot = store.load_mcp_latest("yahoo/options", symbol)
             store.close()
             if snapshot and snapshot.get("expiration"):
                 return [snapshot["expiration"]]

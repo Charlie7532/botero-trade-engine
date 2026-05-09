@@ -1,204 +1,137 @@
 """
-GuruFocus Fundamental Data Adapter
-====================================
-Implements FundamentalDataPort by wrapping GuruFocusIntelligence (parser)
-with actual MCP data fetching via the GuruFocus cache layer.
+GuruFocus Fundamental Data Adapter — Vault-First
+===================================================
+Implements FundamentalDataPort by reading pre-vaulted GuruFocus data
+from Neon PostgreSQL (market.mcp_snapshots, category='fundamental/screening').
 
-This bridges the architectural gap:
-  - FundamentalDataPort expects: get_X(ticker) → fetches + returns structured data
-  - GuruFocusIntelligence expects: parse_X(ticker, mcp_response) → parse-only
+This is a MODULE-LEVEL adapter — it reads from the vault only.
+The daemon (data_vault_daemon.py) writes to the vault via GuruFocusMCPBridge.
 
-This adapter fetches raw data from the GuruFocus cache/API, then delegates
-parsing to GuruFocusIntelligence.
+Architecture: Module Infrastructure → reads vault → returns domain entities.
 """
 import logging
 from typing import Optional
 
 from backend.modules.portfolio_management.domain.ports.fundamental_data_port import FundamentalDataPort
-from backend.modules.portfolio_management.infrastructure.gurufocus_adapter import GuruFocusIntelligence
 
 logger = logging.getLogger(__name__)
 
 
 class GuruFocusFundamentalAdapter(FundamentalDataPort):
     """
-    Concrete implementation of FundamentalDataPort using GuruFocus data.
+    Concrete implementation of FundamentalDataPort using vault-stored
+    GuruFocus screening data from Neon PostgreSQL.
 
-    Wraps the existing GuruFocusIntelligence parser and adds the fetch layer
-    that the port contract demands. Data is loaded from the local diskcache
-    or (when available) via live MCP tool calls.
+    Replaces the old SQLite diskcache reader with vault-first reads.
     """
 
-    def __init__(self, cache_path: str = ""):
-        self._parser = GuruFocusIntelligence()
-        self._cache_path = cache_path
-        self._db_conn = None
-        self._initialized = False
+    def __init__(self, vault=None):
+        self._vault = vault
 
-    def _ensure_db(self):
-        """Lazy-open sqlite3 connection to the GuruFocus diskcache.db."""
-        if self._initialized:
-            return
-        self._initialized = True
+    def _get_vault(self):
+        """Lazy-init vault store."""
+        if self._vault is None:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            self._vault = TimescaleDataStore()
+        return self._vault
+
+    def _load_screening(self, ticker: str) -> Optional[dict]:
+        """Load the latest fundamental/screening snapshot from the vault."""
         try:
-            import os
-            import sqlite3
-            self._cache_dir = self._cache_path or os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))),
-                ".cache", "gurufocus"
-            )
-            db_file = os.path.join(self._cache_dir, "cache.db")
-            if os.path.exists(db_file):
-                self._db_conn = sqlite3.connect(db_file)
-                logger.info(f"GuruFocusFundamentalAdapter: cache loaded from {db_file}")
-            else:
-                logger.warning(f"GuruFocusFundamentalAdapter: no cache.db at {db_file}")
+            return self._get_vault().load_mcp_latest("fundamental/screening", ticker)
         except Exception as e:
-            logger.warning(f"GuruFocusFundamentalAdapter: cache init failed: {e}")
-
-    def _fetch_cached(self, key: str, default=None):
-        """Fetch from diskcache sqlite3 by key.
-
-        diskcache stores small values inline (value column) and large values
-        as pickled files on disk (value=NULL, filename column has relative path).
-        This method handles both modes.
-        """
-        self._ensure_db()
-        if self._db_conn is None:
-            return default
-        try:
-            import os
-            import pickle
-            cursor = self._db_conn.cursor()
-            cursor.execute("SELECT value, filename FROM Cache WHERE key = ?", (key,))
-            row = cursor.fetchone()
-            if row is None:
-                return default
-            value_blob, filename = row
-            # Mode 1: inline blob in SQLite
-            if value_blob is not None:
-                return pickle.loads(value_blob)
-            # Mode 2: large value stored as file on disk
-            if filename:
-                file_path = os.path.join(self._cache_dir, filename)
-                if os.path.exists(file_path):
-                    with open(file_path, "rb") as f:
-                        return pickle.loads(f.read())
-                logger.debug(f"Cache file missing for {key}: {file_path}")
-            return default
-        except Exception as e:
-            logger.debug(f"Cache miss for {key}: {e}")
-            return default
+            logger.debug(f"Vault read failed for {ticker}: {e}")
+            return None
 
     # ── FundamentalDataPort implementation ──────────────────────
 
     def get_guru_analysis(self, ticker: str) -> dict:
-        raw = self._fetch_cached(f"qgarp:{ticker}", {})
-        if raw:
-            scorecard = self._parser.parse_qgarp_scorecard(ticker, raw)
-            return {"scorecard": scorecard, "raw": raw}
-        return {}
+        data = self._load_screening(ticker)
+        if not data:
+            return {}
+        return {
+            "gf_score": data.get("gf_score", 0),
+            "rank_profitability": data.get("rank_profitability", 0),
+            "rank_growth": data.get("rank_growth", 0),
+            "rank_financial_strength": data.get("rank_financial_strength", 0),
+            "rank_gf_value": data.get("rank_gf_value", 0),
+            "guru_buy_pct": data.get("guru_buy_pct", 0),
+            "guru_hold_pct": data.get("guru_hold_pct", 0),
+        }
 
     def get_insider_activity(self, ticker: str) -> dict:
-        raw = self._fetch_cached(f"insider:{ticker}", {})
-        if raw:
-            conviction = self._parser.parse_insider_conviction(ticker, raw)
-            return {"conviction": conviction}
+        # Insider data requires a separate vault category (fundamental/insiders)
+        # For now, return empty — Phase 5 will populate this
         return {}
 
     def get_earnings_calendar(self, ticker: str) -> Optional[dict]:
-        return self._fetch_cached(f"earnings:{ticker}", None)
+        # Earnings calendar requires separate vault category
+        return None
 
     def get_financial_summary(self, ticker: str) -> dict:
-        raw = self._fetch_cached(f"summary:{ticker}", None)
-        if not raw:
+        data = self._load_screening(ticker)
+        if not data:
             return {}
-        # Unwrap: cached data is {summary: {ratio: {...}, general: {...}}}
-        summary = raw.get("summary", raw)
-        ratio = summary.get("ratio", {})
-
-        def _val(key):
-            """Extract 'value' from complex ratio entries like {value: X, status: N}."""
-            v = ratio.get(key)
-            if isinstance(v, dict):
-                return v.get("value", 0)
-            return v if v is not None else 0
-
-        # Map to the flat keys parse_quality_metrics expects
-        flat = {
-            "piotroski_f_score": _val("fscore"),
-            "altman_z_score": _val("zscore"),
-            "beneish_m_score": _val("mscore"),
-            "roic": _val("ROIC (%)"),
-            "roe": _val("ROE (%)"),
-            "gross_margin": _val("Gross Margin (%)"),
-            "operating_margin": _val("Operating margin (%)"),
-            "debt_to_equity": _val("Debt-to-Equity"),
-            "current_ratio": _val("Current Ratio"),
+        return {
+            "piotroski_f_score": data.get("piotroski_f_score", 0),
+            "altman_z_score": data.get("altman_z_score", 0),
+            "beneish_m_score": data.get("beneish_m_score", 0),
+            "roic": data.get("roic", 0),
+            "roe": data.get("roe", 0),
+            "roa": data.get("roa", 0),
+            "gross_margin": data.get("gross_margin", 0),
+            "operating_margin": data.get("operating_margin", 0),
+            "net_margin": data.get("net_margin", 0),
+            "debt_to_equity": data.get("debt_to_equity", 0),
+            "current_ratio": data.get("current_ratio", 0),
+            "gf_valuation": data.get("gf_valuation", ""),
+            "risk_assessment": data.get("risk_assessment", ""),
+            "price_to_gf_value": data.get("price_to_gf_value", 0),
         }
-        return self._parser.parse_quality_metrics(ticker, flat)
 
     def get_financial_statements(self, ticker: str, period_type: str = "annual") -> dict:
-        raw = self._fetch_cached(f"financials:{ticker}:{period_type}", None)
-        if raw:
-            snapshots = self._parser.parse_financial_statements(ticker, raw)
-            return {"snapshots": snapshots}
+        # Full financial statements require a separate vault category
         return {"snapshots": []}
 
     def get_growth_profile(self, ticker: str) -> dict:
-        raw = self._fetch_cached(f"key_ratios:{ticker}", None)
-        if raw:
-            profile = self._parser.parse_growth_profile(ticker, raw)
-            return {
-                "revenue_cagr": profile.revenue_cagr,
-                "eps_cagr": profile.eps_cagr,
-                "fcf_cagr": profile.fcf_cagr,
-            }
-        return {}
+        data = self._load_screening(ticker)
+        if not data:
+            return {}
+        return {
+            "revenue_cagr": data.get("revenue_growth", 0),
+            "eps_cagr": data.get("eps_growth", 0),
+            "fcf_cagr": data.get("fcf_growth", 0),
+        }
 
     def get_operating_kpis(self, ticker: str) -> dict:
-        raw = self._fetch_cached(f"operating_data:{ticker}", None)
-        if raw:
-            kpis = self._parser.parse_operating_kpis(ticker, raw)
-            return kpis.kpis
+        # Operating KPIs require a separate vault category
         return {}
 
     def get_segment_breakdown(self, ticker: str) -> dict:
-        raw = self._fetch_cached(f"segments:{ticker}", None)
-        if raw:
-            breakdown = self._parser.parse_segment_breakdown(ticker, raw)
-            return {
-                "business_segments": breakdown.business_segments,
-                "geographic_segments": breakdown.geographic_segments,
-            }
         return {}
 
     def get_wacc(self, ticker: str) -> float:
-        raw = self._fetch_cached(f"indicator_value:{ticker}:wacc", None)
-        if raw is not None:
-            return self._parser.parse_wacc(ticker, raw)
         return 0.0
 
     def get_full_qgarp(self, ticker: str) -> dict:
-        raw = self._fetch_cached(f"qgarp:{ticker}", {})
-        if raw:
-            analysis = self._parser.parse_full_qgarp(ticker, raw)
-            return {
-                "intrinsic_value": analysis.intrinsic_value,
-                "margin_of_safety": analysis.margin_of_safety,
-                "moat_areas": analysis.moat_areas,
-                "scorecard": analysis.scorecard,
-            }
-        return {}
+        data = self._load_screening(ticker)
+        if not data:
+            return {}
+        return {
+            "gf_score": data.get("gf_score", 0),
+            "piotroski_f_score": data.get("piotroski_f_score", 0),
+            "pe_ratio": data.get("pe_ratio", 0),
+            "pb_ratio": data.get("pb_ratio", 0),
+            "peg_ratio": data.get("peg_ratio", 0),
+            "price_to_gf_value": data.get("price_to_gf_value", 0),
+            "ev_to_ebitda": data.get("ev_to_ebitda", 0),
+        }
 
     def get_warning_signs(self, ticker: str) -> dict:
-        raw = self._fetch_cached(f"summary:{ticker}", None)
-        if raw:
-            warnings = self._parser.parse_warning_signs(ticker, raw)
-            return {
-                "num_good_signs": warnings.num_good_signs,
-                "num_warnings_medium": warnings.num_warnings_medium,
-                "num_warnings_severe": warnings.num_warnings_severe,
-                "net_signal_score": warnings.net_signal_score,
-            }
-        return {}
+        data = self._load_screening(ticker)
+        if not data:
+            return {}
+        return {
+            "good_signs": data.get("good_signs", 0),
+            "warning_signs": data.get("warning_signs", 0),
+        }

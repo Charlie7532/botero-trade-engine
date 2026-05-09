@@ -386,17 +386,17 @@ def vault_gurufocus_screening(store: TimescaleDataStore, tickers: list[str]) -> 
         return {"status": "skipped", "reason": "already_today"}
 
     try:
-        from backend.modules.portfolio_management.infrastructure.gurufocus_adapter import GuruFocusIntelligence
+        from backend.modules.portfolio_management.infrastructure.gurufocus_mcp_bridge import GuruFocusMCPBridge
 
-        gf = GuruFocusIntelligence()
+        bridge = GuruFocusMCPBridge()
 
         # Screen top 20 tickers (rate limit safe)
         batch = tickers[:20]
         for ticker in batch:
             try:
-                summary = gf.get_quality_summary(ticker)
-                if summary and isinstance(summary, dict) and summary.get("gf_score"):
-                    store.save_mcp_snapshot("fundamental/screening", ticker, summary)
+                screening = bridge.fetch_quality_screening(ticker)
+                if screening and isinstance(screening, dict) and screening.get("gf_score"):
+                    store.save_mcp_snapshot("fundamental/screening", ticker, screening)
                     stats["screened"] += 1
             except Exception as e:
                 logger.debug(f"  {ticker} GF screening failed: {e}")

@@ -66,6 +66,11 @@ class PatternRecognitionIntelligence:
             prices = prices.copy()
             prices.columns = prices.columns.get_level_values(0)
 
+        # Normalize column case: vault returns lowercase, we need Title Case
+        col_map = {c: c.capitalize() for c in prices.columns if c.islower() and c in ("open", "high", "low", "close", "volume")}
+        if col_map:
+            prices = prices.rename(columns=col_map)
+
         # Extraer arrays NumPy
         o = prices['Open'].values.astype(float)
         h = prices['High'].values.astype(float)

@@ -740,6 +740,132 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
+# 11. SOURCING — Guru Picks, Insider Clusters, Political Trades
+# ═══════════════════════════════════════════════════════════════
+
+def vault_guru_picks(store: TimescaleDataStore) -> dict:
+    """Vault guru realtime picks (Form 4). 1x/day, 3 pages (~60 records).
+
+    Relevance: PRIMARY for Quality (believability-weighted sourcing).
+    Speculative ignores GuruFocus entirely.
+    """
+    if _already_vaulted_today(store, "sourcing/guru_picks", "MARKET"):
+        logger.info("🎓 Guru picks already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    try:
+        from backend.modules.portfolio_management.infrastructure.gurufocus_mcp_bridge import GuruFocusMCPBridge
+        bridge = GuruFocusMCPBridge()
+
+        all_picks = []
+        for page in range(1, 4):  # 3 pages
+            picks = bridge.fetch_guru_realtime_picks(page=page)
+            if picks and isinstance(picks, (list, dict)):
+                items = picks if isinstance(picks, list) else picks.get("data", [])
+                all_picks.extend(items)
+            time.sleep(RATE_LIMIT_DELAY if 'RATE_LIMIT_DELAY' in dir() else 1.5)
+
+        if all_picks:
+            store.save_mcp_snapshot("sourcing/guru_picks", "MARKET", {
+                "picks": all_picks,
+                "count": len(all_picks),
+                "pages_fetched": 3,
+                "timestamp": datetime.now(UTC).isoformat(),
+            })
+
+        logger.info(f"🎓 Guru picks vault: {len(all_picks)} picks (3 pages)")
+        return {"status": "ok", "picks": len(all_picks)}
+
+    except Exception as e:
+        logger.error(f"Guru picks vault failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+def vault_insider_clusters(store: TimescaleDataStore) -> dict:
+    """Vault insider cluster buys + CEO buys. 1x/day, 2 pages (~40 records).
+
+    Relevance: HIGH for Quality (thesis confirmation),
+    CONDITIONAL for Speculative (only with neg GEX).
+    """
+    if _already_vaulted_today(store, "sourcing/insider_clusters", "MARKET"):
+        logger.info("🔍 Insider clusters already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    try:
+        from backend.modules.portfolio_management.infrastructure.gurufocus_mcp_bridge import GuruFocusMCPBridge
+        bridge = GuruFocusMCPBridge()
+
+        all_clusters = []
+        all_ceo = []
+        for page in range(1, 3):  # 2 pages
+            clusters = bridge.fetch_insider_cluster_buys(page=page)
+            if clusters and isinstance(clusters, (list, dict)):
+                items = clusters if isinstance(clusters, list) else clusters.get("data", [])
+                all_clusters.extend(items)
+
+            ceo = bridge.fetch_insider_ceo_buys(page=page)
+            if ceo and isinstance(ceo, (list, dict)):
+                items = ceo if isinstance(ceo, list) else ceo.get("data", [])
+                all_ceo.extend(items)
+            time.sleep(1.5)
+
+        snapshot = {
+            "clusters": all_clusters,
+            "ceo_buys": all_ceo,
+            "cluster_count": len(all_clusters),
+            "ceo_count": len(all_ceo),
+            "pages_fetched": 2,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+        store.save_mcp_snapshot("sourcing/insider_clusters", "MARKET", snapshot)
+
+        logger.info(
+            f"🔍 Insider clusters vault: {len(all_clusters)} clusters, "
+            f"{len(all_ceo)} CEO buys (2 pages)"
+        )
+        return {"status": "ok", "clusters": len(all_clusters), "ceo": len(all_ceo)}
+
+    except Exception as e:
+        logger.error(f"Insider clusters vault failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+def vault_political_trades(store: TimescaleDataStore) -> dict:
+    """Vault congressional trading activity. 1x/day, 1 page (~20 records).
+
+    Relevance: MODERATE for both departments.
+    Quality uses for regulatory direction. Speculative for catalyst detection.
+    Note: 30-45 day disclosure delay — data is inherently stale.
+    """
+    if _already_vaulted_today(store, "sourcing/political_trades", "MARKET"):
+        logger.info("🏛️ Political trades already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    try:
+        from backend.modules.portfolio_management.infrastructure.gurufocus_mcp_bridge import GuruFocusMCPBridge
+        bridge = GuruFocusMCPBridge()
+
+        trades = bridge.fetch_politician_transactions(page=1)
+        items = []
+        if trades and isinstance(trades, (list, dict)):
+            items = trades if isinstance(trades, list) else trades.get("data", [])
+
+        store.save_mcp_snapshot("sourcing/political_trades", "MARKET", {
+            "trades": items,
+            "count": len(items),
+            "pages_fetched": 1,
+            "timestamp": datetime.now(UTC).isoformat(),
+        })
+
+        logger.info(f"🏛️ Political trades vault: {len(items)} transactions (1 page)")
+        return {"status": "ok", "trades": len(items)}
+
+    except Exception as e:
+        logger.error(f"Political trades vault failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
 # CYCLE ORCHESTRATOR
 # ═══════════════════════════════════════════════════════════════
 
@@ -778,6 +904,11 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
     results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)
     results["breadth"] = vault_breadth_indicators(store)
+
+    # Sourcing signals (1x per day, internal check):
+    results["guru_picks"] = vault_guru_picks(store)
+    results["insider_clusters"] = vault_insider_clusters(store)
+    results["political_trades"] = vault_political_trades(store)
 
     summary = " | ".join(f"{k}={v.get('status', '?')}" for k, v in results.items())
     logger.info(f"═══ Vault cycle complete: {summary} ═══")

@@ -870,12 +870,13 @@ def vault_political_trades(store: TimescaleDataStore) -> dict:
 # ═══════════════════════════════════════════════════════════════
 
 def _get_neon_universe(store: TimescaleDataStore) -> list[str]:
-    """Pull the list of all tickers in Neon OHLCV bars."""
+    """Pull the list of all tickers in Neon OHLCV bars, excluding macro indices."""
     conn = store._conn()
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT DISTINCT ticker FROM market.ohlcv_bars ORDER BY ticker")
-            return [row[0] for row in cur.fetchall()]
+            # Exclude CBOE indices that cause 404s on Yahoo/Finnhub
+            return [row[0] for row in cur.fetchall() if row[0] not in {"SKEW", "VVIX"}]
     finally:
         store._put(conn)
 

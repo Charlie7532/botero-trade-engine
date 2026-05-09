@@ -41,6 +41,7 @@ logging.basicConfig(
     format="%(asctime)s [%(name)s] %(levelname)s — %(message)s",
 )
 logger = logging.getLogger("DataVaultDaemon")
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
 
 def _sanitize_for_json(obj):
@@ -338,7 +339,7 @@ def vault_portfolio_data(store: TimescaleDataStore) -> dict:
         import asyncio
 
         adapter = AlpacaAdapter(api_key, secret_key)
-        portfolio = asyncio.get_event_loop().run_until_complete(adapter.get_portfolio())
+        portfolio = asyncio.run(adapter.get_portfolio())
 
         snapshot = {
             "timestamp": datetime.now(UTC).isoformat(),

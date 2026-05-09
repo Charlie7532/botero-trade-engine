@@ -98,7 +98,7 @@ class GuruFocusMCPBridge:
 
     def fetch_guru_realtime_picks(self, page: int = 1) -> Optional[dict]:
         """Fetch real-time guru trading activity (Form 4)."""
-        return self._get("guru/realtime", {"page": page})
+        return self._get("guru_realtime_picks", {"page": page})
 
     def fetch_politician_transactions(self, page: int = 1) -> Optional[dict]:
         """Fetch congressional trading activity."""

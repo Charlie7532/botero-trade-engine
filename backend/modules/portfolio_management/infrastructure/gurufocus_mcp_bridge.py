@@ -88,21 +88,21 @@ class GuruFocusMCPBridge:
 
     # ── Market-wide endpoints ─────────────────────────────
 
-    def fetch_insider_cluster_buys(self, page: int = 1) -> Optional[dict]:
-        """Fetch stocks with cluster insider buying (multiple insiders)."""
-        return self._get("insider/cluster", {"page": page})
+    def fetch_insider_trades(self, ticker: str) -> Optional[dict]:
+        """Fetch insider transactions for a specific stock.
 
-    def fetch_insider_ceo_buys(self, page: int = 1) -> Optional[dict]:
-        """Fetch stocks where CEOs are buying."""
-        return self._get("insider/ceo", {"page": page})
+        Returns dict keyed by ticker with list of insider trades.
+        Each trade: {position, date, type (P/S), trans_share, price, insider, ...}
+
+        Note: 'insider/cluster' and 'insider/ceo' are WEB-ONLY features,
+        NOT available via the REST API. We use per-stock insider data
+        and detect clusters computationally.
+        """
+        return self._get(f"stock/{ticker}/insider")
 
     def fetch_guru_realtime_picks(self, page: int = 1) -> Optional[dict]:
         """Fetch real-time guru trading activity (Form 4)."""
         return self._get("guru_realtime_picks", {"page": page})
-
-    def fetch_politician_transactions(self, page: int = 1) -> Optional[dict]:
-        """Fetch congressional trading activity."""
-        return self._get("politician/transactions", {"page": page})
 
     # ── Composite: Quality Screening ──────────────────────
 

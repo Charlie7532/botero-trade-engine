@@ -741,8 +741,16 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 11. SOURCING — Guru Picks, Insider Clusters, Political Trades
+# 11. SOURCING — Guru Picks + Insider Activity
 # ═══════════════════════════════════════════════════════════════
+#
+# API AUDIT (2026-05-09):
+#   ✅ guru_realtime_picks  — Works. Returns {data: list, total, currentPage}.
+#   ✅ stock/{ticker}/insider — Works. Returns {TICKER: list[trades]}.
+#   🔴 insider/cluster       — WEB-ONLY, 404 on API. Clusters computed locally.
+#   🔴 insider/ceo           — WEB-ONLY, 404 on API.
+#   🔴 politician/transactions — WEB-ONLY, 404 on API. No programmatic access.
+#
 
 def vault_guru_picks(store: TimescaleDataStore) -> dict:
     """Vault guru realtime picks (Form 4). 1x/day, 3 pages (~60 records).
@@ -764,7 +772,7 @@ def vault_guru_picks(store: TimescaleDataStore) -> dict:
             if picks and isinstance(picks, (list, dict)):
                 items = picks if isinstance(picks, list) else picks.get("data", [])
                 all_picks.extend(items)
-            time.sleep(RATE_LIMIT_DELAY if 'RATE_LIMIT_DELAY' in dir() else 1.5)
+            time.sleep(1.5)
 
         if all_picks:
             store.save_mcp_snapshot("sourcing/guru_picks", "MARKET", {
@@ -773,8 +781,10 @@ def vault_guru_picks(store: TimescaleDataStore) -> dict:
                 "pages_fetched": 3,
                 "timestamp": datetime.now(UTC).isoformat(),
             })
+            logger.info(f"🎓 Guru picks vault: {len(all_picks)} picks (3 pages)")
+        else:
+            logger.warning("🎓 Guru picks: API returned 0 picks — not vaulting empty")
 
-        logger.info(f"🎓 Guru picks vault: {len(all_picks)} picks (3 pages)")
         return {"status": "ok", "picks": len(all_picks)}
 
     except Exception as e:
@@ -782,87 +792,93 @@ def vault_guru_picks(store: TimescaleDataStore) -> dict:
         return {"status": "error", "error": str(e)}
 
 
-def vault_insider_clusters(store: TimescaleDataStore) -> dict:
-    """Vault insider cluster buys + CEO buys. 1x/day, 2 pages (~40 records).
+def vault_insider_activity(store: TimescaleDataStore, watchlist_tickers: list[str] = None) -> dict:
+    """Vault insider trading for Quality watchlist tickers. 1x/day.
 
-    Relevance: HIGH for Quality (thesis confirmation),
-    CONDITIONAL for Speculative (only with neg GEX).
+    Uses per-stock endpoint (stock/{ticker}/insider) because the
+    market-wide insider/cluster endpoint is web-only (404 on API).
+
+    Cluster detection is computed locally: ≥3 unique insiders buying
+    within 30 days = cluster signal.
+
+    Relevance: HIGH for Quality (thesis confirmation via skin-in-the-game).
     """
-    if _already_vaulted_today(store, "sourcing/insider_clusters", "MARKET"):
-        logger.info("🔍 Insider clusters already vaulted today — skipping")
+    if _already_vaulted_today(store, "sourcing/insider_activity", "MARKET"):
+        logger.info("🔍 Insider activity already vaulted today — skipping")
         return {"status": "skipped", "reason": "already_today"}
 
     try:
         from backend.modules.portfolio_management.infrastructure.gurufocus_mcp_bridge import GuruFocusMCPBridge
         bridge = GuruFocusMCPBridge()
 
-        all_clusters = []
-        all_ceo = []
-        for page in range(1, 3):  # 2 pages
-            clusters = bridge.fetch_insider_cluster_buys(page=page)
-            if clusters and isinstance(clusters, (list, dict)):
-                items = clusters if isinstance(clusters, list) else clusters.get("data", [])
-                all_clusters.extend(items)
+        # Default to quality watchlist tickers if none provided
+        if not watchlist_tickers:
+            conn = store._conn()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT ticker FROM market.quality_watchlist ORDER BY conviction_score DESC LIMIT 30")
+                    watchlist_tickers = [r[0] for r in cur.fetchall()]
+            finally:
+                store._put(conn)
 
-            ceo = bridge.fetch_insider_ceo_buys(page=page)
-            if ceo and isinstance(ceo, (list, dict)):
-                items = ceo if isinstance(ceo, list) else ceo.get("data", [])
-                all_ceo.extend(items)
-            time.sleep(1.5)
+        if not watchlist_tickers:
+            logger.info("🔍 No watchlist tickers — skipping insider vault")
+            return {"status": "ok", "tickers": 0, "clusters": 0}
 
-        snapshot = {
-            "clusters": all_clusters,
-            "ceo_buys": all_ceo,
-            "cluster_count": len(all_clusters),
-            "ceo_count": len(all_ceo),
-            "pages_fetched": 2,
-            "timestamp": datetime.now(UTC).isoformat(),
-        }
-        store.save_mcp_snapshot("sourcing/insider_clusters", "MARKET", snapshot)
+        all_insider_data = {}
+        clusters_detected = []
 
-        logger.info(
-            f"🔍 Insider clusters vault: {len(all_clusters)} clusters, "
-            f"{len(all_ceo)} CEO buys (2 pages)"
-        )
-        return {"status": "ok", "clusters": len(all_clusters), "ceo": len(all_ceo)}
+        for ticker in watchlist_tickers:
+            raw = bridge.fetch_insider_trades(ticker)
+            if not raw or not isinstance(raw, dict):
+                continue
 
-    except Exception as e:
-        logger.error(f"Insider clusters vault failed: {e}")
-        return {"status": "error", "error": str(e)}
+            trades = raw.get(ticker, [])
+            if not trades:
+                continue
 
+            # Store per-ticker insider snapshot
+            store.save_mcp_snapshot("sourcing/insider", ticker, {
+                "trades": trades[:50],  # Cap at 50 most recent
+                "total_count": len(trades),
+                "timestamp": datetime.now(UTC).isoformat(),
+            })
 
-def vault_political_trades(store: TimescaleDataStore) -> dict:
-    """Vault congressional trading activity. 1x/day, 1 page (~20 records).
+            # Cluster detection: ≥3 unique insiders buying within 30 days
+            from datetime import timedelta
+            cutoff = (datetime.now(UTC) - timedelta(days=30)).strftime("%Y-%m-%d")
+            recent_buys = [
+                t for t in trades
+                if t.get("type") == "P" and t.get("date", "") >= cutoff
+            ]
+            unique_buyers = {t.get("insider", "") for t in recent_buys}
+            if len(unique_buyers) >= 3:
+                clusters_detected.append({
+                    "ticker": ticker,
+                    "buyer_count": len(unique_buyers),
+                    "buyers": list(unique_buyers),
+                    "total_buys": len(recent_buys),
+                })
 
-    Relevance: MODERATE for both departments.
-    Quality uses for regulatory direction. Speculative for catalyst detection.
-    Note: 30-45 day disclosure delay — data is inherently stale.
-    """
-    if _already_vaulted_today(store, "sourcing/political_trades", "MARKET"):
-        logger.info("🏛️ Political trades already vaulted today — skipping")
-        return {"status": "skipped", "reason": "already_today"}
+            all_insider_data[ticker] = len(trades)
 
-    try:
-        from backend.modules.portfolio_management.infrastructure.gurufocus_mcp_bridge import GuruFocusMCPBridge
-        bridge = GuruFocusMCPBridge()
-
-        trades = bridge.fetch_politician_transactions(page=1)
-        items = []
-        if trades and isinstance(trades, (list, dict)):
-            items = trades if isinstance(trades, list) else trades.get("data", [])
-
-        store.save_mcp_snapshot("sourcing/political_trades", "MARKET", {
-            "trades": items,
-            "count": len(items),
-            "pages_fetched": 1,
+        # Vault aggregate cluster summary
+        store.save_mcp_snapshot("sourcing/insider_activity", "MARKET", {
+            "tickers_scanned": len(all_insider_data),
+            "clusters": clusters_detected,
+            "cluster_count": len(clusters_detected),
+            "ticker_trade_counts": all_insider_data,
             "timestamp": datetime.now(UTC).isoformat(),
         })
 
-        logger.info(f"🏛️ Political trades vault: {len(items)} transactions (1 page)")
-        return {"status": "ok", "trades": len(items)}
+        logger.info(
+            f"🔍 Insider vault: {len(all_insider_data)} tickers scanned, "
+            f"{len(clusters_detected)} clusters detected"
+        )
+        return {"status": "ok", "tickers": len(all_insider_data), "clusters": len(clusters_detected)}
 
     except Exception as e:
-        logger.error(f"Political trades vault failed: {e}")
+        logger.error(f"Insider activity vault failed: {e}")
         return {"status": "error", "error": str(e)}
 
 
@@ -909,8 +925,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
     # Sourcing signals (1x per day, internal check):
     results["guru_picks"] = vault_guru_picks(store)
-    results["insider_clusters"] = vault_insider_clusters(store)
-    results["political_trades"] = vault_political_trades(store)
+    results["insider_activity"] = vault_insider_activity(store)
 
     summary = " | ".join(f"{k}={v.get('status', '?')}" for k, v in results.items())
     logger.info(f"═══ Vault cycle complete: {summary} ═══")

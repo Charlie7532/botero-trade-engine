@@ -188,6 +188,77 @@ class GuruFocusMCPBridge:
 
         return result
 
+    def fetch_deep_screening(self, ticker: str) -> Optional[dict]:
+        """Combine /summary + /keyratios into a unified screening object.
+
+        Returns all fields needed by the recalibrated QualityWatchlistEngine:
+        - Base screening fields from /summary (40 fields)
+        - ROIC, WACC, margins + 5Y medians from /keyratios
+        - GF Value, DCF models, Beneish M from /keyratios
+
+        Rate limit: 2 API calls per ticker (~3s total).
+        """
+        import time
+
+        # 1. Base screening from summary
+        base = self.fetch_quality_screening(ticker)
+        if not base:
+            return None
+
+        time.sleep(1.5)
+
+        # 2. Deep fundamentals from keyratios
+        kr = self.fetch_keyratios(ticker)
+        if not kr:
+            return base  # Return base even without keyratios
+
+        fund = kr.get("Fundamental", {})
+        prof = kr.get("Profitability", {})
+        val = kr.get("Valuation Ratio", {})
+        growth = kr.get("Growth", {})
+
+        # Merge keyratios fields into base
+        base["wacc"] = self._safe_float(fund.get("WACC %"))
+        base["roic"] = self._safe_float(fund.get("ROIC %")) or base.get("roic", 0)
+
+        # Profitability — TTM + 5Y medians (for surveillance)
+        base["operating_margin_ttm"] = self._safe_float(prof.get("Operating Margin %"))
+        base["operating_margin_5y_med"] = self._safe_float(prof.get("Operating Margin % (5y Median)"))
+        base["operating_margin_10y_med"] = self._safe_float(prof.get("Operating Margin % (10y Median)"))
+        base["net_margin_ttm"] = self._safe_float(prof.get("Net Margin %"))
+        base["net_margin_5y_med"] = self._safe_float(prof.get("Net Margin % (5y Median)"))
+        base["gross_margin_ttm"] = self._safe_float(prof.get("Gross Margin %"))
+        base["gross_margin_5y_med"] = self._safe_float(prof.get("Gross Margin % (5y Median)"))
+        base["fcf_margin_ttm"] = self._safe_float(prof.get("FCF Margin %"))
+        base["fcf_margin_5y_med"] = self._safe_float(prof.get("FCF Margin % (5y Median)"))
+
+        # Valuation — 3 intrinsic value models
+        base["gf_value"] = self._safe_float(val.get("GF Value"))
+        base["dcf_earnings"] = self._safe_float(val.get("Intrinsic Value: DCF (Earnings Based)"))
+        base["dcf_fcf"] = self._safe_float(val.get("Intrinsic Value: DCF (FCF Based)"))
+        base["projected_fcf"] = self._safe_float(val.get("Intrinsic Value: Projected FCF"))
+        base["price_to_gf_value"] = self._safe_float(val.get("Price-to-GF-Value")) or base.get("price_to_gf_value", 0)
+
+        # Safety scores
+        base["piotroski_f_score"] = self._safe_float(fund.get("Piotroski F-Score")) or base.get("piotroski_f_score", 0)
+        base["altman_z_score"] = self._safe_float(fund.get("Altman Z-Score")) or base.get("altman_z_score", 0)
+        base["beneish_m"] = self._safe_float(fund.get("Beneish M-Score"))
+        base["financial_strength"] = self._safe_float(fund.get("Financial Strength"))
+        base["predictability"] = self._safe_float(fund.get("Predictability Rank"))
+
+        # Growth rates
+        base["rev_growth_1y"] = self._safe_float(growth.get("1-Year Revenue Growth Rate"))
+        base["rev_growth_3y"] = self._safe_float(growth.get("3-Year Revenue Growth Rate"))
+        base["eps_growth_3y"] = self._safe_float(growth.get("3-Year EPS without NRI Growth Rate"))
+        base["fcf_growth_3y"] = self._safe_float(growth.get("3-Year FCF Growth Rate"))
+
+        # Shareholder alignment
+        base["buyback_yield"] = self._safe_float(fund.get("Buyback Yield %"))
+        base["insider_ownership"] = self._safe_float(fund.get("Insider Ownership"))
+        base["institutional_ownership"] = self._safe_float(fund.get("Institutional Ownership"))
+
+        return base
+
     @staticmethod
     def _val(ratio: dict, key: str):
         """Extract value from complex ratio entries like {value: X, status: N}."""
@@ -198,11 +269,15 @@ class GuruFocusMCPBridge:
 
     @staticmethod
     def _safe_float(v) -> float:
-        """Safely convert to float, handling None and complex types."""
+        """Safely convert to float, handling None, dicts, and descriptive strings."""
         if v is None:
             return 0.0
         if isinstance(v, dict):
-            return float(v.get("value", 0) or 0)
+            inner = v.get("value", 0) or 0
+            try:
+                return float(inner)
+            except (ValueError, TypeError):
+                return 0.0
         try:
             return float(v)
         except (ValueError, TypeError):

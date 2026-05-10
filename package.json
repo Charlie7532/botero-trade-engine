@@ -21,6 +21,7 @@
     "dev:api": "cd backend && .venv/bin/uvicorn api.main:app --reload --port 8000",
     "dev:vault": "cd backend && .venv/bin/python -m daemons.data_vault_daemon --loop 300",
     "vault:once": "cd backend && .venv/bin/python -m daemons.data_vault_daemon --loop 0",
+    "vault:force": "cd backend && .venv/bin/python -m daemons.data_vault_daemon --loop 0 --force",
     "dev:all": "concurrently --names \"web,api\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail \"pnpm dev\" \"pnpm dev:api\"",
     "docker:up": "docker compose up",
     "docker:build": "docker compose build",

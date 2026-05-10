@@ -57,8 +57,14 @@ def _sanitize_for_json(obj):
     return obj
 
 
+# Module-level flag: when True, _already_vaulted_today always returns False
+_FORCE_REFRESH = False
+
+
 def _already_vaulted_today(store: TimescaleDataStore, category: str, ticker: str) -> bool:
     """Check if we already have a snapshot for this category/ticker today."""
+    if _FORCE_REFRESH:
+        return False
     today_str = date.today().isoformat()
     existing = store.load_mcp_snapshot(category, ticker, today_str)
     return existing is not None
@@ -379,7 +385,14 @@ def vault_portfolio_data(store: TimescaleDataStore) -> dict:
 # ═══════════════════════════════════════════════════════════════
 
 def vault_gurufocus_screening(store: TimescaleDataStore, tickers: list[str]) -> dict:
-    """Vault GuruFocus fundamental screening (1x/day, 20 tickers max per cycle)."""
+    """Vault GuruFocus deep screening (summary + keyratios). 1x/day, 20 tickers/cycle.
+
+    Uses fetch_deep_screening() which combines /summary (40 fields) +
+    /keyratios (888 fields) into a unified screening object with 70+ curated
+    fields needed by the recalibrated QualityWatchlistEngine.
+
+    Rate limit: 2 API calls per ticker × 1.5s = 3s/ticker. 20 tickers = ~60s.
+    """
     stats = {"screened": 0}
 
     if _already_vaulted_today(store, "fundamental/screening", "BATCH_DONE"):
@@ -391,14 +404,15 @@ def vault_gurufocus_screening(store: TimescaleDataStore, tickers: list[str]) -> 
 
         bridge = GuruFocusMCPBridge()
 
-        # Screen top 20 tickers (rate limit safe)
+        # Screen top 20 tickers (rate limit safe: 20 × 3s = 60s)
         batch = tickers[:20]
         for ticker in batch:
             try:
-                screening = bridge.fetch_quality_screening(ticker)
+                screening = bridge.fetch_deep_screening(ticker)
                 if screening and isinstance(screening, dict) and screening.get("gf_score"):
                     store.save_mcp_snapshot("fundamental/screening", ticker, screening)
                     stats["screened"] += 1
+                    logger.debug(f"  {ticker}: GF={screening.get('gf_score')}, ROIC={screening.get('roic')}")
             except Exception as e:
                 logger.debug(f"  {ticker} GF screening failed: {e}")
 
@@ -410,7 +424,7 @@ def vault_gurufocus_screening(store: TimescaleDataStore, tickers: list[str]) -> 
                 "batch": batch,
             })
 
-        logger.info(f"🔬 GuruFocus screening: {stats['screened']}/{len(batch)} tickers")
+        logger.info(f"🔬 GuruFocus deep screening: {stats['screened']}/{len(batch)} tickers")
         return {"status": "ok", **stats}
 
     except Exception as e:
@@ -932,6 +946,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
 
 def main():
+    global _FORCE_REFRESH
     parser = argparse.ArgumentParser(
         description="Data Vault Daemon — accumulate ALL MCP snapshots"
     )
@@ -939,7 +954,15 @@ def main():
         "--loop", type=int, default=300,
         help="Loop interval in seconds (0 = one-shot, default 300 = 5 min)",
     )
+    parser.add_argument(
+        "--force", action="store_true",
+        help="Force refresh: bypass _already_vaulted_today checks",
+    )
     args = parser.parse_args()
+
+    if args.force:
+        _FORCE_REFRESH = True
+        logger.info("⚡ Force refresh enabled — bypassing daily guards")
 
     logger.info(f"Loop: {'one-shot' if args.loop <= 0 else f'{args.loop}s'}")
 

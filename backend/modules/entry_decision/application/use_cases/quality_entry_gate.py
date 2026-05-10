@@ -46,11 +46,13 @@ class QualityEntryGate:
         flow_data: FlowDataPort,
         options_provider: OptionsDataPort,
         blacklist=None,
+        fundamental_data=None,
     ):
         self._market_data = market_data
         self._flow_data = flow_data
         self._options_provider = options_provider
         self._blacklist = blacklist
+        self._fundamental_data = fundamental_data
 
         # Lazy-init modules
         from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
@@ -96,6 +98,41 @@ class QualityEntryGate:
             report.final_scale = 0.0
             report.final_reason = f"BLACKLISTED: {ticker} in 4Q cooldown after THESIS_DEATH"
             return report
+
+        # ── Gate 0.5: Fundamental Health (Vault-backed) ──
+        if self._fundamental_data:
+            financials = self._fundamental_data.get_financial_summary(ticker)
+            if financials:
+                roic = float(financials.get("roic", 0) or 0)
+                wacc = float(financials.get("wacc", 0) or 0)
+                gf_score = float(financials.get("gf_score", 0) or 0)
+                opm_ttm = float(financials.get("operating_margin_ttm", 0) or 0)
+                opm_5y = float(financials.get("operating_margin_5y_avg", 0) or 0)
+
+                # Hard gate: ROIC must exceed WACC (value creation)
+                if wacc > 0 and roic < wacc:
+                    report.final_verdict = "BLOCK"
+                    report.final_scale = 0.0
+                    report.final_reason = (
+                        f"FUNDAMENTAL_GATE: Value destruction "
+                        f"(ROIC={roic:.1f}% < WACC={wacc:.1f}%)"
+                    )
+                    return report
+
+                # Hard gate: GF Score minimum
+                if gf_score > 0 and gf_score < 75:
+                    report.final_verdict = "BLOCK"
+                    report.final_scale = 0.0
+                    report.final_reason = f"FUNDAMENTAL_GATE: GF Score too low ({gf_score:.0f} < 75)"
+                    return report
+
+                # Moat decay warning (doesn't block, adds to report)
+                if opm_5y > 0 and opm_ttm < (opm_5y * 0.85):
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"MOAT_DECAY: Operating margin declining "
+                        f"(TTM={opm_ttm:.1f}% vs 5Y={opm_5y:.1f}%)"
+                    )
 
         # ── Step 1: Price Data ──
         prices = prices_df if prices_df is not None else self._market_data.fetch_prices(ticker)

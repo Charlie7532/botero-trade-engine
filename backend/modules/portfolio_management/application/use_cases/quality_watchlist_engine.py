@@ -69,6 +69,13 @@ class QualityWatchlistEngine:
             net_margin=_f("net_margin"),
             debt_to_equity=_f("debt_to_equity"),
             current_price=_f("price"),
+            # Keyratios deep fields (enriched from vault)
+            wacc=_f("wacc"),
+            operating_margin=_f("operating_margin_ttm"),
+            operating_margin_5y_med=_f("operating_margin_5y_med"),
+            fcf_margin=_f("fcf_margin_ttm"),
+            fcf_margin_5y_med=_f("fcf_margin_5y_med"),
+            beneish_m_score=_f("beneish_m", -999.0),
             added_at=datetime.now(timezone.utc),
             last_updated=datetime.now(timezone.utc),
         )
@@ -124,34 +131,51 @@ class QualityWatchlistEngine:
         """
         Composite conviction score (0-100) using weighted dimensions.
 
-        Weights reflect Hohn/Munger priorities:
-        - Quality (GF + Piotroski + financial health): 40%
-        - Profitability (ROIC, margins): 25%
+        Recalibrated from Phase 0 pilot study (2026-05-09):
+        - ROIC-WACC spread CAPPED at 25 pts (prevents PLTR/NVDA inflation)
+        - Moat stability penalty for unstable margin trajectories
+        - Operating margin as primary profitability signal
+
+        Weights:
+        - Quality signals (GF + Piotroski + financial health): 35%
+        - Value creation (ROIC-WACC spread, capped): 25%
         - Valuation (Price-to-GF-Value): 20%
-        - Growth (ranks): 15%
+        - Moat stability (margin consistency): 10%
+        - Growth (ranks): 10%
         """
         score = 0.0
 
-        # Quality dimension (40%)
+        # Quality dimension (35%)
         gf_pts = min(c.gf_score, 100) * 0.15
-        f_pts = min(c.piotroski_f_score / 9, 1.0) * 15
-        fin_pts = min(c.rank_financial_strength / 10, 1.0) * 10
+        f_pts = min(c.piotroski_f_score / 9, 1.0) * 12
+        fin_pts = min(c.rank_financial_strength / 10, 1.0) * 8
         score += gf_pts + f_pts + fin_pts
 
-        # Profitability dimension (25%)
-        roic_pts = min(c.roic / 30, 1.0) * 15  # 30% ROIC = full marks
-        margin_pts = min(c.net_margin / 25, 1.0) * 10  # 25% net margin = full
-        score += roic_pts + margin_pts
+        # Value creation dimension (25%) — CAPPED per pilot recalibration
+        spread = c.roic_wacc_spread
+        # Cap at 25% spread for full marks (prevents 150% ROIC distortion)
+        spread_pts = min(max(spread, 0) / 25, 1.0) * 25
+        score += spread_pts
 
         # Valuation dimension (20%)
         if c.price_to_gf_value > 0:
-            # Below 1.0 = undervalued, above = overvalued
             val_pts = max(0, min(20, (1.3 - c.price_to_gf_value) * 20))
             score += val_pts
 
-        # Growth dimension (15%)
-        growth_pts = min(c.rank_growth / 10, 1.0) * 10
-        prof_pts = min(c.rank_profitability / 10, 1.0) * 5
+        # Moat stability dimension (10%) — NEW from pilot
+        if c.operating_margin_5y_med > 0:
+            # Reward consistent margins, penalize wild swings
+            if c.moat_stable and c.operating_margin >= c.operating_margin_5y_med * 0.85:
+                score += 10  # Stable and not decaying
+            elif c.moat_stable:
+                score += 5   # Stable but slight decay
+            # Unstable (TTM > 3x 5Y) = 0 pts — moat unproven
+        else:
+            score += 5  # No 5Y data = neutral
+
+        # Growth dimension (10%)
+        growth_pts = min(c.rank_growth / 10, 1.0) * 7
+        prof_pts = min(c.rank_profitability / 10, 1.0) * 3
         score += growth_pts + prof_pts
 
         return round(min(score, 100), 1)
@@ -167,6 +191,10 @@ class QualityWatchlistEngine:
         if c.debt_to_equity > MAX_DEBT_TO_EQUITY and c.debt_to_equity > 0:
             return False
         if c.altman_z_score < MIN_ALTMAN_Z and c.altman_z_score > 0:
+            return False
+        if not c.beneish_m_safe:
+            return False
+        if not c.moat_stable:
             return False
         return True
 

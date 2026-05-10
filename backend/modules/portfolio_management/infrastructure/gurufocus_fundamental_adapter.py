@@ -36,9 +36,20 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
         return self._vault
 
     def _load_screening(self, ticker: str) -> Optional[dict]:
-        """Load the latest fundamental/screening snapshot from the vault."""
+        """Load the latest fundamental data from the vault.
+
+        Merges fundamental/screening + fundamental/keyratios to get
+        the complete picture (base screening + deep keyratios fields).
+        """
         try:
-            return self._get_vault().load_mcp_latest("fundamental/screening", ticker)
+            vault = self._get_vault()
+            base = vault.load_mcp_latest("fundamental/screening", ticker) or {}
+            # Merge keyratios on top (keyratios has 5Y medians, WACC, etc.)
+            kr = vault.load_mcp_latest("fundamental/keyratios", ticker) or {}
+            for k, v in kr.items():
+                if k not in base or base[k] in (0, 0.0, None, ""):
+                    base[k] = v
+            return base if base else None
         except Exception as e:
             logger.debug(f"Vault read failed for {ticker}: {e}")
             return None
@@ -69,24 +80,40 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
         return None
 
     def get_financial_summary(self, ticker: str) -> dict:
+        """Load financial summary with keyratios-enriched data from vault.
+
+        Now returns fields needed by SurveillanceLoop._evaluate_moat_decay():
+        - operating_margin_ttm + operating_margin_5y_avg
+        - wacc + roic (for value decay detection)
+        - capex_revenue_ttm / capex_revenue_5y (if available)
+        """
         data = self._load_screening(ticker)
         if not data:
             return {}
         return {
             "piotroski_f_score": data.get("piotroski_f_score", 0),
             "altman_z_score": data.get("altman_z_score", 0),
-            "beneish_m_score": data.get("beneish_m_score", 0),
+            "beneish_m_score": data.get("beneish_m", data.get("beneish_m_score", 0)),
             "roic": data.get("roic", 0),
             "roe": data.get("roe", 0),
             "roa": data.get("roa", 0),
-            "gross_margin": data.get("gross_margin", 0),
-            "operating_margin": data.get("operating_margin", 0),
-            "net_margin": data.get("net_margin", 0),
+            "gross_margin": data.get("gross_margin", data.get("gross_margin_ttm", 0)),
+            "operating_margin": data.get("operating_margin", data.get("operating_margin_ttm", 0)),
+            "net_margin": data.get("net_margin", data.get("net_margin_ttm", 0)),
             "debt_to_equity": data.get("debt_to_equity", 0),
             "current_ratio": data.get("current_ratio", 0),
             "gf_valuation": data.get("gf_valuation", ""),
             "risk_assessment": data.get("risk_assessment", ""),
             "price_to_gf_value": data.get("price_to_gf_value", 0),
+            # Keyratios-enriched fields for SurveillanceLoop
+            "operating_margin_ttm": data.get("operating_margin_ttm", data.get("operating_margin", 0)),
+            "operating_margin_5y_avg": data.get("operating_margin_5y_med", 0),
+            "net_margin_ttm": data.get("net_margin_ttm", data.get("net_margin", 0)),
+            "net_margin_5y_avg": data.get("net_margin_5y_med", 0),
+            "fcf_margin_ttm": data.get("fcf_margin_ttm", 0),
+            "fcf_margin_5y_avg": data.get("fcf_margin_5y_med", 0),
+            "wacc": data.get("wacc", 0),
+            "gf_value": data.get("gf_value", 0),
         }
 
     def get_financial_statements(self, ticker: str, period_type: str = "annual") -> dict:
@@ -111,7 +138,15 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
         return {}
 
     def get_wacc(self, ticker: str) -> float:
-        return 0.0
+        """Return WACC from vault keyratios data."""
+        data = self._load_screening(ticker)
+        if not data:
+            return 0.0
+        wacc = data.get("wacc", 0)
+        try:
+            return float(wacc) if wacc else 0.0
+        except (ValueError, TypeError):
+            return 0.0
 
     def get_full_qgarp(self, ticker: str) -> dict:
         data = self._load_screening(ticker)

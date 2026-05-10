@@ -30,6 +30,14 @@ class QualityWatchlistCandidate:
     net_margin: float = 0.0
     debt_to_equity: float = 0.0
 
+    # Keyratios deep fields (from /keyratios endpoint)
+    wacc: float = 0.0
+    operating_margin: float = 0.0
+    operating_margin_5y_med: float = 0.0
+    fcf_margin: float = 0.0
+    fcf_margin_5y_med: float = 0.0
+    beneish_m_score: float = -999.0  # Default safe (< -1.78)
+
     # Thesis
     thesis: str = ""
     conviction_score: float = 0.0
@@ -66,8 +74,22 @@ class QualityWatchlistCandidate:
     @property
     def beneish_m_safe(self) -> bool:
         """Beneish M-Score < -1.78 indicates low manipulation probability."""
-        # We don't store beneish here, but the screening data has it
-        return True  # Default safe — checked at screening level
+        if self.beneish_m_score <= -999:
+            return True  # No data available — assume safe
+        return self.beneish_m_score < -1.78
+
+    @property
+    def roic_wacc_spread(self) -> float:
+        """Value creation spread: ROIC - WACC."""
+        return self.roic - self.wacc if self.wacc > 0 else self.roic
+
+    @property
+    def moat_stable(self) -> bool:
+        """Moat stability: operating margin not wildly expanding (PLTR trap)."""
+        if self.operating_margin_5y_med <= 0:
+            return True  # No 5Y data
+        ratio = self.operating_margin / self.operating_margin_5y_med if self.operating_margin_5y_med > 0 else 1
+        return ratio < 3.0  # If TTM is 3x the 5Y median, flag as unstable
 
 
 @dataclass

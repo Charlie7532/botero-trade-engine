@@ -396,3 +396,133 @@ class FinnhubIntelligence:
         )
 
         return report
+
+    # ================================================================
+    # SEC FILINGS — 8-K Material Events & Moat Surveillance
+    # ================================================================
+
+    def get_recent_filings(
+        self,
+        ticker: str,
+        form: str = "8-K",
+        days_back: int = 90,
+        max_results: int = 10,
+    ) -> list[dict]:
+        """
+        Retrieve recent SEC filings for a ticker.
+
+        8-K filings are the critical material-event disclosures:
+        - Executive departures / appointments
+        - M&A, divestitures
+        - Regulatory actions, lawsuits
+        - Debt covenant violations
+        - Revenue guidance changes
+
+        These are the earliest signals of moat decay or corporate stress.
+        """
+        if not self._available:
+            return []
+
+        try:
+            today = datetime.now()
+            start = today - timedelta(days=days_back)
+
+            filings = self._client.filings(
+                symbol=ticker,
+                form=form,
+                _from=start.strftime("%Y-%m-%d"),
+                to=today.strftime("%Y-%m-%d"),
+            )
+
+            if not filings:
+                return []
+
+            results = []
+            for f in filings[:max_results]:
+                results.append({
+                    "ticker": ticker,
+                    "form": f.get("form", ""),
+                    "filed_date": str(f.get("filedDate", "")),
+                    "accepted_date": str(f.get("acceptedDate", "")),
+                    "access_number": f.get("accessNumber", ""),
+                    "report_url": f.get("reportUrl", ""),
+                    "filing_url": f.get("filingUrl", ""),
+                })
+
+            if results:
+                logger.info(
+                    f"📄 {ticker}: {len(results)} {form} filings "
+                    f"in last {days_back} days"
+                )
+            return results
+
+        except Exception as e:
+            logger.error(f"Error fetching {form} filings for {ticker}: {e}")
+            return []
+
+    def get_moat_surveillance(self, ticker: str) -> dict:
+        """
+        Complete moat-surveillance report combining 8-K filings
+        with LLM analysis (Gemini → Claude fallback).
+
+        Returns a dict with filing count, analyzed events,
+        and a moat_risk score (0=safe, 100=critical).
+        """
+        filings = self.get_recent_filings(ticker, form="8-K", days_back=90)
+
+        report = {
+            "ticker": ticker,
+            "filings_8k_count": len(filings),
+            "filings": filings,
+            "moat_risk": 0,
+            "analyzed": False,
+            "analysis": None,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+
+        if not filings:
+            report["analysis"] = "No 8-K filings in last 90 days."
+            return report
+
+        # High filing frequency is itself a risk signal
+        if len(filings) >= 5:
+            report["moat_risk"] = min(40, len(filings) * 8)
+            logger.warning(
+                f"⚠️ {ticker}: {len(filings)} 8-K filings in 90 days — "
+                f"elevated corporate activity"
+            )
+
+        # Analyze the most recent filing via LLM if URL available
+        latest = filings[0]
+        url = latest.get("report_url", "")
+        if url:
+            try:
+                from backend.modules.portfolio_management.infrastructure.sec_nlp_analyzer import (
+                    SecNLPAnalyzer,
+                )
+                analyzer = SecNLPAnalyzer()
+                analysis = analyzer.analyze_risk_factors(url, ticker, form_type="8-K")
+                report["analyzed"] = True
+                report["analysis"] = analysis
+
+                # Detect keywords that indicate moat stress
+                stress_keywords = [
+                    "departure", "resignation", "terminated",
+                    "lawsuit", "litigation", "regulatory",
+                    "restatement", "impairment", "covenant",
+                    "downgrade", "restructuring",
+                ]
+                lower_analysis = analysis.lower()
+                hits = [kw for kw in stress_keywords if kw in lower_analysis]
+                if hits:
+                    report["moat_risk"] = min(100, report["moat_risk"] + len(hits) * 15)
+                    report["stress_signals"] = hits
+                    logger.warning(
+                        f"🔴 {ticker} MOAT STRESS: {hits} detected in 8-K"
+                    )
+            except Exception as e:
+                logger.error(f"8-K NLP analysis failed for {ticker}: {e}")
+                report["analysis"] = f"[ANALYSIS ERROR] {e}"
+
+        return report
+

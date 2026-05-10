@@ -265,6 +265,82 @@ def vault_finnhub_data(store: TimescaleDataStore, tickers: list[str]) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
+# 3B. SEC 8-K FILINGS — Material Event Surveillance
+# ═══════════════════════════════════════════════════════════════
+
+def vault_sec_8k_filings(store: TimescaleDataStore) -> dict:
+    """Vault recent 8-K filings for quality watchlist tickers (1x per day).
+
+    8-K filings disclose material corporate events that can signal
+    moat decay: executive departures, regulatory actions, M&A,
+    debt covenant violations, revenue guidance changes.
+
+    Scans top 20 quality watchlist tickers via Finnhub free tier.
+    """
+    if _already_vaulted_today(store, "sec/8k_filings", "BATCH_DONE"):
+        logger.info("📄 SEC 8-K filings already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    stats = {"tickers_scanned": 0, "filings_found": 0}
+
+    try:
+        from backend.modules.flow_intelligence.infrastructure.finnhub_api import FinnhubIntelligence
+        fh = FinnhubIntelligence()
+        if not fh._available:
+            logger.warning("Finnhub not available — skipping 8-K vault")
+            return {"status": "skipped", "reason": "no_api_key"}
+
+        # Get quality watchlist tickers
+        conn = store._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT ticker FROM market.quality_watchlist "
+                    "ORDER BY conviction_score DESC LIMIT 20"
+                )
+                tickers = [r[0] for r in cur.fetchall()]
+        finally:
+            store._put(conn)
+
+        if not tickers:
+            logger.info("📄 No watchlist tickers — skipping 8-K scan")
+            return {"status": "ok", **stats}
+
+        import time
+        for ticker in tickers:
+            try:
+                filings = fh.get_recent_filings(ticker, form="8-K", days_back=90)
+                if filings:
+                    store.save_mcp_snapshot("sec/8k_filings", ticker, {
+                        "filings": filings,
+                        "count": len(filings),
+                        "latest_date": filings[0].get("filed_date", ""),
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    })
+                    stats["filings_found"] += len(filings)
+                stats["tickers_scanned"] += 1
+                time.sleep(0.5)  # Respect Finnhub rate limits (60/min free)
+            except Exception as e:
+                logger.debug(f"  8-K {ticker}: {e}")
+
+        # Mark batch as done
+        store.save_mcp_snapshot("sec/8k_filings", "BATCH_DONE", {
+            "timestamp": datetime.now(UTC).isoformat(),
+            **stats,
+        })
+
+        logger.info(
+            f"📄 SEC 8-K vault: {stats['tickers_scanned']} tickers scanned, "
+            f"{stats['filings_found']} filings found"
+        )
+        return {"status": "ok", **stats}
+
+    except Exception as e:
+        logger.error(f"SEC 8-K vault failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
 # 4A. FRED MACRO — Real Federal Reserve data via MCP
 # ═══════════════════════════════════════════════════════════════
 
@@ -445,6 +521,152 @@ def vault_market_indices(store: TimescaleDataStore) -> dict:
 
     except Exception as e:
         logger.error(f"FRED vault failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
+# 4C. VIX LIVE — High-frequency volatility monitor
+# ═══════════════════════════════════════════════════════════════
+
+# VIX regime thresholds (institutional standard)
+_VIX_THRESHOLDS = {
+    "calm":     (0,    18),
+    "elevated": (18,   25),
+    "panic":    (25,   35),
+    "crisis":   (35,   float("inf")),
+}
+
+def vault_vix_live(store: TimescaleDataStore) -> dict:
+    """High-frequency VIX snapshot — runs EVERY cycle (no daily skip).
+
+    VIX is the single most important real-time risk signal.
+    A regime change from 'calm' to 'panic' must be detected
+    within minutes, not hours.
+
+    Thresholds:
+      0-18:  calm     → full allocation
+      18-25: elevated → reduce new entries
+      25-35: panic    → halt new entries
+      35+:   crisis   → consider hedging
+
+    Saves to macro/vix_live (overwrites each cycle).
+    """
+    try:
+        import yfinance as yf
+        import pandas as pd
+
+        t = yf.Ticker("^VIX")
+        hist = t.history(period="5d")
+        if hist.empty:
+            return {"status": "error", "error": "no VIX data"}
+
+        if isinstance(hist.columns, pd.MultiIndex):
+            hist.columns = hist.columns.get_level_values(0)
+
+        latest = hist.iloc[-1]
+        vix = float(latest["Close"])
+        vix_high = float(latest["High"])
+        vix_low = float(latest["Low"])
+
+        # Previous close for delta
+        prev_close = float(hist.iloc[-2]["Close"]) if len(hist) >= 2 else vix
+        vix_delta = vix - prev_close
+        vix_delta_pct = (vix_delta / prev_close * 100) if prev_close > 0 else 0
+
+        # Classify regime
+        regime = "calm"
+        for name, (lo, hi) in _VIX_THRESHOLDS.items():
+            if lo <= vix < hi:
+                regime = name
+                break
+
+        # Alert on regime transitions
+        # Check previous regime from vault
+        prev_regime = "unknown"
+        try:
+            conn = store._conn()
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT data->>'regime' FROM market.mcp_snapshots
+                    WHERE category = 'macro/vix_live' AND ticker = 'VIX'
+                    ORDER BY time DESC LIMIT 1
+                """)
+                row = cur.fetchone()
+                if row and row[0]:
+                    prev_regime = row[0]
+            store._put(conn)
+        except Exception:
+            pass
+
+        regime_changed = prev_regime != "unknown" and prev_regime != regime
+
+        snapshot = {
+            "vix": round(vix, 2),
+            "high": round(vix_high, 2),
+            "low": round(vix_low, 2),
+            "delta": round(vix_delta, 2),
+            "delta_pct": round(vix_delta_pct, 2),
+            "regime": regime,
+            "prev_regime": prev_regime,
+            "regime_changed": regime_changed,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+
+        store.save_mcp_snapshot("macro/vix_live", "VIX", snapshot)
+
+        # Log with appropriate severity
+        if regime == "crisis":
+            logger.critical(
+                f"🔴 VIX CRISIS: {vix:.1f} (Δ{vix_delta:+.1f}) — "
+                f"HALT ALL NEW ENTRIES"
+            )
+        elif regime == "panic":
+            logger.warning(
+                f"🟠 VIX PANIC: {vix:.1f} (Δ{vix_delta:+.1f}) — "
+                f"halt new entries recommended"
+            )
+        elif regime == "elevated":
+            logger.warning(
+                f"🟡 VIX ELEVATED: {vix:.1f} (Δ{vix_delta:+.1f}) — "
+                f"reduce exposure"
+            )
+        else:
+            logger.info(f"🟢 VIX: {vix:.1f} (Δ{vix_delta:+.1f}) — {regime}")
+
+        if regime_changed:
+            logger.warning(
+                f"⚡ VIX REGIME SHIFT: {prev_regime} → {regime} "
+                f"(VIX={vix:.1f})"
+            )
+            # Dispatch alert for regime change
+            try:
+                from backend.modules.shared.domain.entities.alert_entities import Alert
+                from backend.modules.shared.infrastructure.postgres_alert_adapter import PostgresAlertAdapter
+
+                severity = "critical" if regime in ("panic", "crisis") else "warning"
+                alert = Alert(
+                    category="vix",
+                    severity=severity,
+                    ticker="MARKET",
+                    title=f"VIX Regime Shift: {prev_regime} → {regime}",
+                    message=(
+                        f"VIX moved from {prev_regime} to {regime}. "
+                        f"Current: {vix:.1f} (Δ{vix_delta:+.1f}, {vix_delta_pct:+.1f}%)"
+                    ),
+                    source="vault_vix_live",
+                    metric_name="vix",
+                    metric_value=vix,
+                    previous_value=prev_close,
+                )
+                adapter = PostgresAlertAdapter(pool=store._pool)
+                adapter.save_alert(alert)
+            except Exception as e:
+                logger.debug(f"VIX alert dispatch failed: {e}")
+
+        return {"status": "ok", "vix": vix, "regime": regime}
+
+    except Exception as e:
+        logger.error(f"VIX live vault failed: {e}")
         return {"status": "error", "error": str(e)}
 
 
@@ -1054,6 +1276,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results = {}
 
     # ── Tier 1: Instant + Decision-Critical (~15s) ──
+    results["vix_live"] = vault_vix_live(store)
     results["fred_macro"] = vault_fred_macro(store)
     results["cboe"] = vault_cboe_indices(store)
     results["fear_greed"] = vault_fear_greed(store)
@@ -1062,6 +1285,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
     # ── Tier 2: Moderate (~1 min) ──
     results["finnhub"] = vault_finnhub_data(store, neon_tickers)
+    results["sec_8k"] = vault_sec_8k_filings(store)
     results["market_indices"] = vault_market_indices(store)
     results["guru_picks"] = vault_guru_picks(store)
     results["insider_activity"] = vault_insider_activity(store)

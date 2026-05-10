@@ -47,12 +47,14 @@ class QualityEntryGate:
         options_provider: OptionsDataPort,
         blacklist=None,
         fundamental_data=None,
+        health_provider=None,
     ):
         self._market_data = market_data
         self._flow_data = flow_data
         self._options_provider = options_provider
         self._blacklist = blacklist
         self._fundamental_data = fundamental_data
+        self._health_provider = health_provider
 
         # Lazy-init modules
         from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
@@ -92,12 +94,42 @@ class QualityEntryGate:
             timestamp=datetime.now(UTC).isoformat(),
         )
 
-        # ── Gate 0: Blacklist ──
+        # ── Gate 0: Blacklist (legacy) ──
         if self._blacklist and self._blacklist.is_blacklisted(ticker, "QUALITY"):
             report.final_verdict = "BLOCK"
             report.final_scale = 0.0
             report.final_reason = f"BLACKLISTED: {ticker} in 4Q cooldown after THESIS_DEATH"
             return report
+
+        # ── Gate 0.1: Progressive Health ──
+        _health_sizing = 1.0
+        if self._health_provider:
+            try:
+                health = self._health_provider.get_health(ticker, "QUALITY")
+                if health.requires_exit:
+                    report.final_verdict = "BLOCK"
+                    report.final_scale = 0.0
+                    report.final_reason = (
+                        f"HEALTH_DEATH: {ticker} — {', '.join(health.reasons)}"
+                    )
+                    return report
+                if not health.allows_new_entry:
+                    report.final_verdict = "STALK"
+                    report.final_scale = 0.0
+                    report.final_reason = (
+                        f"HEALTH_WOUNDED: {ticker} — hold existing, "
+                        f"no new entries ({', '.join(health.reasons)})"
+                    )
+                    return report
+                _health_sizing = health.sizing_multiplier
+                if _health_sizing < 1.0:
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"HEALTH_ALERT: sizing reduced to {_health_sizing:.0%} "
+                        f"({', '.join(health.reasons)})"
+                    )
+            except Exception as e:
+                logger.debug(f"Health check skipped for {ticker}: {e}")
 
         # ── Gate 0.5: Fundamental Health (Vault-backed) ──
         if self._fundamental_data:
@@ -325,7 +357,8 @@ class QualityEntryGate:
             base_scale = whale_verdict.position_scale
             if report.pattern_on_support and report.pattern_score >= 0.5:
                 base_scale = min(1.0, base_scale * 1.25)
-            report.final_scale = base_scale
+            # Apply health-based sizing (ALERT = 0.5x, HEALTHY = 1.0x)
+            report.final_scale = base_scale * _health_sizing
             report.final_reason = (
                 f"FIRE: {phase_verdict.phase}, R:R={report.risk_reward}:1, "
                 f"Dims={report.dimensions_confirming}, VP={report.vp_institutional_bias}"

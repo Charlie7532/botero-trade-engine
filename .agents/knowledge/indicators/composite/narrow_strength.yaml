@@ -1,0 +1,32 @@
+# Composite: Narrow Strength — HYPOTHESIS
+# ==========================================
+
+signal_id: "COMPOSITE-NARROW-STRENGTH-001"
+name: "Narrow Strength (RSI Strong + Breadth Weak)"
+condition: "RSI > 55 AND S5TW < 45%"
+action: "HOLD — concentrated momentum, not classic overbought"
+timeframe: "60d forward"
+
+partners:
+  - indicator: RSI-14
+    condition: "> 55"
+    individual_signal: "RSI-NARROW-MOMENTUM-001"
+  - indicator: S5TW
+    condition: "< 45%"
+
+evidence_status: HYPOTHESIS
+reliability_grade: D
+
+observed_metrics:
+  observations: 41
+  win_rate: 0.78
+  avg_return: 0.0219
+  note: |
+    Full-sample only. This is the CURRENT market state (2026-05-10).
+    If validated, it would mean the current narrow market is NOT immediately
+    dangerous. But that conclusion requires OOS proof.
+
+probability_of_profit: null
+expected_return: null
+last_validated: null
+next_validation_due: "PENDING"

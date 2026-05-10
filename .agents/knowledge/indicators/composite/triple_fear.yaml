@@ -1,0 +1,35 @@
+# Composite: Triple Fear — HYPOTHESIS
+# =====================================
+
+signal_id: "COMPOSITE-TRIPLE-FEAR-001"
+name: "Triple Fear (VIX Panic + RSI Oversold + Breadth Washed Out)"
+condition: "VIX > 25 AND RSI < 35 AND S5TW < 25%"
+action: "LONG — triple convergence of fear signals"
+timeframe: "60d forward"
+
+partners:
+  - indicator: VIX
+    condition: "> 25"
+  - indicator: RSI-14
+    condition: "< 35"
+  - indicator: S5TW
+    condition: "< 25%"
+
+evidence_status: HYPOTHESIS
+reliability_grade: D
+
+observed_metrics:
+  observations: 32
+  win_rate: 0.81
+  avg_return: 0.0550
+  note: |
+    Full-sample only. Strong observed returns but:
+    - N=32 is borderline (minimum is 30)
+    - Three conditions compound data-mining risk
+    - DSR adjustment critical for this signal
+    Must validate OOS with extra scrutiny.
+
+probability_of_profit: null
+expected_return: null
+last_validated: null
+next_validation_due: "PENDING"

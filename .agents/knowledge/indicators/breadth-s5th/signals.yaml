@@ -1,0 +1,59 @@
+# S5TH Signals — All HYPOTHESIS until validated
+# ================================================
+
+indicator: S5TH
+data_window: "2021-10-18 → 2026-02-11"
+sample_size: 1084
+universe: 540
+
+signals:
+  - id: "S5TH-CAPITULATION-001"
+    name: "S5TH Deep Capitulation"
+    condition: "S5TH < 30%"
+    action: "LONG — structural washout"
+    timeframe: "60d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: 52
+      win_rate: 0.85
+      avg_return: 0.0726
+      note: "Full-sample only. Very high return observed but needs OOS confirmation."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "S5TH-WEAK-STRUCTURE-001"
+    name: "S5TH Weak Structure"
+    condition: "S5TH < 50%"
+    action: "CAUTION — structural breadth declining"
+    timeframe: "20d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: 380
+      win_rate: 0.55
+      avg_return: 0.0082
+      note: "Full-sample. Wide condition, may lack edge."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "S5TH-BROAD-HEALTH-001"
+    name: "S5TH Broad Market Health"
+    condition: "S5TH > 75%"
+    action: "CONFIRM — broad participation supports trend"
+    timeframe: "20d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: 195
+      win_rate: 0.62
+      avg_return: 0.0105
+      note: "Full-sample. Moderate edge, needs OOS."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"

@@ -1,0 +1,76 @@
+# VIX Regime Signals — All HYPOTHESIS until validated
+# ====================================================
+
+indicator: VIX
+data_window: "2021-10-18 → 2026-02-11"
+sample_size: 1084
+reference_asset: SPY
+
+signals:
+  - id: "VIX-SPIKE-001"
+    name: "VIX Panic Spike"
+    condition: "VIX > 30"
+    action: "LONG — contrarian, panic likely overdone"
+    timeframe: "60d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: 45
+      win_rate: null  # Not computed yet
+      avg_return: null
+      note: "Common contrarian thesis. Must validate with our data."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "VIX-COMPLACENCY-001"
+    name: "VIX Extreme Complacency"
+    condition: "VIX < 13"
+    action: "CAUTION — reduce new entries, complacency risk"
+    timeframe: "20d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: null
+      win_rate: null
+      avg_return: null
+      note: "Historical observation that VIX < 13 precedes volatility expansion. Not tested."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "VIX-REGIME-SHIFT-001"
+    name: "VIX Regime Transition (Calm → Elevated)"
+    condition: "VIX crosses above 18 from below"
+    action: "REDUCE sizing 25%"
+    timeframe: "10d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: null
+      win_rate: null
+      avg_return: null
+      note: "Operational threshold used in daemon. Never backtested for sizing impact."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "VIX-REGIME-SHIFT-002"
+    name: "VIX Regime Transition (Elevated → Panic)"
+    condition: "VIX crosses above 25 from below"
+    action: "HALT new entries"
+    timeframe: "5d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: null
+      win_rate: null
+      avg_return: null
+      note: "Operational threshold. Never backtested."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"

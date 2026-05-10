@@ -1,0 +1,28 @@
+# Composite: Buyable Pullback — HYPOTHESIS
+# ============================================
+
+signal_id: "COMPOSITE-BUYABLE-PULLBACK-001"
+name: "Buyable Pullback (Structural Health + Tactical Washout)"
+condition: "S5TH >= 50% AND S5TW < 20%"
+action: "LONG — structural trend intact, short-term oversold"
+timeframe: "20d forward"
+
+partners:
+  - indicator: S5TH
+    condition: ">= 50%"
+  - indicator: S5TW
+    condition: "< 20%"
+
+evidence_status: HYPOTHESIS
+reliability_grade: D
+
+observed_metrics:
+  observations: 38
+  win_rate: 0.82
+  avg_return: 0.0237
+  note: "Full-sample only. Needs OOS validation."
+
+probability_of_profit: null
+expected_return: null
+last_validated: null
+next_validation_due: "PENDING"

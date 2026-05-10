@@ -1,0 +1,70 @@
+# S5TW Signals — All HYPOTHESIS until validated
+# ================================================
+# These observations come from initial full-sample analysis.
+# NONE have been tested out-of-sample yet.
+
+indicator: S5TW
+data_window: "2021-10-18 → 2026-02-11"
+sample_size: 1084  # trading days
+universe: 540  # tickers
+
+signals:
+  - id: "S5TW-WASHOUT-001"
+    name: "S5TW Extreme Washout"
+    condition: "S5TW < 15%"
+    action: "LONG — potential capitulation"
+    timeframe: "60d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D  # Not validated
+    observed_metrics:
+      observations: 66
+      win_rate: 0.77
+      avg_return: 0.0524
+      note: "Full-sample only. No train/test split performed."
+    probability_of_profit: null  # Unknown until OOS validation
+    expected_return: null        # Unknown until OOS validation
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "S5TW-OVERSOLD-001"
+    name: "S5TW Oversold Zone"
+    condition: "S5TW < 25%"
+    action: "LONG — oversold breadth"
+    timeframe: "60d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: 144
+      win_rate: 0.75
+      avg_return: 0.0485
+      note: "Full-sample only. No train/test split performed."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "S5TW-EUPHORIA-001"
+    name: "S5TW Euphoria Zone"
+    condition: "S5TW > 85%"
+    action: "REDUCE — potential mean reversion"
+    timeframe: "5d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: 79
+      win_rate: 0.48
+      avg_return: -0.0064
+      note: "Full-sample only. Weak signal. May not survive OOS."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+predictive_power:
+  note: "All R² values are full-sample. Must be validated OOS."
+  evidence_status: HYPOTHESIS
+  fwd_20d_R2: 0.0140
+  fwd_20d_p_value: 0.000095
+  fwd_60d_R2: 0.0202
+  fwd_60d_p_value: 0.000003
+  direction: contrarian  # negative slope (low S5TW → higher returns)

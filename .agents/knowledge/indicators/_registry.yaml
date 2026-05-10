@@ -1,0 +1,68 @@
+# Indicator Knowledge System — Registry
+# ========================================
+# Master index of all indicator profiles and their signals.
+# Updated by validation scripts; read by agents for context.
+#
+# RULE: All new entries start as HYPOTHESIS.
+# Only the validation script may promote to VALIDATED.
+
+last_updated: "2026-05-10"
+validation_protocol: "_validation_protocol.md"
+
+indicators:
+  - id: breadth-s5tw
+    name: "S&P 500 % Above 20-DMA (S5TW)"
+    type: breadth
+    data_source: "market.ohlcv_bars (computed)"
+    profile: "breadth-s5tw/PROFILE.md"
+    signals_file: "breadth-s5tw/signals.yaml"
+    signal_count: 3
+    highest_grade: PENDING  # Updated after validation
+
+  - id: breadth-s5th
+    name: "S&P 500 % Above 200-DMA (S5TH)"
+    type: breadth
+    data_source: "market.ohlcv_bars (computed)"
+    profile: "breadth-s5th/PROFILE.md"
+    signals_file: "breadth-s5th/signals.yaml"
+    signal_count: 3
+    highest_grade: PENDING
+
+  - id: rsi-cardwell
+    name: "RSI-14 with Cardwell/Brown Regime Context"
+    type: momentum
+    data_source: "market.ohlcv_bars"
+    profile: "rsi-cardwell/PROFILE.md"
+    signals_file: "rsi-cardwell/signals.yaml"
+    signal_count: 3
+    highest_grade: PENDING
+
+  - id: vix-regime
+    name: "VIX Regime Classification"
+    type: volatility
+    data_source: "market.ohlcv_bars (ticker=VIX)"
+    profile: "vix-regime/PROFILE.md"
+    signals_file: "vix-regime/signals.yaml"
+    signal_count: 4
+    highest_grade: PENDING
+
+composite_signals:
+  - id: capitulation
+    file: "composite/capitulation.yaml"
+    partners: ["breadth-s5th", "breadth-s5tw"]
+    highest_grade: PENDING
+
+  - id: buyable_pullback
+    file: "composite/buyable_pullback.yaml"
+    partners: ["breadth-s5th", "breadth-s5tw"]
+    highest_grade: PENDING
+
+  - id: narrow_strength
+    file: "composite/narrow_strength.yaml"
+    partners: ["rsi-cardwell", "breadth-s5tw"]
+    highest_grade: PENDING
+
+  - id: triple_fear
+    file: "composite/triple_fear.yaml"
+    partners: ["vix-regime", "rsi-cardwell", "breadth-s5tw"]
+    highest_grade: PENDING

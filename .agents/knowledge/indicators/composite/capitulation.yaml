@@ -1,0 +1,36 @@
+# Composite: Capitulation Signal — HYPOTHESIS
+# ==============================================
+# Multi-indicator conjugation: S5TH + S5TW at extreme lows
+
+signal_id: "COMPOSITE-CAPITULATION-001"
+name: "Broad Market Capitulation"
+condition: "S5TH < 30% AND S5TW < 20%"
+action: "LONG — maximum conviction, structural capitulation"
+timeframe: "60d forward"
+
+partners:
+  - indicator: S5TH
+    condition: "< 30%"
+    individual_signal: "S5TH-CAPITULATION-001"
+  - indicator: S5TW
+    condition: "< 20%"
+    individual_signal: "S5TW-WASHOUT-001"
+
+evidence_status: HYPOTHESIS
+reliability_grade: D
+
+observed_metrics:
+  observations: 28
+  win_rate: 1.00
+  avg_return: 0.0826
+  note: |
+    Full-sample only. 100% WR looks extraordinary but N=28 is small.
+    High probability of overfitting or survivorship bias.
+    MUST validate OOS before using as a gate.
+
+probability_of_profit: null  # Unknown until OOS
+expected_return: null
+
+partner_correlation: null  # Must be calculated
+last_validated: null
+next_validation_due: "PENDING"

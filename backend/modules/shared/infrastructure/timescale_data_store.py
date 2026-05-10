@@ -335,3 +335,51 @@ class TimescaleDataStore(TimeSeriesPort):
                 return result
         finally:
             self._put(conn)
+
+    # ── Ticker Metadata ───────────────────────────────────
+
+    def load_sector_map(self) -> dict[str, str]:
+        """Load {ticker: sector} mapping from ticker_metadata.
+
+        Returns empty dict if table doesn't exist yet.
+        """
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """SELECT ticker, sector FROM market.ticker_metadata
+                       WHERE sector IS NOT NULL AND sector != 'Unknown'"""
+                )
+                return {row[0]: row[1] for row in cur.fetchall()}
+        except psycopg2.errors.UndefinedTable:
+            conn.rollback()
+            return {}
+        finally:
+            self._put(conn)
+
+    def upsert_ticker_metadata(
+        self, ticker: str, sector: str,
+        industry: str | None = None, market_cap_bucket: str | None = None,
+    ) -> None:
+        """Insert or update sector/industry metadata for a ticker."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO market.ticker_metadata
+                         (ticker, sector, industry, market_cap_bucket)
+                       VALUES (%s, %s, %s, %s)
+                       ON CONFLICT (ticker) DO UPDATE SET
+                         sector = EXCLUDED.sector,
+                         industry = EXCLUDED.industry,
+                         market_cap_bucket = EXCLUDED.market_cap_bucket,
+                         updated_at = NOW()""",
+                    (ticker.upper(), sector, industry, market_cap_bucket),
+                )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            self._put(conn)
+

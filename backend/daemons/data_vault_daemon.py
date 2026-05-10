@@ -614,6 +614,22 @@ def vault_vix_live(store: TimescaleDataStore) -> dict:
 
         store.save_mcp_snapshot("macro/vix_live", "VIX", snapshot)
 
+        # Persist VIX as OHLCV bar for historical analysis
+        # (enables VIX vs breadth vs RSI time-series correlation)
+        try:
+            latest_date = hist.index[-1].to_pydatetime()
+            vix_df = pd.DataFrame({
+                "open": [float(latest["Open"])],
+                "high": [vix_high],
+                "low": [vix_low],
+                "close": [vix],
+                "volume": [0],
+            }, index=[latest_date])
+            store.save_bars("VIX", "1d", vix_df)
+            logger.debug(f"VIX OHLCV bar persisted for {latest_date.date()}")
+        except Exception as e:
+            logger.debug(f"VIX OHLCV persistence skipped: {e}")
+
         # Log with appropriate severity
         if regime == "crisis":
             logger.critical(
@@ -954,7 +970,8 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
     try:
         from backend.modules.shared.domain.rules.macro_trend_calculator import calculate_breadth
 
-        all_closes = store.load_all_latest_closes(days=200)
+        # 300 calendar days ≈ 210 trading days — enough for 200-DMA
+        all_closes = store.load_all_latest_closes(days=300)
         if not all_closes:
             logger.warning("Breadth: no OHLCV data available")
             return {"status": "error", "reason": "no_data"}

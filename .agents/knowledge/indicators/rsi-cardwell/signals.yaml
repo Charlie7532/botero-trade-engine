@@ -1,0 +1,61 @@
+# RSI-Cardwell Signals — All HYPOTHESIS until validated
+# ======================================================
+
+indicator: RSI-14
+data_window: "2021-10-18 → 2026-02-11"
+sample_size: 1084
+reference_asset: SPY
+
+signals:
+  - id: "RSI-NARROW-MOMENTUM-001"
+    name: "RSI Strong in Narrow Market"
+    condition: "RSI > 60 AND S5TW < 45%"
+    action: "HOLD/ADD — concentrated momentum, not overbought"
+    timeframe: "60d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: 87
+      win_rate: 0.80
+      avg_return: 0.0215
+      note: "Full-sample. Contradicts classic RSI reading. Must validate OOS."
+    conjugation_partner: "S5TW"
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "RSI-OVERSOLD-001"
+    name: "RSI Classic Oversold"
+    condition: "RSI < 30"
+    action: "LONG — oversold bounce potential"
+    timeframe: "20d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: 35
+      win_rate: 0.71
+      avg_return: 0.0312
+      note: "Full-sample only. Classic signal, needs validation in our universe."
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"
+
+  - id: "RSI-BULL-PULLBACK-001"
+    name: "RSI Bull Regime Pullback (Cardwell)"
+    condition: "RSI between 40-50 AND S5TH > 60%"
+    action: "LONG — Cardwell bull pullback zone"
+    timeframe: "20d forward"
+    evidence_status: HYPOTHESIS
+    reliability_grade: D
+    observed_metrics:
+      observations: null  # Not yet computed
+      win_rate: null
+      avg_return: null
+      note: "Cardwell theory. Not even full-sample tested yet."
+    conjugation_partner: "S5TH"
+    probability_of_profit: null
+    expected_return: null
+    last_validated: null
+    next_validation_due: "PENDING"

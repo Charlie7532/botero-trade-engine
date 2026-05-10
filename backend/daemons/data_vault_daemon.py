@@ -265,15 +265,137 @@ def vault_finnhub_data(store: TimescaleDataStore, tickers: list[str]) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 4. FRED / MACRO — VIX live + macro series
+# 4A. FRED MACRO — Real Federal Reserve data via MCP
 # ═══════════════════════════════════════════════════════════════
 
-def vault_fred_data(store: TimescaleDataStore) -> dict:
-    """Vault FRED macro data (1x per day)."""
+def vault_fred_macro(store: TimescaleDataStore) -> dict:
+    """Vault real FRED macro data via FRED MCP (1x per day).
+    
+    This is the TRUE macro intelligence source — Net Liquidity,
+    Fed Funds Rate, CPI, unemployment, yield curve.
+    Druckenmiller directive #8: 'Liquidity is the tide.'
+    """
     stats = {"series": 0}
 
-    if _already_vaulted_today(store, "macro/fred", "SUMMARY"):
-        logger.info("📊 FRED macro already vaulted today — skipping")
+    if _already_vaulted_today(store, "macro/fred_real", "SUMMARY"):
+        logger.info("📊 FRED macro (real) already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    try:
+        from backend.modules.flow_intelligence.infrastructure.fred_adapter import (
+            FREDMacroIntelligence, FRED_SERIES,
+        )
+
+        # Fetch each series individually via FRED MCP bridge
+        # The FRED MCP server exposes get_economic_indicator(series_id)
+        fred_data = {}
+
+        # Try to use fredapi if available (direct FRED API access)
+        fred_client = None
+        try:
+            from fredapi import Fred
+            import os
+            api_key = os.getenv("FRED_API_KEY", "")
+            if api_key:
+                fred_client = Fred(api_key=api_key)
+                logger.info("FRED API client initialized")
+        except ImportError:
+            logger.info("fredapi not installed — attempting yfinance fallback for FRED series")
+
+        # Priority series for Net Liquidity formula
+        priority_series = [
+            ("WALCL", "fed_balance_sheet"),
+            ("RRPONTSYD", "reverse_repo"),
+            ("WTREGEN", "tga_balance"),
+            ("FEDFUNDS", "fed_funds_rate"),
+            ("DGS10", "treasury_10y"),
+            ("DGS2", "treasury_2y"),
+            ("T10Y2Y", "yield_spread"),
+            ("CPIAUCSL", "cpi_yoy"),
+            ("UNRATE", "unemployment_rate"),
+            ("UMCSENT", "consumer_sentiment"),
+            ("WM2NS", "m2_money_supply"),
+        ]
+
+        if fred_client:
+            for series_id, field_name in priority_series:
+                try:
+                    data = fred_client.get_series(series_id, observation_start="2024-01-01")
+                    if data is not None and len(data) > 0:
+                        latest = float(data.dropna().iloc[-1])
+                        fred_data[field_name] = latest
+                        stats["series"] += 1
+                        # Store previous value for trend calculation
+                        if len(data.dropna()) >= 5:
+                            prev = float(data.dropna().iloc[-5])
+                            fred_data[f"{field_name}_prev"] = prev
+                except Exception as e:
+                    logger.debug(f"  FRED {series_id}: {e}")
+
+            # CPI: convert absolute index to YoY% change
+            # CPIAUCSL returns ~330, not 2.5%. We need the percentage.
+            try:
+                cpi_series = fred_client.get_series("CPIAUCSL", observation_start="2024-01-01")
+                cpi_clean = cpi_series.dropna()
+                if len(cpi_clean) >= 12:
+                    current_cpi = float(cpi_clean.iloc[-1])
+                    year_ago_cpi = float(cpi_clean.iloc[-12])
+                    cpi_yoy = ((current_cpi - year_ago_cpi) / year_ago_cpi) * 100
+                    fred_data["cpi_yoy"] = round(cpi_yoy, 2)
+                    logger.info(f"  CPI YoY: {cpi_yoy:.2f}% (index {current_cpi:.1f} vs {year_ago_cpi:.1f})")
+            except Exception as e:
+                logger.debug(f"  CPI YoY calculation: {e}")
+
+            # Calculate previous Net Liquidity for trend
+            if "fed_balance_sheet_prev" in fred_data:
+                prev_walcl = fred_data.get("fed_balance_sheet_prev", 0)
+                prev_rrp = fred_data.get("reverse_repo_prev", 0)
+                prev_tga = fred_data.get("tga_balance_prev", 0)
+                fred_data["_net_liquidity_prev"] = prev_walcl - prev_rrp - prev_tga
+
+        if fred_data:
+            # Parse through the intelligence adapter for classification
+            intel = FREDMacroIntelligence()
+            snapshot = intel.parse_macro_snapshot(individual_series=fred_data)
+
+            # Persist the enriched snapshot
+            vault_payload = {
+                **fred_data,
+                "net_liquidity": snapshot.net_liquidity,
+                "net_liquidity_trend": snapshot.net_liquidity_trend,
+                "liquidity_regime": snapshot.liquidity_regime,
+                "macro_regime": snapshot.macro_regime,
+                "regime_score": snapshot.regime_score,
+                "fed_stance": snapshot.fed_stance,
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+            store.save_mcp_snapshot("macro/fred_real", "SUMMARY", vault_payload)
+            nl_str = f"{snapshot.net_liquidity:,.0f}B" if snapshot.net_liquidity else "N/A"
+            logger.info(
+                f"📊 FRED macro vault (REAL): {stats['series']} series, "
+                f"NetLiq={nl_str} regime={snapshot.macro_regime} "
+                f"(score={snapshot.regime_score:.0f})"
+            )
+        else:
+            logger.warning("FRED macro: no data retrieved — check FRED_API_KEY and fredapi")
+
+        return {"status": "ok", **stats}
+
+    except Exception as e:
+        logger.error(f"FRED macro vault failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
+# 4B. MARKET INDICES — VIX, S&P500, DXY, Gold, Oil via yfinance
+# ═══════════════════════════════════════════════════════════════
+
+def vault_market_indices(store: TimescaleDataStore) -> dict:
+    """Vault market indices via yfinance (VIX, yields, S&P500, DXY, gold, oil)."""
+    stats = {"series": 0}
+
+    if _already_vaulted_today(store, "macro/market_indices", "SUMMARY"):
+        logger.info("📈 Market indices already vaulted today — skipping")
         return {"status": "skipped", "reason": "already_today"}
 
     try:
@@ -314,8 +436,10 @@ def vault_fred_data(store: TimescaleDataStore) -> dict:
 
         if macro_snapshot:
             macro_snapshot["timestamp"] = datetime.now(UTC).isoformat()
+            store.save_mcp_snapshot("macro/market_indices", "SUMMARY", macro_snapshot)
+            # Also write to macro/fred for backward compatibility
             store.save_mcp_snapshot("macro/fred", "SUMMARY", macro_snapshot)
-            logger.info(f"📊 FRED macro vault: {stats['series']} series captured")
+            logger.info(f"📈 Market indices vault: {stats['series']} series captured")
 
         return {"status": "ok", **stats}
 
@@ -616,6 +740,10 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
         s5th = calculate_breadth(all_closes, ma_length=200)
         s5tw = calculate_breadth(all_closes, ma_length=20)
 
+        if s5th is None and s5tw is None:
+            logger.warning("Breadth: insufficient history for MA calculation")
+            return {"status": "error", "reason": "insufficient_history"}
+
         snapshot = {
             "s5th": s5th,
             "s5tw": s5tw,
@@ -623,8 +751,10 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
             "timestamp": datetime.now(UTC).isoformat(),
         }
         store.save_mcp_snapshot("macro/breadth", "SP500", snapshot)
+        s5th_str = f"{s5th:.1f}%" if s5th is not None else "N/A"
+        s5tw_str = f"{s5tw:.1f}%" if s5tw is not None else "N/A"
         logger.info(
-            f"📊 Breadth vault: S5TH={s5th:.1f}% S5TW={s5tw:.1f}% "
+            f"📊 Breadth vault: S5TH={s5th_str} S5TW={s5tw_str} "
             f"({len(all_closes)} tickers)"
         )
         return {"status": "ok", "s5th": s5th, "s5tw": s5tw}
@@ -923,23 +1053,26 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
     results = {}
 
-    # Every cycle (5 min):
-    results["uw"] = vault_uw_data(interceptor)
-    results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)
-    results["portfolio"] = vault_portfolio_data(store)
-    results["finnhub"] = vault_finnhub_data(store, neon_tickers)
-
-    # 1x per day (internal check):
-    results["fred"] = vault_fred_data(store)
+    # ── Tier 1: Instant + Decision-Critical (~15s) ──
+    results["fred_macro"] = vault_fred_macro(store)
     results["cboe"] = vault_cboe_indices(store)
     results["fear_greed"] = vault_fear_greed(store)
-    results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
-    results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)
+    results["portfolio"] = vault_portfolio_data(store)
     results["breadth"] = vault_breadth_indicators(store)
 
-    # Sourcing signals (1x per day, internal check):
+    # ── Tier 2: Moderate (~1 min) ──
+    results["finnhub"] = vault_finnhub_data(store, neon_tickers)
+    results["market_indices"] = vault_market_indices(store)
     results["guru_picks"] = vault_guru_picks(store)
     results["insider_activity"] = vault_insider_activity(store)
+
+    # ── Tier 3: Heavy (~5-20 min) ──
+    results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)
+    results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
+
+    # ── Tier 4: Very heavy + rate limited ──
+    results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)
+    results["uw"] = vault_uw_data(interceptor)
 
     summary = " | ".join(f"{k}={v.get('status', '?')}" for k, v in results.items())
     logger.info(f"═══ Vault cycle complete: {summary} ═══")

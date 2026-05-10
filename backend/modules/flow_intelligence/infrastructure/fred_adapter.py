@@ -17,6 +17,15 @@ FRED Series Used:
 - VIXCLS:        CBOE VIX Index
 - MORTGAGE30US:  30-Year Fixed Mortgage Rate
 - UMCSENT:       University of Michigan Consumer Sentiment
+- WALCL:         Fed Balance Sheet (Total Assets)
+- WM2NS:         M2 Money Stock
+- RRPONTSYD:     Overnight Reverse Repo (ON RRP) — drains liquidity
+- WTREGEN:       Treasury General Account (TGA) — fiscal spending/drain
+
+Net Liquidity Formula (Druckenmiller):
+  Net Liquidity = WALCL - RRPONTSYD - WTREGEN
+  When rising → real easing (even if rates are high)
+  When falling → real tightening (even if Fed says otherwise)
 
 MCP Tools Consumed:
 - get_economic_indicators → broad macro snapshot
@@ -43,6 +52,8 @@ FRED_SERIES = {
     "consumer_sentiment": "UMCSENT",
     "fed_balance_sheet": "WALCL",    # Total Assets of Federal Reserve
     "m2_money_supply": "WM2NS",      # M2 Money Stock
+    "reverse_repo": "RRPONTSYD",     # Overnight Reverse Repo (drains liquidity)
+    "tga_balance": "WTREGEN",        # Treasury General Account
 }
 
 
@@ -83,6 +94,12 @@ class MacroSnapshot:
     fed_balance_trend: str = "unknown"           # expanding, contracting, stable
     m2_money_supply: Optional[float] = None
     liquidity_regime: str = "unknown"            # abundant, tightening, drought
+
+    # Net Liquidity (Druckenmiller formula)
+    reverse_repo: Optional[float] = None         # ON RRP (drains liquidity)
+    tga_balance: Optional[float] = None          # Treasury General Account
+    net_liquidity: Optional[float] = None        # WALCL - RRPONTSYD - WTREGEN
+    net_liquidity_trend: str = "unknown"         # easing, stable, tightening
 
     # Composite
     macro_regime: str = "neutral"              # risk_on, neutral, risk_off, crisis
@@ -139,6 +156,8 @@ class FREDMacroIntelligence:
             snapshot.mortgage_30y = self._safe_float(data.get("mortgage_30y", data.get("MORTGAGE30US")))
             snapshot.fed_balance_sheet = self._safe_float(data.get("fed_balance_sheet", data.get("WALCL")))
             snapshot.m2_money_supply = self._safe_float(data.get("m2_money_supply", data.get("WM2NS")))
+            snapshot.reverse_repo = self._safe_float(data.get("reverse_repo", data.get("RRPONTSYD")))
+            snapshot.tga_balance = self._safe_float(data.get("tga_balance", data.get("WTREGEN")))
             snapshot.raw_data = data
 
             # Calculate yield spread if we have both rates
@@ -152,13 +171,16 @@ class FREDMacroIntelligence:
             self._classify_yield_curve(snapshot)
             self._classify_vix(snapshot)
             self._classify_liquidity(snapshot)
+            self._classify_net_liquidity(snapshot)
             self._classify_macro_regime(snapshot)
 
+            nl_str = f"{snapshot.net_liquidity:,.0f}B" if snapshot.net_liquidity else "N/A"
             self.logger.info(
                 f"Macro Snapshot: regime={snapshot.macro_regime} "
                 f"(score={snapshot.regime_score:.0f}), "
                 f"VIX={snapshot.vix}, FFR={snapshot.fed_funds_rate}, "
-                f"CPI={snapshot.cpi_yoy}, Spread={snapshot.yield_spread}"
+                f"CPI={snapshot.cpi_yoy}, Spread={snapshot.yield_spread}, "
+                f"NetLiq={nl_str} ({snapshot.net_liquidity_trend})"
             )
             return snapshot
 
@@ -289,6 +311,51 @@ class FREDMacroIntelligence:
         # Guardar la delta calculada para logging/debug
         s.raw_data["_walcl_diff_pct_calculated"] = round(walcl_diff_pct, 3)
 
+    @staticmethod
+    def _classify_net_liquidity(s: MacroSnapshot):
+        """
+        Calculate and classify Net Liquidity using Druckenmiller's formula:
+        Net Liquidity = WALCL - RRPONTSYD - WTREGEN
+
+        This is the single most important macro indicator in the system.
+        When Net Liquidity rises, assets inflate regardless of rate levels.
+        When it falls, assets deflate regardless of earnings quality.
+        """
+        if s.fed_balance_sheet is None:
+            return
+
+        walcl = s.fed_balance_sheet
+        rrp = s.reverse_repo or 0.0
+        tga = s.tga_balance or 0.0
+
+        s.net_liquidity = walcl - rrp - tga
+
+        # Determine trend from historical data if available
+        nl_prev = s.raw_data.get("_net_liquidity_prev")
+        if nl_prev is not None:
+            try:
+                prev = float(nl_prev)
+                if prev > 0:
+                    delta_pct = ((s.net_liquidity - prev) / prev) * 100
+                    if delta_pct > 0.5:
+                        s.net_liquidity_trend = "easing"
+                    elif delta_pct < -0.5:
+                        s.net_liquidity_trend = "tightening"
+                    else:
+                        s.net_liquidity_trend = "stable"
+                    s.raw_data["_net_liq_delta_pct"] = round(delta_pct, 3)
+                    return
+            except (ValueError, TypeError):
+                pass
+
+        # Fallback: derive from fed_balance_trend
+        if s.fed_balance_trend == "expanding":
+            s.net_liquidity_trend = "easing"
+        elif s.fed_balance_trend == "contracting":
+            s.net_liquidity_trend = "tightening"
+        else:
+            s.net_liquidity_trend = "stable"
+
     def _classify_macro_regime(self, s: MacroSnapshot):
         """
         Composite macro regime classification.
@@ -333,7 +400,13 @@ class FREDMacroIntelligence:
             s.regime_score -= 15.0
         elif s.liquidity_regime == "abundant":
             s.regime_score += 10.0
-            
+
+        # Net Liquidity Modifier (Druckenmiller: "Liquidity is the tide")
+        if s.net_liquidity_trend == "tightening":
+            s.regime_score -= 10.0
+        elif s.net_liquidity_trend == "easing":
+            s.regime_score += 8.0
+
         # Ensure bounds
         s.regime_score = max(0, min(100, s.regime_score))
 

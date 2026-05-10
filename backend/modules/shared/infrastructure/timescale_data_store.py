@@ -19,6 +19,7 @@ import pandas as pd
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool
+from sqlalchemy import create_engine as _create_engine
 
 from backend.modules.shared.domain.ports.time_series_port import TimeSeriesPort
 
@@ -29,11 +30,13 @@ class TimescaleDataStore(TimeSeriesPort):
     """TimescaleDB adapter for all time-series data."""
 
     def __init__(self, dsn: str | None = None, min_conn: int = 1, max_conn: int = 5):
+        self._dsn = dsn or os.environ.get("POSTGRES_URL", "")
         self._pool = psycopg2.pool.ThreadedConnectionPool(
             minconn=min_conn,
             maxconn=max_conn,
-            dsn=dsn or os.environ.get("POSTGRES_URL", ""),
+            dsn=self._dsn,
         )
+        self._sa_engine = None  # Lazy SQLAlchemy engine for pd.read_sql
 
     # ── Connection helpers ────────────────────────────────
 
@@ -46,6 +49,15 @@ class TimescaleDataStore(TimeSeriesPort):
     def close(self):
         """Release all connections."""
         self._pool.closeall()
+        if self._sa_engine:
+            self._sa_engine.dispose()
+
+    @property
+    def engine(self):
+        """Lazy SQLAlchemy engine for pd.read_sql (avoids deprecation warning)."""
+        if self._sa_engine is None:
+            self._sa_engine = _create_engine(self._dsn)
+        return self._sa_engine
 
     # ── OHLCV Bars ────────────────────────────────────────
 
@@ -107,7 +119,7 @@ class TimescaleDataStore(TimeSeriesPort):
 
             query += " ORDER BY time"
 
-            df = pd.read_sql(query, conn, params=params, index_col="time", parse_dates=["time"])
+            df = pd.read_sql(query, self.engine, params=params, index_col="time", parse_dates=["time"])
             return df
         finally:
             self._put(conn)
@@ -164,19 +176,18 @@ class TimescaleDataStore(TimeSeriesPort):
             self._put(conn)
 
     def load_macro(self, name: str) -> Optional[pd.DataFrame]:
-        conn = self._conn()
         try:
             df = pd.read_sql(
                 "SELECT time, value FROM market.macro_data "
                 "WHERE name = %s ORDER BY time",
-                conn,
+                self.engine,
                 params=[name],
                 index_col="time",
                 parse_dates=["time"],
             )
             return df if not df.empty else None
-        finally:
-            self._put(conn)
+        except Exception:
+            return None
 
     # ── MCP Snapshots ─────────────────────────────────────
 

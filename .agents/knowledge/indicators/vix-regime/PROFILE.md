@@ -5,6 +5,14 @@
 CBOE Volatility Index — the market's implied 30-day volatility expectation.
 Used as a fear/complacency gauge and regime classifier.
 
+### Data Source
+- **Historical**: TradingView — 4 timeframes available:
+  - `1d`: 8,343 bars from 1993 (+ 9,155 existing from yfinance = 17,498 total)
+  - `1h`: 7,174 bars from Apr 2024
+  - `15m`: 8,673 bars from Sep 2025
+  - `5m`: 10,200 bars from Feb 2026 (0DTE gamma detection)
+- **Live**: yfinance (`^VIX`) via `vault_vix_live` — every daemon cycle
+
 ### Regime Thresholds (Operational — Used by Daemon)
 These thresholds are OPERATIONALLY active in `vault_vix_live()`:
 - **Calm**: VIX < 18 — full allocation permitted
@@ -21,16 +29,13 @@ They need walk-forward validation to confirm sizing impact.
 - VIX has negative correlation with SPY (r ≈ -0.71 with RSI)
 - VIX futures term structure (contango/backwardation) adds context
   but we currently only track spot VIX
+- 5m data enables 0DTE gamma flip detection (Karsan mechanics)
 
 ### Known Limitations
 - Spot VIX is a LEVEL, not a SIGNAL — knowing VIX=20 doesn't predict direction
 - VIX regime transitions happen fast — by the time you detect "panic",
   the move is often 50% done
 - VIX < 15 (extreme calm) can persist for months — not actionable alone
-- We have 9,155 bars of VIX OHLCV (1990-2026) but our other indicators
-  only go back to 2021, limiting cross-analysis window
 
-### Current Reading (as of 2026-05-10)
-- VIX: 17.2
-- Regime: Calm
-- VIX-RSI correlation: -0.714
+### Live Feed
+✅ Every daemon cycle from yfinance

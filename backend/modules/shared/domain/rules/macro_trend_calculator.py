@@ -107,12 +107,13 @@ def calculate_breadth(
     """
     Calculate % of tickers trading above their moving average.
 
-    S5TH: ma_length=200 (% above 200-DMA)
-    S5TW: ma_length=20  (% above 20-DMA)
+    S5TH: ma_length=200 (% above 200-DMA) — structural
+    S5FI: ma_length=50  (% above 50-DMA)  — intermediate
+    S5TW: ma_length=20  (% above 20-DMA)  — tactical
 
     Args:
         all_closes: {ticker: [close_day1, close_day2, ...]} chronologically ordered.
-        ma_length: Moving average window (200 for S5TH, 20 for S5TW).
+        ma_length: Moving average window (200 for S5TH, 50 for S5FI, 20 for S5TW).
 
     Returns:
         Percentage (0-100) of tickers above their MA, or None if insufficient data.

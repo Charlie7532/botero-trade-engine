@@ -2,8 +2,14 @@
 ## Indicator Personality Profile
 
 ### What It Measures
-Percentage of tickers in our universe (541) trading above their 20-day
-moving average. Proxies short-term market participation/breadth.
+Percentage of S&P 500 constituent stocks trading above their 20-day
+moving average. Measures short-term market participation and tactical breadth.
+
+### Data Source
+- **Historical**: TradingView `INDEX_S5TW` (4,892 bars from 2006-12-29)
+- **Live**: Calculated daily by daemon from SP500-member OHLCV bars
+  (`asset_type='STOCK' AND 'SP500' = ANY(index_membership)` — 506 tickers)
+- **Previous proxy**: Was incorrectly calculated from ALL 542 tickers (including ETFs, indices). Corrected 2026-05-11.
 
 ### Mechanical Behavior
 - Moves faster than S5TH (20-DMA vs 200-DMA)
@@ -17,11 +23,9 @@ moving average. Proxies short-term market participation/breadth.
 - VIX: moderate negative (r ≈ -0.50)
 
 ### Known Limitations
-- Calculated from our 541-ticker universe, not the actual S&P 500
-- Sensitive to universe composition changes
+- Sensitive to S&P 500 rebalancing events
 - Does NOT measure magnitude of moves, only direction vs MA
 - Lagging during V-shaped reversals (20-DMA takes days to turn)
 
-### Current Reading (as of 2026-05-10)
-- S5TW: 44.1%
-- Interpretation: Below neutral — fewer than half of tickers above 20-DMA
+### Live Feed
+✅ Calculated daily from SP500 stocks in vault

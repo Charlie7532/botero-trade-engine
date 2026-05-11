@@ -958,11 +958,17 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 9. MARKET BREADTH — S5TH / S5TW (daily, calculated from OHLCV)
+# 9. MARKET BREADTH — S5TH / S5TW / S5FI (daily, calculated from OHLCV)
+#    EXECUTION ORDER: MUST run AFTER vault_ohlcv_bars() so breadth
+#    is computed from today's closes, not yesterday's.
 # ═══════════════════════════════════════════════════════════════
 
 def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
-    """Calculate S5TH and S5TW from existing OHLCV bars. Runs 1x/day."""
+    """Calculate S5TH, S5TW, and S5FI from existing OHLCV bars. Runs 1x/day.
+
+    Only uses stocks marked as SP500 members (asset_type='STOCK' + index_membership contains 'SP500').
+    Writes results as OHLCV bars to maintain continuity with TradingView-imported historical data.
+    """
     if _already_vaulted_today(store, "macro/breadth", "SP500"):
         logger.info("📊 Breadth already vaulted today — skipping")
         return {"status": "skipped", "reason": "already_today"}
@@ -971,32 +977,46 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
         from backend.modules.shared.domain.rules.macro_trend_calculator import calculate_breadth
 
         # 300 calendar days ≈ 210 trading days — enough for 200-DMA
-        all_closes = store.load_all_latest_closes(days=300)
+        all_closes = store.load_all_latest_closes(days=300, sp500_only=True)
         if not all_closes:
-            logger.warning("Breadth: no OHLCV data available")
+            logger.warning("Breadth: no SP500 OHLCV data available")
             return {"status": "error", "reason": "no_data"}
 
         s5th = calculate_breadth(all_closes, ma_length=200)
         s5tw = calculate_breadth(all_closes, ma_length=20)
+        s5fi = calculate_breadth(all_closes, ma_length=50)
 
-        if s5th is None and s5tw is None:
+        if s5th is None and s5tw is None and s5fi is None:
             logger.warning("Breadth: insufficient history for MA calculation")
             return {"status": "error", "reason": "insufficient_history"}
 
         snapshot = {
             "s5th": s5th,
             "s5tw": s5tw,
+            "s5fi": s5fi,
             "tickers_counted": len(all_closes),
             "timestamp": datetime.now(UTC).isoformat(),
         }
         store.save_mcp_snapshot("macro/breadth", "SP500", snapshot)
+
+        # Write as OHLCV bars (OHLC all = close, volume=0) for continuity
+        # with TradingView-imported historical data
+        now = datetime.now(UTC)
+        for ticker, value in [("S5TH", s5th), ("S5TW", s5tw), ("S5FI", s5fi)]:
+            if value is not None:
+                store.upsert_ohlcv_bar(
+                    ticker=ticker, timeframe="1d", time=now,
+                    open=value, high=value, low=value, close=value, volume=0,
+                )
+
         s5th_str = f"{s5th:.1f}%" if s5th is not None else "N/A"
         s5tw_str = f"{s5tw:.1f}%" if s5tw is not None else "N/A"
+        s5fi_str = f"{s5fi:.1f}%" if s5fi is not None else "N/A"
         logger.info(
-            f"📊 Breadth vault: S5TH={s5th_str} S5TW={s5tw_str} "
-            f"({len(all_closes)} tickers)"
+            f"📊 Breadth vault: S5TH={s5th_str} S5TW={s5tw_str} S5FI={s5fi_str} "
+            f"({len(all_closes)} SP500 tickers)"
         )
-        return {"status": "ok", "s5th": s5th, "s5tw": s5tw}
+        return {"status": "ok", "s5th": s5th, "s5tw": s5tw, "s5fi": s5fi}
 
     except Exception as e:
         logger.warning(f"Breadth vault failed (non-critical): {e}")
@@ -1298,7 +1318,6 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["cboe"] = vault_cboe_indices(store)
     results["fear_greed"] = vault_fear_greed(store)
     results["portfolio"] = vault_portfolio_data(store)
-    results["breadth"] = vault_breadth_indicators(store)
 
     # ── Tier 2: Moderate (~1 min) ──
     results["finnhub"] = vault_finnhub_data(store, neon_tickers)
@@ -1310,6 +1329,9 @@ def run_cycle(store: TimescaleDataStore) -> None:
     # ── Tier 3: Heavy (~5-20 min) ──
     results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)
     results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
+
+    # ── Tier 3b: Breadth (MUST run AFTER ohlcv to use fresh closes) ──
+    results["breadth"] = vault_breadth_indicators(store)
 
     # ── Tier 4: Very heavy + rate limited ──
     results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)

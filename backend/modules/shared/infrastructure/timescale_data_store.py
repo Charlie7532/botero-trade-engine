@@ -306,33 +306,71 @@ class TimescaleDataStore(TimeSeriesPort):
             seen[dt] = val
         return sorted(seen.items())
 
-    def load_all_latest_closes(self, days: int = 200) -> dict[str, list[float]]:
+    def load_all_latest_closes(self, days: int = 200, sp500_only: bool = False) -> dict[str, list[float]]:
         """
-        Load last N days of close prices for ALL tickers in OHLCV.
-        Used for S5TH/S5TW breadth calculation.
+        Load last N days of close prices for tickers in OHLCV.
+        Used for S5TH/S5TW/S5FI breadth calculation.
+
+        Args:
+            days: Number of calendar days of history to load.
+            sp500_only: If True, only include tickers with index_membership containing 'SP500'
+                        and asset_type = 'STOCK'. This ensures breadth is calculated from
+                        actual S&P 500 constituents, not ETFs/indices/indicators.
 
         Returns:
             {ticker: [close_day1, close_day2, ...]} chronologically ordered.
-
-        Performance: Single query, ~531 tickers × 200 days ≈ 106K rows.
-                     Typically completes in <1s on Neon.
         """
         conn = self._conn()
         try:
             with conn.cursor() as cur:
-                cur.execute(
-                    """SELECT ticker, time::date, close
-                       FROM market.ohlcv_bars
-                       WHERE timeframe = '1d'
-                       AND time >= NOW() - INTERVAL '%s days'
-                       ORDER BY ticker, time""",
-                    (days,),
-                )
+                if sp500_only:
+                    cur.execute(
+                        """SELECT b.ticker, b.time::date, b.close
+                           FROM market.ohlcv_bars b
+                           JOIN market.ticker_metadata m ON b.ticker = m.ticker
+                           WHERE b.timeframe = '1d'
+                           AND b.time >= NOW() - INTERVAL '%s days'
+                           AND m.asset_type = 'STOCK'
+                           AND 'SP500' = ANY(m.index_membership)
+                           ORDER BY b.ticker, b.time""",
+                        (days,),
+                    )
+                else:
+                    cur.execute(
+                        """SELECT ticker, time::date, close
+                           FROM market.ohlcv_bars
+                           WHERE timeframe = '1d'
+                           AND time >= NOW() - INTERVAL '%s days'
+                           ORDER BY ticker, time""",
+                        (days,),
+                    )
                 result: dict[str, list[float]] = {}
                 for ticker, dt, close in cur.fetchall():
                     if close is not None:
                         result.setdefault(ticker, []).append(float(close))
                 return result
+        finally:
+            self._put(conn)
+
+    def upsert_ohlcv_bar(
+        self, ticker: str, timeframe: str, time,
+        open: float, high: float, low: float, close: float, volume: int = 0,
+    ) -> None:
+        """Insert a single OHLCV bar, skip if already exists."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO market.ohlcv_bars
+                       (time, ticker, timeframe, open, high, low, close, volume)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (ticker, timeframe, time) DO NOTHING""",
+                    (time, ticker.upper(), timeframe, open, high, low, close, volume),
+                )
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"TimescaleDB: upsert_ohlcv_bar {ticker}/{timeframe} failed: {e}")
         finally:
             self._put(conn)
 

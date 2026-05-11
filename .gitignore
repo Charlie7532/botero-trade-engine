@@ -44,3 +44,6 @@ public/sitemap*.xml
 
 # Graphify knowledge graph output
 graphify-out/
+
+# TradingView historical data exports (imported to vault, then deleted)
+DataTradingView/

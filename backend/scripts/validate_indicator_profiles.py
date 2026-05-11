@@ -222,20 +222,27 @@ def build_dataset(engine) -> pd.DataFrame:
     ).set_index("date")
     vix.columns = ["vix"]
 
-    # All tickers for breadth
-    logger.info("Computing breadth indicators (S5TH, S5TW)...")
+    # All SP500 tickers for breadth (filtered to STOCK + SP500 membership)
+    logger.info("Computing breadth indicators (S5TH, S5TW, S5FI)...")
     all_data = pd.read_sql(
-        "SELECT time::date as date, ticker, close FROM market.ohlcv_bars "
-        "WHERE timeframe = '1d' AND time >= '2020-01-01' ORDER BY time",
+        "SELECT b.time::date as date, b.ticker, b.close FROM market.ohlcv_bars b "
+        "JOIN market.ticker_metadata m ON b.ticker = m.ticker "
+        "WHERE b.timeframe = '1d' AND b.time >= '2020-01-01' "
+        "AND m.asset_type = 'STOCK' AND 'SP500' = ANY(m.index_membership) "
+        "ORDER BY b.time",
         engine, parse_dates=["date"],
     )
     pvt = all_data.pivot_table(index="date", columns="ticker", values="close").sort_index()
 
-    valid = [c for c in pvt.columns if pvt[c].notna().sum() >= 250 and c not in ("VIX", "SKEW", "VVIX")]
+    valid = [c for c in pvt.columns if pvt[c].notna().sum() >= 250]
 
     # S5TW = % above 20-DMA
     ma20 = pvt[valid].rolling(20, min_periods=20).mean()
     s5tw = ((pvt[valid] > ma20) & ma20.notna()).sum(axis=1) / ma20.notna().sum(axis=1) * 100
+
+    # S5FI = % above 50-DMA (same family as S5TW/S5TH)
+    ma50 = pvt[valid].rolling(50, min_periods=50).mean()
+    s5fi = ((pvt[valid] > ma50) & ma50.notna()).sum(axis=1) / ma50.notna().sum(axis=1) * 100
 
     # S5TH = % above 200-DMA
     ma200 = pvt[valid].rolling(200, min_periods=200).mean()
@@ -250,6 +257,7 @@ def build_dataset(engine) -> pd.DataFrame:
         "spy": spy["spy"],
         "vix": vix["vix"],
         "s5tw": s5tw,
+        "s5fi": s5fi,
         "s5th": s5th,
         "rsi": rsi,
     }).dropna()
@@ -293,6 +301,25 @@ def define_signals():
             "horizon": 5,
             "indicator": "S5TW",
             "action": "REDUCE — potential mean reversion",
+        },
+        # S5FI signals (same family as S5TW — intermediate 50-DMA)
+        "S5FI-WASHOUT-001": {
+            "condition": lambda df: df["s5fi"] < 20,
+            "horizon": 60,
+            "indicator": "S5FI",
+            "action": "LONG — intermediate breadth washout",
+        },
+        "S5FI-OVERSOLD-001": {
+            "condition": lambda df: df["s5fi"] < 30,
+            "horizon": 60,
+            "indicator": "S5FI",
+            "action": "LONG — intermediate breadth oversold",
+        },
+        "S5FI-EUPHORIA-001": {
+            "condition": lambda df: df["s5fi"] > 85,
+            "horizon": 10,
+            "indicator": "S5FI",
+            "action": "REDUCE — intermediate breadth stretched",
         },
         # S5TH signals
         "S5TH-CAPITULATION-001": {
@@ -345,7 +372,7 @@ def define_signals():
             "indicator": "VIX",
             "action": "CAUTION — reduce new entries",
         },
-        # Composite signals
+        # Composite signals (using breadth triad: S5TW/S5FI/S5TH)
         "COMPOSITE-CAPITULATION-001": {
             "condition": lambda df: (df["s5th"] < 30) & (df["s5tw"] < 20),
             "horizon": 60,
@@ -357,6 +384,12 @@ def define_signals():
             "horizon": 20,
             "indicator": "COMPOSITE",
             "action": "LONG — structural trend intact, tactical washout",
+        },
+        "COMPOSITE-ROLLING-CORRECTION-001": {
+            "condition": lambda df: (df["s5th"] >= 60) & (df["s5fi"] < 40) & (df["s5tw"] < 30),
+            "horizon": 20,
+            "indicator": "COMPOSITE",
+            "action": "LONG — rolling correction, structure holds, intermediate+tactical washed out",
         },
         "COMPOSITE-NARROW-STRENGTH-001": {
             "condition": lambda df: (df["rsi"] > 55) & (df["s5tw"] < 45),
@@ -447,14 +480,14 @@ def backfill_signal_states(conn, df: pd.DataFrame, signals_def: dict):
 
     rows = []
     for i, (date, row) in enumerate(df.iterrows()):
-        if pd.isna(row.get("s5th")) or pd.isna(row.get("s5tw")) or pd.isna(row.get("rsi")):
+        if pd.isna(row.get("s5th")) or pd.isna(row.get("s5tw")) or pd.isna(row.get("s5fi")) or pd.isna(row.get("rsi")):
             continue
 
-        # State vector: [S5TH, S5TW, RSI, VIX, SPY_ret_20d, vol_ratio]
+        # State vector: [S5TH, S5FI, S5TW, RSI, VIX, SPY_ret_20d, vol_ratio]
         spy_ret_20d = float(row.get("fwd_20d", 0) or 0) if not pd.isna(row.get("fwd_20d")) else 0
         vol_r = float(row.get("vol_ratio", 1) or 1) if not pd.isna(row.get("vol_ratio")) else 1
         state = [
-            float(row["s5th"]), float(row["s5tw"]),
+            float(row["s5th"]), float(row["s5fi"]), float(row["s5tw"]),
             float(row["rsi"]), float(row["vix"]),
             spy_ret_20d, vol_r,
         ]

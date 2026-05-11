@@ -142,6 +142,7 @@ class AlphaScanner:
         self._uw_intel = uw_intel
         self._market_data = market_data
         self.weight_manager = AdaptiveWeightManager()
+        self._vrr_requested: set[str] = set()  # Avoid duplicate VRR per scan cycle
     
     def scan(
         self,
@@ -249,6 +250,28 @@ class AlphaScanner:
         return ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA',
                 'JPM', 'V', 'UNH', 'XOM', 'JNJ', 'PG', 'HD', 'IBIT']
     
+    def _request_vrr(self, ticker: str, category: str = "ohlcv") -> None:
+        """Enqueue a VRR refresh request (non-blocking, fire-and-forget)."""
+        if ticker in self._vrr_requested:
+            return
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            from backend.modules.shared.infrastructure.vault_refresh_adapter import VaultRefreshAdapter
+            from backend.modules.shared.domain.ports.vault_refresh_port import RefreshRequest
+            store = TimescaleDataStore()
+            adapter = VaultRefreshAdapter(store)
+            adapter.request_refresh(RefreshRequest(
+                ticker=ticker,
+                category=category,
+                priority="normal",
+                requested_by="alpha_scanner",
+            ))
+            store.close()
+            self._vrr_requested.add(ticker)
+            logger.info(f"📥 VRR requested: {ticker}/{category} by alpha_scanner")
+        except Exception as e:
+            logger.warning(f"AlphaScanner: VRR request failed for {ticker}: {e}")
+
     def _score_ticker(
         self,
         ticker: str,
@@ -268,6 +291,9 @@ class AlphaScanner:
         spy = self._market_data.fetch_prices('SPY')
         
         if data is None or data.empty or spy is None or spy.empty or len(data) < 20:
+            # Request VRR so data is available on next scan cycle
+            if data is None or (hasattr(data, 'empty') and data.empty):
+                self._request_vrr(ticker, "ohlcv")
             return None
         
         if isinstance(data.columns, pd.MultiIndex):

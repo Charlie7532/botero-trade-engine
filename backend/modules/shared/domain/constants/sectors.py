@@ -80,3 +80,32 @@ EQUAL_WEIGHT_PROXIES = {
 BENCHMARK = "SPY"
 
 ALL_ETFS = {**SECTOR_ETFS, **INTERNATIONAL_ETFS, **ASSET_CLASS_ETFS}
+
+
+# ── Sector Breadth Indicator Tickers ────────────────────────
+# Naming: S5_{ETF}_{TH|FI|TW}
+# S5 = S&P 500 component breadth
+# TH = % above 200-DMA (structural)
+# FI = % above 50-DMA (intermediate)
+# TW = % above 20-DMA (tactical)
+
+# ETF prefix extraction: XLK→XLK, XLRE→XLRE (no truncation)
+SECTOR_BREADTH_TICKERS: dict[str, dict[str, str]] = {}
+for _etf in SECTOR_ETFS:
+    SECTOR_BREADTH_TICKERS[_etf] = {
+        "structural": f"S5_{_etf}_TH",
+        "intermediate": f"S5_{_etf}_FI",
+        "tactical": f"S5_{_etf}_TW",
+    }
+
+# Flat list of all 33 sector breadth indicator tickers
+ALL_SECTOR_BREADTH_TICKERS: list[str] = [
+    t for d in SECTOR_BREADTH_TICKERS.values() for t in d.values()
+]
+
+# MA lengths for each timeframe
+BREADTH_MA_LENGTHS = {
+    "structural": 200,
+    "intermediate": 50,
+    "tactical": 20,
+}

@@ -421,3 +421,38 @@ class TimescaleDataStore(TimeSeriesPort):
         finally:
             self._put(conn)
 
+    def load_sp500_closes_by_sector(
+        self, days: int = 250,
+    ) -> tuple[dict[str, dict[str, list[float]]], dict[str, str]]:
+        """
+        Load SP500 closes grouped by sector for sector breadth calculation.
+
+        Returns:
+            Tuple of:
+              - {sector: {ticker: [close_day1, ...]}} grouped by sector
+              - {ticker: sector} flat sector map
+        """
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """SELECT b.ticker, m.sector, b.time::date, b.close
+                       FROM market.ohlcv_bars b
+                       JOIN market.ticker_metadata m ON b.ticker = m.ticker
+                       WHERE b.timeframe = '1d'
+                         AND b.time >= NOW() - INTERVAL '%s days'
+                         AND m.asset_type = 'STOCK'
+                         AND 'SP500' = ANY(m.index_membership)
+                         AND m.sector IS NOT NULL
+                       ORDER BY b.ticker, b.time""",
+                    (days,),
+                )
+                by_sector: dict[str, dict[str, list[float]]] = {}
+                sector_map: dict[str, str] = {}
+                for ticker, sector, dt, close in cur.fetchall():
+                    if close is not None:
+                        sector_map[ticker] = sector
+                        by_sector.setdefault(sector, {}).setdefault(ticker, []).append(float(close))
+                return by_sector, sector_map
+        finally:
+            self._put(conn)

@@ -27,6 +27,7 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
 
     def __init__(self, vault=None):
         self._vault = vault
+        self._vrr_requested: set[str] = set()  # Avoid duplicate VRR per session
 
     def _get_vault(self):
         """Lazy-init vault store."""
@@ -40,6 +41,7 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
 
         Merges fundamental/screening + fundamental/keyratios to get
         the complete picture (base screening + deep keyratios fields).
+        If data is empty, enqueues a VRR refresh request.
         """
         try:
             vault = self._get_vault()
@@ -49,10 +51,32 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
             for k, v in kr.items():
                 if k not in base or base[k] in (0, 0.0, None, ""):
                     base[k] = v
+            if not base:
+                self._request_vrr(ticker)
             return base if base else None
         except Exception as e:
             logger.debug(f"Vault read failed for {ticker}: {e}")
             return None
+
+    def _request_vrr(self, ticker: str) -> None:
+        """Request a vault refresh for missing fundamental data."""
+        if ticker in self._vrr_requested:
+            return
+        try:
+            from backend.modules.shared.infrastructure.vault_refresh_adapter import VaultRefreshAdapter
+            from backend.modules.shared.domain.ports.vault_refresh_port import RefreshRequest
+            vault = self._get_vault()
+            adapter = VaultRefreshAdapter(vault)
+            adapter.request_refresh(RefreshRequest(
+                ticker=ticker,
+                category="fundamental",
+                priority="normal",
+                requested_by="gurufocus_adapter",
+            ))
+            self._vrr_requested.add(ticker)
+            logger.info(f"📥 VRR requested: {ticker}/fundamental by gurufocus_adapter")
+        except Exception as e:
+            logger.warning(f"GuruFocusAdapter: VRR request failed for {ticker}: {e}")
 
     # ── FundamentalDataPort implementation ──────────────────────
 

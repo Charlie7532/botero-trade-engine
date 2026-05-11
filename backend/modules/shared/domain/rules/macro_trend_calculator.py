@@ -137,3 +137,42 @@ def calculate_breadth(
         return None
 
     return round(above / total * 100, 1)
+
+
+def calculate_sector_breadth(
+    all_closes: dict[str, list[float]],
+    sector_map: dict[str, str],
+    ma_length: int,
+    min_constituents: int = 10,
+) -> dict[str, float | None]:
+    """
+    Calculate breadth per GICS sector.
+
+    Groups tickers by sector using sector_map, then calls
+    calculate_breadth() per group.
+
+    Args:
+        all_closes: {ticker: [close_day1, ...]} chronologically ordered.
+        sector_map: {ticker: canonical_sector_name} from ticker_metadata.
+        ma_length: Moving average window (200, 50, or 20).
+        min_constituents: Minimum tickers per sector for meaningful breadth.
+
+    Returns:
+        {sector: pct_above_ma} for each sector with enough data.
+        Returns None for sectors with fewer than min_constituents.
+    """
+    # Group closes by sector
+    by_sector: dict[str, dict[str, list[float]]] = {}
+    for ticker, closes in all_closes.items():
+        sector = sector_map.get(ticker)
+        if sector:
+            by_sector.setdefault(sector, {})[ticker] = closes
+
+    result: dict[str, float | None] = {}
+    for sector, closes_dict in by_sector.items():
+        if len(closes_dict) < min_constituents:
+            result[sector] = None
+            continue
+        result[sector] = calculate_breadth(closes_dict, ma_length)
+
+    return result

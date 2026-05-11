@@ -48,7 +48,9 @@ class SectorRanker:
                 flow = sig.flow_signal
                 divergence = sig.breadth_divergence
                 eligible, reason = self._evaluate_eligibility(
-                    stage, flow, divergence
+                    stage, flow, divergence,
+                    divergence_type=sig.divergence_type,
+                    sector_breadth_20d=sig.sector_breadth_20d,
                 )
             else:
                 rs_score = 0.0
@@ -81,7 +83,9 @@ class SectorRanker:
 
     @staticmethod
     def _evaluate_eligibility(
-        stage: int, flow: str, divergence: float
+        stage: int, flow: str, divergence: float,
+        divergence_type: str = "NEUTRAL",
+        sector_breadth_20d: float = 50.0,
     ) -> tuple[bool, str]:
         """
         Determine if a sector passes the rotation filter.
@@ -91,12 +95,23 @@ class SectorRanker:
         2. Stage 4 + DISTRIBUTION → NOT eligible (double confirmation)
         3. Stage 3 + DISTRIBUTION + negative divergence → NOT eligible
            (topping with institutional selling AND narrow market)
-        4. Everything else → eligible
+        4. Stage 2 + BEARISH_DIV → eligible but WARNING (fragile advance)
+        5. Stage 1 + BULLISH_DIV → OPPORTUNITY (stealth accumulation)
+        6. sector_breadth_20d < 20% → TACTICAL_CAPITULATION within sector
         """
         if stage == 4:
             return False, "stage_4_declining"
 
         if stage == 3 and flow == "DISTRIBUTION" and divergence < -0.02:
             return False, "stage_3_distribution_narrow"
+
+        if stage == 2 and divergence_type == "BEARISH_DIV":
+            return True, "stage_2_fragile_advance"
+
+        if stage == 1 and divergence_type == "BULLISH_DIV":
+            return True, "stage_1_stealth_accumulation"
+
+        if sector_breadth_20d < 20.0:
+            return True, "tactical_sector_capitulation"
 
         return True, "eligible"

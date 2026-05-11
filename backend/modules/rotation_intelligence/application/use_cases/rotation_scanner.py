@@ -25,6 +25,7 @@ from backend.modules.shared.domain.constants.sectors import (
     INTERNATIONAL_ETFS,
     ASSET_CLASS_ETFS,
     EQUAL_WEIGHT_PROXIES,
+    SECTOR_BREADTH_TICKERS,
     BENCHMARK,
 )
 
@@ -163,6 +164,17 @@ class RotationScanner:
             etf, prices, all_raw
         )
 
+        # ── Sector Breadth from Vault (S5_XLK_TH/FI/TW) ──────
+        sb_200, sb_50, sb_20 = 0.0, 0.0, 0.0
+        div_score_20, div_score_60 = 0.0, 0.0
+        div_type = "NEUTRAL"
+        top_sub, bottom_sub = "", ""
+
+        if dimension == "sector" and etf in SECTOR_BREADTH_TICKERS:
+            sb_200, sb_50, sb_20, div_score_20, div_score_60, div_type = (
+                self._compute_sector_divergence(etf, prices)
+            )
+
         return RotationSignal(
             etf=etf,
             name=name,
@@ -178,6 +190,14 @@ class RotationScanner:
             cap_weighted_return=cap_ret,
             equal_weighted_return=ew_ret,
             breadth_divergence=divergence,
+            sector_breadth_200d=sb_200,
+            sector_breadth_50d=sb_50,
+            sector_breadth_20d=sb_20,
+            divergence_score_20d=div_score_20,
+            divergence_score_60d=div_score_60,
+            divergence_type=div_type,
+            top_subsector=top_sub,
+            bottom_subsector=bottom_sub,
         )
 
     @staticmethod
@@ -524,6 +544,75 @@ class RotationScanner:
         if etf in ASSET_CLASS_ETFS:
             return "asset_class", ASSET_CLASS_ETFS[etf]
         return "", ""
+
+    # ══════════════════════════════════════════════════════════
+    # SECTOR BREADTH + DIVERGENCE (Vault-First)
+    # ══════════════════════════════════════════════════════════
+
+    @staticmethod
+    def _compute_sector_divergence(
+        etf: str, prices: list[float]
+    ) -> tuple[float, float, float, float, float, str]:
+        """
+        Read pre-computed sector breadth from vault and compute
+        slope divergence against sector ETF price.
+
+        Returns: (sb_200, sb_50, sb_20, div_score_20, div_score_60, div_type)
+        """
+        sb_200, sb_50, sb_20 = 0.0, 0.0, 0.0
+        div_score_20, div_score_60 = 0.0, 0.0
+        div_type = "NEUTRAL"
+
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            from backend.modules.shared.domain.rules.breadth_divergence_detector import (
+                detect_divergence,
+            )
+
+            breadth_tickers = SECTOR_BREADTH_TICKERS.get(etf, {})
+            if not breadth_tickers:
+                return sb_200, sb_50, sb_20, div_score_20, div_score_60, div_type
+
+            store = TimescaleDataStore()
+
+            # Load the last 90 days of sector breadth for divergence analysis
+            from datetime import date, timedelta
+            start = date.today() - timedelta(days=90)
+
+            # Read tactical breadth (20-DMA) for divergence
+            tw_ticker = breadth_tickers.get("tactical", "")
+            fi_ticker = breadth_tickers.get("intermediate", "")
+            th_ticker = breadth_tickers.get("structural", "")
+
+            tw_df = store.load_bars(tw_ticker, "1d", start=start) if tw_ticker else None
+            fi_df = store.load_bars(fi_ticker, "1d", start=start) if fi_ticker else None
+            th_df = store.load_bars(th_ticker, "1d", start=start) if th_ticker else None
+
+            # Current values
+            if tw_df is not None and not tw_df.empty:
+                sb_20 = float(tw_df["close"].iloc[-1])
+            if fi_df is not None and not fi_df.empty:
+                sb_50 = float(fi_df["close"].iloc[-1])
+            if th_df is not None and not th_df.empty:
+                sb_200 = float(th_df["close"].iloc[-1])
+
+            # Divergence analysis (use tactical breadth vs ETF price)
+            if tw_df is not None and not tw_df.empty and len(prices) >= 60:
+                breadth_hist = tw_df["close"].tolist()
+                div = detect_divergence(
+                    ticker=etf,
+                    breadth_history=breadth_hist,
+                    price_history=prices,
+                )
+                div_score_20 = div.divergence_score
+                div_score_60 = div.breadth_slope_60d  # structural slope
+                div_type = div.divergence_type
+
+            store.close()
+        except Exception as e:
+            logger.debug(f"RotationScanner: sector divergence failed for {etf}: {e}")
+
+        return sb_200, sb_50, sb_20, div_score_20, div_score_60, div_type
 
 
 def _avg_flow(flows: dict[str, float], names: list[str]) -> float:

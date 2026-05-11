@@ -4,6 +4,9 @@ Entry Decision — Market Data Adapter
 Infrastructure adapter: reads all price data from the Neon Vault.
 The hub receives pure DataFrames, never touches yfinance.
 Implements EntryMarketDataPort.
+
+VRR Integration: Checks data freshness using market schedule logic.
+If stale, enqueues a vault refresh request (non-blocking).
 """
 import logging
 import pandas as pd
@@ -11,6 +14,7 @@ from datetime import date, timedelta
 from typing import Optional
 
 from backend.modules.entry_decision.domain.ports.market_data_port import EntryMarketDataPort
+from backend.modules.shared.domain.rules.market_schedule import is_data_stale
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +25,7 @@ class MarketDataFetcher(EntryMarketDataPort):
     def __init__(self):
         self._spy_cache: Optional[pd.DataFrame] = None
         self._spy_cache_date: Optional[date] = None
+        self._vrr_requested: set[str] = set()  # Avoid duplicate VRR per session
 
     def _load_bars_from_vault(self, ticker: str) -> Optional[pd.DataFrame]:
         """Load OHLCV bars from the Neon Vault via TimescaleDataStore."""
@@ -29,6 +34,15 @@ class MarketDataFetcher(EntryMarketDataPort):
             store = TimescaleDataStore()
             start_date = date.today() - timedelta(days=100)
             df = store.load_bars(ticker, "1d", start=start_date)
+
+            # ── VRR freshness check (market-schedule aware) ──
+            if ticker not in self._vrr_requested:
+                last = store.bars_last_date(ticker, "1d")
+                if last and is_data_stale(last, asset_type="STOCK"):
+                    self._request_vrr(store, ticker, "ohlcv")
+                elif last is None and df.empty:
+                    self._request_vrr(store, ticker, "ohlcv")
+
             store.close()
             if not df.empty:
                 df.rename(columns={
@@ -39,6 +53,23 @@ class MarketDataFetcher(EntryMarketDataPort):
         except Exception as e:
             logger.error(f"MarketDataFetcher: vault load error for {ticker}: {e}")
         return None
+
+    def _request_vrr(self, store, ticker: str, category: str) -> None:
+        """Enqueue a VRR refresh request (non-blocking, fire-and-forget)."""
+        try:
+            from backend.modules.shared.infrastructure.vault_refresh_adapter import VaultRefreshAdapter
+            from backend.modules.shared.domain.ports.vault_refresh_port import RefreshRequest
+            adapter = VaultRefreshAdapter(store)
+            adapter.request_refresh(RefreshRequest(
+                ticker=ticker,
+                category=category,
+                priority="urgent",
+                requested_by="entry_hub",
+            ))
+            self._vrr_requested.add(ticker)
+            logger.info(f"📥 VRR requested: {ticker}/{category} by entry_hub")
+        except Exception as e:
+            logger.warning(f"MarketDataFetcher: VRR request failed for {ticker}: {e}")
 
     def fetch_prices(self, ticker: str) -> Optional[pd.DataFrame]:
         """Load 3-month OHLCV for a ticker from the Neon Vault."""

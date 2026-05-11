@@ -22,6 +22,17 @@ class RotationSignal:
     cap_weighted_return: float = 0.0     # Return of the cap-weighted ETF (e.g. XLK)
     equal_weighted_return: float = 0.0   # Return of the equal-weight proxy (e.g. RSPT)
     breadth_divergence: float = 0.0      # equal - cap (>0 = broad, <0 = narrow/fragile)
+    # ── Sector Internal Breadth (from S5_{ETF}_{TH|FI|TW} indicators) ──
+    sector_breadth_200d: float = 0.0     # % above 200-DMA within this sector
+    sector_breadth_50d: float = 0.0      # % above 50-DMA within this sector
+    sector_breadth_20d: float = 0.0      # % above 20-DMA within this sector
+    # ── Slope Divergence (breadth slope vs price slope) ──
+    divergence_score_20d: float = 0.0    # Tactical divergence (-1 to +1)
+    divergence_score_60d: float = 0.0    # Structural divergence (-1 to +1)
+    divergence_type: str = "NEUTRAL"     # BULLISH_DIV, BEARISH_DIV, CONFIRMING, NEUTRAL
+    # ── Sub-sector Leadership (on-demand drill-down) ──
+    top_subsector: str = ""              # Sub-sector with highest breadth
+    bottom_subsector: str = ""           # Sub-sector with lowest breadth
 
 
 @dataclass

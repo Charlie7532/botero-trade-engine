@@ -20,6 +20,7 @@ import numpy as np
 import logging
 from backend.modules.price_analysis.domain.entities.price_models import RSIIntelligenceResult
 import backend.modules.price_analysis.domain.rules.price_rules as rules
+from backend.modules.shared.domain.rules.breadth_divergence_detector import compute_slope
 
 logger = logging.getLogger(__name__)
 
@@ -269,15 +270,13 @@ class RSIIntelligence:
         if len(close) < lookback or len(rsi) < lookback:
             return 0.0, 0.0, "ALIGNED"
 
-        x = np.arange(lookback, dtype=float)
-
-        # Normalized price slope (% change per bar)
-        price_seg = close[-lookback:]
-        price_slope = np.polyfit(x, price_seg, 1)[0] / float(np.mean(price_seg)) * 100
+        # Normalized price slope (% change per bar) — uses shared compute_slope
+        raw_slope = compute_slope(list(close), lookback)
+        base_price = float(np.mean(close[-lookback:]))
+        price_slope = (raw_slope / base_price * 100) if base_price > 0 else 0.0
 
         # RSI slope (points per bar)
-        rsi_seg = rsi[-lookback:]
-        rsi_slope = np.polyfit(x, rsi_seg, 1)[0]
+        rsi_slope = compute_slope(list(rsi), lookback)
 
         # Are they aligned?
         if price_slope > 0.05 and rsi_slope > 0.3:

@@ -190,11 +190,22 @@ class PositionMonitor:
             
             print(f"    {'CASH':<16} ${acct['cash']:>8,.0f} ({acct['cash']/acct['equity']*100:>4.1f}%)")
         
-        # Risk Guardian
+        # Fetch live VIX from Vault
+        current_vix = 17.9  # fallback
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            vix_row = store.load_latest_bar("^VIX", "1d")
+            if vix_row is not None:
+                current_vix = float(vix_row.get("close", 17.9))
+            store.close()
+        except Exception:
+            pass
+
         risk = self.risk_guardian.evaluate(
             current_capital=acct['equity'],
             daily_pnl_pct=acct['day_pnl_pct'] / 100,
-            current_vix=17.9,  # Último VIX conocido
+            current_vix=current_vix,
         )
         
         if risk['alerts']:

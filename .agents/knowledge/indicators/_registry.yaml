@@ -6,7 +6,7 @@
 # RULE: All new entries start as HYPOTHESIS.
 # Only the validation script may promote to VALIDATED.
 
-last_updated: "2026-05-10"
+last_updated: "2026-05-11"
 validation_protocol: "_validation_protocol.md"
 
 indicators:
@@ -46,6 +46,36 @@ indicators:
     signal_count: 4
     highest_grade: PENDING
 
+  - id: smc-structure
+    name: "Smart Money Concepts (BOS/CHoCH/OB)"
+    type: structure
+    data_source: "market.ohlcv_bars"
+    profile: "smc-structure/PROFILE.md"
+    signal_count: 4
+    highest_grade: HYPOTHESIS
+    evidence_status: HYPOTHESIS
+    notes: "Integrated into SpeculativeEntryHub 13D vector. Pending Oracle validation."
+
+  - id: volume-profile
+    name: "Volume Profile (POC/VAH/VAL)"
+    type: volume
+    data_source: "market.ohlcv_bars"
+    profile: "volume-profile/PROFILE.md"
+    signal_count: 3
+    highest_grade: HYPOTHESIS
+    evidence_status: HYPOTHESIS
+    notes: "POC distance fed to Memory Guard 13D. Pending Oracle validation."
+
+  - id: wyckoff-kalman
+    name: "Wyckoff Phase via Kalman Filter"
+    type: volume
+    data_source: "market.ohlcv_bars"
+    profile: "wyckoff-kalman/PROFILE.md"
+    signal_count: 4
+    highest_grade: HYPOTHESIS
+    evidence_status: HYPOTHESIS
+    notes: "KalmanVolumeTracker integrated in QualityEntryGate. Pending Oracle validation."
+
 composite_signals:
   - id: capitulation
     file: "composite/capitulation.yaml"
@@ -66,3 +96,15 @@ composite_signals:
     file: "composite/triple_fear.yaml"
     partners: ["vix-regime", "rsi-cardwell", "breadth-s5tw"]
     highest_grade: PENDING
+
+  # Conjugation candidates (discovered, not yet validated)
+  - id: rsi_volume_profile
+    partners: ["rsi-cardwell", "volume-profile"]
+    highest_grade: CANDIDATE
+    notes: "RSI oversold + price at VAL = double confirmation"
+
+  - id: wyckoff_bos
+    partners: ["wyckoff-kalman", "smc-structure"]
+    highest_grade: CANDIDATE
+    notes: "Kalman ACCUMULATION + BOS Bullish = structural momentum"
+

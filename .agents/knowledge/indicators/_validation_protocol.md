@@ -18,9 +18,11 @@ Each signal in `signals.yaml` MUST carry one of these tags:
 
 | Status | Meaning | Requirements |
 |---|---|---|
-| `HYPOTHESIS` | Observed pattern, not yet tested OOS | Initial observation only |
+| `CANDIDATE` | Pattern discovered by Signal Miner | Raw statistical observation |
+| `HYPOTHESIS` | Observed pattern, not yet tested OOS | p < 0.10 preliminary |
 | `VALIDATED` | Passed walk-forward + DSR test | All 5 steps below passed |
 | `DEGRADED` | Was validated, signal decay detected | Rolling Sharpe declining >25% |
+| `REPOSTULATED` | DEGRADED + conjugation restores edge | ConjugationExplorer confirms |
 | `RETIRED` | Failed OOS or decayed beyond use | Remove from active gates |
 
 ---

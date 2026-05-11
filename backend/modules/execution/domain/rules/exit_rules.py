@@ -38,6 +38,7 @@ class AdaptiveTrailingStop:
         vix_current: float = 17.0,
         flow_persistence_grade: str = "UNKNOWN",
         gex_regime: str = "UNKNOWN",
+        order_block_price: float = 0.0,
     ) -> float:
         if rs_vs_spy > 1.05:
             mult = self.atr_multiplier_trend
@@ -79,6 +80,12 @@ class AdaptiveTrailingStop:
         if put_wall > 0 and put_wall < highest_since_entry:
             gamma_stop = put_wall - (0.3 * current_atr * vix_scale)
             stop = min(stop, gamma_stop)
+
+        # SMC Order Block anchor (Seykota: structural stop below institutional zone)
+        if order_block_price > 0 and order_block_price < highest_since_entry:
+            ob_stop = order_block_price - (0.2 * current_atr)
+            # Use OB as structural floor — stop can't go above OB but can go below
+            stop = max(stop, ob_stop)
         
         return round(stop, 2)
     

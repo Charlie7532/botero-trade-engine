@@ -119,7 +119,7 @@ class TimescaleDataStore(TimeSeriesPort):
 
             query += " ORDER BY time"
 
-            df = pd.read_sql(query, self.engine, params=params, index_col="time", parse_dates=["time"])
+            df = pd.read_sql(query, self.engine, params=tuple(params), index_col="time", parse_dates=["time"])
             return df
         finally:
             self._put(conn)

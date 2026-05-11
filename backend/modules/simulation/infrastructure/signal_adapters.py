@@ -219,27 +219,64 @@ class FlowSignalAdapter(SignalPort):
 
 
 class BOSSignalAdapter(SignalPort):
-    """Signal from SMC Break of Structure: recent bullish BOS."""
+    """Self-contained BOS/CHoCH signal via smartmoneyconcepts.
+
+    Pre-computes SMC structure once on the full OHLCV history,
+    then extracts BOS/CHoCH events as signals. No external context needed.
+    """
 
     @property
     def name(self) -> str:
         return "bos_choch"
 
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
-        signals = pd.Series(0, index=ohlc.index)
+        signals = pd.Series(0, index=ohlc.index, dtype=int)
 
-        if context and "smc_structure" in context:
-            structure = context["smc_structure"]
-            if isinstance(structure, pd.DataFrame) and not structure.empty:
-                aligned = structure.reindex(ohlc.index, method="ffill")
-                bos_bull = aligned.get("bos_direction", pd.Series("NONE", index=ohlc.index)) == "BULLISH"
-                bos_recent = aligned.get("bos_bars_ago", pd.Series(999, index=ohlc.index)) <= 5
-                signals = (bos_bull & bos_recent).astype(int)
+        if len(ohlc) < 50:
+            return pd.DataFrame({"signal": signals}, index=ohlc.index)
+
+        try:
+            from smartmoneyconcepts import smc
+        except ImportError:
+            logger.warning("smartmoneyconcepts not installed")
+            return pd.DataFrame({"signal": signals}, index=ohlc.index)
+
+        try:
+            df = ohlc.copy()
+            df.columns = [c.lower() for c in df.columns]
+
+            # Single-pass: compute swing structure + BOS/CHoCH on full history
+            swing_hl = smc.swing_highs_lows(df, swing_length=10)
+            if swing_hl is None or swing_hl.empty:
+                return pd.DataFrame({"signal": signals}, index=ohlc.index)
+
+            bos_choch = smc.bos_choch(df, swing_hl)
+            if bos_choch is None or bos_choch.empty:
+                return pd.DataFrame({"signal": signals}, index=ohlc.index)
+
+            # Extract BOS events: +1 = bullish BOS, -1 = bearish BOS
+            bos_mask = bos_choch["BOS"].notna()
+            if bos_mask.any():
+                bos_vals = bos_choch.loc[bos_mask, "BOS"]
+                for idx in bos_vals.index:
+                    if idx < len(signals):
+                        signals.iloc[idx] = 1 if bos_vals[idx] > 0 else -1
+
+            # CHoCH events override: bearish CHoCH = -1, bullish CHoCH = +1
+            choch_mask = bos_choch["CHOCH"].notna()
+            if choch_mask.any():
+                choch_vals = bos_choch.loc[choch_mask, "CHOCH"]
+                for idx in choch_vals.index:
+                    if idx < len(signals):
+                        signals.iloc[idx] = 1 if choch_vals[idx] > 0 else -1
+
+        except Exception as e:
+            logger.error(f"BOSSignalAdapter error: {e}")
 
         return pd.DataFrame({"signal": signals}, index=ohlc.index)
 
     def required_context(self) -> list[str]:
-        return ["smc_structure"]
+        return []
 
 
 class PatternSignalAdapter(SignalPort):

@@ -68,6 +68,7 @@ class QualityEntryGate:
         self._options = None
         self._rsi_intel = None
         self._pattern = None
+        self._kalman = None  # KalmanVolumeTracker (Wyckoff — lazy)
 
     def evaluate(
         self,
@@ -263,12 +264,26 @@ class QualityEntryGate:
             report.final_reason = f"CONTRA_FLOW: Macro flow against entry"
             return report
 
-        # ── Step 5: Price Phase ──
+        # ── Step 4b: Wyckoff Phase (Kalman — Druckenmiller gate) ──
+        wyckoff = self._run_kalman(ticker, prices)
+        report.wyckoff_state = wyckoff.get("wyckoff_state", "UNKNOWN")
+        report.wyckoff_velocity = wyckoff.get("velocity", 0.0)
+
+        # QUALITY GATE: If Wyckoff says DISTRIBUTION, warn but allow with reduced sizing
+        if report.wyckoff_state == "DISTRIBUTION":
+            report.alerts = report.alerts or []
+            report.alerts.append(
+                f"WYCKOFF_DISTRIBUTION: Kalman velocity={report.wyckoff_velocity:.2f}. "
+                f"Institucionales posiblemente distribuyendo — sizing reducido."
+            )
+            _health_sizing *= 0.5  # Reduce sizing by 50% under distribution
+
+        # ── Step 5: Price Phase (now Wyckoff-aware) ──
         phase_verdict = self.price_phase.diagnose(
             ticker=ticker, prices=prices,
             put_wall=report.put_wall, call_wall=report.call_wall,
             gamma_regime=report.gamma_regime,
-            wyckoff_state="UNKNOWN", wyckoff_velocity=0.0,
+            wyckoff_state=report.wyckoff_state, wyckoff_velocity=report.wyckoff_velocity,
             strategy_bucket="QUALITY", vp_result=vp_result,
         )
         report.phase = phase_verdict.phase
@@ -378,6 +393,29 @@ class QualityEntryGate:
         try:
             analysis = self._options.get_full_analysis(ticker, vix_trend=vix_trend)
             return analysis
+        except Exception:
+            return {}
+
+    def _run_kalman(self, ticker: str, prices: pd.DataFrame) -> dict:
+        """Run Kalman Volume Tracker (Wyckoff phase detection)."""
+        if self._kalman is None:
+            try:
+                from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import KalmanVolumeTracker
+                self._kalman = KalmanVolumeTracker()
+            except Exception:
+                return {}
+        try:
+            close = prices['Close'].values.astype(float)
+            volume = prices['Volume'].values.astype(float)
+            avg_vol_20 = pd.Series(volume).rolling(20).mean().values
+            result = {}
+            for i in range(-20, 0):
+                if np.isnan(avg_vol_20[i]) or avg_vol_20[i] <= 0:
+                    continue
+                rvol = float(volume[i]) / float(avg_vol_20[i])
+                change_pct = float(close[i] / close[i - 1] - 1) * 100 if i > -len(close) else 0
+                result = self._kalman.update(ticker, rvol, change_pct=change_pct)
+            return result
         except Exception:
             return {}
 

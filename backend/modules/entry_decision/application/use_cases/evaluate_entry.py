@@ -556,13 +556,17 @@ class EntryIntelligenceHub:
     # ═══════════════════════════════════════════════════════════
     def _vectorize_report(self, report: EntryIntelligenceReport) -> list[float]:
         """
-        Convierte las variables críticas del reporte en un vector para búsqueda.
-        9 dimensiones (V8): agrega pattern_score para mejor recall en Atlas VS.
+        13D vector for Memory Guard similarity search (V2: +SMC/VP structure).
 
-        ⚠️ NOTA: Si hay vectores de 8D en Atlas, reindexar la colección antes
-        de activar esta versión (dimensión incompatible).
+        ⚠️ MIGRATION: If pgvector index has 9D vectors, they must be backfilled
+        with [0.0, 0.0, 0.0, 0.0] or reindexed before this version activates.
         """
+        poc_distance_pct = 0.0
+        if hasattr(report, 'vp_poc_short') and report.vp_poc_short and report.current_price:
+            poc_distance_pct = (report.current_price - report.vp_poc_short) / report.current_price * 100
+
         return [
+            # Original 9D
             float(report.vix),
             float(report.rsi),
             float(report.rs_vs_spy),
@@ -572,6 +576,11 @@ class EntryIntelligenceHub:
             float(report.risk_reward),
             float(report.flow_persistence_grade == "CONFIRMED_STREAK"),
             float(report.pattern_score),  # Dim 9: sentimiento visual (-1.0 → +1.0)
+            # New 4D: SMC + VP structure
+            1.0 if getattr(report, 'smc_bos_direction', 'NONE') == "BULLISH" else (-1.0 if getattr(report, 'smc_bos_direction', 'NONE') == "BEARISH" else 0.0),
+            float(getattr(report, 'smc_ob_price', 0.0)) / max(float(report.current_price), 1.0) if report.current_price else 0.0,
+            poc_distance_pct,
+            1.0 if getattr(report, 'smc_fvg_active', False) else 0.0,
         ]
 
 

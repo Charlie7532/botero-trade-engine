@@ -10,6 +10,7 @@ Pipeline de decisión de entrada RÁPIDO para trades SPECULATIVE.
 
 + Memory Guard: ¿Este setup fracasó históricamente? (Simons)
 
+V2: Now integrates VP (short-term), Pattern Recognition, and SMC structure.
 NO USA: VP largo plazo, RSI hostile zones, fundamental analysis.
 """
 import logging
@@ -64,6 +65,9 @@ class SpeculativeEntryHub:
 
         self._options = None
         self._kalman = None
+        self._vp = None       # VolumeProfileAnalyzer (lazy)
+        self._pattern = None  # PatternRecognitionIntelligence (lazy)
+        self._smc = None      # SMCAdapter (lazy)
 
     def evaluate(
         self,
@@ -205,15 +209,35 @@ class SpeculativeEntryHub:
             report.whale_verdict = "CONTRA_FLOW_TACTICAL"
             logger.info(f"SpecHub {ticker}: CONTRA_FLOW detected — passing to phase analysis")
 
-        # ── Step 6: Price Phase (fast timing) ──
+        # ── Step 5b: Volume Profile (short-term institutional levels) ──
+        vp_result = self._run_volume_profile(prices)
+
+        # ── Step 6: Price Phase (fast timing — now VP-aware) ──
         phase_verdict = self.price_phase.diagnose(
             ticker=ticker, prices=prices,
             put_wall=report.put_wall, call_wall=report.call_wall,
             gamma_regime=report.gamma_regime,
             wyckoff_state=report.wyckoff_state,
             wyckoff_velocity=report.wyckoff_velocity,
-            strategy_bucket="SPECULATIVE", vp_result=None,
+            strategy_bucket="SPECULATIVE", vp_result=vp_result,
         )
+
+        # ── Step 6b: Pattern Recognition (4th Dimension — visual confirmation) ──
+        pattern = self._run_pattern(prices, ticker, report.put_wall, report.call_wall)
+        report.candlestick_pattern = pattern.get("primary_pattern", "NONE")
+        report.pattern_sentiment = pattern.get("sentiment", "NEUTRAL")
+        report.pattern_score = pattern.get("score", 0.0)
+        report.pattern_on_support = pattern.get("on_support", False)
+
+        # ── Step 6c: SMC Structure Filter (BOS, CHoCH, Order Blocks) ──
+        smc = self._run_smc(prices)
+        report.smc_swing_trend = smc.swing_trend
+        report.smc_bos_direction = smc.bos_direction
+        report.smc_choch_detected = smc.choch_detected
+        report.smc_choch_direction = smc.choch_direction
+        report.smc_ob_price = smc.nearest_ob_price
+        report.smc_fvg_active = smc.fvg_active
+        report.smc_liquidity_swept = smc.liquidity_swept
         report.phase = phase_verdict.phase
         report.phase_verdict = phase_verdict.verdict
         report.entry_price = phase_verdict.entry_price
@@ -225,6 +249,16 @@ class SpeculativeEntryHub:
         report.rsi = phase_verdict.rsi14
 
         # ═══ FINAL VERDICT ═══
+
+        # Pattern VETO: strong bearish candle formation cancels FIRE
+        # (Pending walk-forward validation — currently acts as a safety downgrade)
+        if report.pattern_sentiment == "BEARISH" and report.pattern_score <= -0.5:
+            if phase_verdict.verdict == "FIRE":
+                phase_verdict.verdict = "STALK"
+                report.alerts = report.alerts or []
+                report.alerts.append(f"PATTERN_VETO: {report.candlestick_pattern} suggests caution")
+                logger.info(f"SpecHub {ticker}: PATTERN_VETO {report.candlestick_pattern} → STALK")
+
         if phase_verdict.verdict == "ABORT":
             report.final_verdict = "BLOCK"
             report.final_scale = 0.0
@@ -273,14 +307,29 @@ class SpeculativeEntryHub:
     # ── Private helpers ──
 
     def _vectorize_report(self, report: EntryIntelligenceReport) -> list[float]:
-        """9D vector for Memory Guard similarity search."""
+        """13D vector for Memory Guard similarity search (V2: +SMC/VP structure).
+
+        ⚠️ MIGRATION: If pgvector index has 9D vectors, they must be backfilled
+        with [0.0, 0.0, 0.0, 0.0] or reindexed before this version activates.
+        """
+        # Compute POC distance if VP data is available
+        poc_distance_pct = 0.0
+        if hasattr(report, 'vp_poc_short') and report.vp_poc_short and report.current_price:
+            poc_distance_pct = (report.current_price - report.vp_poc_short) / report.current_price * 100
+
         return [
+            # Original 9D
             float(report.vix), float(report.rsi), float(report.rs_vs_spy),
             1.0 if report.gamma_regime == "POSITIVE" else -1.0,
             float(report.whale_confidence), float(report.phase_confidence),
             float(report.risk_reward),
             float(report.flow_persistence_grade == "CONFIRMED_STREAK"),
             float(getattr(report, 'pattern_score', 0.0)),
+            # New 4D: SMC + VP structure
+            1.0 if getattr(report, 'smc_bos_direction', 'NONE') == "BULLISH" else (-1.0 if getattr(report, 'smc_bos_direction', 'NONE') == "BEARISH" else 0.0),
+            float(getattr(report, 'smc_ob_price', 0.0)) / max(float(report.current_price), 1.0) if report.current_price else 0.0,
+            poc_distance_pct,
+            1.0 if getattr(report, 'smc_fvg_active', False) else 0.0,
         ]
 
     def _fetch_options_data(self, ticker: str, vix_trend: Optional[IndicatorTrend] = None) -> dict:
@@ -291,8 +340,7 @@ class SpeculativeEntryHub:
             except Exception:
                 return {}
         try:
-            analysis = self._options.get_full_analysis(ticker, vix_trend=vix_trend)
-            return analysis
+            return self._options.get_full_analysis(ticker, vix_trend=vix_trend)
         except Exception:
             return {}
 
@@ -317,6 +365,53 @@ class SpeculativeEntryHub:
             return result
         except Exception:
             return {}
+
+    def _run_volume_profile(self, prices: pd.DataFrame):
+        """Run short-term Volume Profile analysis."""
+        if self._vp is None:
+            try:
+                from backend.modules.volume_intelligence.application.use_cases.analyze_volume_profile import VolumeProfileAnalyzer
+                self._vp = VolumeProfileAnalyzer()
+            except Exception:
+                return None
+        try:
+            return self._vp.analyze_dual(prices)
+        except Exception:
+            return None
+
+    def _run_pattern(self, prices: pd.DataFrame, ticker: str, put_wall: float, call_wall: float) -> dict:
+        """Run Pattern Recognition Intelligence."""
+        if self._pattern is None:
+            try:
+                from backend.modules.pattern_recognition.application.use_cases.detect_patterns import PatternRecognitionIntelligence
+                self._pattern = PatternRecognitionIntelligence()
+            except Exception:
+                return {}
+        try:
+            v = self._pattern.detect(prices, put_wall=put_wall, call_wall=call_wall, ticker=ticker)
+            return {
+                "primary_pattern": v.primary_pattern,
+                "sentiment": v.sentiment,
+                "score": v.confirmation_score,
+                "on_support": v.detected_on_support,
+            }
+        except Exception:
+            return {}
+
+    def _run_smc(self, prices: pd.DataFrame):
+        """Run Smart Money Concepts structural analysis."""
+        if self._smc is None:
+            try:
+                from backend.modules.simulation.infrastructure.smc_adapter import SMCAdapter
+                self._smc = SMCAdapter()
+            except Exception:
+                from backend.modules.shared.domain.ports.market_structure_port import MarketStructureResult
+                return MarketStructureResult()
+        try:
+            return self._smc.analyze(prices)
+        except Exception:
+            from backend.modules.shared.domain.ports.market_structure_port import MarketStructureResult
+            return MarketStructureResult()
 
     def _parse_whale_flow(self, ticker: str) -> dict:
         result = {}

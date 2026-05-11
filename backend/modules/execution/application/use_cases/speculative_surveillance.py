@@ -129,6 +129,12 @@ class SpeculativeSurveillance:
                     "flow_persistence_grade": entry_intel.get("flow_persistence_grade", "UNKNOWN"),
                     "exit_reason": report["exit_reason"],
                     "bars_held": bars_held,
+                    # V2: SMC structural context for deeper forensic learning
+                    "smc_bos_direction": entry_intel.get("smc_bos_direction", "NONE"),
+                    "smc_choch_detected": entry_intel.get("smc_choch_detected", False),
+                    "smc_fvg_active": entry_intel.get("smc_fvg_active", False),
+                    "smc_liquidity_swept": entry_intel.get("smc_liquidity_swept", False),
+                    "pattern_score": entry_intel.get("pattern_score", 0.0),
                 }
                 logger.info(f"🧠 Anti-pattern recorded for {ticker} → Memory Guard")
 

@@ -95,70 +95,7 @@ class EntryIntelligenceHub:
         self._kalman = None
         self._uw = None
         self._pattern = None           # PatternRecognitionIntelligence (lazy)
-        self._uw_data_cache = {}  # Pre-fetched UW data from MCP
-
-    # ── Lazy init de módulos costosos ───────────────────────────
-
-    def _get_options(self):
-        if self._options is None:
-            try:
-                from backend.modules.options_gamma.application.use_cases.analyze_gamma import OptionsAwareness
-                self._options = OptionsAwareness(self._options_provider)
-                logger.info("EntryHub: OptionsAwareness conectado ✅")
-            except Exception as e:
-                logger.warning(f"EntryHub: OptionsAwareness NO disponible: {e}")
-        return self._options
-
-    def _get_kalman(self):
-        if self._kalman is None:
-            try:
-                from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import KalmanVolumeTracker
-                self._kalman = KalmanVolumeTracker()
-                logger.info("EntryHub: KalmanVolumeTracker conectado ✅")
-            except Exception as e:
-                logger.warning(f"EntryHub: KalmanVolumeTracker NO disponible: {e}")
-        return self._kalman
-
-    def _get_uw(self):
-        if self._uw is None:
-            self._uw = self._flow_data
-            logger.info("EntryHub: FlowDataPort conectado ✅")
-        return self._uw
-
-    def _get_pattern(self):
-        if self._pattern is None:
-            try:
-                from backend.modules.pattern_recognition.application.use_cases.detect_patterns import PatternRecognitionIntelligence
-                self._pattern = PatternRecognitionIntelligence()
-                logger.info("EntryHub: PatternRecognitionIntelligence conectado ✅")
-            except Exception as e:
-                logger.warning(f"EntryHub: PatternRecognitionIntelligence NO disponible: {e}")
-        return self._pattern
-
-    def inject_uw_data(
-        self,
-        spy_ticks: list[dict] = None,
-        flow_alerts: list[dict] = None,
-        tide_data: list[dict] = None,
-        recent_flow: list[dict] = None,
-        darkpool_prints: list[dict] = None,
-    ):
-        """
-        Inyecta datos pre-obtenidos de Unusual Whales (via MCP).
-        El orchestrador llama esto ANTES de evaluate().
-
-        UW sigue el patrón MCP: el orquestador obtiene los datos crudos
-        y este hub los parsea con uw_intelligence.py.
-        """
-        self._uw_data_cache = {
-            "spy_ticks": spy_ticks or [],
-            "flow_alerts": flow_alerts or [],
-            "tide_data": tide_data or [],
-            "recent_flow": recent_flow or [],
-            "darkpool_prints": darkpool_prints or [],
-        }
-
-    # ═══════════════════════════════════════════════════════════
+        self._pattern = None           # PatternRecognitionIntelligence (lazy)
     # MAIN EVALUATE
     # ═══════════════════════════════════════════════════════════
 
@@ -280,8 +217,16 @@ class EntryIntelligenceHub:
         # ══════════════════════════════════════════════════════
         # STEP 4b: Flow Persistence Analyzer (V7)
         # ══════════════════════════════════════════════════════
-        recent_flow = self._uw_data_cache.get("recent_flow", [])
-        darkpool_prints = self._uw_data_cache.get("darkpool_prints", [])
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            recent_flow = store.load_mcp_latest("flow/alerts", ticker) or []
+            darkpool_prints = store.load_mcp_latest("flow/darkpool", ticker) or []
+            store.close()
+        except Exception:
+            recent_flow = []
+            darkpool_prints = []
+
         persistence = self.flow_persistence.evaluate_persistence(
             ticker=ticker,
             recent_flow=recent_flow,
@@ -674,47 +619,37 @@ class EntryIntelligenceHub:
             return {}
 
     def _parse_whale_flow(self, ticker: str) -> dict:
-        """Parsea datos de UW Intelligence de la caché inyectada."""
+        """Parsea datos de UW Intelligence directamente desde el Vault."""
         uw = self._get_uw()
         if uw is None:
             return {}
 
         result = {}
         try:
-            # Parse SPY Macro Gate
-            spy_ticks = self._uw_data_cache.get("spy_ticks", [])
-            if spy_ticks:
-                gate = uw.parse_spy_macro_gate(spy_ticks)
-                result["spy_cum_delta"] = gate.cum_delta
-                result["spy_signal"] = gate.signal
-                result["spy_confidence"] = gate.confidence
-                result["am_pm_divergence"] = gate.am_pm_diverges
-                result["spy_updated"] = gate.last_updated
+            gate = uw.get_macro_gate()
+            result["spy_cum_delta"] = gate.cum_delta
+            result["spy_signal"] = gate.signal
+            result["spy_confidence"] = gate.confidence
+            result["am_pm_divergence"] = gate.am_pm_diverges
+            result["spy_updated"] = gate.last_updated
 
-            # Parse Market Tide
-            tide_data = self._uw_data_cache.get("tide_data", [])
-            if tide_data:
-                tide = uw.parse_market_tide(tide_data)
-                result["tide_direction"] = tide.tide_direction
-                result["tide_accelerating"] = tide.is_accelerating
-                result["tide_net_premium"] = tide.cum_net_premium
-                result["tide_updated"] = tide.last_updated
+            tide = uw.get_market_tide()
+            result["tide_direction"] = tide.tide_direction
+            result["tide_accelerating"] = tide.is_accelerating
+            result["tide_net_premium"] = tide.cum_net_premium
+            result["tide_updated"] = tide.last_updated
 
-            # Parse Flow Alerts for ticker sweeps
-            flow_alerts = self._uw_data_cache.get("flow_alerts", [])
-            if flow_alerts:
-                flow = uw.parse_flow_alerts(ticker, flow_alerts)
-                result["total_sweeps"] = flow.n_sweeps
-                result["sweep_call_pct"] = (
-                    flow.n_calls / (flow.n_calls + flow.n_puts) * 100
-                    if (flow.n_calls + flow.n_puts) > 0 else 50.0
-                )
-                result["flow_updated"] = flow.last_updated
+            flow = uw.get_flow_signal(ticker)
+            result["total_sweeps"] = flow.n_sweeps
+            result["sweep_call_pct"] = (
+                flow.n_calls / (flow.n_calls + flow.n_puts) * 100
+                if (flow.n_calls + flow.n_puts) > 0 else 50.0
+            )
+            result["flow_updated"] = flow.last_updated
 
-                # Market sentiment for breadth
-                sentiment = uw.parse_market_sentiment(flow_alerts)
-                result["sentiment_regime"] = sentiment.regime
-                result["breadth_pct"] = sentiment.breadth_pct
+            sentiment = uw.get_market_sentiment()
+            result["sentiment_regime"] = sentiment.regime
+            result["breadth_pct"] = sentiment.breadth_pct
 
         except Exception as e:
             logger.warning(f"EntryHub: UW Intelligence error: {e}")

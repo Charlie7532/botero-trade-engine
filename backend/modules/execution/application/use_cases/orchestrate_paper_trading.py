@@ -289,26 +289,7 @@ class PaperTradingOrchestrator:
             logger.error(f"Error creating snapshot for {ticker}: {e}")
             return {"timestamp": datetime.now(UTC).isoformat(), "error": str(e)}
     
-    def inject_whale_data(
-        self,
-        spy_ticks: list = None,
-        flow_alerts: list = None,
-        tide_data: list = None,
-        recent_flow: list = None,
-        darkpool_prints: list = None,
-    ):
-        """
-        Inyecta datos de Unusual Whales pre-obtenidos via MCP.
-        Llamar ANTES de run_core_scan() o run_tactical_scan().
-        """
-        self.entry_hub.inject_uw_data(
-            spy_ticks=spy_ticks or [],
-            flow_alerts=flow_alerts or [],
-            tide_data=tide_data or [],
-            recent_flow=recent_flow or [],
-            darkpool_prints=darkpool_prints or [],
-        )
-        logger.info("🐋 Datos de ballenas inyectados en EntryHub")
+
 
     def open_position(
         self,

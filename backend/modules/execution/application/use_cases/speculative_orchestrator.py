@@ -52,11 +52,7 @@ class SpeculativeOrchestrator:
         self.exit_engine = SpeculativeExitEngine()
         self.risk_guardian = RiskGuardian()
 
-    def inject_whale_data(self, **kwargs):
-        """Inyecta datos de Unusual Whales pre-obtenidos via MCP."""
-        if self.entry_hub:
-            self.entry_hub.inject_uw_data(**kwargs)
-            logger.info("🐋 Whale data injected into SpeculativeEntryHub")
+
 
     def get_portfolio_status(self) -> dict:
         """Estado actual de la cartera SPECULATIVE."""

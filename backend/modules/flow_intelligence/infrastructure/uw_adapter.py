@@ -149,6 +149,67 @@ class UnusualWhalesIntelligence(FlowDataPort):
         self._last_sentiment: Optional[MarketSentiment] = None
     
     # ─────────────────────────────────────────
+    # VAULT-FIRST ACCESS METHODS
+    # ─────────────────────────────────────────
+    
+    def get_macro_gate(self) -> MacroGate:
+        """Fetch SPY macro gate directly from the Vault."""
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            spy_ticks = store.load_mcp_latest("flow/spy", "SPY") or []
+            store.close()
+            return self.parse_spy_macro_gate(spy_ticks)
+        except Exception as e:
+            logger.error(f"UW Adapter error reading macro gate from vault: {e}")
+            return MacroGate()
+
+    def get_market_tide(self) -> MarketTide:
+        """Fetch market tide directly from the Vault."""
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            tide_data = store.load_mcp_latest("flow/tide", "MARKET") or []
+            store.close()
+            return self.parse_market_tide(tide_data)
+        except Exception as e:
+            logger.error(f"UW Adapter error reading market tide from vault: {e}")
+            return MarketTide()
+
+    def get_flow_signal(self, ticker: str) -> FlowSignal:
+        """Fetch flow signal for a specific ticker directly from the Vault."""
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            alerts = store.load_mcp_latest("flow/alerts", ticker) or []
+            store.close()
+            return self.parse_flow_alerts(ticker, alerts)
+        except Exception as e:
+            logger.error(f"UW Adapter error reading flow signal for {ticker}: {e}")
+            return FlowSignal(ticker=ticker)
+
+    def get_market_sentiment(self) -> MarketSentiment:
+        """Fetch pre-calculated market sentiment from the Vault."""
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            sentiment_dict = store.load_mcp_latest("flow/sentiment", "MARKET")
+            store.close()
+            
+            if sentiment_dict:
+                return MarketSentiment(**{
+                    k: v for k, v in sentiment_dict.items() 
+                    if k in MarketSentiment.__dataclass_fields__
+                })
+            
+            # Fallback if not saved as dict: recompute if alerts are available?
+            # DataVaultDaemon always saves it as a dict.
+            return MarketSentiment()
+        except Exception as e:
+            logger.error(f"UW Adapter error reading sentiment from vault: {e}")
+            return MarketSentiment()
+    
+    # ─────────────────────────────────────────
     # PER-TICKER: Flow Alerts → FlowSignal
     # ─────────────────────────────────────────
     

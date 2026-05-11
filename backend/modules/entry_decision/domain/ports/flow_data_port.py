@@ -29,3 +29,23 @@ class FlowDataPort(ABC):
     def parse_market_sentiment(self, flow_alerts: list[dict]) -> object:
         """Parse overall market sentiment from flow data."""
         ...
+
+    @abstractmethod
+    def get_macro_gate(self) -> object:
+        """Get SPY macro gate signal from the Vault."""
+        ...
+
+    @abstractmethod
+    def get_market_tide(self) -> object:
+        """Get market tide signal from the Vault."""
+        ...
+
+    @abstractmethod
+    def get_flow_signal(self, ticker: str) -> object:
+        """Get flow signal for a ticker from the Vault."""
+        ...
+
+    @abstractmethod
+    def get_market_sentiment(self) -> object:
+        """Get market sentiment signal from the Vault."""
+        ...

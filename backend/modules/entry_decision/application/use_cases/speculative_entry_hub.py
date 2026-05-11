@@ -64,20 +64,6 @@ class SpeculativeEntryHub:
 
         self._options = None
         self._kalman = None
-        self._uw_data_cache = {}
-
-    def inject_uw_data(
-        self, spy_ticks=None, flow_alerts=None, tide_data=None,
-        recent_flow=None, darkpool_prints=None,
-    ):
-        """Inyecta datos de Unusual Whales pre-obtenidos via MCP."""
-        self._uw_data_cache = {
-            "spy_ticks": spy_ticks or [],
-            "flow_alerts": flow_alerts or [],
-            "tide_data": tide_data or [],
-            "recent_flow": recent_flow or [],
-            "darkpool_prints": darkpool_prints or [],
-        }
 
     def evaluate(
         self,
@@ -159,8 +145,19 @@ class SpeculativeEntryHub:
         report.am_pm_divergence = flow.get("am_pm_divergence", False)
 
         # ── Step 4b: Flow Persistence (signal freshness) ──
-        recent_flow = self._uw_data_cache.get("recent_flow", [])
-        darkpool_prints = self._uw_data_cache.get("darkpool_prints", [])
+        # Flow data is now read from Vault inside get_flow_signal, but persistence needs history
+        # For now, we will assume FlowPersistenceAnalyzer can fetch its own data or we pass empty
+        # to rely on its internal mechanisms if any, or we fetch from Vault.
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+            recent_flow = store.load_mcp_latest("flow/alerts", ticker) or []
+            darkpool_prints = store.load_mcp_latest("flow/darkpool", ticker) or []
+            store.close()
+        except Exception:
+            recent_flow = []
+            darkpool_prints = []
+
         persistence = self.flow_persistence.evaluate_persistence(
             ticker=ticker, recent_flow=recent_flow, darkpool_prints=darkpool_prints,
             current_price=report.current_price,
@@ -324,21 +321,30 @@ class SpeculativeEntryHub:
     def _parse_whale_flow(self, ticker: str) -> dict:
         result = {}
         try:
-            spy_ticks = self._uw_data_cache.get("spy_ticks", [])
-            if spy_ticks:
-                gate = self._flow_data.parse_spy_macro_gate(spy_ticks)
-                result.update({"spy_cum_delta": gate.cum_delta, "spy_signal": gate.signal, "spy_confidence": gate.confidence, "am_pm_divergence": gate.am_pm_diverges})
-            tide_data = self._uw_data_cache.get("tide_data", [])
-            if tide_data:
-                tide = self._flow_data.parse_market_tide(tide_data)
-                result.update({"tide_direction": tide.tide_direction, "tide_accelerating": tide.is_accelerating, "tide_net_premium": tide.cum_net_premium})
-            flow_alerts = self._uw_data_cache.get("flow_alerts", [])
-            if flow_alerts:
-                flow = self._flow_data.parse_flow_alerts(ticker, flow_alerts)
-                result["total_sweeps"] = flow.n_sweeps
-                result["sweep_call_pct"] = (flow.n_calls / (flow.n_calls + flow.n_puts) * 100 if (flow.n_calls + flow.n_puts) > 0 else 50.0)
-                sentiment = self._flow_data.parse_market_sentiment(flow_alerts)
-                result.update({"sentiment_regime": sentiment.regime, "breadth_pct": sentiment.breadth_pct})
+            gate = self._flow_data.get_macro_gate()
+            result.update({
+                "spy_cum_delta": gate.cum_delta, 
+                "spy_signal": gate.signal, 
+                "spy_confidence": gate.confidence, 
+                "am_pm_divergence": gate.am_pm_diverges
+            })
+            
+            tide = self._flow_data.get_market_tide()
+            result.update({
+                "tide_direction": tide.tide_direction, 
+                "tide_accelerating": tide.is_accelerating, 
+                "tide_net_premium": tide.cum_net_premium
+            })
+            
+            flow = self._flow_data.get_flow_signal(ticker)
+            result["total_sweeps"] = flow.n_sweeps
+            result["sweep_call_pct"] = (flow.n_calls / (flow.n_calls + flow.n_puts) * 100 if (flow.n_calls + flow.n_puts) > 0 else 50.0)
+            
+            sentiment = self._flow_data.get_market_sentiment()
+            result.update({
+                "sentiment_regime": sentiment.regime, 
+                "breadth_pct": sentiment.breadth_pct
+            })
         except Exception as e:
             logger.warning(f"SpecHub: Whale flow error: {e}")
         return result

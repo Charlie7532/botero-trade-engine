@@ -68,15 +68,6 @@ class QualityEntryGate:
         self._options = None
         self._rsi_intel = None
         self._pattern = None
-        self._uw_data_cache = {}
-
-    def inject_uw_data(self, spy_ticks=None, flow_alerts=None, tide_data=None, **kwargs):
-        """Inyecta datos de Unusual Whales pre-obtenidos via MCP."""
-        self._uw_data_cache = {
-            "spy_ticks": spy_ticks or [],
-            "flow_alerts": flow_alerts or [],
-            "tide_data": tide_data or [],
-        }
 
     def evaluate(
         self,
@@ -393,27 +384,24 @@ class QualityEntryGate:
     def _parse_whale_flow(self, ticker: str) -> dict:
         result = {}
         try:
-            spy_ticks = self._uw_data_cache.get("spy_ticks", [])
-            if spy_ticks:
-                gate = self._flow_data.parse_spy_macro_gate(spy_ticks)
-                result["spy_cum_delta"] = gate.cum_delta
-                result["spy_signal"] = gate.signal
-                result["spy_confidence"] = gate.confidence
-                result["am_pm_divergence"] = gate.am_pm_diverges
-            tide_data = self._uw_data_cache.get("tide_data", [])
-            if tide_data:
-                tide = self._flow_data.parse_market_tide(tide_data)
-                result["tide_direction"] = tide.tide_direction
-                result["tide_accelerating"] = tide.is_accelerating
-                result["tide_net_premium"] = tide.cum_net_premium
-            flow_alerts = self._uw_data_cache.get("flow_alerts", [])
-            if flow_alerts:
-                flow = self._flow_data.parse_flow_alerts(ticker, flow_alerts)
-                result["total_sweeps"] = flow.n_sweeps
-                result["sweep_call_pct"] = (flow.n_calls / (flow.n_calls + flow.n_puts) * 100 if (flow.n_calls + flow.n_puts) > 0 else 50.0)
-                sentiment = self._flow_data.parse_market_sentiment(flow_alerts)
-                result["sentiment_regime"] = sentiment.regime
-                result["breadth_pct"] = sentiment.breadth_pct
+            gate = self._flow_data.get_macro_gate()
+            result["spy_cum_delta"] = gate.cum_delta
+            result["spy_signal"] = gate.signal
+            result["spy_confidence"] = gate.confidence
+            result["am_pm_divergence"] = gate.am_pm_diverges
+            
+            tide = self._flow_data.get_market_tide()
+            result["tide_direction"] = tide.tide_direction
+            result["tide_accelerating"] = tide.is_accelerating
+            result["tide_net_premium"] = tide.cum_net_premium
+            
+            flow = self._flow_data.get_flow_signal(ticker)
+            result["total_sweeps"] = flow.n_sweeps
+            result["sweep_call_pct"] = (flow.n_calls / (flow.n_calls + flow.n_puts) * 100 if (flow.n_calls + flow.n_puts) > 0 else 50.0)
+            
+            sentiment = self._flow_data.get_market_sentiment()
+            result["sentiment_regime"] = sentiment.regime
+            result["breadth_pct"] = sentiment.breadth_pct
         except Exception as e:
             logger.warning(f"QualityGate: Whale flow error: {e}")
         return result

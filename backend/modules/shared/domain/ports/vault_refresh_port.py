@@ -64,5 +64,3 @@ class VaultRefreshPort(ABC):
     @abstractmethod
     def pending_requests(self, limit: int = 50) -> list[RefreshStatus]:
         """Get pending requests ordered by priority then time."""
-""",
-<parameter name="Description">Domain port for vault refresh requests. Modules use this to signal that data is stale without breaking the vault-first rule."

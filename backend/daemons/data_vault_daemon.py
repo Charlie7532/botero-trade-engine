@@ -1290,13 +1290,21 @@ def vault_insider_activity(store: TimescaleDataStore, watchlist_tickers: list[st
 # ═══════════════════════════════════════════════════════════════
 
 def _get_neon_universe(store: TimescaleDataStore) -> list[str]:
-    """Pull the list of all tickers in Neon OHLCV bars, excluding macro indices."""
+    """Pull the list of tickers eligible for OHLCV bar updates from Alpaca/yfinance.
+
+    Uses update_source = 'vault_ohlcv_bars' from ticker_metadata as the single
+    source of truth for which tickers this function should update.
+    Excludes INDICATOR and INDEX tickers that have their own update paths.
+    """
     conn = store._conn()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT DISTINCT ticker FROM market.ohlcv_bars ORDER BY ticker")
-            # Exclude CBOE indices that cause 404s on Yahoo/Finnhub
-            return [row[0] for row in cur.fetchall() if row[0] not in {"SKEW", "VVIX"}]
+            cur.execute("""
+                SELECT ticker FROM market.ticker_metadata
+                WHERE update_source = 'vault_ohlcv_bars'
+                ORDER BY ticker
+            """)
+            return [row[0] for row in cur.fetchall()]
     finally:
         store._put(conn)
 

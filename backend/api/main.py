@@ -6,7 +6,7 @@ from fastapi import FastAPI
 load_dotenv()  # reads ../.env (or any .env found walking up from cwd)
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import market_data, orders, portfolio, research, strategy
+from api.routers import market_data, orders, portfolio, research, strategy, vault_refresh
 
 app = FastAPI(
     title="Botero Trade Engine",
@@ -40,6 +40,7 @@ app.include_router(orders.router, prefix="/api")
 app.include_router(portfolio.router, prefix="/api")
 app.include_router(research.router, prefix="/api")
 app.include_router(strategy.router, prefix="/api")
+app.include_router(vault_refresh.router)  # has own /api/vault prefix
 
 
 @app.get("/health")

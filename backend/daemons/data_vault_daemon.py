@@ -1309,6 +1309,60 @@ def _get_neon_universe(store: TimescaleDataStore) -> list[str]:
         store._put(conn)
 
 
+def drain_refresh_queue(store: TimescaleDataStore) -> dict:
+    """Process pending on-demand refresh requests from vault.refresh_queue.
+
+    Uses modular VaultProviders to handle each request category.
+    Called at the START of each cycle so urgent requests don't wait.
+    """
+    try:
+        from backend.modules.shared.infrastructure.vault_refresh_adapter import VaultRefreshAdapter
+        from backend.daemons.vault_providers import get_provider
+        # Ensure all providers are registered
+        import backend.daemons.vault_providers.ohlcv_provider  # noqa: F401
+        import backend.daemons.vault_providers.breadth_provider  # noqa: F401
+        import backend.daemons.vault_providers.remaining_providers  # noqa: F401
+
+        adapter = VaultRefreshAdapter(store)
+        pending = adapter.pending_requests(limit=20)
+
+        if not pending:
+            return {"status": "ok", "processed": 0}
+
+        logger.info(f"📥 VRR: {len(pending)} pending refresh requests")
+        processed = 0
+        failed = 0
+
+        for req in pending:
+            provider = get_provider(req.category)
+            if not provider:
+                adapter.mark_failed(req.request_id, f"No provider for category '{req.category}'")
+                failed += 1
+                continue
+
+            adapter.mark_processing(req.request_id)
+            try:
+                result = provider.run_ticker(store, req.ticker)
+                if result.get("status") == "ok":
+                    adapter.mark_done(req.request_id)
+                    processed += 1
+                else:
+                    adapter.mark_failed(req.request_id, str(result))
+                    failed += 1
+            except Exception as e:
+                adapter.mark_failed(req.request_id, str(e))
+                failed += 1
+
+        logger.info(f"📥 VRR drain: {processed} processed, {failed} failed")
+        return {"status": "ok", "processed": processed, "failed": failed}
+
+    except ImportError:
+        return {"status": "skipped", "reason": "vrr_not_installed"}
+    except Exception as e:
+        logger.warning(f"VRR drain failed (non-critical): {e}")
+        return {"status": "error", "error": str(e)}
+
+
 def run_cycle(store: TimescaleDataStore) -> None:
     """Run one full vault cycle — ALL data sources."""
     interceptor = VaultInterceptor(store)
@@ -1319,6 +1373,9 @@ def run_cycle(store: TimescaleDataStore) -> None:
     logger.info(f"📊 Neon universe: {len(neon_tickers)} tickers")
 
     results = {}
+
+    # ── Tier 0: On-demand refresh requests (VRR) ──
+    results["vrr"] = drain_refresh_queue(store)
 
     # ── Tier 1: Instant + Decision-Critical (~15s) ──
     results["vix_live"] = vault_vix_live(store)

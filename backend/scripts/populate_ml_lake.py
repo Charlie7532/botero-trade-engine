@@ -96,7 +96,7 @@ def run():
     logger.info(f"{'─'*60}")
 
     for ticker in QUALITY_TICKERS:
-        logger.info(f"▶ {ticker} (1d, QUALITY)...")
+        logger.info(f"▶ {ticker} (1d, QUALITY_VALUE max_bars=60)...")
         for signal in signals:
             try:
                 result = oracle.run_signal(ticker, "1d", signal, qual_geometry)
@@ -109,8 +109,8 @@ def run():
     logger.info(f"\n{'='*70}")
     logger.info(f"🎉 ML Data Lake population complete!")
     logger.info(f"   Total feature/label pairs generated: {total_entries}")
-    logger.info(f"   Features: QuantFeatureEngineer (FD, MS, TS, VF, CAL, RG)")
-    logger.info(f"   Execution: VAEP (delay={spec_geometry.entry_delay_bars}bar, "
+    logger.info(f"   Features: QuantFeatureEngineer (FD, MS, TS, CS, VF, CAL, RG, OV)")
+    logger.info(f"   Execution: VAEP (delay=1bar, "
                 f"slip_spec={spec_geometry.slippage_factor}, slip_qual={qual_geometry.slippage_factor})")
     logger.info(f"   Signals: {[s.name for s in signals]}")
     logger.info(f"{'='*70}")

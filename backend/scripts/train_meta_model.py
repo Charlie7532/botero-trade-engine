@@ -41,11 +41,10 @@ load_dotenv(_root / ".env")
 # DATA LOADING
 # ══════════════════════════════════════════════════════════════
 
-def load_ml_data() -> pd.DataFrame:
-    """Load features + labels from Neon ML Data Lake into a single DataFrame."""
+def load_ml_data(timeframe: str = "5m") -> pd.DataFrame:
+    """Load features + labels from Neon ML Data Lake, filtered by timeframe."""
     from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
     store = TimescaleDataStore()
-    conn = store._conn()
 
     query = """
         SELECT
@@ -55,10 +54,15 @@ def load_ml_data() -> pd.DataFrame:
             l.geometry_used
         FROM engine.ml_features f
         JOIN engine.ml_labels l ON f.id = l.feature_id
+        WHERE f.timeframe = %(tf)s
         ORDER BY f.signal_time
     """
-    df = pd.read_sql(query, store.engine)
+    df = pd.read_sql(query, store.engine, params={"tf": timeframe})
     store.close()
+
+    if df.empty:
+        logger.error(f"No ML data found for timeframe={timeframe}")
+        return df
 
     # Parse JSON features into columns
     feat_dicts = df["features"].apply(
@@ -71,9 +75,13 @@ def load_ml_data() -> pd.DataFrame:
     df["signal_time"] = pd.to_datetime(df["signal_time"])
     df["exit_time"] = pd.to_datetime(df["exit_time"], errors="coerce")
 
+    # One-hot encode signal_name (Simons: different signals have different base rates)
+    signal_dummies = pd.get_dummies(df["signal_name"], prefix="SIG")
+    df = pd.concat([df, signal_dummies], axis=1)
+
     logger.info(
-        f"Loaded {len(df)} samples, {len(feat_df.columns)} features, "
-        f"{df['signal_name'].nunique()} signals, {df['ticker'].nunique()} tickers"
+        f"Loaded {len(df)} samples, {len(feat_df.columns)} features + {len(signal_dummies.columns)} signal dummies, "
+        f"{df['signal_name'].nunique()} signals, {df['ticker'].nunique()} tickers, tf={timeframe}"
     )
     return df
 
@@ -331,8 +339,8 @@ def deflated_sharpe_ratio(
 # ══════════════════════════════════════════════════════════════
 
 def get_feature_columns(df: pd.DataFrame) -> list[str]:
-    """Extract ML feature columns (prefixed families)."""
-    prefixes = ('FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_')
+    """Extract ML feature columns (prefixed families + signal dummies)."""
+    prefixes = ('FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_', 'SIG_')
     return [c for c in df.columns if c.startswith(prefixes)]
 
 
@@ -385,29 +393,32 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
     weights = compute_sample_weights(df)
 
     # ── PURGED WALK-FORWARD CV ───────────────────────────────
-    logger.info("Generating Purged Walk-Forward folds...")
-    folds = purged_walk_forward_cv(df, n_folds=5, embargo_pct=0.01)
+    # Auto-adjust folds based on sample count (LdP: need sufficient train per fold)
+    n_folds = 3 if len(df) < 10000 else 5
+    logger.info(f"Generating Purged Walk-Forward folds (n_folds={n_folds}, auto-selected)...")
+    folds = purged_walk_forward_cv(df, n_folds=n_folds, embargo_pct=0.01)
 
     if not folds:
         logger.error("No valid CV folds generated. Insufficient data.")
         return {}
 
-    # ── XGBoost params (conservative, anti-overfit) ──────────
+    # ── XGBoost params (regularized, anti-overfit) ───────────
     xgb_params = {
         "objective": "binary:logistic",
         "eval_metric": "logloss",
-        "max_depth": 4,          # Shallow trees (anti-overfit)
+        "max_depth": 3,          # Depth 4→3 (audit: reduce memorization)
         "learning_rate": 0.05,   # Slow learning
-        "n_estimators": 300,
+        "n_estimators": 500,     # Higher ceiling with early stopping
         "subsample": 0.8,
         "colsample_bytree": 0.7,
-        "min_child_weight": 50,  # Require 50 samples per leaf
+        "min_child_weight": 100, # 50→100 (audit: larger leaf nodes)
         "gamma": 1.0,            # Pruning threshold
         "reg_alpha": 0.5,        # L1 regularization
         "reg_lambda": 2.0,       # L2 regularization
         "scale_pos_weight": (y == 0).sum() / max((y == 1).sum(), 1),
         "random_state": 42,
         "verbosity": 0,
+        "early_stopping_rounds": 20,  # Stop when val loss stagnates
     }
 
     # ── PER-FOLD TRAINING + EVALUATION ───────────────────────
@@ -439,6 +450,8 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
             eval_set=[(X[val_sub], y[val_sub])],
             verbose=False,
         )
+        best_iter = getattr(model, 'best_iteration', model.n_estimators)
+        logger.info(f"  Early stopped at iteration {best_iter}/{xgb_params['n_estimators']}")
 
         # Predictions
         y_pred_proba = model.predict_proba(X_test)[:, 1]
@@ -680,15 +693,24 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
 # ══════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    logger.info("Loading ML Data Lake...")
-    df = load_ml_data()
+    import argparse
+    parser = argparse.ArgumentParser(description="XGBoost Meta-Labeling Training")
+    parser.add_argument("--timeframe", default="5m", help="Timeframe to train on (5m, 1d)")
+    args = parser.parse_args()
+
+    logger.info(f"Loading ML Data Lake (timeframe={args.timeframe})...")
+    df = load_ml_data(timeframe=args.timeframe)
+
+    if df.empty:
+        logger.error("No data loaded. Aborting.")
+        sys.exit(1)
 
     logger.info("Starting Meta-Model Training Pipeline...")
     results = train_and_evaluate(df)
 
     if results:
-        # Save results to JSON
-        out_path = _root / "backend" / "scripts" / "meta_model_results.json"
+        # Save results to JSON (tagged by timeframe)
+        out_path = _root / "backend" / "scripts" / f"meta_model_results_{args.timeframe}.json"
         with open(out_path, "w") as f:
             json.dump(results, f, indent=2, default=str)
         logger.info(f"\nResults saved to {out_path}")

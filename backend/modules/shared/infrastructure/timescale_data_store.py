@@ -581,3 +581,65 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
             raise
         finally:
             self._put(conn)
+
+    # ── SIGNAL PROFILES (Alpha Passport) ─────────────────────
+
+    def save_signal_profile(self, profile: dict[str, Any]) -> None:
+        """Upsert a signal profile to engine.signal_profiles."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO engine.signal_profiles (
+                        ticker, timeframe, signal_name, department,
+                        n_entries, win_rate, ceiling_sharpe, profit_factor,
+                        avg_return_pct, total_return_pct, max_drawdown_pct,
+                        avg_bars_held, avg_bars_to_loss, pct_loss_hit, pct_time_hit,
+                        geometry_json, viable, grade, calibrated_at
+                    ) VALUES (
+                        %(ticker)s, %(timeframe)s, %(signal_name)s, %(department)s,
+                        %(n_entries)s, %(win_rate)s, %(ceiling_sharpe)s, %(profit_factor)s,
+                        %(avg_return_pct)s, %(total_return_pct)s, %(max_drawdown_pct)s,
+                        %(avg_bars_held)s, %(avg_bars_to_loss)s, %(pct_loss_hit)s, %(pct_time_hit)s,
+                        %(geometry_json)s, %(viable)s, %(grade)s, NOW()
+                    )
+                    ON CONFLICT (ticker, timeframe, signal_name) DO UPDATE SET
+                        department = EXCLUDED.department,
+                        n_entries = EXCLUDED.n_entries,
+                        win_rate = EXCLUDED.win_rate,
+                        ceiling_sharpe = EXCLUDED.ceiling_sharpe,
+                        profit_factor = EXCLUDED.profit_factor,
+                        avg_return_pct = EXCLUDED.avg_return_pct,
+                        total_return_pct = EXCLUDED.total_return_pct,
+                        max_drawdown_pct = EXCLUDED.max_drawdown_pct,
+                        avg_bars_held = EXCLUDED.avg_bars_held,
+                        avg_bars_to_loss = EXCLUDED.avg_bars_to_loss,
+                        pct_loss_hit = EXCLUDED.pct_loss_hit,
+                        pct_time_hit = EXCLUDED.pct_time_hit,
+                        geometry_json = EXCLUDED.geometry_json,
+                        viable = EXCLUDED.viable,
+                        grade = EXCLUDED.grade,
+                        calibrated_at = NOW()
+                """, profile)
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Signal profile save failed for {profile.get('ticker')}/{profile.get('signal_name')}: {e}")
+            raise
+        finally:
+            self._put(conn)
+
+    def load_signal_profiles(self, ticker: str, timeframe: str) -> list[dict[str, Any]]:
+        """Load all signal profiles for a ticker/timeframe pair."""
+        conn = self._conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT * FROM engine.signal_profiles
+                    WHERE ticker = %s AND timeframe = %s
+                    ORDER BY ceiling_sharpe DESC
+                """, (ticker, timeframe))
+                return [dict(row) for row in cur.fetchall()]
+        finally:
+            self._put(conn)
+

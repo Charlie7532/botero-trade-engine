@@ -37,16 +37,17 @@ class QuantFeatureEngineer:
     # ================================================================
 
     @staticmethod
-    def _get_weights_ffd(d: float, threshold: float = 1e-5) -> np.ndarray:
+    def _get_weights_ffd(d: float, threshold: float = 1e-5, max_width: int = 500) -> np.ndarray:
         """
         Computa los pesos para Fixed-Width Window Fractional Differentiation.
-        Los pesos decaen geométricamente; truncamos cuando caen debajo del threshold.
+        Los pesos decaen geométricamente; truncamos cuando caen debajo del threshold
+        o when max_width is reached (critical for daily data with limited bars).
         """
         weights = [1.0]
         k = 1
         while True:
             w = -weights[-1] * (d - k + 1) / k
-            if abs(w) < threshold:
+            if abs(w) < threshold or k >= max_width:
                 break
             weights.append(w)
             k += 1
@@ -205,6 +206,13 @@ class QuantFeatureEngineer:
 
         # Momentum relativo (retorno del ratio a 20 períodos)
         self.df['CS_RelMomentum'] = np.log(ratio / ratio.shift(20).clip(lower=1e-8))
+
+        # Rolling Beta to benchmark (sensitivity to market moves)
+        ticker_ret = self.df['close'].pct_change()
+        bench_ret = aligned_bench.pct_change()
+        cov = ticker_ret.rolling(z_length).cov(bench_ret)
+        var = bench_ret.rolling(z_length).var().clip(lower=1e-12)
+        self.df['CS_Beta'] = cov / var
 
     # ================================================================
     # FAMILY E: Volume Flow (Corriente del Volumen)

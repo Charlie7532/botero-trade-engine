@@ -16,6 +16,7 @@ class InvestmentCategory(str, Enum):
     """Dual-regime taxonomy: QUALITY (80%) + SPECULATIVE (20%)."""
     # QUALITY — Hohn & Munger: patience, conviction, fundamental moats
     QUALITY_VALUE = "QUALITY_VALUE"
+    QUALITY_VALUE_120 = "QUALITY_VALUE_120"  # Extended horizon: ~6 months
     QUALITY_GROWTH = "QUALITY_GROWTH"
     QUALITY_DIVIDEND = "QUALITY_DIVIDEND"
 
@@ -59,6 +60,7 @@ class OracleGeometry:
 ORACLE_GEOMETRY: dict[InvestmentCategory, OracleGeometry] = {
     # QUALITY: wider barriers, liquid large caps, daily bars → low slippage
     InvestmentCategory.QUALITY_VALUE:    OracleGeometry(profit_mult=3.0, loss_mult=1.0, max_bars=60, slippage_factor=0.05, round_trip_cost_bps=6.0),
+    InvestmentCategory.QUALITY_VALUE_120: OracleGeometry(profit_mult=3.0, loss_mult=1.0, max_bars=120, slippage_factor=0.05, round_trip_cost_bps=6.0),
     InvestmentCategory.QUALITY_GROWTH:   OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=45, slippage_factor=0.05, round_trip_cost_bps=6.0),
     InvestmentCategory.QUALITY_DIVIDEND: OracleGeometry(profit_mult=2.0, loss_mult=0.8, max_bars=90, slippage_factor=0.04, round_trip_cost_bps=5.0),
     # SPECULATIVE: tighter barriers, volatile stocks, intraday bars → higher slippage

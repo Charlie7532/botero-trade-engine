@@ -36,3 +36,23 @@ class MLDataPort(abc.ABC):
         Batch insert de pares (X, y) para reducir round-trips a Neon.
         """
         pass
+
+    @abc.abstractmethod
+    def save_signal_profile(self, profile: Dict[str, Any]) -> None:
+        """
+        Persist an OracleResult as a Signal Profile (Alpha Passport).
+
+        Args:
+            profile: Dict with ticker, timeframe, signal_name, department,
+                     n_entries, win_rate, ceiling_sharpe, profit_factor,
+                     avg_return_pct, geometry_json, viable, grade, etc.
+        """
+        pass
+
+    @abc.abstractmethod
+    def load_signal_profiles(
+        self, ticker: str, timeframe: str
+    ) -> list[Dict[str, Any]]:
+        """Load all signal profiles for a ticker/timeframe pair."""
+        pass
+

@@ -46,6 +46,7 @@ class OracleResult:
     avg_return_pct: float = 0.0
     total_return_pct: float = 0.0
     ceiling_sharpe: float = 0.0
+    floor_sharpe: float = 0.0
     profit_factor: float = 0.0
     max_drawdown_pct: float = 0.0
     avg_bars_held: float = 0.0
@@ -96,6 +97,27 @@ class OracleBacktester:
 
     # Minimum entries for statistical significance
     MIN_ENTRIES = 10
+
+    @staticmethod
+    def _adverse_geometry(g: OracleGeometry) -> OracleGeometry:
+        """Adversarial execution geometry for Floor Sharpe stress test.
+
+        Stress parameters (all multiplicative vs ceiling geometry):
+          - profit_mult × 0.5 (harder to reach TP)
+          - loss_mult × 0.5 (tighter stops)
+          - max_bars // 2 (less time for thesis, min 3)
+          - slippage_factor × 2.0 (worse fills)
+          - round_trip_cost_bps × 2.0 (higher friction)
+        """
+        return OracleGeometry(
+            profit_mult=g.profit_mult * 0.5,
+            loss_mult=g.loss_mult * 0.5,
+            max_bars=max(g.max_bars // 2, 3),
+            vol_lookback=g.vol_lookback,
+            entry_delay_bars=g.entry_delay_bars,
+            slippage_factor=g.slippage_factor * 2.0,
+            round_trip_cost_bps=g.round_trip_cost_bps * 2.0,
+        )
 
     def __init__(
         self,
@@ -196,7 +218,34 @@ class OracleBacktester:
 
         ceiling_sharpe_val = round(sharpe, 4)
 
-        # ====== SAVE TO ML DATA LAKE (with OV_CeilingSharpe injected) ======
+        # ====== FLOOR SHARPE (Adverse Execution Stress Test) ======
+        floor_geometry = self._adverse_geometry(geometry)
+        floor_labels = self.labeler.label_entries(
+            ohlc, entries,
+            profit_mult=floor_geometry.profit_mult,
+            loss_mult=floor_geometry.loss_mult,
+            max_bars=floor_geometry.max_bars,
+            vol_lookback=floor_geometry.vol_lookback,
+            entry_delay_bars=floor_geometry.entry_delay_bars,
+            slippage_factor=floor_geometry.slippage_factor,
+            round_trip_cost_bps=floor_geometry.round_trip_cost_bps,
+        )
+        if floor_labels and len(floor_labels) > 1:
+            floor_rets = [l.return_pct for l in floor_labels]
+            floor_bars = [l.bars_held for l in floor_labels]
+            floor_std = np.std(floor_rets, ddof=1)
+            if floor_std > 0:
+                floor_sharpe_val = round(
+                    (np.mean(floor_rets) / floor_std)
+                    * np.sqrt(252 / max(np.mean(floor_bars), 1)),
+                    4,
+                )
+            else:
+                floor_sharpe_val = 0.0
+        else:
+            floor_sharpe_val = 0.0
+
+        # ====== SAVE TO ML DATA LAKE (with OV features injected) ======
         import uuid
         if self.ml_store:
             from backend.modules.simulation.application.use_cases.engineer_features import QuantFeatureEngineer
@@ -221,6 +270,14 @@ class OracleBacktester:
                     eng.extract_cross_sectional_features(benchmark_df=spy_bars)
             except Exception as e:
                 logger.debug(f"SPY benchmark unavailable for {tf}: {e}")
+
+            # Family F: Macro context (VIX — 17,499 bars in Vault)
+            try:
+                vix_bars = self.store.load_bars("VIX", tf)
+                if vix_bars is not None and not vix_bars.empty:
+                    eng.extract_macro_context_features(vix_df=vix_bars)
+            except Exception as e:
+                logger.debug(f"VIX data unavailable for {tf}: {e}")
 
             feat_df = eng.df
             feat_cols = eng.get_feature_columns()
@@ -258,6 +315,8 @@ class OracleBacktester:
 
                 # Inject Family H: Oracle Viability context
                 feat_dict["OV_CeilingSharpe"] = ceiling_sharpe_val
+                feat_dict["OV_FloorSharpe"] = floor_sharpe_val
+                feat_dict["OV_RobustnessSpread"] = ceiling_sharpe_val - floor_sharpe_val
 
                 feature_id = str(uuid.uuid4())
 
@@ -307,6 +366,7 @@ class OracleBacktester:
             avg_return_pct=round(avg_return, 4),
             total_return_pct=round(total_return, 4),
             ceiling_sharpe=ceiling_sharpe_val,
+            floor_sharpe=floor_sharpe_val,
             profit_factor=round(pf, 4),
             max_drawdown_pct=round(max_dd, 4),
             avg_bars_held=round(float(np.mean(bars)), 1),
@@ -337,6 +397,7 @@ class OracleBacktester:
                     "n_entries": int(len(labels)),
                     "win_rate": float(round(win_rate, 2)),
                     "ceiling_sharpe": float(ceiling_sharpe_val),
+                    "floor_sharpe": float(floor_sharpe_val),
                     "profit_factor": float(round(pf, 4)),
                     "avg_return_pct": float(round(avg_return, 4)),
                     "total_return_pct": float(round(total_return, 4)),
@@ -357,7 +418,8 @@ class OracleBacktester:
                 logger.warning(f"Failed to persist signal profile for {ticker}/{signal.name}: {e}")
 
         logger.info(
-            f"Oracle: {signal.name} → Sharpe={result.ceiling_sharpe} "
+            f"Oracle: {signal.name} → Ceiling={result.ceiling_sharpe} "
+            f"Floor={result.floor_sharpe} "
             f"WR={result.win_rate}% PF={result.profit_factor} "
             f"Entries={result.n_entries}"
         )

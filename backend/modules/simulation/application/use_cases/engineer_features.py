@@ -176,6 +176,31 @@ class QuantFeatureEngineer:
         # ATR como % del precio (normalizado, comparable entre activos)
         df['TS_ATR_Pct'] = df['TS_ATR_14'] / df['close']
 
+        # --- C5: Volatility Persistence (Rolling Autocorrelation) ---
+        # Vectorized: autocorr(lag=1) ≈ cov(vol, vol_lag1) / var(vol)
+        # High (>0.7) = IN a cluster, predictable. Low (<0.3) = transition imminent.
+        # PERF: 0.007s vs 240+s for rolling().apply(autocorr). Non-negotiable.
+        vol_series = returns_1.rolling(14).std()
+        vol_lag1 = vol_series.shift(1)
+        _cov = vol_series.rolling(60).cov(vol_lag1)
+        _var = vol_series.rolling(60).var().clip(lower=1e-16)
+        df['TS_VolPersistence'] = _cov / _var
+
+        # --- C6: Vol-of-Vol (Regime Stability) ---
+        # High VoV = vol itself is unstable → ATR stops unreliable,
+        # barriers calibrated to wrong distance, model learns noise.
+        vol_of_vol = vol_series.rolling(30).std()
+        vol_level = vol_series.rolling(30).mean().clip(lower=1e-8)
+        df['TS_VolOfVol_Ratio'] = vol_of_vol / vol_level
+
+        # --- C7: Calm Duration (Consecutive Low-Vol Bars) ---
+        # Counts consecutive bars where vol < rolling mean.
+        # Dalio: "The longer the lake is safe, the fatter the prey."
+        vol_avg = vol_series.rolling(120).mean()
+        is_calm = (vol_series < vol_avg).astype(float).fillna(0.0)
+        calm_groups = (is_calm != is_calm.shift(1)).cumsum()
+        df['TS_CalmDuration'] = is_calm.groupby(calm_groups).cumsum()
+
     # ================================================================
     # FAMILY D: Cross-Sectional Context
     # ================================================================

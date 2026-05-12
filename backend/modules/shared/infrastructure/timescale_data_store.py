@@ -592,13 +592,13 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
                 cur.execute("""
                     INSERT INTO engine.signal_profiles (
                         ticker, timeframe, signal_name, department,
-                        n_entries, win_rate, ceiling_sharpe, profit_factor,
+                        n_entries, win_rate, ceiling_sharpe, floor_sharpe, profit_factor,
                         avg_return_pct, total_return_pct, max_drawdown_pct,
                         avg_bars_held, avg_bars_to_loss, pct_loss_hit, pct_time_hit,
                         geometry_json, viable, grade, calibrated_at
                     ) VALUES (
                         %(ticker)s, %(timeframe)s, %(signal_name)s, %(department)s,
-                        %(n_entries)s, %(win_rate)s, %(ceiling_sharpe)s, %(profit_factor)s,
+                        %(n_entries)s, %(win_rate)s, %(ceiling_sharpe)s, %(floor_sharpe)s, %(profit_factor)s,
                         %(avg_return_pct)s, %(total_return_pct)s, %(max_drawdown_pct)s,
                         %(avg_bars_held)s, %(avg_bars_to_loss)s, %(pct_loss_hit)s, %(pct_time_hit)s,
                         %(geometry_json)s, %(viable)s, %(grade)s, NOW()
@@ -608,6 +608,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
                         n_entries = EXCLUDED.n_entries,
                         win_rate = EXCLUDED.win_rate,
                         ceiling_sharpe = EXCLUDED.ceiling_sharpe,
+                        floor_sharpe = EXCLUDED.floor_sharpe,
                         profit_factor = EXCLUDED.profit_factor,
                         avg_return_pct = EXCLUDED.avg_return_pct,
                         total_return_pct = EXCLUDED.total_return_pct,

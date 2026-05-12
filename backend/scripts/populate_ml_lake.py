@@ -109,7 +109,7 @@ def run():
     logger.info(f"\n{'='*70}")
     logger.info(f"🎉 ML Data Lake population complete!")
     logger.info(f"   Total feature/label pairs generated: {total_entries}")
-    logger.info(f"   Features: QuantFeatureEngineer (FD, MS, TS, CS, VF, CAL, RG, OV)")
+    logger.info(f"   Features: QuantFeatureEngineer (FD, MS, TS, CS, VF, MC, CAL, IM, OV, RG)")
     logger.info(f"   Execution: VAEP (delay=1bar, "
                 f"slip_spec={spec_geometry.slippage_factor}, slip_qual={qual_geometry.slippage_factor})")
     logger.info(f"   Signals: {[s.name for s in signals]}")

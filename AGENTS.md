@@ -112,6 +112,7 @@ botero-trade/
 │   │   ├── portfolio_management/# Universe Filter, Alpha Scanner (Domain) + Finviz (Infra)
 │   │   ├── execution/           # Paper Trading, Journal (Domain) + Broker adapters (Infra)
 │   │   ├── simulation/          # Backtester, Autopsy (Domain) + Backtrader (Infra)
+│   │   ├── volatility_regime/   # Vol Regime Classification (Pure Domain)
 │   │   └── shared/              # Cache Utils, Global Ports, Market Data entities
 │   ├── _legacy/                 # Deprecated / Experimental code (LSTM, Sequence modeling)
 │   ├── daemons/                 # Background runners (Quality, Speculative — delivery mechanism)

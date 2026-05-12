@@ -282,6 +282,23 @@ class OracleBacktester:
             # Family G (ext): Vol regime classification (requires C5-C7 + F1-F3)
             eng.extract_vol_regime_features()
 
+            # Family G (Organic Volume): SPY decomposition
+            if spy_bars is not None and not spy_bars.empty:
+                try:
+                    eng.extract_organic_volume_features(spy_df=spy_bars)
+                except Exception as e:
+                    logger.debug(f"Organic volume features unavailable: {e}")
+
+            # Family I (Intermarket): SPY + TLT rotation signals
+            try:
+                bond_bars = self.store.load_bars("TLT", tf)
+                eng.extract_intermarket_features(
+                    spy_df=spy_bars if spy_bars is not None and not spy_bars.empty else None,
+                    bond_df=bond_bars if bond_bars is not None and not bond_bars.empty else None,
+                )
+            except Exception as e:
+                logger.debug(f"Intermarket features unavailable: {e}")
+
             feat_df = eng.df
             feat_cols = eng.get_feature_columns()
 

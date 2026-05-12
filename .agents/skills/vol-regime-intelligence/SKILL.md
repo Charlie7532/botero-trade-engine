@@ -291,14 +291,14 @@ Both `risk-quality` (Druckenmiller) and `risk-speculative` (Seykota) should refe
 
 ---
 
-## Code Mapping (Planned)
+## Code Mapping
 
 | Concept | Location | Status |
 |---|---|---|
-| Vol Regime Classifier | `backend/modules/volatility_regime/domain/vol_classifier.py` | 🔲 Not yet created |
-| Vol Regime Entity | `backend/modules/volatility_regime/domain/vol_regime.py` | 🔲 Not yet created |
+| Vol Regime Classifier | `backend/modules/volatility_regime/domain/rules/vol_classifier.py` | ✅ Live (160 lines) |
+| Vol Regime Entity | `backend/modules/volatility_regime/domain/entities/vol_regime.py` | ✅ Live (44 lines) |
 | Vol Sensors (Features) | `backend/modules/simulation/application/use_cases/engineer_features.py` | ✅ C5-C7 + F1-F3 |
-| ML Integration | `engineer_features.py` → `RG_VolRegime_*` | 🔲 After module exists |
-| Entry Gate Override | `entry_decision/application/use_cases/quality_entry_gate.py` | 🔲 Gate -1 |
-| Entry Hub Override | `entry_decision/application/use_cases/speculative_entry_hub.py` | 🔲 Gate -1 |
-| Trade Forensics Tag | `oracle_backtest.py` → `vol_regime_at_entry` | 🔲 After module exists |
+| ML Integration | `engineer_features.py:extract_vol_regime_features()` → `RG_VolRegime_*` | ✅ Live |
+| Entry Gate Override (Quality) | `entry_decision/application/use_cases/quality_entry_gate.py` | 🔲 Phase 2 — Gate -1 |
+| Entry Hub Override (Speculative) | `entry_decision/application/use_cases/speculative_entry_hub.py` | 🔲 Phase 2 — Gate -1 |
+| Trade Forensics Tag | `oracle_backtest.py` → `vol_regime_at_entry` | 🔲 Phase 2 |

@@ -554,6 +554,8 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
                 "signal_name": df.iloc[idx]["signal_name"],
                 "ticker": df.iloc[idx]["ticker"],
                 "regime": df.iloc[idx].get("RG_WinsteinProxy", 0),
+                "vol_regime_quality": df.iloc[idx].get("RG_VolRegime_Quality", 0),
+                "vol_regime_speculative": df.iloc[idx].get("RG_VolRegime_Speculative", 0),
             })
 
     # ══════════════════════════════════════════════════════════
@@ -661,6 +663,37 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
             f"  {regime_name:<15} N={n_total:>5} WR={wr:.1f}% "
             f"Taken={n_taken} Sharpe={reg_sr:.3f}"
         )
+
+    # ── PER-VOL-REGIME BREAKDOWN ─────────────────────────────
+    logger.info(f"\n{'─'*50}")
+    logger.info("PER-VOL-REGIME OOS PERFORMANCE")
+    logger.info(f"{'─'*50}")
+
+    vol_regime_cols = {
+        "vol_regime_quality": {0: "NORMAL", 1: "COMPLACENT", 2: "ELEVATED", 3: "CRISIS"},
+        "vol_regime_speculative": {0: "STALK", 1: "STRIKE", 2: "HARVEST", 3: "RETREAT"},
+    }
+
+    for col, label_map in vol_regime_cols.items():
+        if col not in oos_df.columns:
+            continue
+        logger.info(f"\n  {col}:")
+        for val, name in label_map.items():
+            reg_mask = oos_df[col] == val
+            if reg_mask.sum() < 10:
+                continue
+            reg_data = oos_df[reg_mask]
+            reg_filtered = reg_data[reg_data["y_pred"] == 1]
+            wr = reg_data["y_true"].mean() * 100
+            reg_sr = _annualized_sharpe(
+                reg_filtered["return_pct"].values,
+                reg_filtered["bars_held"].values,
+                tf_minutes,
+            )
+            logger.info(
+                f"    {name:<15} N={len(reg_data):>5} WR={wr:.1f}% "
+                f"Taken={len(reg_filtered)} Sharpe={reg_sr:.3f}"
+            )
 
     # ── FEATURE IMPORTANCE (MDA) ─────────────────────────────
     logger.info(f"\n{'─'*50}")

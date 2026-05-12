@@ -36,6 +36,12 @@ Gate 6: CIO Approval → Druckenmiller conviction sizing
 
 **Critical difference from Speculative**: Quality blocks on CONTRA_FLOW absolutely. No tactical overrides.
 
+> [!NOTE]
+> **Vol Regime Context (Advisory)**: The `vol-regime-intelligence` skill provides regime state.
+> Quality regimes are ADVISORY only — they adjust sizing, never block entries.
+> CRISIS = buy opportunity for tollkeepers. COMPLACENT = coiled spring warning.
+> See `vol-regime-intelligence/SKILL.md` for full behavioral rules.
+
 ## Exit Rules — Thesis Death Only (Druckenmiller)
 
 QUALITY positions are exited ONLY when the thesis is dead. Never on price action alone.

@@ -45,7 +45,10 @@ Key diagnostic questions:
 1. **Stop calibration**: Is avg MAE > initial stop distance? → Stops too tight
 2. **MFE capture**: Is avg exit price < avg MFE? → Exiting too early
 3. **Pattern decay**: Any pattern_tag with WR < 40% over last 20 trades? → Blacklist pattern
-4. **Regime blindness**: Are losses concentrated in specific VIX/gamma regimes?
+4. **Regime blindness**: Are losses concentrated in specific vol regimes?
+   - Weinstein: `GROUP BY RG_WinsteinProxy` from ML Data Lake features
+   - Vol regime: `GROUP BY RG_VolRegime_Quality` (or `_Speculative`)
+   - Source: `VolRegimeClassifier` via `engineer_features.py`
 
 #### LEARN
 - Compute optimal trailing stop multiplier from MFE/MAE distribution

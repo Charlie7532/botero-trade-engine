@@ -1,0 +1,160 @@
+{
+  "n_samples": 214858,
+  "n_features": 46,
+  "n_folds": 4,
+  "oos_accuracy": 0.5924,
+  "oos_auc": 0.5831,
+  "oos_sharpe_baseline": -19.073,
+  "oos_sharpe_filtered": -24.1145,
+  "oos_sharpe_lift": -5.0414,
+  "dsr": 0.0,
+  "n_trials": 1,
+  "fold_metrics": [
+    {
+      "fold": 1,
+      "n_train": 42423,
+      "n_test": 42571,
+      "n_purged": 267,
+      "accuracy": 0.5821,
+      "precision": 0.2529,
+      "recall": 0.58,
+      "f1": 0.3522,
+      "auc": 0.6201,
+      "logloss": 0.6712,
+      "sharpe_filtered": -31.4266,
+      "sharpe_baseline": -35.0534,
+      "sharpe_lift": 3.6269,
+      "sharpe_IS": 3.2698,
+      "overfit_ratio": -0.1,
+      "is_accuracy": 0.7054,
+      "trades_taken": 19127,
+      "trades_total": 42571,
+      "filter_rate": 44.9
+    },
+    {
+      "fold": 2,
+      "n_train": 84994,
+      "n_test": 42571,
+      "n_purged": 339,
+      "accuracy": 0.5259,
+      "precision": 0.2699,
+      "recall": 0.5177,
+      "f1": 0.3548,
+      "auc": 0.553,
+      "logloss": 0.681,
+      "sharpe_filtered": -32.2225,
+      "sharpe_baseline": -20.8884,
+      "sharpe_lift": -11.3341,
+      "sharpe_IS": -14.8254,
+      "overfit_ratio": 0.46,
+      "is_accuracy": 0.6513,
+      "trades_taken": 20563,
+      "trades_total": 42571,
+      "filter_rate": 48.3
+    },
+    {
+      "fold": 3,
+      "n_train": 127565,
+      "n_test": 42571,
+      "n_purged": 526,
+      "accuracy": 0.6694,
+      "precision": 0.4537,
+      "recall": 0.3656,
+      "f1": 0.4049,
+      "auc": 0.6371,
+      "logloss": 0.6471,
+      "sharpe_filtered": -8.5048,
+      "sharpe_baseline": -14.7576,
+      "sharpe_lift": 6.2528,
+      "sharpe_IS": -15.1881,
+      "overfit_ratio": 1.79,
+      "is_accuracy": 0.7028,
+      "trades_taken": 10556,
+      "trades_total": 42571,
+      "filter_rate": 24.8
+    },
+    {
+      "fold": 4,
+      "n_train": 170136,
+      "n_test": 42571,
+      "n_purged": 458,
+      "accuracy": 0.5923,
+      "precision": 0.3534,
+      "recall": 0.4551,
+      "f1": 0.3978,
+      "auc": 0.5668,
+      "logloss": 0.6769,
+      "sharpe_filtered": -16.5136,
+      "sharpe_baseline": -10.9208,
+      "sharpe_lift": -5.5929,
+      "sharpe_IS": -13.7379,
+      "overfit_ratio": 0.83,
+      "is_accuracy": 0.6602,
+      "trades_taken": 16224,
+      "trades_total": 42571,
+      "filter_rate": 38.1
+    }
+  ],
+  "top_features": [
+    {
+      "feature": "VF_VolAccel_ZScore",
+      "importance": 0.09671292454004288
+    },
+    {
+      "feature": "VF_RelVolume_ZScore",
+      "importance": 0.06300447043031454
+    },
+    {
+      "feature": "TS_CalmDuration",
+      "importance": 0.0466294139623642
+    },
+    {
+      "feature": "TS_RealVol_Fast",
+      "importance": 0.0462088817730546
+    },
+    {
+      "feature": "MS_Spread_ZScore",
+      "importance": 0.040704891085624695
+    },
+    {
+      "feature": "TS_Return_5",
+      "importance": 0.037596083246171474
+    },
+    {
+      "feature": "TS_ATR_Pct",
+      "importance": 0.037565736565738916
+    },
+    {
+      "feature": "TS_VolRatio",
+      "importance": 0.034836119040846825
+    },
+    {
+      "feature": "TS_Return_15",
+      "importance": 0.034381605219095945
+    },
+    {
+      "feature": "MC_VIX_TermStructure",
+      "importance": 0.033866824582219124
+    },
+    {
+      "feature": "TS_VolPersistence",
+      "importance": 0.030618377029895782
+    },
+    {
+      "feature": "MS_VWAP_ZScore",
+      "importance": 0.030378222931176424
+    },
+    {
+      "feature": "CAL_DaysToOPEX",
+      "importance": 0.028605586849153042
+    },
+    {
+      "feature": "RG_TrendStrength",
+      "importance": 0.027384703513234854
+    },
+    {
+      "feature": "TS_Return_50",
+      "importance": 0.02700301678851247
+    }
+  ]
+}

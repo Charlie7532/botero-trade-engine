@@ -37,6 +37,11 @@ Gate 7: PTJ Asymmetry Gate → Block if R:R < 3:1 (target 5:1)
 
 **Critical difference from Quality**: Speculative does NOT block on CONTRA_FLOW. PTJ says the best trades are sometimes against the crowd. Flow persistence and Memory Guard are the primary safety nets.
 
+> [!IMPORTANT]
+> **Vol Regime Gate**: Before all gates, the `vol-regime-intelligence` skill provides regime context.
+> In RETREAT regime, entries are **HARD BLOCKED**. In STALK, sizing is 0.5×.
+> See `vol-regime-intelligence/SKILL.md` for full behavioral rules per state.
+
 ## Exit Rules — Mechanical Stops (Seykota)
 
 SPECULATIVE positions are exited mechanically. No thesis evaluation. No "just one more day."

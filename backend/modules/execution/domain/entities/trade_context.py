@@ -13,6 +13,7 @@ class TradeContext:
     current_price: float
     lstm_probability: float
     target_kelly_pct: float
+    meta_label_confidence: float = 0.0
     current_state: PositionState = PositionState.FLAT
     average_entry: float = 0.0
     current_exposure_pct: float = 0.0

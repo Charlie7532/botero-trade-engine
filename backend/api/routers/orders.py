@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, model_validator
 
 from backend.modules.shared.use_cases import place_order
-from backend.modules.execution.domain.entities.order_models import Broker, Order, OrderSide, OrderStatus, OrderType
+from backend.modules.execution.domain.entities.order_models import Broker, Order, OrderSide, OrderStatus, OrderType, TimeInForce
 from backend.api.factories.execution_factory import build_broker_registry
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
@@ -21,6 +21,8 @@ class PlaceOrderRequest(BaseModel):
     notional: Optional[float] = None
     limit_price: Optional[float] = None
     stop_price: Optional[float] = None
+    time_in_force: TimeInForce = TimeInForce.DAY
+    trail_percent: Optional[float] = None
 
     @model_validator(mode="after")
     def require_quantity_or_notional(self) -> "PlaceOrderRequest":
@@ -28,6 +30,8 @@ class PlaceOrderRequest(BaseModel):
             raise ValueError("Provide either quantity or notional.")
         if self.notional is not None and self.order_type != OrderType.MARKET:
             raise ValueError("notional is only valid for market orders.")
+        if self.order_type == OrderType.TRAILING_STOP and self.trail_percent is None:
+            raise ValueError("trail_percent is required for trailing_stop orders.")
         return self
 
 
@@ -40,6 +44,7 @@ class OrderResponse(BaseModel):
     quantity: Optional[float]
     notional: Optional[float]
     status: str
+    time_in_force: str
 
 
 @router.post("/", response_model=OrderResponse, status_code=201)
@@ -58,6 +63,8 @@ async def create_order(body: PlaceOrderRequest):
         notional=body.notional,
         limit_price=body.limit_price,
         stop_price=body.stop_price,
+        time_in_force=body.time_in_force,
+        trail_percent=body.trail_percent,
     )
 
     try:
@@ -71,6 +78,7 @@ async def create_order(body: PlaceOrderRequest):
             quantity=result.quantity,
             notional=result.notional,
             status=result.status.value,
+            time_in_force=result.time_in_force.value,
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))

@@ -21,11 +21,21 @@ class OrderType(str, Enum):
     LIMIT = "limit"
     STOP = "stop"
     STOP_LIMIT = "stop_limit"
+    TRAILING_STOP = "trailing_stop"
+    MOC = "market_on_close"
 
 
 class Broker(str, Enum):
     INTERACTIVE_BROKERS = "interactive_brokers"
     ALPACA = "alpaca"
+
+
+class TimeInForce(str, Enum):
+    DAY = "day"
+    GTC = "gtc"
+    IOC = "ioc"
+    FOK = "fok"
+    OPG = "opg"
 
 
 @dataclass
@@ -38,6 +48,8 @@ class Order:
     notional: Optional[float] = None
     limit_price: Optional[float] = None
     stop_price: Optional[float] = None
+    time_in_force: TimeInForce = TimeInForce.DAY
+    trail_percent: Optional[float] = None
     order_id: Optional[str] = None
     status: OrderStatus = OrderStatus.PENDING
     created_at: datetime = field(default_factory=datetime.utcnow)

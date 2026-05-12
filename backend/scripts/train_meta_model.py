@@ -106,39 +106,53 @@ def create_meta_labels(df: pd.DataFrame) -> pd.Series:
 
 def compute_sample_weights(df: pd.DataFrame) -> np.ndarray:
     """
-    Compute sample weights based on Average Uniqueness.
+    Compute sample weights based on Average Uniqueness (LdP Ch. 4).
 
-    For each sample i with lifespan [entry_time, exit_time], compute:
-        ū_i = (1 / |L_i|) × Σ_{t ∈ L_i} (1 / c_t)
-    where c_t = number of concurrent labels at timestamp t.
-
-    Samples with higher uniqueness (less overlap) get higher weight.
+    Event-based O(N log N) algorithm:
+      1. Build sorted event list (start/end of each label lifespan)
+      2. Sweep through events tracking concurrency c(t)
+      3. For each sample, average 1/c(t) over its lifespan
     """
     entry = df["signal_time"].values.astype("datetime64[ns]")
     exit_ = df["exit_time"].values.astype("datetime64[ns]")
 
     n = len(df)
-    # For samples without exit_time, use entry_time (instantaneous)
     mask = pd.isna(exit_)
     exit_[mask] = entry[mask]
 
-    # Build concurrency count at each sample's midpoint
-    weights = np.ones(n, dtype=float)
-
-    # Efficient overlap computation using sorted events
-    # For each sample, count how many other samples overlap with it
+    # Build event list: (+1 = label starts, -1 = label ends)
+    events = []
     for i in range(n):
-        overlap_count = 0
-        for j in range(max(0, i - 500), min(n, i + 500)):  # Local window for speed
-            if j == i:
-                continue
-            # Check temporal overlap: [entry_i, exit_i] ∩ [entry_j, exit_j]
-            if entry[j] <= exit_[i] and exit_[j] >= entry[i]:
-                overlap_count += 1
+        events.append((entry[i], 0, +1, i))  # 0 = start sorts before end
+        events.append((exit_[i], 1, -1, i))  # 1 = end sorts after start
+    events.sort(key=lambda x: (x[0], x[1]))
 
-        # Average uniqueness: 1 / (1 + concurrent_count)
-        weights[i] = 1.0 / (1.0 + overlap_count)
+    # Sweep: track concurrency and accumulate uniqueness
+    active_count = 0
+    uniqueness_sum = np.zeros(n, dtype=float)
+    uniqueness_cnt = np.zeros(n, dtype=int)
+    active_set = set()
 
+    for ts, order, delta, idx in events:
+        if delta == +1:
+            active_count += 1
+            active_set.add(idx)
+        else:
+            # At this endpoint, record 1/c for all currently active labels
+            if active_count > 0:
+                inv_c = 1.0 / active_count
+                for j in active_set:
+                    uniqueness_sum[j] += inv_c
+                    uniqueness_cnt[j] += 1
+            active_count -= 1
+            active_set.discard(idx)
+
+    # Average uniqueness per sample
+    weights = np.where(
+        uniqueness_cnt > 0,
+        uniqueness_sum / uniqueness_cnt,
+        1.0,
+    )
     # Normalize to mean=1
     weights = weights / weights.mean()
 
@@ -322,6 +336,33 @@ def get_feature_columns(df: pd.DataFrame) -> list[str]:
     return [c for c in df.columns if c.startswith(prefixes)]
 
 
+def _tf_to_minutes(tf: str) -> int:
+    """Convert timeframe string to minutes per bar."""
+    _map = {"1m": 1, "5m": 5, "15m": 15, "30m": 30, "1h": 60, "4h": 240, "1d": 390}
+    return _map.get(tf, 5)
+
+
+def _annualized_sharpe(
+    returns: np.ndarray,
+    bars_held: np.ndarray,
+    tf_minutes: int,
+) -> float:
+    """
+    Annualize per-trade Sharpe using actual holding period.
+
+    trades_per_year = (bars_per_day × 252) / avg_bars_held
+    SR_annual = SR_per_trade × √(trades_per_year)
+    """
+    if len(returns) < 2 or np.std(returns) == 0:
+        return 0.0
+    bars_per_day = 390.0 / tf_minutes  # 6.5 trading hours
+    avg_bars = float(np.mean(bars_held))
+    if avg_bars <= 0:
+        return 0.0
+    trades_per_year = (bars_per_day * 252) / avg_bars
+    return float((np.mean(returns) / np.std(returns)) * np.sqrt(trades_per_year))
+
+
 def train_and_evaluate(df: pd.DataFrame) -> dict:
     """
     Full training pipeline with institutional-grade validation.
@@ -329,7 +370,8 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
     Returns a results dict with per-fold and aggregate metrics.
     """
     feature_cols = get_feature_columns(df)
-    logger.info(f"Feature columns ({len(feature_cols)}): {feature_cols}")
+    tf_minutes = _tf_to_minutes(df["timeframe"].iloc[0])
+    logger.info(f"Feature columns ({len(feature_cols)}): {feature_cols} [tf={tf_minutes}m]")
 
     X = df[feature_cols].values.astype(np.float32)
     meta_y = create_meta_labels(df)
@@ -385,11 +427,16 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
         X_test = X[fold.test_idx]
         y_test = y[fold.test_idx]
 
+        # Split last 20% of train as validation (stays before test window)
+        val_split = int(len(fold.train_idx) * 0.8)
+        train_sub = fold.train_idx[:val_split]
+        val_sub = fold.train_idx[val_split:]
+
         model = xgb.XGBClassifier(**xgb_params)
         model.fit(
-            X_train, y_train,
-            sample_weight=w_train,
-            eval_set=[(X_test, y_test)],
+            X[train_sub], y[train_sub],
+            sample_weight=weights[train_sub],
+            eval_set=[(X[val_sub], y[val_sub])],
             verbose=False,
         )
 
@@ -408,20 +455,26 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
             auc = 0.5
         ll = log_loss(y_test, y_pred_proba)
 
-        # Sharpe of meta-model filtered trades
-        # If meta-model says "take the trade", what's the return?
+        # OOS Sharpe (corrected annualization via actual holding period)
         test_returns = df.iloc[fold.test_idx]["return_pct"].values
-        filtered_returns = test_returns[y_pred == 1]
-        if len(filtered_returns) > 1:
-            sr = (filtered_returns.mean() / filtered_returns.std()) * np.sqrt(252 / 15)
-        else:
-            sr = 0.0
+        test_bars = df.iloc[fold.test_idx]["bars_held"].values
+        filtered_mask_fold = y_pred == 1
 
-        # Unfiltered baseline
-        if len(test_returns) > 1:
-            sr_baseline = (test_returns.mean() / test_returns.std()) * np.sqrt(252 / 15)
-        else:
-            sr_baseline = 0.0
+        sr = _annualized_sharpe(
+            test_returns[filtered_mask_fold], test_bars[filtered_mask_fold], tf_minutes
+        )
+        sr_baseline = _annualized_sharpe(test_returns, test_bars, tf_minutes)
+
+        # IS metrics (WEAK-1: overfit detection)
+        y_pred_is = model.predict(X_train)
+        is_acc = accuracy_score(y_train, y_pred_is)
+        train_returns = df.iloc[fold.train_idx]["return_pct"].values
+        train_bars = df.iloc[fold.train_idx]["bars_held"].values
+        is_filtered_mask = y_pred_is == 1
+        sr_is = _annualized_sharpe(
+            train_returns[is_filtered_mask], train_bars[is_filtered_mask], tf_minutes
+        )
+        overfit_ratio = round(sr_is / sr, 2) if sr != 0 else float('inf')
 
         fold_result = {
             "fold": fold.fold_id,
@@ -437,6 +490,9 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
             "sharpe_filtered": round(sr, 4),
             "sharpe_baseline": round(sr_baseline, 4),
             "sharpe_lift": round(sr - sr_baseline, 4),
+            "sharpe_IS": round(sr_is, 4),
+            "overfit_ratio": overfit_ratio,
+            "is_accuracy": round(is_acc, 4),
             "trades_taken": int(y_pred.sum()),
             "trades_total": len(y_test),
             "filter_rate": round(y_pred.sum() / len(y_test) * 100, 1),
@@ -444,9 +500,11 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
         fold_metrics.append(fold_result)
 
         logger.info(
-            f"  Acc={acc:.3f} Prec={prec:.3f} Rec={rec:.3f} AUC={auc:.3f}\n"
+            f"  OOS: Acc={acc:.3f} Prec={prec:.3f} Rec={rec:.3f} AUC={auc:.3f}\n"
             f"  Sharpe: baseline={sr_baseline:.3f} → filtered={sr:.3f} "
             f"(lift={sr - sr_baseline:+.3f})\n"
+            f"  IS: Acc={is_acc:.3f} Sharpe_IS={sr_is:.3f} "
+            f"Overfit={overfit_ratio:.1f}x\n"
             f"  Trades: {y_pred.sum()}/{len(y_test)} taken ({fold_result['filter_rate']:.0f}%)"
         )
 
@@ -462,6 +520,7 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
                 "y_pred": y_pred[i],
                 "y_proba": y_pred_proba[i],
                 "return_pct": test_returns[i],
+                "bars_held": int(test_bars[i]),
                 "signal_name": df.iloc[idx]["signal_name"],
                 "ticker": df.iloc[idx]["ticker"],
                 "regime": df.iloc[idx].get("RG_WinsteinProxy", 0),
@@ -486,15 +545,11 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
     filtered_mask = oos_df["y_pred"] == 1
     filtered_rets = all_returns[filtered_mask]
 
-    if len(filtered_rets) > 1 and filtered_rets.std() > 0:
-        oos_sharpe = (filtered_rets.mean() / filtered_rets.std()) * np.sqrt(252 / 15)
-    else:
-        oos_sharpe = 0.0
+    all_bars = oos_df["bars_held"].values
+    filtered_bars = all_bars[filtered_mask]
 
-    if len(all_returns) > 1 and all_returns.std() > 0:
-        baseline_sharpe = (all_returns.mean() / all_returns.std()) * np.sqrt(252 / 15)
-    else:
-        baseline_sharpe = 0.0
+    oos_sharpe = _annualized_sharpe(filtered_rets, filtered_bars, tf_minutes)
+    baseline_sharpe = _annualized_sharpe(all_returns, all_bars, tf_minutes)
 
     logger.info(
         f"Sharpe: Baseline={baseline_sharpe:.3f} → Filtered={oos_sharpe:.3f} "
@@ -506,7 +561,7 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
     )
 
     # ── DSR ───────────────────────────────────────────────────
-    n_trials = 4 * 5  # 4 signals × 5 folds tested
+    n_trials = 1  # Single model config; folds are resamples, not independent trials
     skew = float(stats.skew(filtered_rets)) if len(filtered_rets) > 2 else 0
     kurt = float(stats.kurtosis(filtered_rets, fisher=False)) if len(filtered_rets) > 3 else 3
     dsr = deflated_sharpe_ratio(
@@ -538,10 +593,11 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
         n_total = len(sig_data)
         n_taken = len(sig_filtered)
 
-        if len(sig_filtered) > 1 and sig_filtered["return_pct"].std() > 0:
-            sig_sr = (sig_filtered["return_pct"].mean() / sig_filtered["return_pct"].std()) * np.sqrt(252 / 15)
-        else:
-            sig_sr = 0.0
+        sig_sr = _annualized_sharpe(
+            sig_filtered["return_pct"].values,
+            sig_filtered["bars_held"].values,
+            tf_minutes,
+        )
 
         logger.info(
             f"  {sig:<25} WR={wr:.1f}% Taken={n_taken}/{n_total} "
@@ -565,10 +621,11 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
         n_total = len(reg_data)
         n_taken = len(reg_filtered)
 
-        if len(reg_filtered) > 1 and reg_filtered["return_pct"].std() > 0:
-            reg_sr = (reg_filtered["return_pct"].mean() / reg_filtered["return_pct"].std()) * np.sqrt(252 / 15)
-        else:
-            reg_sr = 0.0
+        reg_sr = _annualized_sharpe(
+            reg_filtered["return_pct"].values,
+            reg_filtered["bars_held"].values,
+            tf_minutes,
+        )
 
         logger.info(
             f"  {regime_name:<15} N={n_total:>5} WR={wr:.1f}% "

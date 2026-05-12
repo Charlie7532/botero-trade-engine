@@ -299,6 +299,7 @@ Both `risk-quality` (Druckenmiller) and `risk-speculative` (Seykota) should refe
 | Vol Regime Entity | `backend/modules/volatility_regime/domain/entities/vol_regime.py` | ✅ Live (44 lines) |
 | Vol Sensors (Features) | `backend/modules/simulation/application/use_cases/engineer_features.py` | ✅ C5-C7 + F1-F3 |
 | ML Integration | `engineer_features.py:extract_vol_regime_features()` → `RG_VolRegime_*` | ✅ Live |
-| Entry Gate Override (Quality) | `entry_decision/application/use_cases/quality_entry_gate.py` | 🔲 Phase 2 — Gate -1 |
-| Entry Hub Override (Speculative) | `entry_decision/application/use_cases/speculative_entry_hub.py` | 🔲 Phase 2 — Gate -1 |
-| Trade Forensics Tag | `oracle_backtest.py` → `vol_regime_at_entry` | 🔲 Phase 2 |
+| Vol Regime Gate Rule | `entry_decision/domain/rules/vol_regime_gate.py` | ✅ Live — `compute_vol_regime_snapshot()` |
+| Entry Gate -1 (Quality) | `entry_decision/application/use_cases/quality_entry_gate.py` | ✅ CRISIS=BLOCK, ELEVATED=50%, COMPLACENT=alert |
+| Entry Gate -1 (Speculative) | `entry_decision/application/use_cases/speculative_entry_hub.py` | ✅ RETREAT=BLOCK, HARVEST=50%, STRIKE=125% |
+| Trade Forensics Tag | `oracle_backtest.py` → `vol_regime_at_entry` | 🔲 Pending — blocks forensic loop |

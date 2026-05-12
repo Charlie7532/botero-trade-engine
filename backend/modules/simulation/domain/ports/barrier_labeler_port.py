@@ -19,6 +19,8 @@ class BarrierLabel:
     return_pct: float      # Actual return achieved
     bars_held: int         # Bars until barrier was hit
     hit_barrier: str       # "profit", "loss", "time"
+    entry_time: pd.Timestamp = None
+    exit_time: pd.Timestamp = None
 
 
 class BarrierLabelerPort(ABC):

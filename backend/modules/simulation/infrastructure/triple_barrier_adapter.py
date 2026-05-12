@@ -108,6 +108,8 @@ class TripleBarrierAdapter(BarrierLabelerPort):
                 return_pct=round(ret, 4),
                 bars_held=bars,
                 hit_barrier=hit,
+                entry_time=entry_idx,
+                exit_time=ohlc.index[pos + bars] if (pos + bars) < len(ohlc) else ohlc.index[-1],
             ))
 
         logger.info(

@@ -22,11 +22,12 @@ import psycopg2.pool
 from sqlalchemy import create_engine as _create_engine
 
 from backend.modules.shared.domain.ports.time_series_port import TimeSeriesPort
+from backend.modules.simulation.domain.ports.ml_data_port import MLDataPort
 
 logger = logging.getLogger(__name__)
 
 
-class TimescaleDataStore(TimeSeriesPort):
+class TimescaleDataStore(TimeSeriesPort, MLDataPort):
     """TimescaleDB adapter for all time-series data."""
 
     def __init__(self, dsn: str | None = None, min_conn: int = 1, max_conn: int = 5):
@@ -454,5 +455,129 @@ class TimescaleDataStore(TimeSeriesPort):
                         sector_map[ticker] = sector
                         by_sector.setdefault(sector, {}).setdefault(ticker, []).append(float(close))
                 return by_sector, sector_map
+        finally:
+            self._put(conn)
+
+    # ── ML Data Lake (Forensics) ──────────────────────────
+
+    def save_ml_feature_and_label(
+        self,
+        feature_record: dict[str, Any],
+        label_record: dict[str, Any]
+    ) -> None:
+        """
+        Guarda un par (X, y) en las tablas engine.ml_features y engine.ml_labels.
+        """
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                # 1. Insert Feature (X)
+                cur.execute(
+                    """INSERT INTO engine.ml_features
+                         (id, ticker, timeframe, signal_name, signal_time, features)
+                       VALUES (%s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (id) DO UPDATE SET
+                         features = EXCLUDED.features""",
+                    (
+                        str(feature_record["id"]),
+                        feature_record["ticker"],
+                        feature_record["timeframe"],
+                        feature_record["signal_name"],
+                        feature_record["signal_time"],
+                        json.dumps(feature_record["features"])
+                    )
+                )
+
+                # 2. Insert Label (y)
+                cur.execute(
+                    """INSERT INTO engine.ml_labels
+                         (feature_id, label, return_pct, bars_held, exit_time, geometry_used)
+                       VALUES (%s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (feature_id) DO UPDATE SET
+                         label = EXCLUDED.label,
+                         return_pct = EXCLUDED.return_pct,
+                         bars_held = EXCLUDED.bars_held,
+                         exit_time = EXCLUDED.exit_time,
+                         geometry_used = EXCLUDED.geometry_used""",
+                    (
+                        str(label_record["feature_id"]),
+                        int(label_record["label"]),
+                        float(label_record["return_pct"]),
+                        int(label_record["bars_held"]),
+                        label_record["exit_time"],
+                        json.dumps(label_record["geometry_used"])
+                    )
+                )
+            conn.commit()
+            logger.debug(f"ML Data Lake: Saved feature/label {feature_record['id']} for {feature_record['ticker']}")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"ML Data Lake: Save failed: {e}")
+            raise
+        finally:
+            self._put(conn)
+
+    def save_ml_batch(
+        self,
+        feature_records: list[dict[str, Any]],
+        label_records: list[dict[str, Any]]
+    ) -> None:
+        """
+        Batch insert features + labels using execute_values.
+        Reduces Neon round-trips from 2×N to 2 (one per table).
+        """
+        if not feature_records:
+            return
+
+        conn = self._conn()
+        try:
+            feat_rows = [
+                (
+                    str(r["id"]), r["ticker"], r["timeframe"],
+                    r["signal_name"], r["signal_time"],
+                    json.dumps(r["features"])
+                )
+                for r in feature_records
+            ]
+
+            label_rows = [
+                (
+                    str(r["feature_id"]), int(r["label"]),
+                    float(r["return_pct"]), int(r["bars_held"]),
+                    r["exit_time"], json.dumps(r["geometry_used"])
+                )
+                for r in label_records
+            ]
+
+            with conn.cursor() as cur:
+                psycopg2.extras.execute_values(
+                    cur,
+                    """INSERT INTO engine.ml_features
+                         (id, ticker, timeframe, signal_name, signal_time, features)
+                       VALUES %s
+                       ON CONFLICT (id) DO UPDATE SET features = EXCLUDED.features""",
+                    feat_rows,
+                    page_size=500,
+                )
+                psycopg2.extras.execute_values(
+                    cur,
+                    """INSERT INTO engine.ml_labels
+                         (feature_id, label, return_pct, bars_held, exit_time, geometry_used)
+                       VALUES %s
+                       ON CONFLICT (feature_id) DO UPDATE SET
+                         label = EXCLUDED.label,
+                         return_pct = EXCLUDED.return_pct,
+                         bars_held = EXCLUDED.bars_held,
+                         exit_time = EXCLUDED.exit_time,
+                         geometry_used = EXCLUDED.geometry_used""",
+                    label_rows,
+                    page_size=500,
+                )
+            conn.commit()
+            logger.info(f"ML Data Lake: Batch saved {len(feat_rows)} feature/label pairs")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"ML Data Lake: Batch save failed: {e}")
+            raise
         finally:
             self._put(conn)

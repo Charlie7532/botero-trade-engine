@@ -25,6 +25,7 @@ from backend.modules.simulation.domain.entities.strategy_profile import (
 from backend.modules.simulation.domain.ports.barrier_labeler_port import BarrierLabelerPort
 from backend.modules.simulation.domain.ports.historical_data_port import HistoricalDataPort
 from backend.modules.simulation.domain.ports.signal_port import SignalPort
+from backend.modules.simulation.domain.ports.ml_data_port import MLDataPort
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,11 @@ class OracleResult:
     profit_factor: float = 0.0
     max_drawdown_pct: float = 0.0
     avg_bars_held: float = 0.0
+    
+    # Forensic metrics
+    avg_bars_to_loss: float = 0.0
+    pct_loss_hit: float = 0.0
+    pct_time_hit: float = 0.0
 
     # Geometry used
     profit_mult: float = 0.0
@@ -95,9 +101,11 @@ class OracleBacktester:
         self,
         store: HistoricalDataPort,
         labeler: BarrierLabelerPort,
+        ml_store: MLDataPort | None = None,
     ):
         self.store = store
         self.labeler = labeler
+        self.ml_store = ml_store
 
     def run_signal(
         self,
@@ -145,6 +153,88 @@ class OracleBacktester:
         if not labels:
             return OracleResult(signal_name=signal.name, ticker=ticker, timeframe=tf)
 
+        # ====== SAVE TO ML DATA LAKE (Stationary Features via QuantFeatureEngineer) ======
+        import uuid
+        if self.ml_store:
+            from backend.modules.simulation.application.use_cases.engineer_features import QuantFeatureEngineer
+
+            # Determine timeframe in minutes for QuantFeatureEngineer
+            tf_minutes_map = {"1m": 1, "5m": 5, "15m": 15, "1h": 60, "4h": 240, "1d": 1440}
+            tf_mins = tf_minutes_map.get(tf, 1440)
+
+            # Compute full stationary feature matrix ONCE per signal run
+            eng = QuantFeatureEngineer(ohlc, timeframe_minutes=tf_mins)
+            eng.extract_fractional_features()
+            eng.extract_microstructure_features()
+            eng.extract_temporal_features()
+            eng.extract_volume_flow_features()
+            eng.extract_calendar_features()
+            feat_df = eng.df
+            feat_cols = eng.get_feature_columns()
+
+            # Accumulate records for batch insertion
+            batch_features = []
+            batch_labels = []
+
+            for label in labels:
+                if label.entry_time is None:
+                    continue
+
+                if label.entry_time not in feat_df.index:
+                    continue
+
+                pos = feat_df.index.get_loc(label.entry_time)
+                if pos < 60:
+                    continue  # Need sufficient lookback for rolling features
+
+                row = feat_df.iloc[pos]
+
+                # Extract only the stationary feature columns, skip NaN rows
+                feat_dict = {}
+                has_nan = False
+                for col in feat_cols:
+                    val = row.get(col)
+                    if val is None or (isinstance(val, float) and np.isnan(val)):
+                        has_nan = True
+                        break
+                    feat_dict[col] = float(val)
+
+                if has_nan or not feat_dict:
+                    continue
+
+                feature_id = str(uuid.uuid4())
+
+                batch_features.append({
+                    "id": feature_id,
+                    "ticker": ticker,
+                    "timeframe": tf,
+                    "signal_name": signal.name,
+                    "signal_time": label.entry_time.isoformat(),
+                    "features": feat_dict
+                })
+
+                batch_labels.append({
+                    "feature_id": feature_id,
+                    "label": label.label,
+                    "return_pct": label.return_pct,
+                    "bars_held": label.bars_held,
+                    "exit_time": label.exit_time.isoformat() if label.exit_time else None,
+                    "geometry_used": {
+                        "profit_mult": geometry.profit_mult,
+                        "loss_mult": geometry.loss_mult,
+                        "max_bars": geometry.max_bars
+                    }
+                })
+
+            # Batch flush to Neon (2 round-trips instead of 2×N)
+            if batch_features:
+                try:
+                    self.ml_store.save_ml_batch(batch_features, batch_labels)
+                except Exception as e:
+                    logger.warning(f"Failed to batch-save {len(batch_features)} ML records for {ticker}: {e}")
+
+        # ====== END ML DATA LAKE ======
+
         # Calculate metrics
         returns = [l.return_pct for l in labels]
         n_profit = sum(1 for l in labels if l.label == 1)
@@ -177,6 +267,12 @@ class OracleBacktester:
         dd = cum - peak
         max_dd = float(np.min(dd)) if len(dd) > 0 else 0.0
 
+        # Forensic metrics
+        loss_bars = [l.bars_held for l in labels if l.label == -1]
+        avg_bars_to_loss = round(float(np.mean(loss_bars)), 1) if loss_bars else 0.0
+        pct_loss_hit = round((n_loss / len(labels)) * 100, 1) if labels else 0.0
+        pct_time_hit = round((n_time / len(labels)) * 100, 1) if labels else 0.0
+
         result = OracleResult(
             signal_name=signal.name,
             ticker=ticker,
@@ -192,6 +288,9 @@ class OracleBacktester:
             profit_factor=round(pf, 4),
             max_drawdown_pct=round(max_dd, 4),
             avg_bars_held=round(float(np.mean(bars)), 1),
+            avg_bars_to_loss=avg_bars_to_loss,
+            pct_loss_hit=pct_loss_hit,
+            pct_time_hit=pct_time_hit,
             profit_mult=geometry.profit_mult,
             loss_mult=geometry.loss_mult,
             max_bars=geometry.max_bars,
@@ -265,20 +364,31 @@ class OracleBacktester:
         gross_profit = sum(r for r in returns if r > 0)
         gross_loss = abs(sum(r for r in returns if r < 0))
 
+        # Forensic metrics
+        loss_bars = [l.bars_held for l in labels if l.label == -1]
+        avg_bars_to_loss = round(float(np.mean(loss_bars)), 1) if loss_bars else 0.0
+        n_loss = sum(1 for l in labels if l.label == -1)
+        n_time = sum(1 for l in labels if l.label == 0)
+        pct_loss_hit = round((n_loss / len(labels)) * 100, 1) if labels else 0.0
+        pct_time_hit = round((n_time / len(labels)) * 100, 1) if labels else 0.0
+
         return OracleResult(
             signal_name="composite",
             ticker=ticker,
             timeframe=tf,
             n_entries=len(labels),
             n_profitable=n_profit,
-            n_loss=sum(1 for l in labels if l.label == -1),
-            n_time_exit=sum(1 for l in labels if l.label == 0),
+            n_loss=n_loss,
+            n_time_exit=n_time,
             win_rate=round(n_profit / len(labels) * 100, 2),
             avg_return_pct=round(avg_return, 4),
             total_return_pct=round(sum(returns), 4),
             ceiling_sharpe=round(sharpe, 4),
             profit_factor=round(gross_profit / max(gross_loss, 0.001), 4),
             avg_bars_held=round(float(np.mean(bars)), 1),
+            avg_bars_to_loss=avg_bars_to_loss,
+            pct_loss_hit=pct_loss_hit,
+            pct_time_hit=pct_time_hit,
             profit_mult=geometry.profit_mult,
             loss_mult=geometry.loss_mult,
             max_bars=geometry.max_bars,

@@ -63,6 +63,7 @@ Based on the prompt's topic, activate the appropriate specialist skills:
 | CIO Allocator | `.agents/skills/cio-allocator/SKILL.md` | CROSS | Budget allocation, macro regime, mandate, capital allocation between departments |
 | Rotation Analyst | `.agents/skills/rotation-analyst/SKILL.md` | SERVICE | Sector rotation, international markets, ETF relative strength, intermarket cycles, stage analysis |
 | Research Intelligence | `.agents/skills/research-intelligence/SKILL.md` | SERVICE | Watchlist, candidate sourcing, screening, moat investigation, guru tracking, valuation zones |
+| Vol Regime Intelligence | `.agents/skills/vol-regime-intelligence/SKILL.md` | SERVICE | Volatility regime, vol clustering, state machine, complacency, calm duration, VIX regime, vol persistence |
 | Fundamental Analyst | `.agents/skills/fundamental-analyst/SKILL.md` | QUALITY | Moats, pricing power, ROIC, company quality, tollkeeper evaluation |
 | Tactical Entries | `.agents/skills/tactical-entries/SKILL.md` | SPECULATIVE | Options flow, GEX, gamma, dealer positioning, Vanna/Charm, Max Pain, tape reading |
 | Risk QUALITY | `.agents/skills/risk-quality/SKILL.md` | QUALITY | QUALITY positions: thesis exits, conviction sizing, moat decay, liquidity check |

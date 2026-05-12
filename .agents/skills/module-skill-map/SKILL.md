@@ -32,6 +32,7 @@ When any agent works on a backend module, activate the skills listed for that mo
 | `simulation` | VALIDATION | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies` | Backtesting engine — López de Prado validation |
 | `signal_discovery` | SPECULATIVE | `clean-architecture`, `operational-purpose` | `signal-miner`, `backtesting-trading-strategies` | Statistical anomaly mining → validated via simulation |
 | `volume_intelligence` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `department-quality` (Gate 1). SPECULATIVE: `tactical-entries` | VP analysis — QUALITY uses for institutional bias check, SPECULATIVE uses for POC/VAH/VAL |
+| `volatility_regime` | SERVICE | `clean-architecture`, `operational-purpose` | `vol-regime-intelligence` | Vol state machine — consumed by entry gates, risk managers, CIO |
 
 ---
 
@@ -94,3 +95,4 @@ When creating a new module, add it to this map and assign the appropriate skills
 | `simulation` | Walk-forward backtesting, trade autopsy, feature engineering | `run_backtest`, `analyze_trades`, `engineer_features` |
 | `signal_discovery` | Non-intuitive statistical signal mining (Simons methodology) | `discover_anomalies`, `monitor_signal_decay`, `scan_cross_asset` |
 | `volume_intelligence` | Volume Profile analysis (POC, VAH, VAL, shapes), volume dynamics tracking | `analyze_volume_profile`, `track_volume_dynamics` |
+| `volatility_regime` | Vol regime classification (COMPLACENT/NORMAL/ELEVATED/CRISIS for Quality; STALK/STRIKE/HARVEST/RETREAT for Speculative) | `classify_quality_regime`, `classify_speculative_regime` |

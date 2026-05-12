@@ -617,6 +617,47 @@ class QuantFeatureEngineer:
         df['RG_MomentumRegime'] = (sma20 > sma50).astype(float)
 
     # ================================================================
+    # FAMILY G (ext): Volatility Regime Classification
+    # P0: Feature only. Gates and allocation shifts are P1/P2.
+    # ================================================================
+
+    def extract_vol_regime_features(self) -> None:
+        """Familia G extensión: Clasificación de régimen de volatilidad.
+
+        Requiere C5-C7 (extract_temporal_features) y opcionalmente F1-F3
+        (extract_macro_context_features) computados previamente.
+
+        Evidence Status: HYPOTHESIS — thresholds need calibration.
+        Committee: LdP (ablation test), Simons (EMA smoothing), Dalio (feature only).
+        """
+        from backend.modules.volatility_regime.domain.rules.vol_classifier import VolRegimeClassifier
+
+        logger.info("Calculando features de régimen de volatilidad...")
+        df = self.df
+        classifier = VolRegimeClassifier()
+
+        # Gather sensor values (all already computed by prior families)
+        calm = df.get('TS_CalmDuration', pd.Series(0.0, index=df.index))
+        vol_persist = df.get('TS_VolPersistence', pd.Series(0.5, index=df.index))
+        vol_of_vol = df.get('TS_VolOfVol_Ratio', pd.Series(0.15, index=df.index))
+        vol_ratio = df.get('TS_VolRatio', pd.Series(1.0, index=df.index))
+        vix_z = df.get('MC_VIX_ZScore', pd.Series(0.0, index=df.index))
+        vix_vel = df.get('MC_VIX_Velocity_ZScore', pd.Series(0.0, index=df.index))
+
+        df['RG_VolRegime_Quality'] = classifier.classify_quality_series(
+            calm, vol_persist, vol_of_vol, vol_ratio, vix_z, vix_vel,
+        )
+        df['RG_VolRegime_Speculative'] = classifier.classify_speculative_series(
+            calm, vol_persist, vol_of_vol, vol_ratio, vix_z, vix_vel,
+        )
+
+        logger.info(
+            "Vol regime: Quality dist=%s, Speculative dist=%s",
+            df['RG_VolRegime_Quality'].value_counts().to_dict(),
+            df['RG_VolRegime_Speculative'].value_counts().to_dict(),
+        )
+
+    # ================================================================
     # PIPELINE MASTER
     # ================================================================
 
@@ -672,6 +713,7 @@ class QuantFeatureEngineer:
         )
         self.extract_macro_context_features(vix_df=vix_df, bond_df=bond_df)
         self.extract_regime_features()
+        self.extract_vol_regime_features()
 
         # Reemplazar infinitos por NaN antes de dropear
         self.df.replace([np.inf, -np.inf], np.nan, inplace=True)

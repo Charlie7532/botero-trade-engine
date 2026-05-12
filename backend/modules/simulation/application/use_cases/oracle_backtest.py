@@ -279,6 +279,9 @@ class OracleBacktester:
             except Exception as e:
                 logger.debug(f"VIX data unavailable for {tf}: {e}")
 
+            # Family G (ext): Vol regime classification (requires C5-C7 + F1-F3)
+            eng.extract_vol_regime_features()
+
             feat_df = eng.df
             feat_cols = eng.get_feature_columns()
 

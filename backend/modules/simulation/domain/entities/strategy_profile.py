@@ -36,24 +36,36 @@ class InvestmentCategory(str, Enum):
 
 @dataclass
 class OracleGeometry:
-    """Triple Barrier geometry for Oracle Alpha Ceiling evaluation."""
+    """Triple Barrier geometry for Oracle Alpha Ceiling evaluation.
+
+    Execution Reality Parameters (Almgren-Chriss simplified):
+        entry_delay_bars: Latency between signal detection and order fill.
+            Signal is computed after bar T closes; earliest fill is bar T+1.
+        slippage_factor: Fraction of ATR used as volatility-adjusted slippage.
+            Slippage = ATR × slippage_factor × √(1 / RVOL).
+            Higher volatility or lower liquidity → larger adverse fill.
+        round_trip_cost_bps: Spread + commission deducted from return (basis points).
+    """
     profit_mult: float    # ATR multiplier for take-profit
     loss_mult: float      # ATR multiplier for stop-loss
     max_bars: int         # Maximum bars before time exit
     vol_lookback: int = 20  # ATR lookback window
+    entry_delay_bars: int = 1         # Bars of latency before fill
+    slippage_factor: float = 0.08     # Fraction of ATR as slippage
+    round_trip_cost_bps: float = 10.0 # Spread + commissions (basis points)
 
 
 # Default Oracle geometries per category
 ORACLE_GEOMETRY: dict[InvestmentCategory, OracleGeometry] = {
-    # QUALITY: wider barriers, more patience (Hohn & Munger)
-    InvestmentCategory.QUALITY_VALUE:    OracleGeometry(profit_mult=3.0, loss_mult=1.0, max_bars=60),
-    InvestmentCategory.QUALITY_GROWTH:   OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=45),
-    InvestmentCategory.QUALITY_DIVIDEND: OracleGeometry(profit_mult=2.0, loss_mult=0.8, max_bars=90),
-    # SPECULATIVE: tighter barriers, faster execution (Eifert & PTJ)
-    InvestmentCategory.SPECULATIVE_SPRING:   OracleGeometry(profit_mult=2.0, loss_mult=1.0, max_bars=15),
-    InvestmentCategory.SPECULATIVE_MOMENTUM: OracleGeometry(profit_mult=1.5, loss_mult=1.0, max_bars=10),
-    InvestmentCategory.SPECULATIVE_GAMMA:    OracleGeometry(profit_mult=1.5, loss_mult=1.5, max_bars=8),
-    InvestmentCategory.SPECULATIVE_BREAKOUT: OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=20),
+    # QUALITY: wider barriers, liquid large caps, daily bars → low slippage
+    InvestmentCategory.QUALITY_VALUE:    OracleGeometry(profit_mult=3.0, loss_mult=1.0, max_bars=60, slippage_factor=0.05, round_trip_cost_bps=6.0),
+    InvestmentCategory.QUALITY_GROWTH:   OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=45, slippage_factor=0.05, round_trip_cost_bps=6.0),
+    InvestmentCategory.QUALITY_DIVIDEND: OracleGeometry(profit_mult=2.0, loss_mult=0.8, max_bars=90, slippage_factor=0.04, round_trip_cost_bps=5.0),
+    # SPECULATIVE: tighter barriers, volatile stocks, intraday bars → higher slippage
+    InvestmentCategory.SPECULATIVE_SPRING:   OracleGeometry(profit_mult=2.0, loss_mult=1.0, max_bars=15, slippage_factor=0.10, round_trip_cost_bps=12.0),
+    InvestmentCategory.SPECULATIVE_MOMENTUM: OracleGeometry(profit_mult=1.5, loss_mult=1.0, max_bars=10, slippage_factor=0.12, round_trip_cost_bps=12.0),
+    InvestmentCategory.SPECULATIVE_GAMMA:    OracleGeometry(profit_mult=1.5, loss_mult=1.5, max_bars=8,  slippage_factor=0.12, round_trip_cost_bps=15.0),
+    InvestmentCategory.SPECULATIVE_BREAKOUT: OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=20, slippage_factor=0.10, round_trip_cost_bps=12.0),
 }
 
 

@@ -141,13 +141,16 @@ class OracleBacktester:
                 n_entries=int(n_entries),
             )
 
-        # Label with Triple Barrier
+        # Label with Triple Barrier (VAEP execution model)
         labels = self.labeler.label_entries(
             ohlc, entries,
             profit_mult=geometry.profit_mult,
             loss_mult=geometry.loss_mult,
             max_bars=geometry.max_bars,
             vol_lookback=geometry.vol_lookback,
+            entry_delay_bars=geometry.entry_delay_bars,
+            slippage_factor=geometry.slippage_factor,
+            round_trip_cost_bps=geometry.round_trip_cost_bps,
         )
 
         if not labels:
@@ -169,6 +172,7 @@ class OracleBacktester:
             eng.extract_temporal_features()
             eng.extract_volume_flow_features()
             eng.extract_calendar_features()
+            eng.extract_regime_features()
             feat_df = eng.df
             feat_cols = eng.get_feature_columns()
 
@@ -222,7 +226,10 @@ class OracleBacktester:
                     "geometry_used": {
                         "profit_mult": geometry.profit_mult,
                         "loss_mult": geometry.loss_mult,
-                        "max_bars": geometry.max_bars
+                        "max_bars": geometry.max_bars,
+                        "entry_delay_bars": geometry.entry_delay_bars,
+                        "slippage_factor": geometry.slippage_factor,
+                        "round_trip_cost_bps": geometry.round_trip_cost_bps,
                     }
                 })
 
@@ -338,12 +345,16 @@ class OracleBacktester:
 
         entries = composite >= threshold
 
-        # Reuse same labeling logic
+        # Reuse same labeling logic (VAEP execution model)
         labels = self.labeler.label_entries(
             ohlc, entries,
             profit_mult=geometry.profit_mult,
             loss_mult=geometry.loss_mult,
             max_bars=geometry.max_bars,
+            vol_lookback=geometry.vol_lookback,
+            entry_delay_bars=geometry.entry_delay_bars,
+            slippage_factor=geometry.slippage_factor,
+            round_trip_cost_bps=geometry.round_trip_cost_bps,
         )
 
         if not labels or len(labels) < self.MIN_ENTRIES:

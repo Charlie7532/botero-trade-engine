@@ -532,12 +532,64 @@ class QuantFeatureEngineer:
             self.df['MC_EquityBond_ZScore'] = (ratio_ret - rr_mean) / rr_std
 
     # ================================================================
+    # FAMILY G: Regime Context (Market Cycle Conditioning)
+    # ================================================================
+
+    def extract_regime_features(self) -> None:
+        """
+        Familia G: Régimen de mercado como features estacionarios.
+
+        Computados EXCLUSIVAMENTE de la data OHLCV del activo — no requiere
+        datos externos, cumple Clean Architecture.
+
+        Features:
+            RG_WinsteinProxy:   Weinstein Stage encoding via price vs MA150 + slope.
+            RG_TrendStrength:   Distance to SMA50 normalized by ATR (clipped [-5, 5]).
+            RG_AccDistRatio_Z:  Up-volume / Down-volume ratio z-score (accumulation vs distribution).
+            RG_MomentumRegime:  Binary — SMA20 > SMA50 = bullish (1.0), else bearish (0.0).
+        """
+        logger.info("Calculando features de régimen de mercado (Familia G)...")
+
+        df = self.df
+
+        # G1: Weinstein Stage Proxy (price vs MA150 + MA slope)
+        ma_150 = df['close'].rolling(150, min_periods=50).mean()
+        ma_slope = df['close'].rolling(20, min_periods=10).mean() - df['close'].rolling(40, min_periods=20).mean()
+        # Encoding: Advancing=0.75, Basing=0.25, Topping=-0.25, Declining=-0.75
+        stage = pd.Series(0.25, index=df.index)  # Default: Basing
+        stage[(df['close'] > ma_150) & (ma_slope > 0)] = 0.75    # Advancing
+        stage[(df['close'] > ma_150) & (ma_slope <= 0)] = -0.25   # Topping
+        stage[(df['close'] < ma_150) & (ma_slope < 0)] = -0.75    # Declining
+        df['RG_WinsteinProxy'] = stage
+
+        # G2: Trend Strength (distance to SMA50 normalized by ATR)
+        sma50 = df['close'].rolling(50, min_periods=20).mean()
+        atr_col = df.get('TS_ATR_14')
+        if atr_col is None:
+            hl_range = df['high'] - df['low']
+            atr_col = hl_range.rolling(14, min_periods=5).mean()
+        df['RG_TrendStrength'] = ((df['close'] - sma50) / atr_col.clip(lower=1e-8)).clip(-5, 5)
+
+        # G3: Accumulation vs Distribution (up-volume / down-volume z-score)
+        price_up = (df['close'] > df['close'].shift(1)).astype(float)
+        up_vol = (df['volume'] * price_up).rolling(20, min_periods=10).sum()
+        down_vol = (df['volume'] * (1.0 - price_up)).rolling(20, min_periods=10).sum().clip(lower=1.0)
+        acc_dist_ratio = up_vol / down_vol
+        adr_mean = acc_dist_ratio.rolling(60, min_periods=20).mean()
+        adr_std = acc_dist_ratio.rolling(60, min_periods=20).std().clip(lower=1e-8)
+        df['RG_AccDistRatio_Z'] = (acc_dist_ratio - adr_mean) / adr_std
+
+        # G4: Momentum Regime (SMA20 > SMA50 = BULL)
+        sma20 = df['close'].rolling(20, min_periods=10).mean()
+        df['RG_MomentumRegime'] = (sma20 > sma50).astype(float)
+
+    # ================================================================
     # PIPELINE MASTER
     # ================================================================
 
     def get_feature_columns(self) -> list:
         """Retorna la lista de columnas que son features válidos para ML."""
-        prefixes = ('FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_')
+        prefixes = ('FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_')
         return [c for c in self.df.columns if c.startswith(prefixes)]
 
     def process_all_features(
@@ -586,6 +638,7 @@ class QuantFeatureEngineer:
             bond_df=bond_df, hyg_df=hyg_df,
         )
         self.extract_macro_context_features(vix_df=vix_df, bond_df=bond_df)
+        self.extract_regime_features()
 
         # Reemplazar infinitos por NaN antes de dropear
         self.df.replace([np.inf, -np.inf], np.nan, inplace=True)

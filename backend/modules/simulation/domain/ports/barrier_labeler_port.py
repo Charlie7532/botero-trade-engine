@@ -16,11 +16,12 @@ import pandas as pd
 class BarrierLabel:
     """Result of labeling a single entry point."""
     label: int             # 1=profit hit, -1=loss hit, 0=time exit
-    return_pct: float      # Actual return achieved
+    return_pct: float      # Actual return achieved (net of slippage + costs)
     bars_held: int         # Bars until barrier was hit
     hit_barrier: str       # "profit", "loss", "time"
     entry_time: pd.Timestamp = None
     exit_time: pd.Timestamp = None
+    entry_price: float = 0.0  # Actual fill price (VAEP-adjusted)
 
 
 class BarrierLabelerPort(ABC):
@@ -35,18 +36,25 @@ class BarrierLabelerPort(ABC):
         loss_mult: float,
         max_bars: int,
         vol_lookback: int = 20,
+        entry_delay_bars: int = 1,
+        slippage_factor: float = 0.08,
+        round_trip_cost_bps: float = 10.0,
     ) -> list[BarrierLabel]:
         """
-        Apply Triple Barrier to each entry point.
+        Apply Triple Barrier with realistic execution modeling.
 
         Args:
             ohlc: Canonical OHLCV DataFrame.
-            entries: Boolean Series marking entry bars.
+            entries: Boolean Series marking signal bars.
             profit_mult: ATR multiplier for take-profit barrier.
             loss_mult: ATR multiplier for stop-loss barrier.
             max_bars: Maximum bars before time exit.
             vol_lookback: ATR lookback window.
+            entry_delay_bars: Bars of latency between signal and fill.
+            slippage_factor: Fraction of ATR as volatility-adjusted slippage.
+            round_trip_cost_bps: Spread + commission deducted from return.
 
         Returns:
             List of BarrierLabel results, one per entry.
         """
+

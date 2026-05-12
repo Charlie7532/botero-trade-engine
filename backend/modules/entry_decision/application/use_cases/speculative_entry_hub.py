@@ -109,6 +109,57 @@ class SpeculativeEntryHub:
         report.rvol = float(prices['Volume'].iloc[-1]) / avg_vol if avg_vol > 0 else 1.0
         report.rs_vs_spy = self._market_data.calc_rs_vs_spy(prices)
 
+        # ── Gate -1: Vol Regime (Seykota hunt cycle) ──
+        # RETREAT = block (capital preservation). HARVEST = reduce sizing.
+        # STRIKE = boost sizing (compression breakout). STALK = normal.
+        # Evidence Status: HYPOTHESIS — thresholds need calibration.
+        _vol_sizing = 1.0
+        try:
+            from backend.modules.entry_decision.domain.rules.vol_regime_gate import compute_vol_regime_snapshot
+            from backend.modules.volatility_regime.domain.entities.vol_regime import S_RETREAT, S_HARVEST, S_STRIKE
+
+            vix_mean_90d = 20.0  # HYPOTHESIS
+            vix_std_90d = 5.0    # HYPOTHESIS
+            vix_z = (report.vix - vix_mean_90d) / vix_std_90d if vix_std_90d > 0 else 0.0
+
+            regime = compute_vol_regime_snapshot(prices, vix_zscore=vix_z)
+            report.vol_regime_quality = regime.quality_label
+            report.vol_regime_speculative = regime.speculative_label
+
+            if regime.speculative_regime == S_RETREAT:
+                report.final_verdict = "BLOCK"
+                report.final_scale = 0.0
+                report.final_reason = (
+                    f"VOL_REGIME_GATE: RETREAT regime detected "
+                    f"(VIX={report.vix:.1f}, z={vix_z:+.1f}). "
+                    f"Speculative: vol chaotic — protect capital."
+                )
+                logger.warning(f"SpecHub {ticker}: BLOCKED by VOL_REGIME RETREAT")
+                return report
+
+            if regime.speculative_regime == S_HARVEST:
+                _vol_sizing = 0.5  # Move is maturing, don't chase
+                report.alerts = report.alerts or []
+                report.alerts.append(
+                    f"VOL_REGIME_HARVEST: Sizing reduced — "
+                    f"move is maturing, ride don't chase."
+                )
+
+            if regime.speculative_regime == S_STRIKE:
+                _vol_sizing = 1.25  # Compression breakout — Seykota's edge
+                report.alerts = report.alerts or []
+                report.alerts.append(
+                    f"VOL_REGIME_STRIKE: Compression breakout detected — "
+                    f"sizing boosted to 125%."
+                )
+
+            logger.info(
+                f"SpecHub {ticker}: Vol regime Q={regime.quality_label} "
+                f"S={regime.speculative_label} sizing={_vol_sizing:.0%}"
+            )
+        except Exception as e:
+            logger.debug(f"SpecHub: Vol regime gate skipped: {e}")
+
         # ── Step 2: Gamma Regime (Karsan) ──
         opts = self._fetch_options_data(ticker, vix_trend=vix_trend)
         report.put_wall = opts.get("put_wall", 0.0)
@@ -286,7 +337,7 @@ class SpeculativeEntryHub:
 
             # EXECUTE
             report.final_verdict = "EXECUTE"
-            report.final_scale = whale_verdict.position_scale
+            report.final_scale = min(1.0, whale_verdict.position_scale * _vol_sizing)
             report.final_reason = (
                 f"FIRE: {phase_verdict.phase}, R:R={report.risk_reward}:1, "
                 f"Gamma={report.gamma_regime}, Flow={report.flow_persistence_grade}, "

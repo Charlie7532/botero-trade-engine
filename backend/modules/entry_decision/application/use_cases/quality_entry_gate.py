@@ -175,6 +175,51 @@ class QualityEntryGate:
         report.rvol = float(prices['Volume'].iloc[-1]) / avg_vol if avg_vol > 0 else 1.0
         report.rs_vs_spy = self._market_data.calc_rs_vs_spy(prices)
 
+        # ── Gate -1: Vol Regime (Dalio cycle intelligence) ──
+        # P1: Entry gate. CRISIS = block. ELEVATED = reduce sizing.
+        # Evidence Status: HYPOTHESIS — thresholds need calibration.
+        try:
+            from backend.modules.entry_decision.domain.rules.vol_regime_gate import compute_vol_regime_snapshot
+            from backend.modules.volatility_regime.domain.entities.vol_regime import Q_CRISIS, Q_ELEVATED, Q_COMPLACENT
+
+            # Compute VIX z-score for the classifier
+            vix_mean_90d = 20.0  # HYPOTHESIS — approximate long-run VIX mean
+            vix_std_90d = 5.0    # HYPOTHESIS — approximate VIX std
+            vix_z = (report.vix - vix_mean_90d) / vix_std_90d if vix_std_90d > 0 else 0.0
+
+            regime = compute_vol_regime_snapshot(prices, vix_zscore=vix_z)
+            report.vol_regime_quality = regime.quality_label
+            report.vol_regime_speculative = regime.speculative_label
+
+            if regime.quality_regime == Q_CRISIS:
+                report.final_verdict = "BLOCK"
+                report.final_scale = 0.0
+                report.final_reason = (
+                    f"VOL_REGIME_GATE: CRISIS regime detected "
+                    f"(VIX={report.vix:.1f}, z={vix_z:+.1f}). "
+                    f"Quality: thesis exits only. No new entries."
+                )
+                logger.warning(f"QualityGate {ticker}: BLOCKED by VOL_REGIME CRISIS")
+                return report
+
+            if regime.quality_regime == Q_ELEVATED:
+                _health_sizing *= 0.5
+                report.alerts = report.alerts or []
+                report.alerts.append(
+                    f"VOL_REGIME_ELEVATED: Sizing reduced to {_health_sizing:.0%} "
+                    f"(VIX={report.vix:.1f}, regime={regime.quality_label})"
+                )
+                logger.info(f"QualityGate {ticker}: ELEVATED regime — sizing reduced")
+
+            if regime.quality_regime == Q_COMPLACENT:
+                report.alerts = report.alerts or []
+                report.alerts.append(
+                    f"VOL_REGIME_COMPLACENT: Market unusually calm — "
+                    f"Dalio's lake warning. Predators may be near."
+                )
+        except Exception as e:
+            logger.debug(f"QualityGate: Vol regime gate skipped: {e}")
+
         # ── Step 2: Options — Gamma Regime ──
         opts = self._fetch_options_data(ticker, vix_trend=vix_trend)
         report.put_wall = opts.get("put_wall", 0.0)

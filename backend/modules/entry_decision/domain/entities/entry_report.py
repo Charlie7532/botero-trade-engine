@@ -129,6 +129,10 @@ class EntryIntelligenceReport:
     # ── Research Fields (SIG-001 — pending López de Prado validation) ──
     force_confluence: str = "NONE"            # "MELT_UP", "MELT_DOWN", "NONE"
 
+    # ── Vol Regime Intelligence (Gate -1) ───────────────────────
+    vol_regime_quality: str = "NORMAL"        # NORMAL, COMPLACENT, ELEVATED, CRISIS
+    vol_regime_speculative: str = "STALK"     # STALK, STRIKE, HARVEST, RETREAT
+
     # ── Dictamen Final ─────────────────────────────────────────
     final_verdict: str = "PASS"          # EXECUTE, STALK, PASS, BLOCK
     final_scale: float = 0.0            # 0-1

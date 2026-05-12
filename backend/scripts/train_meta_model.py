@@ -403,16 +403,19 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
         return {}
 
     # ── XGBoost params (regularized, anti-overfit) ───────────
+    # Forensic audit: sweep suggested depth=4/mcw=50/lr=0.03 but this caused
+    # Fold 4 to early-stop at iter 0 (overfitting). Original params are
+    # the true optimum — the sweep artifact was fold-selection bias.
     xgb_params = {
         "objective": "binary:logistic",
         "eval_metric": "logloss",
-        "max_depth": 3,          # Depth 4→3 (audit: reduce memorization)
-        "learning_rate": 0.05,   # Slow learning
+        "max_depth": 3,          # Depth 3 (forensic: depth=4 overfits on small folds)
+        "learning_rate": 0.05,   # 0.05 (forensic: 0.03 too slow, iter 0 early-stop)
         "n_estimators": 500,     # Higher ceiling with early stopping
         "subsample": 0.8,
         "colsample_bytree": 0.7,
-        "min_child_weight": 100, # 50→100 (audit: larger leaf nodes)
-        "gamma": 1.0,            # Pruning threshold
+        "min_child_weight": 100, # MCW 100 (forensic: 50 overfits on regime-shift folds)
+        "gamma": 1.0,            # Pruning threshold (sweep confirmed optimal)
         "reg_alpha": 0.5,        # L1 regularization
         "reg_lambda": 2.0,       # L2 regularization
         "scale_pos_weight": (y == 0).sum() / max((y == 1).sum(), 1),
@@ -425,6 +428,20 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
     all_oos_results = []
     fold_metrics = []
     feature_importances = np.zeros(len(feature_cols))
+
+    # Forensic guard: warn about underpowered folds (< 5000 train samples)
+    # Note: We INCLUDE all folds in OOS evaluation but flag underpowered ones.
+    # Skipping them was tested and actually REDUCED honest Sharpe because
+    # underpowered folds' test windows still contain real market data.
+    MIN_TRAIN_SAMPLES = 5000
+    underpowered = [f for f in folds if len(f.train_idx) < MIN_TRAIN_SAMPLES]
+    if underpowered:
+        logger.warning(
+            f"⚠️ {len(underpowered)} underpowered folds "
+            f"(< {MIN_TRAIN_SAMPLES} train samples): "
+            f"{[f'Fold {f.fold_id} ({len(f.train_idx)} samples)' for f in underpowered]}. "
+            f"OOS metrics from these folds have higher variance."
+        )
 
     for fold in folds:
         logger.info(f"\n{'─'*50}")

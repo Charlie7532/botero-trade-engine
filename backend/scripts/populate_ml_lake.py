@@ -47,8 +47,12 @@ def create_viable_signals():
 
 # ── DEPARTMENTAL WATCHLISTS ──
 QUALITY_TICKERS = [
+    # Original 15
     'AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'BRK-B',
     'LLY', 'JPM', 'UNH', 'V', 'XOM', 'JNJ', 'MA', 'COST',
+    # Expansion 15 — Vault-verified (1,264 bars each), QGARP-quality tollkeepers
+    'ABBV', 'ACN', 'ADP', 'HD', 'HON', 'IBM', 'INTU',
+    'MCD', 'MRK', 'NEE', 'PEP', 'PG', 'TMO', 'TXN', 'WMT',
 ]
 
 SPECULATIVE_TICKERS = [

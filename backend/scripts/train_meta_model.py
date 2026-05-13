@@ -5,12 +5,14 @@ López de Prado institutional-grade training pipeline:
   1. Load VAEP-corrected features + labels from Neon ML Data Lake
   2. Convert ternary labels {-1, 0, 1} to binary meta-labels {0, 1}
   3. Compute sample weights by Average Uniqueness
-  4. Train XGBoost with Purged Walk-Forward Anchored CV
+  4. Train XGBoost with Purged Walk-Forward CV (anchored or sliding)
   5. Evaluate with Deflated Sharpe Ratio (DSR)
   6. Report: per-signal, per-regime, IS vs OOS metrics
 
 Usage:
-    python backend/scripts/train_meta_model.py
+    python backend/scripts/train_meta_model.py --timeframe 1d --cv-mode sliding
+    python backend/scripts/train_meta_model.py --timeframe 5m --cv-mode expanding
+    python backend/scripts/train_meta_model.py --timeframe 1d --cv-mode sliding --seeds 42,123,456
 """
 import sys
 import json
@@ -282,6 +284,114 @@ def purged_walk_forward_cv(
     return folds
 
 
+def purged_sliding_window_cv(
+    df: pd.DataFrame,
+    n_folds: int = 5,
+    embargo_pct: float = 0.01,
+    min_train_size: int = 2000,
+    window_size: int | None = None,
+) -> list[CVFold]:
+    """
+    Purged Sliding-Window Cross-Validation.
+
+    Forensic fix for fold-collapse: expanding window accumulates stale
+    regimes (2020-2022 COVID/recovery) that don't generalize to 2024-2025.
+    Sliding window forces each fold to train on a fixed recent window.
+
+    Properties:
+        1. SLIDING: Train window has a FIXED size (not anchored at bar 0).
+        2. PURGED: Remove train samples whose [entry, exit] overlaps with test.
+        3. EMBARGOED: Additional buffer after each test fold excluded from train.
+        4. TEMPORAL: Test always comes AFTER train chronologically.
+
+    Args:
+        df: DataFrame sorted by signal_time with entry/exit timestamps.
+        n_folds: Number of walk-forward folds.
+        embargo_pct: Fraction of total samples to embargo after test.
+        min_train_size: Minimum training samples per fold.
+        window_size: Fixed training window size. If None, auto-calculated
+                     as min(len(df) // 3, 20_000).
+    """
+    n = len(df)
+    embargo_size = max(1, int(n * embargo_pct))
+
+    # Auto-calculate window size if not provided
+    if window_size is None:
+        window_size = min(n // 3, 20_000)
+    window_size = max(window_size, min_train_size)
+
+    # Calculate fold boundaries
+    test_size = max(200, (n - min_train_size) // n_folds)
+    folds = []
+
+    entry = df["signal_time"].values.astype("datetime64[ns]")
+    exit_ = df["exit_time"].values.astype("datetime64[ns]")
+    # Fill NaN exit times
+    exit_mask = pd.isna(exit_)
+    exit_[exit_mask] = entry[exit_mask]
+
+    for fold_id in range(n_folds):
+        # Test window (slides forward)
+        test_start = min_train_size + fold_id * test_size
+        test_end = min(test_start + test_size, n)
+
+        if test_start >= n or test_end <= test_start:
+            break
+
+        test_idx = np.arange(test_start, test_end)
+
+        # ── SLIDING TRAIN WINDOW ─────────────────────────────
+        # Instead of anchored at 0, train starts at max(0, test_start - window_size)
+        train_start = max(0, test_start - window_size)
+        train_end = test_start
+        train_candidates = np.arange(train_start, train_end)
+
+        # ── PURGING ──────────────────────────────────────────
+        # Remove train samples whose lifespan overlaps with ANY test sample
+        test_entry_min = entry[test_start]
+
+        purge_mask = np.ones(len(train_candidates), dtype=bool)
+        n_purged = 0
+        for ti, tidx in enumerate(train_candidates):
+            if exit_[tidx] >= test_entry_min:
+                purge_mask[ti] = False
+                n_purged += 1
+
+        train_idx = train_candidates[purge_mask]
+
+        # ── EMBARGO ──────────────────────────────────────────
+        n_embargoed = 0
+        if len(train_idx) > 0 and embargo_size > 0:
+            embargo_cutoff = test_start - embargo_size
+            embargo_mask = train_idx < embargo_cutoff
+            n_embargoed = len(train_idx) - embargo_mask.sum()
+            train_idx = train_idx[embargo_mask]
+
+        if len(train_idx) < min_train_size // 2:
+            logger.warning(
+                f"Fold {fold_id}: Only {len(train_idx)} train samples after purge "
+                f"(purged={n_purged}, embargoed={n_embargoed}). Skipping."
+            )
+            continue
+
+        folds.append(CVFold(
+            fold_id=fold_id,
+            train_idx=train_idx,
+            test_idx=test_idx,
+            n_purged=n_purged,
+            n_embargoed=n_embargoed,
+        ))
+
+        logger.info(
+            f"Fold {fold_id}: train={len(train_idx)} "
+            f"[{train_idx[0]}→{train_idx[-1]}] (window={window_size}), "
+            f"test={len(test_idx)} [{test_start}→{test_end-1}], "
+            f"purged={n_purged}, embargoed={n_embargoed}"
+        )
+
+    return folds
+
+
 # ══════════════════════════════════════════════════════════════
 # DEFLATED SHARPE RATIO (Bailey & LdP, 2014)
 # ══════════════════════════════════════════════════════════════
@@ -371,9 +481,14 @@ def _annualized_sharpe(
     return float((np.mean(returns) / np.std(returns)) * np.sqrt(trades_per_year))
 
 
-def train_and_evaluate(df: pd.DataFrame) -> dict:
+def train_and_evaluate(df: pd.DataFrame, cv_mode: str = "expanding", seed: int = 42) -> dict:
     """
     Full training pipeline with institutional-grade validation.
+
+    Args:
+        df: Full ML dataset.
+        cv_mode: 'expanding' (anchored at bar 0) or 'sliding' (fixed window).
+        seed: Random seed for XGBoost.
 
     Returns a results dict with per-fold and aggregate metrics.
     """
@@ -395,8 +510,22 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
     # ── PURGED WALK-FORWARD CV ───────────────────────────────
     # Auto-adjust folds based on sample count (LdP: need sufficient train per fold)
     n_folds = 3 if len(df) < 10000 else 5
-    logger.info(f"Generating Purged Walk-Forward folds (n_folds={n_folds}, auto-selected)...")
-    folds = purged_walk_forward_cv(df, n_folds=n_folds, embargo_pct=0.01)
+    logger.info(f"Generating Purged Walk-Forward folds (n_folds={n_folds}, cv_mode={cv_mode})...")
+
+    if cv_mode == "sliding":
+        # Sliding window: fixed training window, forget stale regimes
+        # Auto window: 1d ≈ 20K samples (~2 years × 30 tickers), 5m ≈ 80K
+        tf = df["timeframe"].iloc[0]
+        if tf == "1d":
+            window_size = min(len(df) // 3, 20_000)
+        else:
+            window_size = min(len(df) // 3, 80_000)
+        logger.info(f"Sliding window: window_size={window_size} (tf={tf})")
+        folds = purged_sliding_window_cv(
+            df, n_folds=n_folds, embargo_pct=0.01, window_size=window_size,
+        )
+    else:
+        folds = purged_walk_forward_cv(df, n_folds=n_folds, embargo_pct=0.01)
 
     if not folds:
         logger.error("No valid CV folds generated. Insufficient data.")
@@ -419,7 +548,7 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
         "reg_alpha": 0.5,        # L1 regularization
         "reg_lambda": 2.0,       # L2 regularization
         "scale_pos_weight": (y == 0).sum() / max((y == 1).sum(), 1),
-        "random_state": 42,
+        "random_state": seed,
         "verbosity": 0,
         "early_stopping_rounds": 20,  # Stop when val loss stagnates
     }
@@ -746,7 +875,23 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="XGBoost Meta-Labeling Training")
     parser.add_argument("--timeframe", default="5m", help="Timeframe to train on (5m, 1d)")
+    parser.add_argument(
+        "--cv-mode", default="auto",
+        choices=["expanding", "sliding", "auto"],
+        help="CV mode: 'expanding' (anchored), 'sliding' (fixed window), "
+             "'auto' (sliding for 1d, expanding for 5m)",
+    )
+    parser.add_argument(
+        "--seeds", default="42",
+        help="Comma-separated random seeds for multi-trial DSR (e.g., '42,123,456')",
+    )
     args = parser.parse_args()
+
+    # Resolve auto CV mode
+    cv_mode = args.cv_mode
+    if cv_mode == "auto":
+        cv_mode = "sliding" if args.timeframe == "1d" else "expanding"
+    logger.info(f"CV mode: {cv_mode} (requested: {args.cv_mode})")
 
     logger.info(f"Loading ML Data Lake (timeframe={args.timeframe})...")
     df = load_ml_data(timeframe=args.timeframe)
@@ -755,12 +900,60 @@ if __name__ == "__main__":
         logger.error("No data loaded. Aborting.")
         sys.exit(1)
 
-    logger.info("Starting Meta-Model Training Pipeline...")
-    results = train_and_evaluate(df)
+    seeds = [int(s.strip()) for s in args.seeds.split(",")]
 
-    if results:
-        # Save results to JSON (tagged by timeframe)
-        out_path = _root / "backend" / "scripts" / f"meta_model_results_{args.timeframe}.json"
-        with open(out_path, "w") as f:
-            json.dump(results, f, indent=2, default=str)
-        logger.info(f"\nResults saved to {out_path}")
+    if len(seeds) == 1:
+        # Single run
+        logger.info("Starting Meta-Model Training Pipeline...")
+        results = train_and_evaluate(df, cv_mode=cv_mode, seed=seeds[0])
+
+        if results:
+            out_path = _root / "backend" / "scripts" / f"meta_model_results_{args.timeframe}.json"
+            with open(out_path, "w") as f:
+                json.dump(results, f, indent=2, default=str)
+            logger.info(f"\nResults saved to {out_path}")
+    else:
+        # Multi-trial DSR
+        logger.info(f"\n{'='*60}")
+        logger.info(f"MULTI-TRIAL DSR — {len(seeds)} seeds")
+        logger.info(f"{'='*60}")
+
+        all_lifts = []
+        all_dsrs = []
+        all_results = []
+
+        for i, seed in enumerate(seeds):
+            logger.info(f"\n{'━'*60}")
+            logger.info(f"TRIAL {i+1}/{len(seeds)} — seed={seed}")
+            logger.info(f"{'━'*60}")
+            result = train_and_evaluate(df, cv_mode=cv_mode, seed=seed)
+            if result:
+                all_lifts.append(result["oos_sharpe_lift"])
+                all_dsrs.append(result["dsr"])
+                all_results.append({"seed": seed, **result})
+
+        if all_lifts:
+            lifts_arr = np.array(all_lifts)
+            dsrs_arr = np.array(all_dsrs)
+            logger.info(f"\n{'='*60}")
+            logger.info("MULTI-TRIAL DSR SUMMARY")
+            logger.info(f"{'='*60}")
+            logger.info(f"  Trials: {len(all_lifts)}")
+            logger.info(f"  Sharpe Lift: {lifts_arr.mean():+.3f} ± {lifts_arr.std():.3f}")
+            logger.info(f"  Min/Max Lift: {lifts_arr.min():+.3f} / {lifts_arr.max():+.3f}")
+            logger.info(f"  % Positive Lift: {(lifts_arr > 0).mean()*100:.0f}%")
+            logger.info(f"  DSR Mean: {dsrs_arr.mean():.4f}")
+            logger.info(f"  DSR Range: [{dsrs_arr.min():.4f}, {dsrs_arr.max():.4f}]")
+
+            out_path = _root / "backend" / "scripts" / f"meta_model_multitrial_{args.timeframe}.json"
+            with open(out_path, "w") as f:
+                json.dump({
+                    "cv_mode": cv_mode,
+                    "n_trials": len(seeds),
+                    "sharpe_lift_mean": round(float(lifts_arr.mean()), 4),
+                    "sharpe_lift_std": round(float(lifts_arr.std()), 4),
+                    "pct_positive": round(float((lifts_arr > 0).mean() * 100), 1),
+                    "dsr_mean": round(float(dsrs_arr.mean()), 4),
+                    "trials": all_results,
+                }, f, indent=2, default=str)
+            logger.info(f"\nMulti-trial results saved to {out_path}")

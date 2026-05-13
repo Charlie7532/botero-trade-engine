@@ -192,15 +192,21 @@ class QualityEntryGate:
             report.vol_regime_speculative = regime.speculative_label
 
             if regime.quality_regime == Q_CRISIS:
-                report.final_verdict = "BLOCK"
-                report.final_scale = 0.0
-                report.final_reason = (
-                    f"VOL_REGIME_GATE: CRISIS regime detected "
-                    f"(VIX={report.vix:.1f}, z={vix_z:+.1f}). "
-                    f"Quality: thesis exits only. No new entries."
+                # Forensic audit (conv 1ac4da63): CRISIS showed Sharpe 2.849 (N=89).
+                # Hard block was potentially destroying alpha. Softened to 25% sizing
+                # to collect empirical validation data.
+                # Evidence Status: HYPOTHESIS — will validate after 50+ CRISIS entries.
+                _health_sizing *= 0.25
+                report.alerts = report.alerts or []
+                report.alerts.append(
+                    f"VOL_REGIME_CRISIS: Sizing reduced to {_health_sizing:.0%} "
+                    f"(VIX={report.vix:.1f}, regime={regime.quality_label}). "
+                    f"Collecting validation data (forensic: Sharpe=2.849, N=89)."
                 )
-                logger.warning(f"QualityGate {ticker}: BLOCKED by VOL_REGIME CRISIS")
-                return report
+                logger.warning(
+                    f"QualityGate {ticker}: CRISIS regime — 25% sizing "
+                    f"(softened from BLOCK per forensic audit)"
+                )
 
             if regime.quality_regime == Q_ELEVATED:
                 _health_sizing *= 0.5

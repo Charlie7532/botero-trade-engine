@@ -362,6 +362,11 @@ class OracleBacktester:
                         "entry_delay_bars": geometry.entry_delay_bars,
                         "slippage_factor": geometry.slippage_factor,
                         "round_trip_cost_bps": geometry.round_trip_cost_bps,
+                        # Forensic tag: vol regime at moment of entry
+                        "vol_regime_at_entry": {
+                            "quality": int(row.get("RG_VolRegime_Quality", 0)),
+                            "speculative": int(row.get("RG_VolRegime_Speculative", 0)),
+                        },
                     }
                 })
 

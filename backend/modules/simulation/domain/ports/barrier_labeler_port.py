@@ -23,6 +23,14 @@ class BarrierLabel:
     exit_time: pd.Timestamp = None
     entry_price: float = 0.0  # Actual fill price (VAEP-adjusted)
 
+    # ── Forensic fields (Seykota/Dalio: learn from every trade) ──
+    max_adverse_excursion_pct: float = 0.0    # Deepest drawdown DURING trade
+    max_favorable_excursion_pct: float = 0.0  # Highest unrealized profit DURING trade
+    post_exit_max_pct: float = 0.0            # Max price move AFTER exit (what we missed)
+    post_exit_hit_target: bool = False         # Did price eventually hit original TP after exit?
+    post_exit_bars_to_target: int = 0          # Bars from exit to when TP would have been hit
+    stop_was_sweep: bool = False               # Stop bar close > entry (liquidity sweep, not real selling)
+
 
 class BarrierLabelerPort(ABC):
     """Port for Triple Barrier labeling used by Oracle Backtester."""

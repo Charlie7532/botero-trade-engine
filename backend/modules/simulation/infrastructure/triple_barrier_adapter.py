@@ -97,7 +97,7 @@ class TripleBarrierAdapter(BarrierLabelerPort):
 
             # ── BARRIERS from actual fill price ──────────────────
             upper = entry_price + entry_atr * profit_mult
-            lower = entry_price - entry_atr * loss_mult
+            lower = entry_price - entry_atr * loss_mult if loss_mult > 0 else -float('inf')
 
             # ── WALK FORWARD from exec_bar + 1 ───────────────────
             label = 0
@@ -106,11 +106,22 @@ class TripleBarrierAdapter(BarrierLabelerPort):
             hit = "time"
             exit_slippage = entry_atr * slippage_factor * 0.5  # Half of entry slippage
 
+            # ── Forensic tracking (Seykota: MAE/MFE) ─────────────
+            running_max_pct = 0.0  # MFE: best unrealized profit
+            running_min_pct = 0.0  # MAE: worst unrealized drawdown
+            stop_bar_close = 0.0   # For sweep detection
+
             for bar in range(1, min(max_bars + 1, len(ohlc) - exec_bar)):
                 bar_pos = exec_bar + bar
                 bar_high = float(high.iloc[bar_pos])
                 bar_low = float(low.iloc[bar_pos])
                 bar_close = float(close.iloc[bar_pos])
+
+                # Track MAE/MFE (unrealized excursions)
+                bar_max_pct = (bar_high - entry_price) / entry_price * 100
+                bar_min_pct = (bar_low - entry_price) / entry_price * 100
+                running_max_pct = max(running_max_pct, bar_max_pct)
+                running_min_pct = min(running_min_pct, bar_min_pct)
 
                 # Check upper barrier (profit) — exit with adverse slippage
                 if bar_high >= upper:
@@ -122,12 +133,13 @@ class TripleBarrierAdapter(BarrierLabelerPort):
                     break
 
                 # Check lower barrier (loss) — exit with adverse slippage
-                if bar_low <= lower:
+                if loss_mult > 0 and bar_low <= lower:
                     actual_exit = lower + exit_slippage  # Worse than barrier
                     label = -1
                     ret = (actual_exit - entry_price) / entry_price * 100
                     bars = bar
                     hit = "loss"
+                    stop_bar_close = bar_close  # For sweep detection
                     break
 
                 bars = bar
@@ -136,9 +148,38 @@ class TripleBarrierAdapter(BarrierLabelerPort):
             # ── DEDUCT ROUND-TRIP COSTS ──────────────────────────
             ret -= round_trip_cost_bps / 100.0
 
+            # ── POST-EXIT FORENSICS (Dalio: what did we miss?) ───
+            # Walk forward AFTER exit to see what would have happened
+            exit_bar_pos = min(exec_bar + bars, len(ohlc) - 1)
+            post_exit_max_pct = 0.0
+            post_exit_hit_target = False
+            post_exit_bars_to_target = 0
+
+            # Only compute post-exit forensics for stop-outs and time exits
+            if label != 1:
+                post_walk_limit = min(max_bars, len(ohlc) - exit_bar_pos - 1)
+                for post_bar in range(1, post_walk_limit + 1):
+                    post_pos = exit_bar_pos + post_bar
+                    if post_pos >= len(ohlc):
+                        break
+                    post_high = float(high.iloc[post_pos])
+                    post_pct = (post_high - entry_price) / entry_price * 100
+                    post_exit_max_pct = max(post_exit_max_pct, post_pct)
+
+                    if post_high >= upper and not post_exit_hit_target:
+                        post_exit_hit_target = True
+                        post_exit_bars_to_target = post_bar
+
+            # ── SWEEP DETECTION ──────────────────────────────────
+            # A "sweep" is when the low touches the stop but the close
+            # recovers above entry price. This is institutional stop hunting,
+            # not genuine selling pressure.
+            sweep = False
+            if label == -1 and stop_bar_close > entry_price:
+                sweep = True
+
             # Timestamps for purging/embargo
             signal_time = entry_idx
-            exit_bar_pos = min(exec_bar + bars, len(ohlc) - 1)
             exit_time = ohlc.index[exit_bar_pos]
 
             results.append(BarrierLabel(
@@ -149,6 +190,13 @@ class TripleBarrierAdapter(BarrierLabelerPort):
                 entry_time=signal_time,
                 exit_time=exit_time,
                 entry_price=round(entry_price, 4),
+                # Forensic fields
+                max_adverse_excursion_pct=round(running_min_pct, 4),
+                max_favorable_excursion_pct=round(running_max_pct, 4),
+                post_exit_max_pct=round(post_exit_max_pct, 4),
+                post_exit_hit_target=post_exit_hit_target,
+                post_exit_bars_to_target=post_exit_bars_to_target,
+                stop_was_sweep=sweep,
             ))
 
         logger.info(

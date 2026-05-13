@@ -299,6 +299,12 @@ class OracleBacktester:
             except Exception as e:
                 logger.debug(f"Intermarket features unavailable: {e}")
 
+            # Family J: Multi-Timeframe Candle Structure (3-bar, 5-bar composites)
+            eng.extract_multitf_candle_features()
+
+            # Family K: OHLC Bar Anatomy (close position, gap, range expansion)
+            eng.extract_bar_anatomy_features()
+
             feat_df = eng.df
             feat_cols = eng.get_feature_columns()
 

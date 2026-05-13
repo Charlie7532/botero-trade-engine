@@ -450,7 +450,10 @@ def deflated_sharpe_ratio(
 
 def get_feature_columns(df: pd.DataFrame) -> list[str]:
     """Extract ML feature columns (prefixed families + signal dummies)."""
-    prefixes = ('FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_', 'SIG_')
+    prefixes = (
+        'FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_',
+        'MTF_', 'BA_', 'SIG_',
+    )
     return [c for c in df.columns if c.startswith(prefixes)]
 
 

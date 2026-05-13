@@ -658,12 +658,212 @@ class QuantFeatureEngineer:
         )
 
     # ================================================================
+    # FAMILY J: Multi-Timeframe Candle Structure
+    # ================================================================
+
+    def extract_multitf_candle_features(self) -> None:
+        """
+        Familia J: Velas compuestas 5-bar con contexto institucional.
+
+        Structural features of the 5-bar composite candle PLUS contextual
+        position relative to institutional reference levels.
+
+        Forensic-driven simplification:
+        - Dropped 3-bar composites (redundant with 5-bar, adds noise).
+        - Added J8-J11: VWAP position, regression channel σ, VP shape,
+          and slope conjugation (short vs long regression).
+
+        Evidence Status: VALIDATED (Components A-C forensics).
+        """
+        logger.info("Calculando features de velas compuestas 5-bar + contexto...")
+        df = self.df
+        n = 5
+
+        # Composite candle OHLC over last 5 bars
+        comp_open = df['open'].shift(n - 1)  # open of 5 bars ago
+        comp_high = df['high'].rolling(n).max()
+        comp_low = df['low'].rolling(n).min()
+        comp_close = df['close']  # current close
+        comp_volume = df['volume'].rolling(n).sum()
+
+        comp_range = (comp_high - comp_low).clip(lower=1e-8)
+        comp_body = (comp_close - comp_open).abs()
+
+        # J1: Body ratio — |body| / range. Doji ≈ 0, Marubozu ≈ 1
+        df['MTF_BodyRatio_5'] = comp_body / comp_range
+
+        # J2: Body direction — +1 bullish, -1 bearish (normalized)
+        df['MTF_BodyDir_5'] = (comp_close - comp_open) / comp_range
+
+        # J3: Upper/Lower wick ratios
+        body_top = pd.concat([comp_open, comp_close], axis=1).max(axis=1)
+        body_bot = pd.concat([comp_open, comp_close], axis=1).min(axis=1)
+        df['MTF_UpperWick_5'] = (comp_high - body_top) / comp_range
+        df['MTF_LowerWick_5'] = (body_bot - comp_low) / comp_range
+
+        # J4: Wick asymmetry — positive = more upper wick (bearish rejection)
+        df['MTF_WickAsymmetry_5'] = (
+            df['MTF_UpperWick_5'] - df['MTF_LowerWick_5']
+        )
+
+        # J5: Range expansion — composite range vs previous composite range
+        prev_range = comp_range.shift(n)
+        df['MTF_RangeExpansion_5'] = comp_range / prev_range.clip(lower=1e-8)
+
+        # J6: Close position within composite range (0=low, 1=high)
+        df['MTF_ClosePosition_5'] = (comp_close - comp_low) / comp_range
+
+        # J7: Volume concentration — volume of current bar / composite volume
+        # High = most volume happened on the last bar (confirmation)
+        df['MTF_VolConcentration_5'] = (
+            df['volume'] / comp_volume.clip(lower=1)
+        )
+
+        # ── CONTEXTUAL FEATURES (Munger: combine existing tools) ──────
+
+        # J8: VWAP position — where the composite close sits vs VWAP
+        # Reuses the VWAP already computed in Family B (MS_VWAP_ZScore).
+        # Positive = above VWAP (premium), negative = below (discount).
+        # Normalized by composite range for scale invariance.
+        typical_price = (df['high'] + df['low'] + df['close']) / 3.0
+        vwap_20 = (
+            (typical_price * df['volume']).rolling(20).sum()
+            / df['volume'].rolling(20).sum().clip(lower=1.0)
+        )
+        df['MTF_VWAPPosition_5'] = (comp_close - vwap_20) / comp_range
+
+        # J9: Regression channel σ position — distance from 200-bar
+        # regression line in standard deviation units.
+        # Deeply negative = extreme discount (forensic sweet spot).
+        close_arr = df['close'].values.astype(float)
+        channel_sigma = pd.Series(np.nan, index=df.index, dtype=float)
+        # Vectorized rolling regression (200-bar window)
+        if len(df) >= 200:
+            for i in range(200, len(df)):
+                y = close_arr[i - 200:i + 1]
+                x = np.arange(201, dtype=float)
+                x_mean = x.mean()
+                y_mean = y.mean()
+                ss_xx = np.sum((x - x_mean) ** 2)
+                ss_xy = np.sum((x - x_mean) * (y - y_mean))
+                slope = ss_xy / ss_xx
+                intercept = y_mean - slope * x_mean
+                reg_value = slope * 200 + intercept
+                fitted = slope * x + intercept
+                residual_std = float(np.std(y - fitted, ddof=1))
+                if residual_std > 1e-8:
+                    channel_sigma.iloc[i] = (close_arr[i] - reg_value) / residual_std
+        df['MTF_ChannelSigma_5'] = channel_sigma
+
+        # J10: Volume Profile shape encoding (from VP analyzer).
+        # P-shape = distribution/reversal → -1
+        # D-shape = equilibrium/chop → 0
+        # b-shape = accumulation/support → +1
+        # If VP shape is not available in the DataFrame, default to 0.
+        if 'VF_VP_ShapeCode' in df.columns:
+            df['MTF_VPShape_5'] = df['VF_VP_ShapeCode']
+        else:
+            # Proxy: skew of volume distribution over 60 bars
+            vol_skew = df['volume'].rolling(60).apply(
+                lambda x: float(pd.Series(x).skew()), raw=False
+            )
+            # Positive skew = heavy right tail = b-shape (accumulation)
+            # Negative skew = heavy left tail = P-shape (distribution)
+            df['MTF_VPShape_5'] = vol_skew.clip(lower=-2, upper=2) / 2.0
+
+        # J11: Slope conjugation — short vs long regression alignment.
+        # Forensic finding: winners have short slope COUNTER to long in BULL
+        # (entering during the dip). This feature captures the tension.
+        # slope_diff > 0 = short accelerating vs long (momentum)
+        # slope_diff < 0 = short decelerating vs long (pullback = entry zone)
+        slope_long_series = pd.Series(np.nan, index=df.index, dtype=float)
+        slope_short_series = pd.Series(np.nan, index=df.index, dtype=float)
+        if len(df) >= 200:
+            for i in range(200, len(df)):
+                y_long = close_arr[i - 199:i + 1]
+                x_long = np.arange(200, dtype=float)
+                ss_xx_l = np.sum((x_long - x_long.mean()) ** 2)
+                ss_xy_l = np.sum((x_long - x_long.mean()) * (y_long - y_long.mean()))
+                sl = ss_xy_l / ss_xx_l
+                slope_long_series.iloc[i] = (sl / y_long.mean() * 100) if y_long.mean() > 0 else 0
+
+                short_w = min(60, max(10, i // 5))  # adaptive short window
+                if i >= short_w:
+                    y_short = close_arr[i - short_w + 1:i + 1]
+                    x_short = np.arange(short_w, dtype=float)
+                    ss_xx_s = np.sum((x_short - x_short.mean()) ** 2)
+                    ss_xy_s = np.sum((x_short - x_short.mean()) * (y_short - y_short.mean()))
+                    ss = ss_xy_s / ss_xx_s
+                    slope_short_series.iloc[i] = (ss / y_short.mean() * 100) if y_short.mean() > 0 else 0
+
+        df['MTF_SlopeConjugation_5'] = slope_short_series - slope_long_series
+
+        logger.info(
+            f"Multi-TF candle features (5-bar + context): "
+            f"{len([c for c in df.columns if c.startswith('MTF_')])} features"
+        )
+
+    # ================================================================
+    # FAMILY K: OHLC Bar Anatomy
+    # ================================================================
+
+    def extract_bar_anatomy_features(self) -> None:
+        """
+        Familia K: Anatomía estructural de la barra individual.
+
+        Features que capturan la microestructura de cada barra OHLC
+        que no están en las familias existentes (returns, vol, ATR).
+
+        Evidence Status: HYPOTHESIS — P2 from forensic audit.
+        """
+        logger.info("Calculando features de anatomía de barra...")
+        df = self.df
+
+        bar_range = (df['high'] - df['low']).clip(lower=1e-8)
+
+        # K1: Close position within bar (0=low, 1=high)
+        # Hammer = close near high (>0.8), shooting star = close near low (<0.2)
+        df['BA_ClosePosition'] = (df['close'] - df['low']) / bar_range
+
+        # K2: Opening gap (normalized by ATR)
+        atr = df.get('TS_ATR_14', bar_range.rolling(14).mean())
+        gap = df['open'] - df['close'].shift(1)
+        df['BA_GapNorm'] = gap / atr.clip(lower=1e-8)
+
+        # K3: Range expansion ratio (today's range / rolling avg range)
+        avg_range = bar_range.rolling(20).mean().clip(lower=1e-8)
+        df['BA_RangeExpansion'] = bar_range / avg_range
+
+        # K4: Body-to-range ratio (individual bar)
+        body = (df['close'] - df['open']).abs()
+        df['BA_BodyRatio'] = body / bar_range
+
+        # K5: Intrabar trend acceleration
+        # If close > open AND high = close → clean trend bar (no rejection)
+        # Normalized: how much of the bar's move was "wasted" in wicks
+        body_dir = df['close'] - df['open']
+        body_top = pd.concat([df['open'], df['close']], axis=1).max(axis=1)
+        body_bot = pd.concat([df['open'], df['close']], axis=1).min(axis=1)
+        upper_wick = df['high'] - body_top
+        lower_wick = body_bot - df['low']
+        total_wick = upper_wick + lower_wick
+        df['BA_WickToBody'] = total_wick / body.clip(lower=1e-8)
+
+        logger.info(
+            f"Bar anatomy features: "
+            f"{len([c for c in df.columns if c.startswith('BA_')])} features"
+        )
+
+    # ================================================================
     # PIPELINE MASTER
     # ================================================================
 
     def get_feature_columns(self) -> list:
         """Retorna la lista de columnas que son features válidos para ML."""
-        prefixes = ('FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_')
+        prefixes = (
+            'FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_',
+            'MTF_', 'BA_',
+        )
         return [c for c in self.df.columns if c.startswith(prefixes)]
 
     def process_all_features(
@@ -714,6 +914,8 @@ class QuantFeatureEngineer:
         self.extract_macro_context_features(vix_df=vix_df, bond_df=bond_df)
         self.extract_regime_features()
         self.extract_vol_regime_features()
+        self.extract_multitf_candle_features()
+        self.extract_bar_anatomy_features()
 
         # Reemplazar infinitos por NaN antes de dropear
         self.df.replace([np.inf, -np.inf], np.nan, inplace=True)

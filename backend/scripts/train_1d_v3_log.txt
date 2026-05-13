@@ -1,0 +1,132 @@
+INFO: CV mode: sliding (requested: sliding)
+INFO: Loading ML Data Lake (timeframe=1d)...
+INFO: Loaded 24682 samples, 64 features + 4 signal dummies, 4 signals, 30 tickers, tf=1d
+INFO: Starting Meta-Model Training Pipeline...
+INFO: Feature columns (68): ['CS_Beta', 'TS_ATR_14', 'BA_GapNorm', 'TS_ATR_Pct', 'FD_LogClose', 'TS_Return_1', 'TS_Return_5', 'TS_VolRatio', 'BA_BodyRatio', 'CAL_MonthEnd', 'FD_LogVolume', 'TS_Return_15', 'TS_Return_50', 'BA_WickToBody', 'MC_VIX_ZScore', 'MTF_BodyDir_3', 'MTF_BodyDir_5', 'CAL_DaysToOPEX', 'CAL_QuarterEnd', 'CS_RelMomentum', 'MS_VWAP_ZScore', 'OV_FloorSharpe', 'MTF_BodyRatio_3', 'MTF_BodyRatio_5', 'MTF_LowerWick_3', 'MTF_LowerWick_5', 'MTF_UpperWick_3', 'MTF_UpperWick_5', 'OV_OrganicRatio', 'TS_CalmDuration', 'TS_RealVol_Fast', 'TS_RealVol_Slow', 'BA_ClosePosition', 'MS_Amihud_ZScore', 'MS_Spread_ZScore', 'OV_CeilingSharpe', 'RG_TrendStrength', 'RG_WinsteinProxy', 'BA_RangeExpansion', 'RG_AccDistRatio_Z', 'RG_MomentumRegime', 'TS_VolOfVol_Ratio', 'TS_VolPersistence', 'VF_CumDelta_ZScore', 'VF_VolAccel_ZScore', 'MS_OrderFlow_ZScore', 'MTF_ClosePosition_3', 'MTF_ClosePosition_5', 'MTF_WickAsymmetry_3', 'MTF_WickAsymmetry_5', 'OV_IndexBeta_ZScore', 'OV_RobustnessSpread', 'VF_RelVolume_ZScore', 'IM_YieldDelta_ZScore', 'MC_VIX_TermStructure', 'MTF_RangeExpansion_3', 'MTF_RangeExpansion_5', 'RG_VolRegime_Quality', 'CS_RelStrength_ZScore', 'VF_VolPriceDivergence', 'MC_VIX_Velocity_ZScore', 'MTF_VolConcentration_3', 'MTF_VolConcentration_5', 'RG_VolRegime_Speculative', 'SIG_kalman_wyckoff', 'SIG_pattern_recognition', 'SIG_rsi_intelligence', 'SIG_volume_quality'] [tf=390m]
+INFO: Meta-labels: 6938 positive (28.1%), 17744 negative (71.9%)
+INFO: Computing sample weights (Average Uniqueness)...
+INFO: Sample weights: min=0.504, max=6.160, mean=1.000, std=0.254
+INFO: Generating Purged Walk-Forward folds (n_folds=5, cv_mode=sliding)...
+INFO: Sliding window: window_size=8227 (tf=1d)
+INFO: Fold 0: train=1747 [0→1753] (window=8227), test=4536 [2000→6535], purged=125, embargoed=128
+INFO: Fold 1: train=6279 [0→6289] (window=8227), test=4536 [6536→11071], purged=177, embargoed=80
+INFO: Fold 2: train=7929 [2845→10825] (window=8227), test=4536 [11072→15607], purged=192, embargoed=106
+INFO: Fold 3: train=7978 [7381→15361] (window=8227), test=4536 [15608→20143], purged=102, embargoed=147
+INFO: Fold 4: train=7833 [11917→19897] (window=8227), test=4536 [20144→24679], purged=279, embargoed=115
+WARNING: ⚠️ 1 underpowered folds (< 5000 train samples): ['Fold 0 (1747 samples)']. OOS metrics from these folds have higher variance.
+INFO: 
+──────────────────────────────────────────────────
+INFO: FOLD 0
+INFO: ──────────────────────────────────────────────────
+INFO:   Early stopped at iteration 95/500
+INFO:   OOS: Acc=0.477 Prec=0.269 Rec=0.737 AUC=0.603
+  Sharpe: baseline=-0.317 → filtered=0.144 (lift=+0.462)
+  IS: Acc=0.668 Sharpe_IS=2.370 Overfit=16.4x
+  Trades: 2868/4536 taken (63%)
+INFO: 
+──────────────────────────────────────────────────
+INFO: FOLD 1
+INFO: ──────────────────────────────────────────────────
+INFO:   Early stopped at iteration 88/500
+INFO:   OOS: Acc=0.627 Prec=0.327 Rec=0.342 AUC=0.536
+  Sharpe: baseline=0.466 → filtered=0.963 (lift=+0.497)
+  IS: Acc=0.738 Sharpe_IS=2.466 Overfit=2.6x
+  Trades: 1299/4536 taken (29%)
+INFO: 
+──────────────────────────────────────────────────
+INFO: FOLD 2
+INFO: ──────────────────────────────────────────────────
+INFO:   Early stopped at iteration 22/500
+INFO:   OOS: Acc=0.572 Prec=0.288 Rec=0.126 AUC=0.493
+  Sharpe: baseline=1.418 → filtered=0.573 (lift=-0.846)
+  IS: Acc=0.754 Sharpe_IS=3.207 Overfit=5.6x
+  Trades: 715/4536 taken (16%)
+INFO: 
+──────────────────────────────────────────────────
+INFO: FOLD 3
+INFO: ──────────────────────────────────────────────────
+INFO:   Early stopped at iteration 54/500
+INFO:   OOS: Acc=0.396 Prec=0.276 Rec=0.756 AUC=0.531
+  Sharpe: baseline=0.311 → filtered=0.391 (lift=+0.080)
+  IS: Acc=0.560 Sharpe_IS=1.834 Overfit=4.7x
+  Trades: 3368/4536 taken (74%)
+INFO: 
+──────────────────────────────────────────────────
+INFO: FOLD 4
+INFO: ──────────────────────────────────────────────────
+INFO:   Early stopped at iteration 1/500
+INFO:   OOS: Acc=0.256 Prec=0.256 Rec=1.000 AUC=0.503
+  Sharpe: baseline=0.056 → filtered=0.056 (lift=+0.000)
+  IS: Acc=0.306 Sharpe_IS=0.633 Overfit=11.4x
+  Trades: 4536/4536 taken (100%)
+INFO: 
+============================================================
+INFO: AGGREGATE OOS RESULTS
+INFO: ============================================================
+INFO: Overall OOS: Acc=0.466, AUC=0.505
+INFO: Sharpe: Baseline=0.350 → Filtered=0.281 (lift=-0.068)
+INFO: Trades: 12786/22680 (56.4% filter rate)
+INFO: DSR (Deflated Sharpe Ratio): 0.0000 (trials=1)
+INFO: ❌ DSR < 0.50: Sharpe likely explained by luck / multiple testing
+INFO: 
+──────────────────────────────────────────────────
+INFO: PER-SIGNAL OOS PERFORMANCE
+INFO: ──────────────────────────────────────────────────
+INFO:   volume_quality            WR=27.6% Taken=8492/15661 Sharpe=0.179
+INFO:   pattern_recognition       WR=27.5% Taken=665/1218 Sharpe=0.452
+INFO:   kalman_wyckoff            WR=28.7% Taken=1403/2329 Sharpe=0.634
+INFO:   rsi_intelligence          WR=28.7% Taken=2226/3472 Sharpe=0.398
+INFO: 
+──────────────────────────────────────────────────
+INFO: PER-REGIME OOS PERFORMANCE (Weinstein Proxy)
+INFO: ──────────────────────────────────────────────────
+INFO:   Advancing       N= 9874 WR=27.1% Taken=4630 Sharpe=0.212
+INFO:   Basing          N= 2064 WR=26.0% Taken=991 Sharpe=-0.165
+INFO:   Topping         N= 3854 WR=27.2% Taken=2218 Sharpe=0.106
+INFO:   Declining       N= 6888 WR=29.9% Taken=4947 Sharpe=0.450
+INFO: 
+──────────────────────────────────────────────────
+INFO: PER-VOL-REGIME OOS PERFORMANCE
+INFO: ──────────────────────────────────────────────────
+INFO: 
+  vol_regime_quality:
+INFO:     NORMAL          N=15372 WR=27.2% Taken=7955 Sharpe=0.238
+INFO:     COMPLACENT      N=  219 WR=24.7% Taken=91 Sharpe=0.884
+INFO:     ELEVATED        N= 6574 WR=29.1% Taken=4399 Sharpe=0.304
+INFO:     CRISIS          N=  515 WR=31.5% Taken=341 Sharpe=0.727
+INFO: 
+  vol_regime_speculative:
+INFO:     STALK           N=11651 WR=27.9% Taken=6626 Sharpe=0.388
+INFO:     STRIKE          N= 2067 WR=26.6% Taken=1196 Sharpe=0.198
+INFO:     HARVEST         N= 3567 WR=27.0% Taken=2118 Sharpe=-0.188
+INFO:     RETREAT         N= 5395 WR=28.7% Taken=2846 Sharpe=0.475
+INFO: 
+──────────────────────────────────────────────────
+INFO: TOP 15 FEATURES (Gain-Based Importance)
+INFO: ──────────────────────────────────────────────────
+INFO:   OV_CeilingSharpe          0.0367 ███
+INFO:   TS_RealVol_Fast           0.0306 ███
+INFO:   IM_YieldDelta_ZScore      0.0301 ███
+INFO:   TS_RealVol_Slow           0.0285 ██
+INFO:   RG_AccDistRatio_Z         0.0281 ██
+INFO:   MC_VIX_TermStructure      0.0278 ██
+INFO:   MS_VWAP_ZScore            0.0273 ██
+INFO:   TS_Return_50              0.0273 ██
+INFO:   CAL_DaysToOPEX            0.0266 ██
+INFO:   CS_Beta                   0.0256 ██
+INFO:   MC_VIX_ZScore             0.0253 ██
+INFO:   TS_VolPersistence         0.0234 ██
+INFO:   TS_VolRatio               0.0228 ██
+INFO:   VF_VolAccel_ZScore        0.0228 ██
+INFO:   VF_VolPriceDivergence     0.0223 ██
+INFO: 
+============================================================
+INFO: META-MODEL TRAINING COMPLETE
+INFO: ============================================================
+INFO:   Samples: 24682
+INFO:   Features: 68
+INFO:   OOS AUC: 0.5046
+INFO:   OOS Sharpe Lift: -0.068
+INFO:   DSR: 0.0000
+INFO: 
+Results saved to /root/botero-trade/backend/scripts/meta_model_results_1d.json

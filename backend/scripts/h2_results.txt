@@ -1,0 +1,30 @@
+
+============================================================
+H2: PRICE-REGRESSION REGIME RSI vs BASELINE
+============================================================
+
+  BASELINE (RSI < 30, brute force):
+    Entries:       3,472
+    Win Rate:      28.7%
+    Sharpe:        0.398
+
+  H1 (Cardwell/Brown, circular):
+    Entries:       3,214
+    Win Rate:      27.7%
+    Sharpe:        0.375
+
+  H2 (Price Regression 120/60):
+    Entries:       1,570
+    Win Rate:      24.8%
+    Sharpe:        -0.071
+    Profit Factor: 0.972
+    Avg Return:    -0.0458%
+    Avg Bars Held: 6.9
+
+  DELTA vs BASELINE:
+    WR:      -3.9 pp
+    Sharpe:  -0.469
+    Entries: -1,902 (-55%)
+
+  ❌ HYPOTHESIS REJECTED: WR declined by 3.9pp
+============================================================

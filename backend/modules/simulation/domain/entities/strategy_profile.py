@@ -19,6 +19,7 @@ class InvestmentCategory(str, Enum):
     QUALITY_VALUE_120 = "QUALITY_VALUE_120"  # Extended horizon: ~6 months
     QUALITY_GROWTH = "QUALITY_GROWTH"
     QUALITY_DIVIDEND = "QUALITY_DIVIDEND"
+    QUALITY_THESIS = "QUALITY_THESIS"        # Druckenmiller: no mechanical stop, thesis exit only
 
     # SPECULATIVE — Eifert & PTJ: speed, asymmetry, microstructure
     SPECULATIVE_SPRING = "SPECULATIVE_SPRING"
@@ -63,6 +64,8 @@ ORACLE_GEOMETRY: dict[InvestmentCategory, OracleGeometry] = {
     InvestmentCategory.QUALITY_VALUE_120: OracleGeometry(profit_mult=3.0, loss_mult=1.0, max_bars=120, slippage_factor=0.05, round_trip_cost_bps=6.0),
     InvestmentCategory.QUALITY_GROWTH:   OracleGeometry(profit_mult=2.5, loss_mult=1.0, max_bars=45, slippage_factor=0.05, round_trip_cost_bps=6.0),
     InvestmentCategory.QUALITY_DIVIDEND: OracleGeometry(profit_mult=2.0, loss_mult=0.8, max_bars=90, slippage_factor=0.04, round_trip_cost_bps=5.0),
+    # Druckenmiller: No mechanical stop. Exit only on thesis death (time proxy = 120 bars ≈ 6 months)
+    InvestmentCategory.QUALITY_THESIS:   OracleGeometry(profit_mult=3.0, loss_mult=0.0, max_bars=120, slippage_factor=0.05, round_trip_cost_bps=6.0),
     # SPECULATIVE: tighter barriers, volatile stocks, intraday bars → higher slippage
     InvestmentCategory.SPECULATIVE_SPRING:   OracleGeometry(profit_mult=2.0, loss_mult=1.0, max_bars=15, slippage_factor=0.10, round_trip_cost_bps=12.0),
     InvestmentCategory.SPECULATIVE_MOMENTUM: OracleGeometry(profit_mult=1.5, loss_mult=1.0, max_bars=10, slippage_factor=0.12, round_trip_cost_bps=12.0),

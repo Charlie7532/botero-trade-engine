@@ -1,0 +1,55 @@
+INFO: Oracle: rsi_intelligence → Ceiling=1.1772 Floor=1.783 WR=35.92% PF=1.4904 Entries=103
+INFO: Oracle: rsi_intelligence → Ceiling=-1.0781 Floor=-2.0345 WR=21.36% PF=0.7014 Entries=103
+INFO: Oracle: rsi_intelligence → Ceiling=0.397 Floor=-0.4986 WR=28.7% PF=1.1662 Entries=108
+INFO: Oracle: rsi_intelligence → Ceiling=-0.6404 Floor=-0.0297 WR=23.4% PF=0.7837 Entries=94
+INFO: Oracle: rsi_intelligence → Ceiling=0.3389 Floor=-0.0822 WR=25.71% PF=1.1314 Entries=105
+INFO: Oracle: rsi_intelligence → Ceiling=1.5824 Floor=1.8265 WR=37.06% PF=2.0271 Entries=143
+INFO: Oracle: rsi_intelligence → Ceiling=-0.0745 Floor=0.7892 WR=25.51% PF=0.9708 Entries=98
+INFO: Oracle: rsi_intelligence → Ceiling=0.8135 Floor=1.1152 WR=32.69% PF=1.4078 Entries=104
+INFO: Oracle: rsi_intelligence → Ceiling=1.5025 Floor=1.0738 WR=32.52% PF=1.6987 Entries=123
+INFO: Oracle: rsi_intelligence → Ceiling=-0.597 Floor=-0.0219 WR=20.59% PF=0.797 Entries=102
+INFO: Oracle: rsi_intelligence → Ceiling=-1.801 Floor=-0.3006 WR=16.33% PF=0.5296 Entries=98
+INFO: Oracle: rsi_intelligence → Ceiling=1.7317 Floor=2.8117 WR=38.61% PF=2.0901 Entries=101
+INFO: Oracle: rsi_intelligence → Ceiling=-1.1951 Floor=-1.5114 WR=19.83% PF=0.6391 Entries=121
+INFO: Oracle: rsi_intelligence → Ceiling=0.5414 Floor=0.3919 WR=24.47% PF=1.2117 Entries=94
+INFO: Oracle: rsi_intelligence → Ceiling=-0.707 Floor=-0.7298 WR=23.64% PF=0.7767 Entries=110
+INFO: Oracle: rsi_intelligence → Ceiling=0.6418 Floor=1.1599 WR=29.92% PF=1.3698 Entries=127
+INFO: Oracle: rsi_intelligence → Ceiling=0.684 Floor=0.5742 WR=33.33% PF=1.2438 Entries=105
+INFO: Oracle: rsi_intelligence → Ceiling=-0.9431 Floor=0.7329 WR=21.59% PF=0.6896 Entries=88
+INFO: Oracle: rsi_intelligence → Ceiling=-0.4929 Floor=0.2229 WR=21.84% PF=0.8575 Entries=87
+INFO: Oracle: rsi_intelligence → Ceiling=0.623 Floor=0.9493 WR=29.67% PF=1.2579 Entries=91
+INFO: Oracle: rsi_intelligence → Ceiling=-0.5636 Floor=0.9771 WR=21.11% PF=0.7926 Entries=90
+INFO: Oracle: rsi_intelligence → Ceiling=0.2157 Floor=2.2531 WR=24.73% PF=1.1107 Entries=93
+INFO: Oracle: rsi_intelligence → Ceiling=0.0999 Floor=0.992 WR=25.71% PF=1.0442 Entries=105
+INFO: Oracle: rsi_intelligence → Ceiling=-0.9025 Floor=-3.4717 WR=21.74% PF=0.7418 Entries=115
+INFO: Oracle: rsi_intelligence → Ceiling=0.7029 Floor=0.9473 WR=29.57% PF=1.3297 Entries=115
+INFO: Oracle: rsi_intelligence → Ceiling=-0.3301 Floor=-0.8286 WR=24.81% PF=0.879 Entries=133
+INFO: Oracle: rsi_intelligence → Ceiling=0.1663 Floor=0.139 WR=27.55% PF=1.058 Entries=98
+INFO: Oracle: rsi_intelligence → Ceiling=0.602 Floor=0.7763 WR=31.36% PF=1.2691 Entries=118
+INFO: Oracle: rsi_intelligence → Ceiling=1.042 Floor=0.6277 WR=32.76% PF=1.5971 Entries=116
+INFO: Oracle: rsi_intelligence → Ceiling=1.4786 Floor=-0.1171 WR=38.1% PF=1.8429 Entries=126
+
+============================================================
+H1: RSI INTELLIGENCE (Cardwell/Brown) vs BASELINE
+============================================================
+
+  BASELINE (RSI < 30):
+    Entries:      3,472
+    Win Rate:     28.7%
+    Sharpe:       0.398
+
+  H1 (Cardwell/Brown):
+    Entries:      3,214
+    Win Rate:     27.7%
+    Sharpe:       0.375
+    Profit Factor:1.166
+    Avg Return:   0.2587%
+    Avg Bars Held:6.8
+
+  DELTA:
+    WR:     -1.0 pp
+    Sharpe: -0.023
+    Entries: -258 (-7%)
+
+  ❌ HYPOTHESIS REJECTED: WR declined by 1.0pp
+============================================================

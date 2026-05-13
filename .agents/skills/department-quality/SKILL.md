@@ -102,3 +102,45 @@ QUALITY positions are exited ONLY when the thesis is dead. Never on price action
 | Orchestration | `QualityOrchestrator` | `execution/application/use_cases/quality_orchestrator.py` |
 | Research pipeline | `QualityResearchPipeline` | `portfolio_management/` |
 | Fundamental data | `GuruFocusIntelligence` | `flow_intelligence/infrastructure/gurufocus_intelligence.py` |
+| Statistical entry | `RegressionChannelAdapter` | `simulation/infrastructure/signal_adapters.py` |
+| Thesis geometry | `QUALITY_THESIS` | `simulation/domain/entities/strategy_profile.py` |
+| Triple Barrier + MAE/MFE | `TripleBarrierAdapter` | `simulation/infrastructure/triple_barrier_adapter.py` |
+
+## Empirical Evidence — Validated Forensics
+
+> [!NOTE]
+> The following findings have been validated via Oracle backtest on 30 Quality tickers
+> (5 years of daily data from Neon Vault). All results are persisted in the ML Data Lake.
+
+### Stop-Loss Destruction (Component A)
+
+- **53.8% of mechanical stop-outs** eventually hit the original profit target.
+- Only **5.6%** were genuine liquidity sweeps.
+- Average bars to target AFTER being stopped: **22 days** (just needed patience).
+- **Conclusion**: Mechanical stops destroy alpha in Quality positions. Thesis-based exits only.
+
+### QUALITY_THESIS Geometry (Component B)
+
+| Metric | QUALITY_VALUE (3:1 stop) | QUALITY_THESIS (no stop) |
+|---|:-:|:-:|
+| Win Rate | 29.2% | **77.2%** |
+| Sharpe | 0.586 | **0.898** |
+| Profit Factor | 1.281 | **2.531** |
+
+### Regression Channel Entry Tool (Component C)
+
+The `RegressionChannelAdapter` is the highest-precision entry tool in the system.
+
+| Config | WR | Sharpe | PF |
+|---|:-:|:-:|:-:|
+| RC × QUALITY_THESIS | **82.2%** | **1.326** | **3.583** |
+
+**Key mechanic — Slope Conjugation**: Winners enter when the short regression (wave) is
+NEGATIVE while the long regression (tide) is positive. Entering during the dip, not after
+the turn. Losers enter when the short slope has already turned positive (arriving late).
+
+### Entry Signal Orthogonality
+
+RSI (momentum) and RegressionChannel (position) have **1.8% overlap** in signals.
+They measure independent dimensions of market state, enabling pure diversification
+for the meta-model.

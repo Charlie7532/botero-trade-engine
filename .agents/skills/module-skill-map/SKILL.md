@@ -29,7 +29,7 @@ When any agent works on a backend module, activate the skills listed for that mo
 | `price_analysis` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `department-quality` (Gates 3-4). SPECULATIVE: `tactical-entries` | RSI + phase — QUALITY uses as binary gate, SPECULATIVE uses for tactical timing |
 | `rotation_intelligence` | SERVICE | `clean-architecture`, `operational-purpose` | `rotation-analyst`, `cio-allocator` | Sector/international rotation — feeds CIO |
 | `shared` | — | `clean-architecture`, `operational-purpose` | *(none)* | Foundational types and shared ports |
-| `simulation` | VALIDATION | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies` | Backtesting engine — López de Prado validation |
+| `simulation` | VALIDATION | `clean-architecture`, `operational-purpose` | `backtesting-trading-strategies`, `trade-forensics` | Backtesting engine — López de Prado validation + MAE/MFE forensics |
 | `signal_discovery` | SPECULATIVE | `clean-architecture`, `operational-purpose` | `signal-miner`, `backtesting-trading-strategies` | Statistical anomaly mining → validated via simulation |
 | `volume_intelligence` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `department-quality` (Gate 1). SPECULATIVE: `tactical-entries` | VP analysis — QUALITY uses for institutional bias check, SPECULATIVE uses for POC/VAH/VAL |
 | `volatility_regime` | SERVICE | `clean-architecture`, `operational-purpose` | `vol-regime-intelligence` | Vol state machine — consumed by entry gates, risk managers, CIO |

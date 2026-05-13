@@ -373,7 +373,14 @@ class OracleBacktester:
                             "quality": int(row.get("RG_VolRegime_Quality", 0)),
                             "speculative": int(row.get("RG_VolRegime_Speculative", 0)),
                         },
-                    }
+                    },
+                    # Forensic fields (Component A)
+                    "max_adverse_excursion_pct": label.max_adverse_excursion_pct,
+                    "max_favorable_excursion_pct": label.max_favorable_excursion_pct,
+                    "post_exit_max_pct": label.post_exit_max_pct,
+                    "post_exit_hit_target": label.post_exit_hit_target,
+                    "post_exit_bars_to_target": label.post_exit_bars_to_target,
+                    "stop_was_sweep": label.stop_was_sweep,
                 })
 
             # Batch flush to Neon (2 round-trips instead of 2×N)

@@ -117,14 +117,25 @@ Your `StrategyCalibrator._try_xgboost_weights()` uses feature importance. Ensure
 
 | Tool | File | Purpose |
 |---|---|---|
-| `OracleBacktester` | `oracle_backtest.py` | Alpha Ceiling per signal via Triple Barrier |
+| `OracleBacktester` | `oracle_backtest.py` | Alpha Ceiling per signal via Triple Barrier + forensic persistence |
 | `StrategyCalibrator` | `calibrate_strategy.py` | ML-driven weight discovery (Oracle + XGBoost) |
-| `QuantFeatureEngineer` | `engineer_features.py` | 6-family stationary feature pipeline |
+| `QuantFeatureEngineer` | `engineer_features.py` | 11-family stationary feature pipeline (FD→MS→TS→CS→VF→OV→CAL→IM→RG→J→K) |
 | `StrategyComposer` | `strategy_composer.py` | Weighted/majority/unanimous signal composition |
 | `PreTradeGate` | `pre_trade_gate.py` | 11-stage validation pipeline |
 | `RetrainTrigger` | `retrain_trigger.py` | Automated decay detection + recalibration |
 | `BacktestRunner` | `run_backtest.py` | Full backtest with walk-forward |
 | `TradeAnalyzer` | `analyze_trades.py` | Post-trade statistical analysis |
+| `RegressionChannelAdapter` | `signal_adapters.py` | 200-bar channel + VWAP + slope conjugation (Sharpe 1.326) |
+| `TripleBarrierAdapter` | `triple_barrier_adapter.py` | Labels + MAE/MFE/post-exit forensics + sweep detection |
+
+### Dual Geometry (Quality)
+
+Always evaluate Quality signals under BOTH geometries:
+- **QUALITY_VALUE** (3:1 stop, 60 bars): Measures raw signal mechanical quality.
+- **QUALITY_THESIS** (no stop, 120 bars): Measures conviction patience quality.
+
+If a signal has high Sharpe under THESIS but low under VALUE, it is a conviction signal
+that requires patience — valid for Quality department only.
 
 ## Mandatory Output Format
 

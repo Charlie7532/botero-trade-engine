@@ -1,9 +1,11 @@
 """
-populate_ml_lake.py — Corrected ML Data Lake Population
-========================================================
-Fixes applied from forensic audit:
-  #1: QuantFeatureEngineer (25+ stationary features) — via OracleBacktester
-  #2: Departmentalized geometry — Quality(1d, VALUE) vs Speculative(5m, SPRING)
+populate_ml_lake.py — Corrected ML Data Lake Population (v2)
+==============================================================
+Post-audit corrections:
+  #1: Includes RegressionChannelAdapter (Sharpe 1.326, orthogonal to RSI)
+  #2: Dual geometry for Quality: VALUE (3:1 stop) + THESIS (no stop, 120 bars)
+  #3: Features include J8-J11 (VWAP, ChannelSigma, VPShape, SlopeConjugation)
+  #4: Forensic fields (MAE, MFE, post-exit, sweep) persisted via updated schema
   #5: BOS excluded — only signals with viable Oracle Sharpe
 """
 import sys
@@ -26,6 +28,7 @@ from backend.modules.simulation.infrastructure.signal_adapters import (
     VolumeQualitySignalAdapter,
     RSISignalAdapter,
     PatternSignalAdapter,
+    RegressionChannelAdapter,
 )
 from backend.modules.simulation.application.use_cases.oracle_backtest import OracleBacktester
 from backend.modules.simulation.domain.entities.strategy_profile import InvestmentCategory, ORACLE_GEOMETRY
@@ -39,6 +42,7 @@ def create_viable_signals():
         VolumeQualitySignalAdapter(),
         RSISignalAdapter(),
         PatternSignalAdapter(),
+        RegressionChannelAdapter(),  # v2: Sharpe 1.326 (THESIS), orthogonal to RSI
         # BOSSignalAdapter EXCLUDED: 0% WR, Sharpe -10 to -26 consistently
         # MeanReversionSignalAdapter EXCLUDED: 0 entries on 5m timeframe
         # FlowSignalAdapter EXCLUDED: requires UW context not available in backtest
@@ -63,7 +67,7 @@ SPECULATIVE_TICKERS = [
 
 def run():
     logger.info("=" * 70)
-    logger.info("ML DATA LAKE POPULATION — CORRECTED (Post-Audit)")
+    logger.info("ML DATA LAKE POPULATION v2 — Post-Audit (J8-J11 + Forensics + RC)")
     logger.info("=" * 70)
 
     store = TimescaleDataStore()
@@ -79,6 +83,7 @@ def run():
     logger.info(f"SPECULATIVE DEPARTMENT — 5m — geometry: TP={spec_geometry.profit_mult}×ATR "
                 f"SL={spec_geometry.loss_mult}×ATR max_bars={spec_geometry.max_bars}")
     logger.info(f"Tickers: {SPECULATIVE_TICKERS}")
+    logger.info(f"Signals: {[s.name for s in signals]}")
     logger.info(f"{'─'*60}")
 
     for ticker in SPECULATIVE_TICKERS:
@@ -91,32 +96,39 @@ def run():
             except Exception as e:
                 logger.error(f"  Error {signal.name}/{ticker}: {e}")
 
-    # ── DEPARTMENT 2: QUALITY (1d, QUALITY_VALUE geometry) ──
-    qual_geometry = ORACLE_GEOMETRY[InvestmentCategory.QUALITY_VALUE]
-    logger.info(f"\n{'─'*60}")
-    logger.info(f"QUALITY DEPARTMENT — 1d — geometry: TP={qual_geometry.profit_mult}×ATR "
-                f"SL={qual_geometry.loss_mult}×ATR max_bars={qual_geometry.max_bars}")
-    logger.info(f"Tickers: {QUALITY_TICKERS}")
-    logger.info(f"{'─'*60}")
+    # ── DEPARTMENT 2: QUALITY — Dual Geometry ──
+    # Geometry A: QUALITY_VALUE (3:1 stop, 60 bars) — measures mechanical signal quality
+    qual_value_geom = ORACLE_GEOMETRY[InvestmentCategory.QUALITY_VALUE]
+    # Geometry B: QUALITY_THESIS (no stop, 120 bars) — measures conviction patience
+    qual_thesis_geom = ORACLE_GEOMETRY[InvestmentCategory.QUALITY_THESIS]
 
-    for ticker in QUALITY_TICKERS:
-        logger.info(f"▶ {ticker} (1d, QUALITY_VALUE max_bars=60)...")
-        for signal in signals:
-            try:
-                result = oracle.run_signal(ticker, "1d", signal, qual_geometry)
-                if result.n_entries > 0:
-                    total_entries += result.n_entries
-            except Exception as e:
-                logger.error(f"  Error {signal.name}/{ticker}: {e}")
+    for geom_name, geom in [("QUALITY_VALUE", qual_value_geom), ("QUALITY_THESIS", qual_thesis_geom)]:
+        logger.info(f"\n{'─'*60}")
+        logger.info(f"QUALITY DEPARTMENT — 1d — {geom_name} — TP={geom.profit_mult}×ATR "
+                    f"SL={geom.loss_mult}×ATR max_bars={geom.max_bars}")
+        logger.info(f"Tickers: {QUALITY_TICKERS}")
+        logger.info(f"Signals: {[s.name for s in signals]}")
+        logger.info(f"{'─'*60}")
+
+        for ticker in QUALITY_TICKERS:
+            logger.info(f"▶ {ticker} (1d, {geom_name})...")
+            for signal in signals:
+                try:
+                    result = oracle.run_signal(ticker, "1d", signal, geom)
+                    if result.n_entries > 0:
+                        total_entries += result.n_entries
+                except Exception as e:
+                    logger.error(f"  Error {signal.name}/{ticker}: {e}")
 
     store.close()
     logger.info(f"\n{'='*70}")
-    logger.info(f"🎉 ML Data Lake population complete!")
+    logger.info(f"🎉 ML Data Lake population v2 complete!")
     logger.info(f"   Total feature/label pairs generated: {total_entries}")
-    logger.info(f"   Features: QuantFeatureEngineer (FD, MS, TS, CS, VF, MC, CAL, IM, OV, RG)")
-    logger.info(f"   Execution: VAEP (delay=1bar, "
-                f"slip_spec={spec_geometry.slippage_factor}, slip_qual={qual_geometry.slippage_factor})")
+    logger.info(f"   Features: QuantFeatureEngineer (FD, MS, TS, CS, VF, MC, CAL, IM, OV, RG, J1-J11, K)")
+    logger.info(f"   Forensics: MAE, MFE, post-exit tracking, sweep detection")
+    logger.info(f"   Execution: VAEP (delay=1bar)")
     logger.info(f"   Signals: {[s.name for s in signals]}")
+    logger.info(f"   Geometries: SPECULATIVE_SPRING (5m) + QUALITY_VALUE (1d) + QUALITY_THESIS (1d)")
     logger.info(f"{'='*70}")
 
 

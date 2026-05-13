@@ -488,24 +488,39 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
                     )
                 )
 
-                # 2. Insert Label (y)
+                # 2. Insert Label (y) — includes forensic fields
                 cur.execute(
                     """INSERT INTO engine.ml_labels
-                         (feature_id, label, return_pct, bars_held, exit_time, geometry_used)
-                       VALUES (%s, %s, %s, %s, %s, %s)
+                         (feature_id, label, return_pct, bars_held, exit_time, geometry_used,
+                          max_adverse_excursion_pct, max_favorable_excursion_pct,
+                          post_exit_max_pct, post_exit_hit_target,
+                          post_exit_bars_to_target, stop_was_sweep)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                        ON CONFLICT (feature_id) DO UPDATE SET
                          label = EXCLUDED.label,
                          return_pct = EXCLUDED.return_pct,
                          bars_held = EXCLUDED.bars_held,
                          exit_time = EXCLUDED.exit_time,
-                         geometry_used = EXCLUDED.geometry_used""",
+                         geometry_used = EXCLUDED.geometry_used,
+                         max_adverse_excursion_pct = EXCLUDED.max_adverse_excursion_pct,
+                         max_favorable_excursion_pct = EXCLUDED.max_favorable_excursion_pct,
+                         post_exit_max_pct = EXCLUDED.post_exit_max_pct,
+                         post_exit_hit_target = EXCLUDED.post_exit_hit_target,
+                         post_exit_bars_to_target = EXCLUDED.post_exit_bars_to_target,
+                         stop_was_sweep = EXCLUDED.stop_was_sweep""",
                     (
                         str(label_record["feature_id"]),
                         int(label_record["label"]),
                         float(label_record["return_pct"]),
                         int(label_record["bars_held"]),
                         label_record["exit_time"],
-                        json.dumps(label_record["geometry_used"])
+                        json.dumps(label_record["geometry_used"]),
+                        float(label_record.get("max_adverse_excursion_pct", 0)),
+                        float(label_record.get("max_favorable_excursion_pct", 0)),
+                        float(label_record.get("post_exit_max_pct", 0)),
+                        bool(label_record.get("post_exit_hit_target", False)),
+                        int(label_record.get("post_exit_bars_to_target", 0)),
+                        bool(label_record.get("stop_was_sweep", False)),
                     )
                 )
             conn.commit()
@@ -544,7 +559,13 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
                 (
                     str(r["feature_id"]), int(r["label"]),
                     float(r["return_pct"]), int(r["bars_held"]),
-                    r["exit_time"], json.dumps(r["geometry_used"])
+                    r["exit_time"], json.dumps(r["geometry_used"]),
+                    float(r.get("max_adverse_excursion_pct", 0)),
+                    float(r.get("max_favorable_excursion_pct", 0)),
+                    float(r.get("post_exit_max_pct", 0)),
+                    bool(r.get("post_exit_hit_target", False)),
+                    int(r.get("post_exit_bars_to_target", 0)),
+                    bool(r.get("stop_was_sweep", False)),
                 )
                 for r in label_records
             ]
@@ -562,14 +583,23 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
                 psycopg2.extras.execute_values(
                     cur,
                     """INSERT INTO engine.ml_labels
-                         (feature_id, label, return_pct, bars_held, exit_time, geometry_used)
+                         (feature_id, label, return_pct, bars_held, exit_time, geometry_used,
+                          max_adverse_excursion_pct, max_favorable_excursion_pct,
+                          post_exit_max_pct, post_exit_hit_target,
+                          post_exit_bars_to_target, stop_was_sweep)
                        VALUES %s
                        ON CONFLICT (feature_id) DO UPDATE SET
                          label = EXCLUDED.label,
                          return_pct = EXCLUDED.return_pct,
                          bars_held = EXCLUDED.bars_held,
                          exit_time = EXCLUDED.exit_time,
-                         geometry_used = EXCLUDED.geometry_used""",
+                         geometry_used = EXCLUDED.geometry_used,
+                         max_adverse_excursion_pct = EXCLUDED.max_adverse_excursion_pct,
+                         max_favorable_excursion_pct = EXCLUDED.max_favorable_excursion_pct,
+                         post_exit_max_pct = EXCLUDED.post_exit_max_pct,
+                         post_exit_hit_target = EXCLUDED.post_exit_hit_target,
+                         post_exit_bars_to_target = EXCLUDED.post_exit_bars_to_target,
+                         stop_was_sweep = EXCLUDED.stop_was_sweep""",
                     label_rows,
                     page_size=500,
                 )

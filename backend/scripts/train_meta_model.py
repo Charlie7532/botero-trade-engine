@@ -44,7 +44,7 @@ load_dotenv(_root / ".env")
 # ══════════════════════════════════════════════════════════════
 
 def load_ml_data(timeframe: str = "5m") -> pd.DataFrame:
-    """Load features + labels from Neon ML Data Lake, filtered by timeframe."""
+    """Load features + labels + forensics from Neon ML Data Lake, filtered by timeframe."""
     from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
     store = TimescaleDataStore()
 
@@ -53,7 +53,13 @@ def load_ml_data(timeframe: str = "5m") -> pd.DataFrame:
             f.id, f.ticker, f.timeframe, f.signal_name,
             f.signal_time, f.features,
             l.label, l.return_pct, l.bars_held, l.exit_time,
-            l.geometry_used
+            l.geometry_used,
+            l.max_adverse_excursion_pct,
+            l.max_favorable_excursion_pct,
+            l.post_exit_max_pct,
+            l.post_exit_hit_target,
+            l.post_exit_bars_to_target,
+            l.stop_was_sweep
         FROM engine.ml_features f
         JOIN engine.ml_labels l ON f.id = l.feature_id
         WHERE f.timeframe = %(tf)s
@@ -77,6 +83,12 @@ def load_ml_data(timeframe: str = "5m") -> pd.DataFrame:
     df["signal_time"] = pd.to_datetime(df["signal_time"])
     df["exit_time"] = pd.to_datetime(df["exit_time"], errors="coerce")
 
+    # Extract geometry type from JSONB (VALUE: loss_mult=1.0, THESIS: loss_mult=0)
+    df["geometry_type"] = df["geometry_used"].apply(
+        lambda g: "THESIS" if (isinstance(g, dict) and g.get("loss_mult", 1) == 0)
+        else ("THESIS" if isinstance(g, str) and '"loss_mult": 0' in g else "VALUE")
+    )
+
     # One-hot encode signal_name (Simons: different signals have different base rates)
     signal_dummies = pd.get_dummies(df["signal_name"], prefix="SIG")
     df = pd.concat([df, signal_dummies], axis=1)
@@ -84,6 +96,13 @@ def load_ml_data(timeframe: str = "5m") -> pd.DataFrame:
     logger.info(
         f"Loaded {len(df)} samples, {len(feat_df.columns)} features + {len(signal_dummies.columns)} signal dummies, "
         f"{df['signal_name'].nunique()} signals, {df['ticker'].nunique()} tickers, tf={timeframe}"
+    )
+    # Log forensic data availability
+    n_forensic = df["max_adverse_excursion_pct"].notna().sum()
+    n_thesis = (df["geometry_type"] == "THESIS").sum()
+    n_value = (df["geometry_type"] == "VALUE").sum()
+    logger.info(
+        f"Forensics: {n_forensic} with MAE/MFE, {n_thesis} THESIS labels, {n_value} VALUE labels"
     )
     return df
 
@@ -676,6 +695,7 @@ def train_and_evaluate(df: pd.DataFrame, cv_mode: str = "expanding", seed: int =
 
         # Store OOS predictions for aggregate analysis
         for i, idx in enumerate(fold.test_idx):
+            row_data = df.iloc[idx]
             all_oos_results.append({
                 "idx": idx,
                 "y_true": y_test[i],
@@ -683,11 +703,19 @@ def train_and_evaluate(df: pd.DataFrame, cv_mode: str = "expanding", seed: int =
                 "y_proba": y_pred_proba[i],
                 "return_pct": test_returns[i],
                 "bars_held": int(test_bars[i]),
-                "signal_name": df.iloc[idx]["signal_name"],
-                "ticker": df.iloc[idx]["ticker"],
-                "regime": df.iloc[idx].get("RG_WinsteinProxy", 0),
-                "vol_regime_quality": df.iloc[idx].get("RG_VolRegime_Quality", 0),
-                "vol_regime_speculative": df.iloc[idx].get("RG_VolRegime_Speculative", 0),
+                "signal_name": row_data["signal_name"],
+                "ticker": row_data["ticker"],
+                "regime": row_data.get("RG_WinsteinProxy", 0),
+                "vol_regime_quality": row_data.get("RG_VolRegime_Quality", 0),
+                "vol_regime_speculative": row_data.get("RG_VolRegime_Speculative", 0),
+                # Forensic fields
+                "max_adverse_excursion_pct": row_data.get("max_adverse_excursion_pct", 0),
+                "max_favorable_excursion_pct": row_data.get("max_favorable_excursion_pct", 0),
+                "post_exit_max_pct": row_data.get("post_exit_max_pct", 0),
+                "post_exit_hit_target": row_data.get("post_exit_hit_target", False),
+                "post_exit_bars_to_target": row_data.get("post_exit_bars_to_target", 0),
+                "stop_was_sweep": row_data.get("stop_was_sweep", False),
+                "geometry_type": row_data.get("geometry_type", "VALUE"),
             })
 
     # ══════════════════════════════════════════════════════════
@@ -841,6 +869,86 @@ def train_and_evaluate(df: pd.DataFrame, cv_mode: str = "expanding", seed: int =
     for _, row in importance_df.head(15).iterrows():
         bar = "█" * int(row["importance"] * 100)
         logger.info(f"  {row['feature']:<25} {row['importance']:.4f} {bar}")
+
+    # ── FORENSIC DIAGNOSTIC (Dalio Detect-Learn Loop) ────────
+    if "max_adverse_excursion_pct" in oos_df.columns:
+        logger.info(f"\n{'─'*50}")
+        logger.info("FORENSIC DIAGNOSTIC — WHY IT WINS / WHY IT FAILS")
+        logger.info(f"{'─'*50}")
+
+        winners = oos_df[oos_df["y_true"] == 1]
+        losers = oos_df[oos_df["y_true"] == 0]
+
+        # ── WINNERS: What made them win? ──
+        if len(winners) > 0:
+            mae_w = winners["max_adverse_excursion_pct"].mean()
+            mfe_w = winners["max_favorable_excursion_pct"].mean()
+            ret_w = winners["return_pct"].mean()
+            mfe_capture = (ret_w / mfe_w * 100) if mfe_w > 0 else 0
+            entry_quality = (1 - abs(mae_w) / mfe_w) * 100 if mfe_w > 0 else 0
+
+            logger.info(f"\n  ✅ WINNERS (N={len(winners)}):")
+            logger.info(f"     Avg Return:      {ret_w:+.3f}%")
+            logger.info(f"     Avg MAE:         {mae_w:.3f}% (worst drawdown before profit)")
+            logger.info(f"     Avg MFE:         {mfe_w:.3f}% (best profit reached)")
+            logger.info(f"     MFE Capture:     {mfe_capture:.1f}% (of max profit actually realized)")
+            logger.info(f"     Entry Quality:   {entry_quality:.1f}% (lower MAE = better entry)")
+            left_on_table = mfe_w - ret_w
+            logger.info(f"     Left on table:   {left_on_table:.3f}% per trade (exit gap)")
+
+        # ── LOSERS: What made them fail? ──
+        if len(losers) > 0:
+            mae_l = losers["max_adverse_excursion_pct"].mean()
+            mfe_l = losers["max_favorable_excursion_pct"].mean()
+            ret_l = losers["return_pct"].mean()
+
+            # Post-stop analysis
+            if "post_exit_hit_target" in losers.columns:
+                n_sweep = losers["stop_was_sweep"].sum() if "stop_was_sweep" in losers.columns else 0
+                n_post_hit = losers["post_exit_hit_target"].sum() if losers["post_exit_hit_target"].dtype == bool else 0
+                pct_false_neg = n_post_hit / len(losers) * 100 if len(losers) > 0 else 0
+
+                logger.info(f"\n  ❌ LOSERS (N={len(losers)}):")
+                logger.info(f"     Avg Return:      {ret_l:+.3f}%")
+                logger.info(f"     Avg MAE:         {mae_l:.3f}% (how deep the loss)")
+                logger.info(f"     Avg MFE:         {mfe_l:.3f}% (profit they DID reach before losing)")
+                logger.info(f"     False Negatives: {pct_false_neg:.1f}% (hit target AFTER being stopped)")
+                logger.info(f"     Sweeps:          {n_sweep} ({n_sweep/len(losers)*100:.1f}% of losses)")
+                if mfe_l > 0:
+                    logger.info(f"     Entry was right:  {mfe_l:.3f}% profit seen — stop/timing killed it")
+
+        # ── PER-SIGNAL FORENSIC ──
+        logger.info(f"\n  📊 PER-SIGNAL FORENSIC:")
+        logger.info(f"  {'Signal':<25s} {'WR':>6s} {'AvgRet':>8s} {'MFE↑':>8s} {'MAE↓':>8s} {'Capture':>8s}")
+        for sig in oos_df["signal_name"].unique():
+            sig_data = oos_df[oos_df["signal_name"] == sig]
+            sig_wr = sig_data["y_true"].mean() * 100
+            sig_ret = sig_data["return_pct"].mean()
+            sig_mfe = sig_data["max_favorable_excursion_pct"].mean()
+            sig_mae = sig_data["max_adverse_excursion_pct"].mean()
+            sig_cap = (sig_ret / sig_mfe * 100) if sig_mfe > 0 else 0
+            logger.info(
+                f"  {sig:<25s} {sig_wr:>5.1f}% {sig_ret:>+7.3f}% "
+                f"{sig_mfe:>7.3f}% {sig_mae:>7.3f}% {sig_cap:>6.1f}%"
+            )
+
+        # ── GEOMETRY COMPARISON (VALUE vs THESIS) ──
+        if "geometry_type" in oos_df.columns:
+            for gtype in ["VALUE", "THESIS"]:
+                g_data = oos_df[oos_df["geometry_type"] == gtype]
+                if len(g_data) < 10:
+                    continue
+                g_wr = g_data["y_true"].mean() * 100
+                g_sr = _annualized_sharpe(
+                    g_data[g_data["y_pred"] == 1]["return_pct"].values,
+                    g_data[g_data["y_pred"] == 1]["bars_held"].values,
+                    tf_minutes,
+                )
+                g_pht = g_data["post_exit_hit_target"].sum() if "post_exit_hit_target" in g_data.columns else 0
+                logger.info(
+                    f"\n  🏗️ {gtype}: N={len(g_data)} WR={g_wr:.1f}% Sharpe={g_sr:.3f} "
+                    f"PostStopHit={g_pht} ({g_pht/len(g_data)*100:.1f}%)"
+                )
 
     # ── FINAL REPORT ─────────────────────────────────────────
     results = {

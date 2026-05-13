@@ -117,6 +117,33 @@ Key diagnostic questions:
 | `SurveillanceLoop._evaluate_moat_decay()` | Receives adjusted thresholds from RETRAIN |
 | `EntryHub._vectorize_report()` | Receives weight adjustments from RETRAIN |
 | `simulation` module | Validates recalibrations via walk-forward |
+| `TripleBarrierAdapter` (MAE/MFE/sweep) | Persists forensic excursion data per label |
+| `engine.ml_labels` (Neon) | Stores MAE, MFE, post_exit_hit_target, stop_was_sweep |
+| `RegressionChannelAdapter` (slope conjugation) | Provides J11 feature for forensic analysis |
+
+## Validated Forensic Findings (Empirical)
+
+> [!IMPORTANT]
+> These findings are persisted in the ML Data Lake and can be queried via
+> `engine.ml_labels` forensic columns.
+
+### MAE/MFE Analysis (Quality Department)
+
+- **53.8%** of stop-outs eventually hit the original profit target (false negatives).
+- Only **5.6%** were genuine liquidity sweeps.
+- Average MAE at stop: **-2.7%**. Average MFE before stop: **+4.5%**.
+- **Action taken**: Created `QUALITY_THESIS` geometry (no mechanical stop, 120 bars).
+
+### Slope Conjugation (Regression Channel)
+
+- Winners enter during the dip: avg short slope = **-0.05** (negative).
+- Losers enter late: avg short slope = **+0.04** (positive, wave already turned).
+- This is captured as `MTF_SlopeConjugation_5` feature — **#2 importance** in XGBoost.
+
+### BEAR Regime Filter
+
+- All 5 BEAR losers had `slope_long < -0.05` (structural collapse, not pullback).
+- Filter: `slope_long > -0.03` blocks structural collapses. BEAR WR: **100%** (N=2).
 
 ## Output Format
 

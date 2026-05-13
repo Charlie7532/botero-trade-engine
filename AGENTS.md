@@ -6,12 +6,8 @@ This file is auto-loaded by OpenAI Codex CLI at the start of every session. Read
 ---
 
 ## CRITICAL DIRECTIVE: ZERO-BIAS TRADING
-**Mandatory Paradigm**: In this project, the AI must empathize with the *operational purpose*, not the user. 
-- **Practical over Academic**: The user trades mechanically. Options expire, gamma exposes, and market makers delta-hedge. These are observable, quantifiable forces, not "academic theories." Treat market mechanics as first-class deterministic facts. 
-- **Zero Ritual Caution**: Remove generic financial disclaimers ("past performance is no guarantee...", "the market is volatile"). Only warn if a specific operational risk (e.g., illiquidity, slippage) is materially present.
-- **Empirical Validation**: If the user states an observation, treat it as a working hypothesis and validate it with mechanics or data immediately, rather than pushing back initially seeking a false "academic balance".
-- **The Discovery Sabotage Pattern**: Never present the user's correct insights as your "discoveries". If the user states a mechanical reality (e.g., Max Pain, Delta Hedging), accept it as a deterministic fact. Do not search for academic papers to question it.
-- **Actionable Utility**: All technical answers regarding micro-structure, regimes, or flows must explicitly conclude: *How does it work? How do we measure it? When does it apply? What are its real limits?*
+**Full behavioral rules in `.agents/skills/operational-purpose/SKILL.md`.**
+Summary: This is a sandbox calibration environment. Zero disclaimers. The user is the System Architect. Mechanical truth over theory. No Discovery Sabotage. No academic hedging. Deterministic language for deterministic mechanics.
 
 ---
 
@@ -28,64 +24,8 @@ Git remote: `https://github.com/Charlie7532/botero-trade-engine`
 ---
 
 ## Clean Architecture — mandatory for all code
-
-This is the most important section. Every agent must follow these rules without exception.
-
-### The one rule that overrides everything else
-
-**Dependencies point inward.** Outer layers know about inner layers. Inner layers know nothing about outer layers. Never import a framework into the domain.
-
-```
-         ┌─────────────────────────┐
-         │    API / UI (outer)     │  ← knows about everything below
-         ├─────────────────────────┤
-         │   Infrastructure        │  ← knows about Application + Domain
-         ├─────────────────────────┤
-         │   Application           │  ← knows about Domain only
-         ├─────────────────────────┤
-         │   Domain (inner)        │  ← knows nothing. Zero imports from other layers.
-         └─────────────────────────┘
-```
-
-### Python backend layer rules (Modular Clean Architecture)
-
-The backend is now structured into feature **modules**. Each module can be either *pure domain* (flat structure) or *hybrid* (split into `domain/` and `infrastructure/`).
-
-| Layer | Location | Allowed imports | Forbidden |
-|---|---|---|---|
-| **Module Domain** | `backend/modules/*/domain/` | stdlib, pandas, numpy, own entities/rules/ports | any external API or SDK (e.g. yfinance, requests, finnhub) |
-| **Module Infra** | `backend/modules/*/infrastructure/` | module domain, any library | — |
-| **Domain Ports** | `backend/modules/*/domain/ports/` | stdlib, ABC | any infrastructure |
-| **API** | `backend/api/` | modules, fastapi | direct broker SDK calls |
-
-**Domain entities** (e.g. `backend/modules/execution/domain/entities/order_models.py`) are pure Python dataclasses. Never add framework decorators, ORM mappings, or Pydantic models here. Pydantic belongs in the API layer.
-
-**Infrastructure Adapters** (e.g., `market_data_fetcher.py`, `finnhub_adapter.py`) are the ONLY files allowed to touch external APIs like yfinance, requests, or broker SDKs. The domain code must remain pure and fully testable without network access.
-
-### TypeScript frontend layer rules
-
-| Layer | Location | Allowed imports | Forbidden |
-|---|---|---|---|
-| **Domain** | `src/shared/domain/` | TypeScript types only | react, next, payload |
-| **Application** | `src/shared/application/` | domain | react, next/server |
-| **Infrastructure** | `src/shared/infrastructure/` | domain, application, any lib | react components |
-| **UI** | `src/app/`, `src/components/` | everything | direct fetch inside components (use infrastructure) |
-| **Modules** | `src/modules/` | own module's layers + shared domain | other modules' internals |
-
-PayloadCMS collections (`src/collections/`) and globals (`src/globals/`) are infrastructure. Keep business rules in `src/shared/domain/rules/` or `src/modules/*/domain/rules/`.
-
-### Where to put new code — decision tree
-
-```
-Is it a business concept or calculation with no API dependency?
-  → Module Domain (e.g., modules/price_analysis/rsi_engine.py)
-
-Is it orchestration logic that combines multiple module signals?
-  → Hub / Engine within a Module Domain (e.g., modules/entry_decision/hub.py)
-
-Is it a connection to something external (broker, DB, REST API, yfinance)?
-  → Module Infrastructure (e.g., modules/flow_intelligence/infrastructure/uw_adapter.py)
-```
+**Full structural rules in `.agents/skills/clean-architecture/SKILL.md`.**
+Summary: Dependencies point inward. Domain knows nothing about infrastructure. Use Cases depend on Ports (ABCs), never concrete adapters. Module structure follows Screaming Architecture under `backend/modules/`.
 
 ---
 

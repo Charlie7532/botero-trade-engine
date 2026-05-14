@@ -76,6 +76,20 @@ indicators:
     evidence_status: HYPOTHESIS
     notes: "KalmanVolumeTracker integrated in QualityEntryGate. Pending Oracle validation."
 
+  - id: regression-slopes
+    name: "Regression Slope Sentiment (Ticker Fear/Greed)"
+    type: bias
+    data_source: "market.ohlcv_bars (computed from dual regression channels)"
+    profile: "regression-slopes/PROFILE.md"
+    signal_count: 0  # BIAS, not signal — modulates conviction
+    highest_grade: VALIDATED
+    evidence_status: VALIDATED
+    notes: >
+      Empirically validated 2026-05-14 (20,580 obs, 20 tickers × 5yr).
+      Contrarian Buffett/Munger: PANIC P(↑)=47.6% Ret20d=+3.12% (best),
+      GREED P(↑)=40.4% Ret20d=+1.26% (worst). Wave flip spread=8.6%.
+      compute_ticker_fear_level() in signal_adapters.py.
+
 composite_signals:
   - id: capitulation
     file: "composite/capitulation.yaml"
@@ -107,4 +121,12 @@ composite_signals:
     partners: ["wyckoff-kalman", "smc-structure"]
     highest_grade: CANDIDATE
     notes: "Kalman ACCUMULATION + BOS Bullish = structural momentum"
+
+  - id: panic_accumulation
+    partners: ["regression-slopes", "wyckoff-kalman"]
+    highest_grade: VALIDATED
+    notes: >
+      Ticker PANIC + Kalman ACCUM + Wave Flip Positive.
+      Empirical: specific trails boost P(↑) by +30% with this combo.
+      The Munger sweet spot: fear + institutional buying + knife stopped.
 

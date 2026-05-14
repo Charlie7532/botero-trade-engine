@@ -25,7 +25,6 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 from backend.modules.simulation.infrastructure.triple_barrier_adapter import TripleBarrierAdapter
 from backend.modules.simulation.infrastructure.signal_adapters import (
     KalmanSignalAdapter,
-    VolumeQualitySignalAdapter,
     RSISignalAdapter,
     PatternSignalAdapter,
     RegressionChannelAdapter,
@@ -34,12 +33,12 @@ from backend.modules.simulation.application.use_cases.oracle_backtest import Ora
 from backend.modules.simulation.domain.entities.strategy_profile import InvestmentCategory, ORACLE_GEOMETRY
 
 
-# ── VIABLE SIGNALS ONLY (Oracle Sharpe >= 0.3, BOS excluded per audit) ──
+# ── VIABLE SIGNALS ONLY (Oracle Sharpe >= 0.3, forensic-validated) ──
 def create_viable_signals():
     """Only signals that have demonstrated empirical viability."""
     return [
         KalmanSignalAdapter(),
-        VolumeQualitySignalAdapter(),
+        # VolumeQualitySignalAdapter ELIMINATED — forensic audit 2026-05-13
         RSISignalAdapter(),
         PatternSignalAdapter(),
         RegressionChannelAdapter(),  # v2: Sharpe 1.326 (THESIS), orthogonal to RSI

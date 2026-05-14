@@ -48,6 +48,7 @@ class QualityEntryGate:
         blacklist=None,
         fundamental_data=None,
         health_provider=None,
+        signal_viability_port=None,
     ):
         self._market_data = market_data
         self._flow_data = flow_data
@@ -55,6 +56,7 @@ class QualityEntryGate:
         self._blacklist = blacklist
         self._fundamental_data = fundamental_data
         self._health_provider = health_provider
+        self._signal_viability_port = signal_viability_port
 
         # Lazy-init modules
         from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
@@ -77,6 +79,7 @@ class QualityEntryGate:
         prices_df: pd.DataFrame = None,
         vix_override: float = None,
         vix_trend: Optional[IndicatorTrend] = None,
+        signal_name: Optional[str] = None,
     ) -> EntryIntelligenceReport:
         """
         Evaluación QUALITY: profunda, sin prisa.
@@ -85,6 +88,44 @@ class QualityEntryGate:
             ticker=ticker,
             timestamp=datetime.now(UTC).isoformat(),
         )
+
+        # ── Gate -2: Signal Viability (Oracle Alpha Passport) ──
+        # Reads engine.signal_profiles from Vault.
+        # Oracle Backtest calibrates per-ticker/per-signal viability.
+        # If the Oracle says this signal is NOT viable for this ticker → BLOCK.
+        if signal_name and self._signal_viability_port:
+            try:
+                profiles = self._signal_viability_port.load_signal_profiles(ticker, "1d")
+                profile = next((p for p in profiles if p["signal_name"] == signal_name), None)
+                if profile:
+                    if not profile.get("viable", True):
+                        report.final_verdict = "BLOCK"
+                        report.final_scale = 0.0
+                        report.final_reason = (
+                            f"SIGNAL_NOT_VIABLE: {signal_name} on {ticker} "
+                            f"(grade={profile.get('grade','?')}, "
+                            f"WR={profile.get('win_rate',0):.1f}%, "
+                            f"Sharpe={profile.get('ceiling_sharpe',0):.3f}). "
+                            f"Oracle calibrated: {profile.get('calibrated_at','unknown')}"
+                        )
+                        return report
+                    # Viable — attach profile context to report for downstream use
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"SIGNAL_PROFILE: {signal_name} grade={profile.get('grade','?')} "
+                        f"WR={profile.get('win_rate',0):.1f}% "
+                        f"Sharpe={profile.get('ceiling_sharpe',0):.3f} "
+                        f"PF={profile.get('profit_factor',0):.2f}"
+                    )
+                else:
+                    # No profile → signal never tested on this ticker → STALK (caution)
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"SIGNAL_UNCALIBRATED: {signal_name} has no Oracle profile for {ticker}. "
+                        f"Run Oracle backtest before deploying."
+                    )
+            except Exception as e:
+                logger.debug(f"Signal viability check skipped for {ticker}/{signal_name}: {e}")
 
         # ── Gate 0: Blacklist (legacy) ──
         if self._blacklist and self._blacklist.is_blacklisted(ticker, "QUALITY"):

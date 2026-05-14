@@ -470,26 +470,181 @@ class BOSSignalAdapter(SignalPort):
 
 
 class PatternSignalAdapter(SignalPort):
-    """Signal from candlestick pattern recognition on support."""
+    """Dual-Layer Pattern Recognition — Micro (3 real candles) + Macro (3 super-candles).
+
+    Forensic audit 2026-05-13: Original adapter only detected Bullish Engulfing
+    (1 of 17 patterns). Replaced with full PatternRecognitionIntelligence engine
+    operating on two layers:
+
+    MICRO LAYER (3 real bars):
+      Detects all 17 patterns (single, double, triple) on the actual daily candles.
+      This is the TRIGGER — "what happened today?"
+
+    MACRO LAYER (3 super-candles synthesized from 15 bars):
+      Groups bars into 3 "super-candles" of 5 bars each (~1 trading week).
+      Detects the same 17 patterns on the structural formation.
+      This is the CONTEXT — "what pattern is the 3-week structure building?"
+
+    POSITION:
+      Where did price close within the current super-candle being formed?
+      0.0 = floor of the week → potential reversal
+      1.0 = ceiling of the week → potential exhaustion
+
+    SIGNAL LOGIC:
+      signal=1 when micro is BULLISH + macro is BULLISH or NEUTRAL (ALIGNED)
+      signal=1 when micro is BULLISH with strong score (≥0.7) regardless of macro
+      signal=0 otherwise (DIVERGENT or no pattern)
+
+    Empirical basis: The same engine that runs in production QualityEntryGate
+    (PatternRecognitionIntelligence) now powers the Oracle backtest adapter.
+    """
+
+    SUPER_CANDLE_SIZE = 5   # bars per super-candle (≈1 trading week)
+    N_SUPER_CANDLES = 3     # number of super-candles to synthesize
+    MIN_LOOKBACK = 18       # SUPER_CANDLE_SIZE * N_SUPER_CANDLES + 3 real bars
+
+    def __init__(self):
+        from backend.modules.pattern_recognition.application.use_cases.detect_patterns import (
+            PatternRecognitionIntelligence,
+        )
+        self._engine = PatternRecognitionIntelligence()
 
     @property
     def name(self) -> str:
         return "pattern_recognition"
 
+    @staticmethod
+    def synthesize_super_candles(
+        ohlc: pd.DataFrame,
+        end_idx: int,
+        group_size: int = 5,
+        n_groups: int = 3,
+    ) -> pd.DataFrame | None:
+        """Synthesize n_groups super-candles from consecutive bar groups.
+
+        Each super-candle compresses `group_size` real bars into one OHLC bar:
+          Open  = open of the first bar in the group
+          High  = max high across all bars in the group
+          Low   = min low across all bars in the group
+          Close = close of the last bar in the group
+          Volume = sum of volumes
+
+        Args:
+            ohlc: Full OHLC DataFrame.
+            end_idx: Index (iloc) of the last bar to include in synthesis.
+                     Super-candles are built from bars BEFORE the micro window.
+            group_size: Number of bars per super-candle (default 5 = ~1 week).
+            n_groups: Number of super-candles to build (default 3).
+
+        Returns:
+            DataFrame with n_groups rows of synthesized OHLC, or None if
+            insufficient data.
+        """
+        total_bars_needed = group_size * n_groups
+        start_idx = end_idx - total_bars_needed + 1
+        if start_idx < 0:
+            return None
+
+        super_candles = []
+        for g in range(n_groups):
+            g_start = start_idx + g * group_size
+            g_end = g_start + group_size
+            group = ohlc.iloc[g_start:g_end]
+
+            super_candles.append({
+                "Open": float(group.iloc[0]["open"]),
+                "High": float(group["high"].max()),
+                "Low": float(group["low"].min()),
+                "Close": float(group.iloc[-1]["close"]),
+                "Volume": float(group["volume"].sum()),
+            })
+
+        return pd.DataFrame(super_candles)
+
+    @staticmethod
+    def compute_position_in_formation(
+        ohlc: pd.DataFrame,
+        current_idx: int,
+        group_size: int = 5,
+    ) -> float:
+        """Compute where current price sits within the super-candle being formed.
+
+        Looks at the most recent `group_size` bars ending at current_idx
+        (the current week in construction) and returns a 0.0-1.0 position.
+
+        Returns:
+            0.0 = price at the floor of the current formation
+            1.0 = price at the ceiling
+            0.5 = mid-range (indecision)
+        """
+        start = max(0, current_idx - group_size + 1)
+        window = ohlc.iloc[start:current_idx + 1]
+        if window.empty:
+            return 0.5
+
+        formation_high = float(window["high"].max())
+        formation_low = float(window["low"].min())
+        current_close = float(ohlc.iloc[current_idx]["close"])
+
+        rng = formation_high - formation_low
+        if rng <= 0:
+            return 0.5
+
+        return max(0.0, min(1.0, (current_close - formation_low) / rng))
+
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
-        # Simplified: detect bullish engulfing pattern
         signals = pd.Series(0, index=ohlc.index)
 
-        for i in range(1, len(ohlc)):
-            prev = ohlc.iloc[i - 1]
-            curr = ohlc.iloc[i]
+        # Precompute column-name normalization for the engine
+        # The engine expects Title Case columns; ohlc has lowercase
+        for i in range(self.MIN_LOOKBACK, len(ohlc)):
+            try:
+                # ── MICRO: 3 real candles ──
+                micro_window = ohlc.iloc[max(0, i - 2):i + 1].copy()
+                micro_window.columns = [c.capitalize() for c in micro_window.columns]
+                micro_verdict = self._engine.detect(micro_window)
+                micro_score = micro_verdict.confirmation_score
+                micro_sentiment = micro_verdict.sentiment
 
-            prev_bearish = prev["close"] < prev["open"]
-            curr_bullish = curr["close"] > curr["open"]
-            engulfing = curr["open"] <= prev["close"] and curr["close"] >= prev["open"]
+                # ── MACRO: 3 super-candles from 15 bars before micro window ──
+                macro_end_idx = i - 3  # End before the micro window starts
+                super_df = self.synthesize_super_candles(
+                    ohlc, end_idx=macro_end_idx,
+                    group_size=self.SUPER_CANDLE_SIZE,
+                    n_groups=self.N_SUPER_CANDLES,
+                )
+                macro_sentiment = "NEUTRAL"
+                macro_score = 0.0
+                if super_df is not None and len(super_df) >= 3:
+                    macro_verdict = self._engine.detect(super_df)
+                    macro_sentiment = macro_verdict.sentiment
+                    macro_score = macro_verdict.confirmation_score
 
-            if prev_bearish and curr_bullish and engulfing:
-                signals.iloc[i] = 1
+                # ── POSITION within current formation ──
+                position = self.compute_position_in_formation(
+                    ohlc, i, group_size=self.SUPER_CANDLE_SIZE,
+                )
+
+                # ── CONFLUENCE LOGIC ──
+                # Case 1: Micro BULLISH + Macro BULLISH → ALIGNED (strongest)
+                if micro_sentiment == "BULLISH" and macro_sentiment == "BULLISH":
+                    signals.iloc[i] = 1
+
+                # Case 2: Micro BULLISH + Macro NEUTRAL → OK if micro is strong
+                elif micro_sentiment == "BULLISH" and macro_sentiment == "NEUTRAL":
+                    if micro_score >= 0.55:
+                        signals.iloc[i] = 1
+
+                # Case 3: Micro BULLISH strong enough to override BEARISH macro
+                # Only for high-conviction reversal patterns at formation floor
+                elif (micro_sentiment == "BULLISH" and macro_sentiment == "BEARISH"
+                      and micro_score >= 0.85 and position <= 0.25):
+                    signals.iloc[i] = 1
+
+                # Case 4: Macro BULLISH alone is not enough — no micro trigger
+
+            except Exception:
+                continue
 
         return pd.DataFrame({"signal": signals}, index=ohlc.index)
 
@@ -689,7 +844,13 @@ class RegressionChannelAdapter(SignalPort):
 ALL_SIGNAL_ADAPTERS: list[type[SignalPort]] = [
     KalmanSignalAdapter,
     MeanReversionSignalAdapter,
-    VolumeQualitySignalAdapter,
+    # VolumeQualitySignalAdapter ELIMINATED: Forensic audit 2026-05-13.
+    # Created as HFT noise filter (commit 474e14b), mutated into signal adapter
+    # during Phase 2 migration (commit 3d9daf9). Empirical results:
+    # - As signal: 140 entries/yr/ticker (noise), Sharpe 0.89, no regime sensitivity
+    # - As filter for RC: REDUCES WR by -5.3% and return by -1.69% (counterproductive)
+    # - Winners have LOWER VQ than losers (inverted vs intent, p=0.082)
+    # - Original purpose (filter HFT) invalid for daily bars on S&P 500 large caps
     RSISignalAdapter,
     FlowSignalAdapter,
     BOSSignalAdapter,

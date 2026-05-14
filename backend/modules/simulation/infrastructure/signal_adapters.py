@@ -626,22 +626,30 @@ class PatternSignalAdapter(SignalPort):
                 )
 
                 # ── CONFLUENCE LOGIC ──
-                # Case 1: Micro BULLISH + Macro BULLISH → ALIGNED (strongest)
-                if micro_sentiment == "BULLISH" and macro_sentiment == "BULLISH":
+                # Target: ~10-15 signals/year/ticker (like RC and RSI)
+                # Only high-conviction triple/double patterns pass.
+                # Single-candle patterns (Hammer, Doji) are too frequent.
+
+                # Case 1: ALIGNED — Both micro and macro BULLISH
+                # Require micro ≥ 0.85 (Morning Star=1.0, Engulfing=0.85,
+                # Three White Soldiers=0.9, Marubozu=0.7+support bonus)
+                if (micro_sentiment == "BULLISH" and macro_sentiment == "BULLISH"
+                        and micro_score >= 0.85):
                     signals.iloc[i] = 1
 
-                # Case 2: Micro BULLISH + Macro NEUTRAL → OK if micro is strong
-                elif micro_sentiment == "BULLISH" and macro_sentiment == "NEUTRAL":
-                    if micro_score >= 0.55:
-                        signals.iloc[i] = 1
+                # Case 2: Micro alone — only the absolute strongest
+                # Morning Star (1.0) or Engulfing on support (0.85*1.3=1.0)
+                elif (micro_sentiment == "BULLISH" and macro_sentiment == "NEUTRAL"
+                      and micro_score >= 1.0):
+                    signals.iloc[i] = 1
 
-                # Case 3: Micro BULLISH strong enough to override BEARISH macro
-                # Only for high-conviction reversal patterns at formation floor
+                # Case 3: Contrarian reversal — micro overrides bearish macro
+                # Must be a top-tier reversal at the floor of the formation
                 elif (micro_sentiment == "BULLISH" and macro_sentiment == "BEARISH"
-                      and micro_score >= 0.85 and position <= 0.25):
+                      and micro_score >= 1.0 and position <= 0.20):
                     signals.iloc[i] = 1
 
-                # Case 4: Macro BULLISH alone is not enough — no micro trigger
+                # Case 4: Macro BULLISH alone — no micro trigger, no signal
 
             except Exception:
                 continue
@@ -839,11 +847,129 @@ class RegressionChannelAdapter(SignalPort):
         return []
 
 
-# ── Factory ──────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════
+# TICKER SENTIMENT BIAS — Regression Slope Fear/Greed
+# ═══════════════════════════════════════════════════════════════════════
+# Empirical forensic audit (2026-05-14, 20 tickers × 5 years = 20,580 obs):
+#   GREED (tide+wave up+accel) → P(↑)=40.4%, Ret20d=+1.26% (worst)
+#   PANIC (tide+wave down+accel) → P(↑)=47.6%, Ret20d=+3.12% (best)
+#   Wave FLIP → 8.6% spread in P(↑) — most discriminative feature
+# Buffett/Munger validated: buy in fear, sell in greed.
+# See: .agents/knowledge/indicators/regression-slopes/PROFILE.md
+
+
+from dataclasses import dataclass
+
+
+@dataclass
+class TickerSentimentBias:
+    """Per-ticker fear/greed state from dual regression channels.
+
+    Contrarian interpretation (empirically validated):
+      fear_level 0 (GREED) → P(↑) lowest → caution, don't chase
+      fear_level 5 (PANIC) → P(↑) highest → Munger opportunity
+    """
+    fear_level: int          # 0=GREED, 1=CONFIDENCE, 2=NEUTRAL, 3=ANXIETY, 4=FEAR, 5=PANIC
+    fear_label: str          # Human-readable label
+    tide_slope: float        # Long regression slope (200 bars, normalized)
+    wave_slope: float        # Short regression slope (cycle-adaptive, normalized)
+    tide_accel: float        # Change in tide slope vs previous bar
+    wave_flip: bool          # Did the wave change sign? (knife stopped/started falling)
+    wave_flip_direction: int # +1 = flipped positive, -1 = flipped negative, 0 = no flip
+    sigma_position: float    # Price position in σ units within the long channel
+
+
+def compute_ticker_fear_level(
+    ohlc: pd.DataFrame,
+    idx: int,
+    long_window: int = 200,
+    short_window: int | None = None,
+) -> TickerSentimentBias | None:
+    """Compute per-ticker fear/greed bias from regression channel slopes.
+
+    This is a BIAS, not a signal. It modulates conviction of existing signals
+    (RC, RSI) using the contrarian Buffett/Munger principle: high fear = high
+    opportunity (provided the moat is intact and the knife stopped falling).
+
+    Args:
+        ohlc: DataFrame with 'close', 'high', 'low', 'volume' columns.
+        idx: Current bar index (iloc position).
+        long_window: Bars for the tide regression (default 200).
+        short_window: Bars for the wave regression (auto-detected if None).
+
+    Returns:
+        TickerSentimentBias or None if insufficient data.
+    """
+    if idx < long_window + 5:
+        return None
+
+    close = ohlc["close"].values.astype(float)
+    price_window = close[:idx + 1]
+    price_window_prev = close[:idx]
+
+    # Auto-detect cycle for short window
+    if short_window is None:
+        short_window = max(10, min(
+            RSISignalAdapter._detect_dominant_cycle(close), 60
+        ))
+
+    # Current slopes
+    reg_value, tide_slope, res_std = RegressionChannelAdapter._linreg_channel(
+        price_window, long_window
+    )
+    _, wave_slope, _ = RegressionChannelAdapter._linreg_channel(
+        price_window, short_window
+    )
+
+    # Previous bar slopes (for acceleration and flip detection)
+    _, tide_slope_prev, _ = RegressionChannelAdapter._linreg_channel(
+        price_window_prev, long_window
+    )
+    _, wave_slope_prev, _ = RegressionChannelAdapter._linreg_channel(
+        price_window_prev, short_window
+    )
+
+    # Derived metrics
+    tide_accel = tide_slope - tide_slope_prev
+    wave_flip = (wave_slope > 0) != (wave_slope_prev > 0)
+    wave_flip_dir = 0
+    if wave_flip:
+        wave_flip_dir = 1 if wave_slope > 0 else -1
+
+    sigma_position = (close[idx] - reg_value) / res_std if res_std > 0 else 0.0
+
+    # ── FEAR LEVEL CLASSIFICATION ──
+    # Based on empirical P(↑) ranking:
+    #   PANIC > FEAR > ANXIETY > NEUTRAL > CONFIDENCE > GREED
+    if tide_slope < -0.02 and wave_slope < -0.05 and tide_accel < 0:
+        fear_level, fear_label = 5, "PANIC"
+    elif tide_slope < -0.01 and wave_slope <= 0.02:
+        fear_level, fear_label = 4, "FEAR"
+    elif tide_slope > 0.01 and wave_slope < -0.02:
+        fear_level, fear_label = 3, "ANXIETY"
+    elif -0.01 <= tide_slope <= 0.01:
+        fear_level, fear_label = 2, "NEUTRAL"
+    elif tide_slope > 0.01 and wave_slope > 0.02 and tide_accel <= 0:
+        fear_level, fear_label = 1, "CONFIDENCE"
+    elif tide_slope > 0.02 and wave_slope > 0.05 and tide_accel > 0:
+        fear_level, fear_label = 0, "GREED"
+    else:
+        fear_level, fear_label = 2, "NEUTRAL"
+
+    return TickerSentimentBias(
+        fear_level=fear_level,
+        fear_label=fear_label,
+        tide_slope=tide_slope,
+        wave_slope=wave_slope,
+        tide_accel=tide_accel,
+        wave_flip=wave_flip,
+        wave_flip_direction=wave_flip_dir,
+        sigma_position=sigma_position,
+    )
+
 
 ALL_SIGNAL_ADAPTERS: list[type[SignalPort]] = [
     KalmanSignalAdapter,
-    MeanReversionSignalAdapter,
     # VolumeQualitySignalAdapter ELIMINATED: Forensic audit 2026-05-13.
     # Created as HFT noise filter (commit 474e14b), mutated into signal adapter
     # during Phase 2 migration (commit 3d9daf9). Empirical results:

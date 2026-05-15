@@ -9,6 +9,7 @@ build
 # Environment / Secrets
 .env
 .env*.local
+*.env
 .mcp.json
 
 # Platform
@@ -44,4 +45,3 @@ public/sitemap*.xml
 
 # Graphify knowledge graph output
 graphify-out/
-*.env

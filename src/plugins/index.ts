@@ -41,14 +41,14 @@ export const plugins: Plugin[] = [
     },
   }),
   payloadCloudPlugin(),
-  mcpPlugin({
-    collections: {
-      'agent-skills': { enabled: true },
-      portfolios: { enabled: true },
-      bots: { enabled: true },
-      'mcp-servers': { enabled: true },
-    },
-  }),
+  // mcpPlugin({
+  //   collections: {
+  //     'agent-skills': { enabled: true },
+  //     portfolios: { enabled: true },
+  //     bots: { enabled: true },
+  //     'mcp-servers': { enabled: true },
+  //   },
+  // }),
   vercelBlobStorage({
     collections: {
       media: {

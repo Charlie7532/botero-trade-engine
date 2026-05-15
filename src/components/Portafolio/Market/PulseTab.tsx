@@ -41,7 +41,7 @@ export async function PulseTab() {
         accessory={
           spy.bars.length > 0 ? (
             <span className="text-xl font-semibold text-foreground">
-              ${fmt(spy.bars[spy.bars.length - 1].close, 2)}
+              ${fmt(spy.bars[spy.bars.length - 1]!.close, 2)}
             </span>
           ) : null
         }

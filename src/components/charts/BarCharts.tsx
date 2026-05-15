@@ -39,7 +39,7 @@ export function GexBarChart({
             border: '1px solid rgba(255,255,255,0.1)',
             fontSize: 11,
           }}
-          formatter={(v: number) => v.toLocaleString()}
+          formatter={(v) => Number(v).toLocaleString()}
         />
         <ReferenceLine x={0} stroke="rgba(255,255,255,0.3)" />
         {spotPrice !== null && (
@@ -75,7 +75,7 @@ export function MaxPainBarChart({ data, height = 200 }: { data: PainPoint[]; hei
             border: '1px solid rgba(255,255,255,0.1)',
             fontSize: 11,
           }}
-          formatter={(v: number) => v.toLocaleString()}
+          formatter={(v) => Number(v).toLocaleString()}
         />
         <Bar dataKey="pain" fill="#6366f1" />
       </BarChart>

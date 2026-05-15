@@ -123,7 +123,7 @@ function pctChange(closes: number[], days: number): number | null {
   if (closes.length < days + 1) return null
   const last = closes[closes.length - 1]
   const prev = closes[closes.length - 1 - days]
-  if (!prev) return null
+  if (last === undefined || !prev) return null
   return (last / prev - 1) * 100
 }
 
@@ -131,8 +131,8 @@ function rolling(values: number[], window: number): (number | null)[] {
   const out: (number | null)[] = new Array(values.length).fill(null)
   let sum = 0
   for (let i = 0; i < values.length; i++) {
-    sum += values[i]
-    if (i >= window) sum -= values[i - window]
+    sum += values[i]!
+    if (i >= window) sum -= values[i - window]!
     if (i >= window - 1) out[i] = sum / window
   }
   return out
@@ -221,7 +221,7 @@ async function buildPulse(): Promise<PulseData> {
   const ma200: LinePoint[] = []
   for (let i = 0; i < spyBars.length; i++) {
     const v = ma[i]
-    if (v !== null) ma200.push({ time: spyBars[i].time, value: v })
+    if (v !== null && v !== undefined) ma200.push({ time: spyBars[i]!.time, value: v })
   }
 
   const fred = (await loadLatestSnapshot<Record<string, unknown>>('macro/fred', 'SUMMARY')) ?? {}

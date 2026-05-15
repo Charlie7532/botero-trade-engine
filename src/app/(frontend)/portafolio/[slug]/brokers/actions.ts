@@ -2,6 +2,7 @@
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import type { RequiredDataFromCollectionSlug } from 'payload'
 import { revalidatePath } from 'next/cache'
 
 import { requireUser } from '@/providers/Auth/server'
@@ -107,7 +108,7 @@ export async function createBrokerAccount(
   try {
     const created = await payload.create({
       collection: 'broker-accounts',
-      data: data as Parameters<typeof payload.create>[0]['data'],
+      data: data as unknown as RequiredDataFromCollectionSlug<'broker-accounts'>,
       user,
       overrideAccess: false,
     })

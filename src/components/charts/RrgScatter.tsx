@@ -43,7 +43,7 @@ export function RrgScatter({ data, height = 320 }: { data: Point[]; height?: num
             border: '1px solid rgba(255,255,255,0.1)',
             fontSize: 11,
           }}
-          formatter={(v: number) => `${v.toFixed(2)}%`}
+          formatter={(v) => `${Number(v).toFixed(2)}%`}
         />
         <Scatter data={data} fill="#22c55e">
           <LabelList dataKey="ticker" position="top" style={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }} />

@@ -40,8 +40,8 @@ export async function MarketSummary({ slug }: Props) {
   const macro = macroRes.status === 'fulfilled' ? macroRes.value : null
 
   const spyBars = pulse?.spy.bars ?? []
-  const spyLast = spyBars.length > 0 ? spyBars[spyBars.length - 1].close : null
-  const spyPrev = spyBars.length > 1 ? spyBars[spyBars.length - 2].close : null
+  const spyLast = spyBars.length > 0 ? spyBars[spyBars.length - 1]!.close : null
+  const spyPrev = spyBars.length > 1 ? spyBars[spyBars.length - 2]!.close : null
   const spyChange = spyLast !== null && spyPrev ? ((spyLast - spyPrev) / spyPrev) * 100 : null
   const recentBars = spyBars.slice(-90)
 

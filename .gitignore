@@ -9,6 +9,7 @@ build
 # Environment / Secrets
 .env
 .env*.local
+*.env
 .mcp.json
 
 # Platform

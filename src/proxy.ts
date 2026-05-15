@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server'
 export function proxy(request: NextRequest) {
   const token = request.cookies.get('payload-token')?.value
   const pathname = request.nextUrl.pathname
+  const isAuthRoute = pathname === '/login' || pathname === '/admin/login'
 
   // Protected routes that require authentication
   const protectedRoutes = [
@@ -17,6 +18,11 @@ export function proxy(request: NextRequest) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
+  }
+
+  // Logged-in users should never remain on login routes.
+  if (isAuthRoute && token) {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   // If accessing root with token → redirect to portafolio

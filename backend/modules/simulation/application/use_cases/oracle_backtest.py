@@ -305,6 +305,17 @@ class OracleBacktester:
             # Family K: OHLC Bar Anatomy (close position, gap, range expansion)
             eng.extract_bar_anatomy_features()
 
+            # Family L: Sentiment Composite (fear/greed, trail, breadth)
+            # S5FI = most discriminative sentiment feature (12.7% spread)
+            try:
+                s5fi_bars = self.store.load_bars("S5FI", tf)
+                eng.extract_sentiment_composite_features(
+                    s5fi_df=s5fi_bars if s5fi_bars is not None and not s5fi_bars.empty else None,
+                )
+            except Exception as e:
+                logger.debug(f"Sentiment features unavailable: {e}")
+                eng.extract_sentiment_composite_features()
+
             feat_df = eng.df
             feat_cols = eng.get_feature_columns()
 

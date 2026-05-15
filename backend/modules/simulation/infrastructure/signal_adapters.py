@@ -8,6 +8,7 @@ The adapters are intentionally thin — they translate the module's
 output into the canonical signal format (1=long, -1=short, 0=flat).
 """
 import logging
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -858,7 +859,6 @@ class RegressionChannelAdapter(SignalPort):
 # See: .agents/knowledge/indicators/regression-slopes/PROFILE.md
 
 
-from dataclasses import dataclass
 
 
 @dataclass

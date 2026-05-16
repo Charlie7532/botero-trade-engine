@@ -918,15 +918,107 @@ def vault_ohlcv_bars(store: TimescaleDataStore, tickers: list[str]) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 8. CNN FEAR & GREED — Market Sentiment (daily)
+# 8. CNN FEAR & GREED — Intra-Day Sentiment Candle Builder
 # ═══════════════════════════════════════════════════════════════
 
-def vault_fear_greed(store: TimescaleDataStore) -> dict:
-    """Vault CNN Fear & Greed Index (1x per day)."""
-    if _already_vaulted_today(store, "macro/fear_greed", "MARKET"):
-        logger.info("😱 Fear & Greed already vaulted today — skipping")
-        return {"status": "skipped", "reason": "already_today"}
+def _should_poll_fear_greed() -> bool:
+    """Determine if we should poll F&G this cycle.
 
+    During market hours (9:30-16:00 ET): every cycle (~5 min)
+    Outside market hours: once per hour (first cycle window)
+    This keeps total requests sustainable (~42/day vs 288/day).
+    """
+    from datetime import timezone, timedelta as td
+    ET = timezone(td(hours=-4))  # EDT (approximate)
+    now_et = datetime.now(ET)
+    hour, minute = now_et.hour, now_et.minute
+
+    # Market hours: 9:30 - 16:00 ET → every cycle
+    if (hour == 9 and minute >= 30) or (10 <= hour < 16):
+        return True
+
+    # Off-hours: once per hour (first ~5 min window)
+    return minute < 5
+
+
+def vault_fear_greed(store: TimescaleDataStore) -> dict:
+    """Vault CNN Fear & Greed Index — runs EVERY eligible cycle.
+
+    Polls CNN API each daemon cycle during market hours (~5 min interval)
+    and hourly off-hours. Builds a real OHLCV candle for ticker FG:
+      open  = first reading of the day
+      high  = max score observed during the day
+      low   = min score observed during the day
+      close = latest score (updated each cycle)
+      volume = read count (how many times measured today)
+
+    Also persists each reading as MCP snapshot with delta tracking.
+    """
+    if not _should_poll_fear_greed():
+        return {"status": "skipped", "reason": "off_hours_throttle"}
+
+    try:
+        # ── Fallback chain: CNN API → GitHub CSV (Rule 10) ──
+        score, rating, hist_data, source = _fetch_fg_score_cnn()
+
+        if score is None:
+            score, rating, source = _fetch_fg_score_github(store)
+
+        if score is None:
+            logger.warning("F&G: all sources failed")
+            return {"status": "error", "error": "all_sources_failed"}
+
+        # Fetch previous reading for delta calculation
+        prev = store.load_mcp_latest("macro/fear_greed", "MARKET")
+        prev_score = prev.get("score", score) if prev else score
+        delta = round(score - prev_score, 2)
+
+        snapshot = {
+            "score": score,
+            "rating": rating,
+            "delta": delta,
+            "previous_score": prev_score,
+            "source": source,
+            "previous_close": hist_data.get("previousClose", {}).get("score") if hist_data else None,
+            "one_week_ago": hist_data.get("oneWeekAgo", {}).get("score") if hist_data else None,
+            "one_month_ago": hist_data.get("oneMonthAgo", {}).get("score") if hist_data else None,
+            "one_year_ago": hist_data.get("oneYearAgo", {}).get("score") if hist_data else None,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+
+        # Always save MCP snapshot (track every reading for delta history)
+        store.save_mcp_snapshot("macro/fear_greed", "MARKET", snapshot)
+
+        # Build progressive OHLCV candle: open stays, high/low expand, close updates
+        today_str = datetime.now(UTC).strftime("%Y-%m-%d")
+        store.upsert_ohlcv_bar_candle(
+            ticker="FG", timeframe="1d",
+            time=today_str, score=score,
+        )
+
+        # Log with delta awareness
+        delta_str = f"Δ{delta:+.1f}" if abs(delta) > 0.5 else "≈"
+        logger.info(f"😱 F&G: {score:.1f} ({rating}) {delta_str} [{source}]")
+
+        if abs(delta) > 5:
+            logger.warning(
+                f"⚡ F&G SPIKE: {prev_score:.1f} → {score:.1f} ({delta_str})"
+            )
+
+        return {"status": "ok", "score": score, "delta": delta, "source": source}
+
+    except Exception as e:
+        logger.warning(f"Fear & Greed vault failed (non-critical): {e}")
+        return {"status": "error", "error": str(e)}
+
+
+def _fetch_fg_score_cnn() -> tuple:
+    """Primary: CNN Fear & Greed API (intra-day, real-time score).
+
+    Returns:
+        (score, rating, hist_data, "cnn") on success.
+        (None, None, None, None) on failure.
+    """
     try:
         import requests as req
         url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
@@ -936,35 +1028,85 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
         data = r.json()
 
         fg = data.get("fear_and_greed", {})
-        hist = data.get("fear_and_greed_historical", {})
+        score = fg.get("score")
+        if score is None:
+            return None, None, None, None
 
-        snapshot = {
-            "score": fg.get("score", 50.0),
-            "rating": fg.get("rating", "neutral"),
-            "previous_close": hist.get("previousClose", {}).get("score"),
-            "one_week_ago": hist.get("oneWeekAgo", {}).get("score"),
-            "one_month_ago": hist.get("oneMonthAgo", {}).get("score"),
-            "one_year_ago": hist.get("oneYearAgo", {}).get("score"),
-            "timestamp": datetime.now(UTC).isoformat(),
-        }
+        rating = fg.get("rating", "neutral")
+        hist_data = data.get("fear_and_greed_historical", {})
+        return float(score), rating, hist_data, "cnn"
+    except Exception as e:
+        logger.info(f"F&G CNN API failed ({e}) — falling back to GitHub CSV")
+        return None, None, None, None
 
-        store.save_mcp_snapshot("macro/fear_greed", "MARKET", snapshot)
 
-        # Persist as OHLCV bar for ML feature lake (ticker FG)
-        # Bridges historical backfill (from GitHub CSV) with live daily score
-        score = snapshot["score"]
-        store.upsert_ohlcv_bar(
-            ticker="FG", timeframe="1d",
-            time=datetime.now(UTC).strftime("%Y-%m-%d"),
-            open=score, high=score, low=score, close=score, volume=0,
+def _fetch_fg_score_github(store: TimescaleDataStore) -> tuple:
+    """Fallback: whit3rabbit/fear-greed-data GitHub CSV (updated weekly).
+
+    Only useful for catching up missed days. Returns the latest row
+    from the CSV that is newer than our last persisted FG bar.
+
+    Returns:
+        (score, rating, "github") on success.
+        (None, None, None) on failure / no new data.
+    """
+    try:
+        import requests as req
+        from io import StringIO
+        import pandas as pd
+
+        csv_url = (
+            "https://raw.githubusercontent.com/whit3rabbit/"
+            "fear-greed-data/main/fear-greed.csv"
+        )
+        r = req.get(csv_url, timeout=15)
+        r.raise_for_status()
+
+        df = pd.read_csv(StringIO(r.text), parse_dates=["Date"])
+        df = df.dropna(subset=["Date", "Fear Greed"]).drop_duplicates(
+            subset=["Date"], keep="last"
+        )
+        if df.empty:
+            return None, None, None
+
+        latest = df.iloc[-1]
+        score = float(latest["Fear Greed"])
+
+        # Classify rating from score
+        if score < 25:
+            rating = "extreme fear"
+        elif score < 45:
+            rating = "fear"
+        elif score < 55:
+            rating = "neutral"
+        elif score < 75:
+            rating = "greed"
+        else:
+            rating = "extreme greed"
+
+        logger.info(
+            f"F&G GitHub fallback: {score:.1f} ({rating}) "
+            f"from {latest['Date'].date()}"
         )
 
-        logger.info(f"😱 Fear & Greed vault: {snapshot['score']:.1f} ({snapshot['rating']})")
-        return {"status": "ok", "score": snapshot["score"]}
+        # Also backfill any missing days from the CSV into OHLCV bars
+        last_bar_date = store.bars_last_date("FG", "1d")
+        if last_bar_date:
+            new_rows = df[df["Date"].dt.date > last_bar_date]
+            for _, row in new_rows.iterrows():
+                s = float(row["Fear Greed"])
+                store.upsert_ohlcv_bar(
+                    ticker="FG", timeframe="1d",
+                    time=row["Date"].strftime("%Y-%m-%d"),
+                    open=s, high=s, low=s, close=s, volume=0,
+                )
+            if len(new_rows) > 0:
+                logger.info(f"F&G GitHub: backfilled {len(new_rows)} missing days")
 
+        return score, rating, "github"
     except Exception as e:
-        logger.warning(f"Fear & Greed vault failed (non-critical): {e}")
-        return {"status": "error", "error": str(e)}
+        logger.warning(f"F&G GitHub fallback also failed: {e}")
+        return None, None, None
 
 
 # ═══════════════════════════════════════════════════════════════

@@ -1,9 +1,11 @@
 import type { UserAvatar } from '@/payload-types'
-import { getServerUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 import ProfileForm from './ProfileForm'
 
 export default async function ProfileSettingsPage() {
-  const { user } = await getServerUser()
+  const { user } = await userSession()
+
+  if (!user) return null
 
   const avatar = user.avatar as UserAvatar | null | undefined
   const avatarUrl = avatar?.url ?? null

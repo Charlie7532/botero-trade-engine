@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { getServerUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import RenamePortfolioForm from './RenamePortfolioForm'
 
@@ -11,7 +11,9 @@ type PageArgs = {
 export default async function PortfolioSettingsPage({ params }: PageArgs) {
   const { slug } = await params
 
-  const { user } = await getServerUser()
+  const { user } = await userSession()
+
+  if (!user) return null
 
   const portfolios = await getUserPortfolios(user.id)
   const portfolio = portfolios.find((p) => p.slug === slug)

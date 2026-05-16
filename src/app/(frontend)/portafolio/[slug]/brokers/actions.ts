@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 import type { RequiredDataFromCollectionSlug } from 'payload'
 import { revalidatePath } from 'next/cache'
 
-import { requireUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import type {
   BrokerType,
@@ -43,12 +43,8 @@ const trim = (value: string | undefined): string | undefined => {
 export async function createBrokerAccount(
   input: CreateBrokerAccountInput,
 ): Promise<CreateBrokerAccountResult> {
-  let user: Awaited<ReturnType<typeof requireUser>>
-  try {
-    user = await requireUser()
-  } catch {
-    return { ok: false, error: 'Not authenticated.' }
-  }
+  const { user } = await userSession()
+  if (!user) return { ok: false, error: 'Not authenticated.' }
 
   const name = trim(input.name)
   if (!name) return { ok: false, error: 'Name is required.' }

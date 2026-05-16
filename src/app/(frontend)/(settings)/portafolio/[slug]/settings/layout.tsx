@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Home } from 'lucide-react'
 
-import { getServerUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 
 type LayoutProps = {
@@ -20,7 +20,9 @@ const NAV_ITEMS = [
 export default async function SettingsLayout({ children, params }: LayoutProps) {
   const { slug } = await params
 
-  const { user } = await getServerUser()
+  const { user } = await userSession()
+
+  if (!user) return null
 
   const portfolios = await getUserPortfolios(user.id)
   const portfolio = portfolios.find((p) => p.slug === slug)

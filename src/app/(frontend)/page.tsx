@@ -9,9 +9,7 @@ import {
 export default async function FrontendHomePage() {
 	const user = await getUser()
 
-	if (!user) {
-		redirect('/login?redirect=%2Fportafolio')
-	}
+	if (!user) {redirect('/login?redirect=%2Fportafolio')}
 
 	const portfolios = await getUserPortfolios(user.id)
 	const portfolio = portfolios[0] ?? (await getOrCreateDefaultPortfolio(user.id, user.email))

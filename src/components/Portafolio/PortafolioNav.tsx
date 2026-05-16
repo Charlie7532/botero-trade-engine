@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Dropdown, Button, Label } from '@heroui/react'
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 
 import type { UserPortfolioSummary } from '@/collections/Portfolios/interface/service'
+import NewPortafolioDialog from './NewPortafolioDialog'
 
 type NavItem = {
   label: string
@@ -57,6 +58,7 @@ type Props = {
 
 const PortafolioNav: React.FC<Props> = ({ portfolios }) => {
   const pathname = usePathname() ?? '/portafolio'
+  const [isNewOpen, setIsNewOpen] = useState(false)
 
   // Detect active portfolio from URL: /portafolio/{slug}/...
   const slugMatch = pathname.match(/^\/portafolio\/([^/]+)/)
@@ -65,7 +67,7 @@ const PortafolioNav: React.FC<Props> = ({ portfolios }) => {
 
   const handleSelect = (key: React.Key) => {
     if (key === '__new__') {
-      window.location.href = '/admin/collections/portfolios/create'
+      setIsNewOpen(true)
       return
     }
     window.location.href = `/portafolio/${String(key)}`
@@ -135,15 +137,18 @@ const PortafolioNav: React.FC<Props> = ({ portfolios }) => {
             )
           })
         ) : (
-          <Link
-            href="/admin/collections/portfolios/create"
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
+          <button
+            type="button"
+            onClick={() => setIsNewOpen(true)}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-surface-secondary transition-colors"
           >
             <Plus size={16} />
             <span>Create your first portfolio</span>
-          </Link>
+          </button>
         )}
       </nav>
+
+      <NewPortafolioDialog isOpen={isNewOpen} onOpenChange={setIsNewOpen} />
     </>
   )
 }

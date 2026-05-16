@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
 
-import { getServerUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import { MarketSummary } from '@/components/Portafolio/Overview/MarketSummary'
 import { BrokerSummary } from '@/components/Portafolio/Overview/BrokerSummary'
@@ -43,7 +43,9 @@ function SectionSkeleton({
 export default async function PortfolioDashboardPage({ params }: PageArgs) {
   const { slug } = await params
 
-  const { user } = await getServerUser()
+  const { user } = await userSession()
+
+  if (!user) return null
 
   const portfolios = await getUserPortfolios(user.id)
 

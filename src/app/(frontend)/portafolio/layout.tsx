@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react'
 
-import { getServerUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import SidebarUser from '@/components/Portafolio/SidebarUser'
 import PortafolioNav from '@/components/Portafolio/PortafolioNav'
 
 export default async function PortafolioLayout({ children }: { children: ReactNode }) {
-  const { user } = await getServerUser()
+  const { user } = await userSession()
+
+  if (!user) return null
+
   const portfolios = await getUserPortfolios(user.id)
 
   return (

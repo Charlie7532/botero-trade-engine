@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
-import { getServerUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 
 type PageArgs = {
@@ -12,7 +12,9 @@ type PageArgs = {
 export default async function MembersSettingsPage({ params }: PageArgs) {
   const { slug } = await params
 
-  const { user } = await getServerUser()
+  const { user } = await userSession()
+
+  if (!user) return null
 
   const portfolios = await getUserPortfolios(user.id)
   const portfolio = portfolios.find((p) => p.slug === slug)

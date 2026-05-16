@@ -64,6 +64,7 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    'payload-mcp-api-keys': PayloadMcpApiKeyAuthOperations;
   };
   blocks: {};
   collections: {
@@ -83,6 +84,7 @@ export interface Config {
     'trade-snapshots': TradeSnapshot;
     'project-vaults': ProjectVault;
     users: User;
+    'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -120,6 +122,7 @@ export interface Config {
     'trade-snapshots': TradeSnapshotsSelect<false> | TradeSnapshotsSelect<true>;
     'project-vaults': ProjectVaultsSelect<false> | ProjectVaultsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -141,13 +144,31 @@ export interface Config {
     'postgres-performance': PostgresPerformanceWidget;
     collections: CollectionsWidget;
   };
-  user: User;
+  user: User | PayloadMcpApiKey;
   jobs: {
     tasks: unknown;
     workflows: unknown;
   };
 }
 export interface UserAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
+export interface PayloadMcpApiKeyAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -1056,6 +1077,207 @@ export interface ProjectVault {
   createdAt: string;
 }
 /**
+ * Bearer tokens used to authenticate MCP clients (Claude, ChatGPT, internal agents) against the private /api/mcp endpoint. Each key controls which collections, tools and operations its holder can call.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys".
+ */
+export interface PayloadMcpApiKey {
+  id: number;
+  /**
+   * The user that the API key is associated with.
+   */
+  user: number | User;
+  /**
+   * A useful label for the API key.
+   */
+  label?: string | null;
+  /**
+   * The purpose of the API key.
+   */
+  description?: string | null;
+  portfolios?: {
+    /**
+     * Allow clients to find portfolios.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create portfolios.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update portfolios.
+     */
+    update?: boolean | null;
+  };
+  portfolioMemberships?: {
+    /**
+     * Allow clients to find portfolio-memberships.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create portfolio-memberships.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update portfolio-memberships.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete portfolio-memberships.
+     */
+    delete?: boolean | null;
+  };
+  bots?: {
+    /**
+     * Allow clients to find bots.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create bots.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update bots.
+     */
+    update?: boolean | null;
+  };
+  botAssignments?: {
+    /**
+     * Allow clients to find bot-assignments.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create bot-assignments.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update bot-assignments.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete bot-assignments.
+     */
+    delete?: boolean | null;
+  };
+  agentSkills?: {
+    /**
+     * Allow clients to find agent-skills.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create agent-skills.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update agent-skills.
+     */
+    update?: boolean | null;
+  };
+  mcpServers?: {
+    /**
+     * Allow clients to find mcp-servers.
+     */
+    find?: boolean | null;
+  };
+  instruments?: {
+    /**
+     * Allow clients to find instruments.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create instruments.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update instruments.
+     */
+    update?: boolean | null;
+  };
+  regimePhases?: {
+    /**
+     * Allow clients to find regime-phases.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create regime-phases.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update regime-phases.
+     */
+    update?: boolean | null;
+  };
+  calibrationProfiles?: {
+    /**
+     * Allow clients to find calibration-profiles.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create calibration-profiles.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update calibration-profiles.
+     */
+    update?: boolean | null;
+  };
+  candidateScreenings?: {
+    /**
+     * Allow clients to find candidate-screenings.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create candidate-screenings.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update candidate-screenings.
+     */
+    update?: boolean | null;
+  };
+  tradeSnapshots?: {
+    /**
+     * Allow clients to find trade-snapshots.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create trade-snapshots.
+     */
+    create?: boolean | null;
+  };
+  projectVaults?: {
+    /**
+     * Allow clients to find project-vaults.
+     */
+    find?: boolean | null;
+  };
+  brokerAccounts?: {
+    /**
+     * Allow clients to find broker-accounts.
+     */
+    find?: boolean | null;
+  };
+  media?: {
+    /**
+     * Allow clients to find media.
+     */
+    find?: boolean | null;
+  };
+  users?: {
+    /**
+     * Allow clients to find users.
+     */
+    find?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
+  collection: 'payload-mcp-api-keys';
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1142,12 +1364,21 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -1157,10 +1388,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   key?: string | null;
   value?:
     | {
@@ -1651,6 +1887,116 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys_select".
+ */
+export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
+  user?: T;
+  label?: T;
+  description?: T;
+  portfolios?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+      };
+  portfolioMemberships?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  bots?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+      };
+  botAssignments?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  agentSkills?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+      };
+  mcpServers?:
+    | T
+    | {
+        find?: T;
+      };
+  instruments?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+      };
+  regimePhases?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+      };
+  calibrationProfiles?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+      };
+  candidateScreenings?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+      };
+  tradeSnapshots?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+      };
+  projectVaults?:
+    | T
+    | {
+        find?: T;
+      };
+  brokerAccounts?:
+    | T
+    | {
+        find?: T;
+      };
+  media?:
+    | T
+    | {
+        find?: T;
+      };
+  users?:
+    | T
+    | {
+        find?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

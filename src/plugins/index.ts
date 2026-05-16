@@ -3,7 +3,8 @@ import { Plugin } from 'payload'
 
 import { OAuth2Plugin } from 'payload-oauth2'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
-import { mcpPlugin } from '@payloadcms/plugin-mcp'
+
+import { mcp } from './mcp'
 
 export const plugins: Plugin[] = [
   OAuth2Plugin({
@@ -41,14 +42,7 @@ export const plugins: Plugin[] = [
     },
   }),
   payloadCloudPlugin(),
-  // mcpPlugin({
-  //   collections: {
-  //     'agent-skills': { enabled: true },
-  //     portfolios: { enabled: true },
-  //     bots: { enabled: true },
-  //     'mcp-servers': { enabled: true },
-  //   },
-  // }),
+  mcp,
   vercelBlobStorage({
     collections: {
       media: {

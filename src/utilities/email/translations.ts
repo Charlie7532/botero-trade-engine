@@ -75,10 +75,10 @@ const translations: Record<SupportedLanguage, EmailTranslations> = {
         footerSecurityNotice: "If you don't recognize this action, please contact us.",
 
         otp: {
-            subjectLogin: 'Your Enntra verification code',
-            subjectPasswordReset: 'Your Enntra password reset code',
-            preheader: 'Your Enntra verification code is',
-            purposeLogin: 'We recently upgraded our security system. Use this code to sign in:',
+            subjectLogin: 'Your Main 12 verification code',
+            subjectPasswordReset: 'Your Main 12 password reset code',
+            preheader: 'Your Main 12 verification code is',
+            purposeLogin: 'Use this code to sign in to your account:',
             purposePasswordReset: 'Use this code to reset your password:',
             expiresIn: 'This code expires in',
             afterSignIn: 'After signing in, you can optionally set a password for faster access next time.',
@@ -86,22 +86,22 @@ const translations: Record<SupportedLanguage, EmailTranslations> = {
         },
 
         welcome: {
-            subject: 'Welcome to Enntra! 🎉',
-            preheader: 'Welcome to Enntra! Start exploring events now.',
-            title: 'Welcome to Enntra',
+            subject: 'Welcome to Main 12! 🎉',
+            preheader: 'Welcome to Main 12! Start exploring events now.',
+            title: 'Welcome to Main 12',
             greeting: 'Hello',
             introMessage: 'We\'re excited to have you in our community.',
             introSecure: 'is here to make your experiences secure, reliable, and exciting. Get ready to discover a new way to enjoy your favorite events.',
-            highlightMessage: 'Did you know Enntra verifies every ticket for your safety? Enjoy your events worry-free!',
+            highlightMessage: 'Did you know Main 12 verifies every ticket for your safety? Enjoy your events worry-free!',
             ctaButton: 'Start Exploring Events',
             helpMessage: "Questions? Just reply to this email — we're here to help!",
         },
 
         passwordReset: {
-            subject: 'Reset your Enntra password',
+            subject: 'Reset your Main 12 password',
             preheader: 'Your password reset code is',
             title: 'Reset your password',
-            intro: 'We received a request to reset your Enntra password. Use this code to continue:',
+            intro: 'We received a request to reset your Main 12 password. Use this code to continue:',
             expiresIn: 'This code expires in',
             afterVerify: "After verifying your identity, you'll be able to create a new password.",
             warningTitle: "Didn't request this?",
@@ -110,11 +110,11 @@ const translations: Record<SupportedLanguage, EmailTranslations> = {
         },
 
         passwordChanged: {
-            subject: 'Your Enntra password has been updated',
-            preheader: 'Your Enntra password has been changed successfully.',
+            subject: 'Your Main 12 password has been updated',
+            preheader: 'Your Main 12 password has been changed successfully.',
             title: 'Password updated successfully',
             message:
-                'Your Enntra password has been successfully changed. You can now use your new password to sign in.',
+                'Your Main 12 password has been successfully changed. You can now use your new password to sign in.',
             warningTitle: 'Not you?',
             warningMessage:
                 "If you didn't make this change, please reset your password immediately and contact our support team.",
@@ -131,11 +131,11 @@ const translations: Record<SupportedLanguage, EmailTranslations> = {
         footerSecurityNotice: 'Si no reconoces esta acción, por favor contáctanos.',
 
         otp: {
-            subjectLogin: 'Tu código de verificación de Enntra',
-            subjectPasswordReset: 'Tu código para restablecer la contraseña de Enntra',
-            preheader: 'Tu código de verificación de Enntra es',
+            subjectLogin: 'Tu código de verificación de Main 12',
+            subjectPasswordReset: 'Tu código para restablecer la contraseña de Main 12',
+            preheader: 'Tu código de verificación de Main 12 es',
             purposeLogin:
-                'Recientemente actualizamos nuestro sistema de seguridad. Usa este código para iniciar sesión:',
+                'Usa este código para iniciar sesión en tu cuenta:',
             purposePasswordReset: 'Usa este código para restablecer tu contraseña:',
             expiresIn: 'Este código expira en',
             afterSignIn:
@@ -144,23 +144,23 @@ const translations: Record<SupportedLanguage, EmailTranslations> = {
         },
 
         welcome: {
-            subject: '¡Bienvenido a Enntra! 🎉',
-            preheader: '¡Bienvenido a Enntra! Comienza a explorar eventos ahora.',
-            title: '¡Bienvenido a Enntra',
+            subject: '¡Bienvenido a Main 12! 🎉',
+            preheader: '¡Bienvenido a Main 12! Comienza a explorar eventos ahora.',
+            title: '¡Bienvenido a Main 12',
             greeting: '¡Hola',
             introMessage: 'Estamos emocionados de tenerte en nuestra comunidad.',
             introSecure: 'está aquí para hacer tus experiencias seguras, confiables y emocionantes. Prepárate para descubrir una nueva forma de disfrutar tus eventos favoritos.',
-            highlightMessage: '¿Sabías que Enntra verifica cada entrada para tu seguridad? ¡Disfruta tus eventos sin preocupaciones!',
+            highlightMessage: '¿Sabías que Main 12 verifica cada entrada para tu seguridad? ¡Disfruta tus eventos sin preocupaciones!',
             ctaButton: 'Comenzar a Explorar Eventos',
             helpMessage: '¿Preguntas? Solo responde a este correo — ¡estamos aquí para ayudarte!',
         },
 
         passwordReset: {
-            subject: 'Restablece tu contraseña de Enntra',
+            subject: 'Restablece tu contraseña de Main 12',
             preheader: 'Tu código para restablecer la contraseña es',
             title: 'Restablece tu contraseña',
             intro:
-                'Recibimos una solicitud para restablecer tu contraseña de Enntra. Usa este código para continuar:',
+                'Recibimos una solicitud para restablecer tu contraseña de Main 12. Usa este código para continuar:',
             expiresIn: 'Este código expira en',
             afterVerify: 'Después de verificar tu identidad, podrás crear una nueva contraseña.',
             warningTitle: '¿No lo solicitaste?',
@@ -169,11 +169,11 @@ const translations: Record<SupportedLanguage, EmailTranslations> = {
         },
 
         passwordChanged: {
-            subject: 'Tu contraseña de Enntra ha sido actualizada',
-            preheader: 'Tu contraseña de Enntra ha sido cambiada exitosamente.',
+            subject: 'Tu contraseña de Main 12 ha sido actualizada',
+            preheader: 'Tu contraseña de Main 12 ha sido cambiada exitosamente.',
             title: 'Contraseña actualizada exitosamente',
             message:
-                'Tu contraseña de Enntra ha sido cambiada exitosamente. Ahora puedes usar tu nueva contraseña para iniciar sesión.',
+                'Tu contraseña de Main 12 ha sido cambiada exitosamente. Ahora puedes usar tu nueva contraseña para iniciar sesión.',
             warningTitle: '¿No fuiste tú?',
             warningMessage:
                 'Si no realizaste este cambio, por favor restablece tu contraseña inmediatamente y contacta a nuestro equipo de soporte.',

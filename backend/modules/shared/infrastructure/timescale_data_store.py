@@ -139,6 +139,23 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
         finally:
             self._put(conn)
 
+    def load_bars_freshness(
+        self, ticker: str, tf: str,
+    ) -> tuple[Optional[date], bool]:
+        """Check freshness of the latest bar for a ticker.
+
+        Returns:
+            (last_bar_date, is_stale) using market_schedule trading-day awareness.
+            Returns (None, True) if no bars exist.
+        """
+        last_dt = self.bars_last_date(ticker, tf)
+        if not last_dt:
+            return None, True
+
+        from backend.modules.shared.domain.rules.market_schedule import is_data_stale
+        stale = is_data_stale(last_dt, asset_type="INDICATOR")
+        return last_dt, stale
+
     # ── Macro Data ────────────────────────────────────────
 
     def save_macro(self, name: str, df: pd.DataFrame) -> None:
@@ -246,6 +263,33 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
                 )
                 row = cur.fetchone()
                 return row[0] if row else None
+        finally:
+            self._put(conn)
+
+    def load_mcp_latest_with_age(
+        self, category: str, ticker: str,
+    ) -> tuple[Optional[Any], Optional['timedelta']]:
+        """Load the most recent MCP snapshot WITH its age.
+
+        Returns:
+            (data, age) where age is timedelta since the snapshot was saved.
+            (None, None) if no snapshot exists.
+        """
+        from datetime import timedelta  # noqa: F811
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """SELECT data, NOW() - time AS age
+                       FROM market.mcp_snapshots
+                       WHERE category = %s AND ticker = %s
+                       ORDER BY time DESC LIMIT 1""",
+                    (category, ticker.upper()),
+                )
+                row = cur.fetchone()
+                if row:
+                    return row[0], row[1]  # data, timedelta
+                return None, None
         finally:
             self._put(conn)
 
@@ -372,6 +416,41 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
         except Exception as e:
             conn.rollback()
             logger.error(f"TimescaleDB: upsert_ohlcv_bar {ticker}/{timeframe} failed: {e}")
+        finally:
+            self._put(conn)
+
+    def upsert_ohlcv_bar_candle(
+        self, ticker: str, timeframe: str, time,
+        score: float, volume: int = 0,
+    ) -> None:
+        """Insert or UPDATE an OHLCV bar, building a real candle progressively.
+
+        First insert of the day: open=high=low=close=score.
+        Subsequent updates: high=MAX(existing, new), low=MIN(existing, new),
+        close=latest score. Open is preserved (first reading of the day).
+        Volume increments as a read counter (proxy for candle confidence).
+        """
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO market.ohlcv_bars
+                       (time, ticker, timeframe, open, high, low, close, volume)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (ticker, timeframe, time) DO UPDATE SET
+                         high = GREATEST(market.ohlcv_bars.high, EXCLUDED.high),
+                         low = LEAST(market.ohlcv_bars.low, EXCLUDED.low),
+                         close = EXCLUDED.close,
+                         volume = market.ohlcv_bars.volume + 1""",
+                    (time, ticker.upper(), timeframe,
+                     score, score, score, score, volume),
+                )
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(
+                f"TimescaleDB: upsert_ohlcv_bar_candle {ticker}/{timeframe} failed: {e}"
+            )
         finally:
             self._put(conn)
 

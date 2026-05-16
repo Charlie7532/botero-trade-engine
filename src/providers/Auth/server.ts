@@ -4,10 +4,6 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { User } from '@/payload-types'
 
-/**
- * Get the current authenticated user from request cookies.
- * Cached per request to avoid multiple Payload initializations.
- */
 export const getUser = cache(async (): Promise<User | null> => {
     try {
         const cookieStore = await cookies()
@@ -19,10 +15,10 @@ export const getUser = cache(async (): Promise<User | null> => {
 
         const payload = await getPayload({ config })
 
-        // Verify the token and get user
-        const { user } = await payload.auth({
-            headers: await headers(),
-        })
+        const authHeaders = new Headers(await headers())
+        authHeaders.set('Authorization', `JWT ${token}`)
+
+        const { user } = await payload.auth({ headers: authHeaders })
 
         return user as User | null
     } catch (error) {
@@ -31,21 +27,11 @@ export const getUser = cache(async (): Promise<User | null> => {
     }
 })
 
-/**
- * Check if the current request is authenticated.
- * For use in Server Components, API Routes, and Server Actions.
- */
 export async function isAuthenticated(): Promise<boolean> {
     const user = await getUser()
     return user !== null
 }
 
-/**
- * Get user or throw an error if not authenticated.
- * Useful for protected Server Actions.
- * 
- * @throws Error if user is not authenticated
- */
 export async function requireUser(): Promise<User> {
     const user = await getUser()
     if (!user) {
@@ -54,10 +40,6 @@ export async function requireUser(): Promise<User> {
     return user
 }
 
-/**
- * Get the current user session for server components.
- * Cached per request for performance.
- */
 export const userSession = cache(async (): Promise<{
     user: User | null
     isAdmin: boolean

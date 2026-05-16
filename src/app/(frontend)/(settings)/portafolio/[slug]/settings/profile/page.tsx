@@ -1,11 +1,11 @@
 import type { UserAvatar } from '@/payload-types'
-import { getMeUser } from '@/utilities/getMeUser'
+import { userSession } from '@/providers/Auth/server'
 import ProfileForm from './ProfileForm'
 
 export default async function ProfileSettingsPage() {
-  const { user } = await getMeUser({
-    nullUserRedirect: '/admin/login?redirect=%2Fportafolio',
-  })
+  const { user } = await userSession()
+
+  if (!user) return null
 
   const avatar = user.avatar as UserAvatar | null | undefined
   const avatarUrl = avatar?.url ?? null

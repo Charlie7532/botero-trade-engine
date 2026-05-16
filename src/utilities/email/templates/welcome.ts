@@ -44,7 +44,7 @@ export function generateWelcomeEmail(params: WelcomeEmailParams): WelcomeEmailRe
       <td style="text-align: center; padding: 8px 16px 16px; line-height: 1.5; color: ${COLORS.text};">
         <p style="margin: 0 0 16px;">
           ${t.welcome.greeting} <strong>${userName}</strong>! ${t.welcome.introMessage}
-          <strong>Enntra</strong> ${t.welcome.introSecure}
+          <strong>Main 12</strong> ${t.welcome.introSecure}
         </p>
       </td>
     </tr>

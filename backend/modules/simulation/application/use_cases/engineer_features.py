@@ -291,6 +291,60 @@ class QuantFeatureEngineer:
         divergence = price_direction * vol_direction  # -1 = divergencia
         df['VF_VolPriceDivergence'] = divergence.rolling(10).mean()
 
+        # --- E5: Relative Trade Count (interest/activity proxy) ---
+        # Forensic evidence: TC > 1.5× avg → P(↑) = 47.3% vs 41.4% (5.9% spread)
+        # High trade count = heightened institutional interest, not just volume
+        if 'trade_count' in df.columns:
+            tc = pd.to_numeric(df['trade_count'], errors='coerce').fillna(0)
+            tc_avg = tc.rolling(lookback).mean().clip(lower=1.0)
+            tc_rel = tc / tc_avg
+            tc_mean = tc_rel.rolling(50).mean()
+            tc_std = tc_rel.rolling(50).std().clip(lower=1e-8)
+            df['VF_TradeCountRel_ZScore'] = (tc_rel - tc_mean) / tc_std
+        else:
+            df['VF_TradeCountRel_ZScore'] = 0.0
+
+        # --- E6: Volume Per Trade (institutional trade size proxy) ---
+        # High VPT = fewer, larger trades (institutional). Low = retail frenzy.
+        # Forensic: VPT 1.1-1.4× → P(↑) = 44.2% vs 40.7% (3.5% spread)
+        if 'trade_count' in df.columns:
+            tc_safe = pd.to_numeric(df['trade_count'], errors='coerce').fillna(1).clip(lower=1)
+            vpt = df['volume'] / tc_safe
+            vpt_avg = vpt.rolling(lookback).mean().clip(lower=1e-8)
+            vpt_rel = vpt / vpt_avg
+            vpt_mean = vpt_rel.rolling(50).mean()
+            vpt_std = vpt_rel.rolling(50).std().clip(lower=1e-8)
+            df['VF_VolPerTrade_ZScore'] = (vpt_rel - vpt_mean) / vpt_std
+        else:
+            df['VF_VolPerTrade_ZScore'] = 0.0
+
+        # --- E7: Trade Count Acceleration (sudden interest shifts) ---
+        if 'trade_count' in df.columns:
+            tc_fast = tc.rolling(5).mean()
+            tc_slow = tc.rolling(20).mean().clip(lower=1.0)
+            tc_accel = (tc_fast / tc_slow) - 1.0
+            ta_mean = tc_accel.rolling(50).mean()
+            ta_std = tc_accel.rolling(50).std().clip(lower=1e-8)
+            df['VF_TradeCountAccel_ZScore'] = (tc_accel - ta_mean) / ta_std
+        else:
+            df['VF_TradeCountAccel_ZScore'] = 0.0
+
+        # --- E8: VWAP Premium (real Alpaca VWAP when available) ---
+        # Close > VWAP = buyers won the day. Close < VWAP = sellers dominated.
+        if 'vwap' in df.columns:
+            real_vwap = pd.to_numeric(df['vwap'], errors='coerce').fillna(0)
+            has_vwap = real_vwap > 0
+            premium = pd.Series(0.0, index=df.index)
+            premium[has_vwap] = (
+                (df.loc[has_vwap, 'close'] - real_vwap[has_vwap])
+                / real_vwap[has_vwap]
+            )
+            prem_mean = premium.rolling(50).mean()
+            prem_std = premium.rolling(50).std().clip(lower=1e-8)
+            df['VF_VWAPPremium_ZScore'] = (premium - prem_mean) / prem_std
+        else:
+            df['VF_VWAPPremium_ZScore'] = 0.0
+
     # ================================================================
     # FAMILY G: Organic Volume Decomposition & Sector Rotation
     # ================================================================
@@ -855,14 +909,192 @@ class QuantFeatureEngineer:
         )
 
     # ================================================================
+    # FAMILY L: Sentiment Composite (Forensic Audit 2026-05-14)
+    # ================================================================
+    # Empirically validated: 54.2% spread in P(↑) when combined.
+    # Ticker fear/greed (regression slopes), 5-bar candle trail,
+    # market breadth (S5FI). Contrarian: PANIC = opportunity.
+
+    def extract_sentiment_composite_features(
+        self,
+        s5fi_df: pd.DataFrame | None = None,
+        fg_df: pd.DataFrame | None = None,
+    ) -> None:
+        """
+        Family L: Composite sentiment features from multiple orthogonal layers.
+
+        Sub-families:
+          L1-L7: Ticker-level fear/greed (regression slopes — contrarian)
+          L8-L11: Candle trail movement probabilities (5-bar sequence)
+          L12-L14: Market breadth context (S5FI — most discriminative feature)
+
+        Evidence Status: VALIDATED — 20,580 obs, 20 tickers × 5yr.
+        PANIC + S5FI WEAK = P(↑) 55.3%, Ret20d +5.44% (Munger spot).
+        Complacency (all "perfect") = P(↑) 20.8% (worst).
+        """
+        from backend.modules.simulation.infrastructure.signal_adapters import (
+            RegressionChannelAdapter,
+            RSISignalAdapter,
+            compute_ticker_fear_level,
+        )
+        logger.info("Calculating sentiment composite features...")
+
+        df = self.df
+        close = df['close'].values.astype(float)
+        open_arr = df['open'].values.astype(float)
+        high_arr = df['high'].values.astype(float)
+        low_arr = df['low'].values.astype(float)
+
+        n = len(df)
+
+        # Pre-allocate arrays
+        fear_levels = np.full(n, 2, dtype=float)       # L1
+        tide_slopes = np.full(n, 0.0)                  # L2
+        wave_slopes = np.full(n, 0.0)                  # L3
+        tide_accels = np.full(n, 0.0)                  # L4
+        wave_flips = np.full(n, 0, dtype=float)         # L5 (bool as 0/1)
+        wave_flip_dirs = np.full(n, 0, dtype=float)     # L6
+        sigma_positions = np.full(n, 0.0)               # L7
+        trail_ups = np.full(n, 0.0)                     # L8
+        trail_downs = np.full(n, 0.0)                   # L9
+        trail_indecisions = np.full(n, 0.0)             # L10
+        trail_net_direction = np.full(n, 0.0)           # L11
+
+        # ── L1-L7: Ticker Fear/Greed from regression slopes ──
+        # Compute dominant cycle once for the entire series
+        dominant_cycle = RSISignalAdapter._detect_dominant_cycle(close)
+        short_window = max(10, min(dominant_cycle, 60))
+
+        for i in range(205, n):
+            bias = compute_ticker_fear_level(df, i, short_window=short_window)
+            if bias is None:
+                continue
+            fear_levels[i] = bias.fear_level
+            tide_slopes[i] = bias.tide_slope
+            wave_slopes[i] = bias.wave_slope
+            tide_accels[i] = bias.tide_accel
+            wave_flips[i] = 1.0 if bias.wave_flip else 0.0
+            wave_flip_dirs[i] = float(bias.wave_flip_direction)
+            sigma_positions[i] = bias.sigma_position
+
+        df['ST_FearLevel'] = fear_levels
+        df['ST_TideSlope'] = tide_slopes
+        df['ST_WaveSlope'] = wave_slopes
+        df['ST_TideAccel'] = tide_accels
+        df['ST_WaveFlip'] = wave_flips
+        df['ST_WaveFlipDir'] = wave_flip_dirs
+        df['ST_SigmaPosition'] = sigma_positions
+
+        # ── L8-L11: 5-bar candle trail movement classification ──
+        # Each bar: U (up body>20% range), D (down), I (indecision)
+        # Trail = last 5 bars → empirical P(up/down/flat) probabilities
+        for i in range(5, n):
+            n_up = 0
+            n_down = 0
+            n_indecision = 0
+            for j in range(i - 4, i + 1):
+                body = close[j] - open_arr[j]
+                rng = high_arr[j] - low_arr[j]
+                ratio = abs(body) / rng if rng > 0 else 0
+                if ratio < 0.20:
+                    n_indecision += 1
+                elif body > 0:
+                    n_up += 1
+                else:
+                    n_down += 1
+            trail_ups[i] = n_up / 5.0
+            trail_downs[i] = n_down / 5.0
+            trail_indecisions[i] = n_indecision / 5.0
+            trail_net_direction[i] = (n_up - n_down) / 5.0
+
+        df['ST_TrailUp'] = trail_ups
+        df['ST_TrailDown'] = trail_downs
+        df['ST_TrailIndecision'] = trail_indecisions
+        df['ST_TrailNetDirection'] = trail_net_direction
+
+        # ── L12-L14: Market breadth (S5FI) ──
+        # S5FI = % of S&P 500 above 50-DMA → most discriminative feature
+        # WEAK (<30) = P(↑) 51.3%, STRONG (>70) = P(↑) 38.6%
+        if s5fi_df is not None and not s5fi_df.empty:
+            s5fi_close = s5fi_df['close'].reindex(df.index, method='ffill')
+            df['ST_S5FI'] = s5fi_close.fillna(50.0)
+            # Normalized: 0-1 scale
+            df['ST_S5FI_Norm'] = df['ST_S5FI'] / 100.0
+            # Breadth regime: <30=WEAK(0), 30-70=MIXED(1), >70=STRONG(2)
+            df['ST_BreadthRegime'] = np.where(
+                df['ST_S5FI'] < 30, 0,
+                np.where(df['ST_S5FI'] > 70, 2, 1)
+            )
+        else:
+            df['ST_S5FI'] = 50.0
+            df['ST_S5FI_Norm'] = 0.5
+            df['ST_BreadthRegime'] = 1
+
+        # ── L15-L20: CNN Fear & Greed Index (market-wide macro sentiment) ──
+        # Historical: 2011-01-03 → present via backfill_fear_greed.py
+        # Daily continuity: vault_fear_greed() writes FG bar each day
+        if fg_df is not None and not fg_df.empty:
+            fg_close = fg_df['close'].reindex(df.index, method='ffill')
+
+            # L15: Raw score normalized to 0-1
+            df['ST_FG_Score'] = (fg_close / 100.0).fillna(0.5)
+
+            # L16: Rolling 60-day Z-Score (stationarity for ML)
+            fg_mean = fg_close.rolling(60, min_periods=20).mean()
+            fg_std = fg_close.rolling(60, min_periods=20).std()
+            df['ST_FG_ZScore'] = ((fg_close - fg_mean) / fg_std.replace(0, np.nan)).fillna(0.0)
+
+            # L17: 5-day velocity (rate of change), z-scored
+            fg_roc = fg_close.diff(5)
+            roc_mean = fg_roc.rolling(60, min_periods=20).mean()
+            roc_std = fg_roc.rolling(60, min_periods=20).std()
+            df['ST_FG_Velocity'] = ((fg_roc - roc_mean) / roc_std.replace(0, np.nan)).fillna(0.0)
+
+            # L18: Acceleration (second derivative of velocity)
+            fg_accel = fg_roc.diff(5)
+            accel_mean = fg_accel.rolling(60, min_periods=20).mean()
+            accel_std = fg_accel.rolling(60, min_periods=20).std()
+            df['ST_FG_Acceleration'] = ((fg_accel - accel_mean) / accel_std.replace(0, np.nan)).fillna(0.0)
+
+            # L19: Regime classification (0=EXTREME_FEAR → 4=EXTREME_GREED)
+            df['ST_FG_Regime'] = np.select(
+                [
+                    fg_close < 25,
+                    (fg_close >= 25) & (fg_close < 45),
+                    (fg_close >= 45) & (fg_close < 55),
+                    (fg_close >= 55) & (fg_close < 75),
+                    fg_close >= 75,
+                ],
+                [0, 1, 2, 3, 4],
+                default=2,
+            ).astype(float)
+
+            # L20: Mean reversion signal (distance from neutral, contrarian)
+            # Positive = fear territory (contrarian buy), negative = greed
+            df['ST_FG_MeanReversion'] = ((50.0 - fg_close) / 50.0).clip(-1, 1).fillna(0.0)
+        else:
+            df['ST_FG_Score'] = 0.5
+            df['ST_FG_ZScore'] = 0.0
+            df['ST_FG_Velocity'] = 0.0
+            df['ST_FG_Acceleration'] = 0.0
+            df['ST_FG_Regime'] = 2.0
+            df['ST_FG_MeanReversion'] = 0.0
+
+        logger.info(
+            f"Sentiment composite features: "
+            f"{len([c for c in df.columns if c.startswith('ST_')])} features"
+        )
+
+    # ================================================================
     # PIPELINE MASTER
     # ================================================================
+
 
     def get_feature_columns(self) -> list:
         """Retorna la lista de columnas que son features válidos para ML."""
         prefixes = (
             'FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_',
-            'MTF_', 'BA_',
+            'MTF_', 'BA_', 'ST_',
         )
         return [c for c in self.df.columns if c.startswith(prefixes)]
 
@@ -874,6 +1106,8 @@ class QuantFeatureEngineer:
         spy_df: pd.DataFrame = None,
         sector_etf_df: pd.DataFrame = None,
         hyg_df: pd.DataFrame = None,
+        s5fi_df: pd.DataFrame = None,
+        fg_df: pd.DataFrame = None,
         d_price: float = 0.4,
         d_volume: float = 0.6,
     ) -> pd.DataFrame:
@@ -916,6 +1150,7 @@ class QuantFeatureEngineer:
         self.extract_vol_regime_features()
         self.extract_multitf_candle_features()
         self.extract_bar_anatomy_features()
+        self.extract_sentiment_composite_features(s5fi_df=s5fi_df, fg_df=fg_df)
 
         # Reemplazar infinitos por NaN antes de dropear
         self.df.replace([np.inf, -np.inf], np.nan, inplace=True)

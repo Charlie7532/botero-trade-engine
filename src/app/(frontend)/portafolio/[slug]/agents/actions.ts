@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 import type { RequiredDataFromCollectionSlug } from 'payload'
 import { revalidatePath } from 'next/cache'
 
-import { requireUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import type {
   ExecutionType,
@@ -52,12 +52,8 @@ const VALID_STRATEGIES: StrategyType[] = [
 const VALID_MODELS: ClaudeModel[] = ['claude-opus-4-7', 'claude-sonnet-4-6', 'claude-haiku-4']
 
 export async function createBot(input: CreateBotInput): Promise<CreateBotResult> {
-  let user: Awaited<ReturnType<typeof requireUser>>
-  try {
-    user = await requireUser()
-  } catch {
-    return { ok: false, error: 'Not authenticated.' }
-  }
+  const { user } = await userSession()
+  if (!user) return { ok: false, error: 'Not authenticated.' }
 
   const name = trim(input.name)
   if (!name) return { ok: false, error: 'Name is required.' }

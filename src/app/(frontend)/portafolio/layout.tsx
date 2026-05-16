@@ -1,18 +1,12 @@
-import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
-import { getMeUser } from '@/utilities/getMeUser'
+import { getServerUser } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import SidebarUser from '@/components/Portafolio/SidebarUser'
 import PortafolioNav from '@/components/Portafolio/PortafolioNav'
 
 export default async function PortafolioLayout({ children }: { children: ReactNode }) {
-  const { user } = await getMeUser()
-
-  if (!user) {
-    redirect('/login?redirect=%2Fportafolio')
-  }
-
+  const { user } = await getServerUser()
   const portfolios = await getUserPortfolios(user.id)
 
   return (

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
-import { getMeUser } from '@/utilities/getMeUser'
+import { getServerUser } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import { PulseTab } from '@/components/Portafolio/Market/PulseTab'
 import { MechanicsTab } from '@/components/Portafolio/Market/MechanicsTab'
@@ -26,9 +26,7 @@ export default async function MarketAnalysisPage({ params, searchParams }: PageA
   const { slug } = await params
   const { tab } = await searchParams
 
-  const { user } = await getMeUser({
-    nullUserRedirect: '/admin/login?redirect=%2Fportafolio',
-  })
+  const { user } = await getServerUser()
 
   const portfolios = await getUserPortfolios(user.id)
   const portfolio = portfolios.find((p) => p.slug === slug)

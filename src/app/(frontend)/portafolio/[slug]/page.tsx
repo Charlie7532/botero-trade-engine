@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
 
-import { getMeUser } from '@/utilities/getMeUser'
+import { getServerUser } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import { MarketSummary } from '@/components/Portafolio/Overview/MarketSummary'
 import { BrokerSummary } from '@/components/Portafolio/Overview/BrokerSummary'
@@ -43,9 +43,7 @@ function SectionSkeleton({
 export default async function PortfolioDashboardPage({ params }: PageArgs) {
   const { slug } = await params
 
-  const { user } = await getMeUser({
-    nullUserRedirect: '/admin/login?redirect=%2Fportafolio',
-  })
+  const { user } = await getServerUser()
 
   const portfolios = await getUserPortfolios(user.id)
 

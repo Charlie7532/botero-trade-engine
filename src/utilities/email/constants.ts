@@ -9,7 +9,7 @@
 
 // Apple-inspired minimalist colors with brand primary
 export const COLORS = {
-    // Primary brand (Enntra lime for buttons - matches highlight)
+    // Primary brand (Main 12 lime for buttons - matches highlight)
     primary: '#f5ff80',
     primaryText: '#1d1d1f', // Text color on primary buttons
     accent: '#0071e3', // Apple blue for links
@@ -67,4 +67,4 @@ export const SOCIAL_ICONS: Record<SocialPlatform, string> = {
 }
 
 // Get base URL for assets and links
-export const getBaseUrl = () => process.env.NEXT_PUBLIC_SERVER_URL || 'https://enntra.com'
+export const getBaseUrl = () => process.env.NEXT_PUBLIC_SERVER_URL || 'https://main12.com'

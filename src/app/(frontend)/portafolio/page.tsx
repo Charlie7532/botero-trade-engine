@@ -1,13 +1,13 @@
 import { redirect } from 'next/navigation'
 
-import { getMeUser } from '@/utilities/getMeUser'
+import { userSession } from '@/providers/Auth/server'
 import { getOrCreateDefaultPortfolio } from '@/collections/Portfolios/interface/service'
 
 export default async function PortafolioIndexPage() {
-  const { user } = await getMeUser({
-    nullUserRedirect: '/admin/login?redirect=%2Fportafolio',
-  })
+  const { user } = await userSession()
 
+  if (!user) return null;
+  
   const portfolio = await getOrCreateDefaultPortfolio(user.id, user.email)
   redirect(`/portafolio/${portfolio.slug}`)
 }

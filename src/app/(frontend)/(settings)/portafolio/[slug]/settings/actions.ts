@@ -4,7 +4,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { revalidatePath } from 'next/cache'
 
-import { requireUser } from '@/providers/Auth/server'
+import { userSession } from '@/providers/Auth/server'
 
 export async function updatePortfolioName(portfolioId: number | string, name: string) {
   if (!name || name.trim().length === 0) {
@@ -14,12 +14,8 @@ export async function updatePortfolioName(portfolioId: number | string, name: st
     return { error: 'Name must be 80 characters or fewer.' }
   }
 
-  let user: Awaited<ReturnType<typeof requireUser>>
-  try {
-    user = await requireUser()
-  } catch {
-    return { error: 'Not authenticated.' }
-  }
+  const { user } = await userSession()
+  if (!user) return { error: 'Not authenticated.' }
 
   const payload = await getPayload({ config: configPromise })
 
@@ -53,12 +49,8 @@ export async function updateUserProfile(
   userId: number | string,
   data: { name?: string; nickname?: string; preferredLanguage?: string },
 ) {
-  let user: Awaited<ReturnType<typeof requireUser>>
-  try {
-    user = await requireUser()
-  } catch {
-    return { error: 'Not authenticated.' }
-  }
+  const { user } = await userSession()
+  if (!user) return { error: 'Not authenticated.' }
   if (String(user.id) !== String(userId)) return { error: 'Not authorized.' }
 
   const name = data.name?.trim() ?? ''
@@ -90,12 +82,8 @@ export async function updateUserProfile(
 }
 
 export async function uploadUserAvatar(userId: number | string, formData: FormData) {
-  let user: Awaited<ReturnType<typeof requireUser>>
-  try {
-    user = await requireUser()
-  } catch {
-    return { error: 'Not authenticated.' }
-  }
+  const { user } = await userSession()
+  if (!user) return { error: 'Not authenticated.' }
   if (String(user.id) !== String(userId)) return { error: 'Not authorized.' }
 
   const file = formData.get('file') as File | null

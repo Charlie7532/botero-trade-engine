@@ -17,7 +17,7 @@ function getEmailHeader(): string {
     return `
     <tr>
       <td style="padding: 24px 8px; text-align: center;">
-        <img src="${getBaseUrl()}/assets/logo/logo_enntra_black.png" alt="Enntra" width="200" style="max-width: 200px; height: auto; display: block; margin: 0 auto;">
+        <img src="${getBaseUrl()}/assets/logos/logo.webp" alt="Main 12" width="200" style="max-width: 200px; height: auto; display: block; margin: 0 auto;">
       </td>
     </tr>
   `
@@ -72,7 +72,7 @@ function getEmailFooter(language: SupportedLanguage = 'en', socialLinks?: Social
       <td style="padding: 16px; text-align: center; color: ${COLORS.textSecondary}; font-size: 14px; line-height: 1.5;">
         <p style="margin: 0;">
           ${t.footerContactMessage}
-          <a href="mailto:info@enntra.com" style="color: ${COLORS.text}; text-decoration: none; font-weight: bold;">info@enntra.com</a>
+          <a href="mailto:info@main12.com" style="color: ${COLORS.text}; text-decoration: none; font-weight: bold;">info@main12.com</a>
         </p>
         ${emailSentTo}
       </td>
@@ -81,7 +81,7 @@ function getEmailFooter(language: SupportedLanguage = 'en', socialLinks?: Social
     <tr>
       <td style="padding: 16px 0 32px 0; text-align: center;">
         <p style="margin: 0 0 8px 0; font-size: 12px; color: ${COLORS.textTertiary}; letter-spacing: -0.01em;">
-          © ${currentYear} Enntra. ${t.footerCopyright}
+          © ${currentYear} Main 12. ${t.footerCopyright}
         </p>
         <p style="margin: 0; font-size: 12px; color: ${COLORS.textTertiary}; letter-spacing: -0.01em;">
           ${t.footerTagline}
@@ -115,7 +115,7 @@ export function wrapInBaseTemplate(content: string, options: BaseTemplateOptions
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Enntra</title>
+  <title>Main 12</title>
   <!--[if mso]>
   <style type="text/css">
     table {border-collapse: collapse;}

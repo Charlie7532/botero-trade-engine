@@ -3,7 +3,7 @@ import Link from 'next/link'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
-import { getMeUser } from '@/utilities/getMeUser'
+import { userSession } from '@/providers/Auth/server'
 import { getUserPortfolios } from '@/collections/Portfolios/interface/service'
 import NewBrokerAccountDialog from '@/components/Portafolio/Brokers/NewBrokerAccountDialog'
 
@@ -24,9 +24,9 @@ const ENV_STYLES: Record<string, string> = {
 export default async function BrokerAccountsPage({ params }: PageArgs) {
   const { slug } = await params
 
-  const { user } = await getMeUser({
-    nullUserRedirect: '/admin/login?redirect=%2Fportafolio',
-  })
+  const { user } = await userSession()
+
+  if (!user) return null
 
   const portfolios = await getUserPortfolios(user.id)
   const portfolio = portfolios.find((p) => p.slug === slug)

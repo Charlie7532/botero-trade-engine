@@ -918,6 +918,7 @@ class QuantFeatureEngineer:
     def extract_sentiment_composite_features(
         self,
         s5fi_df: pd.DataFrame | None = None,
+        fg_df: pd.DataFrame | None = None,
     ) -> None:
         """
         Family L: Composite sentiment features from multiple orthogonal layers.
@@ -1029,6 +1030,56 @@ class QuantFeatureEngineer:
             df['ST_S5FI_Norm'] = 0.5
             df['ST_BreadthRegime'] = 1
 
+        # ── L15-L20: CNN Fear & Greed Index (market-wide macro sentiment) ──
+        # Historical: 2011-01-03 → present via backfill_fear_greed.py
+        # Daily continuity: vault_fear_greed() writes FG bar each day
+        if fg_df is not None and not fg_df.empty:
+            fg_close = fg_df['close'].reindex(df.index, method='ffill')
+
+            # L15: Raw score normalized to 0-1
+            df['ST_FG_Score'] = (fg_close / 100.0).fillna(0.5)
+
+            # L16: Rolling 60-day Z-Score (stationarity for ML)
+            fg_mean = fg_close.rolling(60, min_periods=20).mean()
+            fg_std = fg_close.rolling(60, min_periods=20).std()
+            df['ST_FG_ZScore'] = ((fg_close - fg_mean) / fg_std.replace(0, np.nan)).fillna(0.0)
+
+            # L17: 5-day velocity (rate of change), z-scored
+            fg_roc = fg_close.diff(5)
+            roc_mean = fg_roc.rolling(60, min_periods=20).mean()
+            roc_std = fg_roc.rolling(60, min_periods=20).std()
+            df['ST_FG_Velocity'] = ((fg_roc - roc_mean) / roc_std.replace(0, np.nan)).fillna(0.0)
+
+            # L18: Acceleration (second derivative of velocity)
+            fg_accel = fg_roc.diff(5)
+            accel_mean = fg_accel.rolling(60, min_periods=20).mean()
+            accel_std = fg_accel.rolling(60, min_periods=20).std()
+            df['ST_FG_Acceleration'] = ((fg_accel - accel_mean) / accel_std.replace(0, np.nan)).fillna(0.0)
+
+            # L19: Regime classification (0=EXTREME_FEAR → 4=EXTREME_GREED)
+            df['ST_FG_Regime'] = np.select(
+                [
+                    fg_close < 25,
+                    (fg_close >= 25) & (fg_close < 45),
+                    (fg_close >= 45) & (fg_close < 55),
+                    (fg_close >= 55) & (fg_close < 75),
+                    fg_close >= 75,
+                ],
+                [0, 1, 2, 3, 4],
+                default=2,
+            ).astype(float)
+
+            # L20: Mean reversion signal (distance from neutral, contrarian)
+            # Positive = fear territory (contrarian buy), negative = greed
+            df['ST_FG_MeanReversion'] = ((50.0 - fg_close) / 50.0).clip(-1, 1).fillna(0.0)
+        else:
+            df['ST_FG_Score'] = 0.5
+            df['ST_FG_ZScore'] = 0.0
+            df['ST_FG_Velocity'] = 0.0
+            df['ST_FG_Acceleration'] = 0.0
+            df['ST_FG_Regime'] = 2.0
+            df['ST_FG_MeanReversion'] = 0.0
+
         logger.info(
             f"Sentiment composite features: "
             f"{len([c for c in df.columns if c.startswith('ST_')])} features"
@@ -1056,6 +1107,7 @@ class QuantFeatureEngineer:
         sector_etf_df: pd.DataFrame = None,
         hyg_df: pd.DataFrame = None,
         s5fi_df: pd.DataFrame = None,
+        fg_df: pd.DataFrame = None,
         d_price: float = 0.4,
         d_volume: float = 0.6,
     ) -> pd.DataFrame:
@@ -1098,7 +1150,7 @@ class QuantFeatureEngineer:
         self.extract_vol_regime_features()
         self.extract_multitf_candle_features()
         self.extract_bar_anatomy_features()
-        self.extract_sentiment_composite_features(s5fi_df=s5fi_df)
+        self.extract_sentiment_composite_features(s5fi_df=s5fi_df, fg_df=fg_df)
 
         # Reemplazar infinitos por NaN antes de dropear
         self.df.replace([np.inf, -np.inf], np.nan, inplace=True)

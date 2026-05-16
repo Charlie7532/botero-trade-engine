@@ -949,6 +949,16 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
         }
 
         store.save_mcp_snapshot("macro/fear_greed", "MARKET", snapshot)
+
+        # Persist as OHLCV bar for ML feature lake (ticker FG)
+        # Bridges historical backfill (from GitHub CSV) with live daily score
+        score = snapshot["score"]
+        store.upsert_ohlcv_bar(
+            ticker="FG", timeframe="1d",
+            time=datetime.now(UTC).strftime("%Y-%m-%d"),
+            open=score, high=score, low=score, close=score, volume=0,
+        )
+
         logger.info(f"😱 Fear & Greed vault: {snapshot['score']:.1f} ({snapshot['rating']})")
         return {"status": "ok", "score": snapshot["score"]}
 

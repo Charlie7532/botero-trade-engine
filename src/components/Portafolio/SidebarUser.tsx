@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { Avatar, Dropdown, Button, Label } from '@heroui/react'
-import { LogOut, Settings, ChevronsUpDown, ShieldCheck } from 'lucide-react'
+import { LogOut, Settings, ChevronsUpDown, ShieldCheck, Sun, Moon, Monitor } from 'lucide-react'
 
 import type { User, UserAvatar as UserAvatarType } from '@/payload-types'
+import { useTheme } from '@/providers/Theme'
 
 type Props = {
   user: Pick<User, 'id' | 'name' | 'email' | 'avatar' | 'role'>
@@ -25,6 +26,14 @@ const SidebarUser: React.FC<Props> = ({ user, fallbackSlug }) => {
   const slugMatch = pathname.match(/^\/portafolio\/([^/]+)/)
   const activeSlug = slugMatch?.[1] ?? fallbackSlug
   const isAdmin = user.role === 'admin' || user.role === 'superadmin'
+  const { theme, setTheme } = useTheme()
+  const cycleTheme = () => {
+    if (theme === 'light') setTheme('dark')
+    else if (theme === 'dark') setTheme(null)
+    else setTheme('light')
+  }
+  const themeLabel = theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'System'
+  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
 
   useEffect(() => {
     const avatar = user.avatar
@@ -77,6 +86,7 @@ const SidebarUser: React.FC<Props> = ({ user, fallbackSlug }) => {
                 ? `/portafolio/${activeSlug}/settings`
                 : '/portafolio'
             }
+            if (key === 'theme') cycleTheme()
             if (key === 'admin') window.location.href = '/admin'
             if (key === 'logout') window.location.href = '/logout'
           }}
@@ -84,6 +94,10 @@ const SidebarUser: React.FC<Props> = ({ user, fallbackSlug }) => {
           <Dropdown.Item id="account" textValue="Account Settings">
             <Settings size={16} />
             <Label>Account Settings</Label>
+          </Dropdown.Item>
+          <Dropdown.Item id="theme" textValue={`Theme: ${themeLabel}`}>
+            <ThemeIcon size={16} />
+            <Label>Theme: {themeLabel}</Label>
           </Dropdown.Item>
           {isAdmin ? (
             <Dropdown.Item id="admin" textValue="Admin Panel">

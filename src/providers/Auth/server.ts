@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -72,3 +73,37 @@ export const userSession = cache(async (): Promise<{
         isAuthenticated: user !== null,
     }
 })
+
+/**
+ * Server-side counterpart to the `useUser()` hook from `./index.tsx`.
+ *
+ * Resolves the current user for a Server Component and redirects to
+ * the login page when the session is missing or stale. The proxy
+ * (`src/proxy.ts`) already blocks unauthenticated access to protected
+ * routes; this helper handles the single case the proxy cannot detect:
+ * a `payload-token` cookie that is present but no longer valid (stale
+ * session, cross-subdomain mismatch, revoked user…). In that case we
+ * redirect to `/login?clear=1&redirect=…`, which signals the proxy to
+ * delete the stale cookie before showing the login form — this is what
+ * breaks the redirect loop.
+ */
+export async function getServerUser(args?: {
+    validUserRedirect?: string
+}): Promise<{ token: string; user: User }> {
+    const { validUserRedirect } = args || {}
+
+    const cookieStore = await cookies()
+    const token = cookieStore.get('payload-token')?.value
+
+    const user = await getUser()
+
+    if (validUserRedirect && user) {
+        redirect(validUserRedirect)
+    }
+
+    if (!user) {
+        redirect('/login?clear=1&redirect=%2Fportafolio')
+    }
+
+    return { token: token!, user }
+}

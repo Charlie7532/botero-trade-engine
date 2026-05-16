@@ -6,6 +6,7 @@ import { Avatar, Dropdown, Button, Label } from '@heroui/react'
 import { LogOut, Settings, ChevronsUpDown, ShieldCheck } from 'lucide-react'
 
 import type { User, UserAvatar as UserAvatarType } from '@/payload-types'
+import { ThemeToggleGroup } from '@/providers/Theme/ThemeSelector/ThemeToggleGroup'
 
 type Props = {
   user: Pick<User, 'id' | 'name' | 'email' | 'avatar' | 'role'>
@@ -81,16 +82,24 @@ const SidebarUser: React.FC<Props> = ({ user, fallbackSlug }) => {
             if (key === 'logout') window.location.href = '/logout'
           }}
         >
-          <Dropdown.Item id="account" textValue="Account Settings">
-            <Settings size={16} />
-            <Label>Account Settings</Label>
-          </Dropdown.Item>
           {isAdmin ? (
             <Dropdown.Item id="admin" textValue="Admin Panel">
               <ShieldCheck size={16} />
               <Label>Admin Panel</Label>
             </Dropdown.Item>
           ) : null}
+          <Dropdown.Item id="account" textValue="Account Settings">
+            <Settings size={16} />
+            <Label>Account Settings</Label>
+          </Dropdown.Item>
+          <Dropdown.Item
+            id="theme"
+            textValue="Theme"
+            className="data-[hovered=true]:!bg-transparent data-[focused=true]:!bg-transparent cursor-default"
+            {...({ isReadOnly: true, closeOnSelect: false } as Record<string, unknown>)}
+          >
+            <ThemeToggleGroup label="Theme" />
+          </Dropdown.Item>
           <Dropdown.Item id="logout" textValue="Log Out" variant="danger">
             <LogOut size={16} />
             <Label>Log Out</Label>

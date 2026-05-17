@@ -82,6 +82,7 @@ export interface Config {
     'calibration-profiles': CalibrationProfile;
     'candidate-screenings': CandidateScreening;
     'trade-snapshots': TradeSnapshot;
+    'infra-snapshots': InfraSnapshot;
     'project-vaults': ProjectVault;
     users: User;
     'payload-mcp-api-keys': PayloadMcpApiKey;
@@ -120,6 +121,7 @@ export interface Config {
     'calibration-profiles': CalibrationProfilesSelect<false> | CalibrationProfilesSelect<true>;
     'candidate-screenings': CandidateScreeningsSelect<false> | CandidateScreeningsSelect<true>;
     'trade-snapshots': TradeSnapshotsSelect<false> | TradeSnapshotsSelect<true>;
+    'infra-snapshots': InfraSnapshotsSelect<false> | InfraSnapshotsSelect<true>;
     'project-vaults': ProjectVaultsSelect<false> | ProjectVaultsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
@@ -141,7 +143,11 @@ export interface Config {
   locale: null;
   widgets: {
     'claude-token-consumption': ClaudeTokenConsumptionWidget;
-    'postgres-performance': PostgresPerformanceWidget;
+    'claude-token-breakdown': ClaudeTokenBreakdownWidget;
+    'neon-cpu': NeonCpuWidget;
+    'neon-cache': NeonCacheWidget;
+    'postgres-connections': PostgresConnectionsWidget;
+    'pooler-connections': PoolerConnectionsWidget;
     collections: CollectionsWidget;
   };
   user: User | PayloadMcpApiKey;
@@ -1053,6 +1059,68 @@ export interface TradeSnapshot {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "infra-snapshots".
+ */
+export interface InfraSnapshot {
+  id: number;
+  /**
+   * When this snapshot was captured (UTC)
+   */
+  capturedAt: string;
+  /**
+   * Cumulative cpu_used_sec from Neon API
+   */
+  cpuUsedSec?: number | null;
+  /**
+   * Cumulative compute_time_seconds
+   */
+  computeTimeSec?: number | null;
+  /**
+   * Cumulative active_time_seconds
+   */
+  activeTimeSec?: number | null;
+  /**
+   * Cache footprint (proxy for RAM)
+   */
+  workingDataBytes?: number | null;
+  dataStorageBytesHour?: number | null;
+  writtenDataBytes?: number | null;
+  dataTransferBytes?: number | null;
+  /**
+   * idle | active | starting | etc.
+   */
+  endpointState?: string | null;
+  autoscaleMinCu?: number | null;
+  autoscaleMaxCu?: number | null;
+  activeBackends?: number | null;
+  idleBackends?: number | null;
+  idleInTxnBackends?: number | null;
+  totalBackends?: number | null;
+  maxConnections?: number | null;
+  xactCommit?: number | null;
+  xactRollback?: number | null;
+  deadlocks?: number | null;
+  blksHit?: number | null;
+  blksRead?: number | null;
+  /**
+   * Active client connections
+   */
+  poolerActive?: number | null;
+  /**
+   * Waiting client connections
+   */
+  poolerWaiting?: number | null;
+  poolerServerActive?: number | null;
+  poolerServerIdle?: number | null;
+  /**
+   * Comma-separated source identifiers that failed during this capture
+   */
+  errors?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "project-vaults".
  */
 export interface ProjectVault {
@@ -1356,6 +1424,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'trade-snapshots';
         value: number | TradeSnapshot;
+      } | null)
+    | ({
+        relationTo: 'infra-snapshots';
+        value: number | InfraSnapshot;
       } | null)
     | ({
         relationTo: 'project-vaults';
@@ -1844,6 +1916,40 @@ export interface TradeSnapshotsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "infra-snapshots_select".
+ */
+export interface InfraSnapshotsSelect<T extends boolean = true> {
+  capturedAt?: T;
+  cpuUsedSec?: T;
+  computeTimeSec?: T;
+  activeTimeSec?: T;
+  workingDataBytes?: T;
+  dataStorageBytesHour?: T;
+  writtenDataBytes?: T;
+  dataTransferBytes?: T;
+  endpointState?: T;
+  autoscaleMinCu?: T;
+  autoscaleMaxCu?: T;
+  activeBackends?: T;
+  idleBackends?: T;
+  idleInTxnBackends?: T;
+  totalBackends?: T;
+  maxConnections?: T;
+  xactCommit?: T;
+  xactRollback?: T;
+  deadlocks?: T;
+  blksHit?: T;
+  blksRead?: T;
+  poolerActive?: T;
+  poolerWaiting?: T;
+  poolerServerActive?: T;
+  poolerServerIdle?: T;
+  errors?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "project-vaults_select".
  */
 export interface ProjectVaultsSelect<T extends boolean = true> {
@@ -2215,17 +2321,57 @@ export interface ClaudeTokenConsumptionWidget {
   data?: {
     [k: string]: unknown;
   };
-  width: 'small' | 'medium' | 'large';
+  width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "postgres-performance_widget".
+ * via the `definition` "claude-token-breakdown_widget".
  */
-export interface PostgresPerformanceWidget {
+export interface ClaudeTokenBreakdownWidget {
   data?: {
     [k: string]: unknown;
   };
-  width: 'large' | 'x-large' | 'full';
+  width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "neon-cpu_widget".
+ */
+export interface NeonCpuWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'small' | 'medium';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "neon-cache_widget".
+ */
+export interface NeonCacheWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'small' | 'medium';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "postgres-connections_widget".
+ */
+export interface PostgresConnectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'small' | 'medium';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pooler-connections_widget".
+ */
+export interface PoolerConnectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'small' | 'medium';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

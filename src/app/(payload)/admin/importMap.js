@@ -19,8 +19,12 @@ import { default as default_b8eccbc6e976e9f5be666a1b4a18a98c } from '@/component
 import { default as default_57542a803be6bc6602169e617924d624 } from '@/components/SidebarHomeButton'
 import { default as default_fe6522ffb7de26dad8c594d3f8d9234a } from '@/components/Admin/AdminHeroUIProvider'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
-import { default as default_e61c8db85f0955b7e4bcefbe8d06795c } from '@/widgets/ClaudeTokenConsumptionWidget'
-import { default as default_29570d79de02fb25d32a6a0ccd82f0b2 } from '@/widgets/PostgresPerformanceWidget'
+import { default as default_06f0c125fb9975bb64801182c7efa4bd } from '@/widgets/ClaudeTokenConsumption'
+import { default as default_994ac1d3cc16da241546b3d54cb8f882 } from '@/widgets/ClaudeTokenBreakdown'
+import { default as default_bcb9ddc6b82a8907d040da4d3cb24e11 } from '@/widgets/NeonCpu'
+import { default as default_3fe3dbeb42bbf71713dfaecac3ee7f2a } from '@/widgets/NeonCache'
+import { default as default_236006c85f42b5e49e29bf0bd6f0cf3f } from '@/widgets/PostgresConnections'
+import { default as default_e95235a385e987c84081adf2e839f5c1 } from '@/widgets/PoolerConnections'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -46,7 +50,11 @@ export const importMap = {
   "@/components/SidebarHomeButton#default": default_57542a803be6bc6602169e617924d624,
   "@/components/Admin/AdminHeroUIProvider#default": default_fe6522ffb7de26dad8c594d3f8d9234a,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
-  "@/widgets/ClaudeTokenConsumptionWidget#default": default_e61c8db85f0955b7e4bcefbe8d06795c,
-  "@/widgets/PostgresPerformanceWidget#default": default_29570d79de02fb25d32a6a0ccd82f0b2,
+  "@/widgets/ClaudeTokenConsumption#default": default_06f0c125fb9975bb64801182c7efa4bd,
+  "@/widgets/ClaudeTokenBreakdown#default": default_994ac1d3cc16da241546b3d54cb8f882,
+  "@/widgets/NeonCpu#default": default_bcb9ddc6b82a8907d040da4d3cb24e11,
+  "@/widgets/NeonCache#default": default_3fe3dbeb42bbf71713dfaecac3ee7f2a,
+  "@/widgets/PostgresConnections#default": default_236006c85f42b5e49e29bf0bd6f0cf3f,
+  "@/widgets/PoolerConnections#default": default_e95235a385e987c84081adf2e839f5c1,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

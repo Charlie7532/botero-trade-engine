@@ -13,6 +13,8 @@ import {
   Check,
   ChevronsUpDown,
   Briefcase,
+  Settings,
+  Users,
 } from 'lucide-react'
 
 import type { UserPortfolioSummary } from '@/collections/Portfolios/interface/service'
@@ -23,6 +25,8 @@ type NavItem = {
   href: (slug: string) => string
   icon: React.ComponentType<{ size?: number; className?: string }>
   match: (pathname: string, slug: string) => boolean
+  /** Roles allowed to see this nav item. Omit to allow all. */
+  roles?: string[]
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -49,6 +53,20 @@ const NAV_ITEMS: NavItem[] = [
     href: (slug) => `/portafolio/${slug}/brokers`,
     icon: Plug,
     match: (p, slug) => p.startsWith(`/portafolio/${slug}/brokers`),
+  },
+  {
+    label: 'Members',
+    href: (slug) => `/portafolio/${slug}/members`,
+    icon: Users,
+    match: (p, slug) => p.startsWith(`/portafolio/${slug}/members`),
+    roles: ['owner', 'admin'],
+  },
+  {
+    label: 'Settings',
+    href: (slug) => `/portafolio/${slug}/settings`,
+    icon: Settings,
+    match: (p, slug) => p.startsWith(`/portafolio/${slug}/settings`),
+    roles: ['owner', 'admin'],
   },
 ]
 
@@ -116,7 +134,7 @@ const PortafolioNav: React.FC<Props> = ({ portfolios }) => {
       {/* Page navigation — slug-aware */}
       <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
         {active ? (
-          NAV_ITEMS.map((item) => {
+          NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(active.role)).map((item) => {
             const Icon = item.icon
             const href = item.href(active.slug)
             const isActive = item.match(pathname, active.slug)

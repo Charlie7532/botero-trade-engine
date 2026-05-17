@@ -8,5 +8,11 @@
       "entrypoint": "backend",
       "routePrefix": "/_/backend"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/infra-snapshots/capture",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

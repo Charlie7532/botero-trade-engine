@@ -89,6 +89,9 @@ importers:
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(@types/pg@8.20.0)(@vercel/postgres@0.10.0(utf-8-validate@6.0.6))(pg@8.20.0)
       framer-motion:
         specifier: ^12.37.0
         version: 12.37.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)

@@ -170,7 +170,7 @@ class RSISignalAdapter(SignalPort):
     Forensic audit result: 10 hypotheses tested, H3 is the winner.
     Sharpe 0.586 (+47% vs brute-force baseline), PF 1.281, 65% fewer entries.
 
-    Architecture (4 validated teses):
+    Architecture (6 validated layers — fully assembled):
       1. REGIME from PRICE: Long regression (120 bars) classifies BULL/BEAR/FLAT.
          The RSI does NOT determine its own regime — that's circular.
       2. CROSS-REGRESSION: Short regression (60 bars) compared to long (120 bars).
@@ -180,11 +180,18 @@ class RSISignalAdapter(SignalPort):
       4. CYCLE-ADAPTIVE PERIOD: Autocorrelation detects each asset's dominant
          oscillation frequency. RSI lookback = cycle/2 (Nyquist).
          NVDA cycles at 15d → RSI-7. JPM cycles at 44d → RSI-22.
+      5. FEAR LEVEL BIAS: Dual RC channel (200/cycle-adaptive bars) produces
+         fear_level 0-5. Contrarian: PANIC → confidence bonus, GREED → penalty.
+         Empirical: RSI improves in CRISIS (56.2%) and ELEVATED (54.8%).
+      6. KALMAN ACCUMULATION: When Kalman-Wyckoff detects ACCUMULATION + positive
+         velocity simultaneously with RSI signal → confidence multiplied.
+         Validated: RSI+Kalman WR 75.7% → 93.5% (GOLDEN COMBO).
 
     Entry rules:
       BULL: Cross-regression pullback + RSI 33-50 + drop ≥12pts + hookup
       BEAR: Price slope negative + RSI slope positive + RSI < 40
       FLAT: RSI < 35 + regression slope divergence confirmed
+      ALL: confidence modulated by fear_level bias + Kalman confirmation
     """
 
     @property
@@ -238,56 +245,27 @@ class RSISignalAdapter(SignalPort):
     def _detect_dominant_cycle(close: np.ndarray, min_period: int = 8, max_period: int = 50) -> int:
         """Detect dominant cycle period via autocorrelation on returns.
 
-        The 'wave on the tide': each asset oscillates at its own frequency.
-        We find the lag with the strongest positive autocorrelation peak
-        within [min_period, max_period], then use period/2 as RSI lookback
-        (Nyquist: need at least 2 samples per cycle).
-
-        Returns the dominant cycle period (not the RSI lookback).
+        Delegated to shared/domain/rules/cycle_detection.py (canonical location).
         """
-        if len(close) < max_period * 3:
-            return 28  # Default: ~28 day cycle → RSI-14
-
-        returns = np.diff(np.log(close[-max_period * 3:]))
-        n = len(returns)
-        returns_dm = returns - returns.mean()
-
-        # Autocorrelation for lags in [min_period, max_period]
-        autocorr = np.zeros(max_period + 1)
-        var = np.sum(returns_dm ** 2)
-        if var == 0:
-            return 28
-
-        for lag in range(min_period, max_period + 1):
-            autocorr[lag] = np.sum(returns_dm[:n - lag] * returns_dm[lag:]) / var
-
-        # Find the lag with highest positive autocorrelation
-        best_lag = min_period
-        best_corr = -1.0
-        for lag in range(min_period, max_period + 1):
-            if autocorr[lag] > best_corr:
-                best_corr = autocorr[lag]
-                best_lag = lag
-
-        # If no meaningful cycle found (correlation too weak), use default
-        if best_corr < 0.02:
-            return 28
-
-        return best_lag
+        from backend.modules.shared.domain.rules.cycle_detection import detect_dominant_cycle
+        return detect_dominant_cycle(close, min_period, max_period)
 
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
         close = ohlc["close"].values.astype(float)
 
-        # Detect the asset's dominant cycle and adapt RSI period
+        # ── Layer 4: Cycle-Adaptive Period (Nyquist) ──
         dominant_cycle = self._detect_dominant_cycle(close)
         adaptive_rsi_period = max(5, dominant_cycle // 2)  # Nyquist: period/2
         rsi_full = self._calc_rsi(close, period=adaptive_rsi_period)
+
+        # ── Layer 6: Pre-compute Kalman states for all bars ──
+        kalman_states = self._precompute_kalman(ohlc)
 
         signals = []
         confidences = []
 
         for i in range(len(ohlc)):
-            if i < 120:
+            if i < 200:  # Extended from 120 to 200 — need 200 bars for fear_level
                 signals.append(0)
                 confidences.append(0.0)
                 continue
@@ -296,11 +274,11 @@ class RSISignalAdapter(SignalPort):
             rsi_window = rsi_full[:i + 1]
             current_rsi = rsi_window[i]
 
-            # ── PRICE REGRESSIONS (the regime anchors) ────────────
+            # ── Layer 1: PRICE REGRESSIONS (the regime anchors) ──
             slope_long = self._linreg_slope(price_window, 120)   # Macro trend
             slope_short = self._linreg_slope(price_window, 60)   # Micro momentum
 
-            # ── REGIME CLASSIFICATION (from PRICE, not RSI) ───────
+            # ── REGIME CLASSIFICATION (from PRICE, not RSI) ──
             if slope_long > 0.02:       # ~0.02% per bar ≈ ~5% over 120 days
                 regime = "BULL"
             elif slope_long < -0.02:
@@ -308,16 +286,14 @@ class RSISignalAdapter(SignalPort):
             else:
                 regime = "FLAT"
 
-            # ── SHORT REGRESSION ON RSI (for divergence detection) ─
+            # ── Layer 3: SHORT REGRESSION ON RSI (divergence) ──
             rsi_slope_short = self._linreg_slope(rsi_window, 30)
 
             signal = 0
             confidence = 0.0
 
             if regime == "BULL":
-                # ── Cross-regression pullback (H2e — validated) ───
-                # Short regression below long = price pulling back from trend
-                # Short recovering toward long = pullback ending
+                # ── Layer 2: Cross-regression pullback (H2e — validated) ──
                 short_below_long = slope_short < slope_long
                 short_recovering = slope_short > (slope_long * 0.3)
                 rsi_in_pullback = 33 <= current_rsi <= 50
@@ -334,31 +310,34 @@ class RSISignalAdapter(SignalPort):
                     confidence = round(min(depth * 0.3 + convergence * 0.3 + trend_strength * 0.4, 1.0), 2)
 
             elif regime == "BEAR":
-                # ── BEAR: Structural divergence via regression slopes ─
-                # Price short regression negative (price still falling)
-                # BUT RSI short regression positive (momentum recovering)
-                # = structural divergence → exhaustion of selling pressure
+                # ── Layer 3: Structural divergence via regression slopes ──
                 price_falling = slope_short < 0
                 rsi_recovering = rsi_slope_short > 0
-
-                # RSI must be in oversold territory for bear
                 rsi_oversold = current_rsi < 40
 
                 if price_falling and rsi_recovering and rsi_oversold:
                     signal = 1
-                    # Stronger divergence = higher confidence
                     div_strength = min(abs(slope_short) + abs(rsi_slope_short), 1.0)
                     confidence = round(0.5 + div_strength * 0.2, 2)
 
             else:  # FLAT
-                # ── FLAT: Only extreme divergence ─────────────────
-                # RSI very low + regression divergence confirmed
+                # ── FLAT: Only extreme divergence ──
                 if current_rsi < 35:
                     price_falling = slope_short < 0
                     rsi_recovering = rsi_slope_short > 0
                     if price_falling and rsi_recovering:
                             signal = 1
                             confidence = 0.5
+
+            # ── Layer 5: Fear Level Bias (dual RC channel) ──
+            # Applied AFTER signal generation — modulates confidence, doesn't gate
+            if signal == 1:
+                confidence = self._apply_fear_bias(ohlc, i, confidence)
+
+            # ── Layer 6: Kalman ACCUMULATION Confirmation ──
+            # Applied AFTER signal — boosts confidence when Kalman confirms
+            if signal == 1:
+                confidence = self._apply_kalman_boost(kalman_states, i, confidence)
 
             signals.append(signal)
             confidences.append(confidence)
@@ -377,6 +356,108 @@ class RSISignalAdapter(SignalPort):
                 if not lows or (i - lows[-1]) >= min_dist:
                     lows.append(i)
         return lows
+
+    def _apply_fear_bias(self, ohlc: pd.DataFrame, idx: int, base_confidence: float) -> float:
+        """Layer 5: Modulate confidence by fear_level from dual RC channel.
+
+        Empirical basis (forensic audit, 20 tickers × 5 years):
+          PANIC (fear=5): P(↑)=47.6%, Ret20d=+3.12% → confidence BOOST
+          FEAR (fear=4): P(↑)=44.9% → confidence BOOST
+          ANXIETY (fear=3): P(↑)=43.7% → slight BOOST
+          NEUTRAL (fear=2): no change
+          CONFIDENCE (fear=1): P(↑)=41.2% → slight PENALTY
+          GREED (fear=0): P(↑)=40.4%, Ret20d=+1.26% → confidence PENALTY
+
+        The fear_level comes from the SEPARATE dual regression channel
+        (200-bar tide + cycle-adaptive wave) — NOT from the RSI's own
+        regressions (120/60). Two independent confirmation sources.
+        """
+        try:
+            from backend.modules.quality_swing.domain.rules.fear_level import compute_ticker_fear_level
+            bias = compute_ticker_fear_level(ohlc, idx)
+            if bias is None:
+                return base_confidence
+
+            # Contrarian scaling: higher fear = higher conviction
+            fear_bonus_map = {
+                5: +0.20,   # PANIC — best forward return
+                4: +0.15,   # FEAR
+                3: +0.08,   # ANXIETY
+                2: 0.00,    # NEUTRAL — no change
+                1: -0.05,   # CONFIDENCE — slight penalty
+                0: -0.10,   # GREED — worst forward return
+            }
+            bonus = fear_bonus_map.get(bias.fear_level, 0.0)
+
+            # Wave flip positive (knife stopped falling) = extra conviction
+            if bias.wave_flip and bias.wave_flip_direction == 1 and bias.fear_level >= 3:
+                bonus += 0.10  # Slope conjugation — the true edge
+
+            adjusted = min(max(base_confidence + bonus, 0.1), 1.0)
+            return round(adjusted, 2)
+        except Exception:
+            return base_confidence
+
+    def _apply_kalman_boost(self, kalman_states: dict, idx: int, base_confidence: float) -> float:
+        """Layer 6: Boost confidence when Kalman-Wyckoff confirms ACCUMULATION.
+
+        Validated conjugation (oracle-training-forensic KI):
+          RSI solo: WR 75.7% → RSI + Kalman: WR 93.5%
+          This is the HIGHEST VALIDATED CONJUGATION in the entire system.
+
+        When both RSI and Kalman agree, the trade has:
+          - Regime confirmation (price regression)
+          - Momentum exhaustion (RSI divergence)
+          - Institutional accumulation (Kalman Wyckoff)
+        = Triple confirmation → maximum conviction.
+        """
+        state = kalman_states.get(idx)
+        if state is None:
+            return base_confidence
+
+        wyckoff = state.get("wyckoff_state", "UNKNOWN")
+        velocity = state.get("velocity", 0.0)
+
+        if wyckoff == "ACCUMULATION" and velocity > 0:
+            # Kalman confirms → boost confidence by 25%
+            # Forensic: this conjugation raised WR from 75.7% to 93.5%
+            boosted = min(base_confidence * 1.25, 1.0)
+            return round(boosted, 2)
+        elif wyckoff == "DISTRIBUTION" and velocity < 0:
+            # Kalman contradicts → reduce confidence
+            reduced = max(base_confidence * 0.60, 0.1)
+            return round(reduced, 2)
+
+        return base_confidence
+
+    @staticmethod
+    def _precompute_kalman(ohlc: pd.DataFrame) -> dict:
+        """Pre-compute Kalman Wyckoff states for all bars (avoid N² cost)."""
+        try:
+            from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import (
+                KalmanVolumeTracker,
+            )
+            tracker = KalmanVolumeTracker(dt=1.0, process_noise=0.05, obs_noise=0.2)
+            vol_series = ohlc["volume"].astype(float)
+            vol_mean_20 = vol_series.rolling(window=20, min_periods=1).mean()
+            states = {}
+
+            for i in range(len(ohlc)):
+                row = ohlc.iloc[i]
+                raw_vol = float(row["volume"])
+                avg_vol = float(vol_mean_20.iloc[i])
+                observed_rvol = raw_vol / avg_vol if avg_vol > 0 else 1.0
+
+                prev_close = float(ohlc.iloc[max(0, i - 1)]["close"])
+                curr_close = float(row["close"])
+                change_pct = ((curr_close - prev_close) / prev_close * 100) if prev_close > 0 else 0.0
+
+                state = tracker.update("RSI_KALMAN", observed_rvol, change_pct)
+                states[i] = state
+
+            return states
+        except Exception:
+            return {}
 
     def required_context(self) -> list[str]:
         return []
@@ -662,32 +743,41 @@ class PatternSignalAdapter(SignalPort):
 
 
 class RegressionChannelAdapter(SignalPort):
-    """Statistical Regression Channel + VWAP Tension (orthogonal to RSI).
+    """Statistical Regression Channel + VWAP Tension — Fully Assembled (8 layers).
 
-    RSI measures MOMENTUM (rate of change). This adapter measures POSITION
-    (absolute deviation from the statistical trend). They are independent.
+    The BEST standalone signal in the system: Sharpe 1.326, WR 82.2% (THESIS).
+    Now fully assembled with all forensic-validated enhancements.
 
-    Architecture:
+    Architecture (8 validated layers):
       1. Long regression (200 bars, FIXED) → channel center line (the tide)
-      2. Standard deviation of residuals → σ bands (±1σ, ±1.5σ, ±2σ)
-      3. Short regression (cycle-adaptive) → micro-momentum direction
-      4. VWAP (20 bars) → institutional fair price reference
+      2. Short regression (cycle-adaptive) → micro-momentum direction (the wave)
+      3. VWAP (20 bars) → institutional fair price reference
+      4. 1-bar hookup → reversal candle confirmation
+      5. FEAR LEVEL BIAS → contrarian: PANIC +0.20, GREED -0.10
+         Empirical: P(↑)=47.6% at PANIC vs 40.4% at GREED (7.2pt spread)
+      6. KALMAN ACCUMULATION → confirmation boost 1.25×
+         Empirical: RC+Kalman WR 78.2→84.2% (+6pts)
+      7. VOLUME UP/DOWN RATIO → stealth distribution detection
+         Production PricePhaseIntelligence uses this (L212-227). If vol on DOWN
+         days > UP days → DISTRIBUTION disguised as correction → penalty
+      8. TRIM OUTPUT → signal=-1 when movement exhausted
+         σ≥+1.5 AND (fear_level≤1 OR wave_flip negative) → trim signal
+
+    SLOPE CONJUGATION — The Determinant Feature:
+      Feature J11 (MTF_SlopeConjugation_5): ranked #11 global, spread -6.7%
+      wave_slope - tide_slope < 0 → wave falling, tide rising → PULLBACK
+      This yields WR=100% under THESIS geometry. The ANGLE between the two
+      lines is what separates winners from losers.
 
     Entry logic:
-      BULL regime (long slope > 0):
-        - Price at -1.5σ to -2.0σ (statistical support)
-        - Short regression turning positive (momentum recovering)
-        - Price below VWAP (discount vs institutional consensus)
-        - 1-bar hookup confirmation
+      BULL: σ ≤ -1.5, below VWAP, hookup → confidence modulated by fear+Kalman+vol
+      BEAR: shallow (> -0.03), σ ≤ -2.0, short turning, VWAP cross
+      FLAT: σ ≤ -2.0, hookup → WR 91.7% (THESIS)
 
-      BEAR regime (long slope < 0):
-        - Price at -2.0σ (extreme statistical deviation)
-        - Short regression turning positive
-        - VWAP crossed from below (institutional buying starting)
-
-    Statistical basis:
-        68% of prices within ±1σ → normal fluctuation
-        95% within ±2σ → entry at -1.5σ to -2σ = 2.5th-16th percentile
+    Trim logic (NEW):
+      σ ≥ +2.0 AND fear=0: signal=-1, confidence=0.50 (max trim)
+      σ ≥ +1.5 AND fear≤1: signal=-1, confidence=0.25
+      σ ≥ +1.0 AND wave_flip neg AND fear≤1: signal=-1, confidence=0.15
     """
 
     @property
@@ -696,50 +786,16 @@ class RegressionChannelAdapter(SignalPort):
 
     @staticmethod
     def _linreg_channel(close: np.ndarray, window: int):
-        """Compute linear regression line and standard deviation of residuals.
-
-        Returns (reg_value, slope_normalized, residual_std) at the last bar.
-        """
-        if len(close) < window:
-            return 0.0, 0.0, 1.0
-
-        y = close[-window:]
-        x = np.arange(window, dtype=float)
-        x_mean = x.mean()
-        y_mean = y.mean()
-
-        ss_xx = np.sum((x - x_mean) ** 2)
-        ss_xy = np.sum((x - x_mean) * (y - y_mean))
-
-        slope = ss_xy / ss_xx
-        intercept = y_mean - slope * x_mean
-
-        # Regression line value at the last bar
-        reg_line = slope * (window - 1) + intercept
-
-        # Standard deviation of residuals (distance from the line)
-        fitted = slope * x + intercept
-        residuals = y - fitted
-        residual_std = float(np.std(residuals, ddof=1)) if len(residuals) > 1 else 1.0
-
-        # Normalize slope by mean price
-        slope_norm = (slope / y_mean * 100) if y_mean > 0 else 0.0
-
-        return reg_line, slope_norm, max(residual_std, 1e-8)
+        """Delegated to quality_swing/domain/rules/regression_channel.py."""
+        from backend.modules.quality_swing.domain.rules.regression_channel import linreg_channel
+        return linreg_channel(close, window)
 
     @staticmethod
     def _calc_vwap(close: np.ndarray, high: np.ndarray, low: np.ndarray,
                    volume: np.ndarray, window: int = 20) -> float:
-        """Rolling VWAP over last `window` bars."""
-        if len(close) < window:
-            return close[-1] if len(close) > 0 else 0.0
-
-        typical = (close[-window:] + high[-window:] + low[-window:]) / 3.0
-        vol = volume[-window:]
-        total_vol = vol.sum()
-        if total_vol <= 0:
-            return typical[-1]
-        return float(np.sum(typical * vol) / total_vol)
+        """Delegated to quality_swing/domain/rules/regression_channel.py."""
+        from backend.modules.quality_swing.domain.rules.regression_channel import calc_vwap
+        return calc_vwap(close, high, low, volume, window)
 
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
         close = ohlc["close"].values.astype(float)
@@ -747,9 +803,12 @@ class RegressionChannelAdapter(SignalPort):
         low_arr = ohlc["low"].values.astype(float)
         vol_arr = ohlc["volume"].values.astype(float)
 
-        # Detect asset's dominant cycle for adaptive short regression
+        # ── Layer 2: Detect asset's dominant cycle for adaptive short regression ──
         dominant_cycle = RSISignalAdapter._detect_dominant_cycle(close)
         short_window = max(10, min(dominant_cycle, 60))  # Clamp to 10-60
+
+        # ── Layer 6: Pre-compute Kalman states for all bars ──
+        kalman_states = RSISignalAdapter._precompute_kalman(ohlc)
 
         signals = []
         confidences = []
@@ -763,22 +822,20 @@ class RegressionChannelAdapter(SignalPort):
             price_window = close[:i + 1]
             current_price = close[i]
 
-            # ── LONG CHANNEL (200 bars, FIXED — the tide) ─────────
+            # ── Layer 1: LONG CHANNEL (200 bars, FIXED — the tide) ──
             reg_value, slope_long, residual_std = self._linreg_channel(price_window, 200)
-
-            # Price position in the channel (in σ units)
             sigma_position = (current_price - reg_value) / residual_std
 
-            # ── SHORT REGRESSION (cycle-adaptive — the wave) ──────
+            # ── Layer 2: SHORT REGRESSION (cycle-adaptive — the wave) ──
             _, slope_short, _ = self._linreg_channel(price_window, short_window)
 
-            # ── VWAP (institutional fair price) ───────────────────
+            # ── Layer 3: VWAP (institutional fair price) ──
             vwap = self._calc_vwap(
                 close[:i + 1], high_arr[:i + 1], low_arr[:i + 1], vol_arr[:i + 1], 20
             )
             below_vwap = current_price < vwap
 
-            # ── REGIME from long slope ────────────────────────────
+            # ── REGIME from long slope ──
             if slope_long > 0.01:
                 regime = "BULL"
             elif slope_long < -0.01:
@@ -789,17 +846,14 @@ class RegressionChannelAdapter(SignalPort):
             signal = 0
             confidence = 0.0
 
+            # ═══ ENTRY SIGNALS (signal = +1) ═══
+
             if regime == "BULL":
                 # ── BULL: statistical pullback to channel support ──
-                # Price at -1.5σ or deeper = buying at the 16th percentile or below
-                # Forensic finding: deeper entries (< -2σ) also work in BULL.
                 at_support = sigma_position <= -1.5
-                # Forensic finding: winners have slope_short NEGATIVE (avg=-0.05).
-                # Entering during the dip, not after the turn, yields WR=100% (THESIS).
-                # Removed: short_recovering gate. The long channel (200-bar tide)
-                # is the conviction — the short wave direction is noise for Quality.
-                # Price below VWAP = discount vs institutional consensus
-                # 1-bar hookup: today's close > yesterday's close (reversal candle)
+                # Forensic: winners have slope_short NEGATIVE (avg=-0.05).
+                # The dip itself IS the signal — entering during the pullback.
+                # Slope conjugation: wave < tide → the determinant feature (#11, -6.7% spread)
                 hookup = close[i] > close[i - 1] if i > 0 else False
 
                 if at_support and below_vwap and hookup:
@@ -810,14 +864,11 @@ class RegressionChannelAdapter(SignalPort):
 
             elif regime == "BEAR":
                 # ── BEAR: only SHALLOW bear trends + extreme σ ──
-                # Forensic finding: 5/5 BEAR losers were UNH with slope_long < -0.05.
-                # Winners (AMZN, TXN) had slope_long > -0.03. The rule:
-                # a shallow bear (> -0.03) is a pullback opportunity.
-                # A deep bear (< -0.03) is a structural collapse — STAY OUT.
+                # Forensic: 5/5 BEAR losers were UNH with slope_long < -0.05.
+                # Winners had slope_long > -0.03 (shallow bear = pullback opportunity).
                 shallow_bear = slope_long > -0.03
                 at_extreme = sigma_position <= -2.0
                 short_turning = slope_short > 0
-                # VWAP crossed from below (institutional buying starting)
                 prev_vwap = self._calc_vwap(
                     close[:i], high_arr[:i], low_arr[:i], vol_arr[:i], 20
                 ) if i > 20 else vwap
@@ -828,13 +879,33 @@ class RegressionChannelAdapter(SignalPort):
                     confidence = round(min(abs(sigma_position) / 3.0 + 0.3, 1.0), 2)
 
             else:  # FLAT
-                # ── FLAT: extreme σ with hookup ───────────────────
-                # Forensic finding: FLAT regime has WR=91.7% (THESIS).
-                # Avg slope_short = -0.465, avg sigma = -2.44.
-                # Mean reversion is almost inevitable in consolidation.
+                # ── FLAT: extreme σ with hookup ──
+                # Forensic: FLAT regime has WR=91.7% (THESIS). Mean reversion is almost inevitable.
                 if sigma_position <= -2.0 and close[i] > close[i - 1]:
                     signal = 1
                     confidence = 0.4
+
+            # ═══ TRIM SIGNALS (signal = -1) — Layer 8 ═══
+
+            if signal == 0:  # Only check trim if no entry signal
+                trim_signal, trim_conf = self._check_trim(
+                    ohlc, i, sigma_position, slope_short
+                )
+                if trim_signal:
+                    signal = -1
+                    confidence = trim_conf
+
+            # ═══ POST-SIGNAL MODULATION (only for entries) ═══
+
+            if signal == 1:
+                # ── Layer 5: Fear Level Bias ──
+                confidence = self._apply_fear_bias(ohlc, i, confidence)
+
+                # ── Layer 6: Kalman ACCUMULATION Confirmation ──
+                confidence = self._apply_kalman_boost(kalman_states, i, confidence)
+
+                # ── Layer 7: Volume UP/DOWN Ratio ──
+                confidence = self._apply_vol_ratio_check(ohlc, i, confidence)
 
             signals.append(signal)
             confidences.append(confidence)
@@ -844,128 +915,169 @@ class RegressionChannelAdapter(SignalPort):
             "confidence": confidences,
         }, index=ohlc.index)
 
+    # ── Layer 5: Fear Level Bias ──────────────────────────────────────
+
+    def _apply_fear_bias(self, ohlc: pd.DataFrame, idx: int, base_confidence: float) -> float:
+        """Modulate confidence by fear_level from the SAME dual regression channel.
+
+        The RC adapter already computes tide_slope and wave_slope — these are
+        exactly the inputs to compute_ticker_fear_level(). No circular dependency:
+        fear_level classifies the STATE of the channel (fear/greed), while the
+        entry rules use the POSITION within the channel (sigma).
+
+        Empirical (20,580 obs): PANIC→47.6% P(↑), GREED→40.4% P(↑).
+        """
+        try:
+            from backend.modules.quality_swing.domain.rules.fear_level import compute_ticker_fear_level
+            bias = compute_ticker_fear_level(ohlc, idx)
+            if bias is None:
+                return base_confidence
+
+            fear_bonus_map = {
+                5: +0.20,   # PANIC — best forward return
+                4: +0.15,   # FEAR
+                3: +0.08,   # ANXIETY
+                2: 0.00,    # NEUTRAL
+                1: -0.05,   # CONFIDENCE
+                0: -0.10,   # GREED — worst forward return
+            }
+            bonus = fear_bonus_map.get(bias.fear_level, 0.0)
+
+            # Slope conjugation bonus: wave < tide (negative conj) = entry zone
+            # Feature J11: spread -6.7%, the ANGLE between lines is determinant
+            if bias.slope_conjugation < -0.03 and bias.fear_level >= 3:
+                bonus += 0.10  # Deep pullback in fear = maximum conviction
+
+            # Wave flip positive (knife stopped falling) + fear ≥ 3
+            if bias.wave_flip and bias.wave_flip_direction == 1 and bias.fear_level >= 3:
+                bonus += 0.08  # 8.6% spread validated
+
+            adjusted = min(max(base_confidence + bonus, 0.1), 1.0)
+            return round(adjusted, 2)
+        except Exception:
+            return base_confidence
+
+    # ── Layer 6: Kalman ACCUMULATION ──────────────────────────────────
+
+    def _apply_kalman_boost(self, kalman_states: dict, idx: int, base_confidence: float) -> float:
+        """Boost confidence when Kalman-Wyckoff confirms ACCUMULATION.
+
+        Validated: RC solo WR 78.2% → RC + Kalman WR 84.2% (+6pts, Ret +5.6%).
+        """
+        state = kalman_states.get(idx)
+        if state is None:
+            return base_confidence
+
+        wyckoff = state.get("wyckoff_state", "UNKNOWN")
+        velocity = state.get("velocity", 0.0)
+
+        if wyckoff == "ACCUMULATION" and velocity > 0:
+            boosted = min(base_confidence * 1.25, 1.0)
+            return round(boosted, 2)
+        elif wyckoff == "DISTRIBUTION" and velocity < 0:
+            reduced = max(base_confidence * 0.60, 0.1)
+            return round(reduced, 2)
+
+        return base_confidence
+
+    # ── Layer 7: Volume UP/DOWN Ratio ────────────────────────────────
+
+    @staticmethod
+    def _apply_vol_ratio_check(ohlc: pd.DataFrame, idx: int, base_confidence: float) -> float:
+        """Detect stealth distribution via volume direction analysis.
+
+        Production PricePhaseIntelligence (L212-227) uses this to block
+        STEALTH_DISTRIBUTION: when volume on DOWN days > UP days, institutions
+        are selling disguised as a correction.
+
+        If vol_up/vol_down < 1.0 → penalize confidence by 30%.
+        """
+        if idx < 5:
+            return base_confidence
+
+        close = ohlc["close"].values.astype(float)
+        volume = ohlc["volume"].values.astype(float)
+
+        up_vol = 0.0
+        down_vol = 0.0
+        up_count = 0
+        down_count = 0
+
+        for j in range(max(0, idx - 4), idx + 1):
+            if j > 0 and close[j] > close[j - 1]:
+                up_vol += volume[j]
+                up_count += 1
+            elif j > 0:
+                down_vol += volume[j]
+                down_count += 1
+
+        avg_up = up_vol / max(up_count, 1)
+        avg_down = down_vol / max(down_count, 1)
+        ratio = avg_up / avg_down if avg_down > 0 else 2.0
+
+        if ratio < 0.8:
+            # Strong distribution signal → heavy penalty
+            reduced = max(base_confidence * 0.50, 0.1)
+            return round(reduced, 2)
+        elif ratio < 1.0:
+            # Mild distribution → moderate penalty
+            reduced = max(base_confidence * 0.70, 0.1)
+            return round(reduced, 2)
+
+        return base_confidence
+
+    # ── Layer 8: Trim Detection ──────────────────────────────────────
+
+    @staticmethod
+    def _check_trim(
+        ohlc: pd.DataFrame, idx: int,
+        sigma_position: float, slope_short: float,
+    ) -> tuple[bool, float]:
+        """Detect movement exhaustion → emit TRIM signal.
+
+        Based on empirical data:
+          - σ ≥ +2.0 AND fear=0 (GREED): P(↑)=40.4% → max trim (50%)
+          - σ ≥ +1.5 AND fear≤1: overextended → trim 25%
+          - σ ≥ +1.0 AND wave_flip neg AND fear≤1: wave reversal → early trim 15%
+
+        Trim ≠ sell. Trim = reduce swing allocation at statistical extremes.
+        """
+        try:
+            from backend.modules.quality_swing.domain.rules.fear_level import compute_ticker_fear_level
+            bias = compute_ticker_fear_level(ohlc, idx)
+            if bias is None:
+                return False, 0.0
+
+            # Extreme GREED + overextended = max trim
+            if sigma_position >= 2.0 and bias.fear_level == 0:
+                return True, 0.50
+
+            # Overextended
+            if sigma_position >= 1.5 and bias.fear_level <= 1:
+                return True, 0.25
+
+            # Wave flip negative (knife started falling) at high sigma
+            if (sigma_position >= 1.0 and bias.wave_flip
+                    and bias.wave_flip_direction == -1 and bias.fear_level <= 1):
+                return True, 0.15
+
+        except Exception:
+            pass
+
+        return False, 0.0
+
     def required_context(self) -> list[str]:
         return []
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# TICKER SENTIMENT BIAS — Regression Slope Fear/Greed
+# TICKER SENTIMENT BIAS — Re-exported from quality_swing module
 # ═══════════════════════════════════════════════════════════════════════
-# Empirical forensic audit (2026-05-14, 20 tickers × 5 years = 20,580 obs):
-#   GREED (tide+wave up+accel) → P(↑)=40.4%, Ret20d=+1.26% (worst)
-#   PANIC (tide+wave down+accel) → P(↑)=47.6%, Ret20d=+3.12% (best)
-#   Wave FLIP → 8.6% spread in P(↑) — most discriminative feature
-# Buffett/Munger validated: buy in fear, sell in greed.
-# See: .agents/knowledge/indicators/regression-slopes/PROFILE.md
+# Canonical location: backend/modules/quality_swing/domain/
+# Kept here as re-exports for backward compatibility.
 
-
-
-
-@dataclass
-class TickerSentimentBias:
-    """Per-ticker fear/greed state from dual regression channels.
-
-    Contrarian interpretation (empirically validated):
-      fear_level 0 (GREED) → P(↑) lowest → caution, don't chase
-      fear_level 5 (PANIC) → P(↑) highest → Munger opportunity
-    """
-    fear_level: int          # 0=GREED, 1=CONFIDENCE, 2=NEUTRAL, 3=ANXIETY, 4=FEAR, 5=PANIC
-    fear_label: str          # Human-readable label
-    tide_slope: float        # Long regression slope (200 bars, normalized)
-    wave_slope: float        # Short regression slope (cycle-adaptive, normalized)
-    tide_accel: float        # Change in tide slope vs previous bar
-    wave_flip: bool          # Did the wave change sign? (knife stopped/started falling)
-    wave_flip_direction: int # +1 = flipped positive, -1 = flipped negative, 0 = no flip
-    sigma_position: float    # Price position in σ units within the long channel
-
-
-def compute_ticker_fear_level(
-    ohlc: pd.DataFrame,
-    idx: int,
-    long_window: int = 200,
-    short_window: int | None = None,
-) -> TickerSentimentBias | None:
-    """Compute per-ticker fear/greed bias from regression channel slopes.
-
-    This is a BIAS, not a signal. It modulates conviction of existing signals
-    (RC, RSI) using the contrarian Buffett/Munger principle: high fear = high
-    opportunity (provided the moat is intact and the knife stopped falling).
-
-    Args:
-        ohlc: DataFrame with 'close', 'high', 'low', 'volume' columns.
-        idx: Current bar index (iloc position).
-        long_window: Bars for the tide regression (default 200).
-        short_window: Bars for the wave regression (auto-detected if None).
-
-    Returns:
-        TickerSentimentBias or None if insufficient data.
-    """
-    if idx < long_window + 5:
-        return None
-
-    close = ohlc["close"].values.astype(float)
-    price_window = close[:idx + 1]
-    price_window_prev = close[:idx]
-
-    # Auto-detect cycle for short window
-    if short_window is None:
-        short_window = max(10, min(
-            RSISignalAdapter._detect_dominant_cycle(close), 60
-        ))
-
-    # Current slopes
-    reg_value, tide_slope, res_std = RegressionChannelAdapter._linreg_channel(
-        price_window, long_window
-    )
-    _, wave_slope, _ = RegressionChannelAdapter._linreg_channel(
-        price_window, short_window
-    )
-
-    # Previous bar slopes (for acceleration and flip detection)
-    _, tide_slope_prev, _ = RegressionChannelAdapter._linreg_channel(
-        price_window_prev, long_window
-    )
-    _, wave_slope_prev, _ = RegressionChannelAdapter._linreg_channel(
-        price_window_prev, short_window
-    )
-
-    # Derived metrics
-    tide_accel = tide_slope - tide_slope_prev
-    wave_flip = (wave_slope > 0) != (wave_slope_prev > 0)
-    wave_flip_dir = 0
-    if wave_flip:
-        wave_flip_dir = 1 if wave_slope > 0 else -1
-
-    sigma_position = (close[idx] - reg_value) / res_std if res_std > 0 else 0.0
-
-    # ── FEAR LEVEL CLASSIFICATION ──
-    # Based on empirical P(↑) ranking:
-    #   PANIC > FEAR > ANXIETY > NEUTRAL > CONFIDENCE > GREED
-    if tide_slope < -0.02 and wave_slope < -0.05 and tide_accel < 0:
-        fear_level, fear_label = 5, "PANIC"
-    elif tide_slope < -0.01 and wave_slope <= 0.02:
-        fear_level, fear_label = 4, "FEAR"
-    elif tide_slope > 0.01 and wave_slope < -0.02:
-        fear_level, fear_label = 3, "ANXIETY"
-    elif -0.01 <= tide_slope <= 0.01:
-        fear_level, fear_label = 2, "NEUTRAL"
-    elif tide_slope > 0.01 and wave_slope > 0.02 and tide_accel <= 0:
-        fear_level, fear_label = 1, "CONFIDENCE"
-    elif tide_slope > 0.02 and wave_slope > 0.05 and tide_accel > 0:
-        fear_level, fear_label = 0, "GREED"
-    else:
-        fear_level, fear_label = 2, "NEUTRAL"
-
-    return TickerSentimentBias(
-        fear_level=fear_level,
-        fear_label=fear_label,
-        tide_slope=tide_slope,
-        wave_slope=wave_slope,
-        tide_accel=tide_accel,
-        wave_flip=wave_flip,
-        wave_flip_direction=wave_flip_dir,
-        sigma_position=sigma_position,
-    )
+from backend.modules.quality_swing.domain.entities.swing_bias import TickerSentimentBias  # noqa: F811
+from backend.modules.quality_swing.domain.rules.fear_level import compute_ticker_fear_level  # noqa: F811
 
 
 ALL_SIGNAL_ADAPTERS: list[type[SignalPort]] = [

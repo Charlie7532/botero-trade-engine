@@ -90,7 +90,7 @@ When creating a new module, add it to this map and assign the appropriate skills
 | `options_gamma` | Gamma regime detection (PIN/DRIFT/SQUEEZE), Max Pain, GEX, Black-Scholes, OpEx calendar | `analyze_gamma` |
 | `pattern_recognition` | Candlestick and technical pattern detection (reversals, continuations) | `detect_patterns` |
 | `portfolio_management` | Universe filtering, alpha scanning, position sizing, ticker qualification | `filter_universe`, `scan_alpha`, `qualify_ticker`, `optimize_portfolio` |
-| `price_analysis` | RSI regime-aware interpretation (Cardwell/Brown), price phase detection | `analyze_rsi`, `detect_price_phase` |
+| `price_analysis` | RSI regime-aware interpretation (Cardwell/Brown), Regression Channel position analysis (σ, fear/greed, trim), price phase detection | `analyze_rsi`, `analyze_regression_channel`, `detect_price_phase` |
 | `shared` | Cross-cutting types: `Bar`, `MarketDataPort`, `ExecutionPort` | Foundation for all modules |
 | `simulation` | Walk-forward backtesting, trade autopsy, feature engineering | `run_backtest`, `analyze_trades`, `engineer_features` |
 | `signal_discovery` | Non-intuitive statistical signal mining (Simons methodology) | `discover_anomalies`, `monitor_signal_decay`, `scan_cross_asset` |

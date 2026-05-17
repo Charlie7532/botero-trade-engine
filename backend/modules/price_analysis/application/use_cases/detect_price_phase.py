@@ -55,6 +55,7 @@ class PricePhaseIntelligence:
     RSI_OVERSOLD = rules.RSI_OVERSOLD
     MIN_RR_RATIO = rules.MIN_RR_RATIO
     _rsi_intel = None                 # RSIIntelligence (lazy, Cardwell/Brown)
+    _rc_intel = None                  # RegressionChannelIntelligence (lazy, position tool)
 
     def diagnose(
         self,
@@ -115,6 +116,29 @@ class PricePhaseIntelligence:
             rsi_conviction = rsi_result.rsi_conviction
         except Exception:
             pass  # Fallback to static if RSI Intelligence unavailable
+
+        # ── RC Intelligence (Channel Position Tool) ────────────
+        rc_zone = "NEUTRAL"
+        rc_conviction = 0.0
+        rc_sigma = 0.0
+        rc_fear_label = "NEUTRAL"
+        try:
+            if PricePhaseIntelligence._rc_intel is None:
+                from backend.modules.price_analysis.application.use_cases.analyze_regression_channel import (
+                    RegressionChannelIntelligence,
+                )
+                PricePhaseIntelligence._rc_intel = RegressionChannelIntelligence()
+
+            # RC needs lowercase column names
+            rc_ohlc = prices.copy()
+            rc_ohlc.columns = [c.lower() for c in rc_ohlc.columns]
+            rc_result = PricePhaseIntelligence._rc_intel.analyze(rc_ohlc)
+            rc_zone = rc_result.zone
+            rc_conviction = rc_result.conviction
+            rc_sigma = rc_result.sigma_position
+            rc_fear_label = rc_result.fear_label
+        except Exception:
+            pass  # Fallback if RC Intelligence unavailable
 
         # Distancia al SMA20 en unidades de ATR
         if v.atr14 > 0:

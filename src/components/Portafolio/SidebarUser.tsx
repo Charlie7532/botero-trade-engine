@@ -1,17 +1,14 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import { Avatar, Dropdown, Button, Label } from '@heroui/react'
-import { LogOut, Settings, ChevronsUpDown, ShieldCheck } from 'lucide-react'
+import { LogOut, User as UserIcon, ChevronsUpDown, ShieldCheck } from 'lucide-react'
 
 import type { User, UserAvatar as UserAvatarType } from '@/payload-types'
 import { ThemeToggleGroup } from '@/providers/Theme/ThemeSelector/ThemeToggleGroup'
 
 type Props = {
   user: Pick<User, 'id' | 'name' | 'email' | 'avatar' | 'role'>
-  /** Fallback portfolio slug to use when no slug is in the URL. */
-  fallbackSlug?: string
 }
 
 const getInitials = (name?: string | null, email?: string) => {
@@ -20,11 +17,8 @@ const getInitials = (name?: string | null, email?: string) => {
   return 'U'
 }
 
-const SidebarUser: React.FC<Props> = ({ user, fallbackSlug }) => {
+const SidebarUser: React.FC<Props> = ({ user }) => {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined)
-  const pathname = usePathname() ?? ''
-  const slugMatch = pathname.match(/^\/portafolio\/([^/]+)/)
-  const activeSlug = slugMatch?.[1] ?? fallbackSlug
   const isAdmin = user.role === 'admin' || user.role === 'superadmin'
 
   useEffect(() => {
@@ -73,11 +67,7 @@ const SidebarUser: React.FC<Props> = ({ user, fallbackSlug }) => {
         <Dropdown.Menu
           aria-label="User actions"
           onAction={(key) => {
-            if (key === 'account') {
-              window.location.href = activeSlug
-                ? `/portafolio/${activeSlug}/settings`
-                : '/portafolio'
-            }
+            if (key === 'account') window.location.href = '/account/profile'
             if (key === 'admin') window.location.href = '/admin'
             if (key === 'logout') window.location.href = '/logout'
           }}
@@ -88,9 +78,9 @@ const SidebarUser: React.FC<Props> = ({ user, fallbackSlug }) => {
               <Label>Admin Panel</Label>
             </Dropdown.Item>
           ) : null}
-          <Dropdown.Item id="account" textValue="Account Settings">
-            <Settings size={16} />
-            <Label>Account Settings</Label>
+          <Dropdown.Item id="account" textValue="Profile">
+            <UserIcon size={16} />
+            <Label>Profile</Label>
           </Dropdown.Item>
           <Dropdown.Item
             id="theme"

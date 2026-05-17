@@ -19,6 +19,7 @@ version: "1.0"
 baselines:
   - operational-purpose    # Zero-bias behavioral alignment
   - clean-architecture     # Hexagonal architecture enforcement
+  - hypothesis-governance  # Evidence Status Tags — HYPOTHESIS vs VALIDATED enforcement
 
 # ─── Department Layer ───────────────────────────────────────────
 departments:
@@ -101,13 +102,13 @@ tools:
   backtesting-trading-strategies:
     department: VALIDATION
     crewai_role: agent
-    requires: [operational-purpose, clean-architecture]
+    requires: [operational-purpose, clean-architecture, hypothesis-governance]
     mcp_servers: []
 
   trade-forensics:
     department: VALIDATION
     crewai_role: agent
-    requires: [operational-purpose, clean-architecture]
+    requires: [operational-purpose, clean-architecture, hypothesis-governance]
     mcp_servers: []
 
 # ─── Router Layer ───────────────────────────────────────────────
@@ -131,26 +132,26 @@ conflicts:
 # memory = Neon PostgreSQL (engine.agent_messages)
 agents:
   quality_agent:
-    system_prompt_skills: [operational-purpose, clean-architecture, department-quality, fundamental-analyst, risk-quality]
+    system_prompt_skills: [operational-purpose, clean-architecture, hypothesis-governance, department-quality, fundamental-analyst, risk-quality]
     mcp_servers: [gurufocus, finnhub, fred]
     department: QUALITY
 
   speculative_agent:
-    system_prompt_skills: [operational-purpose, clean-architecture, department-speculative, tactical-entries, risk-speculative]
+    system_prompt_skills: [operational-purpose, clean-architecture, hypothesis-governance, department-speculative, tactical-entries, risk-speculative]
     mcp_servers: [unusual-whales, yahoo-finance]
     department: SPECULATIVE
 
   research_agent:
-    system_prompt_skills: [operational-purpose, clean-architecture, research-intelligence]
+    system_prompt_skills: [operational-purpose, clean-architecture, hypothesis-governance, research-intelligence]
     mcp_servers: [gurufocus, finnhub, finviz, unusual-whales]
     department: SERVICE
 
   cio_agent:
-    system_prompt_skills: [operational-purpose, clean-architecture, cio-allocator, rotation-analyst]
+    system_prompt_skills: [operational-purpose, clean-architecture, hypothesis-governance, cio-allocator, rotation-analyst]
     mcp_servers: [fred, yahoo-finance]
     department: CROSS
 
   validation_agent:
-    system_prompt_skills: [operational-purpose, clean-architecture, backtesting-trading-strategies, trade-forensics, signal-miner]
+    system_prompt_skills: [operational-purpose, clean-architecture, hypothesis-governance, backtesting-trading-strategies, trade-forensics, signal-miner]
     mcp_servers: []
     department: VALIDATION

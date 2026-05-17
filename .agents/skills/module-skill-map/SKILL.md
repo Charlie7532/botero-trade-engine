@@ -12,7 +12,7 @@ crewai_role: lookup
 # Module → Skill Activation Map
 
 When any agent works on a backend module, activate the skills listed for that module.
-**`clean-architecture` and `operational-purpose` are ALWAYS active for all modules.**
+**`clean-architecture`, `operational-purpose`, and `hypothesis-governance` are ALWAYS active for all modules.**
 
 ---
 
@@ -39,11 +39,12 @@ When any agent works on a backend module, activate the skills listed for that mo
 ## Visual Map
 
 ```
-                        ┌─────────────────────┐
-                        │   ALWAYS ACTIVE      │
-                        │  clean-architecture  │
-                        │  operational-purpose │
-                        └────────┬────────────┘
+                        ┌──────────────────────┐
+                        │    ALWAYS ACTIVE      │
+                        │  clean-architecture   │
+                        │  operational-purpose  │
+                        │ hypothesis-governance │
+                        └────────┬─────────────┘
                                  │
                     ┌────────────┼────────────┐
                     │                         │

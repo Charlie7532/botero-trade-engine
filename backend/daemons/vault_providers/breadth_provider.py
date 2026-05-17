@@ -51,9 +51,10 @@ class BreadthProvider:
                 logger.warning("Breadth: insufficient history for MA calculation")
                 return {"status": "error", "reason": "insufficient_history"}
 
+            n_constituents = len(all_closes)
             snapshot = {
                 "s5th": s5th, "s5tw": s5tw, "s5fi": s5fi,
-                "tickers_counted": len(all_closes),
+                "tickers_counted": n_constituents,
                 "timestamp": datetime.now(UTC).isoformat(),
             }
             store.save_mcp_snapshot("macro/breadth", "SP500", snapshot)
@@ -63,7 +64,8 @@ class BreadthProvider:
                 if value is not None:
                     store.upsert_ohlcv_bar(
                         ticker=ticker, timeframe="1d", time=now,
-                        open=value, high=value, low=value, close=value, volume=0,
+                        open=value, high=value, low=value, close=value,
+                        volume=n_constituents,
                     )
 
             s5th_str = f"{s5th:.1f}%" if s5th is not None else "N/A"

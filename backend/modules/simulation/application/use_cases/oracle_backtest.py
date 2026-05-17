@@ -289,12 +289,14 @@ class OracleBacktester:
                 except Exception as e:
                     logger.debug(f"Organic volume features unavailable: {e}")
 
-            # Family I (Intermarket): SPY + TLT rotation signals
+            # Family I (Intermarket): SPY + TLT + HYG rotation signals
             try:
                 bond_bars = self.store.load_bars("TLT", tf)
+                hyg_bars = self.store.load_bars("HYG", tf)
                 eng.extract_intermarket_features(
                     spy_df=spy_bars if spy_bars is not None and not spy_bars.empty else None,
                     bond_df=bond_bars if bond_bars is not None and not bond_bars.empty else None,
+                    hyg_df=hyg_bars if hyg_bars is not None and not hyg_bars.empty else None,
                 )
             except Exception as e:
                 logger.debug(f"Intermarket features unavailable: {e}")
@@ -305,15 +307,50 @@ class OracleBacktester:
             # Family K: OHLC Bar Anatomy (close position, gap, range expansion)
             eng.extract_bar_anatomy_features()
 
-            # Family L: Sentiment Composite (fear/greed, trail, breadth, F&G)
-            # S5FI = most discriminative sentiment feature (12.7% spread)
-            # FG = CNN Fear & Greed historical (2011→present, ~3,800 bars)
+            # Family L: Sentiment Composite (fear/greed, trail, breadth cascade, F&G)
+            # S5FI = most discriminative feature (12.7% spread)
+            # S5TH/S5TW = structural/tactical cascade context
+            # FG = CNN Fear & Greed (2011→present, ~3,800 bars)
             try:
                 s5fi_bars = self.store.load_bars("S5FI", tf)
+                s5th_bars = self.store.load_bars("S5TH", tf)
+                s5tw_bars = self.store.load_bars("S5TW", tf)
                 fg_bars = self.store.load_bars("FG", tf)
+
+                # Load sector breadth for ticker's sector
+                sector_breadth_args = {}
+                try:
+                    from backend.modules.shared.domain.constants.sectors import (
+                        SECTOR_BREADTH_TICKERS, SECTOR_CAP_WEIGHTS,
+                    )
+                    sector_map = self.store.load_sector_map()
+                    ticker_sector = sector_map.get(ticker)
+                    if ticker_sector:
+                        from backend.modules.shared.domain.constants.sectors import canonicalize
+                        canon = canonicalize(ticker_sector)
+                        # Find ETF for this sector
+                        from backend.modules.shared.domain.constants.sectors import SECTOR_ETFS
+                        etf = next((k for k, v in SECTOR_ETFS.items() if v == canon), None)
+                        if etf and etf in SECTOR_BREADTH_TICKERS:
+                            tickers = SECTOR_BREADTH_TICKERS[etf]
+                            sb_th = self.store.load_bars(tickers["structural"], tf)
+                            sb_fi = self.store.load_bars(tickers["intermediate"], tf)
+                            sb_tw = self.store.load_bars(tickers["tactical"], tf)
+                            sector_breadth_args = {
+                                "sector_breadth_th_df": sb_th if sb_th is not None and not sb_th.empty else None,
+                                "sector_breadth_fi_df": sb_fi if sb_fi is not None and not sb_fi.empty else None,
+                                "sector_breadth_tw_df": sb_tw if sb_tw is not None and not sb_tw.empty else None,
+                                "sector_cap_weight": SECTOR_CAP_WEIGHTS.get(etf, 0.0),
+                            }
+                except Exception as e:
+                    logger.debug(f"Sector breadth unavailable for {ticker}: {e}")
+
                 eng.extract_sentiment_composite_features(
                     s5fi_df=s5fi_bars if s5fi_bars is not None and not s5fi_bars.empty else None,
+                    s5th_df=s5th_bars if s5th_bars is not None and not s5th_bars.empty else None,
+                    s5tw_df=s5tw_bars if s5tw_bars is not None and not s5tw_bars.empty else None,
                     fg_df=fg_bars if fg_bars is not None and not fg_bars.empty else None,
+                    **sector_breadth_args,
                 )
             except Exception as e:
                 logger.debug(f"Sentiment features unavailable: {e}")

@@ -109,3 +109,21 @@ BREADTH_MA_LENGTHS = {
     "intermediate": 50,
     "tactical": 20,
 }
+
+# Approximate sector cap-weights in SPY (as of mid-2025).
+# Used to compute breadth contribution weighted by capitalisation.
+# Source: S&P Dow Jones Indices fact sheet.
+# TODO: refresh dynamically via GuruFocus MCP (get_etf_sector_weighting).
+SECTOR_CAP_WEIGHTS: dict[str, float] = {
+    "XLK":  0.32,   # Technology
+    "XLF":  0.13,   # Financials
+    "XLV":  0.12,   # Healthcare
+    "XLY":  0.10,   # Consumer Discretionary
+    "XLC":  0.09,   # Communication Services
+    "XLI":  0.08,   # Industrials
+    "XLP":  0.06,   # Consumer Staples
+    "XLE":  0.04,   # Energy
+    "XLU":  0.025,  # Utilities
+    "XLRE": 0.023,  # Real Estate
+    "XLB":  0.022,  # Materials
+}

@@ -918,7 +918,13 @@ class QuantFeatureEngineer:
     def extract_sentiment_composite_features(
         self,
         s5fi_df: pd.DataFrame | None = None,
+        s5th_df: pd.DataFrame | None = None,
+        s5tw_df: pd.DataFrame | None = None,
         fg_df: pd.DataFrame | None = None,
+        sector_breadth_th_df: pd.DataFrame | None = None,
+        sector_breadth_fi_df: pd.DataFrame | None = None,
+        sector_breadth_tw_df: pd.DataFrame | None = None,
+        sector_cap_weight: float = 0.0,
     ) -> None:
         """
         Family L: Composite sentiment features from multiple orthogonal layers.
@@ -927,6 +933,9 @@ class QuantFeatureEngineer:
           L1-L7: Ticker-level fear/greed (regression slopes — contrarian)
           L8-L11: Candle trail movement probabilities (5-bar sequence)
           L12-L14: Market breadth context (S5FI — most discriminative feature)
+          L15-L20: CNN Fear & Greed Index (macro sentiment, contrarian)
+          L21-L27: Breadth Cascade (S5TH/S5FI/S5TW — structural health)
+          L28-L31: Sector Breadth (per-ticker sector cascade + normalized weight)
 
         Evidence Status: VALIDATED — 20,580 obs, 20 tickers × 5yr.
         PANIC + S5FI WEAK = P(↑) 55.3%, Ret20d +5.44% (Munger spot).
@@ -1079,6 +1088,105 @@ class QuantFeatureEngineer:
             df['ST_FG_Acceleration'] = 0.0
             df['ST_FG_Regime'] = 2.0
             df['ST_FG_MeanReversion'] = 0.0
+
+        # ── L21-L27: Breadth Cascade (S5TH + S5TW context) ──
+        # The cascade S5TW→S5FI→S5TH discriminates pullback/correction/bear
+        # by measuring the speed of propagation across timeframes.
+        _has_s5th = s5th_df is not None and not s5th_df.empty
+        _has_s5tw = s5tw_df is not None and not s5tw_df.empty
+
+        if _has_s5th:
+            s5th_close = s5th_df['close'].reindex(df.index, method='ffill').fillna(50.0)
+            df['ST_S5TH'] = s5th_close
+        else:
+            df['ST_S5TH'] = 50.0
+            s5th_close = df['ST_S5TH']
+
+        if _has_s5tw:
+            s5tw_close = s5tw_df['close'].reindex(df.index, method='ffill').fillna(50.0)
+            df['ST_S5TW'] = s5tw_close
+        else:
+            df['ST_S5TW'] = 50.0
+            s5tw_close = df['ST_S5TW']
+
+        s5fi_vals = df['ST_S5FI']
+
+        # L21: CascadeSpread — gap between structural and tactical breadth
+        # High positive = healthy pullback (structure intact, tactical washed)
+        # Negative = bear rally trap (tactical bounced, structure broken)
+        df['ST_CascadeSpread'] = (s5th_close - s5tw_close) / 100.0
+
+        # L22: CascadeSpeed — 5-day rate of change of the mean of all 3
+        cascade_mean = (s5th_close + s5fi_vals + s5tw_close) / 3.0
+        df['ST_CascadeSpeed'] = (cascade_mean.diff(5) / 100.0).fillna(0.0)
+
+        # L23: BreadthParticipation — overall market participation (0-1)
+        df['ST_BreadthParticipation'] = cascade_mean / 100.0
+
+        # L24: BreadthAccord — how much the 3 layers agree (1.0 = perfect accord)
+        cascade_std = pd.concat(
+            [s5th_close, s5fi_vals, s5tw_close], axis=1
+        ).std(axis=1)
+        df['ST_BreadthAccord'] = (1.0 - cascade_std / 50.0).clip(0, 1).fillna(0.5)
+
+        # L25: CascadeState — categorical regime (0=HEALTH → 3=BEAR)
+        df['ST_CascadeState'] = np.select(
+            [
+                (s5tw_close >= 40) & (s5fi_vals >= 40) & (s5th_close >= 40),  # HEALTH
+                (s5tw_close < 40) & (s5fi_vals >= 50) & (s5th_close >= 60),   # PULLBACK
+                (s5tw_close < 30) & (s5fi_vals < 40) & (s5th_close >= 50),    # CORRECTION
+            ],
+            [0.0, 1.0, 2.0],
+            default=3.0,  # BEAR
+        )
+
+        # L26: NarrowMarket — SPY rising but breadth falling = fragile rally
+        spy_slope = df['close'].pct_change(20).fillna(0.0)
+        s5fi_slope = s5fi_vals.diff(20).fillna(0.0)
+        df['ST_NarrowMarket'] = np.where(
+            (spy_slope > 0.02) & (s5fi_slope < -5.0), 1.0, 0.0
+        )
+
+        # L27: BreadthMomentum — 5-day velocity of intermediate breadth
+        df['ST_BreadthMomentum'] = (s5fi_vals.diff(5) / 100.0).fillna(0.0)
+
+        # ── L28-L31: Sector Breadth (per-ticker sector context) ──
+        _has_sector = (
+            sector_breadth_fi_df is not None and not sector_breadth_fi_df.empty
+        )
+
+        if _has_sector:
+            sb_fi = sector_breadth_fi_df['close'].reindex(df.index, method='ffill').fillna(50.0)
+            sb_th_vals = (
+                sector_breadth_th_df['close'].reindex(df.index, method='ffill').fillna(50.0)
+                if sector_breadth_th_df is not None and not sector_breadth_th_df.empty
+                else pd.Series(50.0, index=df.index)
+            )
+            sb_tw_vals = (
+                sector_breadth_tw_df['close'].reindex(df.index, method='ffill').fillna(50.0)
+                if sector_breadth_tw_df is not None and not sector_breadth_tw_df.empty
+                else pd.Series(50.0, index=df.index)
+            )
+
+            # L28: SectorCascadeSpread — internal health of the ticker's sector
+            df['ST_SectorCascadeSpread'] = (sb_th_vals - sb_tw_vals) / 100.0
+
+            # L29: SectorBreadthRatio — sector vs market (>1 = sector leads)
+            df['ST_SectorBreadthRatio'] = (sb_fi / s5fi_vals.replace(0, 50.0)).clip(0, 3).fillna(1.0)
+
+            # L30: SectorConstituentContribution — breadth weighted by quantity
+            # Uses volume field from sector breadth bar (= n_constituents)
+            n_constituents = float(sector_breadth_fi_df['volume'].iloc[-1]) if 'volume' in sector_breadth_fi_df.columns else 50.0
+            constituent_weight = n_constituents / 506.0
+            df['ST_SectorConstituentContrib'] = (sb_fi / 100.0) * constituent_weight
+
+            # L31: SectorCapContribution — breadth weighted by market cap
+            df['ST_SectorCapContrib'] = (sb_fi / 100.0) * sector_cap_weight
+        else:
+            df['ST_SectorCascadeSpread'] = 0.0
+            df['ST_SectorBreadthRatio'] = 1.0
+            df['ST_SectorConstituentContrib'] = 0.0
+            df['ST_SectorCapContrib'] = 0.0
 
         logger.info(
             f"Sentiment composite features: "

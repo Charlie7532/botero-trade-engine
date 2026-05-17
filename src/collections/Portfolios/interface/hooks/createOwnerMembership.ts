@@ -25,7 +25,26 @@ export const createOwnerMembershipHook = handleAfterChangeHook({
         overrideAccess: true,
       })
     } catch (error) {
+      // Failing silently here leaves the portfolio doc in the DB with no owner
+      // membership, which makes the portfolio unreachable from the UI (the
+      // sidebar lists portfolios via memberships and the dashboard 404s).
+      // Best-effort rollback so the user sees a clean error and can retry.
       console.error('[Portfolios] Failed to create owner membership:', error)
+      try {
+        await req.payload.delete({
+          collection: 'portfolios',
+          id: doc.id,
+          overrideAccess: true,
+        })
+      } catch (cleanupError) {
+        console.error(
+          '[Portfolios] Failed to roll back portfolio after membership error:',
+          cleanupError,
+        )
+      }
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to create owner membership for portfolio.')
     }
 
     return doc

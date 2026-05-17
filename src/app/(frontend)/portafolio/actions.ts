@@ -37,7 +37,9 @@ export async function createPortfolio(
       user,
       overrideAccess: false,
     })
-    revalidatePath('/portafolio')
+    // Revalidate the layout so the sidebar dropdown picks up the new portfolio
+    // on the next render (the layout, not just /portafolio, owns the dropdown).
+    revalidatePath('/portafolio', 'layout')
     return { ok: true, id: created.id, slug: String(created.slug) }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create portfolio.'

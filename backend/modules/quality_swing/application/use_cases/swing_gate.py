@@ -101,6 +101,55 @@ class SwingGate:
             vol_label = "NORMAL"
         decision.vol_regime = vol_label
 
+        # ── Load Market Health snapshot (Persist-then-Read from Vault) ──
+        _mh_snapshot = None
+        _mh_sizing_mod = 1.0
+        try:
+            from backend.modules.market_health.domain.entities.health_snapshot import MarketHealthSnapshot
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            _store = TimescaleDataStore()
+            mh_raw = _store.load_mcp_latest("market/health", "MARKET")
+            _store.close()
+            if mh_raw:
+                _mh_snapshot = MarketHealthSnapshot.from_dict(mh_raw)
+
+                # Cascade gate: BEAR blocks accumulation, CORRECTION reduces
+                if _mh_snapshot.cascade_state == 3:  # BEAR
+                    _mh_sizing_mod = 0.0
+                    decision.alerts.append(
+                        f"MH_CASCADE_BEAR: Accumulation BLOCKED "
+                        f"(S5 participation={_mh_snapshot.breadth_participation:.1%})"
+                    )
+                elif _mh_snapshot.cascade_state == 2:  # CORRECTION
+                    _mh_sizing_mod = 0.5
+                    decision.alerts.append("MH_CASCADE_CORRECTION: Sizing 50%")
+
+                # F&G contrarian signals
+                if _mh_snapshot.fg_action == "CAPITULATION_BUY":
+                    _mh_sizing_mod = min(_mh_sizing_mod * 1.5, 1.0)
+                    decision.alerts.append(
+                        f"MH_FG_CAPITULATION: F&G={_mh_snapshot.fg_score:.0f} "
+                        f"rising — conviction boost"
+                    )
+                elif _mh_snapshot.fg_action == "FEAR_BUY":
+                    _mh_sizing_mod = min(_mh_sizing_mod * 1.2, 1.0)
+                    decision.alerts.append(
+                        f"MH_FG_FEAR_BUY: F&G={_mh_snapshot.fg_score:.0f} "
+                        f"stabilizing — contrarian accumulation"
+                    )
+                elif _mh_snapshot.fg_action == "GREED_CAUTION":
+                    _mh_sizing_mod *= 0.7
+                    decision.alerts.append(
+                        f"MH_FG_GREED: F&G={_mh_snapshot.fg_score:.0f} — reduce sizing"
+                    )
+                elif _mh_snapshot.fg_action == "EUPHORIA_SELL":
+                    _mh_sizing_mod *= 0.5
+                    decision.alerts.append(
+                        f"MH_FG_EUPHORIA: F&G={_mh_snapshot.fg_score:.0f} — trim mode"
+                    )
+        except Exception as e:
+            logger.debug(f"SwingGate: MH snapshot not available: {e}")
+
         # ── Compute fear bias (full entity for entry rules) ──
         from backend.modules.quality_swing.domain.rules.fear_level import compute_ticker_fear_level
         fear = compute_ticker_fear_level(ohlc, idx)
@@ -141,6 +190,14 @@ class SwingGate:
         )
 
         if should_accum:
+            # ── MH cascade BEAR blocks accumulation entirely ──
+            if _mh_sizing_mod <= 0.0:
+                decision.action = "HOLD"
+                decision.reasoning = (
+                    f"MH_BLOCK: {reason_accum} — blocked by breadth cascade BEAR"
+                )
+                return decision
+
             # ── Passport-scaled conviction ──
             if passport and passport.viable:
                 fear_label = rc_result.fear_label
@@ -168,6 +225,12 @@ class SwingGate:
             elif rc_result.conviction < -0.3:
                 conviction *= 0.70
                 reason_accum += f" | RC_WARNS({rc_result.conviction:+.2f})"
+
+            # ── MH sizing modifier (cascade + F&G) ──
+            if _mh_sizing_mod < 1.0:
+                pre_mh = conviction
+                conviction = round(conviction * _mh_sizing_mod, 2)
+                reason_accum += f" | MH_MOD: {pre_mh:.2f}→{conviction:.2f}"
 
             decision.action = "ACCUMULATE"
             decision.conviction = round(conviction, 2)

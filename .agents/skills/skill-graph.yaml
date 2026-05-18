@@ -97,6 +97,22 @@ personas:
     conflicts: []
     mcp_servers: [gurufocus, finnhub, finviz, unusual-whales]
 
+  market-health-intelligence:
+    department: SERVICE
+    crewai_role: injected
+    requires: [operational-purpose, clean-architecture, hypothesis-governance]
+    conflicts: []
+    mcp_servers: [fred, yahoo-finance]
+    module: market_health
+
+  vol-regime-intelligence:
+    department: SERVICE
+    crewai_role: injected
+    requires: [operational-purpose, clean-architecture, hypothesis-governance]
+    conflicts: []
+    mcp_servers: [yahoo-finance, fred]
+    module: volatility_regime
+
 # ─── Tool Layer ─────────────────────────────────────────────────
 tools:
   backtesting-trading-strategies:

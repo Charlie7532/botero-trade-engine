@@ -216,27 +216,72 @@ class QualityEntryGate:
         report.rvol = float(prices['Volume'].iloc[-1]) / avg_vol if avg_vol > 0 else 1.0
         report.rs_vs_spy = self._market_data.calc_rs_vs_spy(prices)
 
-        # ── Gate -1: Vol Regime (Dalio cycle intelligence) ──
-        # P1: Entry gate. CRISIS = block. ELEVATED = reduce sizing.
+        # ── Gate -1: Vol Regime + Market Health (Dalio cycle intelligence) ──
+        # P1: Entry gate. CRISIS = reduce sizing. ELEVATED = reduce sizing.
+        #     Breadth cascade BEAR = hard block.
         # Evidence Status: HYPOTHESIS — thresholds need calibration.
+        _mh_snapshot = None
+        try:
+            from backend.modules.market_health.domain.entities.health_snapshot import MarketHealthSnapshot
+            mh_raw = self._market_data.load_mcp_latest("market/health", "MARKET") if hasattr(self._market_data, "load_mcp_latest") else None
+            if not mh_raw:
+                from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+                _store = TimescaleDataStore()
+                mh_raw = _store.load_mcp_latest("market/health", "MARKET")
+                _store.close()
+            if mh_raw:
+                _mh_snapshot = MarketHealthSnapshot.from_dict(mh_raw)
+        except Exception as e:
+            logger.debug(f"QualityGate: MH snapshot load skipped: {e}")
+
         try:
             from backend.modules.entry_decision.domain.rules.vol_regime_gate import compute_vol_regime_snapshot
             from backend.modules.volatility_regime.domain.entities.vol_regime import Q_CRISIS, Q_ELEVATED, Q_COMPLACENT
 
-            # Compute VIX z-score for the classifier
-            vix_mean_90d = 20.0  # HYPOTHESIS — approximate long-run VIX mean
-            vix_std_90d = 5.0    # HYPOTHESIS — approximate VIX std
-            vix_z = (report.vix - vix_mean_90d) / vix_std_90d if vix_std_90d > 0 else 0.0
+            if _mh_snapshot:
+                # Use dynamic VIX z-score from MH snapshot (replaces hardcoded 20.0/5.0)
+                report.vol_regime_quality = _mh_snapshot.vol_regime_quality
+                report.vol_regime_speculative = _mh_snapshot.vol_regime_speculative
 
-            regime = compute_vol_regime_snapshot(prices, vix_zscore=vix_z)
-            report.vol_regime_quality = regime.quality_label
-            report.vol_regime_speculative = regime.speculative_label
+                # Breadth cascade gate
+                if _mh_snapshot.cascade_state == 3:  # BEAR
+                    _health_sizing *= 0.25
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"MH_CASCADE_BEAR: Breadth in BEAR state — sizing to {_health_sizing:.0%}. "
+                        f"S5 participation={_mh_snapshot.breadth_participation:.1%}"
+                    )
+                    logger.warning(f"QualityGate {ticker}: Breadth CASCADE BEAR — 25% sizing")
+                elif _mh_snapshot.cascade_state == 2:  # CORRECTION
+                    _health_sizing *= 0.5
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"MH_CASCADE_CORRECTION: Sizing to {_health_sizing:.0%}"
+                    )
+
+                # F&G contrarian boost
+                if _mh_snapshot.fg_action == "CAPITULATION_BUY":
+                    _health_sizing = min(1.0, _health_sizing * 1.5)
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"MH_FG_CAPITULATION: F&G={_mh_snapshot.fg_score:.0f} rising — "
+                        f"contrarian conviction boost to {_health_sizing:.0%}"
+                    )
+
+                # Still compute local vol regime for ticker-specific analysis
+                regime = compute_vol_regime_snapshot(
+                    prices, vix_zscore=0.0,
+                )
+            else:
+                # Fallback: hardcoded VIX z-score (legacy path)
+                vix_mean_90d = 20.0  # HYPOTHESIS — approximate long-run VIX mean
+                vix_std_90d = 5.0    # HYPOTHESIS — approximate VIX std
+                vix_z = (report.vix - vix_mean_90d) / vix_std_90d if vix_std_90d > 0 else 0.0
+                regime = compute_vol_regime_snapshot(prices, vix_zscore=vix_z)
+                report.vol_regime_quality = regime.quality_label
+                report.vol_regime_speculative = regime.speculative_label
 
             if regime.quality_regime == Q_CRISIS:
-                # Forensic audit (conv 1ac4da63): CRISIS showed Sharpe 2.849 (N=89).
-                # Hard block was potentially destroying alpha. Softened to 25% sizing
-                # to collect empirical validation data.
-                # Evidence Status: HYPOTHESIS — will validate after 50+ CRISIS entries.
                 _health_sizing *= 0.25
                 report.alerts = report.alerts or []
                 report.alerts.append(

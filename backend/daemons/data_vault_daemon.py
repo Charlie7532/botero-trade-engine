@@ -1176,6 +1176,25 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
+# 9b. MARKET HEALTH — 6D Convergence + F&G Contrarian (daily)
+# ═══════════════════════════════════════════════════════════════
+
+def vault_market_health(store: TimescaleDataStore) -> dict:
+    """Compute MarketHealthSnapshot from Vault data. Runs AFTER breadth + F&G + OHLCV.
+
+    All inputs read from Vault — zero external API calls.
+    Persists as mcp_snapshot("market/health", "MARKET").
+    """
+    try:
+        from backend.daemons.vault_providers.market_health_provider import MarketHealthProvider
+        provider = MarketHealthProvider()
+        return provider.run_full(store)
+    except Exception as e:
+        logger.warning(f"Market Health vault failed (non-critical): {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
 # 10. CBOE INDICES — SKEW + VVIX (daily, authoritative source)
 # ═══════════════════════════════════════════════════════════════
 
@@ -1549,6 +1568,9 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
     # ── Tier 3b: Breadth (MUST run AFTER ohlcv to use fresh closes) ──
     results["breadth"] = vault_breadth_indicators(store)
+
+    # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
+    results["market_health"] = vault_market_health(store)
 
     # ── Tier 4: Very heavy + rate limited ──
     results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)

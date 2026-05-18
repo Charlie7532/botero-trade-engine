@@ -94,14 +94,14 @@ class MarketDataFetcher(EntryMarketDataPort):
         except Exception as e:
             logger.warning(f"MarketDataFetcher: vault VIX error: {e}")
 
-        # Fallback: try the vix_close macro series
+        # Fallback: try VIX from ohlcv_bars (Rule 14 unified schema)
         try:
             from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             store = TimescaleDataStore()
-            df = store.load_macro("vix_close")
+            vix_df = store.load_bars("VIX", "1d")
             store.close()
-            if df is not None and not df.empty:
-                return float(df['value'].iloc[-1])
+            if vix_df is not None and not vix_df.empty:
+                return float(vix_df['close'].iloc[-1])
         except Exception:
             pass
 

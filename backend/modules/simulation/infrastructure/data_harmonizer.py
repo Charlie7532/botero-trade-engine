@@ -158,38 +158,40 @@ class DataHarmonizer(DataHarmonizerPort):
 
     def harmonize_macro(self, start: str, end: str) -> pd.DataFrame:
         """
-        Combine VIX + yields + breadth into unified macro features.
-        Output: vault/features/_MARKET/macro_1d.parquet
+        Combine VIX + yields into unified macro features.
+        Reads from ohlcv_bars (unified schema, Rule 14).
         """
-        vix_df = self.store.load_macro("vix")
-        yields_df = self.store.load_macro("yields")
-
-        if vix_df is None and yields_df is None:
-            return pd.DataFrame()
+        from datetime import date as _date
+        start_d = _date.fromisoformat(start) if start else None
+        end_d = _date.fromisoformat(end) if end else None
 
         frames = []
+
+        # VIX from ohlcv_bars
+        vix_df = self.store.load_bars("VIX", "1d", start=start_d, end=end_d)
         if vix_df is not None and not vix_df.empty:
-            vix_df = vix_df.rename(columns={"close": "vix_close"})
-            vix_df["vix_regime"] = vix_df["vix_close"].apply(
+            vix_close = vix_df[["close"]].rename(columns={"close": "vix_close"})
+            vix_close["vix_regime"] = vix_close["vix_close"].apply(
                 lambda v: "FEAR" if v > 25 else ("COMPLACENT" if v < 15 else "NORMAL")
             )
-            frames.append(vix_df[["vix_close", "vix_regime"]])
+            frames.append(vix_close)
 
-        if yields_df is not None and not yields_df.empty:
-            if "yield_10y" in yields_df.columns and "yield_3m" in yields_df.columns:
-                yields_df["yield_spread"] = yields_df["yield_10y"] - yields_df["yield_3m"]
-                yields_df["yield_curve_inverted"] = yields_df["yield_spread"] < 0
-                frames.append(yields_df[["yield_10y", "yield_3m", "yield_spread", "yield_curve_inverted"]])
+        # Yields from ohlcv_bars (TNX = 10Y, IRX = 3M)
+        tnx = self.store.load_bars("TNX", "1d", start=start_d, end=end_d)
+        irx = self.store.load_bars("IRX", "1d", start=start_d, end=end_d)
+        if tnx is not None and not tnx.empty and irx is not None and not irx.empty:
+            yields_df = pd.DataFrame({
+                "yield_10y": tnx["close"],
+                "yield_3m": irx["close"],
+            }).dropna()
+            yields_df["yield_spread"] = yields_df["yield_10y"] - yields_df["yield_3m"]
+            yields_df["yield_curve_inverted"] = yields_df["yield_spread"] < 0
+            frames.append(yields_df)
 
         if not frames:
             return pd.DataFrame()
 
         result = pd.concat(frames, axis=1).sort_index()
-        # Filter date range
-        if start:
-            result = result[result.index >= pd.Timestamp(start, tz="UTC")]
-        if end:
-            result = result[result.index <= pd.Timestamp(end, tz="UTC")]
         return result
 
     def build_ml_dataset(

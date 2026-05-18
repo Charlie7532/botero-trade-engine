@@ -53,19 +53,17 @@ class MarketHealthProvider:
             hyg = store.load_bars("HYG", "1d", start=start)
             tlt = store.load_bars("TLT", "1d", start=start)
 
-            # VIX bars (ticker may be ^VIX or CBOE:VIX)
-            vix = store.load_bars("^VIX", "1d", start=start)
-            if vix is None or vix.empty:
-                vix = store.load_bars("VIX", "1d", start=start)
+            # VIX from ohlcv_bars (canonical ticker: VIX)
+            vix = store.load_bars("VIX", "1d", start=start)
 
             # FRED macro snapshot
             fred = store.load_mcp_latest("macro/fred_real", "SUMMARY")
             if not fred:
                 fred = store.load_mcp_latest("macro/fred", "SUMMARY")
 
-            # Yields from macro_data
-            y10 = store.load_macro("yields_yield_10y", days=120)
-            y3m = store.load_macro("yields_yield_3m", days=120)
+            # Yields from ohlcv_bars (Rule 14 unified schema)
+            tnx_df = store.load_bars("TNX", "1d", start=start)
+            irx_df = store.load_bars("IRX", "1d", start=start)
 
             # Rotation snapshot (if available)
             rotation_phase = "UNKNOWN"
@@ -93,8 +91,8 @@ class MarketHealthProvider:
                 hyg_df=hyg,
                 tlt_df=tlt,
                 vix_df=vix,
-                yields_10y=y10,
-                yields_3m=y3m,
+                yields_10y=tnx_df,
+                yields_3m=irx_df,
                 fred_snapshot=fred,
                 rotation_phase=rotation_phase,
                 dominant_rotation=dominant_rotation,

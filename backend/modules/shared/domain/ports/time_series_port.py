@@ -35,15 +35,15 @@ class TimeSeriesPort(ABC):
     def bars_last_date(self, ticker: str, tf: str) -> Optional[date]:
         """Return the last available date for incremental downloads."""
 
-    # ── Macro Data ────────────────────────────────────────
+    # ── Macro Data (DEPRECATED — use save_bars/load_bars per Rule 14) ──
 
     @abstractmethod
     def save_macro(self, name: str, df: pd.DataFrame) -> None:
-        """Append macro data (VIX, yields). Deduplicates by (name, time)."""
+        """DEPRECATED: Use save_bars() with INDICATOR ticker instead. Will be removed."""
 
     @abstractmethod
     def load_macro(self, name: str) -> Optional[pd.DataFrame]:
-        """Load macro series by name. Returns None if not found."""
+        """DEPRECATED: Use load_bars() with INDICATOR ticker instead. Will be removed."""
 
     # ── MCP Snapshots ─────────────────────────────────────
 

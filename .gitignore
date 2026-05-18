@@ -48,3 +48,6 @@ graphify-out/
 
 # TradingView historical data exports (imported to vault, then deleted)
 DataTradingView/
+
+# MCP Server repos (cloned locally)
+.mcp-servers/

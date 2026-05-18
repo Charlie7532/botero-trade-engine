@@ -216,3 +216,33 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 13. **Vault-First data access.** Production modules (everything under `backend/modules/`) MUST read market data exclusively from `TimescaleDataStore` (Neon PostgreSQL). Direct calls to yfinance, requests, httpx, or any external API for market data are FORBIDDEN in modules. Only `backend/daemons/` and `backend/scripts/` may call external APIs. The Vault Daemon is the single writer; modules are readers only.
 
 - `backend/daemons/` — Delivery mechanism (daemon entry points). Not a Clean Architecture application layer — these are background runners equivalent to API routers.
+
+14. **Vault Data Schema — Single Table, Classified Tickers.**
+
+    **ALL time-series data lives in `market.ohlcv_bars`** — stocks, ETFs, and indicators alike. Use `store.load_bars(ticker, "1d")` as the universal read interface. Never create new tables for new data types.
+
+    **`market.ticker_metadata`** classifies each ticker. When adding a new ticker, you MUST upsert its metadata:
+
+    ```python
+    store.upsert_ticker_metadata(
+        ticker="MY_INDICATOR",
+        sector="Category",        # e.g. "Sentiment", "Volatility", "Options Flow"
+        industry="INDICATOR",     # asset_type: "STOCK", "ETF", or "INDICATOR"
+        market_cap_bucket=None,   # None for indicators, "MEGA"/"LARGE"/etc for stocks
+    )
+    ```
+
+    **Current Vault Registry:**
+
+    | Ticker | Type | Sector | Bars | Range |
+    |---|---|---|---:|---|
+    | `SPY` | ETF | Broad Market | 9,625 | 1993→2026 |
+    | `QQQ` | ETF | Technology | 8,100 | 1999→2026 |
+    | `VIX` | INDICATOR | Volatility | 17,504 | 1990→2026 |
+    | `VVIX` | INDICATOR | Volatility | 10,024 | 2006→2026 |
+    | `CBOE_PCR` | INDICATOR | Options Flow | 4,924 | 2006→2026 |
+    | `FG` | INDICATOR | Sentiment | 3,843 | 2011→2026 |
+
+    **`market.macro_data`** is LEGACY. It holds yields and breadth ADL as `(time, name, value)` scalars. New data should NOT go here — use `ohlcv_bars` with `industry='INDICATOR'` instead. Existing macro_data will be migrated over time.
+
+    **Indicators as pseudo-OHLCV:** For indicators with only a single daily value (e.g. F&G score), store as `open=high=low=close=value, volume=0`. For indicators with real intraday range (e.g. CBOE PCR), preserve the full OHLCV.

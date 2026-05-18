@@ -81,9 +81,26 @@ def main():
     pcr_df = load_from_vault("CBOE_PCR", start)
 
     fg = fg_df["close"].rename("fg")
+    fg.index = fg.index.normalize()
+    fg = fg.loc[~fg.index.duplicated(keep="last")]
+    
     spy = spy_df["close"].rename("spy")
-    qqq = qqq_df["close"].rename("qqq") if qqq_df is not None else None
-    pcr = pcr_df["close"].rename("pcr") if pcr_df is not None and not pcr_df.empty else None
+    spy.index = spy.index.normalize()
+    spy = spy.loc[~spy.index.duplicated(keep="last")]
+    
+    if qqq_df is not None:
+        qqq = qqq_df["close"].rename("qqq")
+        qqq.index = qqq.index.normalize()
+        qqq = qqq.loc[~qqq.index.duplicated(keep="last")]
+    else:
+        qqq = None
+        
+    if pcr_df is not None and not pcr_df.empty:
+        pcr = pcr_df["close"].rename("pcr")
+        pcr.index = pcr.index.normalize()
+        pcr = pcr.loc[~pcr.index.duplicated(keep="last")]
+    else:
+        pcr = None
 
     common = fg.index.intersection(spy.index)
     if qqq is not None:
@@ -100,7 +117,14 @@ def main():
         pcr = pcr.reindex(common)
 
     # Build master DataFrame
-    df = pd.DataFrame({"fg": fg, "spy": spy})
+    df = pd.DataFrame({
+        "fg": fg, 
+        "spy": spy,
+        "spy_open": spy_df["open"].reindex(common),
+        "spy_high": spy_df["high"].reindex(common),
+        "spy_low": spy_df["low"].reindex(common),
+        "spy_vol": spy_df["volume"].reindex(common)
+    })
     if qqq is not None:
         df["qqq"] = qqq
     if pcr is not None:
@@ -112,6 +136,14 @@ def main():
         if "qqq" in df.columns:
             df[f"qqq_ret{h}d"] = df["qqq"].pct_change(h).shift(-h) * 100
 
+    # Volume & Price Trend Features
+    df["spy_vol_50d"] = df["spy_vol"].rolling(50, min_periods=20).mean()
+    df["spy_vol_ratio"] = df["spy_vol"] / df["spy_vol_50d"]
+    
+    # 20d Highs and Lows (for trend structure)
+    df["spy_hh20"] = df["spy_high"] > df["spy_high"].rolling(20).max().shift(1)
+    df["spy_ll20"] = df["spy_low"] < df["spy_low"].rolling(20).min().shift(1)
+    
     # MDD and MFE (20d)
     df["spy_mdd20d"] = (df["spy"].rolling(20).min().shift(-20) / df["spy"] - 1) * 100
     df["spy_mfe20d"] = (df["spy"].rolling(20).max().shift(-20) / df["spy"] - 1) * 100
@@ -482,6 +514,8 @@ def main():
         store.close()
         if vix_df is not None and not vix_df.empty:
             vix = vix_df["close"].rename("vix")
+            vix.index = vix.index.normalize()
+            vix = vix.loc[~vix.index.duplicated(keep="last")]
             vix_common = df.index.intersection(vix.index)
             df_vix = df.reindex(vix_common).copy()
             df_vix["vix"] = vix.reindex(vix_common)
@@ -600,6 +634,91 @@ def main():
                 wr = (vals > 0).mean() * 100
                 t = calc_adjusted_tstat(vals, horizon=20)
                 print(f"    {label:35s}: N={len(vals):4d}  Ret20d={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+    # ═══════════════════════════════════════════════════════════
+    # 16. CAPITULATION EXHAUSTION (Volume Climax)
+    # ═══════════════════════════════════════════════════════════
+    print("\n" + "=" * 80)
+    print("16. CAPITULATION EXHAUSTION — Does extreme volume confirm bottoms?")
+    print("=" * 80)
+    # Filter for days in Fear/Extreme Fear
+    fear_zone = df[df["fg"] < 25].copy()
+    if not fear_zone.empty:
+        fear_zone["is_vol_climax"] = fear_zone["spy_vol_ratio"] > 1.5
+        fear_zone["is_vol_dry"] = fear_zone["spy_vol_ratio"] < 0.8
+        
+        print(f"  In F&G < 25 (Fear Zone):")
+        for label, mask in [
+            ("Volume Climax (Vol > 1.5x avg)", fear_zone["is_vol_climax"]),
+            ("Volume Normal", (fear_zone["spy_vol_ratio"] >= 0.8) & (fear_zone["spy_vol_ratio"] <= 1.5)),
+            ("Volume Dry-up (Vol < 0.8x avg)", fear_zone["is_vol_dry"]),
+        ]:
+            vals = fear_zone.loc[mask, "spy_ret20d"].dropna()
+            if len(vals) >= 3:
+                wr = (vals > 0).mean() * 100
+                t = calc_adjusted_tstat(vals, horizon=20)
+                print(f"    {label:35s}: N={len(vals):4d}  Ret20d={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+                
+    # ═══════════════════════════════════════════════════════════
+    # 17. ACCUMULATION vs DISTRIBUTION (Divergences)
+    # ═══════════════════════════════════════════════════════════
+    print("\n" + "=" * 80)
+    print("17. ACCUMULATION & DISTRIBUTION — Volume behavior vs price")
+    print("=" * 80)
+    # Up days vs Down days
+    df["is_up_day"] = df["spy"].pct_change(1) > 0
+    df["is_down_day"] = df["spy"].pct_change(1) < 0
+    
+    # Distribution: High volume down day near highs (F&G > 75)
+    dist_days = df[(df["fg"] > 75) & (df["is_down_day"]) & (df["spy_vol_ratio"] > 1.2)]
+    # Accumulation: High volume up day near lows (F&G < 25)
+    accum_days = df[(df["fg"] < 25) & (df["is_up_day"]) & (df["spy_vol_ratio"] > 1.2)]
+    
+    print("  Volume Signals (Ret20d):")
+    for label, subset in [
+        ("DISTRIBUTION (High Vol down day in GREED)", dist_days),
+        ("ACCUMULATION (High Vol up day in FEAR)", accum_days)
+    ]:
+        vals = subset["spy_ret20d"].dropna()
+        if len(vals) >= 3:
+            wr = (vals > 0).mean() * 100
+            t = calc_adjusted_tstat(vals, horizon=20)
+            print(f"    {label:45s}: N={len(vals):4d}  Ret={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+    # ═══════════════════════════════════════════════════════════
+    # 18. DOW THEORY PRICE PHASES
+    # ═══════════════════════════════════════════════════════════
+    print("\n" + "=" * 80)
+    print("18. DOW THEORY PHASES — Trend structure context")
+    print("=" * 80)
+    
+    # Higher Highs / Lower Lows over rolling 20d window
+    # Advancing: HH but no LL
+    # Declining: LL but no HH
+    hh_roll = df["spy_hh20"].rolling(20).sum()
+    ll_roll = df["spy_ll20"].rolling(20).sum()
+    
+    df["phase"] = "BASING/CHOP"
+    df.loc[(hh_roll > 0) & (ll_roll == 0), "phase"] = "ADVANCING"
+    df.loc[(ll_roll > 0) & (hh_roll == 0), "phase"] = "DECLINING"
+    df.loc[(ll_roll > 0) & (hh_roll > 0), "phase"] = "EXPANDING_VOLATILITY"
+
+    for phase in ["ADVANCING", "DECLINING", "BASING/CHOP", "EXPANDING_VOLATILITY"]:
+        phase_df = df[df["phase"] == phase]
+        if len(phase_df) < 5: continue
+        print(f"\n  Phase: {phase} (N={len(phase_df)} days)")
+        
+        for fg_label, mask in [
+            ("Fear (<25)", phase_df["fg"] < 25),
+            ("Neutral (25-75)", (phase_df["fg"] >= 25) & (phase_df["fg"] <= 75)),
+            ("Greed (>75)", phase_df["fg"] > 75)
+        ]:
+            vals = phase_df.loc[mask, "spy_ret20d"].dropna()
+            if len(vals) >= 3:
+                wr = (vals > 0).mean() * 100
+                t = calc_adjusted_tstat(vals, horizon=20)
+                print(f"    {fg_label:15s}: N={len(vals):4d}  Ret={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
 
     print("\n═══ Deep Forensics Complete ═══")
 

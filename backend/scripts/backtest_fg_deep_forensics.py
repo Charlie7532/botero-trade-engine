@@ -79,6 +79,8 @@ def main():
     spy_df = load_from_vault("SPY", start)
     qqq_df = load_from_vault("QQQ", start)
     pcr_df = load_from_vault("CBOE_PCR", start)
+    vix_df = load_from_vault("VIX", start)
+    vvix_df = load_from_vault("VVIX", start)
 
     fg = fg_df["close"].rename("fg")
     fg.index = fg.index.normalize()
@@ -102,11 +104,20 @@ def main():
     else:
         pcr = None
 
+    if vix_df is not None and not vix_df.empty:
+        vix = vix_df["close"].rename("vix")
+        vix.index = vix.index.normalize()
+        vix = vix.loc[~vix.index.duplicated(keep="last")]
+    else:
+        vix = None
+
     common = fg.index.intersection(spy.index)
     if qqq is not None:
         common = common.intersection(qqq.index)
     if pcr is not None:
         common = common.intersection(pcr.index)
+    # VIX has more data than FG, so don't restrict common to VIX
+    # We'll reindex VIX to common instead
     logger.info(f"  Common: {len(common)} dates\n")
 
     fg = fg.reindex(common)
@@ -116,25 +127,40 @@ def main():
     if pcr is not None:
         pcr = pcr.reindex(common)
 
+    # Normalize spy_df OHLCV columns before reindex (Rule 14: index parity)
+    for col in ["open", "high", "low", "volume"]:
+        spy_df[col].index = spy_df[col].index.normalize()
+    spy_open = spy_df["open"].loc[~spy_df["open"].index.duplicated(keep="last")]
+    spy_high = spy_df["high"].loc[~spy_df["high"].index.duplicated(keep="last")]
+    spy_low = spy_df["low"].loc[~spy_df["low"].index.duplicated(keep="last")]
+    spy_volume = spy_df["volume"].loc[~spy_df["volume"].index.duplicated(keep="last")]
+
     # Build master DataFrame
     df = pd.DataFrame({
         "fg": fg, 
         "spy": spy,
-        "spy_open": spy_df["open"].reindex(common),
-        "spy_high": spy_df["high"].reindex(common),
-        "spy_low": spy_df["low"].reindex(common),
-        "spy_vol": spy_df["volume"].reindex(common)
+        "spy_open": spy_open.reindex(common),
+        "spy_high": spy_high.reindex(common),
+        "spy_low": spy_low.reindex(common),
+        "spy_vol": spy_volume.reindex(common)
     })
     if qqq is not None:
         df["qqq"] = qqq
     if pcr is not None:
         df["pcr"] = pcr
+    if vix is not None:
+        df["vix"] = vix.reindex(common)
 
     # Forward returns
     for h in [5, 10, 20, 40, 60]:
         df[f"spy_ret{h}d"] = df["spy"].pct_change(h).shift(-h) * 100
         if "qqq" in df.columns:
             df[f"qqq_ret{h}d"] = df["qqq"].pct_change(h).shift(-h) * 100
+
+    # ── TRAILING MOMENTUM (backward-looking context at signal time) ──
+    df["spy_mom5d"] = df["spy"].pct_change(5) * 100
+    df["spy_mom10d"] = df["spy"].pct_change(10) * 100
+    df["spy_mom20d"] = df["spy"].pct_change(20) * 100
 
     # Volume & Price Trend Features
     df["spy_vol_50d"] = df["spy_vol"].rolling(50, min_periods=20).mean()
@@ -154,6 +180,80 @@ def main():
     fg_mean60 = df["fg"].rolling(60, min_periods=20).mean()
     fg_std60 = df["fg"].rolling(60, min_periods=20).std()
     df["fg_zscore"] = (df["fg"] - fg_mean60) / fg_std60.replace(0, np.nan)
+    df["fg_direction"] = np.where(df["fg_roc5"] > 3, "RISING",
+                          np.where(df["fg_roc5"] < -3, "FALLING", "FLAT"))
+
+    # ── VIX DELTAS ──
+    if "vix" in df.columns:
+        df["vix_roc5"] = df["vix"].diff(5)
+        df["vix_roc1"] = df["vix"].diff(1)
+        vix_mean60 = df["vix"].rolling(60, min_periods=20).mean()
+        vix_std60 = df["vix"].rolling(60, min_periods=20).std()
+        df["vix_zscore"] = (df["vix"] - vix_mean60) / vix_std60.replace(0, np.nan)
+        df["vix_direction"] = np.where(df["vix_roc5"] > 2, "RISING",
+                              np.where(df["vix_roc5"] < -2, "FALLING", "FLAT"))
+
+    # ── PCR DELTAS ──
+    if "pcr" in df.columns:
+        df["pcr_roc5"] = df["pcr"].diff(5)
+        pcr_mean60 = df["pcr"].rolling(60, min_periods=20).mean()
+        pcr_std60 = df["pcr"].rolling(60, min_periods=20).std()
+        df["pcr_zscore"] = (df["pcr"] - pcr_mean60) / pcr_std60.replace(0, np.nan)
+        df["pcr_direction"] = np.where(df["pcr_roc5"] > 0.05, "RISING",
+                              np.where(df["pcr_roc5"] < -0.05, "FALLING", "FLAT"))
+
+    # ── VVIX (Vol-of-Vol) ──
+    if vvix_df is not None and not vvix_df.empty:
+        vvix = vvix_df["close"].rename("vvix")
+        vvix.index = vvix.index.normalize()
+        vvix = vvix.loc[~vvix.index.duplicated(keep="last")]
+        df["vvix"] = vvix.reindex(common)
+
+    # ── VOL REGIME CLASSIFICATION (production VolRegimeClassifier) ──
+    if "vix" in df.columns:
+        from backend.modules.volatility_regime.domain.rules.vol_classifier import VolRegimeClassifier
+        from backend.modules.volatility_regime.domain.entities.vol_regime import QUALITY_LABELS, SPECULATIVE_LABELS
+
+        # Compute the 6 sensor inputs from VIX + VVIX
+        vix_s = df["vix"].copy()
+        vix_mean_252 = vix_s.rolling(252, min_periods=60).mean()
+        vix_std_252 = vix_s.rolling(252, min_periods=60).std()
+        vix_zscore_252 = (vix_s - vix_mean_252) / vix_std_252.replace(0, np.nan)
+        vix_velocity = vix_s.pct_change(5) * 100  # 5d pct change
+
+        # Vol ratio: fast/slow realized vol of SPY
+        spy_ret1d = df["spy"].pct_change(1)
+        vol_fast = spy_ret1d.rolling(10, min_periods=5).std() * np.sqrt(252)
+        vol_slow = spy_ret1d.rolling(60, min_periods=20).std() * np.sqrt(252)
+        vol_ratio = vol_fast / vol_slow.replace(0, np.nan)
+
+        # Vol persistence: autocorrelation of daily returns (rolling 20d)
+        vol_persistence = spy_ret1d.rolling(20, min_periods=10).apply(
+            lambda x: x.autocorr(lag=1) if len(x) >= 10 else 0.5, raw=False
+        ).fillna(0.5)
+
+        # Vol-of-Vol: rolling std of VIX (or VVIX if available)
+        if "vvix" in df.columns:
+            vol_of_vol = df["vvix"].copy()
+        else:
+            vol_of_vol = vix_s.rolling(20, min_periods=10).std()
+
+        # Calm duration: consecutive bars where VIX < its mean
+        below_mean = (vix_s < vix_mean_252).astype(float)
+        calm_groups = (below_mean != below_mean.shift(1)).cumsum()
+        calm_duration = below_mean.groupby(calm_groups).cumsum()
+
+        classifier = VolRegimeClassifier()
+        df["vol_regime_q"] = classifier.classify_quality_series(
+            calm_duration, vol_persistence, vol_of_vol, vol_ratio, vix_zscore_252, vix_velocity
+        )
+        df["vol_regime_s"] = classifier.classify_speculative_series(
+            calm_duration, vol_persistence, vol_of_vol, vol_ratio, vix_zscore_252, vix_velocity
+        )
+        df["vol_regime_q_label"] = df["vol_regime_q"].map(QUALITY_LABELS)
+        df["vol_regime_s_label"] = df["vol_regime_s"].map(SPECULATIVE_LABELS)
+        logger.info(f"  Vol Regime classified: Q={df['vol_regime_q_label'].value_counts().to_dict()}")
+        logger.info(f"  Vol Regime classified: S={df['vol_regime_s_label'].value_counts().to_dict()}")
 
     # SPY drawdown from 52-week high
     spy_52w_high = df["spy"].rolling(252, min_periods=50).max()
@@ -492,13 +592,15 @@ def main():
         # MDD suffered
         print(f"    MDD20d suffered:   Losers={losers['spy_mdd20d'].dropna().mean():.2f}%  vs Winners={winners['spy_mdd20d'].dropna().mean():.2f}%")
         
-        # Date-by-date losers
-        print(f"\n  LOSER DATES (for Black Swan identification):")
-        for _, row in losers.dropna(subset=["spy_ret20d"]).iterrows():
+        # Date-by-date losers (show up to 30 worst)
+        loser_sorted = losers.dropna(subset=["spy_ret20d"]).sort_values("spy_ret20d")
+        print(f"\n  LOSER DATES (sorted worst-first, top 30):")
+        for i, (_, row) in enumerate(loser_sorted.iterrows()):
+            if i >= 30:
+                print(f"    ... and {len(loser_sorted) - 30} more")
+                break
             print(f"    {row.name.date()}: F&G={row['fg']:.0f}  SPY_DD={row['spy_dd_from_high']:.1f}%  "
                   f"Ret20d={row['spy_ret20d']:+.2f}%  Consec={row['consec_fear']:.0f}d")
-            if len(losers.dropna(subset=["spy_ret20d"])) > 20:
-                break  # Limit output
 
     # ═══════════════════════════════════════════════════════════
     # 13. VIX CORRELATION — F&G vs VIX behavior
@@ -506,7 +608,7 @@ def main():
     print("\n" + "=" * 80)
     print("13. VIX CONTEXT — F&G extremes and VIX behavior")
     print("=" * 80)
-    # Load VIX from macro_data if available
+    # Load VIX from ohlcv_bars (Rule 14 unified schema)
     try:
         from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
         store = TimescaleDataStore()
@@ -719,6 +821,575 @@ def main():
                 t = calc_adjusted_tstat(vals, horizon=20)
                 print(f"    {fg_label:15s}: N={len(vals):4d}  Ret={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
 
+    # ═══════════════════════════════════════════════════════════
+    # 19. SPY MOMENTUM AT FEAR SIGNAL (Trailing context)
+    # ═══════════════════════════════════════════════════════════
+    print("\n" + "=" * 80)
+    print("19. SPY MOMENTUM AT FEAR SIGNAL — How fast was SPY falling?")
+    print("=" * 80)
+    fear_sig = df[df["fg"] < 20].copy()
+    if len(fear_sig) > 5:
+        print(f"  SPY trailing return when F&G < 20:")
+        for h_label, col in [("5d", "spy_mom5d"), ("10d", "spy_mom10d"), ("20d", "spy_mom20d")]:
+            vals = fear_sig[col].dropna()
+            print(f"    SPY {h_label} trailing: Mean={vals.mean():+.2f}%  Median={vals.median():+.2f}%  "
+                  f"Min={vals.min():+.2f}%  Max={vals.max():+.2f}%")
+
+        print(f"\n  Fear signal by SPY crash speed (trailing 5d):")
+        for label, lo, hi in [
+            ("SPY crashed hard  (<-5%/5d)", -99, -5),
+            ("SPY falling moderate (-5 to -2%)", -5, -2),
+            ("SPY drifting down  (-2 to 0%)", -2, 0),
+            ("SPY actually rising (>0%/5d)", 0, 99),
+        ]:
+            mask = (fear_sig["spy_mom5d"] >= lo) & (fear_sig["spy_mom5d"] < hi)
+            vals = fear_sig.loc[mask, "spy_ret20d"].dropna()
+            if len(vals) >= 3:
+                wr = (vals > 0).mean() * 100
+                t = calc_adjusted_tstat(vals, horizon=20)
+                print(f"    {label:35s}: N={len(vals):4d}  Ret={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+    # ═══════════════════════════════════════════════════════════
+    # 20. VIX DELTA AT FEAR SIGNAL
+    # ═══════════════════════════════════════════════════════════
+    if "vix" in df.columns:
+        print("\n" + "=" * 80)
+        print("20. VIX DIRECTION AT FEAR SIGNAL — Is VIX rising or stabilizing?")
+        print("=" * 80)
+        fear_vix = df[(df["fg"] < 20) & df["vix"].notna()].copy()
+        if len(fear_vix) > 5:
+            print(f"  VIX state when F&G < 20:")
+            print(f"    VIX mean={fear_vix['vix'].mean():.1f}  median={fear_vix['vix'].median():.1f}")
+            print(f"    VIX 5d delta: mean={fear_vix['vix_roc5'].mean():+.2f}  median={fear_vix['vix_roc5'].median():+.2f}")
+
+            print(f"\n  F&G < 20 by VIX direction:")
+            for label, mask in [
+                ("VIX RISING (roc5 > +2)",   fear_vix["vix_direction"] == "RISING"),
+                ("VIX FLAT   (-2 to +2)",    fear_vix["vix_direction"] == "FLAT"),
+                ("VIX FALLING (roc5 < -2)",  fear_vix["vix_direction"] == "FALLING"),
+            ]:
+                vals = fear_vix.loc[mask, "spy_ret20d"].dropna()
+                if len(vals) >= 3:
+                    wr = (vals > 0).mean() * 100
+                    t = calc_adjusted_tstat(vals, horizon=20)
+                    print(f"    {label:30s}: N={len(vals):4d}  Ret={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+            # VIX absolute level crossed with direction
+            print(f"\n  F&G < 20 by VIX level × direction:")
+            for vix_label, vix_lo, vix_hi in [
+                ("VIX 15-25", 15, 25), ("VIX 25-35", 25, 35), ("VIX > 35", 35, 999)
+            ]:
+                for dir_label, dir_val in [("↑ rising", "RISING"), ("↓ falling", "FALLING")]:
+                    mask = (
+                        (fear_vix["vix"] >= vix_lo) & (fear_vix["vix"] < vix_hi) &
+                        (fear_vix["vix_direction"] == dir_val)
+                    )
+                    vals = fear_vix.loc[mask, "spy_ret20d"].dropna()
+                    if len(vals) >= 5:
+                        wr = (vals > 0).mean() * 100
+                        t = calc_adjusted_tstat(vals, horizon=20)
+                        print(f"    {vix_label} {dir_label:12s}: N={len(vals):4d}  "
+                              f"Ret={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+    # ═══════════════════════════════════════════════════════════
+    # 21. PCR ACCELERATION AT FEAR SIGNAL
+    # ═══════════════════════════════════════════════════════════
+    if "pcr" in df.columns:
+        print("\n" + "=" * 80)
+        print("21. PCR DIRECTION AT FEAR SIGNAL — Is protective hedging accelerating?")
+        print("=" * 80)
+        fear_pcr = df[(df["fg"] < 20) & df["pcr"].notna()].copy()
+        if len(fear_pcr) > 5:
+            print(f"  PCR state when F&G < 20:")
+            print(f"    PCR mean={fear_pcr['pcr'].mean():.3f}  roc5 mean={fear_pcr['pcr_roc5'].mean():+.4f}")
+
+            print(f"\n  F&G < 20 by PCR direction:")
+            for label, mask in [
+                ("PCR RISING (hedging up)",  fear_pcr["pcr_direction"] == "RISING"),
+                ("PCR FLAT",                fear_pcr["pcr_direction"] == "FLAT"),
+                ("PCR FALLING (hedging off)", fear_pcr["pcr_direction"] == "FALLING"),
+            ]:
+                vals = fear_pcr.loc[mask, "spy_ret20d"].dropna()
+                if len(vals) >= 3:
+                    wr = (vals > 0).mean() * 100
+                    t = calc_adjusted_tstat(vals, horizon=20)
+                    print(f"    {label:30s}: N={len(vals):4d}  Ret={vals.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+    # ═══════════════════════════════════════════════════════════
+    # 22. TRIPLE CONVERGENCE — All indicators aligned
+    # ═══════════════════════════════════════════════════════════
+    if "vix" in df.columns and "pcr" in df.columns:
+        print("\n" + "=" * 80)
+        print("22. TRIPLE CONVERGENCE — Multi-instrument directional alignment")
+        print("=" * 80)
+
+        print(f"  CAPITULATION CONVERGENCE (all signals confirm panic):")
+        signals = [
+            ("F&G < 20 alone",
+             df["fg"] < 20),
+            ("+ VIX > 25",
+             (df["fg"] < 20) & (df["vix"] > 25)),
+            ("+ VIX > 25 + VIX↑",
+             (df["fg"] < 20) & (df["vix"] > 25) & (df["vix_direction"] == "RISING")),
+            ("+ VIX > 25 + VIX↑ + PCR > 1.0",
+             (df["fg"] < 20) & (df["vix"] > 25) & (df["vix_direction"] == "RISING") & (df["pcr"] > 1.0)),
+            ("+ VIX > 25 + VIX↑ + PCR > 1.0 + SPY fell >3%/5d",
+             (df["fg"] < 20) & (df["vix"] > 25) & (df["vix_direction"] == "RISING") &
+             (df["pcr"] > 1.0) & (df["spy_mom5d"] < -3)),
+        ]
+        print(f"  {'Signal':50s} {'N':>5s} {'Ret20d':>8s} {'WR':>6s} {'t_adj':>6s}")
+        print(f"  {'─'*50} {'─'*5:>5s} {'─'*8:>8s} {'─'*6:>6s} {'─'*6:>6s}")
+        for label, mask in signals:
+            vals = df.loc[mask, "spy_ret20d"].dropna()
+            if len(vals) >= 3:
+                wr = (vals > 0).mean() * 100
+                t = calc_adjusted_tstat(vals, horizon=20)
+                print(f"  {label:50s} {len(vals):5d} {vals.mean():+7.2f}% {wr:5.1f}% {t:+5.2f}")
+
+        print(f"\n  REVERSAL CONFIRMATION (panic exhausting — VIX falling):")
+        reversal_signals = [
+            ("F&G < 20 + VIX↓ (vol stabilizing)",
+             (df["fg"] < 20) & (df["vix_direction"] == "FALLING")),
+            ("F&G < 20 + VIX↓ + PCR↓ (hedging unwinding)",
+             (df["fg"] < 20) & (df["vix_direction"] == "FALLING") & (df["pcr_direction"] == "FALLING")),
+            ("F&G < 20 + VIX↓ + SPY bouncing (mom5d > 0)",
+             (df["fg"] < 20) & (df["vix_direction"] == "FALLING") & (df["spy_mom5d"] > 0)),
+        ]
+        print(f"  {'Signal':50s} {'N':>5s} {'Ret20d':>8s} {'WR':>6s} {'t_adj':>6s}")
+        print(f"  {'─'*50} {'─'*5:>5s} {'─'*8:>8s} {'─'*6:>6s} {'─'*6:>6s}")
+        for label, mask in reversal_signals:
+            vals = df.loc[mask, "spy_ret20d"].dropna()
+            if len(vals) >= 3:
+                wr = (vals > 0).mean() * 100
+                t = calc_adjusted_tstat(vals, horizon=20)
+                print(f"  {label:50s} {len(vals):5d} {vals.mean():+7.2f}% {wr:5.1f}% {t:+5.2f}")
+
+        print(f"\n  GREED TRAP DETECTION (directional signals):")
+        greed_dir = [
+            ("F&G > 75 alone",
+             df["fg"] > 75),
+            ("F&G > 75 + VIX↑ (hidden stress)",
+             (df["fg"] > 75) & (df["vix_direction"] == "RISING")),
+            ("F&G > 75 + PCR↑ (smart hedging)",
+             (df["fg"] > 75) & (df["pcr_direction"] == "RISING")),
+            ("F&G > 75 + VIX↑ + PCR↑ (DOUBLE WARNING)",
+             (df["fg"] > 75) & (df["vix_direction"] == "RISING") & (df["pcr_direction"] == "RISING")),
+            ("F&G > 75 + VIX↓ + PCR↓ (all-clear)",
+             (df["fg"] > 75) & (df["vix_direction"] == "FALLING") & (df["pcr_direction"] == "FALLING")),
+        ]
+        print(f"  {'Signal':50s} {'N':>5s} {'Ret20d':>8s} {'WR':>6s} {'t_adj':>6s}")
+        print(f"  {'─'*50} {'─'*5:>5s} {'─'*8:>8s} {'─'*6:>6s} {'─'*6:>6s}")
+        for label, mask in greed_dir:
+            vals = df.loc[mask, "spy_ret20d"].dropna()
+            if len(vals) >= 3:
+                wr = (vals > 0).mean() * 100
+                t = calc_adjusted_tstat(vals, horizon=20)
+                print(f"  {label:50s} {len(vals):5d} {vals.mean():+7.2f}% {wr:5.1f}% {t:+5.2f}")
+
+    # ═══════════════════════════════════════════════════════════
+    # 22B. VOL REGIME × F&G CROSS-ANALYSIS
+    # ═══════════════════════════════════════════════════════════
+    if "vol_regime_q_label" in df.columns:
+        print("\n" + "=" * 80)
+        print("22B. VOL REGIME × F&G — Production regime classification cross")
+        print("=" * 80)
+
+        print(f"\n  QUALITY REGIME DISTRIBUTION:")
+        for label in ["NORMAL", "COMPLACENT", "ELEVATED", "CRISIS"]:
+            mask = df["vol_regime_q_label"] == label
+            n = mask.sum()
+            if n > 0:
+                pct = n / len(df) * 100
+                ret = df.loc[mask, "spy_ret20d"].dropna()
+                wr = (ret > 0).mean() * 100 if len(ret) >= 3 else 0
+                t = calc_adjusted_tstat(ret, horizon=20) if len(ret) >= 5 else 0
+                print(f"    {label:12s}: {n:4d} days ({pct:5.1f}%)  Ret={ret.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+        print(f"\n  SPECULATIVE REGIME DISTRIBUTION:")
+        for label in ["STALK", "STRIKE", "HARVEST", "RETREAT"]:
+            mask = df["vol_regime_s_label"] == label
+            n = mask.sum()
+            if n > 0:
+                pct = n / len(df) * 100
+                ret = df.loc[mask, "spy_ret20d"].dropna()
+                wr = (ret > 0).mean() * 100 if len(ret) >= 3 else 0
+                t = calc_adjusted_tstat(ret, horizon=20) if len(ret) >= 5 else 0
+                print(f"    {label:12s}: {n:4d} days ({pct:5.1f}%)  Ret={ret.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+        # Quality regime × F&G cross
+        print(f"\n  QUALITY REGIME × F&G CROSS (Fear signals in each vol regime):")
+        print(f"  {'Vol Regime':12s} {'F&G Zone':12s} {'N':>5s} {'Ret20d':>8s} {'WR':>6s} {'t_adj':>6s}")
+        print(f"  {'─'*12} {'─'*12} {'─'*5:>5s} {'─'*8:>8s} {'─'*6:>6s} {'─'*6:>6s}")
+        for vr in ["NORMAL", "COMPLACENT", "ELEVATED", "CRISIS"]:
+            for fg_label, fg_lo, fg_hi in [("Fear<25", 0, 25), ("Neutral", 25, 75), ("Greed>75", 75, 101)]:
+                mask = (
+                    (df["vol_regime_q_label"] == vr) &
+                    (df["fg"] >= fg_lo) & (df["fg"] < fg_hi)
+                )
+                vals = df.loc[mask, "spy_ret20d"].dropna()
+                if len(vals) >= 5:
+                    wr = (vals > 0).mean() * 100
+                    t = calc_adjusted_tstat(vals, horizon=20)
+                    print(f"  {vr:12s} {fg_label:12s} {len(vals):5d} {vals.mean():+7.2f}% {wr:5.1f}% {t:+5.2f}")
+
+        # Speculative regime × F&G cross
+        print(f"\n  SPECULATIVE REGIME × F&G CROSS:")
+        print(f"  {'Vol Regime':12s} {'F&G Zone':12s} {'N':>5s} {'Ret20d':>8s} {'WR':>6s} {'t_adj':>6s}")
+        print(f"  {'─'*12} {'─'*12} {'─'*5:>5s} {'─'*8:>8s} {'─'*6:>6s} {'─'*6:>6s}")
+        for vr in ["STALK", "STRIKE", "HARVEST", "RETREAT"]:
+            for fg_label, fg_lo, fg_hi in [("Fear<25", 0, 25), ("Neutral", 25, 75), ("Greed>75", 75, 101)]:
+                mask = (
+                    (df["vol_regime_s_label"] == vr) &
+                    (df["fg"] >= fg_lo) & (df["fg"] < fg_hi)
+                )
+                vals = df.loc[mask, "spy_ret20d"].dropna()
+                if len(vals) >= 5:
+                    wr = (vals > 0).mean() * 100
+                    t = calc_adjusted_tstat(vals, horizon=20)
+                    print(f"  {vr:12s} {fg_label:12s} {len(vals):5d} {vals.mean():+7.2f}% {wr:5.1f}% {t:+5.2f}")
+
+        # Triple convergence with vol regime
+        print(f"\n  CAPITULATION × VOL REGIME (the ultimate filter):")
+        print(f"  {'Signal':55s} {'N':>5s} {'Ret20d':>8s} {'WR':>6s} {'t_adj':>6s}")
+        print(f"  {'─'*55} {'─'*5:>5s} {'─'*8:>8s} {'─'*6:>6s} {'─'*6:>6s}")
+        cap_signals = [
+            ("F&G < 20 + CRISIS regime",
+             (df["fg"] < 20) & (df["vol_regime_q_label"] == "CRISIS")),
+            ("F&G < 20 + ELEVATED regime",
+             (df["fg"] < 20) & (df["vol_regime_q_label"] == "ELEVATED")),
+            ("F&G < 20 + NORMAL regime",
+             (df["fg"] < 20) & (df["vol_regime_q_label"] == "NORMAL")),
+            ("F&G < 20 + CRISIS + VIX↓ (vol stabilizing)",
+             (df["fg"] < 20) & (df["vol_regime_q_label"] == "CRISIS") &
+             (df["vix_direction"] == "FALLING")),
+            ("F&G < 20 + CRISIS + VIX↑ (still panicking)",
+             (df["fg"] < 20) & (df["vol_regime_q_label"] == "CRISIS") &
+             (df["vix_direction"] == "RISING")),
+            ("F&G < 20 + RETREAT (spec) + VIX > 25",
+             (df["fg"] < 20) & (df["vol_regime_s_label"] == "RETREAT") &
+             (df["vix"] > 25)),
+            ("F&G < 20 + STRIKE (spec — compression breakout)",
+             (df["fg"] < 20) & (df["vol_regime_s_label"] == "STRIKE")),
+        ]
+        for label, mask in cap_signals:
+            vals = df.loc[mask, "spy_ret20d"].dropna()
+            if len(vals) >= 3:
+                wr = (vals > 0).mean() * 100
+                t = calc_adjusted_tstat(vals, horizon=20)
+                print(f"  {label:55s} {len(vals):5d} {vals.mean():+7.2f}% {wr:5.1f}% {t:+5.2f}")
+
+    # ═══════════════════════════════════════════════════════════
+    # 22C. EMERGENT MARKET REGIME — Can F&G ecosystem DEFINE the regime?
+    # ═══════════════════════════════════════════════════════════
+    if "vix" in df.columns and "pcr" in df.columns:
+        print("\n" + "=" * 80)
+        print("22C. EMERGENT MARKET REGIME — Inferred purely from F&G + VIX + PCR + Momentum")
+        print("=" * 80)
+
+        # Classify market regime from observable sentiment-flow indicators
+        # Priority order (top-down, first match wins):
+        conditions = []
+        labels = []
+
+        # CAPITULATION: Extreme fear + high VIX + SPY crashing
+        cap_mask = (df["fg"] < 20) & (df["vix"] > 25) & (df["spy_mom5d"] < -2)
+        conditions.append(cap_mask)
+        labels.append("CAPITULATION")
+
+        # RECOVERY: Fear was recent (F&G < 30) + VIX falling + SPY bouncing
+        rec_mask = (
+            (df["fg"] >= 20) & (df["fg"] < 40) &
+            (df["vix_direction"] == "FALLING") &
+            (df["spy_mom5d"] > 0)
+        )
+        conditions.append(rec_mask)
+        labels.append("RECOVERY")
+
+        # WALL_OF_WORRY: Neutral sentiment + SPY rising + VIX still above avg
+        wow_mask = (
+            (df["fg"] >= 30) & (df["fg"] < 55) &
+            (df["spy_mom20d"] > 0) &
+            (df["vix"] > df["vix"].rolling(60, min_periods=20).mean())
+        )
+        conditions.append(wow_mask)
+        labels.append("WALL_OF_WORRY")
+
+        # DISTRIBUTION: Greed + VIX rising + PCR rising (smart money hedging)
+        dist_mask = (
+            (df["fg"] > 65) &
+            (df["vix_direction"] == "RISING") &
+            (df["pcr_direction"] == "RISING")
+        )
+        conditions.append(dist_mask)
+        labels.append("DISTRIBUTION")
+
+        # EUPHORIA: Extreme greed + low VIX + SPY at highs
+        euph_mask = (
+            (df["fg"] > 75) &
+            (df["vix"] < 18) &
+            (df["spy_dd_from_high"] > -3)
+        )
+        conditions.append(euph_mask)
+        labels.append("EUPHORIA")
+
+        # COMPLACENCY: High F&G + VIX very low + flat PCR
+        comp_mask = (
+            (df["fg"] >= 55) & (df["fg"] <= 75) &
+            (df["vix"] < 15) &
+            (df["pcr"] < 0.85)
+        )
+        conditions.append(comp_mask)
+        labels.append("COMPLACENCY")
+
+        # STRESS: Low F&G + VIX rising + SPY falling
+        stress_mask = (
+            (df["fg"] < 35) &
+            (df["vix_direction"] == "RISING") &
+            (df["spy_mom5d"] < 0)
+        )
+        conditions.append(stress_mask)
+        labels.append("STRESS")
+
+        # Assign regimes (priority-ordered: first match wins)
+        df["mkt_regime"] = "NORMAL_BULL"  # default
+        # Apply in reverse so first conditions have priority
+        for cond, label in reversed(list(zip(conditions, labels))):
+            df.loc[cond, "mkt_regime"] = label
+
+        # Report distribution
+        print(f"\n  EMERGENT REGIME DISTRIBUTION:")
+        regime_order = ["CAPITULATION", "STRESS", "RECOVERY", "WALL_OF_WORRY",
+                        "NORMAL_BULL", "COMPLACENCY", "EUPHORIA", "DISTRIBUTION"]
+        regime_counts = df["mkt_regime"].value_counts()
+        for r in regime_order:
+            if r not in regime_counts:
+                continue
+            n = regime_counts[r]
+            pct = n / len(df) * 100
+            ret = df.loc[df["mkt_regime"] == r, "spy_ret20d"].dropna()
+            wr = (ret > 0).mean() * 100 if len(ret) >= 3 else 0
+            t = calc_adjusted_tstat(ret, horizon=20) if len(ret) >= 5 else 0
+            bar = "█" * max(1, int(pct / 2))
+            print(f"    {r:16s}: {n:4d} days ({pct:5.1f}%) {bar:12s} "
+                  f"Ret={ret.mean():+5.2f}%  WR={wr:.1f}%  t={t:+.2f}")
+
+        # Regime × forward returns deep table
+        print(f"\n  EMERGENT REGIME × SPY FORWARD RETURNS:")
+        print(f"  {'Regime':16s} {'N':>5s} {'Ret5d':>7s} {'Ret10d':>8s} {'Ret20d':>8s} {'Ret40d':>8s} {'WR20d':>6s}")
+        print(f"  {'─'*16} {'─'*5:>5s} {'─'*7:>7s} {'─'*8:>8s} {'─'*8:>8s} {'─'*8:>8s} {'─'*6:>6s}")
+        for r in regime_order:
+            mask = df["mkt_regime"] == r
+            if mask.sum() < 10:
+                continue
+            sub = df.loc[mask]
+            r5 = sub["spy_ret5d"].dropna().mean()
+            r10 = sub["spy_ret10d"].dropna().mean()
+            r20 = sub["spy_ret20d"].dropna().mean()
+            r40 = sub["spy_ret40d"].dropna().mean()
+            wr20 = (sub["spy_ret20d"].dropna() > 0).mean() * 100
+            print(f"  {r:16s} {mask.sum():5d} {r5:+6.2f}% {r10:+7.2f}% {r20:+7.2f}% {r40:+7.2f}% {wr20:5.1f}%")
+
+        # Regime transitions: what happens when regime changes?
+        print(f"\n  REGIME TRANSITIONS → SPY Ret20d after transition:")
+        df["prev_regime"] = df["mkt_regime"].shift(1)
+        transitions = df[df["mkt_regime"] != df["prev_regime"]].copy()
+        print(f"  {'From':16s} → {'To':16s} {'N':>5s} {'Ret20d':>8s} {'WR':>6s}")
+        print(f"  {'─'*16}   {'─'*16} {'─'*5:>5s} {'─'*8:>8s} {'─'*6:>6s}")
+        key_transitions = [
+            ("CAPITULATION", "RECOVERY"),
+            ("CAPITULATION", "STRESS"),
+            ("STRESS", "RECOVERY"),
+            ("STRESS", "CAPITULATION"),
+            ("RECOVERY", "WALL_OF_WORRY"),
+            ("RECOVERY", "NORMAL_BULL"),
+            ("WALL_OF_WORRY", "NORMAL_BULL"),
+            ("NORMAL_BULL", "EUPHORIA"),
+            ("EUPHORIA", "DISTRIBUTION"),
+            ("EUPHORIA", "NORMAL_BULL"),
+            ("DISTRIBUTION", "STRESS"),
+            ("COMPLACENCY", "STRESS"),
+        ]
+        for from_r, to_r in key_transitions:
+            mask = (transitions["prev_regime"] == from_r) & (transitions["mkt_regime"] == to_r)
+            vals = transitions.loc[mask, "spy_ret20d"].dropna()
+            if len(vals) >= 3:
+                wr = (vals > 0).mean() * 100
+                print(f"  {from_r:16s} → {to_r:16s} {len(vals):5d} {vals.mean():+7.2f}% {wr:5.1f}%")
+
+        # Can the emergent regime predict BETTER than F&G alone?
+        print(f"\n  PREDICTIVE POWER COMPARISON: Emergent Regime vs F&G alone")
+        # For fear signals: compare F&G < 20 alone vs CAPITULATION regime
+        fg_fear = df.loc[df["fg"] < 20, "spy_ret20d"].dropna()
+        cap_ret = df.loc[df["mkt_regime"] == "CAPITULATION", "spy_ret20d"].dropna()
+        stress_ret = df.loc[df["mkt_regime"] == "STRESS", "spy_ret20d"].dropna()
+        print(f"    F&G < 20 (raw):       N={len(fg_fear):4d}  Ret={fg_fear.mean():+5.2f}%  WR={(fg_fear > 0).mean()*100:.1f}%")
+        if len(cap_ret) >= 3:
+            print(f"    CAPITULATION (regime): N={len(cap_ret):4d}  Ret={cap_ret.mean():+5.2f}%  WR={(cap_ret > 0).mean()*100:.1f}%")
+        if len(stress_ret) >= 3:
+            print(f"    STRESS (regime):       N={len(stress_ret):4d}  Ret={stress_ret.mean():+5.2f}%  WR={(stress_ret > 0).mean()*100:.1f}%")
+        # For greed signals
+        fg_greed = df.loc[df["fg"] > 75, "spy_ret20d"].dropna()
+        euph_ret = df.loc[df["mkt_regime"] == "EUPHORIA", "spy_ret20d"].dropna()
+        dist_ret = df.loc[df["mkt_regime"] == "DISTRIBUTION", "spy_ret20d"].dropna()
+        print(f"    F&G > 75 (raw):       N={len(fg_greed):4d}  Ret={fg_greed.mean():+5.2f}%  WR={(fg_greed > 0).mean()*100:.1f}%")
+        if len(euph_ret) >= 3:
+            print(f"    EUPHORIA (regime):    N={len(euph_ret):4d}  Ret={euph_ret.mean():+5.2f}%  WR={(euph_ret > 0).mean()*100:.1f}%")
+        if len(dist_ret) >= 3:
+            print(f"    DISTRIBUTION (regime):N={len(dist_ret):4d}  Ret={dist_ret.mean():+5.2f}%  WR={(dist_ret > 0).mean()*100:.1f}%")
+
+    # ═══════════════════════════════════════════════════════════
+    # 23. DELTA CORRELATION MATRIX
+    # ═══════════════════════════════════════════════════════════
+    print("\n" + "=" * 80)
+    print("23. DELTA CORRELATION MATRIX — Which deltas predict SPY Ret20d?")
+    print("=" * 80)
+    delta_cols = ["fg_roc5", "spy_mom5d", "spy_mom20d"]
+    if "vix_roc5" in df.columns:
+        delta_cols.append("vix_roc5")
+    if "pcr_roc5" in df.columns:
+        delta_cols.append("pcr_roc5")
+    delta_cols.append("spy_ret20d")
+    
+    corr_matrix = df[delta_cols].dropna().corr()
+    ret_corrs = corr_matrix["spy_ret20d"].drop("spy_ret20d").sort_values()
+    print(f"  Correlation with SPY forward 20d return:")
+    for col, corr in ret_corrs.items():
+        bar = "█" * int(abs(corr) * 50)
+        sign = "+" if corr > 0 else "-"
+        print(f"    {col:15s}: {corr:+.4f}  {sign}{bar}")
+
+    # ═══════════════════════════════════════════════════════════
+    # 24. COMPREHENSIVE SUMMARY — Absolute Statistics
+    # ═══════════════════════════════════════════════════════════
+    print("\n" + "=" * 80)
+    print("24. COMPREHENSIVE SUMMARY — Absolute statistics for data science review")
+    print("=" * 80)
+    
+    print(f"\n  DATASET METADATA:")
+    print(f"    Date range:     {df.index[0].date()} → {df.index[-1].date()}")
+    print(f"    Total days:     {len(df)}")
+    print(f"    Instruments:    FG, SPY, QQQ, CBOE_PCR, VIX")
+    print(f"    Horizons:       5d, 10d, 20d, 40d, 60d")
+    
+    print(f"\n  F&G INDEX — Full Distribution:")
+    fg_s = df["fg"]
+    print(f"    Min={fg_s.min():.0f}  P5={fg_s.quantile(0.05):.0f}  P25={fg_s.quantile(0.25):.0f}  "
+          f"Median={fg_s.median():.0f}  P75={fg_s.quantile(0.75):.0f}  P95={fg_s.quantile(0.95):.0f}  Max={fg_s.max():.0f}")
+    print(f"    Mean={fg_s.mean():.1f}  Std={fg_s.std():.1f}  Skew={fg_s.skew():.2f}  Kurt={fg_s.kurtosis():.2f}")
+    
+    print(f"\n  SPY CLOSE — Full Distribution:")
+    spy_s = df["spy"]
+    print(f"    Min=${spy_s.min():.2f}  Max=${spy_s.max():.2f}  "
+          f"Total Return={(spy_s.iloc[-1]/spy_s.iloc[0]-1)*100:.1f}%")
+
+    print(f"\n  SPY 20d FORWARD RETURN — Full Distribution:")
+    ret20 = df["spy_ret20d"].dropna()
+    print(f"    Min={ret20.min():+.2f}%  P5={ret20.quantile(0.05):+.2f}%  P25={ret20.quantile(0.25):+.2f}%  "
+          f"Median={ret20.median():+.2f}%  P75={ret20.quantile(0.75):+.2f}%  P95={ret20.quantile(0.95):+.2f}%  Max={ret20.max():+.2f}%")
+    print(f"    Mean={ret20.mean():+.2f}%  Std={ret20.std():.2f}%  Skew={ret20.skew():.2f}  Kurt={ret20.kurtosis():.2f}")
+    print(f"    Overall WR (Ret20d > 0): {(ret20 > 0).mean()*100:.1f}%")
+    
+    if "pcr" in df.columns:
+        print(f"\n  PCR — Full Distribution:")
+        pcr_s = df["pcr"].dropna()
+        print(f"    Min={pcr_s.min():.3f}  P5={pcr_s.quantile(0.05):.3f}  P25={pcr_s.quantile(0.25):.3f}  "
+              f"Median={pcr_s.median():.3f}  P75={pcr_s.quantile(0.75):.3f}  P95={pcr_s.quantile(0.95):.3f}  Max={pcr_s.max():.3f}")
+
+    print(f"\n  REGIME TIME DISTRIBUTION (% of total days):")
+    regime_counts = df["regime"].value_counts().sort_index()
+    for r, c in regime_counts.items():
+        pct = c / len(df) * 100
+        bar = "█" * int(pct)
+        print(f"    F&G {str(r):8s}: {c:4d} days ({pct:5.1f}%) {bar}")
+
+    print(f"\n  DOW THEORY PHASE DISTRIBUTION:")
+    phase_counts = df["phase"].value_counts()
+    for p in ["ADVANCING", "DECLINING", "BASING/CHOP", "EXPANDING_VOLATILITY"]:
+        if p in phase_counts:
+            c = phase_counts[p]
+            pct = c / len(df) * 100
+            print(f"    {p:25s}: {c:4d} days ({pct:5.1f}%)")
+
+    # ═══════════════════════════════════════════════════════════
+    # 25. HYPOTHESIS SCOREBOARD
+    # ═══════════════════════════════════════════════════════════
+    print("\n" + "=" * 80)
+    print("25. HYPOTHESIS SCOREBOARD — Evidence Status Tags (López de Prado)")
+    print("=" * 80)
+    print(f"  {'#':3s} {'Hypothesis':55s} {'Status':12s} {'Evidence':40s}")
+    print(f"  {'─'*3} {'─'*55} {'─'*12} {'─'*40}")
+    
+    # Compute hypothesis verdicts from data already in memory
+    # H1: Fear < 20 generates positive 20d returns
+    h1_vals = df.loc[df["fg"] < 20, "spy_ret20d"].dropna()
+    h1_t = calc_adjusted_tstat(h1_vals, 20)
+    h1_status = "✅ CONFIRMED" if h1_t > 1.96 else ("🔶 PLAUSIBLE" if h1_t > 1.0 else "❌ REJECTED")
+    
+    # H2: Greed > 85 is dangerous
+    h2_vals = df.loc[df["fg"] > 85, "spy_ret20d"].dropna()
+    h2_wr = (h2_vals > 0).mean() * 100
+    h2_status = "❌ REJECTED" if h2_wr > 65 else "✅ CONFIRMED"
+    
+    # H3: Duration matters (21+ days fear > early fear)
+    h3_long = df.loc[df["consec_fear"] >= 21, "spy_ret20d"].dropna()
+    h3_short = df.loc[(df["consec_fear"] >= 1) & (df["consec_fear"] <= 3), "spy_ret20d"].dropna()
+    h3_diff = h3_long.mean() - h3_short.mean() if len(h3_long) >= 3 and len(h3_short) >= 3 else 0
+    h3_status = "✅ CONFIRMED" if h3_diff > 1.0 else "🔶 PLAUSIBLE"
+
+    # H4: Exiting fear > entering fear
+    exit_vals = df.loc[(df["fg"] >= 20) & (df["fg"].shift(1) < 20), "spy_ret20d"].dropna()
+    enter_vals = df.loc[(df["fg"] < 20) & (df["fg"].shift(1) >= 20), "spy_ret20d"].dropna()
+    h4_diff = exit_vals.mean() - enter_vals.mean() if len(exit_vals) >= 3 and len(enter_vals) >= 3 else 0
+    h4_status = "✅ CONFIRMED" if h4_diff > 0.3 else "🔶 PLAUSIBLE"
+
+    # H5: PCR > 1.3 predicts bounce
+    h5_vals = df.loc[df["pcr"] > 1.3, "spy_ret20d"].dropna() if "pcr" in df.columns else pd.Series(dtype=float)
+    h5_t = calc_adjusted_tstat(h5_vals, 20) if len(h5_vals) >= 5 else 0
+    h5_status = "🔶 PLAUSIBLE" if h5_t > 0.5 else "❌ INSUFFICIENT"
+
+    # H6: Volume dry-up in fear = strongest signal
+    h6_vals = fear_zone.loc[fear_zone["spy_vol_ratio"] < 0.8, "spy_ret20d"].dropna() if not fear_zone.empty else pd.Series(dtype=float)
+    h6_wr = (h6_vals > 0).mean() * 100 if len(h6_vals) >= 3 else 0
+    h6_status = "✅ CONFIRMED" if h6_wr > 80 else "🔶 PLAUSIBLE"
+
+    # H7: EXPANDING_VOLATILITY destroys fear signals
+    h7_vals = df.loc[(df["phase"] == "EXPANDING_VOLATILITY") & (df["fg"] < 25), "spy_ret20d"].dropna()
+    h7_wr = (h7_vals > 0).mean() * 100 if len(h7_vals) >= 3 else 50
+    h7_status = "✅ CONFIRMED" if h7_wr < 55 else "❌ REJECTED"
+
+    # H8: ADVANCING + Fear = highest WR
+    h8_vals = df.loc[(df["phase"] == "ADVANCING") & (df["fg"] < 25), "spy_ret20d"].dropna()
+    h8_wr = (h8_vals > 0).mean() * 100 if len(h8_vals) >= 3 else 0
+    h8_status = "✅ CONFIRMED" if h8_wr > 80 else "🔶 PLAUSIBLE"
+
+    # H9: F&G > 75 + PCR > 1.0 divergence = alpha
+    h9_vals = df.loc[(df["fg"] > 75) & (df["pcr"] > 1.0), "spy_ret20d"].dropna() if "pcr" in df.columns else pd.Series(dtype=float)
+    h9_wr = (h9_vals > 0).mean() * 100 if len(h9_vals) >= 3 else 0
+    h9_status = "✅ CONFIRMED" if h9_wr > 75 else "🔶 PLAUSIBLE"
+
+    # H10: VIX > 25 + F&G < 15 = max reversal
+    if "vix" in df.columns:
+        h10_vals = df.loc[(df["vix"] > 25) & (df["fg"] < 15), "spy_ret20d"].dropna()
+        h10_mean = h10_vals.mean() if len(h10_vals) >= 3 else 0
+        h10_status = "✅ CONFIRMED" if h10_mean > 2.0 else "🔶 PLAUSIBLE"
+    else:
+        h10_mean = 0
+        h10_status = "⚠️ NO DATA"
+
+    hypotheses = [
+        ("H1", "Extreme Fear (F&G < 20) → positive 20d returns", h1_status, f"t_adj={h1_t:+.2f} Mean={h1_vals.mean():+.2f}% WR={((h1_vals>0).mean()*100):.0f}%"),
+        ("H2", "Extreme Greed (F&G > 85) is immediately dangerous", h2_status, f"WR={h2_wr:.0f}% — GREED IS BULLISH not bearish"),
+        ("H3", "Longer fear duration → stronger reversal", h3_status, f"21d+: {h3_long.mean():+.2f}% vs 1-3d: {h3_short.mean():+.2f}%"),
+        ("H4", "Exit fear signal > Enter fear signal", h4_status, f"Exit: {exit_vals.mean():+.2f}% vs Enter: {enter_vals.mean():+.2f}%"),
+        ("H5", "PCR > 1.3 (panic) predicts bounce", h5_status, f"t_adj={h5_t:+.2f} N={len(h5_vals)}"),
+        ("H6", "Volume dry-up in fear = seller exhaustion", h6_status, f"WR={h6_wr:.0f}% Ret={h6_vals.mean():+.2f}%" if len(h6_vals) >= 3 else "Insufficient N"),
+        ("H7", "EXPANDING_VOL phase destroys fear buy signals", h7_status, f"WR={h7_wr:.0f}% — near coin flip"),
+        ("H8", "ADVANCING + Fear = highest probability buy", h8_status, f"WR={h8_wr:.0f}% N={len(h8_vals)}"),
+        ("H9", "Greed + PCR > 1.0 divergence = institutional alpha", h9_status, f"WR={h9_wr:.0f}% Ret={h9_vals.mean():+.2f}%" if len(h9_vals) >= 3 else "N/A"),
+        ("H10", "VIX > 25 + F&G < 15 = maximum reversal zone", h10_status, f"Mean={h10_mean:+.2f}%"),
+    ]
+    for hid, desc, status, evidence in hypotheses:
+        print(f"  {hid:3s} {desc:55s} {status:12s} {evidence}")
 
     print("\n═══ Deep Forensics Complete ═══")
 

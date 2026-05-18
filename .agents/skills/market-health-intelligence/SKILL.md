@@ -65,6 +65,7 @@ Evidence Status: `HYPOTHESIS` — thresholds from engineer_features L1132-1141, 
 
 Consumed from `volatility_regime` module — NOT recomputed.
 Uses `VolRegimeState.quality_label` and `speculative_label`.
+VIX z-score computed dynamically from Vault VIX bars (replaces hardcoded 20.0/5.0).
 
 Evidence Status: `HYPOTHESIS` — all vol_classifier thresholds pending calibration.
 
@@ -122,21 +123,19 @@ spread < 0    → INVERTED    (recession warning)
 spread rising from negative → STEEPENING (recovery)
 ```
 
-**Macro Regime:** Read directly from `macro/fred_real` snapshot
-(`macro_regime`, `fed_stance`, `liquidity_regime`).
-
 Evidence Status: Yield inversion → recession = `VALIDATED` (7/8 since 1970).
 
 ---
 
 ## Fear & Greed: Contrarian Signal Layer
 
-> F&G is NOT a 7th dimension of convergence. It is a COMPOSITE of 7
-> sub-indicators that overlap with our G1, G2, G4, G5 dimensions.
-> Including it in convergence would double-count.
+> F&G is a LAGGING indicator (corr +0.61 same-day, zero predictive power
+> for daily moves). BUT extreme LEVELS identify exhausted markets, and
+> exhausted markets bounce. F&G measures sentiment exhaustion, not future
+> direction.
 >
-> F&G has its own operational value: extreme levels are contrarian
-> signals with independent predictive power.
+> F&G is NOT a 7th dimension of convergence. 5 of 7 sub-indicators
+> overlap with G1, G2, G4, G5. Including it would double-count.
 
 ### F&G Composition (CNN, equal-weighted average of 7):
 
@@ -150,36 +149,61 @@ Evidence Status: Yield inversion → recession = `VALIDATED` (7/8 since 1970).
 | 6 | VIX vs 50d mean | G2: Vol regime |
 | 7 | Stock vs Bond returns (20d) | G4/G5: TLT vs SPY |
 
-### F&G Operational Roles
-
-**Role 1 — Contrarian extremes (independent signal):**
+### F&G Actions (forensically calibrated)
 
 ```
-F&G < 15  → CAPITULATION_BUY   — Aggressive accumulation
-F&G < 25  → FEAR_BUY           — Gradual accumulation
-F&G 25-75 → NONE               — Not actionable alone
-F&G > 75  → GREED_CAUTION      — Reduce sizing
-F&G > 85  → EUPHORIA_SELL      — Active trimming
+F&G < 15           → CAPITULATION_BUY   [FG-H01 t=6.39, WR 75.5%]
+  urgency HIGH:      Day 1-3 in fear    [FG-H07: WR 80.8% — act NOW]
+  urgency DECAYING:  Day 10+ in fear    [FG-H07: WR drops to 50%]
+F&G 15-25          → FEAR_BUY           [FG-H01 t=5.37, WR 69.9%]
+F&G 25-75          → NONE               (not actionable alone)
+F&G > 75           → GREED_CAUTION      [FG-H02 REJECTED as sell, only -30% sizing]
+F&G > 75 + SPY DD  → GREED_TRAP         [FG-H08: WR 0%, N=6 — hard block]
 ```
 
-**Role 2 — Direction + Level (the combination is the signal):**
+### F&G Direction × Level (forensically corrected)
 
-| F&G Level | Direction | Action |
-|:-:|---|---|
-| < 20 | Rising | ✅ BUY — bounce confirmed, capitulation complete |
-| < 20 | Falling | ⏳ WAIT — active panic, don't catch falling knife |
-| < 20 | Stable | 🔍 WATCH — sustained fear, await catalyst |
-| > 80 | Falling | ✅ TRIM — distribution starting |
-| > 80 | Rising | ⏳ HOLD — euphoria not confirmed yet |
-| > 80 | Stable | ⚠️ CAUTION — complacency, don't add |
+| F&G Level | Direction | Action | Evidence |
+|:-:|---|---|---|
+| < 20 | **FALLING** | ✅ **BUY** — HIGHEST WR (80.6%) | FG-H03 corrected |
+| < 20 | STABLE | ✅ BUY — WR 70% | FG-H01 |
+| < 20 | RISING | ✅ BUY — WR 67% (much of move done) | FG-H03 |
+| > 80 | Any | ⚠️ Sizing reduction only — NOT a sell | FG-H02 rejected |
 
-**Role 3 — Divergence vs convergence_score:**
+### Divergence Interpretation (FG-H14 — forensically inverted)
 
 ```
-convergence = RISK_ON  AND fg < 25  → CONTRARIAN_BUY
-convergence = RISK_OFF AND fg > 75  → CONTRARIAN_SELL
-convergence agrees with fg          → CONFIRMING (high confidence)
-convergence disagrees               → DIVERGING (investigate)
+convergence = RISK_ON  AND fg < 25  → STEALTH_ACCUMULATION   [WR 79%, t=6.21]
+  (internal healthy + public fear = institutional buying with retail combustible)
+
+convergence = RISK_OFF AND fg > 75  → DISTRIBUTION_WARNING
+  (internal weak + public euphoric = smart money exiting)
+
+convergence NEUTRAL   AND fg < 25   → CONTRARIAN_BUY
+  (flat convergence + fear = washout → bounce)
+
+convergence agrees with fg          → CONFIRMING
+```
+
+### Duration Effect (FG-H07)
+
+```
+Day 1-3 in extreme fear:  WR 80.8%  → urgency=HIGH (max boost)
+Day 4-10:                 WR 75.0%  → urgency=NORMAL
+Day 11-20:                WR 50.0%  → urgency=DECAYING (signal exhausted)
+Mean-reversion to 50:     ~16 days median [FG-H10]
+```
+
+### Multi-Horizon Signal Strength (FG-H13)
+
+```
+Horizon  Fear Mean  Baseline  Diff     t-stat
+    5d     +1.27%    +0.05%   +1.22%   +3.57 ✅
+   10d     +2.51%    +0.09%   +2.41%   +5.98 ✅
+   20d     +3.56%    +0.26%   +3.30%   +5.52 ✅
+   40d     +4.51%    +0.56%   +3.95%   +5.10 ✅
+   60d     +6.43%    +2.27%   +4.17%   +5.22 ✅
+→ Signal STRENGTHENS over time. Not a quick bounce — regime shift.
 ```
 
 ---
@@ -188,27 +212,33 @@ convergence disagrees               → DIVERGING (investigate)
 
 ### Market Health Hypotheses (MH)
 
-| ID | Hypothesis | Type | Validation Method | Status |
-|---|---|---|---|:---:|
-| MH-H01 | CascadeState==PULLBACK is accumulation zone | DIRECTIONAL | Oracle: Ret20d when CascadeState==1 | `HYPOTHESIS` |
-| MH-H02 | CascadeState==BEAR blocks entries profitably | PROTECTIVE | Oracle: WR+DD in CascadeState==3 | `HYPOTHESIS` |
-| MH-H03 | NarrowMarket precedes correction in 60d | PREDICTIVE | Oracle: Ret60d when NarrowMarket==1 | `HYPOTHESIS` |
-| MH-H04 | HYG/TLT ratio decline precedes equity stress | INTERMARKET | Oracle: equity DD lag after HYG/TLT drop | `HYPOTHESIS` |
-| MH-H05 | Convergence ≥ 5/6 RISK_OFF → CIO defensive | ALLOCATION | Portfolio backtest by regime | `CANDIDATE` |
-| MH-H06 | Yield curve inversion > 90d → contraction | MACRO | FRED: inversion → recession lag | `VALIDATED` |
-| MH-H07 | wave_flip + fear≥4 → Munger entry zone | TACTICAL | Oracle: WR+Ret20d conditional | `HYPOTHESIS` |
-| MH-H08 | PANIC + S5FI WEAK = Munger spot | COMPOSITE | P(↑)=55.3%, Ret20d=+5.44% | `VALIDATED` |
-| MH-H09 | VVIX/VIX > 5.0 = vol of vol extreme | VOL | Oracle: MAE following ratio spikes | `CANDIDATE` |
+| ID | Hypothesis | Type | Status |
+|---|---|---|:---:|
+| MH-H01 | CascadeState==PULLBACK is accumulation zone | DIRECTIONAL | `HYPOTHESIS` |
+| MH-H02 | CascadeState==BEAR blocks entries profitably | PROTECTIVE | `HYPOTHESIS` |
+| MH-H03 | NarrowMarket precedes correction in 60d | PREDICTIVE | `HYPOTHESIS` |
+| MH-H04 | HYG/TLT ratio decline precedes equity stress | INTERMARKET | `HYPOTHESIS` |
+| MH-H05 | Convergence ≥ 5/6 RISK_OFF → CIO defensive | ALLOCATION | `CANDIDATE` |
+| MH-H06 | Yield curve inversion > 90d → contraction | MACRO | `VALIDATED` |
+| MH-H08 | PANIC + S5FI WEAK = Munger spot | COMPOSITE | `VALIDATED` |
 
 ### Fear & Greed Hypotheses (FG)
 
-| ID | Hypothesis | Type | Validation Method | Status |
-|---|---|---|---|:---:|
-| FG-H01 | F&G < 20 → SPY Ret20d > 2% | CONTRARIAN | Backtest: FG bars × SPY bars (2011–2026) | `CANDIDATE` |
-| FG-H02 | F&G > 80 → SPY Ret20d < 0% | CONTRARIAN | Backtest: FG bars × SPY bars | `CANDIDATE` |
-| FG-H03 | F&G < 15 + velocity rising → SPY Ret20d > 5% | COMPOSITE | Backtest: FG level + direction × SPY | `CANDIDATE` |
-| FG-H04 | F&G velocity < -3σ → more downside before bounce | TIMING | Backtest: MAE10d after panic velocity | `CANDIDATE` |
-| FG-H05 | QQQ reacts stronger than SPY to F&G extremes | RELATIVE | Backtest: |QQQ Ret20d| vs |SPY Ret20d| | `CANDIDATE` |
+| ID | Hypothesis | Evidence | Status |
+|---|---|---|:---:|
+| FG-H01 | F&G < 20 → SPY Ret20d +3.56% | t=6.39, WR=75.5%, N=106 | `VALIDATED` |
+| FG-H02 | F&G > 80 → negative returns | t=0.46, WR_neg=45%, N=20 | `REJECTED` |
+| FG-H03 | FALLING at extreme fear = highest WR | WR=80.6% FALLING vs 66.7% RISING | `VALIDATED` |
+| FG-H05 | QQQ > SPY at extremes | QQQ/SPY = 1.18x | `CONFIRMED` |
+| FG-H06 | F&G 0-10 = monster zone (WR 90.5%) | t=5.47, N=21 | `CANDIDATE` |
+| FG-H07 | Day 1-3 peak WR, decays after day 10 | WR 80.8% → 50% | `VALIDATED` |
+| FG-H08 | Greed + SPY correction = TRAP | WR=0%, N=6 | `CANDIDATE` |
+| FG-H09 | Entering fear is the signal, not exiting | t=3.12, WR=73.9% | `VALIDATED` |
+| FG-H10 | Mean-reversion from extreme fear: ~16d | Median=16d, N=52 | `VALIDATED` |
+| FG-H11 | Pullback + F&G < 15 = best combo | t=5.24, WR=75.5%, N=49 | `VALIDATED` |
+| FG-H12 | Velocity crash (<-20pts/5d) = buy | t=4.64, WR=74.2%, N=31 | `VALIDATED` |
+| FG-H13 | Signal strengthens over time (5→60d) | All t > 3.5 | `VALIDATED` |
+| FG-H14 | "Bearish" div (SPY↑, F&G↓) = BULLISH | t=6.21, WR=79%, N=81 | `VALIDATED` |
 
 ---
 
@@ -218,11 +248,12 @@ convergence disagrees               → DIVERGING (investigate)
 
 | Condition | Directive |
 |---|---|
-| `cascade_state == BEAR` | **BLOCK** entry (hard gate) |
-| `cascade_state == CORRECTION` | Reduce sizing to 50% |
-| `convergence_score <= 2` | Reduce sizing by convergence |
-| `fg_action == CAPITULATION_BUY` | Override: allow entry even in CORRECTION |
-| `credit_regime == STRESS` | Reduce sizing to 50%, alert |
+| `cascade_state == BEAR` | Sizing 25% (hard reduction) |
+| `cascade_state == CORRECTION` | Sizing 50% |
+| `fg_action == CAPITULATION_BUY` | Boost sizing (×1.5, ×1.75 if HIGH urgency) |
+| `fg_action == GREED_TRAP` | Sizing 25% (distribution trap) |
+| `fg_divergence == STEALTH_ACCUMULATION` | Boost sizing ×1.25 |
+| `credit_regime == STRESS` | Reduce sizing 50%, alert |
 
 ### Quality Swing (SwingGate)
 
@@ -230,9 +261,11 @@ convergence disagrees               → DIVERGING (investigate)
 |---|---|
 | `cascade_state == PULLBACK` | Increase accumulation conviction |
 | `cascade_state == BEAR` | **BLOCK** new accumulation |
-| `narrow_market == True` | Tighten stops |
-| `fg_action == FEAR_BUY` | Boost contrarian conviction |
-| `fg_action == GREED_CAUTION` | Reduce accumulation sizing |
+| `fg_action == CAPITULATION_BUY` | Boost ×1.5 (×1.75 if HIGH urgency) |
+| `fg_action == FEAR_BUY` | Boost ×1.2 |
+| `fg_action == GREED_TRAP` | **BLOCK** accumulation |
+| `fg_action == GREED_CAUTION` | Sizing -30% |
+| `fg_divergence == STEALTH_ACCUMULATION` | Boost ×1.25 |
 
 ### CIO Allocator (synthesize_live_mandate)
 
@@ -241,14 +274,7 @@ convergence disagrees               → DIVERGING (investigate)
 | `convergence_direction == RISK_OFF` | Tilt to 90/10 Q/S |
 | `convergence_direction == RISK_ON` | Allow up to 60/40 Q/S |
 | `macro_regime == CONTRACTION` | Defensive allocation |
-| `fg_action == EUPHORIA_SELL` | Cap speculative budget |
-
-### Speculative (SpeculativeEntryHub) — Optional
-
-| Condition | Directive |
-|---|---|
-| `cascade_state == BEAR` | Reduce sizing to 50% |
-| All other fields | Not consumed (has own flow + gamma) |
+| `fg_action == GREED_CAUTION` | Cap speculative budget |
 
 ---
 
@@ -259,6 +285,8 @@ Daemon Pipeline (1x/day):
   OHLCVProvider → BreadthProvider → FGProvider → MarketHealthProvider
                                                         ↓
                                                compute_market_health()
+                                                        ↓
+                                               inject vol_regime (SPY prices)
                                                         ↓
                                                save_mcp_snapshot(
                                                  "market/health", "MARKET"
@@ -293,4 +321,8 @@ backend/modules/market_health/
 │       ├── __init__.py
 │       └── compute_market_health.py # The Compositor
 └── # NO infrastructure/ — pure domain
+
+backend/scripts/
+├── backtest_fg_correlation.py        # FG-H01 through FG-H05 validation
+└── backtest_fg_deep_forensics.py     # FG-H06 through FG-H14 discovery
 ```

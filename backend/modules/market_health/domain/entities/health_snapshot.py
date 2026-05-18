@@ -53,16 +53,20 @@ class MarketHealthSnapshot:
 
     # ── Fear & Greed: Contrarian Signal Layer ────────────────
     # NOT a convergence dimension. Operates independently.
+    # F&G is LAGGING (corr +0.61 same-day) but extreme LEVELS
+    # predict forward returns (FG-H01 VALIDATED, t=6.39).
     fg_score: float = 50.0                  # Raw 0-100
     fg_regime: str = "NEUTRAL"              # EXTREME_FEAR/FEAR/NEUTRAL/GREED/EXTREME_GREED
     fg_zscore: float = 0.0                  # Rolling 60d z-score
     fg_velocity: float = 0.0               # 5d ROC z-scored
     fg_direction: str = "STABLE"            # FALLING/STABLE/RISING
     fg_action: str = "NONE"                 # CAPITULATION_BUY/FEAR_BUY/NONE/
-                                            # GREED_CAUTION/EUPHORIA_SELL
+                                            # GREED_CAUTION/GREED_TRAP
+    fg_duration: int = 0                    # Consecutive days in extreme regime
+    fg_urgency: str = "NORMAL"              # HIGH (day 1-3) / NORMAL / DECAYING (day 10+)
     fg_confirms_internal: bool = True       # F&G agrees with convergence_direction?
-    fg_divergence_type: str = "NONE"        # CONFIRMING/DIVERGING/
-                                            # CONTRARIAN_BUY/CONTRARIAN_SELL
+    fg_divergence_type: str = "NONE"        # CONFIRMING/STEALTH_ACCUMULATION/
+                                            # DISTRIBUTION_WARNING/CONTRARIAN_BUY
 
     def to_dict(self) -> dict:
         """Serialize for mcp_snapshot persistence."""

@@ -143,15 +143,21 @@ def compute_market_health(
     # ── F&G Contrarian Signal Layer ──────────────────────────
     if fg_df is not None and not fg_df.empty:
         fg_history = fg_df["close"].tolist()
-        fg_analytics = compute_fg_analytics(fg_history)
+        # FG-H08: pass SPY drawdown for greed+correction trap detection
+        fg_analytics = compute_fg_analytics(
+            fg_history,
+            spy_dd_pct=spy_pct_change_20d * 100 if spy_pct_change_20d < 0 else 0.0,
+        )
         snap.fg_score = fg_analytics["fg_score"]
         snap.fg_regime = fg_analytics["fg_regime"]
         snap.fg_zscore = fg_analytics["fg_zscore"]
         snap.fg_velocity = fg_analytics["fg_velocity"]
         snap.fg_direction = fg_analytics["fg_direction"]
         snap.fg_action = fg_analytics["fg_action"]
+        snap.fg_duration = fg_analytics["fg_duration"]
+        snap.fg_urgency = fg_analytics["fg_urgency"]
 
-        # Divergence detection
+        # Divergence detection (FG-H14 corrected interpretation)
         snap.fg_confirms_internal, snap.fg_divergence_type = compute_fg_divergence(
             snap.fg_regime, snap.convergence_direction,
         )

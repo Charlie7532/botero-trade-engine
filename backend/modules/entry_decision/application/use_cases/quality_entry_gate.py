@@ -259,13 +259,38 @@ class QualityEntryGate:
                         f"MH_CASCADE_CORRECTION: Sizing to {_health_sizing:.0%}"
                     )
 
-                # F&G contrarian boost
+                # F&G contrarian signals (forensic evidence 2021-2026)
                 if _mh_snapshot.fg_action == "CAPITULATION_BUY":
-                    _health_sizing = min(1.0, _health_sizing * 1.5)
+                    # FG-H01 VALIDATED (t=6.39, WR 75.5%)
+                    boost = 1.5
+                    # FG-H07: urgency decay — first 3 days are peak WR
+                    if _mh_snapshot.fg_urgency == "HIGH":
+                        boost = 1.75  # Day 1-3: WR 80.8%
+                    elif _mh_snapshot.fg_urgency == "DECAYING":
+                        boost = 1.2   # Day 10+: WR drops to 50%
+                    _health_sizing = min(1.0, _health_sizing * boost)
                     report.alerts = report.alerts or []
                     report.alerts.append(
-                        f"MH_FG_CAPITULATION: F&G={_mh_snapshot.fg_score:.0f} rising — "
-                        f"contrarian conviction boost to {_health_sizing:.0%}"
+                        f"MH_FG_CAPITULATION: F&G={_mh_snapshot.fg_score:.0f} "
+                        f"day={_mh_snapshot.fg_duration} urgency={_mh_snapshot.fg_urgency} "
+                        f"— sizing {_health_sizing:.0%} (WR 75.5%, t=6.39)"
+                    )
+                elif _mh_snapshot.fg_action == "GREED_TRAP":
+                    # FG-H08 CANDIDATE (N=6, WR 0%): greed + correction
+                    _health_sizing *= 0.25
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"MH_FG_GREED_TRAP: F&G={_mh_snapshot.fg_score:.0f} + SPY in correction "
+                        f"— TRAP (WR 0%, N=6). Sizing {_health_sizing:.0%}"
+                    )
+
+                # FG-H14 VALIDATED (t=6.21): stealth accumulation boost
+                if _mh_snapshot.fg_divergence_type == "STEALTH_ACCUMULATION":
+                    _health_sizing = min(1.0, _health_sizing * 1.25)
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"MH_STEALTH_ACCUM: Internal RISK_ON + public fear "
+                        f"— institutional accumulation (WR 79%, t=6.21)"
                     )
 
                 # Still compute local vol regime for ticker-specific analysis

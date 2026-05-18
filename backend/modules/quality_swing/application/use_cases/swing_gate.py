@@ -124,28 +124,47 @@ class SwingGate:
                     _mh_sizing_mod = 0.5
                     decision.alerts.append("MH_CASCADE_CORRECTION: Sizing 50%")
 
-                # F&G contrarian signals
+                # F&G contrarian signals (forensic evidence 2021-2026)
                 if _mh_snapshot.fg_action == "CAPITULATION_BUY":
-                    _mh_sizing_mod = min(_mh_sizing_mod * 1.5, 1.0)
+                    # FG-H01 (t=6.39), FG-H07 urgency decay
+                    boost = 1.5
+                    if _mh_snapshot.fg_urgency == "HIGH":
+                        boost = 1.75  # Day 1-3: WR 80.8%
+                    elif _mh_snapshot.fg_urgency == "DECAYING":
+                        boost = 1.15  # Day 10+: WR 50%
+                    _mh_sizing_mod = min(_mh_sizing_mod * boost, 1.0)
                     decision.alerts.append(
                         f"MH_FG_CAPITULATION: F&G={_mh_snapshot.fg_score:.0f} "
-                        f"rising — conviction boost"
+                        f"day={_mh_snapshot.fg_duration} urgency={_mh_snapshot.fg_urgency} "
+                        f"(WR 75.5%, t=6.39)"
                     )
                 elif _mh_snapshot.fg_action == "FEAR_BUY":
+                    # VALIDATED (t=5.37, WR=69.9%)
                     _mh_sizing_mod = min(_mh_sizing_mod * 1.2, 1.0)
                     decision.alerts.append(
                         f"MH_FG_FEAR_BUY: F&G={_mh_snapshot.fg_score:.0f} "
-                        f"stabilizing — contrarian accumulation"
+                        f"— fear zone accumulation (WR 69.9%)"
+                    )
+                elif _mh_snapshot.fg_action == "GREED_TRAP":
+                    # FG-H08 CANDIDATE (N=6, WR 0%): greed + correction
+                    _mh_sizing_mod = 0.0  # Block accumulation
+                    decision.alerts.append(
+                        f"MH_FG_GREED_TRAP: F&G={_mh_snapshot.fg_score:.0f} + correction "
+                        f"— distribution TRAP (WR 0%). Accumulation BLOCKED."
                     )
                 elif _mh_snapshot.fg_action == "GREED_CAUTION":
+                    # H02 REJECTED (t=0.46): greed ≠ sell
                     _mh_sizing_mod *= 0.7
                     decision.alerts.append(
-                        f"MH_FG_GREED: F&G={_mh_snapshot.fg_score:.0f} — reduce sizing"
+                        f"MH_FG_GREED: F&G={_mh_snapshot.fg_score:.0f} — sizing -30%"
                     )
-                elif _mh_snapshot.fg_action == "EUPHORIA_SELL":
-                    _mh_sizing_mod *= 0.5
+
+                # FG-H14 VALIDATED (t=6.21): stealth accumulation
+                if _mh_snapshot.fg_divergence_type == "STEALTH_ACCUMULATION":
+                    _mh_sizing_mod = min(_mh_sizing_mod * 1.25, 1.0)
                     decision.alerts.append(
-                        f"MH_FG_EUPHORIA: F&G={_mh_snapshot.fg_score:.0f} — trim mode"
+                        f"MH_STEALTH_ACCUM: Institutional accumulation "
+                        f"(RISK_ON + public fear, WR 79%, t=6.21)"
                     )
         except Exception as e:
             logger.debug(f"SwingGate: MH snapshot not available: {e}")

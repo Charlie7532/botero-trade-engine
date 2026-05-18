@@ -102,6 +102,21 @@ class MarketHealthProvider:
                 spy_pct_change_20d=spy_pct,
             )
 
+            # ── Inject Vol Regime (infra layer responsibility) ──
+            # The compositor computes VIX z-score (domain). The provider
+            # runs VolRegimeClassifier on SPY prices (cross-module, infra-ok).
+            try:
+                from backend.modules.entry_decision.domain.rules.vol_regime_gate import (
+                    compute_vol_regime_snapshot,
+                )
+                vix_z = getattr(snapshot, "_vix_zscore", 0.0)
+                if spy_df is not None and len(spy_df) >= 60:
+                    regime = compute_vol_regime_snapshot(spy_df, vix_zscore=vix_z)
+                    snapshot.vol_regime_quality = regime.quality_label
+                    snapshot.vol_regime_speculative = regime.speculative_label
+            except Exception as e:
+                logger.debug(f"MH Provider: Vol regime injection skipped: {e}")
+
             # ── Persist ──
             store.save_mcp_snapshot("market/health", "MARKET", snapshot.to_dict())
 

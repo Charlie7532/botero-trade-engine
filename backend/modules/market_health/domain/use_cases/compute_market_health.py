@@ -14,7 +14,6 @@ from datetime import datetime, UTC
 from typing import Optional
 
 import pandas as pd
-import numpy as np
 
 from backend.modules.market_health.domain.entities.health_snapshot import (
     MarketHealthSnapshot,
@@ -93,33 +92,20 @@ def compute_market_health(
     snap.narrow_market = detect_narrow_market(spy_pct_change_20d, s5fi_change)
 
     # ── G2: Volatility Regime ────────────────────────────────
-    if vix_df is not None and not vix_df.empty and len(vix_df) >= 60:
+    # Vol regime is INJECTED by the daemon provider (which runs
+    # VolRegimeClassifier on SPY prices). Here we only compute the
+    # dynamic VIX z-score (replacing the hardcoded 20.0/5.0).
+    if vix_df is not None and not vix_df.empty and len(vix_df) >= 30:
         try:
             vix_close = vix_df["close"].astype(float)
             vix_now = float(vix_close.iloc[-1])
             vix_mean = float(vix_close.rolling(90, min_periods=30).mean().iloc[-1])
             vix_std = float(vix_close.rolling(90, min_periods=30).std().iloc[-1])
-            vix_z = (vix_now - vix_mean) / vix_std if vix_std > 0 else 0.0
-
-            # Classify using the existing VolRegimeClassifier
-            from backend.modules.entry_decision.domain.rules.vol_regime_gate import (
-                compute_vol_regime_snapshot,
-            )
-            # Build a prices-like DF from VIX for the classifier
-            # The classifier needs Close/High/Low/Volume columns
-            # We approximate H/L from close for VIX (it's an index)
-            vix_prices = pd.DataFrame({
-                "Close": vix_close.values,
-                "High": vix_close.values * 1.02,
-                "Low": vix_close.values * 0.98,
-                "Volume": np.ones(len(vix_close)),
-            }, index=vix_df.index)
-
-            regime = compute_vol_regime_snapshot(vix_prices, vix_zscore=vix_z)
-            snap.vol_regime_quality = regime.quality_label
-            snap.vol_regime_speculative = regime.speculative_label
+            snap._vix_zscore = (vix_now - vix_mean) / vix_std if vix_std > 0 else 0.0
         except Exception as e:
-            logger.debug(f"MH: Vol regime computation skipped: {e}")
+            logger.debug(f"MH: VIX z-score computation skipped: {e}")
+    # vol_regime_quality and vol_regime_speculative stay at defaults
+    # unless injected by the provider via the snapshot's fields
 
     # ── G3: Flow (injected) ──────────────────────────────────
     snap.flow_direction = flow_direction

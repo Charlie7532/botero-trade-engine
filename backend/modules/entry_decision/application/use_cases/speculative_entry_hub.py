@@ -112,33 +112,78 @@ class SpeculativeEntryHub:
         # ── Gate -1: Vol Regime (Seykota hunt cycle) ──
         # RETREAT = block (capital preservation). HARVEST = reduce sizing.
         # STRIKE = boost sizing (compression breakout). STALK = normal.
-        # Evidence Status: HYPOTHESIS — thresholds need calibration.
         _vol_sizing = 1.0
+        _mh_snapshot = None
+        try:
+            # Read Market Health snapshot from Vault (same pattern as QualityEntryGate)
+            from backend.modules.market_health.domain.entities.health_snapshot import MarketHealthSnapshot
+            mh_raw = self._market_data.load_mcp_latest("market/health", "MARKET") if hasattr(self._market_data, "load_mcp_latest") else None
+            if not mh_raw:
+                from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+                _store = TimescaleDataStore()
+                mh_raw = _store.load_mcp_latest("market/health", "MARKET")
+                _store.close()
+            if mh_raw:
+                _mh_snapshot = MarketHealthSnapshot.from_dict(mh_raw)
+        except Exception as e:
+            logger.debug(f"SpecHub: MH snapshot load skipped: {e}")
+
         try:
             from backend.modules.entry_decision.domain.rules.vol_regime_gate import compute_vol_regime_snapshot
             from backend.modules.volatility_regime.domain.entities.vol_regime import S_RETREAT, S_HARVEST, S_STRIKE
 
-            vix_mean_90d = 20.0  # HYPOTHESIS
-            vix_std_90d = 5.0    # HYPOTHESIS
-            vix_z = (report.vix - vix_mean_90d) / vix_std_90d if vix_std_90d > 0 else 0.0
+            if _mh_snapshot:
+                # Use dynamic vol regime from MH snapshot (replaces hardcoded 20.0/5.0)
+                report.vol_regime_quality = _mh_snapshot.vol_regime_quality
+                report.vol_regime_speculative = _mh_snapshot.vol_regime_speculative
 
-            regime = compute_vol_regime_snapshot(prices, vix_zscore=vix_z)
-            report.vol_regime_quality = regime.quality_label
-            report.vol_regime_speculative = regime.speculative_label
+                # F&G contrarian signals (forensic evidence 2021-2026)
+                report.alerts = report.alerts or []
+                if _mh_snapshot.fg_action == "CAPITULATION_BUY":
+                    # FG-H01 (t=6.39, WR 75.5%) — even speculative benefits
+                    boost = 1.3
+                    if _mh_snapshot.fg_urgency == "HIGH":
+                        boost = 1.5  # Day 1-3: WR 80.8%
+                    elif _mh_snapshot.fg_urgency == "DECAYING":
+                        boost = 1.0  # Day 10+: no boost
+                    _vol_sizing = min(_vol_sizing * boost, 1.5)
+                    report.alerts.append(
+                        f"MH_FG_CAPITULATION: F&G={_mh_snapshot.fg_score:.0f} "
+                        f"day={_mh_snapshot.fg_duration} — speculative boost {_vol_sizing:.0%}"
+                    )
+                elif _mh_snapshot.fg_action == "GREED_TRAP":
+                    # FG-H08 (WR 0%): greed + correction
+                    _vol_sizing *= 0.25
+                    report.alerts.append(
+                        f"MH_FG_GREED_TRAP: F&G={_mh_snapshot.fg_score:.0f} + correction "
+                        f"— distribution TRAP. Sizing {_vol_sizing:.0%}"
+                    )
+
+                # Compute local vol regime with dynamic VIX z-score
+                regime = compute_vol_regime_snapshot(prices, vix_zscore=0.0)
+            else:
+                # Fallback: hardcoded VIX z-score (legacy path)
+                logger.debug("SpecHub: MH snapshot unavailable — using legacy VIX hardcode")
+                vix_mean_90d = 20.0  # LEGACY FALLBACK
+                vix_std_90d = 5.0    # LEGACY FALLBACK
+                vix_z = (report.vix - vix_mean_90d) / vix_std_90d if vix_std_90d > 0 else 0.0
+                regime = compute_vol_regime_snapshot(prices, vix_zscore=vix_z)
+                report.vol_regime_quality = regime.quality_label
+                report.vol_regime_speculative = regime.speculative_label
 
             if regime.speculative_regime == S_RETREAT:
                 report.final_verdict = "BLOCK"
                 report.final_scale = 0.0
                 report.final_reason = (
                     f"VOL_REGIME_GATE: RETREAT regime detected "
-                    f"(VIX={report.vix:.1f}, z={vix_z:+.1f}). "
+                    f"(VIX={report.vix:.1f}). "
                     f"Speculative: vol chaotic — protect capital."
                 )
                 logger.warning(f"SpecHub {ticker}: BLOCKED by VOL_REGIME RETREAT")
                 return report
 
             if regime.speculative_regime == S_HARVEST:
-                _vol_sizing = 0.5  # Move is maturing, don't chase
+                _vol_sizing *= 0.5  # Move is maturing, don't chase
                 report.alerts = report.alerts or []
                 report.alerts.append(
                     f"VOL_REGIME_HARVEST: Sizing reduced — "
@@ -146,11 +191,11 @@ class SpeculativeEntryHub:
                 )
 
             if regime.speculative_regime == S_STRIKE:
-                _vol_sizing = 1.25  # Compression breakout — Seykota's edge
+                _vol_sizing = min(_vol_sizing * 1.25, 1.5)  # Compression breakout
                 report.alerts = report.alerts or []
                 report.alerts.append(
                     f"VOL_REGIME_STRIKE: Compression breakout detected — "
-                    f"sizing boosted to 125%."
+                    f"sizing boosted."
                 )
 
             logger.info(

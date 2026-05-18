@@ -208,15 +208,82 @@ def build_surveillance_loop():
 
 def synthesize_live_mandate(cio=None):
     """
-    Connect FRED + VIX + Rotation Intelligence to the CIO for a dynamic mandate.
+    Connect Market Health snapshot + GEX to the CIO for a dynamic mandate.
 
-    The unified RotationScanner now provides breadth, capitulation, and flow
-    data — no separate RSP/SPY or breadth provider needed.
+    Vault-First (Rule 13): reads MH snapshot from Neon Vault.
+    Fallback: yfinance + rotation scanner if snapshot unavailable.
     """
     from backend.modules.portfolio_management.application.use_cases.cio_orchestrator import CIOOrchestrator
-    import yfinance as yf
 
     cio = cio or CIOOrchestrator()
+
+    # ── Vault-First: read MH snapshot ──
+    mh_snapshot = None
+    try:
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+        from backend.modules.market_health.domain.entities.health_snapshot import MarketHealthSnapshot
+        store = TimescaleDataStore()
+        mh_raw = store.load_mcp_latest("market/health", "MARKET")
+        if mh_raw:
+            mh_snapshot = MarketHealthSnapshot.from_dict(mh_raw)
+    except Exception as e:
+        logger.debug(f"MH snapshot load failed (will fallback): {e}")
+
+    # ── GEX Regime from Neon vault ──
+    gex_regime = "UNKNOWN"
+    try:
+        gamma_snap = store.load_mcp_latest("flow/gex", "SPY")
+        if gamma_snap and isinstance(gamma_snap, dict):
+            gex_regime = gamma_snap.get("gamma_regime", "UNKNOWN")
+    except Exception as e:
+        logger.debug(f"GEX regime load skipped: {e}")
+
+    try:
+        store.close()
+    except Exception:
+        pass
+
+    if mh_snapshot:
+        # ── FAST PATH: Vault-backed (no API calls) ──
+        # Map MH snapshot fields to CIO params
+        vix_estimate = 20.0  # Default; MH snapshot gives regime, not raw VIX
+        if mh_snapshot.vol_regime_quality == "CRISIS":
+            vix_estimate = 35.0
+        elif mh_snapshot.vol_regime_quality == "ELEVATED":
+            vix_estimate = 25.0
+        elif mh_snapshot.vol_regime_quality == "COMPLACENT":
+            vix_estimate = 14.0
+
+        breadth = mh_snapshot.breadth_participation * 100
+
+        yield_inverted = mh_snapshot.yield_curve_signal == "INVERTED"
+
+        # Rotation data from snapshot (basic mapping)
+        rotation_data = {
+            "cycle_phase": mh_snapshot.rotation_phase,
+        }
+
+        mandate = cio.synthesize_mandate(
+            vix=vix_estimate,
+            market_breadth=breadth,
+            macro_news_sentiment=0.0,
+            yield_curve_inverted=yield_inverted,
+            cycle_phase=rotation_data.get("cycle_phase", "UNKNOWN"),
+            gex_regime=gex_regime,
+        )
+
+        logger.info(
+            f"🏛️ Live Mandate (Vault): {mandate.regime} | "
+            f"Q={mandate.quality_budget_pct*100:.0f}% S={mandate.speculative_budget_pct*100:.0f}% | "
+            f"Vol={mh_snapshot.vol_regime_quality} Breadth={breadth:.0f}% "
+            f"YC={'INV' if yield_inverted else 'OK'} "
+            f"F&G={mh_snapshot.fg_score:.0f}({mh_snapshot.fg_action})"
+        )
+        return mandate
+
+    # ── FALLBACK: yfinance + rotation scanner (legacy) ──
+    logger.warning("synthesize_live_mandate: MH snapshot unavailable — using legacy yfinance path")
+    import yfinance as yf
 
     # 1. VIX (live from yfinance)
     try:
@@ -249,8 +316,7 @@ def synthesize_live_mandate(cio=None):
     except Exception as e:
         logger.warning(f"Rotation scan failed (non-fatal): {e}")
 
-    # 3. FRED Macro (yield curve from FRED adapter)
-    fred = build_fred()
+    # 3. FRED Macro (yield curve from yfinance)
     try:
         ust10 = yf.download("^TNX", period="5d", progress=False)
         ust2 = yf.download("^IRX", period="5d", progress=False)
@@ -268,19 +334,7 @@ def synthesize_live_mandate(cio=None):
     except Exception:
         yield_inverted = False
 
-    # 4. GEX Regime from Neon vault (8 Forces → CIO budget gate)
-    gex_regime = "UNKNOWN"
-    try:
-        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-        store = TimescaleDataStore()
-        gamma_snap = store.load_mcp_latest("flow/gex", "SPY")
-        store.close()
-        if gamma_snap and isinstance(gamma_snap, dict):
-            gex_regime = gamma_snap.get("gamma_regime", "UNKNOWN")
-    except Exception as e:
-        logger.debug(f"GEX regime load skipped: {e}")
-
-    # 5. Synthesize
+    # 4. Synthesize
     mandate = cio.synthesize_mandate(
         vix=vix,
         market_breadth=breadth,
@@ -295,11 +349,9 @@ def synthesize_live_mandate(cio=None):
 
     cap_level = rotation_data.get("capitulation_level", 0)
     logger.info(
-        f"🏛️ Live Mandate: {mandate.regime} | "
+        f"🏛️ Live Mandate (Legacy): {mandate.regime} | "
         f"Q={mandate.quality_budget_pct*100:.0f}% S={mandate.speculative_budget_pct*100:.0f}% | "
         f"VIX={vix:.1f} Breadth={breadth:.0f}% YC={'INV' if yield_inverted else 'OK'} "
         f"Cap_L{cap_level}"
     )
     return mandate
-
-

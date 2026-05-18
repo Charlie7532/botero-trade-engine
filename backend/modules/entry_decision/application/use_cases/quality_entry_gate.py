@@ -299,8 +299,9 @@ class QualityEntryGate:
                 )
             else:
                 # Fallback: hardcoded VIX z-score (legacy path)
-                vix_mean_90d = 20.0  # HYPOTHESIS — approximate long-run VIX mean
-                vix_std_90d = 5.0    # HYPOTHESIS — approximate VIX std
+                logger.debug("QualityGate: MH snapshot unavailable — using legacy VIX hardcode")
+                vix_mean_90d = 20.0  # LEGACY FALLBACK
+                vix_std_90d = 5.0    # LEGACY FALLBACK
                 vix_z = (report.vix - vix_mean_90d) / vix_std_90d if vix_std_90d > 0 else 0.0
                 regime = compute_vol_regime_snapshot(prices, vix_zscore=vix_z)
                 report.vol_regime_quality = regime.quality_label

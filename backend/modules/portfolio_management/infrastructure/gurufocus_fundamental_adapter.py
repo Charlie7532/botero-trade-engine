@@ -113,15 +113,17 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
     def get_financial_summary(self, ticker: str) -> dict:
         """Load financial summary with keyratios-enriched data from vault.
 
-        Now returns fields needed by SurveillanceLoop._evaluate_moat_decay():
-        - operating_margin_ttm + operating_margin_5y_avg
-        - wacc + roic (for value decay detection)
-        - capex_revenue_ttm / capex_revenue_5y (if available)
+        Returns fields needed by:
+        - SurveillanceLoop._evaluate_moat_decay() (margins, WACC, ROIC)
+        - QualityWatchlistEngine (forward estimates, credibility gate)
+
+        Hybrid Merge: GuruFocus screening data (proprietary) + vault estimates
+        (raw from GF or YF + revision derivatives from YF-exclusive).
         """
         data = self._load_screening(ticker)
         if not data:
             return {}
-        return {
+        result = {
             "piotroski_f_score": data.get("piotroski_f_score", 0),
             "altman_z_score": data.get("altman_z_score", 0),
             "beneish_m_score": data.get("beneish_m", data.get("beneish_m_score", 0)),
@@ -147,24 +149,27 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
             "gf_value": data.get("gf_value", 0),
         }
 
-        # Enrich with forward-looking estimates (Phase 3)
+        # Enrich with forward-looking estimates from vault
+        # (Hybrid Merge: raw from GF/YF + derivatives from YF-exclusive)
         try:
             vault = self._get_vault()
             est = vault.load_mcp_latest("fundamental/estimates", ticker)
             if est:
-                # Current-year EPS trend (0y) is the primary signal
+                # Raw estimates (from GuruFocus PRIMARY or yfinance FALLBACK)
                 result["eps_estimate_current_q"] = est.get("eps_0q_avg", 0)
                 result["eps_estimate_next_y"] = est.get("eps_+1y_avg", 0)
                 result["eps_growth_estimate"] = est.get("eps_0y_growth", 0)
                 result["revenue_growth_estimate"] = est.get("rev_0y_growth", 0)
                 result["num_analysts"] = est.get("eps_0y_numAnalysts", 0)
-                # Revision momentum — the key derivative signal
+                # Revision derivatives (yfinance-EXCLUSIVE alpha signals)
                 result["eps_revision_pct_30d"] = est.get("trend_0y_rev_pct_30d", 0)
                 result["eps_revision_pct_90d"] = est.get("trend_0y_rev_pct_90d", 0)
                 result["revenue_revision_pct_90d"] = est.get("trend_0y_rev_pct_90d", 0)
-                # Revision breadth
+                # Revision breadth (yfinance-EXCLUSIVE)
                 result["eps_revisions_up_30d"] = int(est.get("revisions_0y_up30d", 0))
                 result["eps_revisions_down_30d"] = int(est.get("revisions_0y_down30d", 0))
+                # Source traceability
+                result["estimate_raw_source"] = est.get("raw_source", "unknown")
         except Exception as e:
             logger.debug(f"Estimates enrichment for {ticker}: {e}")
 

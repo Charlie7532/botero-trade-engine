@@ -799,27 +799,41 @@ def vault_gurufocus_screening(store: TimescaleDataStore, tickers: list[str]) -> 
 # ═══════════════════════════════════════════════════════════════
 
 def vault_earnings_estimates(store: TimescaleDataStore, tickers: list[str]) -> dict:
-    """Vault forward-looking earnings estimates. 1x/day.
+    """Vault forward-looking earnings estimates. 1x/day. Hybrid Merge.
 
-    PRIMARY: GuruFocus /analyst_estimate (institutional-grade, more reliable).
-    FALLBACK: yfinance (free, richer revision trend data, used when GF rate-limited).
+    ARCHITECTURE (approved by architect 2026-05-19):
+    Both GuruFocus and yfinance get raw consensus from the SAME upstream
+    (Refinitiv/LSEG). They are NOT competing — they are complementary:
 
-    Per Rule 10: daemon providers use fallback chains; never fail silently.
+    Layer 1 — RAW ESTIMATES (commodity data, same Refinitiv upstream):
+        PRIMARY: GuruFocus /analyst_estimate
+        FALLBACK: yfinance .earnings_estimate (when GF rate-limited)
+
+    Layer 2 — REVISION DERIVATIVES (yfinance-EXCLUSIVE alpha signals):
+        ALWAYS: yfinance .eps_trend (revision momentum 30d/90d)
+        ALWAYS: yfinance .eps_revisions (breadth up/down counts)
+        → No GuruFocus alternative. This data only exists in yfinance.
+
+    Layer 3 — CROSS-VALIDATION (when both succeed for commodity fields):
+        Log divergence >5% for audit trail.
+
+    Per Rule 10: never fail silently — always log the fallback.
     """
-    stats = {"estimated": 0, "source_gf": 0, "source_yf": 0}
+    stats = {"estimated": 0, "source_gf": 0, "source_yf_fallback": 0,
+             "yf_derivatives": 0, "divergences": 0}
 
     if _already_vaulted_today(store, "fundamental/estimates", "BATCH_DONE"):
         logger.info("📊 Earnings estimates already vaulted today — skipping")
         return {"status": "skipped", "reason": "already_today"}
 
-    # Initialize GuruFocus bridge (PRIMARY)
+    # Initialize GuruFocus bridge (PRIMARY for raw estimates)
     gf_bridge = None
     try:
         from backend.modules.portfolio_management.infrastructure.gurufocus_mcp_bridge import GuruFocusMCPBridge
         gf_bridge = GuruFocusMCPBridge()
         if not gf_bridge._token:
             gf_bridge = None
-            logger.info("📊 GuruFocus token not set — will use yfinance only")
+            logger.info("📊 GuruFocus token not set — will use yfinance for raw estimates")
     except Exception:
         pass
 
@@ -830,15 +844,19 @@ def vault_earnings_estimates(store: TimescaleDataStore, tickers: list[str]) -> d
     batch = tickers[:20]
     for ticker in batch:
         payload = {"ticker": ticker, "timestamp": datetime.now(UTC).isoformat()}
-        source = None
+        raw_source = None
 
-        # ── PRIMARY: GuruFocus /analyst_estimate ──
+        # ═══ LAYER 1: Raw Estimates (commodity data) ═══
+
+        # PRIMARY: GuruFocus /analyst_estimate
+        gf_raw = {}
         if gf_bridge and gf_consecutive_failures < GF_FAILURE_THRESHOLD:
             try:
                 gf_data = gf_bridge.fetch_analyst_estimates(ticker)
                 if gf_data:
-                    payload.update(_parse_gurufocus_estimates(gf_data, ticker))
-                    source = "gurufocus"
+                    gf_raw = _parse_gurufocus_estimates(gf_data, ticker)
+                    payload.update(gf_raw)
+                    raw_source = "gurufocus"
                     gf_consecutive_failures = 0
                     stats["source_gf"] += 1
                 else:
@@ -847,63 +865,84 @@ def vault_earnings_estimates(store: TimescaleDataStore, tickers: list[str]) -> d
                 gf_consecutive_failures += 1
                 logger.debug(f"  {ticker} GuruFocus estimate failed: {e}")
 
-        # ── FALLBACK: yfinance ──
-        if source is None:
-            if gf_consecutive_failures >= GF_FAILURE_THRESHOLD and gf_consecutive_failures == GF_FAILURE_THRESHOLD:
+        # FALLBACK: yfinance for raw estimates (when GF rate-limited)
+        yf_raw = {}
+        if raw_source is None:
+            if gf_consecutive_failures == GF_FAILURE_THRESHOLD:
                 logger.warning(
-                    f"📊 GuruFocus rate-limited ({gf_consecutive_failures} failures) "
-                    f"— falling back to yfinance for remaining tickers"
+                    f"📊 GuruFocus rate-limited ({gf_consecutive_failures} consecutive failures) "
+                    f"— falling back to yfinance for raw estimates"
                 )
             try:
-                payload.update(_fetch_yfinance_estimates(ticker))
-                if len(payload) > 2:
-                    source = "yfinance"
-                    stats["source_yf"] += 1
-                    logger.debug(f"  {ticker}: FALLBACK to yfinance (GuruFocus unavailable)")
+                yf_raw = _fetch_yfinance_raw_estimates(ticker)
+                if yf_raw:
+                    payload.update(yf_raw)
+                    raw_source = "yfinance"
+                    stats["source_yf_fallback"] += 1
+                    logger.debug(f"  {ticker}: FALLBACK to yfinance for raw estimates")
             except Exception as e:
-                logger.debug(f"  {ticker} yfinance estimate also failed: {e}")
+                logger.debug(f"  {ticker} yfinance raw estimate also failed: {e}")
 
-        # Save if we got data from either source
-        payload["source"] = source or "none"
-        if source and len(payload) > 3:
+        # ═══ LAYER 2: Revision Derivatives (yfinance-EXCLUSIVE) ═══
+
+        # ALWAYS fetch from yfinance — GuruFocus doesn't expose these
+        try:
+            derivatives = _fetch_yfinance_revision_derivatives(ticker)
+            if derivatives:
+                payload.update(derivatives)
+                stats["yf_derivatives"] += 1
+        except Exception as e:
+            logger.debug(f"  {ticker} yfinance revision derivatives failed: {e}")
+
+        # ═══ LAYER 3: Cross-Validation (when both succeeded) ═══
+
+        if gf_raw and yf_raw:
+            divergence = _cross_validate_estimates(ticker, gf_raw, yf_raw)
+            if divergence:
+                stats["divergences"] += 1
+
+        # Save merged payload
+        payload["raw_source"] = raw_source or "none"
+        if raw_source and len(payload) > 3:
             store.save_mcp_snapshot("fundamental/estimates", ticker, payload)
             stats["estimated"] += 1
-            logger.debug(f"  {ticker}: {len(payload)} estimate fields via {source}")
+            logger.debug(f"  {ticker}: {len(payload)} fields (raw={raw_source}, derivatives=yf)")
 
     # Mark batch done
     if stats["estimated"] > 0:
         store.save_mcp_snapshot("fundamental/estimates", "BATCH_DONE", {
             "timestamp": datetime.now(UTC).isoformat(),
             "tickers_estimated": stats["estimated"],
-            "source_gf": stats["source_gf"],
-            "source_yf": stats["source_yf"],
+            "raw_source_gf": stats["source_gf"],
+            "raw_source_yf_fallback": stats["source_yf_fallback"],
+            "yf_revision_derivatives": stats["yf_derivatives"],
+            "divergences_detected": stats["divergences"],
             "batch": batch,
         })
 
     logger.info(
         f"📈 Earnings estimates vault: {stats['estimated']}/{len(batch)} tickers "
-        f"(GF: {stats['source_gf']}, YF fallback: {stats['source_yf']})"
+        f"(Raw: GF={stats['source_gf']} YF={stats['source_yf_fallback']}, "
+        f"Derivatives: {stats['yf_derivatives']}, Divergences: {stats['divergences']})"
     )
     return {"status": "ok", **stats}
 
 
-def _parse_gurufocus_estimates(gf_data: dict, ticker: str) -> dict:
-    """Parse GuruFocus /analyst_estimate response into normalized payload.
+# ── Layer 1 Parsers ─────────────────────────────────────────
 
-    GuruFocus returns annual/quarterly estimates with EPS and revenue forecasts.
-    We extract the same fields that yfinance provides for consistency.
+def _parse_gurufocus_estimates(gf_data: dict, ticker: str) -> dict:
+    """Parse GuruFocus /analyst_estimate → normalized raw estimate fields.
+
+    Upstream: Refinitiv/LSEG (same as Yahoo Finance).
+    Provides: EPS avg/high/low, revenue avg, analyst count, growth %.
+    Does NOT provide: revision momentum, revision breadth.
     """
     payload = {}
-    sf = _safe_num  # Use local helper (same behavior as GuruFocusMCPBridge._safe_float)
+    sf = _safe_num
 
-    # GuruFocus analyst_estimate structure varies but typically includes:
-    # - annual estimates with EPS mean/high/low, revenue mean/high/low
-    # - per-period breakdown (current year, next year, etc.)
     if isinstance(gf_data, dict):
-        # Try standard keys
         annual = gf_data.get("annual", gf_data)
         if isinstance(annual, list) and len(annual) > 0:
-            # First entry = current year, second = next year
             for i, entry in enumerate(annual[:2]):
                 period = "0y" if i == 0 else "+1y"
                 payload[f"eps_{period}_avg"] = sf(entry.get("eps_nri_mean", entry.get("eps_mean", 0)))
@@ -916,30 +955,24 @@ def _parse_gurufocus_estimates(gf_data: dict, ticker: str) -> dict:
                 year_ago = sf(entry.get("eps_nri_year_ago", entry.get("eps_year_ago", 0)))
                 payload[f"eps_{period}_yearAgoEps"] = year_ago
         elif isinstance(annual, dict):
-            # Flat dict format
             payload["eps_0y_avg"] = sf(annual.get("eps_nri_mean", annual.get("eps_mean", 0)))
             payload["eps_0y_numAnalysts"] = sf(annual.get("number_of_analysts", 0))
             payload["rev_0y_avg"] = sf(annual.get("revenue_mean", 0))
             payload["eps_0y_growth"] = sf(annual.get("eps_growth", 0))
             payload["rev_0y_growth"] = sf(annual.get("revenue_growth", 0))
-
-    # Note: GuruFocus does NOT provide eps_trend (revision momentum) or
-    # eps_revisions (up/down breadth). These are only available via yfinance.
-    # The adapter layer handles this gracefully — missing fields default to 0.
     return payload
 
 
-def _fetch_yfinance_estimates(ticker: str) -> dict:
-    """Fetch earnings estimates from yfinance (fallback source).
+def _fetch_yfinance_raw_estimates(ticker: str) -> dict:
+    """Fetch raw consensus estimates from yfinance (FALLBACK for commodity data).
 
-    Provides richer data than GuruFocus: includes EPS Trend (revision momentum)
-    and EPS Revisions (up/down breadth counts) — the key alpha signals.
+    Upstream: Refinitiv/LSEG (same as GuruFocus).
+    Used only when GuruFocus is rate-limited or unavailable.
     """
     import yfinance as yf
     payload = {}
     t = yf.Ticker(ticker)
 
-    # 1. Earnings estimate (avg EPS per period)
     try:
         ee = t.earnings_estimate
         if ee is not None and not ee.empty:
@@ -955,7 +988,6 @@ def _fetch_yfinance_estimates(ticker: str) -> dict:
     except Exception:
         pass
 
-    # 2. Revenue estimate
     try:
         re_ = t.revenue_estimate
         if re_ is not None and not re_.empty:
@@ -968,20 +1000,42 @@ def _fetch_yfinance_estimates(ticker: str) -> dict:
     except Exception:
         pass
 
-    # 3. EPS Trend — revision momentum (the key alpha signal, yfinance-exclusive)
+    return payload
+
+
+# ── Layer 2: yfinance-EXCLUSIVE Derivatives ─────────────────
+
+def _fetch_yfinance_revision_derivatives(ticker: str) -> dict:
+    """Fetch revision momentum + breadth from yfinance (EXCLUSIVE data).
+
+    These fields do NOT exist in GuruFocus or any other source we have.
+    This is the key alpha signal — the DERIVATIVE of consensus, not the level.
+
+    - eps_trend: how the estimate CHANGED over 7d/30d/60d/90d
+    - eps_revisions: how many analysts revised UP vs DOWN
+    """
+    import yfinance as yf
+    payload = {}
+    t = yf.Ticker(ticker)
+
+    # EPS Trend — revision momentum (the derivative)
     try:
         et = t.eps_trend
         if et is not None and not et.empty:
             for period in et.index:
                 row = et.loc[period]
                 current = _safe_num(row.get("current"))
+                ago_7 = _safe_num(row.get("7daysAgo"))
                 ago_30 = _safe_num(row.get("30daysAgo"))
+                ago_60 = _safe_num(row.get("60daysAgo"))
                 ago_90 = _safe_num(row.get("90daysAgo"))
                 prefix = f"trend_{period}"
                 payload[f"{prefix}_current"] = current
+                payload[f"{prefix}_7dAgo"] = ago_7
                 payload[f"{prefix}_30dAgo"] = ago_30
+                payload[f"{prefix}_60dAgo"] = ago_60
                 payload[f"{prefix}_90dAgo"] = ago_90
-                # Compute revision % (the derivative)
+                # Compute revision % (the derivative — this IS the alpha)
                 if ago_30 and ago_30 != 0:
                     payload[f"{prefix}_rev_pct_30d"] = round(
                         (current - ago_30) / abs(ago_30), 4
@@ -993,7 +1047,7 @@ def _fetch_yfinance_estimates(ticker: str) -> dict:
     except Exception:
         pass
 
-    # 4. EPS Revisions — breadth (up/down counts, yfinance-exclusive)
+    # EPS Revisions — breadth (up/down counts)
     try:
         er = t.eps_revisions
         if er is not None and not er.empty:
@@ -1008,6 +1062,31 @@ def _fetch_yfinance_estimates(ticker: str) -> dict:
         pass
 
     return payload
+
+
+# ── Layer 3: Cross-Validation ──────────────────────────────
+
+def _cross_validate_estimates(ticker: str, gf: dict, yf: dict) -> bool:
+    """Cross-validate commodity fields when both sources succeeded.
+
+    Both GuruFocus and yfinance get their data from Refinitiv/LSEG.
+    Divergence >5% indicates timing lag or data quality issue.
+    Returns True if divergence detected.
+    """
+    divergence_found = False
+    # Compare EPS avg for current year
+    gf_eps = gf.get("eps_0y_avg", 0)
+    yf_eps = yf.get("eps_0y_avg", yf.get("eps_0q_avg", 0))  # Key may differ
+    if gf_eps and yf_eps and gf_eps != 0:
+        pct = abs(gf_eps - yf_eps) / abs(gf_eps)
+        if pct > 0.05:
+            logger.warning(
+                f"⚠️ {ticker} EPS estimate DIVERGENCE: "
+                f"GuruFocus={gf_eps:.2f} vs yfinance={yf_eps:.2f} (Δ{pct:.1%}) "
+                f"— both source from Refinitiv. Possible timing lag."
+            )
+            divergence_found = True
+    return divergence_found
 
 
 def _safe_num(v) -> float:

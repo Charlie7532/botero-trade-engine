@@ -150,25 +150,25 @@ Key diagnostic questions:
 Walk-Forward PCV (2yr Train / 6mo Test / 10d Purge / 5d Embargo) across 32 tickers
 (30 Quality + SPY 1993→2026 + QQQ 1999→2026). Deflated Sharpe Ratio adjusted for N=10 trials.
 
-**Grade C — Sizing Modifier (downgraded from A after 20yr deep validation):**
+**Grade C — Sizing Modifier (DSR walk-forward validated, 2026-05-19):**
 
-| Setup | WR (5yr) | WR (20yr) | N (20yr) | Status |
-|---|---|---|---|---|
-| **HYPER_3BC_MB** (base) | 66.5% | **62.9%** | 717 | Degraded: sobreajustada a crash 2022 |
-| **MICRO_BM_MB** | 67.6% | pending | 102 | Needs 20yr re-validation |
+| Setup | WR_OOS | N_OOS | DSR | Folds | Grade |
+|---|---|---|---|---|---|
+| **HYPER_3BC_MB** (base) | 63.7% | 670 | — | 49 | [VALIDATED] C |
+| **MICRO_BM_MB** | 67.6% | 102 | — | 13 | Needs 20yr re-validation |
 
-**Narrative Signatures — Internal Pattern Intelligence (20yr data):**
+**Narrative Signatures — DSR Walk-Forward Validated (20yr, 32 tickers):**
 
-When HYPER_3BC_MB fires, the INTERNAL composition of the 3 hyper-candles modifies signal quality:
-
-| Narrative Signature | WR | N | Δ vs Base | Confidence |
-|---|---|---|---|---|
-| BEARISH_ENGULFING central (2nd hyper) | **73.9%** | 23 | **+11pp** | ×1.25 |
-| BEARISH_MARUBOZU central (2nd hyper) | **75.0%** | 16 | **+12pp** | ×1.25 |
-| TWEEZER_TOP central (2nd hyper) | **100%** | 7 | **+37pp** | Monitor (N low) |
-| SHOOTING_STAR conclusión (3rd hyper) | **87.5%** | 8 | **+25pp** | Monitor (N low) |
-| DRAGONFLY_DOJI central (anti) | **28.6%** | 7 | **-34pp** | ×0.50 |
-| MORNING_STAR conclusión (anti) | **54.5%** | 22 | **-8pp** | ×0.60 |
+| Signature | WR_OOS | N_OOS | DSR | Folds | Grade |
+|---|---|---|---|---|---|
+| **EXTREME_BODY (body >0.80)** | **72.7%** | 44 | 0.984 | 17 | **[VALIDATED] B** |
+| **BEARISH_MARUBOZU central** | **75.0%** | 24 | 0.962 | 13 | [VALIDATED] C |
+| **CONFIDENCE ≥ 1.25** | **68.0%** | 128 | 1.000 | 34 | [VALIDATED] C |
+| **FLOOR_CLOSE (≤0.28)** | **67.6%** | 336 | 1.000 | 46 | [VALIDATED] C |
+| BEARISH_ENGULFING central | 64.7% | 34 | 0.979 | 14 | [VALIDATED] C |
+| DEEP_CENTRAL (BE or BM) | 65.3% | 72 | 0.975 | 26 | [VALIDATED] C |
+| MORNING_STAR final (trap) | **51.4%** | 35 | **0.006** | 13 | **REJECT** |
+| DRAGONFLY_DOJI central | — | 1 | — | 1 | INSUFFICIENT |
 
 **Anti-Señales (Sharpe negativo demostrado):**
 

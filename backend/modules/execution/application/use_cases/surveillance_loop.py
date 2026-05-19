@@ -6,8 +6,13 @@ No usa stops de precio. Si la empresa se deteriora fundamentalmente (márgenes/c
 levanta la bandera de 'Thesis Death' para que el QualityExitEngine liquide la posición.
 
 V12: Direct journal injection (no orchestrator dependency) + 4Q blacklist.
+V13: Forward Estimate Decay + THESIS_REVIEW intermediate state (2026-05-19).
+     - Added detection #4: Forward Estimate Decay (Druckenmiller forward-looking)
+     - THESIS_REVIEW requires CIO confirmation before THESIS_DEATH
+     - Munger Credibility Gate modulates forward estimate severity
 """
 import logging
+from datetime import datetime
 from typing import List, Dict
 
 logger = logging.getLogger(__name__)
@@ -20,13 +25,14 @@ class SurveillanceLoop:
         self.blacklist = blacklist  # InstrumentBlacklistPort
         self.thesis_repo = thesis_repo
         
-    def _evaluate_moat_decay(self, financials: dict) -> tuple[bool, str]:
+    def _evaluate_moat_decay(self, financials: dict) -> tuple[bool, str, str]:
         """
         Druckenmiller & Hohn Strict Moat Math.
-        Devuelve (True, "Razón") si el Moat ha muerto operativamente.
+        Returns (decay_detected, reason, severity).
+        severity: "THESIS_DEATH" | "THESIS_REVIEW" | ""
         """
         if not financials:
-            return False, ""
+            return False, "", ""
             
         # 1. Pricing Power Alert (Munger/Hohn)
         margin_ttm = financials.get("operating_margin_ttm", 0.0)
@@ -34,16 +40,16 @@ class SurveillanceLoop:
         if margin_5y > 0:
             # 15% relative drop
             if margin_ttm < (margin_5y * 0.85):
-                return True, f"Pricing Power Lost: Margin dropped 15%+ (TTM: {margin_ttm:.2f} vs 5Y: {margin_5y:.2f})"
+                return True, f"Pricing Power Lost: Margin dropped 15%+ (TTM: {margin_ttm:.2f} vs 5Y: {margin_5y:.2f})", "THESIS_DEATH"
             # 350bps absolute drop
             if (margin_5y - margin_ttm) > 0.035:
-                return True, f"Pricing Power Lost: Margin absolute drop >350bps (TTM: {margin_ttm:.2f} vs 5Y: {margin_5y:.2f})"
+                return True, f"Pricing Power Lost: Margin absolute drop >350bps (TTM: {margin_ttm:.2f} vs 5Y: {margin_5y:.2f})", "THESIS_DEATH"
                 
         # 2. Capex Bloat Alert (Hohn)
         capex_ratio_ttm = financials.get("capex_revenue_ttm", 0.0)
         capex_ratio_5y = financials.get("capex_revenue_5y", 0.0)
         if capex_ratio_5y > 0 and capex_ratio_ttm > (capex_ratio_5y * 1.25):
-            return True, f"Capex Bloat: Capital intensity +25% (TTM: {capex_ratio_ttm:.2f} vs 5Y: {capex_ratio_5y:.2f})"
+            return True, f"Capex Bloat: Capital intensity +25% (TTM: {capex_ratio_ttm:.2f} vs 5Y: {capex_ratio_5y:.2f})", "THESIS_DEATH"
             
         # 3. Value Decay Alert (Druckenmiller)
         roic_trend = financials.get("roic_last_3_quarters", [])
@@ -51,9 +57,40 @@ class SurveillanceLoop:
         if len(roic_trend) == 3 and wacc > 0:
             # ROIC falling for 3 quarters and dangerously close to WACC (10% premium)
             if roic_trend[0] > roic_trend[1] > roic_trend[2] and roic_trend[2] < (wacc * 1.1):
-                return True, f"Value Decay: ROIC declining 3Q ({roic_trend}) approaching WACC ({wacc})"
+                return True, f"Value Decay: ROIC declining 3Q ({roic_trend}) approaching WACC ({wacc})", "THESIS_DEATH"
+
+        # 4. Forward Estimate Decay Alert (Druckenmiller — forward-looking)
+        eps_rev_90d = financials.get("eps_revision_pct_90d", 0)
+        rev_rev_90d = financials.get("revenue_revision_pct_90d", 0)
+        num_analysts = financials.get("num_analysts", 0)
+        credibility = financials.get("credibility_gate", "MODERATE")
+
+        if num_analysts >= 10:  # Only trust with sufficient coverage
+            # CRITICAL: Both EPS and Revenue estimates collapsing >10%
+            if eps_rev_90d < -0.10 and rev_rev_90d < -0.10:
+                if credibility == "HIGH":
+                    # High credibility = trust the signal strongly → THESIS_DEATH
+                    return True, (
+                        f"Forward Decay [HIGH CREDIBILITY]: Estimates collapsing "
+                        f"(EPS Δ{eps_rev_90d:.1%}, Revenue Δ{rev_rev_90d:.1%} over 90d, "
+                        f"{num_analysts} analysts)"
+                    ), "THESIS_DEATH"
+                else:
+                    # Moderate/Low credibility → THESIS_REVIEW (CIO must confirm)
+                    return True, (
+                        f"Forward Decay [{credibility} CREDIBILITY]: Estimates declining "
+                        f"(EPS Δ{eps_rev_90d:.1%}, Revenue Δ{rev_rev_90d:.1%} over 90d, "
+                        f"{num_analysts} analysts) — CIO review required"
+                    ), "THESIS_REVIEW"
+
+            # MARGIN COMPRESSION: EPS declining but Revenue stable/up
+            if eps_rev_90d < -0.08 and rev_rev_90d > -0.02:
+                return True, (
+                    f"Margin Compression Signal: EPS declining ({eps_rev_90d:.1%}) "
+                    f"while Revenue stable ({rev_rev_90d:.1%}) — CIO review required"
+                ), "THESIS_REVIEW"
                 
-        return False, ""
+        return False, "", ""
 
     def run_surveillance(self) -> List[Dict]:
         """
@@ -69,15 +106,22 @@ class SurveillanceLoop:
             logger.info(f"Auditing Moat for {ticker}...")
             
             thesis_death = False
+            thesis_review = False
             reason = ""
+            severity = ""
             
-            # A. Mathematical Moat Test (GuruFocus)
+            # A. Mathematical Moat Test (GuruFocus + Forward Estimates)
             if self.fundamental_data:
                 financials = self.fundamental_data.get_financial_summary(ticker)
-                thesis_death, reason = self._evaluate_moat_decay(financials)
+                decay_detected, reason, severity = self._evaluate_moat_decay(financials)
+                if decay_detected:
+                    if severity == "THESIS_DEATH":
+                        thesis_death = True
+                    elif severity == "THESIS_REVIEW":
+                        thesis_review = True
 
                 # Helmer Protocol: Dynamic Checkpoints Evaluation
-                if not thesis_death and self.thesis_repo:
+                if not thesis_death and not thesis_review and self.thesis_repo:
                     from backend.modules.portfolio_management.application.use_cases.validate_thesis import validate_thesis
                     thesis = self.thesis_repo.get_active_thesis(ticker)
                     if thesis:
@@ -87,10 +131,11 @@ class SurveillanceLoop:
                             breached_cp = next((cp for cp in validated_thesis.checkpoints if cp.is_breached), None)
                             notes = breached_cp.evidence_notes if breached_cp else "Unknown Checkpoint Breached"
                             reason = f"FALSIFICATION PROTOCOL: {notes}"
+                            severity = "THESIS_DEATH"
                             self.thesis_repo.save_thesis(validated_thesis)
             
             # B. NLP SEC Risk Factors Test (Finnhub + Gemini)
-            if not thesis_death and self.sec_adapter:
+            if not thesis_death and not thesis_review and self.sec_adapter:
                 logger.info(f"Checking SEC Filings for {ticker}...")
                 # Fetch latest 10-K URL
                 latest_10k = self.sec_adapter.get_latest_10k(ticker)
@@ -101,10 +146,13 @@ class SurveillanceLoop:
                     if "No material customer concentration" not in risk_factors and "[SEC ANALYSIS" not in risk_factors:
                         thesis_death = True
                         reason = f"SEC NLP Alert: Material structural risks detected in 10-K: {risk_factors[:100]}..."
+                        severity = "THESIS_DEATH"
             
             report = {
                 "ticker": ticker,
                 "thesis_death_flag": thesis_death,
+                "thesis_review_flag": thesis_review,
+                "severity": severity,
                 "surveillance_reason": reason
             }
             surveillance_reports.append(report)
@@ -120,6 +168,14 @@ class SurveillanceLoop:
                 # 4Q Blacklist (Druckenmiller: dead moat = dead for 4 quarters)
                 if self.blacklist:
                     self.blacklist.blacklist(ticker, "QUALITY", reason, quarters=4)
+
+            elif thesis_review:
+                logger.warning(f"⚠️ THESIS REVIEW REQUERIDO PARA {ticker}: {reason}")
+                self.journal.update_trade(trade["trade_id"], {
+                    "thesis_review_flag": True,
+                    "thesis_review_reason": reason,
+                    "thesis_review_requested_at": datetime.now().isoformat(),
+                })
                     
         return surveillance_reports
 

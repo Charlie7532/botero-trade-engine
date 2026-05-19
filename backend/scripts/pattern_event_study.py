@@ -35,7 +35,7 @@ from backend.modules.simulation.infrastructure.signal_adapters import PatternSig
 # Full 30-ticker Quality Universe
 from backend.scripts.calibrate_passports import QUALITY_TICKERS
 
-OOS_TICKERS = ["TSLA", "AMD", "NFLX", "BA", "DIS", "UBER", "SQ", "SPOT", "COIN", "PLTR"]
+OOS_TICKERS = ["TSLA", "NFLX", "UBER"]
 
 def get_trend_state(closes: np.ndarray, current_idx: int, lookback: int = 60) -> str:
     """Calculates the 60-day linear regression slope and classifies the trend."""

@@ -76,6 +76,19 @@ class QualityWatchlistEngine:
             fcf_margin=_f("fcf_margin_ttm"),
             fcf_margin_5y_med=_f("fcf_margin_5y_med"),
             beneish_m_score=_f("beneish_m", -999.0),
+            # Forward-looking estimate fields
+            eps_estimate_current_q=_f("eps_estimate_current_q"),
+            eps_estimate_next_y=_f("eps_estimate_next_y"),
+            eps_growth_estimate=_f("eps_growth_estimate"),
+            revenue_growth_estimate=_f("revenue_growth_estimate"),
+            eps_revision_pct_30d=_f("eps_revision_pct_30d"),
+            eps_revision_pct_90d=_f("eps_revision_pct_90d"),
+            eps_revisions_up_30d=int(_f("eps_revisions_up_30d")),
+            eps_revisions_down_30d=int(_f("eps_revisions_down_30d")),
+            num_analysts=int(_f("num_analysts")),
+            # Credibility gate (Munger)
+            analyst_credibility_score=_f("analyst_credibility_score", 50.0),
+            credibility_gate=screening.get("credibility_gate", "MODERATE"),
             added_at=datetime.now(timezone.utc),
             last_updated=datetime.now(timezone.utc),
         )
@@ -131,23 +144,25 @@ class QualityWatchlistEngine:
         """
         Composite conviction score (0-100) using weighted dimensions.
 
-        Recalibrated from Phase 0 pilot study (2026-05-09):
-        - ROIC-WACC spread CAPPED at 25 pts (prevents PLTR/NVDA inflation)
-        - Moat stability penalty for unstable margin trajectories
-        - Operating margin as primary profitability signal
+        Recalibrated v2 (2026-05-19) — Earnings Estimates Intelligence:
+        - Added Forward Estimates dimension (10%) modulated by Credibility Gate
+        - Quality signals reduced 35%→30% to accommodate
+        - Trailing growth reduced 10%→5%, forward estimates compensate
+        - Moat stability enhanced with revision direction signal
 
         Weights:
-        - Quality signals (GF + Piotroski + financial health): 35%
+        - Quality signals (GF + Piotroski + financial health): 30%
         - Value creation (ROIC-WACC spread, capped): 25%
         - Valuation (Price-to-GF-Value): 20%
-        - Moat stability (margin consistency): 10%
-        - Growth (ranks): 10%
+        - Moat stability (margin consistency + revision direction): 10%
+        - Growth (trailing ranks): 5%
+        - Forward Estimates (revision momentum × credibility): 10%
         """
         score = 0.0
 
-        # Quality dimension (35%)
-        gf_pts = min(c.gf_score, 100) * 0.15
-        f_pts = min(c.piotroski_f_score / 9, 1.0) * 12
+        # Quality dimension (30%, reduced from 35%)
+        gf_pts = min(c.gf_score, 100) * 0.12
+        f_pts = min(c.piotroski_f_score / 9, 1.0) * 10
         fin_pts = min(c.rank_financial_strength / 10, 1.0) * 8
         score += gf_pts + f_pts + fin_pts
 
@@ -162,21 +177,58 @@ class QualityWatchlistEngine:
             val_pts = max(0, min(20, (1.3 - c.price_to_gf_value) * 20))
             score += val_pts
 
-        # Moat stability dimension (10%) — NEW from pilot
+        # Moat stability dimension (10%) — enhanced with revision direction
+        moat_pts = 0.0
         if c.operating_margin_5y_med > 0:
-            # Reward consistent margins, penalize wild swings
             if c.moat_stable and c.operating_margin >= c.operating_margin_5y_med * 0.85:
-                score += 10  # Stable and not decaying
+                moat_pts = 8   # Stable and not decaying
             elif c.moat_stable:
-                score += 5   # Stable but slight decay
-            # Unstable (TTM > 3x 5Y) = 0 pts — moat unproven
+                moat_pts = 4   # Stable but slight decay
         else:
-            score += 5  # No 5Y data = neutral
+            moat_pts = 4  # No 5Y data = neutral
+        # Revision direction bonus/penalty (±2 pts within moat stability)
+        if c.eps_revision_pct_90d > 0.02:
+            moat_pts = min(10, moat_pts + 2)   # Estimates rising → moat widening
+        elif c.eps_revision_pct_90d < -0.05:
+            moat_pts = max(0, moat_pts - 2)    # Estimates falling → moat stress
+        score += moat_pts
 
-        # Growth dimension (10%)
-        growth_pts = min(c.rank_growth / 10, 1.0) * 7
-        prof_pts = min(c.rank_profitability / 10, 1.0) * 3
+        # Growth dimension (5%, reduced from 10%)
+        growth_pts = min(c.rank_growth / 10, 1.0) * 3
+        prof_pts = min(c.rank_profitability / 10, 1.0) * 2
         score += growth_pts + prof_pts
+
+        # Forward Estimates dimension (10%) — modulated by Credibility Gate
+        fwd_pts = 0.0
+        if c.num_analysts >= 10:  # Minimum coverage threshold
+            # Credibility modifier (Munger "Ver Para Creer")
+            if c.credibility_gate == "HIGH":
+                cred_modifier = 1.0
+            elif c.credibility_gate == "MODERATE":
+                cred_modifier = 0.6
+            else:  # LOW
+                cred_modifier = 0.3
+
+            # Revision momentum score (scale -1 to +1)
+            rev_90d = c.eps_revision_pct_90d
+            if rev_90d > 0.05:
+                rev_score = 1.0   # Strong upward revision
+            elif rev_90d > 0.02:
+                rev_score = 0.6   # Moderate upward
+            elif rev_90d > -0.02:
+                rev_score = 0.3   # Flat/neutral
+            elif rev_90d > -0.05:
+                rev_score = 0.0   # Moderate downward
+            else:
+                rev_score = -0.3  # Strong downward (penalty)
+
+            # Breadth bonus: overwhelming consensus shift
+            if c.eps_revisions_up_30d > 15 and c.eps_revisions_down_30d < 3:
+                rev_score = min(1.0, rev_score + 0.2)
+
+            fwd_pts = max(0, rev_score * 10 * cred_modifier)
+        # else: < 10 analysts → 0% weight (completely ignored per architect)
+        score += fwd_pts
 
         return round(min(score, 100), 1)
 
@@ -199,7 +251,7 @@ class QualityWatchlistEngine:
         return True
 
     def _classify_moat(self, c: QualityWatchlistCandidate) -> str:
-        """Classify moat strength based on fundamental metrics."""
+        """Classify moat strength based on fundamental metrics + revision direction."""
         strong_signals = 0
 
         if c.roic >= 20:
@@ -212,6 +264,11 @@ class QualityWatchlistEngine:
             strong_signals += 1
         if c.gf_score >= 90:
             strong_signals += 1
+        # Forward estimate momentum confirms moat direction
+        if c.eps_revision_pct_90d > 0.02:
+            strong_signals += 1   # Moat WIDENING signal
+        elif c.eps_revision_pct_90d < -0.05:
+            strong_signals -= 1   # Moat NARROWING penalty
 
         if strong_signals >= 4:
             return "WIDE"

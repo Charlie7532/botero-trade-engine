@@ -115,18 +115,21 @@ Your `StrategyCalibrator._try_xgboost_weights()` uses feature importance. Ensure
 
 ## Available Tools (backend/modules/simulation/)
 
-| Tool | File | Purpose |
-|---|---|---|
-| `OracleBacktester` | `oracle_backtest.py` | Alpha Ceiling per signal via Triple Barrier + forensic persistence |
-| `StrategyCalibrator` | `calibrate_strategy.py` | ML-driven weight discovery (Oracle + XGBoost) |
-| `QuantFeatureEngineer` | `engineer_features.py` | 11-family stationary feature pipeline (FD→MS→TS→CS→VF→OV→CAL→IM→RG→J→K) |
-| `StrategyComposer` | `strategy_composer.py` | Weighted/majority/unanimous signal composition |
-| `PreTradeGate` | `pre_trade_gate.py` | 11-stage validation pipeline |
-| `RetrainTrigger` | `retrain_trigger.py` | Automated decay detection + recalibration |
-| `BacktestRunner` | `run_backtest.py` | Full backtest with walk-forward |
-| `TradeAnalyzer` | `analyze_trades.py` | Post-trade statistical analysis |
-| `RegressionChannelAdapter` | `signal_adapters.py` | 200-bar channel + VWAP + slope conjugation (Sharpe 1.326) |
-| `TripleBarrierAdapter` | `triple_barrier_adapter.py` | Labels + MAE/MFE/post-exit forensics + sweep detection |
+| Tool | File | Status | Purpose |
+|---|---|---|---|
+| `OracleBacktester` | `oracle_backtest.py` | — | Alpha Ceiling per signal via Triple Barrier + forensic persistence |
+| `StrategyCalibrator` | `calibrate_strategy.py` | — | ML-driven weight discovery (Oracle + XGBoost) |
+| `QuantFeatureEngineer` | `engineer_features.py` | — | 11-family stationary feature pipeline (FD→MS→TS→CS→VF→OV→CAL→IM→RG→J→K) |
+| `StrategyComposer` | `strategy_composer.py` | — | Weighted/majority/unanimous signal composition |
+| `PreTradeGate` | `pre_trade_gate.py` | — | 11-stage validation pipeline |
+| `RetrainTrigger` | `retrain_trigger.py` | — | Automated decay detection + recalibration |
+| `BacktestRunner` | `run_backtest.py` | — | Full backtest with walk-forward |
+| `TradeAnalyzer` | `analyze_trades.py` | — | Post-trade statistical analysis |
+| `RegressionChannelAdapter` | `signal_adapters.py` | `[VALIDATED] A` | 200-bar channel + VWAP + slope conjugation (Sharpe 1.326) |
+| `PatternSignalAdapter` | `signal_adapters.py` | `[VALIDATED] C` | Tri-layer (Micro/Macro/Hyper) — contrarian buy (WR 62.9% N=717 w/20yr) + narrative confidence modifier + anti-signals |
+| `RSISignalAdapter` | `signal_adapters.py` | `[HYPOTHESIS] D` | RSI Cardwell regime-aware (Sharpe 0.586) — pending WF-DSR |
+| `KalmanFilterAdapter` | `signal_adapters.py` | `[HYPOTHESIS] D` | Kalman trend confirmador — pending WF-DSR |
+| `TripleBarrierAdapter` | `triple_barrier_adapter.py` | — | Labels + MAE/MFE/post-exit forensics + sweep detection |
 
 ### Dual Geometry (Quality)
 

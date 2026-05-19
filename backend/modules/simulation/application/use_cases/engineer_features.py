@@ -22,6 +22,7 @@ class QuantFeatureEngineer:
     D. Contexto Cross-Sectional (Relative Strength, Sector Rank)
     E. Corriente de Volumen (Relative Volume, Aceleración, Cumulative Delta)
     F. Contexto Macro (VIX, Bonds/Equity Ratio)
+    N. Narrativa Fractal de Patrones (Hyper-candle decomposition)
     """
 
     def __init__(self, data: pd.DataFrame, timeframe_minutes: int):
@@ -1194,6 +1195,86 @@ class QuantFeatureEngineer:
         )
 
     # ================================================================
+    # FAMILY N: Fractal Pattern Narrative (Nested Pattern Intelligence)
+    # ================================================================
+
+    def extract_narrative_pattern_features(self) -> None:
+        """Family N: Fractal Pattern Narrative features.
+
+        Decomposes HYPER-scale candlestick patterns into their internal
+        narrative signatures (what MACRO patterns live inside each hyper-candle)
+        and raw morphology (body ratio, close position).
+
+        Features (all shifted by 1 to prevent lookahead):
+          NP1: NP_HyperActive          — 1/0 flag: is a HYPER pattern firing?
+          NP2: NP_NarrativeConfidence   — float 0.3-1.5 from decompose_narrative()
+          NP3: NP_FinalClosePosition    — close position of last hyper-candle (0-1)
+          NP4: NP_FinalBodyRatio        — body ratio of last hyper-candle (0-1)
+
+        Empirical basis (2026-05-19, 20yr, 32 tickers, N=717):
+          - NP_NarrativeConfidence encodes narrative signatures (+11-12pp WR)
+          - NP_FinalClosePosition <= 0.28: +3.1pp WR (floor close = surrender)
+          - NP_FinalBodyRatio > 0.80: +9pp WR (71.9%, N=64)
+        """
+        from backend.modules.simulation.infrastructure.signal_adapters import PatternSignalAdapter
+
+        df = self.df
+        adapter = PatternSignalAdapter()
+
+        # Initialize columns
+        np_active = pd.Series(0.0, index=df.index)
+        np_confidence = pd.Series(0.0, index=df.index)
+        np_close_pos = pd.Series(0.0, index=df.index)
+        np_body_ratio = pd.Series(0.0, index=df.index)
+
+        # DLR trend needed for context
+        trend_series = adapter._compute_dlr_trend(df, lookback=60)
+
+        ohlcv_cols = [c for c in ['open', 'high', 'low', 'close', 'volume'] if c in df.columns]
+        ohlc = df[ohlcv_cols]
+
+        for i in range(60, len(df)):
+            try:
+                # Only compute when in MUY_BAJISTA (where signals fire)
+                if trend_series.iloc[i] != 'MUY_BAJISTA':
+                    continue
+
+                # Check if HYPER pattern fires
+                hyper_df = adapter.synthesize_hyper_candles(ohlc, end_idx=i)
+                if hyper_df is None or len(hyper_df) < 3:
+                    continue
+
+                verdict = adapter._engine.detect(hyper_df)
+                if verdict.primary_pattern == 'NONE':
+                    continue
+
+                np_active.iloc[i] = 1.0
+
+                # Decompose narrative
+                narrative = adapter.decompose_narrative(
+                    adapter._engine, ohlc, end_idx=i,
+                )
+                if narrative:
+                    np_confidence.iloc[i] = narrative['confidence']
+                    if len(narrative['morphology']) == 3:
+                        final_m = narrative['morphology'][2]
+                        np_close_pos.iloc[i] = final_m['close_position']
+                        np_body_ratio.iloc[i] = final_m['body_ratio']
+            except Exception:
+                continue
+
+        # SHIFT(1) — mandatory anti-lookahead
+        df['NP_HyperActive'] = np_active.shift(1).fillna(0.0)
+        df['NP_NarrativeConfidence'] = np_confidence.shift(1).fillna(0.0)
+        df['NP_FinalClosePosition'] = np_close_pos.shift(1).fillna(0.0)
+        df['NP_FinalBodyRatio'] = np_body_ratio.shift(1).fillna(0.0)
+
+        logger.info(
+            f"Narrative pattern features: 4 features (NP_), "
+            f"{int(np_active.sum())} active events detected"
+        )
+
+    # ================================================================
     # PIPELINE MASTER
     # ================================================================
 
@@ -1202,7 +1283,7 @@ class QuantFeatureEngineer:
         """Retorna la lista de columnas que son features válidos para ML."""
         prefixes = (
             'FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_',
-            'MTF_', 'BA_', 'ST_',
+            'MTF_', 'BA_', 'ST_', 'NP_',
         )
         return [c for c in self.df.columns if c.startswith(prefixes)]
 
@@ -1232,7 +1313,8 @@ class QuantFeatureEngineer:
         7. Calendar Mechanical Forces (OPEX, Month-End, Quarter-End)
         8. Intermarket Rotation (Sector RS, Yield Delta, Credit Spread)
         9. Macro Context (VIX, Bonds/Equity Ratio)
-        10. Limpieza de NaNs iniciales por rolling windows
+        10. Narrative Pattern (Hyper-candle fractal decomposition)
+        11. Limpieza de NaNs iniciales por rolling windows
 
         Returns:
             DataFrame con OHLCV original + features nombrados con prefijo de familia.
@@ -1259,6 +1341,7 @@ class QuantFeatureEngineer:
         self.extract_multitf_candle_features()
         self.extract_bar_anatomy_features()
         self.extract_sentiment_composite_features(s5fi_df=s5fi_df, fg_df=fg_df)
+        self.extract_narrative_pattern_features()
 
         # Reemplazar infinitos por NaN antes de dropear
         self.df.replace([np.inf, -np.inf], np.nan, inplace=True)

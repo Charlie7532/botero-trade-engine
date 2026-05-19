@@ -795,6 +795,349 @@ def vault_gurufocus_screening(store: TimescaleDataStore, tickers: list[str]) -> 
 
 
 # ═══════════════════════════════════════════════════════════════
+# 6B. EARNINGS ESTIMATES — Forward-Looking Analyst Consensus
+# ═══════════════════════════════════════════════════════════════
+
+def vault_earnings_estimates(store: TimescaleDataStore, tickers: list[str]) -> dict:
+    """Vault forward-looking earnings estimates. 1x/day.
+
+    PRIMARY: GuruFocus /analyst_estimate (institutional-grade, more reliable).
+    FALLBACK: yfinance (free, richer revision trend data, used when GF rate-limited).
+
+    Per Rule 10: daemon providers use fallback chains; never fail silently.
+    """
+    stats = {"estimated": 0, "source_gf": 0, "source_yf": 0}
+
+    if _already_vaulted_today(store, "fundamental/estimates", "BATCH_DONE"):
+        logger.info("📊 Earnings estimates already vaulted today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    # Initialize GuruFocus bridge (PRIMARY)
+    gf_bridge = None
+    try:
+        from backend.modules.portfolio_management.infrastructure.gurufocus_mcp_bridge import GuruFocusMCPBridge
+        gf_bridge = GuruFocusMCPBridge()
+        if not gf_bridge._token:
+            gf_bridge = None
+            logger.info("📊 GuruFocus token not set — will use yfinance only")
+    except Exception:
+        pass
+
+    # Track consecutive GF failures to short-circuit to yfinance
+    gf_consecutive_failures = 0
+    GF_FAILURE_THRESHOLD = 3  # After 3 failures, assume rate-limited
+
+    batch = tickers[:20]
+    for ticker in batch:
+        payload = {"ticker": ticker, "timestamp": datetime.now(UTC).isoformat()}
+        source = None
+
+        # ── PRIMARY: GuruFocus /analyst_estimate ──
+        if gf_bridge and gf_consecutive_failures < GF_FAILURE_THRESHOLD:
+            try:
+                gf_data = gf_bridge.fetch_analyst_estimates(ticker)
+                if gf_data:
+                    payload.update(_parse_gurufocus_estimates(gf_data, ticker))
+                    source = "gurufocus"
+                    gf_consecutive_failures = 0
+                    stats["source_gf"] += 1
+                else:
+                    gf_consecutive_failures += 1
+            except Exception as e:
+                gf_consecutive_failures += 1
+                logger.debug(f"  {ticker} GuruFocus estimate failed: {e}")
+
+        # ── FALLBACK: yfinance ──
+        if source is None:
+            if gf_consecutive_failures >= GF_FAILURE_THRESHOLD and gf_consecutive_failures == GF_FAILURE_THRESHOLD:
+                logger.warning(
+                    f"📊 GuruFocus rate-limited ({gf_consecutive_failures} failures) "
+                    f"— falling back to yfinance for remaining tickers"
+                )
+            try:
+                payload.update(_fetch_yfinance_estimates(ticker))
+                if len(payload) > 2:
+                    source = "yfinance"
+                    stats["source_yf"] += 1
+                    logger.debug(f"  {ticker}: FALLBACK to yfinance (GuruFocus unavailable)")
+            except Exception as e:
+                logger.debug(f"  {ticker} yfinance estimate also failed: {e}")
+
+        # Save if we got data from either source
+        payload["source"] = source or "none"
+        if source and len(payload) > 3:
+            store.save_mcp_snapshot("fundamental/estimates", ticker, payload)
+            stats["estimated"] += 1
+            logger.debug(f"  {ticker}: {len(payload)} estimate fields via {source}")
+
+    # Mark batch done
+    if stats["estimated"] > 0:
+        store.save_mcp_snapshot("fundamental/estimates", "BATCH_DONE", {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "tickers_estimated": stats["estimated"],
+            "source_gf": stats["source_gf"],
+            "source_yf": stats["source_yf"],
+            "batch": batch,
+        })
+
+    logger.info(
+        f"📈 Earnings estimates vault: {stats['estimated']}/{len(batch)} tickers "
+        f"(GF: {stats['source_gf']}, YF fallback: {stats['source_yf']})"
+    )
+    return {"status": "ok", **stats}
+
+
+def _parse_gurufocus_estimates(gf_data: dict, ticker: str) -> dict:
+    """Parse GuruFocus /analyst_estimate response into normalized payload.
+
+    GuruFocus returns annual/quarterly estimates with EPS and revenue forecasts.
+    We extract the same fields that yfinance provides for consistency.
+    """
+    payload = {}
+    sf = _safe_num  # Use local helper (same behavior as GuruFocusMCPBridge._safe_float)
+
+    # GuruFocus analyst_estimate structure varies but typically includes:
+    # - annual estimates with EPS mean/high/low, revenue mean/high/low
+    # - per-period breakdown (current year, next year, etc.)
+    if isinstance(gf_data, dict):
+        # Try standard keys
+        annual = gf_data.get("annual", gf_data)
+        if isinstance(annual, list) and len(annual) > 0:
+            # First entry = current year, second = next year
+            for i, entry in enumerate(annual[:2]):
+                period = "0y" if i == 0 else "+1y"
+                payload[f"eps_{period}_avg"] = sf(entry.get("eps_nri_mean", entry.get("eps_mean", 0)))
+                payload[f"eps_{period}_low"] = sf(entry.get("eps_nri_low", entry.get("eps_low", 0)))
+                payload[f"eps_{period}_high"] = sf(entry.get("eps_nri_high", entry.get("eps_high", 0)))
+                payload[f"eps_{period}_numAnalysts"] = sf(entry.get("number_of_analysts", 0))
+                payload[f"rev_{period}_avg"] = sf(entry.get("revenue_mean", 0))
+                payload[f"rev_{period}_growth"] = sf(entry.get("revenue_growth", 0))
+                payload[f"eps_{period}_growth"] = sf(entry.get("eps_growth", 0))
+                year_ago = sf(entry.get("eps_nri_year_ago", entry.get("eps_year_ago", 0)))
+                payload[f"eps_{period}_yearAgoEps"] = year_ago
+        elif isinstance(annual, dict):
+            # Flat dict format
+            payload["eps_0y_avg"] = sf(annual.get("eps_nri_mean", annual.get("eps_mean", 0)))
+            payload["eps_0y_numAnalysts"] = sf(annual.get("number_of_analysts", 0))
+            payload["rev_0y_avg"] = sf(annual.get("revenue_mean", 0))
+            payload["eps_0y_growth"] = sf(annual.get("eps_growth", 0))
+            payload["rev_0y_growth"] = sf(annual.get("revenue_growth", 0))
+
+    # Note: GuruFocus does NOT provide eps_trend (revision momentum) or
+    # eps_revisions (up/down breadth). These are only available via yfinance.
+    # The adapter layer handles this gracefully — missing fields default to 0.
+    return payload
+
+
+def _fetch_yfinance_estimates(ticker: str) -> dict:
+    """Fetch earnings estimates from yfinance (fallback source).
+
+    Provides richer data than GuruFocus: includes EPS Trend (revision momentum)
+    and EPS Revisions (up/down breadth counts) — the key alpha signals.
+    """
+    import yfinance as yf
+    payload = {}
+    t = yf.Ticker(ticker)
+
+    # 1. Earnings estimate (avg EPS per period)
+    try:
+        ee = t.earnings_estimate
+        if ee is not None and not ee.empty:
+            for period in ee.index:
+                row = ee.loc[period]
+                prefix = f"eps_{period}"
+                payload[f"{prefix}_avg"] = _safe_num(row.get("avg"))
+                payload[f"{prefix}_low"] = _safe_num(row.get("low"))
+                payload[f"{prefix}_high"] = _safe_num(row.get("high"))
+                payload[f"{prefix}_yearAgoEps"] = _safe_num(row.get("yearAgoEps"))
+                payload[f"{prefix}_numAnalysts"] = _safe_num(row.get("numberOfAnalysts"))
+                payload[f"{prefix}_growth"] = _safe_num(row.get("growth"))
+    except Exception:
+        pass
+
+    # 2. Revenue estimate
+    try:
+        re_ = t.revenue_estimate
+        if re_ is not None and not re_.empty:
+            for period in re_.index:
+                row = re_.loc[period]
+                prefix = f"rev_{period}"
+                payload[f"{prefix}_avg"] = _safe_num(row.get("avg"))
+                payload[f"{prefix}_numAnalysts"] = _safe_num(row.get("numberOfAnalysts"))
+                payload[f"{prefix}_growth"] = _safe_num(row.get("growth"))
+    except Exception:
+        pass
+
+    # 3. EPS Trend — revision momentum (the key alpha signal, yfinance-exclusive)
+    try:
+        et = t.eps_trend
+        if et is not None and not et.empty:
+            for period in et.index:
+                row = et.loc[period]
+                current = _safe_num(row.get("current"))
+                ago_30 = _safe_num(row.get("30daysAgo"))
+                ago_90 = _safe_num(row.get("90daysAgo"))
+                prefix = f"trend_{period}"
+                payload[f"{prefix}_current"] = current
+                payload[f"{prefix}_30dAgo"] = ago_30
+                payload[f"{prefix}_90dAgo"] = ago_90
+                # Compute revision % (the derivative)
+                if ago_30 and ago_30 != 0:
+                    payload[f"{prefix}_rev_pct_30d"] = round(
+                        (current - ago_30) / abs(ago_30), 4
+                    )
+                if ago_90 and ago_90 != 0:
+                    payload[f"{prefix}_rev_pct_90d"] = round(
+                        (current - ago_90) / abs(ago_90), 4
+                    )
+    except Exception:
+        pass
+
+    # 4. EPS Revisions — breadth (up/down counts, yfinance-exclusive)
+    try:
+        er = t.eps_revisions
+        if er is not None and not er.empty:
+            for period in er.index:
+                row = er.loc[period]
+                prefix = f"revisions_{period}"
+                payload[f"{prefix}_up7d"] = _safe_num(row.get("upLast7days"))
+                payload[f"{prefix}_up30d"] = _safe_num(row.get("upLast30days"))
+                payload[f"{prefix}_down30d"] = _safe_num(row.get("downLast30days"))
+                payload[f"{prefix}_down7d"] = _safe_num(row.get("downLast7Days"))
+    except Exception:
+        pass
+
+    return payload
+
+
+def _safe_num(v) -> float:
+    """Safely extract a numeric value from pandas/yfinance output."""
+    if v is None:
+        return 0.0
+    try:
+        import math
+        val = float(v)
+        return 0.0 if math.isnan(val) or math.isinf(val) else val
+    except (ValueError, TypeError):
+        return 0.0
+
+
+# ═══════════════════════════════════════════════════════════════
+# 6C. ANALYST CREDIBILITY — Post-Hoc Accuracy Tracking
+# ═══════════════════════════════════════════════════════════════
+
+def vault_analyst_credibility(store: TimescaleDataStore, tickers: list[str]) -> dict:
+    """Build per-ticker analyst credibility scores from Finnhub earnings history.
+
+    Munger Credibility Framework: compares actual reported EPS vs consensus
+    estimates from historical earnings events. Produces a rolling 4-quarter
+    accuracy score (0-100) that modulates how much weight we give to
+    forward-looking estimates for each ticker.
+
+    Reads from already-vaulted Finnhub earnings calendar data.
+    """
+    stats = {"scored": 0}
+
+    if _already_vaulted_today(store, "fundamental/credibility", "BATCH_DONE"):
+        logger.info("📊 Analyst credibility already scored today — skipping")
+        return {"status": "skipped", "reason": "already_today"}
+
+    try:
+        from backend.modules.flow_intelligence.infrastructure.finnhub_api import FinnhubIntelligence
+        fh = FinnhubIntelligence()
+        if not fh._available:
+            logger.debug("Finnhub not available — skipping credibility scoring")
+            return {"status": "skipped", "reason": "no_api_key"}
+
+        from datetime import timedelta
+        today = datetime.now()
+        # Look back 15 months to capture 4-5 quarters of earnings
+        start = (today - timedelta(days=450)).strftime("%Y-%m-%d")
+        end = today.strftime("%Y-%m-%d")
+
+        for ticker in tickers[:30]:
+            try:
+                # Fetch earnings calendar for this specific ticker
+                calendar = fh._client.earnings_calendar(
+                    _from=start, to=end, symbol=ticker
+                )
+                events = calendar.get("earningsCalendar", [])
+                if not events:
+                    continue
+
+                # Filter to events with both actual and estimate
+                valid_events = []
+                for ev in events:
+                    actual = ev.get("actual")
+                    estimate = ev.get("estimate")
+                    if actual is not None and estimate is not None and estimate != 0:
+                        surprise_pct = abs(actual - estimate) / abs(estimate)
+                        valid_events.append({
+                            "date": ev.get("date", ""),
+                            "actual": actual,
+                            "estimate": estimate,
+                            "surprise_pct": round(surprise_pct * 100, 2),
+                            "beat": actual > estimate,
+                        })
+
+                if not valid_events:
+                    continue
+
+                # Take last 4 quarters (most recent)
+                recent = sorted(valid_events, key=lambda x: x["date"], reverse=True)[:4]
+
+                # Credibility score: 100 = perfect accuracy, 0 = wildly wrong
+                avg_surprise = sum(e["surprise_pct"] for e in recent) / len(recent)
+                beat_rate = sum(1 for e in recent if e["beat"]) / len(recent)
+
+                # Score: penalize high surprise %, reward consistency
+                # Perfect: avg_surprise=0 → score=100
+                # Terrible: avg_surprise>50% → score≈0
+                credibility_score = max(0, min(100, 100 - avg_surprise * 2))
+
+                # Determine gate
+                if credibility_score >= 70 and len(recent) >= 3:
+                    gate = "HIGH"
+                elif credibility_score >= 40:
+                    gate = "MODERATE"
+                else:
+                    gate = "LOW"
+
+                payload = {
+                    "ticker": ticker,
+                    "credibility_score": round(credibility_score, 1),
+                    "gate": gate,
+                    "avg_surprise_pct": round(avg_surprise, 2),
+                    "beat_rate": round(beat_rate, 2),
+                    "quarters_evaluated": len(recent),
+                    "events": recent,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+                store.save_mcp_snapshot("fundamental/credibility", ticker, payload)
+                stats["scored"] += 1
+                logger.debug(
+                    f"  {ticker}: credibility={credibility_score:.0f} "
+                    f"gate={gate} ({len(recent)}Q)"
+                )
+
+            except Exception as e:
+                logger.debug(f"  {ticker} credibility scoring failed: {e}")
+
+        if stats["scored"] > 0:
+            store.save_mcp_snapshot("fundamental/credibility", "BATCH_DONE", {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "tickers_scored": stats["scored"],
+            })
+
+        logger.info(f"🔍 Analyst credibility vault: {stats['scored']} tickers scored")
+        return {"status": "ok", **stats}
+
+    except Exception as e:
+        logger.error(f"Analyst credibility vault failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
 # 7. OHLCV BARS — Daily update (yfinance + Alpaca enrichment)
 # ═══════════════════════════════════════════════════════════════
 
@@ -1565,6 +1908,8 @@ def run_cycle(store: TimescaleDataStore) -> None:
     # ── Tier 3: Heavy (~5-20 min) ──
     results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)
     results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
+    results["estimates"] = vault_earnings_estimates(store, neon_tickers)
+    results["credibility"] = vault_analyst_credibility(store, neon_tickers)
 
     # ── Tier 3b: Breadth (MUST run AFTER ohlcv to use fresh closes) ──
     results["breadth"] = vault_breadth_indicators(store)

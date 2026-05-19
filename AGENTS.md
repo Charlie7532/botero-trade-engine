@@ -238,6 +238,21 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     |---|---|---|---:|---|
     | `SPY` | ETF | Broad Market | 9,625 | 1993→2026 |
     | `QQQ` | ETF | Technology | 8,100 | 1999→2026 |
+    | `AAPL` | STOCK | Technology | 8,511 | 1992→2026 |
+    | `MSFT` | STOCK | Technology | 5,078 | 2006→2026 |
+    | `AMZN` | STOCK | Consumer | 5,086 | 2006→2026 |
+    | `COST` | STOCK | Consumer | 5,093 | 2006→2026 |
+    | `HD` | STOCK | Consumer | 5,094 | 2006→2026 |
+    | `HON` | STOCK | Industrial | 5,095 | 2006→2026 |
+    | `IBM` | STOCK | Technology | 5,094 | 2006→2026 |
+    | `JNJ` | STOCK | Healthcare | 5,085 | 2006→2026 |
+    | `JPM` | STOCK | Financial | 5,091 | 2006→2026 |
+    | `MCD` | STOCK | Consumer | 5,093 | 2006→2026 |
+    | `MRK` | STOCK | Healthcare | 5,093 | 2006→2026 |
+    | `PEP` | STOCK | Consumer | 5,572 | 2004→2026 |
+    | `PG` | STOCK | Consumer | 5,086 | 2006→2026 |
+    | `WMT` | STOCK | Consumer | 5,085 | 2006→2026 |
+    | `XOM` | STOCK | Energy | 5,094 | 2006→2026 |
     | `VIX` | INDICATOR | Volatility | 17,504 | 1990→2026 |
     | `VVIX` | INDICATOR | Volatility | 10,024 | 2006→2026 |
     | `CBOE_PCR` | INDICATOR | Options Flow | 4,924 | 2006→2026 |

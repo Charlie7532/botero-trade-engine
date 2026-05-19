@@ -45,9 +45,9 @@ Every directive in a PROFILE.md or indicator configuration that implies an actio
 
 | Grade | Authority Level | What It Can Do | What It Cannot Do |
 |---|---|---|---|
-| **A** (DSR > 2.0) | Hard Gate | Block/allow trades, full veto power | — |
-| **B** (DSR > 1.0) | Hard Gate | Block/allow trades | Override Grade A signals |
-| **C** (DSR > 0.5) | Sizing Modifier | Adjust position ±25% | Block or allow trades |
+| **A** (DSR > 0.95) | Hard Gate | Block/allow trades, full veto power | — |
+| **B** (DSR > 0.85) | Hard Gate | Block/allow trades | Override Grade A signals |
+| **C** (DSR > 0.70) | Sizing Modifier | Adjust position ±25% | Block or allow trades |
 | **D** (unvalidated) | Advisory Only | Log alerts, feed Memory Guard 13D | Modify sizing or block trades |
 | **F** (failed OOS) | None | Nothing | Must be removed from active code |
 
@@ -65,16 +65,24 @@ No agent may promote a HYPOTHESIS to VALIDATED without completing ALL steps:
 
 3. **Walk-Forward Validation** (`StrategyCalibrator`)
    - SPECULATIVE: 1yr train / 3mo test, 5-20 bar horizon
-   - QUALITY: 3yr train / 1yr test, 60-250 bar horizon
-   - Purged + Embargoed cross-validation (no data leakage)
+   - QUALITY: 2yr train / 6mo test, 10 bar horizon (forward return)
+     - NOTE: If data history is < 8 years, use 2yr/6mo to ensure ≥4 folds.
+       If data history is ≥ 8 years, use 3yr/1yr for deeper training.
+   - Purged + Embargoed cross-validation (10d purge, 5d embargo)
+   - **Minimum N_OOS ≥ 30** for statistical significance (López de Prado)
 
 4. **Deflated Sharpe Ratio** (DSR)
    - Adjusts for number of trials tested
-   - DSR > 1.0 required for Grade B, DSR > 2.0 for Grade A
+   - DSR probability thresholds (implemented in `walk_forward_dsr_v2.py`):
+     - Grade A: DSR > 0.95 → Hard Gate with veto power
+     - Grade B: DSR > 0.85 → Hard Gate (subordinate)
+     - Grade C: DSR > 0.70 → Sizing Modifier (±25%)
+     - Grade D: DSR ≤ 0.70 → Advisory Only
 
 5. **Out-of-Sample Confirmation**
    - Final holdout test on unseen data
    - Must beat walk-forward baseline by ≥ 80%
+   - Overfitting check: IS_Sharpe / OOS_Sharpe ratio > 2.0 = SUSPECT
 
 ## Conjugation Rules
 

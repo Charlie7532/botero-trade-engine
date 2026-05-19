@@ -38,6 +38,23 @@ class QualityWatchlistCandidate:
     fcf_margin_5y_med: float = 0.0
     beneish_m_score: float = -999.0  # Default safe (< -1.78)
 
+    # Forward-Looking Estimate Fields (yfinance earnings_estimate + eps_trend)
+    eps_estimate_current_q: float = 0.0     # Avg EPS estimate for current quarter
+    eps_estimate_next_y: float = 0.0        # Avg EPS estimate for next year
+    eps_growth_estimate: float = 0.0        # YoY EPS growth expected (current year)
+    revenue_growth_estimate: float = 0.0    # YoY revenue growth expected
+
+    # Revision Momentum — the derivative signal (eps_trend current vs 30d/90d ago)
+    eps_revision_pct_30d: float = 0.0       # % change in EPS estimate vs 30 days ago
+    eps_revision_pct_90d: float = 0.0       # % change in EPS estimate vs 90 days ago
+    eps_revisions_up_30d: int = 0           # Count of upward revisions in 30 days
+    eps_revisions_down_30d: int = 0         # Count of downward revisions in 30 days
+    num_analysts: int = 0                   # Number of analysts covering
+
+    # Credibility Gate (Munger "Ver Para Creer" — cross-validated trust level)
+    analyst_credibility_score: float = 50.0  # 0-100, from post-hoc accuracy tracking
+    credibility_gate: str = "MODERATE"       # LOW | MODERATE | HIGH
+
     # Thesis
     thesis: str = ""
     conviction_score: float = 0.0

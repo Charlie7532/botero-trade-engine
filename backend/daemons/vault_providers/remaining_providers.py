@@ -196,11 +196,41 @@ class InsiderProvider:
         return self.run_full(store)
 
 
+class EarningsEstimatesProvider:
+    """Forward-looking earnings estimates via yfinance."""
+    name = "estimates"
+    categories = ["estimates", "earnings_estimates"]
+
+    def run_full(self, store: TimescaleDataStore, **kwargs) -> dict:
+        from backend.daemons.data_vault_daemon import vault_earnings_estimates
+        tickers = kwargs.get("tickers", [])
+        return vault_earnings_estimates(store, tickers)
+
+    def run_ticker(self, store: TimescaleDataStore, ticker: str) -> dict:
+        from backend.daemons.data_vault_daemon import vault_earnings_estimates
+        return vault_earnings_estimates(store, [ticker])
+
+
+class AnalystCredibilityProvider:
+    """Analyst credibility scores from Finnhub earnings history."""
+    name = "credibility"
+    categories = ["credibility"]
+
+    def run_full(self, store: TimescaleDataStore, **kwargs) -> dict:
+        from backend.daemons.data_vault_daemon import vault_analyst_credibility
+        tickers = kwargs.get("tickers", [])
+        return vault_analyst_credibility(store, tickers)
+
+    def run_ticker(self, store: TimescaleDataStore, ticker: str) -> dict:
+        from backend.daemons.data_vault_daemon import vault_analyst_credibility
+        return vault_analyst_credibility(store, [ticker])
+
+
 # ── Auto-register all providers ──
 for _cls in [
     VIXProvider, CBOEProvider, FREDProvider, MarketIndicesProvider,
     FearGreedProvider, PortfolioProvider, FinnhubProvider, SECProvider,
     GuruFocusProvider, YahooProvider, UWProvider, GuruPicksProvider,
-    InsiderProvider,
+    InsiderProvider, EarningsEstimatesProvider, AnalystCredibilityProvider,
 ]:
     register_provider(_cls())

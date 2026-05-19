@@ -100,7 +100,14 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
         return {}
 
     def get_earnings_calendar(self, ticker: str) -> Optional[dict]:
-        # Earnings calendar requires separate vault category
+        """Load forward-looking estimates from vault (fundamental/estimates)."""
+        try:
+            vault = self._get_vault()
+            est = vault.load_mcp_latest("fundamental/estimates", ticker)
+            if est and len(est) > 2:
+                return est
+        except Exception as e:
+            logger.debug(f"Vault estimates read for {ticker}: {e}")
         return None
 
     def get_financial_summary(self, ticker: str) -> dict:
@@ -139,6 +146,39 @@ class GuruFocusFundamentalAdapter(FundamentalDataPort):
             "wacc": data.get("wacc", 0),
             "gf_value": data.get("gf_value", 0),
         }
+
+        # Enrich with forward-looking estimates (Phase 3)
+        try:
+            vault = self._get_vault()
+            est = vault.load_mcp_latest("fundamental/estimates", ticker)
+            if est:
+                # Current-year EPS trend (0y) is the primary signal
+                result["eps_estimate_current_q"] = est.get("eps_0q_avg", 0)
+                result["eps_estimate_next_y"] = est.get("eps_+1y_avg", 0)
+                result["eps_growth_estimate"] = est.get("eps_0y_growth", 0)
+                result["revenue_growth_estimate"] = est.get("rev_0y_growth", 0)
+                result["num_analysts"] = est.get("eps_0y_numAnalysts", 0)
+                # Revision momentum — the key derivative signal
+                result["eps_revision_pct_30d"] = est.get("trend_0y_rev_pct_30d", 0)
+                result["eps_revision_pct_90d"] = est.get("trend_0y_rev_pct_90d", 0)
+                result["revenue_revision_pct_90d"] = est.get("trend_0y_rev_pct_90d", 0)
+                # Revision breadth
+                result["eps_revisions_up_30d"] = int(est.get("revisions_0y_up30d", 0))
+                result["eps_revisions_down_30d"] = int(est.get("revisions_0y_down30d", 0))
+        except Exception as e:
+            logger.debug(f"Estimates enrichment for {ticker}: {e}")
+
+        # Enrich with credibility score (Munger "Ver Para Creer")
+        try:
+            vault = self._get_vault()
+            cred = vault.load_mcp_latest("fundamental/credibility", ticker)
+            if cred:
+                result["analyst_credibility_score"] = cred.get("credibility_score", 50)
+                result["credibility_gate"] = cred.get("gate", "MODERATE")
+        except Exception as e:
+            logger.debug(f"Credibility enrichment for {ticker}: {e}")
+
+        return result
 
     def get_financial_statements(self, ticker: str, period_type: str = "annual") -> dict:
         # Full financial statements require a separate vault category

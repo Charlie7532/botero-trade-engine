@@ -145,6 +145,45 @@ Key diagnostic questions:
 - All 5 BEAR losers had `slope_long < -0.05` (structural collapse, not pullback).
 - Filter: `slope_long > -0.03` blocks structural collapses. BEAR WR: **100%** (N=2).
 
+### Pattern Forensics — Candlestick Conjugation (DSR Validated, 2026-05-19)
+
+Walk-Forward PCV (2yr Train / 6mo Test / 10d Purge / 5d Embargo) across 32 tickers
+(30 Quality + SPY 1993→2026 + QQQ 1999→2026). Deflated Sharpe Ratio adjusted for N=10 trials.
+
+**Grade C — Sizing Modifier (downgraded from A after 20yr deep validation):**
+
+| Setup | WR (5yr) | WR (20yr) | N (20yr) | Status |
+|---|---|---|---|---|
+| **HYPER_3BC_MB** (base) | 66.5% | **62.9%** | 717 | Degraded: sobreajustada a crash 2022 |
+| **MICRO_BM_MB** | 67.6% | pending | 102 | Needs 20yr re-validation |
+
+**Narrative Signatures — Internal Pattern Intelligence (20yr data):**
+
+When HYPER_3BC_MB fires, the INTERNAL composition of the 3 hyper-candles modifies signal quality:
+
+| Narrative Signature | WR | N | Δ vs Base | Confidence |
+|---|---|---|---|---|
+| BEARISH_ENGULFING central (2nd hyper) | **73.9%** | 23 | **+11pp** | ×1.25 |
+| BEARISH_MARUBOZU central (2nd hyper) | **75.0%** | 16 | **+12pp** | ×1.25 |
+| TWEEZER_TOP central (2nd hyper) | **100%** | 7 | **+37pp** | Monitor (N low) |
+| SHOOTING_STAR conclusión (3rd hyper) | **87.5%** | 8 | **+25pp** | Monitor (N low) |
+| DRAGONFLY_DOJI central (anti) | **28.6%** | 7 | **-34pp** | ×0.50 |
+| MORNING_STAR conclusión (anti) | **54.5%** | 22 | **-8pp** | ×0.60 |
+
+**Anti-Señales (Sharpe negativo demostrado):**
+
+| Setup | Sharpe OOS | WR OOS | N_OOS | Acción |
+|---|---|---|---|---|
+| HYPER_SS_A | -0.502 | 46.8% | 109 | VETO: Shooting Star en ALCISTA NO predice reversión |
+| MACRO_SS_A | -1.079 | 41.7% | 120 | VETO: Destruye capital sistemáticamente |
+
+**Key Insight**: La señal base HYPER_3BC_MB se degrada con historia profunda (estaba
+sobreajustada a 2022), pero las **narrative signatures específicas** (la "palabra central"
+del párrafo) mantienen su poder. La descomposición fractal es la fuente real de alpha,
+no el patrón exterior. El Shooting Star en tendencia alcista, contrariamente al dogma,
+no predice reversiones — su interpretación correcta en sentido inverso es una señal de
+advertencia: "no entres aquí".
+
 ## Output Format
 
 When generating a forensics report, structure as:

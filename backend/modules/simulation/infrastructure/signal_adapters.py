@@ -170,7 +170,7 @@ class RSISignalAdapter(SignalPort):
     Forensic audit result: 10 hypotheses tested, H3 is the winner.
     Sharpe 0.586 (+47% vs brute-force baseline), PF 1.281, 65% fewer entries.
 
-    Architecture (6 validated layers — fully assembled):
+    Architecture (7 layers — entries validated, trims [HYPOTHESIS]):
       1. REGIME from PRICE: Long regression (120 bars) classifies BULL/BEAR/FLAT.
          The RSI does NOT determine its own regime — that's circular.
       2. CROSS-REGRESSION: Short regression (60 bars) compared to long (120 bars).
@@ -186,12 +186,26 @@ class RSISignalAdapter(SignalPort):
       6. KALMAN ACCUMULATION: When Kalman-Wyckoff detects ACCUMULATION + positive
          velocity simultaneously with RSI signal → confidence multiplied.
          Validated: RSI+Kalman WR 75.7% → 93.5% (GOLDEN COMBO).
+      7. REGIME-INVERTED TRIM: [HYPOTHESIS] D — Advisory Only.
+         RSI reading is asymmetric by regime:
+           - BULL: valid signals at RSI LOWS (entries — pullback buying)
+           - BAJISTA: valid signals at RSI HIGHS (trims — bear rally exhaustion)
+           - MUY_BAJISTA: NO trim — RSI high = V-recovery momentum (contrarian)
+         Forensic basis (110K events, 32 tickers, 20yr):
+           BAJISTA + RSI>=65 + RSI_slope<0: P(fall)=52.8%, Avg=-0.31% (N=106)
+           BAJISTA + RSI>=60 + RSI_slope<0: P(fall)=52.0%, Avg=-0.18% (N=202)
+           FLAT + cross-regression exhaustion: price bouncing + RSI peaking
+         Pending: Walk-Forward DSR validation to promote from D.
 
     Entry rules:
       BULL: Cross-regression pullback + RSI 33-50 + drop ≥12pts + hookup
       BEAR: Price slope negative + RSI slope positive + RSI < 40
       FLAT: RSI < 35 + regression slope divergence confirmed
       ALL: confidence modulated by fear_level bias + Kalman confirmation
+
+    Trim rules (signal=-1) [HYPOTHESIS]:
+      BAJISTA: RSI ≥ 60 + RSI slope negative (bear rally peaked + falling)
+      FLAT: RSI ≥ 65 + short slope positive + RSI slope negative (bounce exhaustion)
     """
 
     @property
@@ -258,6 +272,10 @@ class RSISignalAdapter(SignalPort):
         adaptive_rsi_period = max(5, dominant_cycle // 2)  # Nyquist: period/2
         rsi_full = self._calc_rsi(close, period=adaptive_rsi_period)
 
+        # ── Adaptive short regression window (same logic as RC adapter) ──
+        # Matches each asset's natural cycle: NVDA (15d) vs JPM (44d)
+        short_slope_window = max(10, min(dominant_cycle, 60))  # Clamp 10-60
+
         # ── Layer 6: Pre-compute Kalman states for all bars ──
         kalman_states = self._precompute_kalman(ohlc)
 
@@ -275,22 +293,29 @@ class RSISignalAdapter(SignalPort):
             current_rsi = rsi_window[i]
 
             # ── Layer 1: PRICE REGRESSIONS (the regime anchors) ──
-            slope_long = self._linreg_slope(price_window, 120)   # Macro trend
-            slope_short = self._linreg_slope(price_window, 60)   # Micro momentum
+            slope_long = self._linreg_slope(price_window, 120)   # Macro trend (fixed)
+            slope_short = self._linreg_slope(price_window, short_slope_window)  # Adaptive micro momentum
 
             # ── REGIME CLASSIFICATION (from PRICE, not RSI) ──
-            if slope_long > 0.02:       # ~0.02% per bar ≈ ~5% over 120 days
+            # 5-state for trim granularity (BAJISTA vs MUY_BAJISTA)
+            if slope_long > 0.02:
                 regime = "BULL"
-            elif slope_long < -0.02:
-                regime = "BEAR"
-            else:
+            elif slope_long > -0.005:
                 regime = "FLAT"
+            elif slope_long > -0.02:
+                regime = "BAJISTA"
+            else:
+                regime = "MUY_BAJISTA"
 
             # ── Layer 3: SHORT REGRESSION ON RSI (divergence) ──
             rsi_slope_short = self._linreg_slope(rsi_window, 30)
 
             signal = 0
             confidence = 0.0
+
+            # ═══════════════════════════════════════════════════
+            # ENTRY SIGNALS (signal = +1)
+            # ═══════════════════════════════════════════════════
 
             if regime == "BULL":
                 # ── Layer 2: Cross-regression pullback (H2e — validated) ──
@@ -309,8 +334,21 @@ class RSISignalAdapter(SignalPort):
                     trend_strength = min(slope_long / 0.10, 1.0)
                     confidence = round(min(depth * 0.3 + convergence * 0.3 + trend_strength * 0.4, 1.0), 2)
 
-            elif regime == "BEAR":
+            elif regime == "MUY_BAJISTA":
                 # ── Layer 3: Structural divergence via regression slopes ──
+                # In severe bear: RSI oversold + recovering = contrarian entry
+                # (Mirror: NO trim here — RSI high in MUY_BAJISTA = V-recovery)
+                price_falling = slope_short < 0
+                rsi_recovering = rsi_slope_short > 0
+                rsi_oversold = current_rsi < 40
+
+                if price_falling and rsi_recovering and rsi_oversold:
+                    signal = 1
+                    div_strength = min(abs(slope_short) + abs(rsi_slope_short), 1.0)
+                    confidence = round(0.5 + div_strength * 0.2, 2)
+
+            elif regime == "BAJISTA":
+                # ── BAJISTA entry: same divergence logic as MUY_BAJISTA ──
                 price_falling = slope_short < 0
                 rsi_recovering = rsi_slope_short > 0
                 rsi_oversold = current_rsi < 40
@@ -329,6 +367,29 @@ class RSISignalAdapter(SignalPort):
                             signal = 1
                             confidence = 0.5
 
+            # ═══════════════════════════════════════════════════
+            # TRIM SIGNALS (signal = -1) — Layer 7
+            # [HYPOTHESIS] D — Advisory Only. Pending WF-DSR.
+            #
+            # The regime-inverted RSI reading:
+            #   BULL: valid signals are at RSI LOWS (entries)
+            #   BAJISTA: valid signals are at RSI HIGHS (trims)
+            #   MUY_BAJISTA: NO trim — high RSI = V-recovery
+            #
+            # Forensic basis (110K events, 32 tickers, 20yr):
+            #   BAJISTA + RSI>=65 + RSI↓: P(fall)=52.8%, N=106
+            #   BAJISTA + RSI>=60 + RSI↓: P(fall)=52.0%, N=202
+            # ═══════════════════════════════════════════════════
+
+            if signal == 0:  # Only check trim if no entry signal
+                trim_signal, trim_conf = self._check_rsi_trim(
+                    regime, current_rsi, rsi_slope_short,
+                    slope_short, slope_long,
+                )
+                if trim_signal:
+                    signal = -1
+                    confidence = trim_conf
+
             # ── Layer 5: Fear Level Bias (dual RC channel) ──
             # Applied AFTER signal generation — modulates confidence, doesn't gate
             if signal == 1:
@@ -346,6 +407,54 @@ class RSISignalAdapter(SignalPort):
             "signal": signals,
             "confidence": confidences,
         }, index=ohlc.index)
+
+    @staticmethod
+    def _check_rsi_trim(
+        regime: str, current_rsi: float, rsi_slope: float,
+        slope_short: float, slope_long: float,
+    ) -> tuple[bool, float]:
+        """Layer 7: Regime-Inverted RSI Trim Detection.
+
+        [HYPOTHESIS] D — Advisory Only. Pending Walk-Forward DSR validation.
+
+        The key insight: RSI reading is ASYMMETRIC by regime.
+          - In BULL: entries are at RSI lows (pullback buying)
+          - In BAJISTA: trims are at RSI highs (bear rally exhaustion)
+          - In MUY_BAJISTA: NO trim — high RSI = V-recovery momentum
+
+        The mirror logic of entry:
+          ENTRY (BULL): price falling (short < long) + RSI low + RSI hooking UP
+          TRIM (BAJISTA): price bouncing (short > 0) + RSI high + RSI hooking DOWN
+
+        Forensic basis (110K events, 32 tickers, 20yr):
+          BAJISTA + RSI>=65 + RSI_slope<0: P(fall 10d)=52.8%, Avg=-0.31% (N=106)
+          BAJISTA + RSI>=60 + RSI_slope<0: P(fall 10d)=52.0%, Avg=-0.18% (N=202)
+
+        Confidence tiers:
+          RSI ≥ 70 + RSI falling:  confidence 0.30 (stronger signal)
+          RSI ≥ 65 + RSI falling:  confidence 0.20
+          RSI ≥ 60 + RSI falling:  confidence 0.15 (weakest trim)
+        """
+        # ── BAJISTA only (slope_long between -0.02 and -0.005) ──
+        # MUY_BAJISTA excluded: RSI high there = V-recovery, NOT exhaustion
+        if regime == "BAJISTA":
+            rsi_falling = rsi_slope < 0
+
+            if rsi_falling and current_rsi >= 70:
+                return True, 0.30
+            if rsi_falling and current_rsi >= 65:
+                return True, 0.20
+            if rsi_falling and current_rsi >= 60:
+                return True, 0.15
+
+        # ── FLAT: bounce exhaustion (price bouncing but RSI peaking) ──
+        if regime == "FLAT":
+            price_bouncing = slope_short > 0
+            rsi_peaking = rsi_slope < 0
+            if price_bouncing and rsi_peaking and current_rsi >= 65:
+                return True, 0.15
+
+        return False, 0.0
 
     @staticmethod
     def _find_swing_lows(data: np.ndarray, min_dist: int = 3) -> list[int]:

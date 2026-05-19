@@ -379,30 +379,31 @@ class PatternRecognitionIntelligence:
     # ═══════════════════════════════════════════════════════════
 
     # Mapa de patrones → score base (-1.0 a +1.0)
+    # Calibrado empíricamente (Forensic Event Study 2026-05) vs Universo Quality
     _PATTERN_SCORES = {
-        # Alcistas fuertes
-        "MORNING_STAR":         +1.0,
-        "THREE_WHITE_SOLDIERS": +0.9,
-        "BULLISH_ENGULFING":    +0.85,
-        "PIERCING_LINE":        +0.7,
-        "TWEEZER_BOTTOM":       +0.65,
-        "HAMMER":               +0.6,
-        "DRAGONFLY_DOJI":       +0.55,
-        "INVERTED_HAMMER":      +0.45,
-        "BULLISH_MARUBOZU":     +0.7,
+        # Alcistas empíricos (Basado en Forward Return WR a 10 días)
+        "PIERCING_LINE":        +1.0,   # 72.4% WR Micro / 69.2% WR Macro
+        "INVERTED_HAMMER":      +0.90,  # 73.1% WR Micro (Anomalía fuertemente predictiva)
+        "BULLISH_ENGULFING":    +0.85,  # 63.3% WR Micro (Sólido, alta frecuencia)
+        "THREE_WHITE_SOLDIERS": +0.85,  # 65.3% WR Macro (Excelente indicador estructural)
+        "HAMMER":               +0.70,  # 59.7% WR Micro / 63.4% WR Macro
+        "MORNING_STAR":         +0.65,  # 58.5% WR (Downgrade empírico desde +1.0 teórico)
+        "BULLISH_MARUBOZU":     +0.60,  # 58.3% WR Micro
+        "DRAGONFLY_DOJI":       +0.55,  # 56.7% WR Micro
+        "TWEEZER_BOTTOM":       +0.40,  # 52.0% WR (Casi ruido estadístico)
         # Neutros
         "DOJI":                  0.0,
         "NONE":                  0.0,
-        # Bajistas fuertes
-        "EVENING_STAR":         -1.0,
-        "THREE_BLACK_CROWS":    -0.9,
-        "BEARISH_ENGULFING":    -0.85,
-        "DARK_CLOUD_COVER":     -0.7,
-        "TWEEZER_TOP":          -0.65,
-        "SHOOTING_STAR":        -0.6,
-        "GRAVESTONE_DOJI":      -0.55,
-        "HANGING_MAN":          -0.5,
-        "BEARISH_MARUBOZU":     -0.7,
+        # Bajistas (Degradados en convicción por su ineficacia estructural en "Quality")
+        "THREE_BLACK_CROWS":    -0.80,  # 51.6% WR (Único bajista con >50% éxito direccional)
+        "GRAVESTONE_DOJI":      -0.60,
+        "EVENING_STAR":         -0.60,
+        "TWEEZER_TOP":          -0.50,
+        "BEARISH_ENGULFING":    -0.50,
+        "BEARISH_MARUBOZU":     -0.50,
+        "DARK_CLOUD_COVER":     -0.40,
+        "HANGING_MAN":          -0.40,
+        "SHOOTING_STAR":        -0.30,  # 25% WR bajista (El mercado suele subir después)
     }
 
     def _score_sentiment(

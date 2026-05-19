@@ -133,6 +133,9 @@ class EntryIntelligenceReport:
     vol_regime_quality: str = "NORMAL"        # NORMAL, COMPLACENT, ELEVATED, CRISIS
     vol_regime_speculative: str = "STALK"     # STALK, STRIKE, HARVEST, RETREAT
 
+    # ── Market Sentiment Regime (Gate -1B, forensic 2026-05-18) ─
+    market_sentiment_regime: str = "NORMAL_BULL"  # CAPITULATION, STRESS, RECOVERY, WALL_OF_WORRY, NORMAL_BULL, COMPLACENCY, EUPHORIA, DISTRIBUTION
+
     # ── Dictamen Final ─────────────────────────────────────────
     final_verdict: str = "PASS"          # EXECUTE, STALK, PASS, BLOCK
     final_scale: float = 0.0            # 0-1

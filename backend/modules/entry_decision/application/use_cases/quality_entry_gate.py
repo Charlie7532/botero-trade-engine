@@ -259,39 +259,47 @@ class QualityEntryGate:
                         f"MH_CASCADE_CORRECTION: Sizing to {_health_sizing:.0%}"
                     )
 
-                # F&G contrarian signals (forensic evidence 2021-2026)
-                if _mh_snapshot.fg_action == "CAPITULATION_BUY":
-                    # FG-H01 VALIDATED (t=6.39, WR 75.5%)
-                    boost = 1.5
-                    # FG-H07: urgency decay — first 3 days are peak WR
-                    if _mh_snapshot.fg_urgency == "HIGH":
-                        boost = 1.75  # Day 1-3: WR 80.8%
-                    elif _mh_snapshot.fg_urgency == "DECAYING":
-                        boost = 1.2   # Day 10+: WR drops to 50%
-                    _health_sizing = min(1.0, _health_sizing * boost)
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"MH_FG_CAPITULATION: F&G={_mh_snapshot.fg_score:.0f} "
-                        f"day={_mh_snapshot.fg_duration} urgency={_mh_snapshot.fg_urgency} "
-                        f"— sizing {_health_sizing:.0%} (WR 75.5%, t=6.39)"
+                # ── Market Sentiment Regime (forensic 2026-05-18) ──
+                # Replaces raw F&G actions (CAPITULATION_BUY/GREED_TRAP)
+                # which used inflated t-stats. New classifier uses F&G + VIX + PCR + SPY mom.
+                # Evidence: FG-H15 CONFIRMED — 232% alpha vs raw F&G.
+                try:
+                    from backend.modules.entry_decision.domain.rules.sentiment_regime_gate import (
+                        compute_sentiment_regime_snapshot,
                     )
-                elif _mh_snapshot.fg_action == "GREED_TRAP":
-                    # FG-H08 CANDIDATE (N=6, WR 0%): greed + correction
-                    _health_sizing *= 0.25
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"MH_FG_GREED_TRAP: F&G={_mh_snapshot.fg_score:.0f} + SPY in correction "
-                        f"— TRAP (WR 0%, N=6). Sizing {_health_sizing:.0%}"
-                    )
+                    from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+                    _vault = TimescaleDataStore()
+                    _fg_bars = _vault.load_bars("FG", "1d")
+                    _vix_bars = _vault.load_bars("VIX", "1d")
+                    _pcr_bars = _vault.load_bars("CBOE_PCR", "1d")
+                    _spy_bars = _vault.load_bars("SPY", "1d")
+                    _vault.close()
 
-                # FG-H14 VALIDATED (t=6.21): stealth accumulation boost
-                if _mh_snapshot.fg_divergence_type == "STEALTH_ACCUMULATION":
-                    _health_sizing = min(1.0, _health_sizing * 1.25)
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"MH_STEALTH_ACCUM: Internal RISK_ON + public fear "
-                        f"— institutional accumulation (WR 79%, t=6.21)"
-                    )
+                    if _fg_bars is not None and len(_fg_bars) > 0:
+                        _msr = compute_sentiment_regime_snapshot(
+                            _fg_bars, _vix_bars, _pcr_bars, _spy_bars,
+                        )
+                        report.market_sentiment_regime = _msr.label
+                        _health_sizing *= _msr.sizing_modifier
+                        report.alerts = report.alerts or []
+                        report.alerts.append(
+                            f"MKT_SENTIMENT: {_msr.label} "
+                            f"(F&G={_msr.fg_level:.0f}, VIX={_msr.vix_level:.1f}, "
+                            f"PCR={_msr.pcr_level:.3f}, urgency={_msr.urgency}) "
+                            f"— sizing {_health_sizing:.0%}"
+                        )
+                        if _msr.is_actionable_buy:
+                            logger.info(
+                                f"QualityGate {ticker}: {_msr.label} — "
+                                f"sizing boost to {_health_sizing:.0%}"
+                            )
+                        elif _msr.is_warning:
+                            logger.warning(
+                                f"QualityGate {ticker}: {_msr.label} — "
+                                f"sizing reduced to {_health_sizing:.0%}"
+                            )
+                except Exception as e:
+                    logger.debug(f"QualityGate: Sentiment regime skipped: {e}")
 
                 # Still compute local vol regime for ticker-specific analysis
                 regime = compute_vol_regime_snapshot(

@@ -97,6 +97,26 @@ CREATE TABLE IF NOT EXISTS engine.signal_passports (
 """
 
 
+def _to_native(val):
+    """Convert numpy types to Python builtins for psycopg2 serialization.
+
+    Without this, np.float64(1.0) is rendered as 'np.float64(1.0)' in SQL,
+    which PostgreSQL interprets as a schema reference → 'schema np does not exist'.
+    """
+    import numpy as np
+    if isinstance(val, (np.integer,)):
+        return int(val)
+    if isinstance(val, (np.floating,)):
+        return float(val)
+    if isinstance(val, np.bool_):
+        return bool(val)
+    if isinstance(val, dict):
+        return {k: _to_native(v) for k, v in val.items()}
+    if isinstance(val, (list, tuple)):
+        return [_to_native(v) for v in val]
+    return val
+
+
 class NeonPassportStore(PassportStorePort):
     """Persists Signal Reliability Passports to Neon PostgreSQL."""
 
@@ -124,12 +144,12 @@ class NeonPassportStore(PassportStorePort):
 
     def save_passport(self, passport: SignalPassport) -> None:
         """Upsert a passport. Key: (ticker, department, signal_name)."""
-        regime = {
+        regime = _to_native({
             "sharpe_by": passport.sharpe_by_vol_regime,
             "wr_by": passport.wr_by_vol_regime,
             "n_by": passport.n_by_vol_regime,
-        }
-        swing = {
+        })
+        swing = _to_native({
             "wr_fear": passport.wr_by_fear_level,
             "n_fear": passport.n_by_fear_level,
             "wr_sigma": passport.wr_by_sigma_band,
@@ -139,11 +159,11 @@ class NeonPassportStore(PassportStorePort):
             "wave_flip_edge": passport.wave_flip_edge,
             "tide_regime_wr": passport.tide_regime_wr,
             "n_tide": passport.n_by_tide_regime,
-        }
-        core = {
+        })
+        core = _to_native({
             "drawdown_recovery_avg_bars": passport.drawdown_recovery_avg_bars,
             "thesis_survival_rate": passport.thesis_survival_rate,
-        }
+        })
 
         conn = self._pool.getconn()
         try:
@@ -190,7 +210,7 @@ class NeonPassportStore(PassportStorePort):
                         grade            = EXCLUDED.grade,
                         geometry_used    = EXCLUDED.geometry_used,
                         calibrated_at    = NOW()
-                """, {
+                """, _to_native({
                     "ticker": passport.ticker,
                     "department": passport.department,
                     "signal_name": passport.signal_name,
@@ -215,8 +235,8 @@ class NeonPassportStore(PassportStorePort):
                     "core_breakdown": json.dumps(core),
                     "viable": passport.viable,
                     "grade": passport.grade,
-                    "geometry_used": json.dumps(passport.geometry_used),
-                })
+                    "geometry_used": json.dumps(_to_native(passport.geometry_used)),
+                }))
             conn.commit()
             logger.info(
                 f"Passport saved: {passport.ticker}/{passport.department}/{passport.signal_name} "

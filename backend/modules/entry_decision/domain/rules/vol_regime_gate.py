@@ -36,9 +36,14 @@ def compute_vol_regime_snapshot(
     if prices is None or len(prices) < 60:
         return VolRegimeState()
 
-    close = prices['Close'].astype(float)
-    high = prices['High'].astype(float)
-    low = prices['Low'].astype(float)
+    close_col = 'Close' if 'Close' in prices.columns else 'close'
+    high_col = 'High' if 'High' in prices.columns else 'high'
+    low_col = 'Low' if 'Low' in prices.columns else 'low'
+
+    close = prices[close_col].astype(float)
+    high = prices[high_col].astype(float)
+    low = prices[low_col].astype(float)
+
 
     # ── Sensor: Realized Volatility (fast/slow) ─────────────────
     log_returns = np.log(close / close.shift(1))

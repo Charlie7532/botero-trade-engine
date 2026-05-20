@@ -1,0 +1,330 @@
+
+================================================================================
+  FORENSIC LAB v6 — FINAL AUDIT: Volume Variance + Calibration + Architecture
+================================================================================
+
+  Loading forensic labels...
+  → 2325 entry labels
+
+================================================================================
+  PART 1: VOLUME VARIANCE — Exhaustion → BOOM
+================================================================================
+
+  ── VOLUME VARIANCE: Exhaustion → BOOM Detection ──
+
+    rsi × COST:
+      Volume Regime:
+             QUIET │ WR= 68.4% n= 19  █████████████ ★
+            NORMAL │ WR= 52.4% n= 42  ██████████
+          ELEVATED │ WR= 55.3% n= 47  ███████████
+              BOOM │ WR= 71.4% n=  7  ██████████████ ★
+      Volume × Flow × Trend:
+        QUIET+SELL_FLOW+BULL                │ WR= 75.0% n=  4  ███████████████ ← QUIET ACCUMULATION
+        ELEVATED+BUY_FLOW+BULL              │ WR= 66.7% n=  3  █████████████
+        ELEVATED+SELL_FLOW+BULL             │ WR= 60.0% n= 10  ████████████
+      RVOL × Trend (continuous):
+         BULL: rvol×win r=-0.0056 p=0.9553
+
+    reg × COST:
+      Volume Regime:
+             QUIET │ WR= 77.8% n= 27  ███████████████ ★
+            NORMAL │ WR= 48.2% n= 83  █████████
+          ELEVATED │ WR= 50.8% n= 63  ██████████
+              BOOM │ WR= 45.5% n= 22  █████████
+      Volume × Flow × Trend:
+        QUIET+BUY_FLOW+BULL                 │ WR=100.0% n=  3  ████████████████████ ← QUIET ACCUMULATION
+        QUIET+SELL_FLOW+BULL                │ WR= 50.0% n=  4  ██████████
+        BOOM+BUY_FLOW+BULL                  │ WR= 33.3% n=  6  ██████
+        ELEVATED+BUY_FLOW+BULL              │ WR= 75.0% n=  4  ███████████████
+        ELEVATED+SELL_FLOW+BULL             │ WR= 53.8% n= 13  ██████████
+      RVOL × Trend (continuous):
+         BULL: rvol×win r=-0.0291 p=0.6905
+
+    rsi × SPY:
+      Volume Regime:
+             QUIET │ WR= 62.5% n= 32  ████████████ ★
+            NORMAL │ WR= 50.9% n=112  ██████████
+          ELEVATED │ WR= 54.3% n=151  ██████████
+              BOOM │ WR= 54.1% n= 37  ██████████
+      Volume × Flow × Trend:
+        QUIET+BUY_FLOW+BEAR                 │ WR= 66.7% n=  3  █████████████
+        QUIET+SELL_FLOW+BULL                │ WR= 40.0% n=  5  ████████
+        BOOM+SELL_FLOW+BULL                 │ WR= 57.1% n=  7  ███████████
+        ELEVATED+BUY_FLOW+BULL              │ WR= 27.3% n= 11  █████
+        ELEVATED+BUY_FLOW+BEAR              │ WR= 66.7% n=  6  █████████████
+        ELEVATED+SELL_FLOW+BULL             │ WR= 50.0% n= 12  ██████████
+        ELEVATED+SELL_FLOW+BEAR             │ WR= 33.3% n=  3  ██████
+      RVOL × Trend (continuous):
+         BULL: rvol×win r=+0.0663 p=0.3358
+         BEAR: rvol×win r=-0.2368 p=0.0281**
+
+    reg × SPY:
+      Volume Regime:
+             QUIET │ WR= 69.4% n= 36  █████████████ ★
+            NORMAL │ WR= 56.1% n=114  ███████████
+          ELEVATED │ WR= 50.3% n=143  ██████████
+              BOOM │ WR= 47.1% n= 51  █████████
+      Volume × Flow × Trend:
+        QUIET+BUY_FLOW+BULL                 │ WR= 75.0% n=  4  ███████████████ ← QUIET ACCUMULATION
+        QUIET+SELL_FLOW+BULL                │ WR= 66.7% n= 12  █████████████ ← QUIET ACCUMULATION
+        BOOM+BUY_FLOW+BULL                  │ WR= 57.1% n= 14  ███████████
+        ELEVATED+BUY_FLOW+BULL              │ WR= 25.0% n=  8  █████
+        ELEVATED+SELL_FLOW+BULL             │ WR= 50.0% n= 10  ██████████
+      RVOL × Trend (continuous):
+         BULL: rvol×win r=-0.0811 p=0.1503
+
+    rsi × AAPL:
+      Volume Regime:
+             QUIET │ WR= 35.3% n= 68  ███████ ✗
+            NORMAL │ WR= 43.7% n=126  ████████
+          ELEVATED │ WR= 54.5% n= 99  ██████████
+              BOOM │ WR= 33.3% n= 33  ██████ ✗
+      Volume × Flow × Trend:
+        QUIET+BUY_FLOW+BEAR                 │ WR= 33.3% n=  6  ██████
+        QUIET+SELL_FLOW+BULL                │ WR= 42.9% n=  7  ████████
+        QUIET+SELL_FLOW+BEAR                │ WR=  0.0% n=  5  
+        BOOM+SELL_FLOW+BULL                 │ WR= 25.0% n=  4  █████ ← BULL EXHAUSTION + SELL BOOM
+        BOOM+SELL_FLOW+BEAR                 │ WR= 16.7% n=  6  ███
+        ELEVATED+BUY_FLOW+BULL              │ WR= 62.5% n=  8  ████████████
+        ELEVATED+BUY_FLOW+BEAR              │ WR= 60.0% n=  5  ████████████
+        ELEVATED+SELL_FLOW+BULL             │ WR= 61.5% n= 13  ████████████
+        ELEVATED+SELL_FLOW+BEAR             │ WR= 33.3% n=  9  ██████
+      RVOL × Trend (continuous):
+         BULL: rvol×win r=-0.0136 p=0.8594
+         BEAR: rvol×win r=+0.0854 p=0.3340
+
+    reg × AAPL:
+      Volume Regime:
+             QUIET │ WR= 43.1% n= 58  ████████
+            NORMAL │ WR= 47.9% n=144  █████████
+          ELEVATED │ WR= 53.1% n=128  ██████████
+              BOOM │ WR= 51.3% n= 39  ██████████
+      Volume × Flow × Trend:
+        QUIET+BUY_FLOW+BULL                 │ WR= 50.0% n=  4  ██████████
+        QUIET+SELL_FLOW+BULL                │ WR= 44.4% n= 18  ████████
+        BOOM+BUY_FLOW+BULL                  │ WR= 50.0% n= 16  ██████████
+        ELEVATED+BUY_FLOW+BULL              │ WR= 46.7% n= 15  █████████
+        ELEVATED+SELL_FLOW+BULL             │ WR= 42.1% n= 19  ████████
+      RVOL × Trend (continuous):
+         BULL: rvol×win r=+0.0674 p=0.2022
+
+    rsi × QQQ:
+      Volume Regime:
+             QUIET │ WR= 60.6% n= 33  ████████████ ★
+            NORMAL │ WR= 47.4% n=114  █████████
+          ELEVATED │ WR= 43.4% n=152  ████████
+              BOOM │ WR= 52.0% n= 25  ██████████
+      Volume × Flow × Trend:
+        QUIET+SELL_FLOW+BULL                │ WR= 50.0% n=  6  ██████████
+        ELEVATED+BUY_FLOW+BEAR              │ WR= 50.0% n=  4  ██████████
+        ELEVATED+SELL_FLOW+BULL             │ WR= 72.7% n= 11  ██████████████
+        ELEVATED+SELL_FLOW+BEAR             │ WR= 25.0% n=  4  █████
+      RVOL × Trend (continuous):
+         BULL: rvol×win r=-0.0796 p=0.3137
+         BEAR: rvol×win r=-0.0778 p=0.3700
+
+    reg × QQQ:
+      Volume Regime:
+             QUIET │ WR= 57.1% n= 28  ███████████
+            NORMAL │ WR= 52.9% n=104  ██████████
+          ELEVATED │ WR= 53.9% n=154  ██████████
+              BOOM │ WR= 47.1% n= 34  █████████
+      Volume × Flow × Trend:
+        QUIET+SELL_FLOW+BULL                │ WR= 33.3% n=  6  ██████
+        BOOM+BUY_FLOW+BULL                  │ WR= 66.7% n=  3  █████████████
+        ELEVATED+BUY_FLOW+BULL              │ WR= 66.7% n=  3  █████████████
+        ELEVATED+SELL_FLOW+BULL             │ WR= 50.0% n=  6  ██████████
+      RVOL × Trend (continuous):
+         BULL: rvol×win r=-0.0167 p=0.7693
+
+================================================================================
+  PART 2: PER-STOCK CALIBRATION — Optimal σ Windows
+================================================================================
+
+  ── PER-STOCK CALIBRATION: Optimal σ_wave Entry Windows ──
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ σ_WAVE OPTIMAL WINDOW CALIBRATION (all signals, direction=1)     │
+    └──────────────────────────────────────────────────────────────────┘
+
+    AAPL (N=695):
+          σ<-2.5 (extreme) │ WR= 66.7% n=  3  █████████████
+                 σ -2.5→-2 │ WR= 47.1% n= 17  █████████
+                 σ -2→-1.5 │ WR= 69.8% n= 63  █████████████ ★ OPTIMAL
+                 σ -1.5→-1 │ WR= 47.5% n= 99  █████████
+                 σ -1→-0.5 │ WR= 39.3% n=140  ███████ ✗ AVOID
+                  σ -0.5→0 │ WR= 38.2% n=131  ███████ ✗ AVOID
+                  σ 0→+0.5 │ WR= 51.5% n= 99  ██████████
+                 σ +0.5→+1 │ WR= 44.0% n= 75  ████████
+                      σ>+1 │ WR= 52.9% n= 68  ██████████
+
+      Contiguous Window Search (2-3 adjacent bins):
+           [-2.5, -1.5) │ WR= 65.0% n= 80  █████████████
+           [-2.0, -1.0) │ WR= 56.2% n=162  ███████████
+         [-999.0, -1.5) │ WR= 65.1% n= 83  █████████████
+           [-2.5, -1.0) │ WR= 55.3% n=179  ███████████
+
+    COST (N=310):
+                 σ -2.5→-2 │ WR= 16.7% n= 12  ███ ✗ AVOID
+                 σ -2→-1.5 │ WR= 57.1% n= 35  ███████████
+                 σ -1.5→-1 │ WR= 54.4% n= 57  ██████████
+                 σ -1→-0.5 │ WR= 60.0% n= 65  ████████████
+                  σ -0.5→0 │ WR= 50.0% n= 40  ██████████
+                  σ 0→+0.5 │ WR= 60.0% n= 50  ████████████
+                 σ +0.5→+1 │ WR= 43.3% n= 30  ████████
+                      σ>+1 │ WR= 63.2% n= 19  ████████████ ★ OPTIMAL
+
+      Contiguous Window Search (2-3 adjacent bins):
+           [-2.0, -1.0) │ WR= 55.4% n= 92  ███████████
+           [-1.5, -0.5) │ WR= 57.4% n=122  ███████████
+           [-1.0, +0.0) │ WR= 56.2% n=105  ███████████
+           [-0.5, +0.5) │ WR= 55.6% n= 90  ███████████
+           [-2.0, -0.5) │ WR= 57.3% n=157  ███████████
+           [-1.5, +0.0) │ WR= 55.6% n=162  ███████████
+           [-1.0, +0.5) │ WR= 57.4% n=155  ███████████
+         [+0.0, +999.0) │ WR= 55.6% n= 99  ███████████
+
+    QQQ (N=644):
+                 σ -2.5→-2 │ WR= 25.0% n=  4  █████
+                 σ -2→-1.5 │ WR= 30.8% n= 26  ██████ ✗ AVOID
+                 σ -1.5→-1 │ WR= 55.9% n= 59  ███████████
+                 σ -1→-0.5 │ WR= 60.4% n= 91  ████████████ ★ OPTIMAL
+                  σ -0.5→0 │ WR= 40.4% n= 94  ████████
+                  σ 0→+0.5 │ WR= 47.3% n=112  █████████
+                 σ +0.5→+1 │ WR= 54.5% n=121  ██████████
+                      σ>+1 │ WR= 50.4% n=137  ██████████
+
+      Contiguous Window Search (2-3 adjacent bins):
+           [-1.5, -0.5) │ WR= 58.7% n=150  ███████████
+
+    SPY (N=676):
+                 σ -2.5→-2 │ WR= 60.0% n= 10  ████████████
+                 σ -2→-1.5 │ WR= 50.0% n= 38  ██████████
+                 σ -1.5→-1 │ WR= 64.2% n= 53  ████████████ ★ OPTIMAL
+                 σ -1→-0.5 │ WR= 56.5% n= 85  ███████████
+                  σ -0.5→0 │ WR= 58.1% n=105  ███████████
+                  σ 0→+0.5 │ WR= 50.0% n=120  ██████████
+                 σ +0.5→+1 │ WR= 54.2% n=120  ██████████
+                      σ>+1 │ WR= 49.0% n=145  █████████
+
+      Contiguous Window Search (2-3 adjacent bins):
+         [-999.0, -2.0) │ WR= 60.0% n= 10  ████████████
+           [-2.0, -1.0) │ WR= 58.2% n= 91  ███████████
+           [-1.5, -0.5) │ WR= 59.4% n=138  ███████████
+           [-1.0, +0.0) │ WR= 57.4% n=190  ███████████
+           [-2.5, -1.0) │ WR= 58.4% n=101  ███████████
+           [-2.0, -0.5) │ WR= 57.4% n=176  ███████████
+           [-1.5, +0.0) │ WR= 58.8% n=243  ███████████
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ CALIBRATION SUMMARY — Per-Stock Optimal Windows                  │
+    └──────────────────────────────────────────────────────────────────┘
+
+      Ticker │      Best Single Bin     WR    N │ Best Contiguous     WR    N
+    ────────────────────────────────────────────────────────────────────────────────
+        AAPL │            σ -2→-1.5  69.8%  63  │  [-999.0, -1.5)  65.1%  83
+        COST │                 σ>+1  63.2%  19  │    [-1.0, +0.5)  57.4% 155
+         QQQ │            σ -1→-0.5  60.4%  91  │    [-1.5, -0.5)  58.7% 150
+         SPY │            σ -1.5→-1  64.2%  53  │  [-999.0, -2.0)  60.0%  10
+
+================================================================================
+  PART 3: FEATURE ABSORPTION — Is RC absorbed by Enhanced RSI?
+================================================================================
+
+  ── FEATURE ABSORPTION: RC vs Enhanced RSI ──
+
+    COST: RSI signals=115, RC signals=195
+      RSI-only model:     acc=0.530  (N=115)
+      RC-only model:      acc=0.554  (N=195)
+      Combined model:     acc=0.606  (N=310)
+      Without signal_type: acc=0.626  Δ=-0.0194  ❌ RC ABSORBED
+      Signal Overlap:
+        Both fire:   36 (13.1%)
+        RSI only:    79 (28.8%)
+        RC only:    159 (58.0%)
+
+    SPY: RSI signals=332, RC signals=344
+      RSI-only model:     acc=0.500  (N=332)
+      RC-only model:      acc=0.555  (N=344)
+      Combined model:     acc=0.541  (N=676)
+      Without signal_type: acc=0.544  Δ=-0.0029  ❌ RC ABSORBED
+      Signal Overlap:
+        Both fire:   47 (7.5%)
+        RSI only:   285 (45.5%)
+        RC only:    295 (47.0%)
+
+    AAPL: RSI signals=326, RC signals=369
+      RSI-only model:     acc=0.595  (N=326)
+      RC-only model:      acc=0.483  (N=369)
+      Combined model:     acc=0.517  (N=695)
+      Without signal_type: acc=0.514  Δ=+0.0029  ~ MARGINAL
+      Signal Overlap:
+        Both fire:   39 (5.9%)
+        RSI only:   287 (43.8%)
+        RC only:    330 (50.3%)
+
+    QQQ: RSI signals=324, RC signals=320
+      RSI-only model:     acc=0.568  (N=324)
+      RC-only model:      acc=0.575  (N=320)
+      Combined model:     acc=0.601  (N=644)
+      Without signal_type: acc=0.592  Δ=+0.0093  ~ MARGINAL
+      Signal Overlap:
+        Both fire:   44 (7.6%)
+        RSI only:   272 (46.9%)
+        RC only:    264 (45.5%)
+
+================================================================================
+  PART 4: ARCHITECTURE PROPOSAL
+================================================================================
+
+  ── ARCHITECTURE: Feature → Module Mapping ──
+
+    Feature Effectiveness Matrix (Cohen's d by signal × ticker):
+    Feature                   │   COST RSI    COST RC    SPY RSI     SPY RC │ Best Owner
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    tide_slope                │     -0.484     +0.100     +0.122     +0.089 │ COST RSI → RC Module (shared)
+    tide_accel                │     -0.093     -0.213     -0.036     -0.303 │ SPY RC → RC Module (shared)
+    sigma_wave                │     +0.074     +0.062     -0.078     -0.193 │ SPY RC → RC Module (shared)
+    sigma_tide                │     +0.030     -0.072     -0.323     -0.158 │ SPY RSI → RC Module (shared)
+    slope_conjugation         │     -0.171     -0.426     -0.067     +0.157 │ COST RC → RC Module (shared)
+    fear_level                │     +0.608     +0.247     +0.061     -0.019 │ COST RSI → RC Module (shared)
+    kalman_velocity           │     +0.111     -0.041     -0.023     -0.004 │ COST RSI → Volume Module
+    rvol                      │     +0.005     -0.094     -0.022     -0.139 │ SPY RC → Volume Module
+    vol_up_down_ratio         │     -0.010     +0.047     -0.117     -0.112 │ SPY RSI → Volume Module
+    rsi_value                 │     -0.386     -0.160     -0.349     -0.043 │ COST RSI → RSI Module
+    wave_slope                │     -0.321     -0.383     -0.038     +0.167 │ COST RC → RC Module (shared)
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ PROPOSED ARCHITECTURE: RSISuperPlus + ConfirmationLayer          │
+    ├──────────────────────────────────────────────────────────────────┤
+    │                                                                  │
+    │  LAYER 1: SignalGenerator (per indicator)                        │
+    │    ├─ RSI Intelligence → fires when RSI condition met            │
+    │    └─ RC Intelligence → fires when σ condition met               │
+    │                                                                  │
+    │  LAYER 2: ContextEnricher (SHARED — runs on ANY signal)          │
+    │    ├─ tide_slope, tide_accel  (macro direction)                   │
+    │    ├─ sigma_wave, sigma_tide  (position)                         │
+    │    ├─ slope_conjugation       (micro-macro angle)                │
+    │    ├─ fear_level              (sentiment encoding)               │
+    │    ├─ kalman_velocity         (flow confirmation)                │
+    │    ├─ rvol, vol_up_down_ratio (volume regime)                    │
+    │    ├─ sigma_structure         (HH/HL/LH/LL from v3)             │
+    │    └─ norm_trough_delta       (adaptive floor speed from v4)     │
+    │                                                                  │
+    │  LAYER 3: PerStockCalibrator (trained per ticker)                │
+    │    ├─ Optimal σ window        (e.g. AAPL: [-2, -1])             │
+    │    ├─ Pullback buyability     (trend-aware from v5)              │
+    │    └─ Volume interpretation   (COST: +vol=good, SPY: +vol=bad)  │
+    │                                                                  │
+    │  LAYER 4: MetaLabeler (ML classifier)                            │
+    │    ├─ Input: enriched context + calibrated thresholds            │
+    │    ├─ Output: P(win | signal_fired, context)                     │
+    │    └─ Method: Purged Walk-Forward CV (López de Prado)            │
+    │                                                                  │
+    └──────────────────────────────────────────────────────────────────┘
+    
+
+================================================================================
+  v6 FINAL AUDIT COMPLETE
+================================================================================

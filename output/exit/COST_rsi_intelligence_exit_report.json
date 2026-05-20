@@ -1,0 +1,59 @@
+{
+  "ticker": "COST",
+  "signal_name": "rsi_intelligence",
+  "n_signals": 5,
+  "classification_dist": {
+    "GOOD_WARNING": 2,
+    "MISSED_UPSIDE": 3
+  },
+  "classification_pct": {
+    "GOOD_WARNING": 0.4,
+    "MISSED_UPSIDE": 0.6
+  },
+  "save_rate": 0.4,
+  "early_rate": 0.0,
+  "false_alarm_rate": 0.0,
+  "missed_upside_rate": 0.6,
+  "neutral_rate": 0.0,
+  "avg_avoided_loss": {
+    "3": -0.9403,
+    "5": -1.943,
+    "10": -1.8465,
+    "20": -1.4022,
+    "40": -0.0677
+  },
+  "avg_missed_gain": {
+    "3": 3.1623,
+    "5": 1.9466,
+    "10": 2.8665,
+    "20": 7.4765,
+    "40": 3.8393
+  },
+  "cost_of_false_alarms": 0.0,
+  "cost_of_missed_upside": 2.8665,
+  "net_exit_value": -0.9813,
+  "foreseeable_pct": 1.0,
+  "failure_breakdown": {
+    "LOW_CONVICTION_NOISE": 2,
+    "FEAR_CONTRARIAN_ERROR": 1
+  },
+  "foreseeability_breakdown": {
+    "FORESEEABLE": 3
+  },
+  "top_lesson": "LOW_CONVICTION_NOISE",
+  "save_rate_by_fear": {
+    "NEUTRAL": 0.5,
+    "ANXIETY": 0.0
+  },
+  "save_rate_by_regime": {
+    "BEAR": 1.0,
+    "BULL": 0.0
+  },
+  "save_rate_by_vol_regime": {},
+  "false_alarm_rate_by_fear": {
+    "NEUTRAL": 0.0,
+    "ANXIETY": 0.0
+  },
+  "grade": "B",
+  "verdict": "VIABLE"
+}

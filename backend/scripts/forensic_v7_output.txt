@@ -1,0 +1,492 @@
+
+================================================================================
+  FORENSIC LAB v7 — VOLUME THESES + RSI DIVERGENCE + PV DIVERGENCE
+================================================================================
+
+  Loading forensic labels...
+  → 2325 entry labels
+
+================================================================================
+  PART 1: VOLUME EXHAUSTION → BOOM (Vol-of-Vol + Dryness + Spike)
+================================================================================
+
+  ── VOLUME EXHAUSTION → BOOM: COST ──
+
+    rsi_intelligence × COST (N=115)
+      Vol-of-Vol (Coefficient of Variation):
+        r=-0.1721  p=0.0659
+                Low CV (steady vol) │ WR= 73.7% n= 38  ██████████████ ★
+                          Medium CV │ WR= 56.4% n= 39  ███████████
+              High CV (erratic vol) │ WR= 42.1% n= 38  ████████
+      Volume Dryness (consecutive bars < 80% SMA):
+        r=-0.0248  p=0.7927
+                     No dryness (0 bars) │ WR= 56.8% n= 88  ███████████
+                 Mild dryness (1-2 bars) │ WR= 68.8% n= 16  █████████████ ★ EXHAUSTION
+                    Dry spell (3-5 bars) │ WR= 28.6% n=  7  █████
+                   Extended drought (6+) │ WR= 75.0% n=  4  ███████████████ ★ EXHAUSTION
+      Volume Spike (current bar / prev 5-bar avg):
+        r=+0.1158  p=0.2177
+                   Volume drying up │ WR= 46.7% n= 15  █████████
+                      Normal volume │ WR= 60.0% n= 75  ████████████
+                     Elevated spike │ WR= 52.4% n= 21  ██████████
+                   BOOM (2x+ spike) │ WR= 75.0% n=  4  ███████████████ ★ BOOM
+      Exhaustion Score (dryness × spike):
+        r=-0.0311  p=0.7414
+          Top 20% exhaustion: WR= 56.5% n=23
+          Bottom 80%:         WR= 57.6% n=92
+
+    regression_channel × COST (N=195)
+      Vol-of-Vol (Coefficient of Variation):
+        r=-0.0610  p=0.3968
+                Low CV (steady vol) │ WR= 46.2% n= 65  █████████
+                          Medium CV │ WR= 58.5% n= 65  ███████████
+              High CV (erratic vol) │ WR= 53.8% n= 65  ██████████
+      Volume Dryness (consecutive bars < 80% SMA):
+        r=-0.0362  p=0.6151
+                     No dryness (0 bars) │ WR= 50.7% n=142  ██████████
+                 Mild dryness (1-2 bars) │ WR= 62.8% n= 43  ████████████ ★ EXHAUSTION
+                    Dry spell (3-5 bars) │ WR= 50.0% n=  8  ██████████
+      Volume Spike (current bar / prev 5-bar avg):
+        r=-0.0126  p=0.8610
+                   Volume drying up │ WR= 58.3% n= 36  ███████████
+                      Normal volume │ WR= 51.6% n=126  ██████████
+                     Elevated spike │ WR= 50.0% n= 32  ██████████
+      Exhaustion Score (dryness × spike):
+        r=+0.0303  p=0.6744
+          Top 20% exhaustion: WR= 59.0% n=39
+          Bottom 80%:         WR= 51.3% n=156
+
+  ── VOLUME EXHAUSTION → BOOM: SPY ──
+
+    rsi_intelligence × SPY (N=332)
+      Vol-of-Vol (Coefficient of Variation):
+        r=+0.0472  p=0.3909
+                Low CV (steady vol) │ WR= 47.3% n=110  █████████
+                          Medium CV │ WR= 59.8% n=112  ███████████
+              High CV (erratic vol) │ WR= 54.5% n=110  ██████████
+      Volume Dryness (consecutive bars < 80% SMA):
+        r=+0.0560  p=0.3088
+                     No dryness (0 bars) │ WR= 53.1% n=273  ██████████
+                 Mild dryness (1-2 bars) │ WR= 56.5% n= 46  ███████████
+                    Dry spell (3-5 bars) │ WR= 54.5% n= 11  ██████████
+      Volume Spike (current bar / prev 5-bar avg):
+        r=+0.0051  p=0.9261
+                   Volume drying up │ WR= 55.0% n= 40  ███████████
+                      Normal volume │ WR= 53.6% n=192  ██████████
+                     Elevated spike │ WR= 56.2% n= 89  ███████████
+                   BOOM (2x+ spike) │ WR= 36.4% n= 11  ███████
+      Exhaustion Score (dryness × spike):
+        r=-0.0106  p=0.8471
+          Top 20% exhaustion: WR= 52.2% n=67
+          Bottom 80%:         WR= 54.3% n=265
+
+    regression_channel × SPY (N=344)
+      Vol-of-Vol (Coefficient of Variation):
+        r=-0.1991  p=0.0002
+                Low CV (steady vol) │ WR= 52.6% n=114  ██████████
+                          Medium CV │ WR= 67.2% n=116  █████████████ ★
+              High CV (erratic vol) │ WR= 41.2% n=114  ████████
+      Volume Dryness (consecutive bars < 80% SMA):
+        r=+0.0107  p=0.8427
+                     No dryness (0 bars) │ WR= 53.1% n=275  ██████████
+                 Mild dryness (1-2 bars) │ WR= 57.9% n= 57  ███████████
+                    Dry spell (3-5 bars) │ WR= 54.5% n= 11  ██████████
+      Volume Spike (current bar / prev 5-bar avg):
+        r=-0.1247  p=0.0207
+                   Volume drying up │ WR= 60.9% n= 64  ████████████ ★
+                      Normal volume │ WR= 53.9% n=204  ██████████
+                     Elevated spike │ WR= 52.5% n= 59  ██████████
+                   BOOM (2x+ spike) │ WR= 29.4% n= 17  █████
+      Exhaustion Score (dryness × spike):
+        r=-0.0561  p=0.2996
+          Top 20% exhaustion: WR= 53.8% n=344
+          Bottom 80%:         WR=  nan% n=0
+
+  ── VOLUME EXHAUSTION → BOOM: AAPL ──
+
+    rsi_intelligence × AAPL (N=326)
+      Vol-of-Vol (Coefficient of Variation):
+        r=-0.0661  p=0.2336
+                Low CV (steady vol) │ WR= 54.6% n=108  ██████████
+                          Medium CV │ WR= 37.3% n=110  ███████ ✗
+              High CV (erratic vol) │ WR= 40.7% n=108  ████████
+      Volume Dryness (consecutive bars < 80% SMA):
+        r=-0.1759  p=0.0014
+                     No dryness (0 bars) │ WR= 47.4% n=209  █████████
+                 Mild dryness (1-2 bars) │ WR= 42.5% n= 73  ████████
+                    Dry spell (3-5 bars) │ WR= 53.8% n= 26  ██████████
+                   Extended drought (6+) │ WR=  0.0% n= 18  
+      Volume Spike (current bar / prev 5-bar avg):
+        r=+0.0377  p=0.4971
+                   Volume drying up │ WR= 35.8% n= 53  ███████
+                      Normal volume │ WR= 45.8% n=190  █████████
+                     Elevated spike │ WR= 46.4% n= 69  █████████
+                   BOOM (2x+ spike) │ WR= 42.9% n= 14  ████████
+      Exhaustion Score (dryness × spike):
+        r=-0.0853  p=0.1243
+          Top 20% exhaustion: WR= 34.8% n=66
+          Bottom 80%:         WR= 46.5% n=260
+
+    regression_channel × AAPL (N=369)
+      Vol-of-Vol (Coefficient of Variation):
+        r=-0.1611  p=0.0019
+                Low CV (steady vol) │ WR= 54.1% n=122  ██████████
+                          Medium CV │ WR= 52.8% n=125  ██████████
+              High CV (erratic vol) │ WR= 41.0% n=122  ████████
+      Volume Dryness (consecutive bars < 80% SMA):
+        r=-0.0996  p=0.0560
+                     No dryness (0 bars) │ WR= 51.2% n=258  ██████████
+                 Mild dryness (1-2 bars) │ WR= 47.5% n= 80  █████████
+                    Dry spell (3-5 bars) │ WR= 46.2% n= 26  █████████
+                   Extended drought (6+) │ WR=  0.0% n=  5  
+      Volume Spike (current bar / prev 5-bar avg):
+        r=-0.0258  p=0.6218
+                   Volume drying up │ WR= 38.7% n= 75  ███████
+                      Normal volume │ WR= 53.4% n=223  ██████████
+                     Elevated spike │ WR= 52.6% n= 57  ██████████
+                   BOOM (2x+ spike) │ WR= 28.6% n= 14  █████
+      Exhaustion Score (dryness × spike):
+        r=-0.0634  p=0.2247
+          Top 20% exhaustion: WR= 45.9% n=74
+          Bottom 80%:         WR= 50.2% n=295
+
+  ── VOLUME EXHAUSTION → BOOM: QQQ ──
+
+    rsi_intelligence × QQQ (N=324)
+      Vol-of-Vol (Coefficient of Variation):
+        r=+0.0151  p=0.7863
+                Low CV (steady vol) │ WR= 43.9% n=107  ████████
+                          Medium CV │ WR= 50.9% n=110  ██████████
+              High CV (erratic vol) │ WR= 46.7% n=107  █████████
+      Volume Dryness (consecutive bars < 80% SMA):
+        r=+0.1235  p=0.0262
+                     No dryness (0 bars) │ WR= 46.4% n=263  █████████
+                 Mild dryness (1-2 bars) │ WR= 41.9% n= 43  ████████
+                    Dry spell (3-5 bars) │ WR= 66.7% n= 12  █████████████ ★ EXHAUSTION
+                   Extended drought (6+) │ WR= 83.3% n=  6  ████████████████ ★ EXHAUSTION
+      Volume Spike (current bar / prev 5-bar avg):
+        r=-0.0460  p=0.4097
+                   Volume drying up │ WR= 52.9% n= 34  ██████████
+                      Normal volume │ WR= 47.5% n=200  █████████
+                     Elevated spike │ WR= 44.3% n= 88  ████████
+      Exhaustion Score (dryness × spike):
+        r=-0.0535  p=0.3369
+          Top 20% exhaustion: WR= 43.1% n=65
+          Bottom 80%:         WR= 48.3% n=259
+
+    regression_channel × QQQ (N=320)
+      Vol-of-Vol (Coefficient of Variation):
+        r=-0.0620  p=0.2686
+                Low CV (steady vol) │ WR= 56.6% n=106  ███████████
+                          Medium CV │ WR= 54.6% n=108  ██████████
+              High CV (erratic vol) │ WR= 48.1% n=106  █████████
+      Volume Dryness (consecutive bars < 80% SMA):
+        r=+0.0086  p=0.8780
+                     No dryness (0 bars) │ WR= 52.1% n=259  ██████████
+                 Mild dryness (1-2 bars) │ WR= 56.9% n= 51  ███████████
+                    Dry spell (3-5 bars) │ WR= 60.0% n= 10  ████████████
+      Volume Spike (current bar / prev 5-bar avg):
+        r=+0.0079  p=0.8881
+                   Volume drying up │ WR= 61.5% n= 52  ████████████ ★
+                      Normal volume │ WR= 49.2% n=199  █████████
+                     Elevated spike │ WR= 58.2% n= 67  ███████████
+      Exhaustion Score (dryness × spike):
+        r=+0.0131  p=0.8160
+          Top 20% exhaustion: WR= 53.1% n=320
+          Bottom 80%:         WR=  nan% n=0
+
+================================================================================
+  PART 2: RSI DIVERGENCE RECONSTRUCTION
+================================================================================
+
+  ── RSI DIVERGENCE RECONSTRUCTION: COST ──
+
+    rsi_intelligence × COST (N=115)
+      Divergence Type:
+        NONE                      │ WR= 56.1% n= 98  ███████████
+        NEGATIVE_REVERSAL         │ WR= 83.3% n=  6  ████████████████ ★
+        CLASSIC_BULLISH_DIV       │ WR= 66.7% n=  6  █████████████ ★
+        CLASSIC_BEARISH_DIV       │ WR= 25.0% n=  4  █████ ✗
+      Div Strength × Win: r=-0.0078  p=0.9762
+      RSI Conviction × Win: r=-0.0947  p=0.3142
+                Low conviction (bearish) │ WR= 68.4% n= 38  █████████████ ★
+                       Medium conviction │ WR= 48.6% n= 37  █████████
+               High conviction (bullish) │ WR= 55.0% n= 40  ███████████
+      Slope Alignment (price vs RSI):
+        ALIGNED         │ WR= 58.6% n=111  ███████████
+        CONVERGING      │ WR= 25.0% n=  4  █████ ✗
+      Divergence Combos:
+        Any divergence                      │ WR= 64.7% n= 17  ████████████
+        Divergence + Fear≥ANX               │ WR= 76.9% n= 13  ███████████████ ★ SLINGSHOT
+        Divergence + σ<-1                   │ WR= 50.0% n=  6  ██████████
+        CLASSIC_BULLISH only                │ WR= 66.7% n=  6  █████████████ ★ SLINGSHOT
+
+    regression_channel × COST (N=195)
+      Divergence Type:
+        NONE                      │ WR= 55.3% n=150  ███████████
+        NEGATIVE_REVERSAL         │ WR= 52.0% n= 25  ██████████
+        CLASSIC_BULLISH_DIV       │ WR= 36.8% n= 19  ███████ ✗
+      Div Strength × Win: r=+0.0372  p=0.8082
+      RSI Conviction × Win: r=-0.0829  p=0.2495
+                Low conviction (bearish) │ WR= 59.4% n= 64  ███████████
+                       Medium conviction │ WR= 50.8% n= 65  ██████████
+               High conviction (bullish) │ WR= 48.5% n= 66  █████████
+      Slope Alignment (price vs RSI):
+        ALIGNED         │ WR= 53.7% n=175  ██████████
+        CONVERGING      │ WR= 45.0% n= 20  █████████
+      Divergence Combos:
+        Any divergence                      │ WR= 44.4% n= 45  ████████
+        Divergence + Fear≥ANX               │ WR= 47.6% n= 42  █████████
+        Divergence + σ<-1                   │ WR= 50.0% n=  4  ██████████
+        Divergence + Fear + σ<-1            │ WR= 66.7% n=  3  █████████████ ★ SLINGSHOT
+        CLASSIC_BULLISH only                │ WR= 36.8% n= 19  ███████
+
+  ── RSI DIVERGENCE RECONSTRUCTION: SPY ──
+
+    rsi_intelligence × SPY (N=332)
+      Divergence Type:
+        NONE                      │ WR= 54.0% n=285  ██████████
+        POSITIVE_REVERSAL         │ WR= 62.5% n=  8  ████████████ ★
+        NEGATIVE_REVERSAL         │ WR= 80.0% n= 10  ████████████████ ★
+        CLASSIC_BULLISH_DIV       │ WR= 46.7% n= 15  █████████
+        CLASSIC_BEARISH_DIV       │ WR= 35.7% n= 14  ███████ ✗
+      Div Strength × Win: r=-0.1582  p=0.2883
+      RSI Conviction × Win: r=-0.1254  p=0.0223
+                Low conviction (bearish) │ WR= 65.4% n= 78  █████████████ ★
+                       Medium conviction │ WR= 54.1% n=122  ██████████
+               High conviction (bullish) │ WR= 47.0% n=132  █████████
+      Slope Alignment (price vs RSI):
+        ALIGNED         │ WR= 54.0% n=326  ██████████
+        CONVERGING      │ WR= 75.0% n=  4  ███████████████ ★
+      Divergence Combos:
+        Any divergence                      │ WR= 53.2% n= 47  ██████████
+        Divergence + Fear≥ANX               │ WR= 51.4% n= 37  ██████████
+        Divergence + σ<-1                   │ WR= 88.9% n=  9  █████████████████ ★ SLINGSHOT
+        Divergence + Fear + σ<-1            │ WR= 85.7% n=  7  █████████████████ ★ SLINGSHOT
+        POSITIVE_REVERSAL only              │ WR= 62.5% n=  8  ████████████
+        CLASSIC_BULLISH only                │ WR= 46.7% n= 15  █████████
+
+    regression_channel × SPY (N=344)
+      Divergence Type:
+        NONE                      │ WR= 52.7% n=281  ██████████
+        NEGATIVE_REVERSAL         │ WR= 61.1% n= 18  ████████████ ★
+        CLASSIC_BULLISH_DIV       │ WR= 61.5% n= 39  ████████████ ★
+        CLASSIC_BEARISH_DIV       │ WR= 33.3% n=  6  ██████ ✗
+      Div Strength × Win: r=-0.0015  p=0.9908
+      RSI Conviction × Win: r=-0.0445  p=0.4111
+                Low conviction (bearish) │ WR= 50.7% n= 71  ██████████
+                       Medium conviction │ WR= 56.6% n=159  ███████████
+               High conviction (bullish) │ WR= 51.8% n=114  ██████████
+      Slope Alignment (price vs RSI):
+        ALIGNED         │ WR= 52.2% n=316  ██████████
+        CONVERGING      │ WR= 71.4% n= 28  ██████████████ ★
+      Divergence Combos:
+        Any divergence                      │ WR= 58.7% n= 63  ███████████
+        Divergence + Fear≥ANX               │ WR= 61.1% n= 54  ████████████
+        CLASSIC_BULLISH only                │ WR= 61.5% n= 39  ████████████
+
+  ── RSI DIVERGENCE RECONSTRUCTION: AAPL ──
+
+    rsi_intelligence × AAPL (N=326)
+      Divergence Type:
+        NONE                      │ WR= 41.6% n=250  ████████
+        NEGATIVE_REVERSAL         │ WR= 50.0% n= 30  ██████████
+        CLASSIC_BULLISH_DIV       │ WR= 55.8% n= 43  ███████████
+      Div Strength × Win: r=+0.0084  p=0.9429
+      RSI Conviction × Win: r=+0.0958  p=0.0840
+                Low conviction (bearish) │ WR= 50.0% n= 20  ██████████
+                       Medium conviction │ WR= 40.7% n=194  ████████
+               High conviction (bullish) │ WR= 49.1% n=112  █████████
+      Slope Alignment (price vs RSI):
+        ALIGNED         │ WR= 42.9% n=303  ████████
+        CONVERGING      │ WR= 60.9% n= 23  ████████████ ★
+      Divergence Combos:
+        Any divergence                      │ WR= 52.6% n= 76  ██████████
+        Divergence + Fear≥ANX               │ WR= 55.0% n= 60  ███████████
+        Divergence + σ<-1                   │ WR= 68.8% n= 16  █████████████ ★ SLINGSHOT
+        Divergence + Fear + σ<-1            │ WR= 85.7% n=  7  █████████████████ ★ SLINGSHOT
+        CLASSIC_BULLISH only                │ WR= 55.8% n= 43  ███████████
+
+    regression_channel × AAPL (N=369)
+      Divergence Type:
+        NONE                      │ WR= 48.5% n=266  █████████
+        NEGATIVE_REVERSAL         │ WR= 40.5% n= 42  ████████
+        CLASSIC_BULLISH_DIV       │ WR= 59.0% n= 61  ███████████
+      Div Strength × Win: r=-0.1618  p=0.1024
+      RSI Conviction × Win: r=+0.0347  p=0.5062
+                Low conviction (bearish) │ WR= 47.9% n=119  █████████
+                       Medium conviction │ WR= 52.2% n= 23  ██████████
+               High conviction (bullish) │ WR= 49.8% n=227  █████████
+      Slope Alignment (price vs RSI):
+        ALIGNED         │ WR= 51.1% n=329  ██████████
+        CONVERGING      │ WR= 35.9% n= 39  ███████ ✗
+      Divergence Combos:
+        Any divergence                      │ WR= 51.5% n=103  ██████████
+        Divergence + Fear≥ANX               │ WR= 52.5% n= 99  ██████████
+        Divergence + σ<-1                   │ WR= 36.4% n= 11  ███████
+        Divergence + Fear + σ<-1            │ WR= 36.4% n= 11  ███████
+        CLASSIC_BULLISH only                │ WR= 59.0% n= 61  ███████████
+
+  ── RSI DIVERGENCE RECONSTRUCTION: QQQ ──
+
+    rsi_intelligence × QQQ (N=324)
+      Divergence Type:
+        NONE                      │ WR= 45.9% n=259  █████████
+        POSITIVE_REVERSAL         │ WR= 66.7% n= 15  █████████████ ★
+        NEGATIVE_REVERSAL         │ WR= 58.3% n= 12  ███████████
+        CLASSIC_BULLISH_DIV       │ WR= 48.0% n= 25  █████████
+        CLASSIC_BEARISH_DIV       │ WR= 38.5% n= 13  ███████ ✗
+      Div Strength × Win: r=+0.0563  p=0.6560
+      RSI Conviction × Win: r=+0.0520  p=0.3505
+                Low conviction (bearish) │ WR= 47.5% n= 80  █████████
+                       Medium conviction │ WR= 44.1% n=118  ████████
+               High conviction (bullish) │ WR= 50.0% n=126  ██████████
+      Slope Alignment (price vs RSI):
+        ALIGNED         │ WR= 46.9% n=311  █████████
+        CONVERGING      │ WR= 53.8% n= 13  ██████████
+      Divergence Combos:
+        Any divergence                      │ WR= 52.3% n= 65  ██████████
+        Divergence + Fear≥ANX               │ WR= 59.3% n= 54  ███████████
+        Divergence + σ<-1                   │ WR= 36.4% n= 11  ███████
+        Divergence + Fear + σ<-1            │ WR= 50.0% n=  6  ██████████
+        POSITIVE_REVERSAL only              │ WR= 66.7% n= 15  █████████████ ★ SLINGSHOT
+        CLASSIC_BULLISH only                │ WR= 48.0% n= 25  █████████
+
+    regression_channel × QQQ (N=320)
+      Divergence Type:
+        NONE                      │ WR= 50.8% n=242  ██████████
+        NEGATIVE_REVERSAL         │ WR= 44.4% n= 18  ████████
+        CLASSIC_BULLISH_DIV       │ WR= 62.5% n= 56  ████████████ ★
+        CLASSIC_BEARISH_DIV       │ WR=100.0% n=  3  ████████████████████ ★
+      Div Strength × Win: r=+0.1221  p=0.2867
+      RSI Conviction × Win: r=+0.0144  p=0.7969
+                Low conviction (bearish) │ WR= 49.4% n= 83  █████████
+                       Medium conviction │ WR= 52.7% n=131  ██████████
+               High conviction (bullish) │ WR= 56.6% n=106  ███████████
+      Slope Alignment (price vs RSI):
+        ALIGNED         │ WR= 53.9% n=304  ██████████
+        CONVERGING      │ WR= 37.5% n= 16  ███████ ✗
+      Divergence Combos:
+        Any divergence                      │ WR= 60.3% n= 78  ████████████
+        Divergence + Fear≥ANX               │ WR= 64.6% n= 65  ████████████
+        CLASSIC_BULLISH only                │ WR= 62.5% n= 56  ████████████
+
+================================================================================
+  PART 3: PRICE-VOLUME DIVERGENCE
+================================================================================
+
+  ── PRICE-VOLUME DIVERGENCE: COST ──
+
+    rsi_intelligence × COST (N=115)
+      Price-Volume Divergence:
+        📥 ACCUMULATION    │ WR= 53.7% n= 54  ██████████
+        💀 CAPITULATION    │ WR= 54.1% n= 37  ██████████
+        ✅ CONFIRMATION    │ WR= 66.7% n=  3  █████████████ ★
+        📤 DISTRIBUTION    │ WR= 75.0% n=  4  ███████████████ ★
+        ➡ NEUTRAL         │ WR= 70.6% n= 17  ██████████████ ★
+
+      PV Divergence × Trend:
+        ACCUMULATION+BULL  │ WR= 53.1% n= 49  ██████████
+        ACCUMULATION+BEAR  │ WR= 66.7% n=  3  █████████████ ★ SIGNAL
+        CAPITULATION+BULL  │ WR= 50.0% n= 32  ██████████
+        CAPITULATION+BEAR  │ WR= 75.0% n=  4  ███████████████ ★ SIGNAL
+
+    regression_channel × COST (N=195)
+      Price-Volume Divergence:
+        📥 ACCUMULATION    │ WR= 51.5% n=101  ██████████
+        💀 CAPITULATION    │ WR= 52.5% n= 59  ██████████
+        ✅ CONFIRMATION    │ WR= 50.0% n=  4  ██████████
+        📤 DISTRIBUTION    │ WR= 83.3% n=  6  ████████████████ ★
+        ➡ NEUTRAL         │ WR= 52.0% n= 25  ██████████
+
+      PV Divergence × Trend:
+        ACCUMULATION+BULL  │ WR= 53.6% n= 97  ██████████
+        CAPITULATION+BULL  │ WR= 52.5% n= 59  ██████████
+
+  ── PRICE-VOLUME DIVERGENCE: SPY ──
+
+    rsi_intelligence × SPY (N=332)
+      Price-Volume Divergence:
+        📥 ACCUMULATION    │ WR= 54.8% n=157  ██████████
+        💀 CAPITULATION    │ WR= 47.4% n= 38  █████████
+        ✅ CONFIRMATION    │ WR= 38.1% n= 21  ███████ ✗
+        📤 DISTRIBUTION    │ WR= 54.7% n= 53  ██████████
+        ➡ NEUTRAL         │ WR= 60.3% n= 63  ████████████ ★
+
+      PV Divergence × Trend:
+        ACCUMULATION+BULL  │ WR= 59.3% n=118  ███████████
+        ACCUMULATION+BEAR  │ WR= 40.0% n= 25  ████████
+        CAPITULATION+BULL  │ WR= 66.7% n= 12  █████████████ ★ SIGNAL
+        CAPITULATION+BEAR  │ WR= 50.0% n= 20  ██████████
+
+    regression_channel × SPY (N=344)
+      Price-Volume Divergence:
+        📥 ACCUMULATION    │ WR= 53.5% n=213  ██████████
+        💀 CAPITULATION    │ WR= 59.4% n= 69  ███████████
+        ✅ CONFIRMATION    │ WR= 33.3% n=  3  ██████ ✗
+        📤 DISTRIBUTION    │ WR= 63.6% n= 11  ████████████ ★
+        ➡ NEUTRAL         │ WR= 45.8% n= 48  █████████
+
+      PV Divergence × Trend:
+        ACCUMULATION+BULL  │ WR= 55.0% n=200  ███████████
+        CAPITULATION+BULL  │ WR= 60.7% n= 61  ████████████ ★ SIGNAL
+
+  ── PRICE-VOLUME DIVERGENCE: AAPL ──
+
+    rsi_intelligence × AAPL (N=326)
+      Price-Volume Divergence:
+        📥 ACCUMULATION    │ WR= 44.6% n=148  ████████
+        💀 CAPITULATION    │ WR= 36.9% n=103  ███████ ✗
+        ✅ CONFIRMATION    │ WR= 45.5% n= 11  █████████
+        📤 DISTRIBUTION    │ WR= 53.6% n= 28  ██████████
+        ➡ NEUTRAL         │ WR= 55.6% n= 36  ███████████
+
+      PV Divergence × Trend:
+        ACCUMULATION+BULL  │ WR= 45.4% n= 97  █████████
+        ACCUMULATION+BEAR  │ WR= 40.4% n= 47  ████████
+        CAPITULATION+BULL  │ WR= 44.7% n= 47  ████████
+        CAPITULATION+BEAR  │ WR= 22.2% n= 45  ████ ✗
+
+    regression_channel × AAPL (N=369)
+      Price-Volume Divergence:
+        📥 ACCUMULATION    │ WR= 51.4% n=210  ██████████
+        💀 CAPITULATION    │ WR= 47.9% n= 94  █████████
+        ✅ CONFIRMATION    │ WR= 20.0% n=  5  ████ ✗
+        📤 DISTRIBUTION    │ WR= 56.2% n= 16  ███████████
+        ➡ NEUTRAL         │ WR= 43.2% n= 44  ████████
+
+      PV Divergence × Trend:
+        ACCUMULATION+BULL  │ WR= 51.2% n=207  ██████████
+        CAPITULATION+BULL  │ WR= 49.5% n= 91  █████████
+
+  ── PRICE-VOLUME DIVERGENCE: QQQ ──
+
+    rsi_intelligence × QQQ (N=324)
+      Price-Volume Divergence:
+        📥 ACCUMULATION    │ WR= 50.7% n=146  ██████████
+        💀 CAPITULATION    │ WR= 48.4% n= 62  █████████
+        ✅ CONFIRMATION    │ WR= 42.9% n= 28  ████████
+        📤 DISTRIBUTION    │ WR= 41.7% n= 36  ████████
+        ➡ NEUTRAL         │ WR= 42.3% n= 52  ████████
+
+      PV Divergence × Trend:
+        ACCUMULATION+BULL  │ WR= 55.6% n= 99  ███████████
+        ACCUMULATION+BEAR  │ WR= 36.6% n= 41  ███████ ✗
+        CAPITULATION+BULL  │ WR= 72.2% n= 18  ██████████████ ★ SIGNAL
+        CAPITULATION+BEAR  │ WR= 40.0% n= 40  ████████
+
+    regression_channel × QQQ (N=320)
+      Price-Volume Divergence:
+        📥 ACCUMULATION    │ WR= 51.2% n=207  ██████████
+        💀 CAPITULATION    │ WR= 54.4% n= 68  ██████████
+        ✅ CONFIRMATION    │ WR= 50.0% n=  4  ██████████
+        📤 DISTRIBUTION    │ WR= 63.6% n= 11  ████████████ ★
+        ➡ NEUTRAL         │ WR= 60.0% n= 30  ████████████
+
+      PV Divergence × Trend:
+        ACCUMULATION+BULL  │ WR= 50.7% n=203  ██████████
+        CAPITULATION+BULL  │ WR= 54.5% n= 66  ██████████
+
+================================================================================
+  v7 ANALYSIS COMPLETE
+================================================================================

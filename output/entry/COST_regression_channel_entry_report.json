@@ -1,0 +1,68 @@
+{
+  "ticker": "COST",
+  "signal_name": "regression_channel",
+  "n_signals": 195,
+  "classification_dist": {
+    "MISS": 20,
+    "SOLID_MOVE": 71,
+    "TRAP": 31,
+    "GOLDEN_RUN": 32,
+    "FALSE_SIGNAL": 33,
+    "SLOW_GRIND": 8
+  },
+  "classification_pct": {
+    "MISS": 0.10256410256410256,
+    "SOLID_MOVE": 0.3641025641025641,
+    "TRAP": 0.15897435897435896,
+    "GOLDEN_RUN": 0.1641025641025641,
+    "FALSE_SIGNAL": 0.16923076923076924,
+    "SLOW_GRIND": 0.041025641025641026
+  },
+  "golden_rate": 0.5282051282051282,
+  "trap_rate": 0.15897435897435896,
+  "false_rate": 0.16923076923076924,
+  "miss_rate": 0.14358974358974358,
+  "avg_return_by_horizon": {
+    "3": 0.4759,
+    "5": 0.7346,
+    "10": 1.5126,
+    "20": 2.42,
+    "40": 4.1991
+  },
+  "wr_by_horizon": {
+    "3": 0.5795,
+    "5": 0.6,
+    "10": 0.6,
+    "20": 0.6769,
+    "40": 0.7179
+  },
+  "edge_ratio_10": 1.46,
+  "avg_mfe_10": 4.2002,
+  "avg_mae_10": -2.8861,
+  "foreseeable_pct": 0.2381,
+  "failure_breakdown": {
+    "LOW_VOLATILITY_REGIME": 19,
+    "UNFORESEEABLE": 61,
+    "EARNINGS_SHOCK": 1,
+    "BLACK_SWAN": 2,
+    "LOW_RVOL_ENTRY": 1
+  },
+  "foreseeability_breakdown": {
+    "FORESEEABLE": 20,
+    "UNFORESEEABLE": 64
+  },
+  "top_lesson": "UNFORESEEABLE",
+  "golden_rate_by_fear": {
+    "CONFIDENCE": 0.5,
+    "ANXIETY": 0.5621301775147929,
+    "NEUTRAL": 0.1875
+  },
+  "golden_rate_by_regime": {
+    "SBULL": 0.5174418604651163,
+    "BULL": 0.7777777777777778,
+    "FLAT": 0.0
+  },
+  "golden_rate_by_vol_regime": {},
+  "grade": "C",
+  "verdict": "MARGINAL"
+}

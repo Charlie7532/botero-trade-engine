@@ -1,0 +1,1126 @@
+
+================================================================================
+  ORACLE FORENSIC DATA EXPLORER — López de Prado × Simons Lab
+================================================================================
+
+  Extracting entry forensic labels from Neon...
+  → 2325 entry labels extracted
+
+  Extracting exit forensic labels from Neon...
+  → 2597 exit labels extracted
+
+================================================================================
+  ENTRY SIGNAL ANALYSIS
+================================================================================
+
+  ── ENTRY: regression_channel × AAPL (369 signals) ──
+
+    Feature                         Win μ    Win σ   Loss μ   Loss σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                     -2.222    0.491   -2.171    0.545   -0.052    -0.96   0.3398
+    sigma_wave                     -0.118    1.023   -0.081    0.938   -0.037    -0.36   0.7156
+    tide_slope                      0.173    0.113    0.179    0.128   -0.006    -0.44   0.6569
+    wave_slope                     -0.421    0.411   -0.511    0.440   +0.090     2.03   0.0429 **
+    tide_accel                     -0.003    0.002   -0.003    0.002   -0.000    -0.15   0.8793
+    rvol                            1.049    0.383    0.995    0.375   +0.054     1.37   0.1721
+    vol_up_down_ratio               0.988    0.332    0.982    0.341   +0.005     0.16   0.8765
+    slope_conjugation              -0.594    0.397   -0.689    0.436   +0.096     2.20   0.0282 **
+    fear_level                      2.835    0.521    2.807    0.544   +0.028     0.50   0.6178
+    rsi_value                      39.738    6.019   39.182    5.960   +0.557     0.89   0.3725
+    kalman_velocity                -0.030    0.131   -0.042    0.145   +0.012     0.86   0.3880
+
+    Win Rate by σ_tide (macro) Bucket:
+              <-2σ │ WR= 52.9% n=210  ██████████
+          -2→-1.5σ │ WR= 44.7% n=159  ████████
+
+    Win Rate by σ_wave (cycle) Bucket:
+              <-2σ │ WR= 50.0% n=  4  ██████████
+          -2→-1.5σ │ WR= 68.0% n= 25  █████████████
+          -1.5→-1σ │ WR= 50.0% n= 46  ██████████
+          -1→-0.5σ │ WR= 45.6% n= 57  █████████
+           -0.5→0σ │ WR= 41.1% n= 73  ████████
+            0→0.5σ │ WR= 58.6% n= 58  ███████████
+            0.5→1σ │ WR= 44.2% n= 52  ████████
+            1→1.5σ │ WR= 43.8% n= 32  ████████
+            1.5→2σ │ WR= 66.7% n= 15  █████████████
+               >2σ │ WR= 42.9% n=  7  ████████
+
+    Win Rate by Fear Level:
+        CONFIDENCE │ WR= 48.0% n= 25  █████████
+           NEUTRAL │ WR= 37.5% n= 16  ███████
+           ANXIETY │ WR= 50.0% n=328  ██████████
+
+    Win Rate by Slope Conjugation (wave - tide):
+           Strong↓ │ WR= 48.8% n=299  █████████
+             Mild↓ │ WR= 53.4% n= 58  ██████████
+              Flat │ WR= 41.7% n= 12  ████████
+
+    Win Rate by RSI Bucket:
+             20-30 │ WR= 48.5% n= 33  █████████
+             30-40 │ WR= 45.1% n=142  █████████
+             40-50 │ WR= 52.4% n=191  ██████████
+             50-60 │ WR= 66.7% n=  3  █████████████
+
+    Win Rate by Kalman Velocity:
+           Strong↓ │ WR= 50.0% n=226  ██████████
+             Weak↓ │ WR= 50.0% n= 14  ██████████
+             Weak↑ │ WR= 41.7% n= 12  ████████
+           Strong↑ │ WR= 48.7% n=117  █████████
+
+    Win Rate by Wyckoff State:
+          ACCUMULATION │ WR= 46.4% n= 28  █████████
+         CONSOLIDATION │ WR= 49.7% n=312  █████████
+          DISTRIBUTION │ WR=100.0% n=  1  ████████████████████
+                MARKUP │ WR= 46.4% n= 28  █████████
+
+    Win Rate by Relative Volume:
+             <0.5x │ WR= 28.6% n= 14  █████
+          0.5-0.8x │ WR= 46.2% n= 93  █████████
+          0.8-1.0x │ WR= 49.5% n= 95  █████████
+          1.0-1.3x │ WR= 54.7% n= 95  ██████████
+          1.3-2.0x │ WR= 47.7% n= 65  █████████
+             >2.0x │ WR= 71.4% n=  7  ██████████████
+
+    Win Rate Curves by Horizon:
+      H= 3 │ WR= 49.3%  AvgRet= -0.32%  MedRet= -0.03%
+      H= 5 │ WR= 52.8%  AvgRet= +0.20%  MedRet= +0.39%
+      H=10 │ WR= 55.0%  AvgRet= +0.75%  MedRet= +0.85%
+      H=20 │ WR= 56.6%  AvgRet= +2.09%  MedRet= +1.99%
+      H=40 │ WR= 66.9%  AvgRet= +5.97%  MedRet= +6.01%
+
+    MFE/MAE Analysis by Horizon:
+      H= 3 │ AvgMFE= +3.07%  AvgMAE= -3.48%  Edge=0.88
+      H= 5 │ AvgMFE= +4.35%  AvgMAE= -4.51%  Edge=0.96
+      H=10 │ AvgMFE= +6.44%  AvgMAE= -6.15%  Edge=1.05
+      H=20 │ AvgMFE= +9.45%  AvgMAE= -8.27%  Edge=1.14
+      H=40 │ AvgMFE=+14.97%  AvgMAE=-10.23%  Edge=1.46
+
+    Combined Condition Win Rates:
+      σ_wave<-1 + wave↑              │ WR= 60.0% n= 15  ████████████
+      σ_wave < -1.0                  │ WR= 56.8% n= 74  ███████████
+      σ_wave<-1 + Fear≥ANXIETY       │ WR= 56.1% n= 57  ███████████
+      Fear ≥ ANXIETY                 │ WR= 50.0% n=328  ██████████
+      RVOL > 1.3x                    │ WR= 50.0% n= 72  ██████████
+      σ_tide < -1.0                  │ WR= 49.3% n=369  █████████
+      Below VWAP                     │ WR= 49.2% n=368  █████████
+      RSI < 30                       │ WR= 48.5% n= 33  █████████
+
+    Feature Correlation with Win (top predictors):
+      slope_conjugation            r=+0.1141 **
+      wave_slope                   r=+0.1054 **
+      rvol                         r=+0.0713 *
+      sigma_tide                   r=-0.0498 
+      rsi_value                    r=+0.0466 
+      kalman_velocity              r=+0.0450 
+      fear_level                   r=+0.0260 
+      tide_slope                   r=-0.0232 
+
+  ── ENTRY: rsi_intelligence × AAPL (326 signals) ──
+
+    Feature                         Win μ    Win σ   Loss μ   Loss σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                     -1.242    0.962   -1.070    0.755   -0.172    -1.76   0.0796 *
+    sigma_wave                     -0.708    1.000   -0.564    0.780   -0.143    -1.41   0.1594
+    tide_slope                      0.059    0.217   -0.035    0.243   +0.095     3.71   0.0002 ***
+    wave_slope                     -0.312    0.463   -0.277    0.399   -0.035    -0.72   0.4747
+    tide_accel                     -0.002    0.003   -0.003    0.004   +0.001     1.40   0.1624
+    rvol                            1.029    0.395    0.994    0.464   +0.035     0.74   0.4578
+    vol_up_down_ratio               0.939    0.384    0.907    0.350   +0.032     0.77   0.4440
+    slope_conjugation              -0.371    0.443   -0.242    0.390   -0.129    -2.76   0.0061 ***
+    fear_level                      2.903    1.474    3.368    1.487   -0.465    -2.82   0.0051 ***
+    rsi_value                      39.312    4.912   39.812    5.165   -0.500    -0.89   0.3730
+    kalman_velocity                 0.009    0.147    0.010    0.146   -0.001    -0.07   0.9441
+
+    Win Rate by σ_tide (macro) Bucket:
+              <-2σ │ WR= 69.6% n= 56  █████████████
+          -2→-1.5σ │ WR= 45.0% n= 60  █████████
+          -1.5→-1σ │ WR= 26.9% n= 78  █████
+          -1→-0.5σ │ WR= 28.9% n= 45  █████
+           -0.5→0σ │ WR= 54.9% n= 51  ██████████
+            0→0.5σ │ WR= 46.4% n= 28  █████████
+            0.5→1σ │ WR= 37.5% n=  8  ███████
+
+    Win Rate by σ_wave (cycle) Bucket:
+              <-2σ │ WR= 50.0% n= 16  ██████████
+          -2→-1.5σ │ WR= 70.7% n= 41  ██████████████
+          -1.5→-1σ │ WR= 42.3% n= 52  ████████
+          -1→-0.5σ │ WR= 35.8% n= 81  ███████
+           -0.5→0σ │ WR= 34.4% n= 61  ██████
+            0→0.5σ │ WR= 42.1% n= 38  ████████
+            0.5→1σ │ WR= 43.5% n= 23  ████████
+            1→1.5σ │ WR= 66.7% n=  9  █████████████
+            1.5→2σ │ WR= 60.0% n=  5  ████████████
+
+    Win Rate by Fear Level:
+             GREED │ WR= 54.2% n= 24  ██████████
+        CONFIDENCE │ WR= 41.2% n= 17  ████████
+           NEUTRAL │ WR= 61.5% n= 52  ████████████
+           ANXIETY │ WR= 45.3% n=117  █████████
+              FEAR │ WR= 33.3% n= 21  ██████
+             PANIC │ WR= 33.7% n= 95  ██████
+
+    Win Rate by Slope Conjugation (wave - tide):
+           Strong↓ │ WR= 52.7% n=148  ██████████
+             Mild↓ │ WR= 38.8% n= 80  ███████
+              Flat │ WR= 33.3% n= 48  ██████
+             Mild↑ │ WR= 41.5% n= 41  ████████
+           Strong↑ │ WR= 22.2% n=  9  ████
+
+    Win Rate by RSI Bucket:
+             20-30 │ WR= 75.0% n=  4  ███████████████
+             30-40 │ WR= 44.2% n=208  ████████
+             40-50 │ WR= 43.0% n=114  ████████
+
+    Win Rate by Kalman Velocity:
+           Strong↓ │ WR= 43.9% n=157  ████████
+             Weak↓ │ WR= 40.0% n= 10  ████████
+             Weak↑ │ WR= 54.5% n= 11  ██████████
+           Strong↑ │ WR= 43.9% n=148  ████████
+
+    Win Rate by Wyckoff State:
+          ACCUMULATION │ WR= 60.0% n= 20  ████████████
+         CONSOLIDATION │ WR= 45.0% n=231  █████████
+          DISTRIBUTION │ WR= 31.2% n= 16  ██████
+              MARKDOWN │ WR= 39.5% n= 43  ███████
+                MARKUP │ WR= 37.5% n= 16  ███████
+
+    Win Rate by Relative Volume:
+             <0.5x │ WR= 17.6% n= 17  ███
+          0.5-0.8x │ WR= 41.7% n= 96  ████████
+          0.8-1.0x │ WR= 44.4% n= 81  ████████
+          1.0-1.3x │ WR= 55.4% n= 74  ███████████
+          1.3-2.0x │ WR= 42.2% n= 45  ████████
+             >2.0x │ WR= 38.5% n= 13  ███████
+
+    Win Rate Curves by Horizon:
+      H= 3 │ WR= 47.5%  AvgRet= +0.10%  MedRet= -0.06%
+      H= 5 │ WR= 51.2%  AvgRet= +0.22%  MedRet= +0.15%
+      H=10 │ WR= 48.8%  AvgRet= +0.45%  MedRet= -0.38%
+      H=20 │ WR= 55.5%  AvgRet= +0.90%  MedRet= +1.18%
+      H=40 │ WR= 56.1%  AvgRet= +3.52%  MedRet= +3.00%
+
+    MFE/MAE Analysis by Horizon:
+      H= 3 │ AvgMFE= +3.43%  AvgMAE= -3.26%  Edge=1.05
+      H= 5 │ AvgMFE= +4.38%  AvgMAE= -4.29%  Edge=1.02
+      H=10 │ AvgMFE= +6.32%  AvgMAE= -5.99%  Edge=1.05
+      H=20 │ AvgMFE= +9.53%  AvgMAE= -8.49%  Edge=1.12
+      H=40 │ AvgMFE=+14.55%  AvgMAE=-11.38%  Edge=1.28
+
+    Combined Condition Win Rates:
+      σ_wave<-1 + wave↑              │ WR= 55.4% n= 56  ███████████
+      σ_wave < -1.0                  │ WR= 54.6% n=108  ██████████
+      σ_wave<-1 + Fear≥ANXIETY       │ WR= 50.0% n= 52  ██████████
+      Below VWAP                     │ WR= 45.7% n=315  █████████
+      σ_tide < -1.0                  │ WR= 45.1% n=193  █████████
+      RVOL > 1.3x                    │ WR= 41.4% n= 58  ████████
+      Fear ≥ ANXIETY                 │ WR= 39.5% n=233  ███████
+
+    Feature Correlation with Win (top predictors):
+      tide_slope                   r=+0.1991 ***
+      fear_level                   r=-0.1546 ***
+      slope_conjugation            r=-0.1538 ***
+      sigma_tide                   r=-0.1000 **
+      sigma_wave                   r=-0.0804 *
+      tide_accel                   r=+0.0763 *
+      rsi_value                    r=-0.0492 
+      vol_up_down_ratio            r=+0.0430 
+
+  ── ENTRY: regression_channel × COST (195 signals) ──
+
+    Feature                         Win μ    Win σ   Loss μ   Loss σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                     -2.237    0.524   -2.201    0.484   -0.036    -0.50   0.6145
+    sigma_wave                     -0.251    0.915   -0.310    0.978   +0.059     0.43   0.6673
+    tide_slope                      0.108    0.054    0.103    0.042   +0.005     0.70   0.4823
+    wave_slope                     -0.258    0.218   -0.179    0.193   -0.079    -2.69   0.0079 ***
+    tide_accel                     -0.002    0.001   -0.001    0.001   -0.000    -1.51   0.1335
+    rvol                            1.008    0.393    1.042    0.315   -0.034    -0.66   0.5085
+    vol_up_down_ratio               0.951    0.262    0.939    0.239   +0.012     0.33   0.7406
+    slope_conjugation              -0.366    0.209   -0.282    0.183   -0.084    -2.99   0.0031 ***
+    fear_level                      2.874    0.458    2.750    0.547   +0.124     1.70   0.0904 *
+    rsi_value                      39.616    5.520   40.492    5.428   -0.876    -1.12   0.2655
+    kalman_velocity                -0.048    0.145   -0.042    0.144   -0.006    -0.29   0.7745
+
+    Win Rate by σ_tide (macro) Bucket:
+              <-2σ │ WR= 51.7% n=120  ██████████
+          -2→-1.5σ │ WR= 54.7% n= 75  ██████████
+
+    Win Rate by σ_wave (cycle) Bucket:
+              <-2σ │ WR=  0.0% n=  4  
+          -2→-1.5σ │ WR= 53.3% n= 15  ██████████
+          -1.5→-1σ │ WR= 54.5% n= 33  ██████████
+          -1→-0.5σ │ WR= 62.2% n= 37  ████████████
+           -0.5→0σ │ WR= 44.4% n= 27  ████████
+            0→0.5σ │ WR= 55.0% n= 40  ███████████
+            0.5→1σ │ WR= 43.5% n= 23  ████████
+            1→1.5σ │ WR= 80.0% n= 10  ████████████████
+            1.5→2σ │ WR= 33.3% n=  6  ██████
+
+    Win Rate by Fear Level:
+        CONFIDENCE │ WR= 50.0% n= 10  ██████████
+           NEUTRAL │ WR= 18.8% n= 16  ███
+           ANXIETY │ WR= 56.2% n=169  ███████████
+
+    Win Rate by Slope Conjugation (wave - tide):
+           Strong↓ │ WR= 69.5% n= 82  █████████████
+             Mild↓ │ WR= 41.4% n= 99  ████████
+              Flat │ WR= 35.7% n= 14  ███████
+
+    Win Rate by RSI Bucket:
+             20-30 │ WR= 63.6% n= 11  ████████████
+             30-40 │ WR= 56.4% n= 78  ███████████
+             40-50 │ WR= 49.1% n=106  █████████
+
+    Win Rate by Kalman Velocity:
+           Strong↓ │ WR= 56.8% n=111  ███████████
+             Weak↓ │ WR= 33.3% n=  9  ██████
+              Flat │ WR=  0.0% n=  2  
+             Weak↑ │ WR= 44.4% n=  9  ████████
+           Strong↑ │ WR= 51.6% n= 64  ██████████
+
+    Win Rate by Wyckoff State:
+          ACCUMULATION │ WR= 40.0% n= 15  ████████
+         CONSOLIDATION │ WR= 53.8% n=171  ██████████
+                MARKUP │ WR= 55.6% n=  9  ███████████
+
+    Win Rate by Relative Volume:
+             <0.5x │ WR= 75.0% n=  4  ███████████████
+          0.5-0.8x │ WR= 57.4% n= 47  ███████████
+          0.8-1.0x │ WR= 52.5% n= 59  ██████████
+          1.0-1.3x │ WR= 49.0% n= 49  █████████
+          1.3-2.0x │ WR= 48.5% n= 33  █████████
+             >2.0x │ WR= 66.7% n=  3  █████████████
+
+    Win Rate Curves by Horizon:
+      H= 3 │ WR= 57.9%  AvgRet= +0.48%  MedRet= +0.22%
+      H= 5 │ WR= 60.0%  AvgRet= +0.73%  MedRet= +0.89%
+      H=10 │ WR= 60.0%  AvgRet= +1.51%  MedRet= +1.68%
+      H=20 │ WR= 67.7%  AvgRet= +2.42%  MedRet= +3.52%
+      H=40 │ WR= 71.8%  AvgRet= +4.20%  MedRet= +4.81%
+
+    MFE/MAE Analysis by Horizon:
+      H= 3 │ AvgMFE= +2.19%  AvgMAE= -1.74%  Edge=1.26
+      H= 5 │ AvgMFE= +2.97%  AvgMAE= -2.20%  Edge=1.35
+      H=10 │ AvgMFE= +4.20%  AvgMAE= -2.89%  Edge=1.46
+      H=20 │ AvgMFE= +6.02%  AvgMAE= -3.81%  Edge=1.58
+      H=40 │ AvgMFE= +8.62%  AvgMAE= -5.13%  Edge=1.68
+
+    Combined Condition Win Rates:
+      RSI < 30                       │ WR= 63.6% n= 11  ████████████ ← EDGE
+      σ_wave<-1 + Fear≥ANXIETY       │ WR= 63.3% n= 30  ████████████ ← EDGE
+      Fear ≥ ANXIETY                 │ WR= 56.2% n=169  ███████████
+      σ_tide < -1.0                  │ WR= 52.8% n=195  ██████████
+      Below VWAP                     │ WR= 52.8% n=195  ██████████
+      RVOL > 1.3x                    │ WR= 50.0% n= 36  ██████████
+      σ_wave < -1.0                  │ WR= 47.9% n= 48  █████████
+      σ_wave<-1 + wave↑              │ WR= 25.0% n= 12  █████
+
+    Feature Correlation with Win (top predictors):
+      slope_conjugation            r=-0.2090 ***
+      wave_slope                   r=-0.1886 ***
+      fear_level                   r=+0.1228 **
+      tide_accel                   r=-0.1062 **
+      rsi_value                    r=-0.0800 *
+      tide_slope                   r=+0.0499 
+      rvol                         r=-0.0470 
+      sigma_tide                   r=-0.0361 
+
+  ── ENTRY: rsi_intelligence × COST (115 signals) ──
+
+    Feature                         Win μ    Win σ   Loss μ   Loss σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                     -1.130    1.075   -1.162    1.049   +0.032     0.16   0.8736
+    sigma_wave                     -0.891    0.921   -0.957    0.853   +0.066     0.40   0.6932
+    tide_slope                      0.071    0.070    0.104    0.065   -0.033    -2.60   0.0107 **
+    wave_slope                     -0.128    0.204   -0.063    0.201   -0.065    -1.70   0.0912 *
+    tide_accel                     -0.001    0.002   -0.001    0.001   -0.000    -0.52   0.6018
+    rvol                            1.011    0.383    1.009    0.299   +0.002     0.03   0.9760
+    vol_up_down_ratio               0.922    0.356    0.925    0.270   -0.003    -0.06   0.9539
+    slope_conjugation              -0.199    0.191   -0.167    0.181   -0.032    -0.91   0.3626
+    fear_level                      2.682    1.055    2.000    1.208   +0.682     3.16   0.0021 ***
+    rsi_value                      40.618    5.590   42.629    4.644   -2.011    -2.10   0.0376 **
+    kalman_velocity                -0.005    0.126   -0.019    0.126   +0.014     0.59   0.5570
+
+    Win Rate by σ_tide (macro) Bucket:
+              <-2σ │ WR= 50.0% n= 32  ██████████
+          -2→-1.5σ │ WR= 71.4% n= 21  ██████████████
+          -1.5→-1σ │ WR= 54.5% n= 11  ██████████
+          -1→-0.5σ │ WR= 50.0% n= 12  ██████████
+           -0.5→0σ │ WR= 56.2% n= 16  ███████████
+            0→0.5σ │ WR= 52.6% n= 19  ██████████
+            0.5→1σ │ WR=100.0% n=  4  ████████████████████
+
+    Win Rate by σ_wave (cycle) Bucket:
+              <-2σ │ WR= 40.0% n= 10  ████████
+          -2→-1.5σ │ WR= 60.0% n= 20  ████████████
+          -1.5→-1σ │ WR= 62.5% n= 32  ████████████
+          -1→-0.5σ │ WR= 45.0% n= 20  █████████
+           -0.5→0σ │ WR= 64.3% n= 14  ████████████
+            0→0.5σ │ WR= 63.6% n= 11  ████████████
+            0.5→1σ │ WR= 50.0% n=  6  ██████████
+            1→1.5σ │ WR=100.0% n=  2  ████████████████████
+
+    Win Rate by Fear Level:
+             GREED │ WR= 37.5% n=  8  ███████
+        CONFIDENCE │ WR= 26.3% n= 19  █████
+           NEUTRAL │ WR= 54.5% n= 22  ██████████
+           ANXIETY │ WR= 69.5% n= 59  █████████████
+             PANIC │ WR= 71.4% n=  7  ██████████████
+
+    Win Rate by Slope Conjugation (wave - tide):
+           Strong↓ │ WR= 70.8% n= 24  ██████████████
+             Mild↓ │ WR= 55.1% n= 49  ███████████
+              Flat │ WR= 51.3% n= 39  ██████████
+             Mild↑ │ WR= 66.7% n=  3  █████████████
+
+    Win Rate by RSI Bucket:
+             20-30 │ WR=100.0% n=  3  ████████████████████
+             30-40 │ WR= 65.1% n= 43  █████████████
+             40-50 │ WR= 50.7% n= 69  ██████████
+
+    Win Rate by Kalman Velocity:
+           Strong↓ │ WR= 57.4% n= 61  ███████████
+             Weak↓ │ WR= 50.0% n=  6  ██████████
+             Weak↑ │ WR= 50.0% n=  2  ██████████
+           Strong↑ │ WR= 58.7% n= 46  ███████████
+
+    Win Rate by Wyckoff State:
+          ACCUMULATION │ WR= 28.6% n=  7  █████
+         CONSOLIDATION │ WR= 60.6% n= 99  ████████████
+          DISTRIBUTION │ WR=100.0% n=  1  ████████████████████
+              MARKDOWN │ WR= 50.0% n=  2  ██████████
+                MARKUP │ WR= 33.3% n=  6  ██████
+
+    Win Rate by Relative Volume:
+             <0.5x │ WR= 75.0% n=  4  ███████████████
+          0.5-0.8x │ WR= 56.5% n= 23  ███████████
+          0.8-1.0x │ WR= 55.9% n= 34  ███████████
+          1.0-1.3x │ WR= 62.2% n= 37  ████████████
+          1.3-2.0x │ WR= 43.8% n= 16  ████████
+             >2.0x │ WR=100.0% n=  1  ████████████████████
+
+    Win Rate Curves by Horizon:
+      H= 3 │ WR= 64.3%  AvgRet= +0.59%  MedRet= +0.55%
+      H= 5 │ WR= 65.2%  AvgRet= +1.18%  MedRet= +1.20%
+      H=10 │ WR= 70.4%  AvgRet= +2.15%  MedRet= +2.06%
+      H=20 │ WR= 76.5%  AvgRet= +3.54%  MedRet= +3.26%
+      H=40 │ WR= 78.3%  AvgRet= +4.23%  MedRet= +3.70%
+
+    MFE/MAE Analysis by Horizon:
+      H= 3 │ AvgMFE= +2.17%  AvgMAE= -1.55%  Edge=1.40
+      H= 5 │ AvgMFE= +3.12%  AvgMAE= -1.81%  Edge=1.72
+      H=10 │ AvgMFE= +4.39%  AvgMAE= -2.39%  Edge=1.84
+      H=20 │ AvgMFE= +6.63%  AvgMAE= -2.90%  Edge=2.29
+      H=40 │ AvgMFE= +9.65%  AvgMAE= -3.52%  Edge=2.74
+
+    Combined Condition Win Rates:
+      σ_wave<-1 + Fear≥ANXIETY       │ WR= 85.0% n= 20  █████████████████ ← EDGE
+      Fear ≥ ANXIETY                 │ WR= 69.7% n= 66  █████████████ ← EDGE
+      Below VWAP                     │ WR= 57.9% n=114  ███████████
+      σ_tide < -1.0                  │ WR= 57.8% n= 64  ███████████
+      σ_wave < -1.0                  │ WR= 55.2% n= 58  ███████████
+      RVOL > 1.3x                    │ WR= 47.1% n= 17  █████████
+      σ_wave<-1 + wave↑              │ WR= 35.7% n= 28  ███████
+
+    Feature Correlation with Win (top predictors):
+      fear_level                   r=+0.2901 ***
+      tide_slope                   r=-0.2349 ***
+      rsi_value                    r=-0.1891 ***
+      wave_slope                   r=-0.1580 ***
+      slope_conjugation            r=-0.0850 *
+      kalman_velocity              r=+0.0554 *
+      tide_accel                   r=-0.0462 
+      sigma_wave                   r=+0.0368 
+
+  ── ENTRY: regression_channel × QQQ (320 signals) ──
+
+    Feature                         Win μ    Win σ   Loss μ   Loss σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                     -2.279    0.572   -2.276    0.496   -0.003    -0.05   0.9568
+    sigma_wave                      0.527    0.755    0.626    0.700   -0.099    -1.22   0.2243
+    tide_slope                      0.086    0.062    0.078    0.064   +0.008     1.14   0.2566
+    wave_slope                     -0.421    0.398   -0.432    0.393   +0.011     0.24   0.8074
+    tide_accel                     -0.001    0.001   -0.001    0.001   -0.000    -0.78   0.4389
+    rvol                            1.098    0.342    1.116    0.368   -0.017    -0.44   0.6637
+    vol_up_down_ratio               0.936    0.194    0.924    0.173   +0.012     0.60   0.5475
+    slope_conjugation              -0.507    0.417   -0.510    0.405   +0.003     0.06   0.9523
+    fear_level                      2.812    0.522    2.800    0.568   +0.012     0.19   0.8477
+    rsi_value                      41.562    4.528   41.780    5.044   -0.218    -0.40   0.6859
+    kalman_velocity                -0.027    0.118   -0.032    0.116   +0.004     0.33   0.7415
+
+    Win Rate by σ_tide (macro) Bucket:
+              <-2σ │ WR= 52.3% n=199  ██████████
+          -2→-1.5σ │ WR= 54.5% n=121  ██████████
+
+    Win Rate by σ_wave (cycle) Bucket:
+          -1.5→-1σ │ WR= 80.0% n=  5  ████████████████
+          -1→-0.5σ │ WR= 72.4% n= 29  ██████████████
+           -0.5→0σ │ WR= 40.5% n= 42  ████████
+            0→0.5σ │ WR= 50.0% n= 60  ██████████
+            0.5→1σ │ WR= 58.8% n= 85  ███████████
+            1→1.5σ │ WR= 48.7% n= 76  █████████
+            1.5→2σ │ WR= 45.5% n= 22  █████████
+               >2σ │ WR=100.0% n=  1  ████████████████████
+
+    Win Rate by Fear Level:
+        CONFIDENCE │ WR= 45.5% n= 22  █████████
+           NEUTRAL │ WR= 66.7% n= 18  █████████████
+           ANXIETY │ WR= 52.9% n=280  ██████████
+
+    Win Rate by Slope Conjugation (wave - tide):
+           Strong↓ │ WR= 54.8% n=230  ██████████
+             Mild↓ │ WR= 50.8% n= 59  ██████████
+              Flat │ WR= 40.0% n= 25  ████████
+             Mild↑ │ WR= 66.7% n=  6  █████████████
+
+    Win Rate by RSI Bucket:
+             20-30 │ WR= 28.6% n=  7  █████
+             30-40 │ WR= 53.6% n= 97  ██████████
+             40-50 │ WR= 54.2% n=212  ██████████
+             50-60 │ WR= 25.0% n=  4  █████
+
+    Win Rate by Kalman Velocity:
+           Strong↓ │ WR= 53.2% n=190  ██████████
+             Weak↓ │ WR= 50.0% n=  8  ██████████
+              Flat │ WR=100.0% n=  1  ████████████████████
+             Weak↑ │ WR= 25.0% n=  8  █████
+           Strong↑ │ WR= 54.9% n=113  ██████████
+
+    Win Rate by Wyckoff State:
+          ACCUMULATION │ WR= 77.3% n= 22  ███████████████
+         CONSOLIDATION │ WR= 52.9% n=274  ██████████
+                MARKUP │ WR= 33.3% n= 24  ██████
+
+    Win Rate by Relative Volume:
+             <0.5x │ WR= 75.0% n=  4  ███████████████
+          0.5-0.8x │ WR= 57.1% n= 56  ███████████
+          0.8-1.0x │ WR= 50.0% n= 72  ██████████
+          1.0-1.3x │ WR= 51.9% n=106  ██████████
+          1.3-2.0x │ WR= 53.3% n= 75  ██████████
+             >2.0x │ WR= 57.1% n=  7  ███████████
+
+    Win Rate Curves by Horizon:
+      H= 3 │ WR= 52.5%  AvgRet= -0.00%  MedRet= +0.12%
+      H= 5 │ WR= 56.6%  AvgRet= +0.27%  MedRet= +0.57%
+      H=10 │ WR= 65.6%  AvgRet= +1.02%  MedRet= +1.32%
+      H=20 │ WR= 67.5%  AvgRet= +2.03%  MedRet= +2.26%
+      H=40 │ WR= 70.9%  AvgRet= +2.83%  MedRet= +3.42%
+
+    MFE/MAE Analysis by Horizon:
+      H= 3 │ AvgMFE= +1.84%  AvgMAE= -2.03%  Edge=0.91
+      H= 5 │ AvgMFE= +2.42%  AvgMAE= -2.53%  Edge=0.96
+      H=10 │ AvgMFE= +3.45%  AvgMAE= -3.25%  Edge=1.06
+      H=20 │ AvgMFE= +4.93%  AvgMAE= -4.02%  Edge=1.23
+      H=40 │ AvgMFE= +6.90%  AvgMAE= -5.50%  Edge=1.25
+
+    Combined Condition Win Rates:
+      σ_wave < -1.0                  │ WR= 80.0% n=  5  ████████████████ ← EDGE
+      RVOL > 1.3x                    │ WR= 53.7% n= 82  ██████████
+      σ_tide < -1.0                  │ WR= 53.1% n=320  ██████████
+      Below VWAP                     │ WR= 53.1% n=320  ██████████
+      Fear ≥ ANXIETY                 │ WR= 52.9% n=280  ██████████
+      wave↑ + flip                   │ WR= 40.0% n= 15  ████████
+      RSI < 30                       │ WR= 28.6% n=  7  █████
+
+    Feature Correlation with Win (top predictors):
+      sigma_wave                   r=-0.0678 *
+      tide_slope                   r=+0.0637 *
+      tide_accel                   r=-0.0426 
+      vol_up_down_ratio            r=+0.0335 
+      rvol                         r=-0.0245 
+      rsi_value                    r=-0.0228 
+      kalman_velocity              r=+0.0185 
+      wave_slope                   r=+0.0137 
+
+  ── ENTRY: rsi_intelligence × QQQ (324 signals) ──
+
+    Feature                         Win μ    Win σ   Loss μ   Loss σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                     -1.218    1.167   -0.812    1.052   -0.406    -3.27   0.0012 ***
+    sigma_wave                     -0.256    0.915   -0.322    0.958   +0.067     0.64   0.5229
+    tide_slope                     -0.010    0.170   -0.030    0.163   +0.020     1.07   0.2854
+    wave_slope                     -0.415    0.550   -0.423    0.516   +0.009     0.15   0.8815
+    tide_accel                     -0.001    0.002   -0.001    0.002   -0.000    -0.71   0.4792
+    rvol                            1.038    0.322    1.073    0.282   -0.034    -1.01   0.3113
+    vol_up_down_ratio               0.919    0.234    0.946    0.250   -0.026    -0.97   0.3319
+    slope_conjugation              -0.404    0.533   -0.393    0.489   -0.011    -0.19   0.8473
+    fear_level                      3.301    1.159    3.351    1.286   -0.050    -0.37   0.7118
+    rsi_value                      43.132    6.326   43.575    5.783   -0.443    -0.66   0.5126
+    kalman_velocity                 0.003    0.110    0.010    0.102   -0.007    -0.62   0.5340
+
+    Win Rate by σ_tide (macro) Bucket:
+              <-2σ │ WR= 71.2% n= 59  ██████████████
+          -2→-1.5σ │ WR= 49.3% n= 67  █████████
+          -1.5→-1σ │ WR= 39.7% n= 58  ███████
+          -1→-0.5σ │ WR= 26.7% n= 30  █████
+           -0.5→0σ │ WR= 42.3% n= 26  ████████
+            0→0.5σ │ WR= 53.2% n= 47  ██████████
+            0.5→1σ │ WR= 26.9% n= 26  █████
+            1→1.5σ │ WR= 25.0% n=  8  █████
+            1.5→2σ │ WR= 66.7% n=  3  █████████████
+
+    Win Rate by σ_wave (cycle) Bucket:
+              <-2σ │ WR= 25.0% n=  4  █████
+          -2→-1.5σ │ WR= 28.6% n= 28  █████
+          -1.5→-1σ │ WR= 57.4% n= 54  ███████████
+          -1→-0.5σ │ WR= 54.7% n= 64  ██████████
+           -0.5→0σ │ WR= 38.5% n= 52  ███████
+            0→0.5σ │ WR= 42.9% n= 49  ████████
+            0.5→1σ │ WR= 51.3% n= 39  ██████████
+            1→1.5σ │ WR= 53.6% n= 28  ██████████
+            1.5→2σ │ WR= 33.3% n=  6  ██████
+
+    Win Rate by Fear Level:
+             GREED │ WR= 33.3% n=  6  ██████
+        CONFIDENCE │ WR= 58.3% n= 12  ███████████
+           NEUTRAL │ WR= 34.6% n= 52  ██████
+           ANXIETY │ WR= 56.2% n=137  ███████████
+              FEAR │ WR= 41.2% n= 34  ████████
+             PANIC │ WR= 42.2% n= 83  ████████
+
+    Win Rate by Slope Conjugation (wave - tide):
+           Strong↓ │ WR= 47.1% n=172  █████████
+             Mild↓ │ WR= 44.3% n= 70  ████████
+              Flat │ WR= 52.0% n= 50  ██████████
+             Mild↑ │ WR= 47.1% n= 17  █████████
+           Strong↑ │ WR= 46.7% n= 15  █████████
+
+    Win Rate by RSI Bucket:
+             20-30 │ WR= 75.0% n=  4  ███████████████
+             30-40 │ WR= 47.7% n= 86  █████████
+             40-50 │ WR= 46.0% n=198  █████████
+             50-60 │ WR= 51.4% n= 35  ██████████
+             60-70 │ WR=  0.0% n=  1  
+
+    Win Rate by Kalman Velocity:
+           Strong↓ │ WR= 51.1% n=135  ██████████
+             Weak↓ │ WR= 40.0% n= 10  ████████
+              Flat │ WR=  0.0% n=  2  
+             Weak↑ │ WR= 77.8% n=  9  ███████████████
+           Strong↑ │ WR= 43.5% n=168  ████████
+
+    Win Rate by Wyckoff State:
+          ACCUMULATION │ WR= 50.0% n= 22  ██████████
+         CONSOLIDATION │ WR= 46.9% n=258  █████████
+          DISTRIBUTION │ WR= 66.7% n=  3  █████████████
+              MARKDOWN │ WR= 52.0% n= 25  ██████████
+                MARKUP │ WR= 37.5% n= 16  ███████
+
+    Win Rate by Relative Volume:
+             <0.5x │ WR=100.0% n=  5  ████████████████████
+          0.5-0.8x │ WR= 47.3% n= 55  █████████
+          0.8-1.0x │ WR= 49.4% n= 87  █████████
+          1.0-1.3x │ WR= 43.6% n=117  ████████
+          1.3-2.0x │ WR= 46.4% n= 56  █████████
+             >2.0x │ WR= 50.0% n=  4  ██████████
+
+    Win Rate Curves by Horizon:
+      H= 3 │ WR= 58.0%  AvgRet= +0.29%  MedRet= +0.51%
+      H= 5 │ WR= 57.4%  AvgRet= +0.58%  MedRet= +0.66%
+      H=10 │ WR= 54.6%  AvgRet= +0.27%  MedRet= +0.77%
+      H=20 │ WR= 59.9%  AvgRet= +1.24%  MedRet= +1.43%
+      H=40 │ WR= 58.3%  AvgRet= +0.61%  MedRet= +1.84%
+
+    MFE/MAE Analysis by Horizon:
+      H= 3 │ AvgMFE= +2.75%  AvgMAE= -2.69%  Edge=1.02
+      H= 5 │ AvgMFE= +3.56%  AvgMAE= -3.51%  Edge=1.01
+      H=10 │ AvgMFE= +4.97%  AvgMAE= -5.04%  Edge=0.99
+      H=20 │ AvgMFE= +6.77%  AvgMAE= -7.17%  Edge=0.94
+      H=40 │ AvgMFE= +8.81%  AvgMAE= -9.63%  Edge=0.92
+
+    Combined Condition Win Rates:
+      σ_wave<-1 + Fear≥ANXIETY       │ WR= 56.1% n= 41  ███████████
+      σ_tide < -1.0                  │ WR= 53.0% n=183  ██████████
+      Fear ≥ ANXIETY                 │ WR= 49.6% n=254  █████████
+      RVOL > 1.3x                    │ WR= 46.7% n= 60  █████████
+      Below VWAP                     │ WR= 45.7% n=291  █████████
+      σ_wave < -1.0                  │ WR= 45.2% n= 84  █████████
+      σ_wave<-1 + wave↑              │ WR= 44.4% n= 36  ████████
+
+    Feature Correlation with Win (top predictors):
+      sigma_tide                   r=-0.1803 ***
+      tide_slope                   r=+0.0597 *
+      rvol                         r=-0.0568 *
+      vol_up_down_ratio            r=-0.0539 *
+      tide_accel                   r=-0.0392 
+      rsi_value                    r=-0.0367 
+      sigma_wave                   r=+0.0355 
+      kalman_velocity              r=-0.0348 
+
+  ── ENTRY: regression_channel × SPY (344 signals) ──
+
+    Feature                         Win μ    Win σ   Loss μ   Loss σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                     -2.377    0.602   -2.282    0.605   -0.095    -1.46   0.1459
+    sigma_wave                      0.515    0.736    0.659    0.764   -0.144    -1.78   0.0763 *
+    tide_slope                      0.061    0.036    0.057    0.040   +0.003     0.81   0.4160
+    wave_slope                     -0.310    0.379   -0.371    0.350   +0.061     1.56   0.1208
+    tide_accel                     -0.001    0.001   -0.001    0.001   -0.000    -2.84   0.0048 ***
+    rvol                            1.096    0.455    1.157    0.417   -0.061    -1.30   0.1961
+    vol_up_down_ratio               0.949    0.259    0.981    0.312   -0.032    -1.02   0.3076
+    slope_conjugation              -0.371    0.379   -0.428    0.356   +0.058     1.46   0.1456
+    fear_level                      2.757    0.581    2.767    0.553   -0.011    -0.17   0.8634
+    rsi_value                      41.820    4.787   42.026    4.710   -0.206    -0.40   0.6883
+    kalman_velocity                -0.033    0.160   -0.032    0.155   -0.001    -0.04   0.9714
+
+    Win Rate by σ_tide (macro) Bucket:
+              <-2σ │ WR= 56.7% n=224  ███████████
+          -2→-1.5σ │ WR= 48.3% n=120  █████████
+
+    Win Rate by σ_wave (cycle) Bucket:
+          -1.5→-1σ │ WR=  0.0% n=  1  
+          -1→-0.5σ │ WR= 60.0% n= 35  ████████████
+           -0.5→0σ │ WR= 61.7% n= 47  ████████████
+            0→0.5σ │ WR= 54.0% n= 63  ██████████
+            0.5→1σ │ WR= 56.2% n= 89  ███████████
+            1→1.5σ │ WR= 48.6% n= 70  █████████
+            1.5→2σ │ WR= 42.9% n= 35  ████████
+               >2σ │ WR= 50.0% n=  4  ██████████
+
+    Win Rate by Fear Level:
+             GREED │ WR=  0.0% n=  1  
+        CONFIDENCE │ WR= 66.7% n= 21  █████████████
+           NEUTRAL │ WR= 45.9% n= 37  █████████
+           ANXIETY │ WR= 54.0% n=285  ██████████
+
+    Win Rate by Slope Conjugation (wave - tide):
+           Strong↓ │ WR= 51.9% n=185  ██████████
+             Mild↓ │ WR= 53.1% n=113  ██████████
+              Flat │ WR= 64.1% n= 39  ████████████
+             Mild↑ │ WR= 50.0% n=  6  ██████████
+           Strong↑ │ WR=100.0% n=  1  ████████████████████
+
+    Win Rate by RSI Bucket:
+             20-30 │ WR= 66.7% n=  3  █████████████
+             30-40 │ WR= 52.3% n=109  ██████████
+             40-50 │ WR= 54.5% n=231  ██████████
+             50-60 │ WR=  0.0% n=  1  
+
+    Win Rate by Kalman Velocity:
+           Strong↓ │ WR= 57.2% n=201  ███████████
+             Weak↓ │ WR= 60.0% n= 10  ████████████
+              Flat │ WR= 60.0% n=  5  ████████████
+             Weak↑ │ WR= 35.7% n= 14  ███████
+           Strong↑ │ WR= 49.1% n=114  █████████
+
+    Win Rate by Wyckoff State:
+          ACCUMULATION │ WR= 56.7% n= 30  ███████████
+         CONSOLIDATION │ WR= 55.6% n=279  ███████████
+                MARKUP │ WR= 37.1% n= 35  ███████
+
+    Win Rate by Relative Volume:
+             <0.5x │ WR= 87.5% n=  8  █████████████████
+          0.5-0.8x │ WR= 55.9% n= 59  ███████████
+          0.8-1.0x │ WR= 59.0% n= 83  ███████████
+          1.0-1.3x │ WR= 51.9% n=106  ██████████
+          1.3-2.0x │ WR= 45.8% n= 72  █████████
+             >2.0x │ WR= 50.0% n= 16  ██████████
+
+    Win Rate Curves by Horizon:
+      H= 3 │ WR= 57.0%  AvgRet= +0.07%  MedRet= +0.33%
+      H= 5 │ WR= 58.7%  AvgRet= +0.22%  MedRet= +0.34%
+      H=10 │ WR= 67.2%  AvgRet= +0.86%  MedRet= +1.23%
+      H=20 │ WR= 70.9%  AvgRet= +1.85%  MedRet= +2.13%
+      H=40 │ WR= 73.0%  AvgRet= +2.97%  MedRet= +3.36%
+
+    MFE/MAE Analysis by Horizon:
+      H= 3 │ AvgMFE= +1.49%  AvgMAE= -1.67%  Edge=0.89
+      H= 5 │ AvgMFE= +1.98%  AvgMAE= -2.10%  Edge=0.94
+      H=10 │ AvgMFE= +2.86%  AvgMAE= -2.76%  Edge=1.04
+      H=20 │ AvgMFE= +4.24%  AvgMAE= -3.47%  Edge=1.22
+      H=40 │ AvgMFE= +5.99%  AvgMAE= -4.68%  Edge=1.28
+
+    Combined Condition Win Rates:
+      wave↑ + flip                   │ WR= 70.6% n= 17  ██████████████ ← EDGE
+      Below VWAP                     │ WR= 54.1% n=342  ██████████
+      Fear ≥ ANXIETY                 │ WR= 54.0% n=285  ██████████
+      σ_tide < -1.0                  │ WR= 53.8% n=344  ██████████
+      RVOL > 1.3x                    │ WR= 46.6% n= 88  █████████
+
+    Feature Correlation with Win (top predictors):
+      tide_accel                   r=-0.1498 **
+      sigma_wave                   r=-0.0960 *
+      wave_slope                   r=+0.0833 *
+      sigma_tide                   r=-0.0786 *
+      slope_conjugation            r=+0.0783 *
+      rvol                         r=-0.0694 *
+      vol_up_down_ratio            r=-0.0559 *
+      tide_slope                   r=+0.0444 
+
+  ── ENTRY: rsi_intelligence × SPY (332 signals) ──
+
+    Feature                         Win μ    Win σ   Loss μ   Loss σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                     -1.387    1.121   -1.023    1.139   -0.365    -2.93   0.0036 ***
+    sigma_wave                     -0.417    0.959   -0.342    0.962   -0.075    -0.71   0.4789
+    tide_slope                      0.028    0.080    0.018    0.087   +0.010     1.10   0.2729
+    wave_slope                     -0.264    0.341   -0.251    0.343   -0.013    -0.35   0.7292
+    tide_accel                     -0.001    0.001   -0.001    0.001   -0.000    -0.32   0.7471
+    rvol                            1.111    0.480    1.120    0.403   -0.010    -0.20   0.8421
+    vol_up_down_ratio               0.930    0.312    0.978    0.493   -0.047    -1.03   0.3049
+    slope_conjugation              -0.292    0.358   -0.268    0.334   -0.023    -0.61   0.5426
+    fear_level                      2.994    1.008    2.928    1.182   +0.066     0.54   0.5862
+    rsi_value                      42.745    5.801   44.836    6.197   -2.091    -3.16   0.0018 ***
+    kalman_velocity                 0.025    0.160    0.028    0.134   -0.003    -0.21   0.8321
+
+    Win Rate by σ_tide (macro) Bucket:
+              <-2σ │ WR= 63.4% n= 93  ████████████
+          -2→-1.5σ │ WR= 59.6% n= 57  ███████████
+          -1.5→-1σ │ WR= 45.8% n= 48  █████████
+          -1→-0.5σ │ WR= 58.6% n= 29  ███████████
+           -0.5→0σ │ WR= 52.4% n= 42  ██████████
+            0→0.5σ │ WR= 45.0% n= 40  █████████
+            0.5→1σ │ WR= 28.6% n= 21  █████
+            1→1.5σ │ WR= 50.0% n=  2  ██████████
+
+    Win Rate by σ_wave (cycle) Bucket:
+              <-2σ │ WR= 63.6% n= 11  ████████████
+          -2→-1.5σ │ WR= 50.0% n= 38  ██████████
+          -1.5→-1σ │ WR= 65.4% n= 52  █████████████
+          -1→-0.5σ │ WR= 54.9% n= 51  ██████████
+           -0.5→0σ │ WR= 51.7% n= 58  ██████████
+            0→0.5σ │ WR= 47.3% n= 55  █████████
+            0.5→1σ │ WR= 54.1% n= 37  ██████████
+            1→1.5σ │ WR= 45.8% n= 24  █████████
+            1.5→2σ │ WR= 66.7% n=  6  █████████████
+
+    Win Rate by Fear Level:
+             GREED │ WR= 28.6% n=  7  █████
+        CONFIDENCE │ WR= 50.0% n= 20  ██████████
+           NEUTRAL │ WR= 48.3% n= 60  █████████
+           ANXIETY │ WR= 58.8% n=177  ███████████
+              FEAR │ WR= 51.9% n= 27  ██████████
+             PANIC │ WR= 48.8% n= 41  █████████
+
+    Win Rate by Slope Conjugation (wave - tide):
+           Strong↓ │ WR= 53.8% n=130  ██████████
+             Mild↓ │ WR= 56.1% n=107  ███████████
+              Flat │ WR= 47.8% n= 67  █████████
+             Mild↑ │ WR= 60.0% n= 20  ████████████
+           Strong↑ │ WR= 62.5% n=  8  ████████████
+
+    Win Rate by RSI Bucket:
+             20-30 │ WR=100.0% n=  2  ████████████████████
+             30-40 │ WR= 62.7% n= 83  ████████████
+             40-50 │ WR= 54.1% n=194  ██████████
+             50-60 │ WR= 37.7% n= 53  ███████
+
+    Win Rate by Kalman Velocity:
+           Strong↓ │ WR= 53.6% n=125  ██████████
+             Weak↓ │ WR= 64.3% n= 14  ████████████
+              Flat │ WR= 33.3% n=  3  ██████
+             Weak↑ │ WR= 55.6% n=  9  ███████████
+           Strong↑ │ WR= 53.6% n=181  ██████████
+
+    Win Rate by Wyckoff State:
+          ACCUMULATION │ WR= 54.8% n= 31  ██████████
+         CONSOLIDATION │ WR= 54.7% n=256  ██████████
+          DISTRIBUTION │ WR= 44.4% n=  9  ████████
+              MARKDOWN │ WR= 54.5% n= 22  ██████████
+                MARKUP │ WR= 42.9% n= 14  ████████
+
+    Win Rate by Relative Volume:
+             <0.5x │ WR= 42.9% n=  7  ████████
+          0.5-0.8x │ WR= 60.9% n= 46  ████████████
+          0.8-1.0x │ WR= 50.5% n= 91  ██████████
+          1.0-1.3x │ WR= 54.8% n=115  ██████████
+          1.3-2.0x │ WR= 54.8% n= 62  ██████████
+             >2.0x │ WR= 45.5% n= 11  █████████
+
+    Win Rate Curves by Horizon:
+      H= 3 │ WR= 59.3%  AvgRet= +0.32%  MedRet= +0.48%
+      H= 5 │ WR= 61.1%  AvgRet= +0.56%  MedRet= +0.75%
+      H=10 │ WR= 64.8%  AvgRet= +0.90%  MedRet= +1.39%
+      H=20 │ WR= 66.3%  AvgRet= +1.23%  MedRet= +1.99%
+      H=40 │ WR= 67.2%  AvgRet= +1.88%  MedRet= +2.85%
+
+    MFE/MAE Analysis by Horizon:
+      H= 3 │ AvgMFE= +1.78%  AvgMAE= -1.68%  Edge=1.06
+      H= 5 │ AvgMFE= +2.39%  AvgMAE= -2.17%  Edge=1.10
+      H=10 │ AvgMFE= +3.42%  AvgMAE= -3.11%  Edge=1.10
+      H=20 │ AvgMFE= +4.54%  AvgMAE= -4.37%  Edge=1.04
+      H=40 │ AvgMFE= +6.34%  AvgMAE= -6.15%  Edge=1.03
+
+    Combined Condition Win Rates:
+      σ_wave<-1 + Fear≥ANXIETY       │ WR= 64.7% n= 51  ████████████ ← EDGE
+      σ_wave < -1.0                  │ WR= 59.0% n=100  ███████████
+      σ_tide < -1.0                  │ WR= 58.1% n=198  ███████████
+      Below VWAP                     │ WR= 56.6% n=288  ███████████
+      Fear ≥ ANXIETY                 │ WR= 56.3% n=245  ███████████
+      σ_wave<-1 + wave↑              │ WR= 55.8% n= 43  ███████████
+      RVOL > 1.3x                    │ WR= 53.4% n= 73  ██████████
+
+    Feature Correlation with Win (top predictors):
+      rsi_value                    r=-0.1720 ***
+      sigma_tide                   r=-0.1594 ***
+      tide_slope                   r=+0.0608 *
+      vol_up_down_ratio            r=-0.0584 *
+      sigma_wave                   r=-0.0390 
+      slope_conjugation            r=-0.0334 
+      fear_level                   r=+0.0304 
+      wave_slope                   r=-0.0191 
+
+================================================================================
+  EXIT SIGNAL ANALYSIS
+================================================================================
+
+  ── EXIT: regression_channel × AAPL (938 signals) ──
+
+    Feature                        Save μ   Save σ   Fail μ   Fail σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                      2.199    0.543    2.139    0.584   +0.060     1.57   0.1160
+    sigma_wave                      0.512    1.279    0.471    1.185   +0.042     0.49   0.6208
+    tide_slope                      0.210    0.154    0.193    0.117   +0.017     1.81   0.0713 *
+    wave_slope                      0.646    0.324    0.595    0.289   +0.051     2.40   0.0168 **
+    tide_accel                      0.003    0.002    0.003    0.002   +0.000     1.30   0.1935
+    rvol                            1.149    0.631    1.059    0.508   +0.090     2.25   0.0246 **
+    vol_up_down_ratio               1.365    0.637    1.217    0.533   +0.149     3.65   0.0003 ***
+    slope_conjugation               0.436    0.310    0.403    0.248   +0.033     1.70   0.0894 *
+    fear_level                      0.014    0.120    0.032    0.176   -0.018    -1.81   0.0705 *
+    rsi_value                      70.591    6.898   72.273    7.497   -1.682    -3.49   0.0005 ***
+    kalman_velocity                 0.003    0.217   -0.000    0.179   +0.004     0.26   0.7916
+
+    Failure Diagnosis Distribution:
+      UNFORESEEABLE                  │ 407 ( 43.4%)
+      VOLUME_ABSENT                  │  97 ( 10.3%)
+      EARNINGS_CATALYST              │   7 (  0.7%)
+
+    Save Rate by Fear Level:
+             GREED │ SR= 37.2% n=914  ███████
+        CONFIDENCE │ SR= 20.8% n= 24  ████
+
+    Save Rate by σ_wave Bucket:
+            <-1.5σ │ SR= 42.9% n= 56  ████████
+        -1.5→-0.5σ │ SR= 33.6% n=143  ██████
+         -0.5→0.5σ │ SR= 38.1% n=273  ███████
+          0.5→1.5σ │ SR= 31.9% n=273  ██████
+             >1.5σ │ SR= 42.5% n=193  ████████
+
+  ── EXIT: rsi_intelligence × AAPL (17 signals) ──
+
+    Feature                        Save μ   Save σ   Fail μ   Fail σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                      0.009    1.141    1.168    1.188   -1.159    -2.03   0.0630 *
+    sigma_wave                      1.784    1.309    1.822    1.009   -0.038    -0.06   0.9501
+    tide_slope                      0.138    0.073   -0.001    0.113   +0.139     3.08   0.0077 ***
+    wave_slope                     -0.033    0.291    0.095    0.156   -0.127    -1.06   0.3199
+    tide_accel                     -0.000    0.002    0.000    0.001   -0.000    -0.72   0.4914
+    rvol                            1.350    0.930    1.572    0.584   -0.222    -0.56   0.5895
+    vol_up_down_ratio               1.957    1.019    1.142    0.313   +0.815     2.05   0.0808 *
+    slope_conjugation              -0.171    0.361    0.095    0.267   -0.266    -1.66   0.1271
+    fear_level                      2.000    1.291    2.100    0.568   -0.100    -0.19   0.8525
+    rsi_value                      63.926    4.680   65.982    3.424   -2.057    -0.99   0.3440
+    kalman_velocity                 0.131    0.348    0.163    0.192   -0.032    -0.22   0.8286
+
+    Failure Diagnosis Distribution:
+      LOW_CONVICTION_NOISE           │   7 ( 41.2%)
+      FEAR_CONTRARIAN_ERROR          │   2 ( 11.8%)
+      BULL_MOMENTUM_INTACT           │   1 (  5.9%)
+
+    Save Rate by Fear Level:
+             GREED │ SR=100.0% n=  1  ████████████████████
+        CONFIDENCE │ SR= 66.7% n=  3  █████████████
+           NEUTRAL │ SR=  0.0% n=  7  
+           ANXIETY │ SR= 66.7% n=  6  █████████████
+
+    Save Rate by σ_wave Bucket:
+        -1.5→-0.5σ │ SR=100.0% n=  1  ████████████████████
+          0.5→1.5σ │ SR= 20.0% n=  5  ████
+             >1.5σ │ SR= 45.5% n= 11  █████████
+
+  ── EXIT: regression_channel × COST (494 signals) ──
+
+    Feature                        Save μ   Save σ   Fail μ   Fail σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                      2.116    0.567    2.052    0.481   +0.064     1.23   0.2187
+    sigma_wave                      0.733    1.122    0.354    1.148   +0.379     3.50   0.0005 ***
+    tide_slope                      0.089    0.049    0.083    0.053   +0.006     1.29   0.1989
+    wave_slope                      0.294    0.117    0.304    0.139   -0.010    -0.81   0.4199
+    tide_accel                      0.002    0.001    0.002    0.001   +0.000     0.08   0.9365
+    rvol                            1.098    0.601    0.969    0.350   +0.129     2.53   0.0122 **
+    vol_up_down_ratio               1.204    0.456    1.225    0.451   -0.021    -0.48   0.6294
+    slope_conjugation               0.205    0.120    0.221    0.127   -0.016    -1.36   0.1762
+    fear_level                      0.037    0.189    0.015    0.122   +0.022     1.35   0.1794
+    rsi_value                      72.215    6.125   69.956    5.909   +2.259     3.89   0.0001 ***
+    kalman_velocity                 0.026    0.178   -0.005    0.129   +0.030     1.94   0.0536 *
+
+    Failure Diagnosis Distribution:
+      UNFORESEEABLE                  │ 205 ( 41.5%)
+      VOLUME_ABSENT                  │  49 (  9.9%)
+      EARNINGS_CATALYST              │   1 (  0.2%)
+
+    Save Rate by Fear Level:
+             GREED │ SR= 32.3% n=483  ██████
+        CONFIDENCE │ SR= 54.5% n= 11  ██████████
+
+    Save Rate by σ_wave Bucket:
+            <-1.5σ │ SR=  8.3% n= 24  █
+        -1.5→-0.5σ │ SR= 24.0% n= 75  ████
+         -0.5→0.5σ │ SR= 39.3% n=145  ███████
+          0.5→1.5σ │ SR= 29.6% n=159  █████
+             >1.5σ │ SR= 41.8% n= 91  ████████
+
+  ── EXIT: rsi_intelligence × COST (5 signals) ──
+
+    Feature                        Save μ   Save σ   Fail μ   Fail σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+
+    Failure Diagnosis Distribution:
+      LOW_CONVICTION_NOISE           │   2 ( 40.0%)
+      FEAR_CONTRARIAN_ERROR          │   1 ( 20.0%)
+
+    Save Rate by Fear Level:
+           NEUTRAL │ SR= 50.0% n=  4  ██████████
+           ANXIETY │ SR=  0.0% n=  1  
+
+    Save Rate by σ_wave Bucket:
+         -0.5→0.5σ │ SR=  0.0% n=  2  
+             >1.5σ │ SR= 66.7% n=  3  █████████████
+
+  ── EXIT: regression_channel × QQQ (463 signals) ──
+
+    Feature                        Save μ   Save σ   Fail μ   Fail σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                      2.075    0.440    1.947    0.339   +0.128     3.12   0.0021 ***
+    sigma_wave                      0.134    0.893   -0.042    0.929   +0.175     1.94   0.0535 *
+    tide_slope                      0.098    0.072    0.093    0.081   +0.005     0.71   0.4769
+    wave_slope                      0.422    0.242    0.387    0.251   +0.035     1.43   0.1530
+    tide_accel                      0.001    0.001    0.001    0.001   +0.000     1.65   0.1001
+    rvol                            0.993    0.283    0.992    0.275   +0.001     0.05   0.9584
+    vol_up_down_ratio               1.076    0.376    1.112    0.398   -0.036    -0.95   0.3417
+    slope_conjugation               0.324    0.209    0.294    0.214   +0.030     1.41   0.1594
+    fear_level                      0.014    0.117    0.041    0.199   -0.027    -1.85   0.0648 *
+    rsi_value                      69.827    7.896   68.871    7.600   +0.956     1.22   0.2219
+    kalman_velocity                -0.001    0.099   -0.000    0.092   -0.000    -0.03   0.9752
+
+    Failure Diagnosis Distribution:
+      UNFORESEEABLE                  │ 185 ( 40.0%)
+      VOLUME_ABSENT                  │  22 (  4.8%)
+      EARNINGS_CATALYST              │   1 (  0.2%)
+
+    Save Rate by Fear Level:
+             GREED │ SR= 32.1% n=448  ██████
+        CONFIDENCE │ SR= 13.3% n= 15  ██
+
+    Save Rate by σ_wave Bucket:
+            <-1.5σ │ SR= 18.5% n= 27  ███
+        -1.5→-0.5σ │ SR= 25.9% n=116  █████
+         -0.5→0.5σ │ SR= 32.5% n=160  ██████
+          0.5→1.5σ │ SR= 37.0% n=146  ███████
+             >1.5σ │ SR= 35.7% n= 14  ███████
+
+  ── EXIT: rsi_intelligence × QQQ (106 signals) ──
+
+    Feature                        Save μ   Save σ   Fail μ   Fail σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                      0.104    1.198    0.127    1.336   -0.023    -0.09   0.9323
+    sigma_wave                      0.531    0.804    0.897    0.768   -0.366    -2.11   0.0396 **
+    tide_slope                      0.032    0.121    0.047    0.054   -0.015    -0.63   0.5303
+    wave_slope                      0.372    0.256    0.214    0.242   +0.158     2.88   0.0059 ***
+    tide_accel                      0.000    0.001    0.000    0.001   -0.000    -0.09   0.9318
+    rvol                            0.814    0.287    0.943    0.233   -0.129    -2.17   0.0359 **
+    vol_up_down_ratio               1.215    0.438    1.168    0.377   +0.047     0.51   0.6146
+    slope_conjugation               0.340    0.278    0.167    0.251   +0.173     2.93   0.0052 ***
+    fear_level                      1.586    0.568    1.390    0.989   +0.197     1.27   0.2062
+    rsi_value                      56.797    5.589   58.439    7.515   -1.642    -1.22   0.2265
+    kalman_velocity                -0.009    0.098   -0.025    0.086   +0.015     0.75   0.4584
+
+    Failure Diagnosis Distribution:
+      BULL_MOMENTUM_INTACT           │  26 ( 24.5%)
+      LOW_CONVICTION_NOISE           │  18 ( 17.0%)
+      FEAR_CONTRARIAN_ERROR          │   7 (  6.6%)
+      UNFORESEEABLE                  │   5 (  4.7%)
+      SUPPORT_BOUNCE                 │   2 (  1.9%)
+      EARNINGS_CATALYST              │   1 (  0.9%)
+      VOLUME_ABSENT                  │   1 (  0.9%)
+
+    Save Rate by Fear Level:
+             GREED │ SR=  0.0% n= 17  
+        CONFIDENCE │ SR= 36.1% n= 36  ███████
+           NEUTRAL │ SR= 34.9% n= 43  ██████
+           ANXIETY │ SR= 11.1% n=  9  ██
+              FEAR │ SR=  0.0% n=  1  
+
+    Save Rate by σ_wave Bucket:
+        -1.5→-0.5σ │ SR= 40.0% n= 10  ████████
+         -0.5→0.5σ │ SR= 36.4% n= 22  ███████
+          0.5→1.5σ │ SR= 26.9% n= 52  █████
+             >1.5σ │ SR= 13.6% n= 22  ██
+
+  ── EXIT: regression_channel × SPY (447 signals) ──
+
+    Feature                        Save μ   Save σ   Fail μ   Fail σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                      2.045    0.565    1.921    0.382   +0.124     2.15   0.0328 **
+    sigma_wave                      0.087    0.921    0.145    0.930   -0.059    -0.58   0.5645
+    tide_slope                      0.065    0.033    0.057    0.026   +0.008     2.33   0.0210 **
+    wave_slope                      0.327    0.188    0.256    0.142   +0.071     3.62   0.0004 ***
+    tide_accel                      0.001    0.001    0.001    0.001   +0.000     4.28   0.0000 ***
+    rvol                            1.021    0.380    1.046    0.436   -0.025    -0.58   0.5648
+    vol_up_down_ratio               1.049    0.317    1.124    0.446   -0.075    -1.94   0.0532 *
+    slope_conjugation               0.262    0.191    0.199    0.140   +0.063     3.18   0.0018 ***
+    fear_level                      0.027    0.164    0.036    0.186   -0.008    -0.45   0.6543
+    rsi_value                      68.731    7.966   68.910    7.399   -0.179    -0.21   0.8352
+    kalman_velocity                -0.012    0.123    0.004    0.152   -0.016    -1.11   0.2662
+
+    Failure Diagnosis Distribution:
+      UNFORESEEABLE                  │ 162 ( 36.2%)
+      VOLUME_ABSENT                  │  33 (  7.4%)
+
+    Save Rate by Fear Level:
+             GREED │ SR= 24.8% n=432  ████
+        CONFIDENCE │ SR= 20.0% n= 15  ████
+
+    Save Rate by σ_wave Bucket:
+            <-1.5σ │ SR= 30.0% n= 20  ██████
+        -1.5→-0.5σ │ SR= 23.3% n=103  ████
+         -0.5→0.5σ │ SR= 27.9% n=136  █████
+          0.5→1.5σ │ SR= 22.7% n=163  ████
+             >1.5σ │ SR= 20.0% n= 25  ████
+
+  ── EXIT: rsi_intelligence × SPY (127 signals) ──
+
+    Feature                        Save μ   Save σ   Fail μ   Fail σ       Δμ   t-stat    p-val
+    ──────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+    sigma_tide                      0.236    1.352    0.068    1.373   +0.168     0.56   0.5822
+    sigma_wave                      0.891    0.699    0.941    0.760   -0.050    -0.32   0.7537
+    tide_slope                      0.002    0.070    0.033    0.056   -0.032    -2.10   0.0436 **
+    wave_slope                      0.166    0.164    0.129    0.214   +0.037     0.94   0.3514
+    tide_accel                      0.000    0.002    0.000    0.001   +0.000     0.57   0.5760
+    rvol                            1.064    0.282    0.967    0.367   +0.098     1.46   0.1513
+    vol_up_down_ratio               0.950    0.181    1.148    0.407   -0.198    -3.66   0.0004 ***
+    slope_conjugation               0.165    0.208    0.096    0.222   +0.069     1.46   0.1524
+    fear_level                      1.480    0.872    1.725    0.935   -0.245    -1.24   0.2212
+    rsi_value                      57.425    6.939   58.708    8.352   -1.283    -0.79   0.4315
+    kalman_velocity                -0.012    0.114   -0.032    0.127   +0.020     0.76   0.4506
+
+    Failure Diagnosis Distribution:
+      BULL_MOMENTUM_INTACT           │  34 ( 26.8%)
+      LOW_CONVICTION_NOISE           │  21 ( 16.5%)
+      FEAR_CONTRARIAN_ERROR          │  21 ( 16.5%)
+      UNFORESEEABLE                  │   4 (  3.1%)
+      EARNINGS_CATALYST              │   1 (  0.8%)
+
+    Save Rate by Fear Level:
+             GREED │ SR= 36.4% n= 11  ███████
+        CONFIDENCE │ SR= 14.9% n= 47  ██
+           NEUTRAL │ SR= 28.6% n= 42  █████
+           ANXIETY │ SR=  7.7% n= 26  █
+              FEAR │ SR=  0.0% n=  1  
+
+    Save Rate by σ_wave Bucket:
+        -1.5→-0.5σ │ SR= 12.5% n=  8  ██
+         -0.5→0.5σ │ SR= 23.8% n= 21  ████
+          0.5→1.5σ │ SR= 19.7% n= 71  ███
+             >1.5σ │ SR= 18.5% n= 27  ███
+
+
+================================================================================
+  EXPLORATION COMPLETE
+================================================================================
+  All forensic labels analyzed. Use the data above to identify:
+    1. Which features PREDICT wins vs losses (statistically significant)
+    2. Which COMBINED CONDITIONS create exploitable edge
+    3. Which exit signals are NOISE and should be suppressed
+    4. Where REGIME context separates identical signals into different outcomes
+

@@ -1,0 +1,686 @@
+
+================================================================================
+  FORENSIC LAB v2 — TREND-AWARE + DIRECTION + SLINGSHOT + ML
+================================================================================
+
+  Extracting from Neon...
+  → 2325 entry + 2597 exit = 4922 total labels
+
+================================================================================
+  PART 1: TREND-AWARE RSI ANALYSIS
+================================================================================
+
+  ── RSI × COST — TREND-AWARE ANALYSIS (115 signals) ──
+
+    Win Rate by Trend Regime:
+        BULL │ WR= 55.8% n=104  ███████████
+        FLAT │ WR= 66.7% n=  3  █████████████
+        BEAR │ WR= 75.0% n=  8  ███████████████
+
+    RSI Quadrant vs Trend (opposite quadrant theory):
+      BULL + RSI 30-40 (pullback in bull)   │ WR= 64.7% n= 34
+      BULL + RSI 40-50 (mild pullback bull) │ WR= 50.0% n= 68
+      FLAT + RSI < 40  (range mean-revert)  │ WR= 66.7% n=  3
+
+  ── RSI × AAPL — TREND-AWARE ANALYSIS (326 signals) ──
+
+    Win Rate by Trend Regime:
+        BULL │ WR= 46.8% n=171  █████████
+        FLAT │ WR= 80.0% n= 25  ████████████████
+        BEAR │ WR= 33.8% n=130  ██████
+
+    RSI Quadrant vs Trend (opposite quadrant theory):
+      BEAR + RSI 40-60 (bear continuation) │ WR=  0.0% n=  3
+      BEAR + RSI < 30  (oversold in bear)  │ WR= 66.7% n=  3
+      BULL + RSI 30-40 (pullback in bull)   │ WR= 50.8% n= 63
+      BULL + RSI 40-50 (mild pullback bull) │ WR= 43.9% n=107
+      FLAT + RSI < 40  (range mean-revert)  │ WR= 85.7% n= 21
+
+  ── RSI × SPY — TREND-AWARE ANALYSIS (332 signals) ──
+
+    Win Rate by Trend Regime:
+        BULL │ WR= 56.8% n=213  ███████████
+        FLAT │ WR= 36.4% n= 33  ███████
+        BEAR │ WR= 53.5% n= 86  ██████████
+
+    RSI Quadrant vs Trend (opposite quadrant theory):
+      BEAR + RSI 40-60 (bear continuation) │ WR= 43.5% n= 46
+      BULL + RSI 30-40 (pullback in bull)   │ WR= 64.7% n= 34
+      BULL + RSI 40-50 (mild pullback bull) │ WR= 60.5% n=129
+      FLAT + RSI < 40  (range mean-revert)  │ WR= 44.4% n=  9
+
+  ── RSI × QQQ — TREND-AWARE ANALYSIS (324 signals) ──
+
+    Win Rate by Trend Regime:
+        BULL │ WR= 53.7% n=162  ██████████
+        FLAT │ WR= 40.7% n= 27  ████████
+        BEAR │ WR= 40.7% n=135  ████████
+
+    RSI Quadrant vs Trend (opposite quadrant theory):
+      BEAR + RSI 40-60 (bear continuation) │ WR= 37.3% n= 67
+      BEAR + RSI < 30  (oversold in bear)  │ WR= 75.0% n=  4
+      BULL + RSI 30-40 (pullback in bull)   │ WR= 81.2% n= 16
+      BULL + RSI 40-50 (mild pullback bull) │ WR= 53.0% n=115
+      FLAT + RSI < 40  (range mean-revert)  │ WR= 16.7% n=  6
+
+================================================================================
+  PART 2: SLINGSHOT DETECTION (σ direction + Kalman + Volume)
+================================================================================
+
+  ── SLINGSHOT ANALYSIS: rsi_intelligence × COST (115 signals) ──
+
+    Win Rate by σ_wave Position × Direction:
+        Deep oversold (<-1σ) +  RISING │ WR= 33.3% n= 21  ██████
+        Deep oversold (<-1σ) +    FLAT │ WR= 60.0% n= 20  ████████████
+        Deep oversold (<-1σ) + FALLING │ WR= 76.5% n= 17  ███████████████
+        Mild oversold (-1→0) +    FLAT │ WR= 50.0% n= 16  ██████████
+        Mild oversold (-1→0) + FALLING │ WR= 60.0% n= 20  ████████████
+               Neutral (0→1) + FALLING │ WR= 62.5% n= 16  ████████████
+              Extended (>1σ) + FALLING │ WR= 66.7% n=  3  █████████████
+
+  ── SLINGSHOT ANALYSIS: regression_channel × COST (195 signals) ──
+
+    Win Rate by σ_wave Position × Direction:
+        Deep oversold (<-1σ) +  RISING │ WR= 33.3% n=  6  ██████
+        Deep oversold (<-1σ) +    FLAT │ WR= 25.0% n= 12  █████
+        Deep oversold (<-1σ) + FALLING │ WR= 60.0% n= 30  ████████████
+        Mild oversold (-1→0) +    FLAT │ WR= 42.9% n=  7  ████████
+        Mild oversold (-1→0) + FALLING │ WR= 55.2% n= 58  ███████████
+               Neutral (0→1) + FALLING │ WR= 51.6% n= 64  ██████████
+              Extended (>1σ) + FALLING │ WR= 62.5% n= 16  ████████████
+
+  ── SLINGSHOT ANALYSIS: rsi_intelligence × AAPL (326 signals) ──
+
+    Win Rate by σ_wave Position × Direction:
+        Deep oversold (<-1σ) +  RISING │ WR= 61.0% n= 41  ████████████ ← SLINGSHOT!
+        Deep oversold (<-1σ) +    FLAT │ WR= 52.4% n= 21  ██████████
+        Deep oversold (<-1σ) + FALLING │ WR= 50.0% n= 46  ██████████
+        Mild oversold (-1→0) +  RISING │ WR=  0.0% n=  8  
+        Mild oversold (-1→0) +    FLAT │ WR= 13.3% n= 15  ██
+        Mild oversold (-1→0) + FALLING │ WR= 39.8% n=118  ███████ ← KNIFE
+               Neutral (0→1) + FALLING │ WR= 42.9% n= 63  ████████
+              Extended (>1σ) + FALLING │ WR= 64.3% n= 14  ████████████
+
+  ── SLINGSHOT ANALYSIS: regression_channel × AAPL (369 signals) ──
+
+    Win Rate by σ_wave Position × Direction:
+        Deep oversold (<-1σ) +  RISING │ WR= 58.3% n= 12  ███████████ ← SLINGSHOT!
+        Deep oversold (<-1σ) +    FLAT │ WR= 62.5% n=  8  ████████████
+        Deep oversold (<-1σ) + FALLING │ WR= 55.6% n= 54  ███████████
+        Mild oversold (-1→0) +  RISING │ WR= 25.0% n=  8  █████
+        Mild oversold (-1→0) +    FLAT │ WR= 31.2% n= 16  ██████
+        Mild oversold (-1→0) + FALLING │ WR= 46.2% n=106  █████████
+               Neutral (0→1) + FALLING │ WR= 50.9% n=110  ██████████
+              Extended (>1σ) + FALLING │ WR= 50.0% n= 54  ██████████
+
+  ── SLINGSHOT ANALYSIS: rsi_intelligence × SPY (332 signals) ──
+
+    Win Rate by σ_wave Position × Direction:
+        Deep oversold (<-1σ) +  RISING │ WR= 48.6% n= 35  █████████
+        Deep oversold (<-1σ) +    FLAT │ WR= 64.7% n= 17  ████████████
+        Deep oversold (<-1σ) + FALLING │ WR= 64.6% n= 48  ████████████
+        Mild oversold (-1→0) +  RISING │ WR= 55.6% n=  9  ███████████ ← SLINGSHOT!
+        Mild oversold (-1→0) +    FLAT │ WR= 38.9% n= 18  ███████
+        Mild oversold (-1→0) + FALLING │ WR= 58.0% n= 81  ███████████
+               Neutral (0→1) +    FLAT │ WR= 20.0% n=  5  ████
+               Neutral (0→1) + FALLING │ WR= 49.4% n= 87  █████████
+              Extended (>1σ) + FALLING │ WR= 53.1% n= 32  ██████████
+
+  ── SLINGSHOT ANALYSIS: regression_channel × SPY (344 signals) ──
+
+    Win Rate by σ_wave Position × Direction:
+        Mild oversold (-1→0) +  RISING │ WR= 70.0% n= 10  ██████████████ ← SLINGSHOT!
+        Mild oversold (-1→0) +    FLAT │ WR= 71.4% n=  7  ██████████████
+        Mild oversold (-1→0) + FALLING │ WR= 58.5% n= 65  ███████████
+               Neutral (0→1) +  RISING │ WR= 60.0% n= 10  ████████████
+               Neutral (0→1) +    FLAT │ WR= 64.3% n= 14  ████████████
+               Neutral (0→1) + FALLING │ WR= 53.2% n=124  ██████████
+              Extended (>1σ) +    FLAT │ WR= 75.0% n=  4  ███████████████
+              Extended (>1σ) + FALLING │ WR= 46.7% n=107  █████████
+
+  ── SLINGSHOT ANALYSIS: rsi_intelligence × QQQ (324 signals) ──
+
+    Win Rate by σ_wave Position × Direction:
+        Deep oversold (<-1σ) +  RISING │ WR= 39.3% n= 28  ███████
+        Deep oversold (<-1σ) +    FLAT │ WR= 42.9% n= 14  ████████
+        Deep oversold (<-1σ) + FALLING │ WR= 50.0% n= 42  ██████████
+        Mild oversold (-1→0) +  RISING │ WR= 66.7% n=  9  █████████████ ← SLINGSHOT!
+        Mild oversold (-1→0) +    FLAT │ WR= 35.7% n= 14  ███████
+        Mild oversold (-1→0) + FALLING │ WR= 47.9% n= 94  █████████
+               Neutral (0→1) + FALLING │ WR= 45.3% n= 86  █████████
+              Extended (>1σ) + FALLING │ WR= 51.4% n= 35  ██████████
+
+  ── SLINGSHOT ANALYSIS: regression_channel × QQQ (320 signals) ──
+
+    Win Rate by σ_wave Position × Direction:
+        Deep oversold (<-1σ) + FALLING │ WR=100.0% n=  3  ████████████████████
+        Mild oversold (-1→0) +  RISING │ WR= 50.0% n=  4  ██████████
+        Mild oversold (-1→0) +    FLAT │ WR= 50.0% n=  8  ██████████
+        Mild oversold (-1→0) + FALLING │ WR= 55.4% n= 56  ███████████
+               Neutral (0→1) +  RISING │ WR= 66.7% n=  9  █████████████
+               Neutral (0→1) +    FLAT │ WR= 30.0% n= 10  ██████
+               Neutral (0→1) + FALLING │ WR= 54.8% n=126  ██████████
+              Extended (>1σ) +  RISING │ WR=  0.0% n=  5  
+              Extended (>1σ) +    FLAT │ WR= 60.0% n=  5  ████████████
+              Extended (>1σ) + FALLING │ WR= 52.2% n= 92  ██████████
+
+================================================================================
+  PART 3: FLOOR/CEILING FORMATION (Slope Pair Analysis)
+================================================================================
+
+  ── FLOOR/CEILING FORMATION: rsi_intelligence × COST ──
+
+    Slope Pair Analysis (tide_slope × wave_slope → conjugation):
+      Tide ≤flat + Wave ↑ (FLOOR FORMING)   │ WR= 55.6% n=9
+      Tide ↑ + Wave ↓ (CEILING FORMING)     │ WR= 61.5% n=52
+      Tide ↑ + Wave ↑ (TREND CONTINUATION)  │ WR= 30.8% n=26
+      Tide ↓ + Wave ↓ (DOWNTREND ACCEL)     │ WR= 71.4% n=7
+      Tide ↑ + ACCELERATING                 │ WR= 62.2% n=37
+
+  ── FLOOR/CEILING FORMATION: regression_channel × COST ──
+
+    Slope Pair Analysis (tide_slope × wave_slope → conjugation):
+      Tide ↑ + Wave ↓ (CEILING FORMING)     │ WR= 52.9% n=157
+      Tide ↑ + Wave ↑ (TREND CONTINUATION)  │ WR= 40.0% n=15
+      Tide ↑ + ACCELERATING                 │ WR= 33.3% n=3
+
+  ── FLOOR/CEILING FORMATION: rsi_intelligence × AAPL ──
+
+    Slope Pair Analysis (tide_slope × wave_slope → conjugation):
+      Tide ≤flat + Wave ↑ (FLOOR FORMING)   │ WR= 40.0% n=20
+      Tide ↑ + Wave ↓ (CEILING FORMING)     │ WR= 43.2% n=95
+      Tide ↑ + Wave ↑ (TREND CONTINUATION)  │ WR= 48.9% n=47
+      Tide ↓ + Wave ↓ (DOWNTREND ACCEL)     │ WR= 28.0% n=93
+      Tide ↓ but DECELERATING (turn ahead?) │ WR=  0.0% n=5
+      Tide ↑ + ACCELERATING                 │ WR= 51.4% n=72
+
+  ── FLOOR/CEILING FORMATION: regression_channel × AAPL ──
+
+    Slope Pair Analysis (tide_slope × wave_slope → conjugation):
+      Tide ↑ + Wave ↓ (CEILING FORMING)     │ WR= 49.7% n=298
+      Tide ↑ + Wave ↑ (TREND CONTINUATION)  │ WR= 42.9% n=28
+      Tide ↑ + ACCELERATING                 │ WR= 46.2% n=13
+
+  ── FLOOR/CEILING FORMATION: rsi_intelligence × SPY ──
+
+    Slope Pair Analysis (tide_slope × wave_slope → conjugation):
+      Tide ≤flat + Wave ↑ (FLOOR FORMING)   │ WR= 60.5% n=38
+      Tide ↑ + Wave ↓ (CEILING FORMING)     │ WR= 56.0% n=109
+      Tide ↑ + Wave ↑ (TREND CONTINUATION)  │ WR= 47.6% n=21
+      Tide ↓ + Wave ↓ (DOWNTREND ACCEL)     │ WR= 46.2% n=39
+      Tide ↓ but DECELERATING (turn ahead?) │ WR= 45.5% n=33
+      Tide ↑ + ACCELERATING                 │ WR= 58.5% n=65
+
+  ── FLOOR/CEILING FORMATION: regression_channel × SPY ──
+
+    Slope Pair Analysis (tide_slope × wave_slope → conjugation):
+      Tide ≤flat + Wave ↑ (FLOOR FORMING)   │ WR= 53.3% n=15
+      Tide ↑ + Wave ↓ (CEILING FORMING)     │ WR= 53.1% n=177
+      Tide ↑ + Wave ↑ (TREND CONTINUATION)  │ WR= 68.8% n=16
+      Tide ↑ + ACCELERATING                 │ WR= 16.7% n=12
+
+  ── FLOOR/CEILING FORMATION: rsi_intelligence × QQQ ──
+
+    Slope Pair Analysis (tide_slope × wave_slope → conjugation):
+      Tide ≤flat + Wave ↑ (FLOOR FORMING)   │ WR= 50.0% n=34
+      Tide ↑ + Wave ↓ (CEILING FORMING)     │ WR= 55.1% n=107
+      Tide ↑ + Wave ↑ (TREND CONTINUATION)  │ WR= 37.5% n=16
+      Tide ↓ + Wave ↓ (DOWNTREND ACCEL)     │ WR= 41.2% n=85
+      Tide ↓ but DECELERATING (turn ahead?) │ WR= 27.3% n=22
+      Tide ↑ + ACCELERATING                 │ WR= 41.3% n=63
+
+  ── FLOOR/CEILING FORMATION: regression_channel × QQQ ──
+
+    Slope Pair Analysis (tide_slope × wave_slope → conjugation):
+      Tide ≤flat + Wave ↑ (FLOOR FORMING)   │ WR= 70.0% n=10
+      Tide ↑ + Wave ↓ (CEILING FORMING)     │ WR= 59.7% n=201
+      Tide ↑ + Wave ↑ (TREND CONTINUATION)  │ WR= 42.1% n=19
+      Tide ↑ + ACCELERATING                 │ WR= 80.0% n=5
+
+================================================================================
+  PART 4: KALMAN STATE TRANSITIONS
+================================================================================
+
+  ── KALMAN STATE × DIRECTION: rsi_intelligence × COST ──
+
+    Wyckoff State × Kalman Velocity Direction:
+          ACCUMULATION + KV↑ │ WR= 28.6% n=  7  █████
+         CONSOLIDATION + KV↑ │ WR= 65.7% n= 35  █████████████ ★
+         CONSOLIDATION + KV→ │ WR=  0.0% n=  2  
+         CONSOLIDATION + KV↓ │ WR= 59.7% n= 62  ███████████
+                MARKUP + KV↑ │ WR= 25.0% n=  4  █████
+                MARKUP + KV↓ │ WR= 50.0% n=  2  ██████████
+
+  ── KALMAN STATE × DIRECTION: regression_channel × COST ──
+
+    Wyckoff State × Kalman Velocity Direction:
+          ACCUMULATION + KV↑ │ WR= 40.0% n= 15  ████████
+         CONSOLIDATION + KV↑ │ WR= 51.1% n= 47  ██████████
+         CONSOLIDATION + KV→ │ WR= 45.5% n= 11  █████████
+         CONSOLIDATION + KV↓ │ WR= 55.8% n=113  ███████████
+                MARKUP + KV↑ │ WR= 50.0% n=  6  ██████████
+                MARKUP + KV↓ │ WR= 66.7% n=  3  █████████████
+
+  ── KALMAN STATE × DIRECTION: rsi_intelligence × AAPL ──
+
+    Wyckoff State × Kalman Velocity Direction:
+          ACCUMULATION + KV↑ │ WR= 60.0% n= 20  ████████████ ★
+         CONSOLIDATION + KV↑ │ WR= 45.1% n= 91  █████████
+         CONSOLIDATION + KV→ │ WR= 60.0% n= 10  ████████████
+         CONSOLIDATION + KV↓ │ WR= 43.8% n=130  ████████
+          DISTRIBUTION + KV↑ │ WR= 31.2% n= 16  ██████
+              MARKDOWN + KV↑ │ WR= 26.7% n= 15  █████
+              MARKDOWN + KV↓ │ WR= 44.4% n= 27  ████████
+                MARKUP + KV↑ │ WR= 46.2% n= 13  █████████
+                MARKUP + KV↓ │ WR=  0.0% n=  3  
+
+  ── KALMAN STATE × DIRECTION: regression_channel × AAPL ──
+
+    Wyckoff State × Kalman Velocity Direction:
+          ACCUMULATION + KV↑ │ WR= 46.4% n= 28  █████████
+         CONSOLIDATION + KV↑ │ WR= 47.4% n= 76  █████████
+         CONSOLIDATION + KV→ │ WR= 70.0% n= 10  ██████████████
+         CONSOLIDATION + KV↓ │ WR= 49.6% n=226  █████████
+                MARKUP + KV↑ │ WR= 50.0% n= 22  ██████████
+                MARKUP + KV↓ │ WR= 40.0% n=  5  ████████
+
+  ── KALMAN STATE × DIRECTION: rsi_intelligence × SPY ──
+
+    Wyckoff State × Kalman Velocity Direction:
+          ACCUMULATION + KV↑ │ WR= 54.8% n= 31  ██████████
+         CONSOLIDATION + KV↑ │ WR= 53.0% n=132  ██████████
+         CONSOLIDATION + KV→ │ WR= 50.0% n= 14  ██████████
+         CONSOLIDATION + KV↓ │ WR= 57.3% n=110  ███████████
+          DISTRIBUTION + KV↑ │ WR= 44.4% n=  9  ████████
+              MARKDOWN + KV↑ │ WR= 83.3% n=  6  ████████████████
+              MARKDOWN + KV↓ │ WR= 40.0% n= 15  ████████
+                MARKUP + KV↑ │ WR= 55.6% n=  9  ███████████
+                MARKUP + KV↓ │ WR= 20.0% n=  5  ████
+
+  ── KALMAN STATE × DIRECTION: regression_channel × SPY ──
+
+    Wyckoff State × Kalman Velocity Direction:
+          ACCUMULATION + KV↑ │ WR= 56.7% n= 30  ███████████ ★
+         CONSOLIDATION + KV↑ │ WR= 48.5% n= 68  █████████
+         CONSOLIDATION + KV→ │ WR= 44.4% n= 18  ████████
+         CONSOLIDATION + KV↓ │ WR= 59.1% n=193  ███████████
+                MARKUP + KV↑ │ WR= 38.1% n= 21  ███████
+                MARKUP + KV↓ │ WR= 35.7% n= 14  ███████
+
+  ── KALMAN STATE × DIRECTION: rsi_intelligence × QQQ ──
+
+    Wyckoff State × Kalman Velocity Direction:
+          ACCUMULATION + KV↑ │ WR= 50.0% n= 22  ██████████
+         CONSOLIDATION + KV↑ │ WR= 42.5% n=127  ████████
+         CONSOLIDATION + KV→ │ WR= 42.9% n=  7  ████████
+         CONSOLIDATION + KV↓ │ WR= 51.6% n=124  ██████████
+          DISTRIBUTION + KV↑ │ WR= 66.7% n=  3  █████████████
+              MARKDOWN + KV↑ │ WR= 36.4% n= 11  ███████
+              MARKDOWN + KV↓ │ WR= 61.5% n= 13  ████████████
+                MARKUP + KV↑ │ WR= 54.5% n= 11  ██████████
+                MARKUP + KV↓ │ WR=  0.0% n=  4  
+
+  ── KALMAN STATE × DIRECTION: regression_channel × QQQ ──
+
+    Wyckoff State × Kalman Velocity Direction:
+          ACCUMULATION + KV↑ │ WR= 77.3% n= 22  ███████████████ ★
+         CONSOLIDATION + KV↑ │ WR= 51.9% n= 79  ██████████
+         CONSOLIDATION + KV→ │ WR= 50.0% n=  8  ██████████
+         CONSOLIDATION + KV↓ │ WR= 53.5% n=187  ██████████
+                MARKUP + KV↑ │ WR= 31.2% n= 16  ██████
+                MARKUP + KV↓ │ WR= 37.5% n=  8  ███████
+
+================================================================================
+  PART 5: COMBINED EDGE MATRIX — Entry Confluences
+================================================================================
+
+  ── COMBINED EDGE MATRIX: rsi_intelligence × COST (115 signals) ──
+
+      σ<-1 + Fear≥ANX + VolAccum             │ WR=100.0% n=  5  ████████████████████ ← EDGE!
+      RSI<35 + Fear≥ANXIETY                  │ WR= 84.6% n= 13  ████████████████ ← EDGE!
+      Fear≥ANX + <VWAP + RVOL>0.8            │ WR= 70.8% n= 48  ██████████████ ← EDGE!
+      Floor forming + Kalman↑                │ WR= 68.8% n= 16  █████████████ ← EDGE!
+      σ<-0.5 + wave↑ + RVOL>1                │ WR= 42.1% n= 19  ████████
+      ★ FULL: σ<-1+wave↑+KV↑+Vol             │ WR= 37.5% n=  8  ███████
+
+  ── COMBINED EDGE MATRIX: regression_channel × COST (195 signals) ──
+
+      RSI<35 + Fear≥ANXIETY                  │ WR= 65.5% n= 29  █████████████ ← EDGE!
+      σ<-1 + Fear≥ANX + VolAccum             │ WR= 60.0% n= 10  ████████████ ← promising
+      Fear≥ANX + <VWAP + RVOL>0.8            │ WR= 55.3% n=123  ███████████ ← promising
+      σ<-0.5 + wave↑ + RVOL>1                │ WR= 50.0% n=  6  ██████████
+      Floor forming + Kalman↑                │ WR= 46.2% n= 52  █████████
+      ★ FULL: σ<-1+wave↑+KV↑+Vol             │ WR=  0.0% n=  2  
+
+  ── COMBINED EDGE MATRIX: rsi_intelligence × AAPL (326 signals) ──
+
+      σ<-0.5 + wave↑ + RVOL>1                │ WR= 48.3% n= 29  █████████
+      Fear≥ANX + <VWAP + RVOL>0.8            │ WR= 47.3% n=150  █████████
+      Floor forming + Kalman↑                │ WR= 45.2% n= 73  █████████
+      ★ FULL: σ<-1+wave↑+KV↑+Vol             │ WR= 42.9% n= 14  ████████
+      σ<-1 + Fear≥ANX + VolAccum             │ WR= 41.2% n= 17  ████████
+      RSI<35 + Fear≥ANXIETY                  │ WR= 39.6% n= 53  ███████
+
+  ── COMBINED EDGE MATRIX: regression_channel × AAPL (369 signals) ──
+
+      σ<-1 + Fear≥ANX + VolAccum             │ WR= 58.8% n= 17  ███████████ ← promising
+      Fear≥ANX + <VWAP + RVOL>0.8            │ WR= 53.0% n=230  ██████████
+      Floor forming + Kalman↑                │ WR= 48.8% n= 41  █████████
+      RSI<35 + Fear≥ANXIETY                  │ WR= 46.1% n= 76  █████████
+      σ<-0.5 + wave↑ + RVOL>1                │ WR= 38.5% n= 13  ███████
+      ★ FULL: σ<-1+wave↑+KV↑+Vol             │ WR= 33.3% n=  3  ██████
+
+  ── COMBINED EDGE MATRIX: rsi_intelligence × SPY (332 signals) ──
+
+      σ<-1 + Fear≥ANX + VolAccum             │ WR= 81.2% n= 16  ████████████████ ← EDGE!
+      ★ FULL: σ<-1+wave↑+KV↑+Vol             │ WR= 72.2% n= 18  ██████████████ ← EDGE!
+      Floor forming + Kalman↑                │ WR= 57.8% n= 83  ███████████ ← promising
+      RSI<35 + Fear≥ANXIETY                  │ WR= 57.7% n= 26  ███████████ ← promising
+      Fear≥ANX + <VWAP + RVOL>0.8            │ WR= 56.3% n=190  ███████████ ← promising
+      σ<-0.5 + wave↑ + RVOL>1                │ WR= 48.1% n= 27  █████████
+
+  ── COMBINED EDGE MATRIX: regression_channel × SPY (344 signals) ──
+
+      σ<-0.5 + wave↑ + RVOL>1                │ WR= 66.7% n=  3  █████████████ ← EDGE!
+      RSI<35 + Fear≥ANXIETY                  │ WR= 65.4% n= 26  █████████████ ← EDGE!
+      Fear≥ANX + <VWAP + RVOL>0.8            │ WR= 52.9% n=242  ██████████
+      Floor forming + Kalman↑                │ WR= 47.2% n= 72  █████████
+
+  ── COMBINED EDGE MATRIX: rsi_intelligence × QQQ (324 signals) ──
+
+      RSI<35 + Fear≥ANXIETY                  │ WR= 66.7% n= 30  █████████████ ← EDGE!
+      σ<-1 + Fear≥ANX + VolAccum             │ WR= 58.8% n= 17  ███████████ ← promising
+      ★ FULL: σ<-1+wave↑+KV↑+Vol             │ WR= 54.5% n= 11  ██████████
+      Fear≥ANX + <VWAP + RVOL>0.8            │ WR= 46.4% n=192  █████████
+      Floor forming + Kalman↑                │ WR= 45.6% n= 57  █████████
+      σ<-0.5 + wave↑ + RVOL>1                │ WR= 41.2% n= 17  ████████
+
+  ── COMBINED EDGE MATRIX: regression_channel × QQQ (320 signals) ──
+
+      Floor forming + Kalman↑                │ WR= 56.2% n= 48  ███████████ ← promising
+      RSI<35 + Fear≥ANXIETY                  │ WR= 53.6% n= 28  ██████████
+      Fear≥ANX + <VWAP + RVOL>0.8            │ WR= 51.1% n=235  ██████████
+
+================================================================================
+  PART 6: TREND-AWARE EXIT ANALYSIS
+================================================================================
+
+  ── EXIT TREND-AWARE: rsi_intelligence × COST (5 signals) ──
+
+    Save Rate by Trend Regime:
+        BULL │ SR=  0.0% n=  3   ← EXPECTED: exits wrong here
+
+    Save Rate by σ_wave (exit = leaving channel?):
+               Extended (>1.5σ) │ SR= 66.7% n=  3  █████████████ ← EXIT VALID
+
+  ── EXIT TREND-AWARE: regression_channel × COST (494 signals) ──
+
+    Save Rate by Trend Regime:
+        BULL │ SR= 32.8% n=494  ██████
+
+    Save Rate by σ_wave (exit = leaving channel?):
+            Deep below (<-1.5σ) │ SR=  8.7% n= 23  █ ← EXIT WRONG
+             Below (-1.5→-0.5σ) │ SR= 24.0% n= 75  ████ ← EXIT WRONG
+             Center (-0.5→0.5σ) │ SR= 40.0% n=140  ████████
+               Above (0.5→1.5σ) │ SR= 28.7% n=160  █████
+               Extended (>1.5σ) │ SR= 41.7% n= 96  ████████ ← EXIT VALID
+
+    🎪 EUPHORIA EXIT (σ>1.5 + GREED/CONF):     SR= 41.8% n=91
+
+  ── EXIT TREND-AWARE: rsi_intelligence × AAPL (17 signals) ──
+
+    Save Rate by Trend Regime:
+        BULL │ SR= 63.6% n= 11  ████████████
+        BEAR │ SR=  0.0% n=  6  
+
+    Save Rate by σ_wave (exit = leaving channel?):
+               Above (0.5→1.5σ) │ SR= 20.0% n=  5  ████
+               Extended (>1.5σ) │ SR= 45.5% n= 11  █████████ ← EXIT VALID
+
+    🎪 EUPHORIA EXIT (σ>1.5 + GREED/CONF):     SR= 50.0% n=2
+
+  ── EXIT TREND-AWARE: regression_channel × AAPL (938 signals) ──
+
+    Save Rate by Trend Regime:
+        BULL │ SR= 36.8% n=938  ███████
+
+    Save Rate by σ_wave (exit = leaving channel?):
+            Deep below (<-1.5σ) │ SR= 43.4% n= 53  ████████
+             Below (-1.5→-0.5σ) │ SR= 33.6% n=146  ██████
+             Center (-0.5→0.5σ) │ SR= 37.8% n=270  ███████
+               Above (0.5→1.5σ) │ SR= 32.2% n=273  ██████
+               Extended (>1.5σ) │ SR= 42.3% n=196  ████████ ← EXIT VALID
+
+    🎪 EUPHORIA EXIT (σ>1.5 + GREED/CONF):     SR= 42.5% n=193
+
+  ── EXIT TREND-AWARE: rsi_intelligence × SPY (127 signals) ──
+
+    Save Rate by Trend Regime:
+        BULL │ SR= 17.0% n= 88  ███ ← EXPECTED: exits wrong here
+        FLAT │ SR=  0.0% n= 15  
+        BEAR │ SR= 41.7% n= 24  ████████ ← EXPECTED: exits valid here
+
+    Save Rate by σ_wave (exit = leaving channel?):
+             Below (-1.5→-0.5σ) │ SR= 12.5% n=  8  ██ ← EXIT WRONG
+             Center (-0.5→0.5σ) │ SR= 23.8% n= 21  ████
+               Above (0.5→1.5σ) │ SR= 20.0% n= 70  ████
+               Extended (>1.5σ) │ SR= 17.9% n= 28  ███
+
+    🎪 EUPHORIA EXIT (σ>1.5 + GREED/CONF):     SR= 20.0% n=5
+
+  ── EXIT TREND-AWARE: regression_channel × SPY (447 signals) ──
+
+    Save Rate by Trend Regime:
+        BULL │ SR= 24.6% n=447  ████ ← EXPECTED: exits wrong here
+
+    Save Rate by σ_wave (exit = leaving channel?):
+            Deep below (<-1.5σ) │ SR= 30.0% n= 20  ██████
+             Below (-1.5→-0.5σ) │ SR= 22.8% n=101  ████ ← EXIT WRONG
+             Center (-0.5→0.5σ) │ SR= 28.3% n=138  █████
+               Above (0.5→1.5σ) │ SR= 22.7% n=163  ████
+               Extended (>1.5σ) │ SR= 20.0% n= 25  ████
+
+    🎪 EUPHORIA EXIT (σ>1.5 + GREED/CONF):     SR= 20.0% n=25
+
+  ── EXIT TREND-AWARE: rsi_intelligence × QQQ (106 signals) ──
+
+    Save Rate by Trend Regime:
+        BULL │ SR= 24.7% n= 73  ████ ← EXPECTED: exits wrong here
+        FLAT │ SR= 15.4% n= 13  ███
+        BEAR │ SR= 45.0% n= 20  █████████ ← EXPECTED: exits valid here
+
+    Save Rate by σ_wave (exit = leaving channel?):
+             Below (-1.5→-0.5σ) │ SR= 40.0% n= 10  ████████
+             Center (-0.5→0.5σ) │ SR= 36.4% n= 22  ███████
+               Above (0.5→1.5σ) │ SR= 27.5% n= 51  █████
+               Extended (>1.5σ) │ SR= 13.0% n= 23  ██
+
+    🎪 EUPHORIA EXIT (σ>1.5 + GREED/CONF):     SR=  0.0% n=5
+
+  ── EXIT TREND-AWARE: regression_channel × QQQ (463 signals) ──
+
+    Save Rate by Trend Regime:
+        BULL │ SR= 31.5% n=463  ██████
+
+    Save Rate by σ_wave (exit = leaving channel?):
+            Deep below (<-1.5σ) │ SR= 20.0% n= 25  ████ ← EXIT WRONG
+             Below (-1.5→-0.5σ) │ SR= 25.6% n=117  █████
+             Center (-0.5→0.5σ) │ SR= 32.3% n=158  ██████
+               Above (0.5→1.5σ) │ SR= 36.9% n=149  ███████ ← EXIT VALID
+               Extended (>1.5σ) │ SR= 35.7% n= 14  ███████ ← EXIT VALID
+
+    🎪 EUPHORIA EXIT (σ>1.5 + GREED/CONF):     SR= 35.7% n=14
+
+================================================================================
+  PART 7: ML FEATURE IMPORTANCE (Random Forest + Gradient Boosting)
+================================================================================
+
+  ── ML FEATURE IMPORTANCE: rsi_intelligence × COST (Entry, n=115) ──
+
+    Random Forest CV Accuracy: 0.600 ± 0.115
+    (Baseline random: 0.574)
+
+    Permutation Importance (MDA):
+      tide_slope                   MDA=+0.0641 ± 0.0254  ████████████ ***
+      tide_accel                   MDA=+0.0206 ± 0.0109  ████ ***
+      kalman_velocity              MDA=+0.0186 ± 0.0097  ███ **
+      sigma_wave                   MDA=+0.0157 ± 0.0072  ███ **
+      wave_slope                   MDA=+0.0151 ± 0.0174  ███ **
+      vol_up_down_ratio            MDA=+0.0128 ± 0.0120  ██ **
+      rsi_value                    MDA=+0.0113 ± 0.0084  ██ **
+      slope_conjugation            MDA=+0.0110 ± 0.0067  ██ **
+      sigma_tide                   MDA=+0.0072 ± 0.0060  █ *
+      fear_level                   MDA=+0.0064 ± 0.0190  █ *
+      rvol                         MDA=+0.0038 ± 0.0043   
+
+    Gradient Boosting CV Accuracy: 0.530 ± 0.147
+    MDI (Tree-Based):
+      tide_slope                   MDI=0.2668  █████████████
+      sigma_tide                   MDI=0.1203  ██████
+      vol_up_down_ratio            MDI=0.0942  ████
+      tide_accel                   MDI=0.0890  ████
+      rsi_value                    MDI=0.0778  ███
+      wave_slope                   MDI=0.0732  ███
+
+  ── ML FEATURE IMPORTANCE: regression_channel × COST (Entry, n=195) ──
+
+    Random Forest CV Accuracy: 0.605 ± 0.048
+    (Baseline random: 0.528)
+
+    Permutation Importance (MDA):
+      tide_slope                   MDA=+0.0795 ± 0.0173  ███████████████ ***
+      slope_conjugation            MDA=+0.0434 ± 0.0213  ████████ ***
+      rvol                         MDA=+0.0161 ± 0.0115  ███ **
+      wave_slope                   MDA=+0.0159 ± 0.0193  ███ **
+      vol_up_down_ratio            MDA=+0.0132 ± 0.0080  ██ **
+      sigma_wave                   MDA=+0.0103 ± 0.0056  ██ **
+      sigma_tide                   MDA=+0.0096 ± 0.0057  █ *
+      kalman_velocity              MDA=+0.0077 ± 0.0066  █ *
+      tide_accel                   MDA=+0.0074 ± 0.0070  █ *
+      rsi_value                    MDA=+0.0038 ± 0.0048   
+      fear_level                   MDA=-0.0000 ± 0.0035   
+
+    Gradient Boosting CV Accuracy: 0.538 ± 0.036
+    MDI (Tree-Based):
+      tide_slope                   MDI=0.2378  ███████████
+      slope_conjugation            MDI=0.2232  ███████████
+      tide_accel                   MDI=0.1023  █████
+      wave_slope                   MDI=0.0929  ████
+      kalman_velocity              MDI=0.0751  ███
+      rvol                         MDI=0.0688  ███
+
+  ── ML FEATURE IMPORTANCE: rsi_intelligence × SPY (Entry, n=332) ──
+
+    Random Forest CV Accuracy: 0.491 ± 0.047
+    (Baseline random: 0.539)
+
+    Permutation Importance (MDA):
+      rsi_value                    MDA=+0.1065 ± 0.0200  █████████████████████ ***
+      tide_slope                   MDA=+0.0942 ± 0.0115  ██████████████████ ***
+      tide_accel                   MDA=+0.0575 ± 0.0087  ███████████ ***
+      sigma_tide                   MDA=+0.0526 ± 0.0174  ██████████ ***
+      vol_up_down_ratio            MDA=+0.0501 ± 0.0078  ██████████ ***
+      kalman_velocity              MDA=+0.0434 ± 0.0080  ████████ ***
+      rvol                         MDA=+0.0383 ± 0.0083  ███████ ***
+      wave_slope                   MDA=+0.0284 ± 0.0085  █████ ***
+      sigma_wave                   MDA=+0.0277 ± 0.0055  █████ ***
+      slope_conjugation            MDA=+0.0275 ± 0.0060  █████ ***
+      fear_level                   MDA=+0.0108 ± 0.0059  ██ **
+
+    Gradient Boosting CV Accuracy: 0.515 ± 0.058
+    MDI (Tree-Based):
+      tide_slope                   MDI=0.2015  ██████████
+      tide_accel                   MDI=0.1327  ██████
+      rvol                         MDI=0.1142  █████
+      rsi_value                    MDI=0.1128  █████
+      sigma_tide                   MDI=0.1094  █████
+      kalman_velocity              MDI=0.0905  ████
+
+  ── ML FEATURE IMPORTANCE: regression_channel × SPY (Entry, n=344) ──
+
+    Random Forest CV Accuracy: 0.529 ± 0.054
+    (Baseline random: 0.538)
+
+    Permutation Importance (MDA):
+      tide_accel                   MDA=+0.0914 ± 0.0132  ██████████████████ ***
+      tide_slope                   MDA=+0.0886 ± 0.0151  █████████████████ ***
+      slope_conjugation            MDA=+0.0453 ± 0.0141  █████████ ***
+      rsi_value                    MDA=+0.0430 ± 0.0085  ████████ ***
+      sigma_tide                   MDA=+0.0291 ± 0.0075  █████ ***
+      kalman_velocity              MDA=+0.0274 ± 0.0088  █████ ***
+      wave_slope                   MDA=+0.0235 ± 0.0099  ████ ***
+      sigma_wave                   MDA=+0.0224 ± 0.0077  ████ ***
+      rvol                         MDA=+0.0206 ± 0.0078  ████ ***
+      vol_up_down_ratio            MDA=+0.0146 ± 0.0060  ██ **
+      fear_level                   MDA=+0.0000 ± 0.0000   
+
+    Gradient Boosting CV Accuracy: 0.523 ± 0.073
+    MDI (Tree-Based):
+      tide_slope                   MDI=0.2612  █████████████
+      tide_accel                   MDI=0.1719  ████████
+      sigma_tide                   MDI=0.0885  ████
+      rvol                         MDI=0.0868  ████
+      kalman_velocity              MDI=0.0827  ████
+      wave_slope                   MDI=0.0767  ███
+
+================================================================================
+  PART 8: ML EXIT FEATURE IMPORTANCE
+================================================================================
+
+  ── ML FEATURE IMPORTANCE: regression_channel × COST (Exit, n=494) ──
+
+    Random Forest CV Accuracy: 0.640 ± 0.045
+    (Baseline random: 0.328)
+
+    Permutation Importance (MDA):
+      sigma_wave                   MDA=+0.0304 ± 0.0048  ██████ ***
+      rvol                         MDA=+0.0190 ± 0.0031  ███ **
+      tide_slope                   MDA=+0.0182 ± 0.0042  ███ **
+      rsi_value                    MDA=+0.0146 ± 0.0046  ██ **
+      wave_slope                   MDA=+0.0143 ± 0.0039  ██ **
+      slope_conjugation            MDA=+0.0132 ± 0.0032  ██ **
+      vol_up_down_ratio            MDA=+0.0103 ± 0.0034  ██ **
+      kalman_velocity              MDA=+0.0092 ± 0.0019  █ *
+      tide_accel                   MDA=+0.0087 ± 0.0043  █ *
+      sigma_tide                   MDA=+0.0026 ± 0.0023   
+      fear_level                   MDA=+0.0018 ± 0.0007   
+
+    Gradient Boosting CV Accuracy: 0.587 ± 0.082
+    MDI (Tree-Based):
+      tide_accel                   MDI=0.2177  ██████████
+      tide_slope                   MDI=0.2117  ██████████
+      rsi_value                    MDI=0.1283  ██████
+      wave_slope                   MDI=0.1197  █████
+      sigma_wave                   MDI=0.0772  ███
+      kalman_velocity              MDI=0.0656  ███
+
+  ── ML FEATURE IMPORTANCE: regression_channel × SPY (Exit, n=447) ──
+
+    Random Forest CV Accuracy: 0.698 ± 0.059
+    (Baseline random: 0.246)
+
+    Permutation Importance (MDA):
+      tide_accel                   MDA=+0.0400 ± 0.0084  ███████ ***
+      tide_slope                   MDA=+0.0210 ± 0.0060  ████ ***
+      wave_slope                   MDA=+0.0165 ± 0.0052  ███ **
+      rsi_value                    MDA=+0.0115 ± 0.0022  ██ **
+      slope_conjugation            MDA=+0.0092 ± 0.0045  █ *
+      sigma_tide                   MDA=+0.0075 ± 0.0037  █ *
+      kalman_velocity              MDA=+0.0052 ± 0.0038  █ *
+      rvol                         MDA=+0.0010 ± 0.0021   
+      sigma_wave                   MDA=-0.0006 ± 0.0010   
+      vol_up_down_ratio            MDA=+0.0002 ± 0.0036   
+      fear_level                   MDA=+0.0000 ± 0.0000   
+
+    Gradient Boosting CV Accuracy: 0.602 ± 0.113
+    MDI (Tree-Based):
+      tide_slope                   MDI=0.2433  ████████████
+      tide_accel                   MDI=0.1924  █████████
+      rsi_value                    MDI=0.1277  ██████
+      sigma_tide                   MDI=0.0857  ████
+      wave_slope                   MDI=0.0759  ███
+      slope_conjugation            MDI=0.0703  ███
+
+================================================================================
+  ANALYSIS COMPLETE
+================================================================================

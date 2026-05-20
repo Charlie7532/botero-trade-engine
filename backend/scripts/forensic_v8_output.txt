@@ -1,0 +1,887 @@
+
+================================================================================
+  FORENSIC LAB v8 — AUCTION PSYCHOLOGY + VOLUME-SIGMA CORRELATIONS
+================================================================================
+
+  Loading forensic labels...
+  → 2325 entry labels
+
+  Enriching COST with volume features...
+
+================================================================================
+  PART 1: CV × SIGMA EXTREMES — COST
+================================================================================
+
+  ── CV × SIGMA EXTREMES: COST ──
+
+    rsi_intelligence × COST (N=115)
+      CV × σ Position (Win Rate):
+                           │     Low CV     Med CV    High CV
+      ────────────────────────────────────────────────────────────
+            σ DEEP (<-1.5) │  68.8%★(16)  44.4% ( 9)  20.0%✗( 5)
+      σ MID-LOW (-1.5→-0.5) │  76.9%★(13)  58.8% (17)  40.9% (22)
+      σ NEUTRAL (-0.5→+0.5) │  75.0%★( 8)  66.7%★( 9)  57.1% ( 7)
+            σ HIGH (>+0.5) │       —      50.0% ( 4)  50.0% ( 4)
+
+      Trend × CV:
+                   │     Low CV     Med CV    High CV
+      ──────────────────────────────────────────────────
+              BULL │  75.0%★(28)  55.3% (38)  42.1% (38)
+              BEAR │  75.0%★( 8)       —           —    
+
+    regression_channel × COST (N=195)
+      CV × σ Position (Win Rate):
+                           │     Low CV     Med CV    High CV
+      ────────────────────────────────────────────────────────────
+            σ DEEP (<-1.5) │  33.3%✗( 6)  75.0%★( 4)  33.3%✗( 9)
+      σ MID-LOW (-1.5→-0.5) │  52.6% (19)  64.3%★(28)  56.5% (23)
+      σ NEUTRAL (-0.5→+0.5) │  53.3% (30)  37.5%✗(16)  60.0% (20)
+            σ HIGH (>+0.5) │  20.0%✗(10)  64.7%★(17)  53.8% (13)
+
+      Trend × CV:
+                   │     Low CV     Med CV    High CV
+      ──────────────────────────────────────────────────
+              BULL │  47.6% (63)  61.3%★(62)  53.8% (65)
+              BEAR │       —           —           —    
+
+================================================================================
+  PART 2: TELEBOLITO — Dryness × Context — COST
+================================================================================
+
+  ── TELEBOLITO — Dryness × Context: COST ──
+
+    rsi_intelligence × COST (N=115)
+      Dryness × σ Position:
+            No drought (0) │ WR= 56.8% n= 88  σ_mean=-1.04  σ_std=0.83
+                Mild (1-2) │ WR= 68.8% n= 16  σ_mean=-0.99  σ_std=0.66
+           Dry spell (3-5) │ WR= 28.6% n=  7  σ_mean=-0.13  σ_std=1.24
+             Extended (6+) │ WR= 75.0% n=  4  σ_mean=+0.54  σ_std=0.42
+
+      Dryness × σ Direction (the ping-pong):
+          Drought + σ<-1 (bouncing at FLOOR)            │ WR= 54.5% n= 11  ██████████
+          Drought + σ[-1,0) (mid-low)                   │ WR= 62.5% n=  8  ████████████ ★
+          Drought + σ[0,+1) (mid-high)                  │ WR= 60.0% n=  5  ████████████
+          Drought + σ≥+1 (at CEILING)                   │ WR= 66.7% n=  3  █████████████ ★
+
+      Dryness × Fear Level:
+          Drought+CAUTION    │ WR= 16.7% n=  6  ███ ✗
+          Drought+ANXIETY    │ WR= 68.8% n= 16  █████████████ ★
+
+      Dryness × Kalman Velocity:
+          KV falling (sellers winning)        │ WR= 63.6% n= 11  ████████████ ★
+          KV flat (equilibrium)               │ WR= 56.2% n= 16  ███████████
+
+    regression_channel × COST (N=195)
+      Dryness × σ Position:
+            No drought (0) │ WR= 50.7% n=142  σ_mean=-0.41  σ_std=0.92
+                Mild (1-2) │ WR= 62.8% n= 43  σ_mean=+0.06  σ_std=0.94
+           Dry spell (3-5) │ WR= 50.0% n=  8  σ_mean=+0.14  σ_std=1.02
+
+      Dryness × σ Direction (the ping-pong):
+          Drought + σ<-1 (bouncing at FLOOR)            │ WR= 71.4% n=  7  ██████████████ ★
+          Drought + σ[-1,0) (mid-low)                   │ WR= 35.7% n= 14  ███████ ✗
+          Drought + σ[0,+1) (mid-high)                  │ WR= 56.5% n= 23  ███████████
+          Drought + σ≥+1 (at CEILING)                   │ WR= 88.9% n=  9  █████████████████ ★
+
+      Dryness × Fear Level:
+          Drought+CAUTION    │ WR= 50.0% n=  4  ██████████
+          Drought+ANXIETY    │ WR= 58.3% n= 48  ███████████
+
+      Dryness × Kalman Velocity:
+          KV falling (sellers winning)        │ WR= 60.0% n= 20  ████████████
+          KV flat (equilibrium)               │ WR= 57.6% n= 33  ███████████
+
+================================================================================
+  PART 3: BOOM DIRECTION — Flow × σ — COST
+================================================================================
+
+  ── BOOM DIRECTION — Flow × σ × Trend: COST ──
+
+    rsi_intelligence × COST (N=115)
+      Vol Regime × Flow Direction × σ Position:
+
+        QUIET (<0.7x):
+
+        NORMAL:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 80.0% n=  5  σ̄=+0.11 ★
+            ↳ σ≥0=67%★(n=3)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 62.5% n=  8  σ̄=-1.93 ★
+            ↳ σ<-1=62%★(n=8)
+
+        ELEVATED:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 66.7% n=  6  σ̄=-0.71 ★
+            ↳ σ[-1,0)=67%★(n=3)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 50.0% n=  4  σ̄=-0.74
+
+      BOOM/ELEVATED at σ Extremes (floor vs ceiling):
+          High vol + σ<-1.5 + GREEN bar → FLOOR FOUND?
+                                                             WR= 40.0% n=  5  ████████
+          High vol + σ<-1.5 + RED bar → FLOOR BREAKING?
+                                                             WR= 75.0% n=  4  ███████████████ ★ SIGNAL
+
+    regression_channel × COST (N=195)
+      Vol Regime × Flow Direction × σ Position:
+
+        QUIET (<0.7x):
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 33.3% n=  3  σ̄=+0.08 ✗
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 80.0% n=  5  σ̄=-0.39 ★
+
+        NORMAL:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 54.5% n= 11  σ̄=-0.01
+            ↳ σ[-1,0)=33%✗(n=3) | σ≥0=67%★(n=6)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 25.0% n=  8  σ̄=-0.44 ✗
+            ↳ σ<-1=0%✗(n=4) | σ≥0=50%(n=4)
+
+        ELEVATED:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 55.6% n=  9  σ̄=-0.42
+            ↳ σ[-1,0)=60%(n=5)
+
+      BOOM/ELEVATED at σ Extremes (floor vs ceiling):
+          High vol + σ<-1.5 + GREEN bar → FLOOR FOUND?
+                                                             WR= 33.3% n=  3  ██████ ✗ TRAP
+          High vol + σ>+1 + GREEN bar → BREAKOUT?
+                                                             WR= 33.3% n=  3  ██████ ✗ TRAP
+
+================================================================================
+  PART 4: AUCTION PSYCHOLOGY — COST
+================================================================================
+
+  ── AUCTION PSYCHOLOGY: COST ──
+
+    rsi_intelligence × COST (N=115)
+      Auction State Classification:
+        ⚖ BALANCE (quiet+narrow)              │ WR= 54.5% n= 22  ██████████
+        🗜 COMPRESSION (loud+narrow)           │ WR= 40.0% n=  5  ████████
+        🚀 INITIATIVE (loud+wide)              │ WR= 60.0% n= 10  ████████████
+        ➡ NORMAL VOLUME                       │ WR= 61.4% n= 57  ████████████ ★
+
+      Auction State × σ Position:
+        ⚖ BALANCE (quiet+ + σ<-1       │ WR= 44.4% n=  9  ████████
+        ⚖ BALANCE (quiet+ + σ[-1,0)    │ WR= 71.4% n=  7  ██████████████ ★
+        ⚖ BALANCE (quiet+ + σ≥0        │ WR= 50.0% n=  6  ██████████
+        🚀 INITIATIVE (lou + σ<-1       │ WR= 40.0% n=  5  ████████
+        🚀 INITIATIVE (lou + σ[-1,0)    │ WR= 80.0% n=  5  ████████████████ ★
+        ➡ NORMAL VOLUME   + σ<-1       │ WR= 57.6% n= 33  ███████████
+        ➡ NORMAL VOLUME   + σ[-1,0)    │ WR= 64.3% n= 14  ████████████ ★
+        ➡ NORMAL VOLUME   + σ≥0        │ WR= 70.0% n= 10  ██████████████ ★
+
+      Auction State × Trend:
+        ⚖ BALANCE (quiet+ + BULL  │ WR= 55.0% n= 20  ███████████
+        🚀 INITIATIVE (lou + BULL  │ WR= 55.6% n=  9  ███████████
+        ➡ NORMAL VOLUME   + BULL  │ WR= 61.1% n= 54  ████████████ ★
+        ➡ NORMAL VOLUME   + BEAR  │ WR= 66.7% n=  3  █████████████ ★
+
+      Sequence Pattern: Drought → Initiative:
+        DROUGHT → BALANCE (still sleeping)                 │ WR= 60.0% n=  5  ████████████
+        INITIATIVE (no drought — already active)           │ WR= 60.0% n= 10  ████████████
+
+      Initiative Bar Direction at σ Extremes:
+          Initiative + σ<-1 + GREEN → REVERSAL BUY
+                                                        WR= 33.3% n=  3  ██████ ✗ TRAP
+
+    regression_channel × COST (N=195)
+      Auction State Classification:
+        ⚖ BALANCE (quiet+narrow)              │ WR= 60.9% n= 46  ████████████ ★
+        🔍 EXPLORATION (quiet+wide)            │ WR= 66.7% n=  3  █████████████ ★
+        🗜 COMPRESSION (loud+narrow)           │ WR= 33.3% n=  6  ██████ ✗
+        🚀 INITIATIVE (loud+wide)              │ WR= 61.5% n= 13  ████████████ ★
+        ➡ NORMAL VOLUME                       │ WR= 49.5% n= 91  █████████
+
+      Auction State × σ Position:
+        ⚖ BALANCE (quiet+ + σ<-1       │ WR= 60.0% n= 10  ████████████
+        ⚖ BALANCE (quiet+ + σ[-1,0)    │ WR= 45.0% n= 20  █████████
+        ⚖ BALANCE (quiet+ + σ≥0        │ WR= 81.2% n= 16  ████████████████ ★
+        🚀 INITIATIVE (lou + σ[-1,0)    │ WR= 85.7% n=  7  █████████████████ ★
+        🚀 INITIATIVE (lou + σ≥0        │ WR= 50.0% n=  4  ██████████
+        ➡ NORMAL VOLUME   + σ<-1       │ WR= 45.8% n= 24  █████████
+        ➡ NORMAL VOLUME   + σ[-1,0)    │ WR= 62.1% n= 29  ████████████ ★
+        ➡ NORMAL VOLUME   + σ≥0        │ WR= 42.1% n= 38  ████████
+
+      Auction State × Trend:
+        ⚖ BALANCE (quiet+ + BULL  │ WR= 60.9% n= 46  ████████████ ★
+        🚀 INITIATIVE (lou + BULL  │ WR= 61.5% n= 13  ████████████ ★
+        ➡ NORMAL VOLUME   + BULL  │ WR= 51.1% n= 88  ██████████
+
+      Sequence Pattern: Drought → Initiative:
+        DROUGHT → BALANCE (still sleeping)                 │ WR= 70.0% n= 10  ██████████████ ★ SLINGSHOT
+        INITIATIVE (no drought — already active)           │ WR= 61.5% n= 13  ████████████
+
+      Initiative Bar Direction at σ Extremes:
+
+  Enriching SPY with volume features...
+
+================================================================================
+  PART 1: CV × SIGMA EXTREMES — SPY
+================================================================================
+
+  ── CV × SIGMA EXTREMES: SPY ──
+
+    rsi_intelligence × SPY (N=332)
+      CV × σ Position (Win Rate):
+                           │     Low CV     Med CV    High CV
+      ────────────────────────────────────────────────────────────
+            σ DEEP (<-1.5) │  46.7% (15)  60.0% (15)  50.0% (18)
+      σ MID-LOW (-1.5→-0.5) │  46.5% (43)  67.6%★(34)  73.1%★(26)
+      σ NEUTRAL (-0.5→+0.5) │  45.5% (33)  53.2% (47)  50.0% (34)
+            σ HIGH (>+0.5) │  52.6% (19)  62.5%★(16)  46.9% (32)
+
+      Trend × CV:
+                   │     Low CV     Med CV    High CV
+      ──────────────────────────────────────────────────
+              BULL │  52.2% (69)  65.2%★(66)  53.8% (78)
+              BEAR │  37.5%✗(40)  68.8%★(32)  64.3%★(14)
+
+    regression_channel × SPY (N=344)
+      CV × σ Position (Win Rate):
+                           │     Low CV     Med CV    High CV
+      ────────────────────────────────────────────────────────────
+            σ DEEP (<-1.5) │       —           —           —    
+      σ MID-LOW (-1.5→-0.5) │  66.7%★(12)  66.7%★(12)  36.4%✗(11)
+      σ NEUTRAL (-0.5→+0.5) │  53.1% (32)  67.6%★(34)  53.3% (45)
+            σ HIGH (>+0.5) │  50.0% (70)  67.1%★(70)  32.8%✗(58)
+
+      Trend × CV:
+                   │     Low CV     Med CV    High CV
+      ──────────────────────────────────────────────────
+              BULL │  52.8% (108)  67.0%★(109)  45.5% (99)
+              BEAR │       —           —           —    
+
+================================================================================
+  PART 2: TELEBOLITO — Dryness × Context — SPY
+================================================================================
+
+  ── TELEBOLITO — Dryness × Context: SPY ──
+
+    rsi_intelligence × SPY (N=332)
+      Dryness × σ Position:
+            No drought (0) │ WR= 53.1% n=273  σ_mean=-0.36  σ_std=0.97
+                Mild (1-2) │ WR= 56.5% n= 46  σ_mean=-0.34  σ_std=0.84
+           Dry spell (3-5) │ WR= 54.5% n= 11  σ_mean=-1.02  σ_std=0.91
+
+      Dryness × σ Direction (the ping-pong):
+          Drought + σ<-1 (bouncing at FLOOR)            │ WR= 52.6% n= 19  ██████████
+          Drought + σ[-1,0) (mid-low)                   │ WR= 61.5% n= 26  ████████████ ★
+          Drought + σ[0,+1) (mid-high)                  │ WR= 44.4% n=  9  ████████
+          Drought + σ≥+1 (at CEILING)                   │ WR= 80.0% n=  5  ████████████████ ★
+
+      Dryness × Fear Level:
+          Drought+CAUTION    │ WR= 33.3% n=  3  ██████ ✗
+          Drought+FEAR       │ WR= 73.3% n= 15  ██████████████ ★
+          Drought+ANXIETY    │ WR= 45.8% n= 24  █████████
+          Drought+PANIC      │ WR= 50.0% n=  4  ██████████
+
+      Dryness × Kalman Velocity:
+          KV falling (sellers winning)        │ WR= 63.2% n= 19  ████████████ ★
+          KV flat (equilibrium)               │ WR= 55.0% n= 40  ███████████
+
+    regression_channel × SPY (N=344)
+      Dryness × σ Position:
+            No drought (0) │ WR= 53.1% n=275  σ_mean=+0.60  σ_std=0.76
+                Mild (1-2) │ WR= 57.9% n= 57  σ_mean=+0.51  σ_std=0.73
+           Dry spell (3-5) │ WR= 54.5% n= 11  σ_mean=+0.58  σ_std=0.65
+
+      Dryness × σ Direction (the ping-pong):
+          Drought + σ[-1,0) (mid-low)                   │ WR= 53.3% n= 15  ██████████
+          Drought + σ[0,+1) (mid-high)                  │ WR= 58.8% n= 34  ███████████
+          Drought + σ≥+1 (at CEILING)                   │ WR= 55.0% n= 20  ███████████
+
+      Dryness × Fear Level:
+          Drought+CAUTION    │ WR= 80.0% n= 10  ████████████████ ★
+          Drought+FEAR       │ WR= 38.5% n= 13  ███████ ✗
+          Drought+ANXIETY    │ WR= 57.8% n= 45  ███████████
+
+      Dryness × Kalman Velocity:
+          KV falling (sellers winning)        │ WR= 72.2% n= 36  ██████████████ ★
+          KV flat (equilibrium)               │ WR= 39.4% n= 33  ███████ ✗
+
+================================================================================
+  PART 3: BOOM DIRECTION — Flow × σ — SPY
+================================================================================
+
+  ── BOOM DIRECTION — Flow × σ × Trend: SPY ──
+
+    rsi_intelligence × SPY (N=332)
+      Vol Regime × Flow Direction × σ Position:
+
+        QUIET (<0.7x):
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 60.0% n= 10  σ̄=-0.39
+            ↳ σ[-1,0)=75%★(n=4) | σ≥0=50%(n=4)
+
+        NORMAL:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 37.5% n=  8  σ̄=+0.16 ✗
+            ↳ σ[-1,0)=33%✗(n=3) | σ≥0=40%(n=5)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 56.2% n= 16  σ̄=-0.35
+            ↳ σ<-1=40%(n=5) | σ[-1,0)=50%(n=4) | σ≥0=71%★(n=7)
+
+        ELEVATED:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 40.0% n= 10  σ̄=+0.24
+            ↳ σ≥0=33%✗(n=9)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 52.4% n= 21  σ̄=-1.48
+            ↳ σ<-1=53%(n=19)
+
+        BOOM (2x+):
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 33.3% n=  6  σ̄=-1.71 ✗
+            ↳ σ<-1=33%✗(n=6)
+
+      BOOM/ELEVATED at σ Extremes (floor vs ceiling):
+          High vol + σ<-1.5 + RED bar → FLOOR BREAKING?
+                                                             WR= 53.1% n= 32  ██████████
+
+    regression_channel × SPY (N=344)
+      Vol Regime × Flow Direction × σ Position:
+
+        QUIET (<0.7x):
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 77.8% n=  9  σ̄=+0.85 ★
+            ↳ σ≥0=78%★(n=9)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 60.0% n= 10  σ̄=+0.61
+            ↳ σ≥0=50%(n=8)
+
+        NORMAL:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 36.4% n= 11  σ̄=+0.89 ✗
+            ↳ σ≥0=40%(n=10)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 50.0% n= 18  σ̄=+0.15
+            ↳ σ[-1,0)=44%(n=9) | σ≥0=56%(n=9)
+
+        ELEVATED:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 28.6% n= 14  σ̄=+0.54 ✗
+            ↳ σ[-1,0)=33%✗(n=3) | σ≥0=27%✗(n=11)
+
+        BOOM (2x+):
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 75.0% n=  4  σ̄=-0.15 ★
+            ↳ σ[-1,0)=100%★(n=3)
+
+      BOOM/ELEVATED at σ Extremes (floor vs ceiling):
+          High vol + σ>+1 + GREEN bar → BREAKOUT?
+                                                             WR= 20.0% n= 10  ████ ✗ TRAP
+
+================================================================================
+  PART 4: AUCTION PSYCHOLOGY — SPY
+================================================================================
+
+  ── AUCTION PSYCHOLOGY: SPY ──
+
+    rsi_intelligence × SPY (N=332)
+      Auction State Classification:
+        ⚖ BALANCE (quiet+narrow)              │ WR= 68.8% n= 32  █████████████ ★
+        🔍 EXPLORATION (quiet+wide)            │ WR= 16.7% n=  6  ███ ✗
+        🗜 COMPRESSION (loud+narrow)           │ WR= 70.0% n= 10  ██████████████ ★
+        🚀 INITIATIVE (loud+wide)              │ WR= 50.8% n= 59  ██████████
+        ➡ NORMAL VOLUME                       │ WR= 54.9% n=164  ██████████
+
+      Auction State × σ Position:
+        ⚖ BALANCE (quiet+ + σ[-1,0)    │ WR= 66.7% n= 15  █████████████ ★
+        ⚖ BALANCE (quiet+ + σ≥0        │ WR= 80.0% n= 15  ████████████████ ★
+        🗜 COMPRESSION (lo + σ<-1       │ WR= 66.7% n=  6  █████████████ ★
+        🗜 COMPRESSION (lo + σ[-1,0)    │ WR= 66.7% n=  3  █████████████ ★
+        🚀 INITIATIVE (lou + σ<-1       │ WR= 50.0% n= 36  ██████████
+        🚀 INITIATIVE (lou + σ[-1,0)    │ WR= 53.8% n= 13  ██████████
+        🚀 INITIATIVE (lou + σ≥0        │ WR= 50.0% n= 10  ██████████
+        ➡ NORMAL VOLUME   + σ<-1       │ WR= 68.6% n= 35  █████████████ ★
+        ➡ NORMAL VOLUME   + σ[-1,0)    │ WR= 50.8% n= 61  ██████████
+        ➡ NORMAL VOLUME   + σ≥0        │ WR= 51.5% n= 68  ██████████
+
+      Auction State × Trend:
+        ⚖ BALANCE (quiet+ + BULL  │ WR= 63.0% n= 27  ████████████ ★
+        🗜 COMPRESSION (lo + BULL  │ WR= 83.3% n=  6  ████████████████ ★
+        🗜 COMPRESSION (lo + BEAR  │ WR= 50.0% n=  4  ██████████
+        🚀 INITIATIVE (lou + BULL  │ WR= 58.5% n= 41  ███████████
+        🚀 INITIATIVE (lou + BEAR  │ WR= 38.5% n= 13  ███████ ✗
+        ➡ NORMAL VOLUME   + BULL  │ WR= 57.7% n=104  ███████████
+        ➡ NORMAL VOLUME   + BEAR  │ WR= 54.3% n= 46  ██████████
+
+      Sequence Pattern: Drought → Initiative:
+        DROUGHT → BALANCE (still sleeping)                 │ WR= 71.4% n=  7  ██████████████ ★ SLINGSHOT
+        INITIATIVE (no drought — already active)           │ WR= 50.8% n= 59  ██████████
+
+      Initiative Bar Direction at σ Extremes:
+          Initiative + σ<-1 + RED → CONTINUATION SELL
+                                                        WR= 51.4% n= 35  ██████████
+
+    regression_channel × SPY (N=344)
+      Auction State Classification:
+        ⚖ BALANCE (quiet+narrow)              │ WR= 64.1% n= 78  ████████████ ★
+        🔍 EXPLORATION (quiet+wide)            │ WR= 16.7% n=  6  ███ ✗
+        🗜 COMPRESSION (loud+narrow)           │ WR= 66.7% n=  9  █████████████ ★
+        🚀 INITIATIVE (loud+wide)              │ WR= 40.4% n= 47  ████████
+        ➡ NORMAL VOLUME                       │ WR= 52.0% n=152  ██████████
+
+      Auction State × σ Position:
+        ⚖ BALANCE (quiet+ + σ[-1,0)    │ WR= 50.0% n= 12  ██████████
+        ⚖ BALANCE (quiet+ + σ≥0        │ WR= 66.7% n= 66  █████████████ ★
+        🗜 COMPRESSION (lo + σ[-1,0)    │ WR= 33.3% n=  3  ██████ ✗
+        🗜 COMPRESSION (lo + σ≥0        │ WR= 83.3% n=  6  ████████████████ ★
+        🚀 INITIATIVE (lou + σ[-1,0)    │ WR= 60.0% n= 20  ████████████
+        🚀 INITIATIVE (lou + σ≥0        │ WR= 25.9% n= 27  █████ ✗
+        ➡ NORMAL VOLUME   + σ[-1,0)    │ WR= 62.5% n= 32  ████████████ ★
+        ➡ NORMAL VOLUME   + σ≥0        │ WR= 49.6% n=119  █████████
+
+      Auction State × Trend:
+        ⚖ BALANCE (quiet+ + BULL  │ WR= 66.2% n= 71  █████████████ ★
+        🗜 COMPRESSION (lo + BULL  │ WR= 66.7% n=  9  █████████████ ★
+        🚀 INITIATIVE (lou + BULL  │ WR= 47.4% n= 38  █████████
+        ➡ NORMAL VOLUME   + BULL  │ WR= 51.7% n=143  ██████████
+
+      Sequence Pattern: Drought → Initiative:
+        DROUGHT → BALANCE (still sleeping)                 │ WR= 81.8% n= 11  ████████████████ ★ SLINGSHOT
+        INITIATIVE (no drought — already active)           │ WR= 40.4% n= 47  ████████
+
+      Initiative Bar Direction at σ Extremes:
+          Initiative + σ>0.5 + GREEN → BREAKOUT
+                                                        WR= 25.0% n= 16  █████ ✗ TRAP
+
+  Enriching AAPL with volume features...
+
+================================================================================
+  PART 1: CV × SIGMA EXTREMES — AAPL
+================================================================================
+
+  ── CV × SIGMA EXTREMES: AAPL ──
+
+    rsi_intelligence × AAPL (N=326)
+      CV × σ Position (Win Rate):
+                           │     Low CV     Med CV    High CV
+      ────────────────────────────────────────────────────────────
+            σ DEEP (<-1.5) │  73.9%★(23)  53.3% (15)  62.5%★(16)
+      σ MID-LOW (-1.5→-0.5) │  50.0% (48)  34.0%✗(50)  31.6%✗(38)
+      σ NEUTRAL (-0.5→+0.5) │  32.0%✗(25)  35.3%✗(34)  42.5% (40)
+            σ HIGH (>+0.5) │  83.3%★(12)  36.4%✗(11)  35.7%✗(14)
+
+      Trend × CV:
+                   │     Low CV     Med CV    High CV
+      ──────────────────────────────────────────────────
+              BULL │  45.8% (59)  55.8% (52)  40.0% (60)
+              BEAR │  60.0% (40)  15.7%✗(51)  30.8%✗(39)
+
+    regression_channel × AAPL (N=369)
+      CV × σ Position (Win Rate):
+                           │     Low CV     Med CV    High CV
+      ────────────────────────────────────────────────────────────
+            σ DEEP (<-1.5) │  75.0%★( 8)  50.0% ( 6)  66.7%★(15)
+      σ MID-LOW (-1.5→-0.5) │  65.8%★(38)  47.2% (36)  24.1%✗(29)
+      σ NEUTRAL (-0.5→+0.5) │  52.9% (34)  52.1% (48)  42.9% (49)
+            σ HIGH (>+0.5) │  40.5% (42)  60.0% (35)  41.4% (29)
+
+      Trend × CV:
+                   │     Low CV     Med CV    High CV
+      ──────────────────────────────────────────────────
+              BULL │  53.3% (120)  52.8% (123)  41.0% (117)
+              BEAR │       —           —           —    
+
+================================================================================
+  PART 2: TELEBOLITO — Dryness × Context — AAPL
+================================================================================
+
+  ── TELEBOLITO — Dryness × Context: AAPL ──
+
+    rsi_intelligence × AAPL (N=326)
+      Dryness × σ Position:
+            No drought (0) │ WR= 47.4% n=209  σ_mean=-0.77  σ_std=0.92
+                Mild (1-2) │ WR= 42.5% n= 73  σ_mean=-0.54  σ_std=0.70
+           Dry spell (3-5) │ WR= 53.8% n= 26  σ_mean=-0.40  σ_std=0.81
+             Extended (6+) │ WR=  0.0% n= 18  σ_mean=+0.28  σ_std=0.64
+
+      Dryness × σ Direction (the ping-pong):
+          Drought + σ<-1 (bouncing at FLOOR)            │ WR= 69.6% n= 23  █████████████ ★
+          Drought + σ[-1,0) (mid-low)                   │ WR= 33.3% n= 57  ██████ ✗
+          Drought + σ[0,+1) (mid-high)                  │ WR= 28.1% n= 32  █████ ✗
+          Drought + σ≥+1 (at CEILING)                   │ WR= 20.0% n=  5  ████ ✗
+
+      Dryness × Fear Level:
+          Drought+CALM       │ WR= 60.0% n= 10  ████████████
+          Drought+CAUTION    │ WR= 75.0% n=  4  ███████████████ ★
+          Drought+FEAR       │ WR= 72.2% n= 18  ██████████████ ★
+          Drought+ANXIETY    │ WR= 25.0% n= 28  █████ ✗
+          Drought+PANIC      │ WR= 28.6% n=  7  █████ ✗
+
+      Dryness × Kalman Velocity:
+          KV falling (sellers winning)        │ WR= 42.1% n= 38  ████████
+          KV flat (equilibrium)               │ WR= 36.7% n= 79  ███████ ✗
+
+    regression_channel × AAPL (N=369)
+      Dryness × σ Position:
+            No drought (0) │ WR= 51.2% n=258  σ_mean=-0.30  σ_std=0.97
+                Mild (1-2) │ WR= 47.5% n= 80  σ_mean=+0.24  σ_std=0.85
+           Dry spell (3-5) │ WR= 46.2% n= 26  σ_mean=+0.68  σ_std=0.70
+             Extended (6+) │ WR=  0.0% n=  5  σ_mean=+0.97  σ_std=0.32
+
+      Dryness × σ Direction (the ping-pong):
+          Drought + σ<-1 (bouncing at FLOOR)            │ WR= 50.0% n=  6  ██████████
+          Drought + σ[-1,0) (mid-low)                   │ WR= 35.5% n= 31  ███████ ✗
+          Drought + σ[0,+1) (mid-high)                  │ WR= 55.3% n= 47  ███████████
+          Drought + σ≥+1 (at CEILING)                   │ WR= 37.0% n= 27  ███████ ✗
+
+      Dryness × Fear Level:
+          Drought+CAUTION    │ WR= 80.0% n=  5  ████████████████ ★
+          Drought+FEAR       │ WR= 25.0% n=  4  █████ ✗
+          Drought+ANXIETY    │ WR= 44.1% n=102  ████████
+
+      Dryness × Kalman Velocity:
+          KV falling (sellers winning)        │ WR= 44.7% n= 47  ████████
+          KV flat (equilibrium)               │ WR= 45.3% n= 64  █████████
+
+================================================================================
+  PART 3: BOOM DIRECTION — Flow × σ — AAPL
+================================================================================
+
+  ── BOOM DIRECTION — Flow × σ × Trend: AAPL ──
+
+    rsi_intelligence × AAPL (N=326)
+      Vol Regime × Flow Direction × σ Position:
+
+        QUIET (<0.7x):
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 25.0% n=  4  σ̄=-0.39 ✗
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 57.1% n=  7  σ̄=-0.70
+            ↳ σ[-1,0)=60%(n=5)
+
+        NORMAL:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 57.1% n= 14  σ̄=-0.25
+            ↳ σ[-1,0)=50%(n=6) | σ≥0=50%(n=6)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 56.0% n= 25  σ̄=-0.95
+            ↳ σ<-1=60%(n=15) | σ[-1,0)=43%(n=7) | σ≥0=67%★(n=3)
+
+        ELEVATED:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 30.0% n= 10  σ̄=-0.57 ✗
+            ↳ σ<-1=0%✗(n=4) | σ[-1,0)=25%✗(n=4)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 35.7% n= 14  σ̄=-1.52 ✗
+            ↳ σ<-1=33%✗(n=12)
+
+        BOOM (2x+):
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 66.7% n=  3  σ̄=-0.23 ★
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 25.0% n=  8  σ̄=-1.19 ✗
+            ↳ σ<-1=25%✗(n=4) | σ[-1,0)=0%✗(n=3)
+
+      BOOM/ELEVATED at σ Extremes (floor vs ceiling):
+          High vol + σ<-1.5 + GREEN bar → FLOOR FOUND?
+                                                             WR= 72.7% n= 11  ██████████████ ★ SIGNAL
+          High vol + σ<-1.5 + RED bar → FLOOR BREAKING?
+                                                             WR= 62.5% n= 16  ████████████ ★ SIGNAL
+          High vol + σ>+1 + GREEN bar → BREAKOUT?
+                                                             WR= 66.7% n=  3  █████████████ ★ SIGNAL
+
+    regression_channel × AAPL (N=369)
+      Vol Regime × Flow Direction × σ Position:
+
+        QUIET (<0.7x):
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 40.0% n=  5  σ̄=-0.24
+
+        NORMAL:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 52.4% n= 21  σ̄=+0.55
+            ↳ σ[-1,0)=33%✗(n=6) | σ≥0=57%(n=14)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 28.6% n=  7  σ̄=-0.59 ✗
+            ↳ σ<-1=33%✗(n=3) | σ[-1,0)=33%✗(n=3)
+
+        ELEVATED:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 45.0% n= 20  σ̄=-0.37
+            ↳ σ<-1=29%✗(n=7) | σ[-1,0)=60%(n=5) | σ≥0=50%(n=8)
+
+        BOOM (2x+):
+
+      BOOM/ELEVATED at σ Extremes (floor vs ceiling):
+          High vol + σ<-1.5 + GREEN bar → FLOOR FOUND?
+                                                             WR= 44.4% n=  9  ████████
+          High vol + σ>+1 + GREEN bar → BREAKOUT?
+                                                             WR=100.0% n=  4  ████████████████████ ★ SIGNAL
+
+================================================================================
+  PART 4: AUCTION PSYCHOLOGY — AAPL
+================================================================================
+
+  ── AUCTION PSYCHOLOGY: AAPL ──
+
+    rsi_intelligence × AAPL (N=326)
+      Auction State Classification:
+        ⚖ BALANCE (quiet+narrow)              │ WR= 39.0% n= 77  ███████ ✗
+        🔍 EXPLORATION (quiet+wide)            │ WR=  0.0% n=  4   ✗
+        🗜 COMPRESSION (loud+narrow)           │ WR= 55.0% n= 20  ███████████
+        🚀 INITIATIVE (loud+wide)              │ WR= 43.8% n= 32  ████████
+        ➡ NORMAL VOLUME                       │ WR= 47.1% n=136  █████████
+
+      Auction State × σ Position:
+        ⚖ BALANCE (quiet+ + σ<-1       │ WR= 50.0% n= 16  ██████████
+        ⚖ BALANCE (quiet+ + σ[-1,0)    │ WR= 34.1% n= 44  ██████ ✗
+        ⚖ BALANCE (quiet+ + σ≥0        │ WR= 41.2% n= 17  ████████
+        🗜 COMPRESSION (lo + σ<-1       │ WR= 50.0% n=  8  ██████████
+        🗜 COMPRESSION (lo + σ[-1,0)    │ WR= 50.0% n=  6  ██████████
+        🗜 COMPRESSION (lo + σ≥0        │ WR= 66.7% n=  6  █████████████ ★
+        🚀 INITIATIVE (lou + σ<-1       │ WR= 64.7% n= 17  ████████████ ★
+        🚀 INITIATIVE (lou + σ[-1,0)    │ WR= 20.0% n= 10  ████ ✗
+        🚀 INITIATIVE (lou + σ≥0        │ WR= 20.0% n=  5  ████ ✗
+        ➡ NORMAL VOLUME   + σ<-1       │ WR= 57.5% n= 40  ███████████
+        ➡ NORMAL VOLUME   + σ[-1,0)    │ WR= 39.0% n= 59  ███████ ✗
+        ➡ NORMAL VOLUME   + σ≥0        │ WR= 48.6% n= 37  █████████
+
+      Auction State × Trend:
+        ⚖ BALANCE (quiet+ + BULL  │ WR= 38.5% n= 39  ███████ ✗
+        ⚖ BALANCE (quiet+ + BEAR  │ WR= 25.9% n= 27  █████ ✗
+        🗜 COMPRESSION (lo + BULL  │ WR= 77.8% n=  9  ███████████████ ★
+        🗜 COMPRESSION (lo + BEAR  │ WR= 30.0% n= 10  ██████ ✗
+        🚀 INITIATIVE (lou + BULL  │ WR= 33.3% n= 18  ██████ ✗
+        🚀 INITIATIVE (lou + BEAR  │ WR= 54.5% n= 11  ██████████
+        ➡ NORMAL VOLUME   + BULL  │ WR= 52.0% n= 75  ██████████
+        ➡ NORMAL VOLUME   + BEAR  │ WR= 33.3% n= 54  ██████ ✗
+
+      Sequence Pattern: Drought → Initiative:
+        DROUGHT → BALANCE (still sleeping)                 │ WR= 40.0% n= 35  ████████
+        INITIATIVE (no drought — already active)           │ WR= 43.8% n= 32  ████████
+
+      Initiative Bar Direction at σ Extremes:
+          Initiative + σ<-1 + GREEN → REVERSAL BUY
+                                                        WR= 55.6% n=  9  ███████████
+          Initiative + σ<-1 + RED → CONTINUATION SELL
+                                                        WR= 75.0% n=  8  ███████████████ ★ SIGNAL
+
+    regression_channel × AAPL (N=369)
+      Auction State Classification:
+        ⚖ BALANCE (quiet+narrow)              │ WR= 43.6% n=101  ████████
+        🔍 EXPLORATION (quiet+wide)            │ WR= 50.0% n=  6  ██████████
+        🗜 COMPRESSION (loud+narrow)           │ WR= 44.4% n=  9  ████████
+        🚀 INITIATIVE (loud+wide)              │ WR= 47.7% n= 44  █████████
+        ➡ NORMAL VOLUME                       │ WR= 54.2% n=168  ██████████
+
+      Auction State × σ Position:
+        ⚖ BALANCE (quiet+ + σ<-1       │ WR= 52.6% n= 19  ██████████
+        ⚖ BALANCE (quiet+ + σ[-1,0)    │ WR= 37.1% n= 35  ███████ ✗
+        ⚖ BALANCE (quiet+ + σ≥0        │ WR= 44.7% n= 47  ████████
+        🗜 COMPRESSION (lo + σ<-1       │ WR= 66.7% n=  3  █████████████ ★
+        🗜 COMPRESSION (lo + σ≥0        │ WR= 25.0% n=  4  █████ ✗
+        🚀 INITIATIVE (lou + σ<-1       │ WR= 36.4% n= 11  ███████ ✗
+        🚀 INITIATIVE (lou + σ[-1,0)    │ WR= 31.2% n= 16  ██████ ✗
+        🚀 INITIATIVE (lou + σ≥0        │ WR= 70.6% n= 17  ██████████████ ★
+        ➡ NORMAL VOLUME   + σ<-1       │ WR= 67.7% n= 31  █████████████ ★
+        ➡ NORMAL VOLUME   + σ[-1,0)    │ WR= 43.5% n= 62  ████████
+        ➡ NORMAL VOLUME   + σ≥0        │ WR= 57.3% n= 75  ███████████
+
+      Auction State × Trend:
+        ⚖ BALANCE (quiet+ + BULL  │ WR= 43.9% n= 98  ████████
+        🗜 COMPRESSION (lo + BULL  │ WR= 44.4% n=  9  ████████
+        🚀 INITIATIVE (lou + BULL  │ WR= 47.7% n= 44  █████████
+        ➡ NORMAL VOLUME   + BULL  │ WR= 54.3% n=164  ██████████
+
+      Sequence Pattern: Drought → Initiative:
+        DROUGHT → BALANCE (still sleeping)                 │ WR= 32.1% n= 28  ██████ ✗
+        INITIATIVE (no drought — already active)           │ WR= 47.7% n= 44  █████████
+
+      Initiative Bar Direction at σ Extremes:
+          Initiative + σ<-1 + GREEN → REVERSAL BUY
+                                                        WR= 33.3% n=  9  ██████ ✗ TRAP
+          Initiative + σ>0.5 + GREEN → BREAKOUT
+                                                        WR= 66.7% n=  6  █████████████ ★ SIGNAL
+          Initiative + σ>0.5 + RED → EXHAUSTION
+                                                        WR= 66.7% n=  3  █████████████ ★ SIGNAL
+
+  Enriching QQQ with volume features...
+
+================================================================================
+  PART 1: CV × SIGMA EXTREMES — QQQ
+================================================================================
+
+  ── CV × SIGMA EXTREMES: QQQ ──
+
+    rsi_intelligence × QQQ (N=324)
+      CV × σ Position (Win Rate):
+                           │     Low CV     Med CV    High CV
+      ────────────────────────────────────────────────────────────
+            σ DEEP (<-1.5) │  40.0% (15)  20.0%✗(10)  20.0%✗( 5)
+      σ MID-LOW (-1.5→-0.5) │  45.2% (31)  61.7%★(47)  52.6% (38)
+      σ NEUTRAL (-0.5→+0.5) │  40.5% (37)  36.1%✗(36)  50.0% (32)
+            σ HIGH (>+0.5) │  50.0% (24)  70.6%★(17)  40.6% (32)
+
+      Trend × CV:
+                   │     Low CV     Med CV    High CV
+      ──────────────────────────────────────────────────
+              BULL │  53.3% (45)  64.3%★(42)  48.0% (75)
+              BEAR │  29.8%✗(47)  43.1% (65)  56.5% (23)
+
+    regression_channel × QQQ (N=320)
+      CV × σ Position (Win Rate):
+                           │     Low CV     Med CV    High CV
+      ────────────────────────────────────────────────────────────
+            σ DEEP (<-1.5) │       —           —           —    
+      σ MID-LOW (-1.5→-0.5) │  87.5%★( 8)  68.8%★(16)  70.0%★(10)
+      σ NEUTRAL (-0.5→+0.5) │  51.2% (41)  41.2% (34)  46.2% (26)
+            σ HIGH (>+0.5) │  56.1% (57)  58.6% (58)  45.7% (70)
+
+      Trend × CV:
+                   │     Low CV     Med CV    High CV
+      ──────────────────────────────────────────────────
+              BULL │  55.0% (100)  54.2% (107)  47.6% (103)
+              BEAR │       —           —           —    
+
+================================================================================
+  PART 2: TELEBOLITO — Dryness × Context — QQQ
+================================================================================
+
+  ── TELEBOLITO — Dryness × Context: QQQ ──
+
+    rsi_intelligence × QQQ (N=324)
+      Dryness × σ Position:
+            No drought (0) │ WR= 46.4% n=263  σ_mean=-0.31  σ_std=0.94
+                Mild (1-2) │ WR= 41.9% n= 43  σ_mean=+0.04  σ_std=0.87
+           Dry spell (3-5) │ WR= 66.7% n= 12  σ_mean=-0.75  σ_std=0.76
+             Extended (6+) │ WR= 83.3% n=  6  σ_mean=-1.07  σ_std=0.66
+
+      Dryness × σ Direction (the ping-pong):
+          Drought + σ<-1 (bouncing at FLOOR)            │ WR= 66.7% n= 12  █████████████ ★
+          Drought + σ[-1,0) (mid-low)                   │ WR= 32.0% n= 25  ██████ ✗
+          Drought + σ[0,+1) (mid-high)                  │ WR= 52.9% n= 17  ██████████
+          Drought + σ≥+1 (at CEILING)                   │ WR= 85.7% n=  7  █████████████████ ★
+
+      Dryness × Fear Level:
+          Drought+FEAR       │ WR= 33.3% n=  9  ██████ ✗
+          Drought+ANXIETY    │ WR= 51.9% n= 27  ██████████
+          Drought+PANIC      │ WR= 50.0% n=  6  ██████████
+
+      Dryness × Kalman Velocity:
+          KV falling (sellers winning)        │ WR= 48.0% n= 25  █████████
+          KV flat (equilibrium)               │ WR= 52.8% n= 36  ██████████
+
+    regression_channel × QQQ (N=320)
+      Dryness × σ Position:
+            No drought (0) │ WR= 52.1% n=259  σ_mean=+0.53  σ_std=0.75
+                Mild (1-2) │ WR= 56.9% n= 51  σ_mean=+0.77  σ_std=0.62
+           Dry spell (3-5) │ WR= 60.0% n= 10  σ_mean=+0.70  σ_std=0.63
+
+      Dryness × σ Direction (the ping-pong):
+          Drought + σ[-1,0) (mid-low)                   │ WR= 80.0% n=  5  ████████████████ ★
+          Drought + σ[0,+1) (mid-high)                  │ WR= 55.2% n= 29  ███████████
+          Drought + σ≥+1 (at CEILING)                   │ WR= 55.6% n= 27  ███████████
+
+      Dryness × Fear Level:
+          Drought+CAUTION    │ WR= 25.0% n=  8  █████ ✗
+          Drought+FEAR       │ WR= 71.4% n=  7  ██████████████ ★
+          Drought+ANXIETY    │ WR= 60.9% n= 46  ████████████ ★
+
+      Dryness × Kalman Velocity:
+          KV falling (sellers winning)        │ WR= 57.1% n= 35  ███████████
+          KV flat (equilibrium)               │ WR= 57.7% n= 26  ███████████
+
+================================================================================
+  PART 3: BOOM DIRECTION — Flow × σ — QQQ
+================================================================================
+
+  ── BOOM DIRECTION — Flow × σ × Trend: QQQ ──
+
+    rsi_intelligence × QQQ (N=324)
+      Vol Regime × Flow Direction × σ Position:
+
+        QUIET (<0.7x):
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 44.4% n=  9  σ̄=+0.02
+            ↳ σ[-1,0)=50%(n=4) | σ≥0=25%✗(n=4)
+
+        NORMAL:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR=  0.0% n=  3  σ̄=+1.05 ✗
+            ↳ σ≥0=0%✗(n=3)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 52.9% n= 17  σ̄=-0.00
+            ↳ σ<-1=33%✗(n=3) | σ[-1,0)=67%★(n=6) | σ≥0=50%(n=8)
+
+        ELEVATED:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 22.2% n=  9  σ̄=+0.13 ✗
+            ↳ σ[-1,0)=33%✗(n=3) | σ≥0=17%✗(n=6)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 41.7% n= 12  σ̄=-1.02
+            ↳ σ<-1=50%(n=8) | σ[-1,0)=33%✗(n=3)
+
+      BOOM/ELEVATED at σ Extremes (floor vs ceiling):
+          High vol + σ<-1.5 + RED bar → FLOOR BREAKING?
+                                                             WR=  8.3% n= 12  █ ✗ TRAP
+          High vol + σ>+1 + GREEN bar → BREAKOUT?
+                                                             WR= 33.3% n=  3  ██████ ✗ TRAP
+
+    regression_channel × QQQ (N=320)
+      Vol Regime × Flow Direction × σ Position:
+
+        QUIET (<0.7x):
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 42.9% n=  7  σ̄=+0.58
+            ↳ σ≥0=33%✗(n=6)
+
+        NORMAL:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 33.3% n=  6  σ̄=+0.36 ✗
+            ↳ σ≥0=40%(n=5)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR= 61.5% n= 13  σ̄=+0.29 ★
+            ↳ σ[-1,0)=50%(n=4) | σ≥0=67%★(n=9)
+
+        ELEVATED:
+          BUY FLOW (vudr>1.2 + green bar)          │ WR= 50.0% n=  8  σ̄=+0.52
+            ↳ σ≥0=50%(n=6)
+          SELL FLOW (vudr<0.8 + red bar)           │ WR=100.0% n=  4  σ̄=-0.33 ★
+
+      BOOM/ELEVATED at σ Extremes (floor vs ceiling):
+          High vol + σ>+1 + GREEN bar → BREAKOUT?
+                                                             WR= 37.5% n=  8  ███████ ✗ TRAP
+
+================================================================================
+  PART 4: AUCTION PSYCHOLOGY — QQQ
+================================================================================
+
+  ── AUCTION PSYCHOLOGY: QQQ ──
+
+    rsi_intelligence × QQQ (N=324)
+      Auction State Classification:
+        ⚖ BALANCE (quiet+narrow)              │ WR= 55.3% n= 38  ███████████
+        🔍 EXPLORATION (quiet+wide)            │ WR= 25.0% n=  4  █████ ✗
+        🗜 COMPRESSION (loud+narrow)           │ WR= 28.6% n=  7  █████ ✗
+        🚀 INITIATIVE (loud+wide)              │ WR= 47.6% n= 42  █████████
+        ➡ NORMAL VOLUME                       │ WR= 46.7% n=169  █████████
+
+      Auction State × σ Position:
+        ⚖ BALANCE (quiet+ + σ[-1,0)    │ WR= 38.5% n= 13  ███████ ✗
+        ⚖ BALANCE (quiet+ + σ≥0        │ WR= 64.0% n= 25  ████████████ ★
+        🚀 INITIATIVE (lou + σ<-1       │ WR= 46.7% n= 15  █████████
+        🚀 INITIATIVE (lou + σ[-1,0)    │ WR= 53.3% n= 15  ██████████
+        🚀 INITIATIVE (lou + σ≥0        │ WR= 41.7% n= 12  ████████
+        ➡ NORMAL VOLUME   + σ<-1       │ WR= 50.0% n= 50  ██████████
+        ➡ NORMAL VOLUME   + σ[-1,0)    │ WR= 47.4% n= 57  █████████
+        ➡ NORMAL VOLUME   + σ≥0        │ WR= 43.5% n= 62  ████████
+
+      Auction State × Trend:
+        ⚖ BALANCE (quiet+ + BULL  │ WR= 57.1% n= 28  ███████████
+        ⚖ BALANCE (quiet+ + BEAR  │ WR= 55.6% n=  9  ███████████
+        🚀 INITIATIVE (lou + BULL  │ WR= 63.6% n= 22  ████████████ ★
+        🚀 INITIATIVE (lou + BEAR  │ WR= 23.1% n= 13  ████ ✗
+        ➡ NORMAL VOLUME   + BULL  │ WR= 47.9% n= 71  █████████
+        ➡ NORMAL VOLUME   + BEAR  │ WR= 45.2% n= 84  █████████
+
+      Sequence Pattern: Drought → Initiative:
+        DROUGHT → BALANCE (still sleeping)                 │ WR= 87.5% n=  8  █████████████████ ★ SLINGSHOT
+        INITIATIVE (no drought — already active)           │ WR= 47.6% n= 42  █████████
+
+      Initiative Bar Direction at σ Extremes:
+          Initiative + σ<-1 + RED → CONTINUATION SELL
+                                                        WR= 42.9% n= 14  ████████
+          Initiative + σ>0.5 + GREEN → BREAKOUT
+                                                        WR= 25.0% n=  4  █████ ✗ TRAP
+
+    regression_channel × QQQ (N=320)
+      Auction State Classification:
+        ⚖ BALANCE (quiet+narrow)              │ WR= 52.2% n= 69  ██████████
+        🔍 EXPLORATION (quiet+wide)            │ WR= 75.0% n=  4  ███████████████ ★
+        🗜 COMPRESSION (loud+narrow)           │ WR= 57.1% n=  7  ███████████
+        🚀 INITIATIVE (loud+wide)              │ WR= 58.5% n= 41  ███████████
+        ➡ NORMAL VOLUME                       │ WR= 49.4% n=158  █████████
+
+      Auction State × σ Position:
+        ⚖ BALANCE (quiet+ + σ[-1,0)    │ WR= 66.7% n=  3  █████████████ ★
+        ⚖ BALANCE (quiet+ + σ≥0        │ WR= 51.5% n= 66  ██████████
+        🚀 INITIATIVE (lou + σ<-1       │ WR= 66.7% n=  3  █████████████ ★
+        🚀 INITIATIVE (lou + σ[-1,0)    │ WR= 57.1% n= 14  ███████████
+        🚀 INITIATIVE (lou + σ≥0        │ WR= 58.3% n= 24  ███████████
+        ➡ NORMAL VOLUME   + σ[-1,0)    │ WR= 46.9% n= 32  █████████
+        ➡ NORMAL VOLUME   + σ≥0        │ WR= 49.6% n=125  █████████
+
+      Auction State × Trend:
+        ⚖ BALANCE (quiet+ + BULL  │ WR= 50.7% n= 67  ██████████
+        🚀 INITIATIVE (lou + BULL  │ WR= 58.5% n= 41  ███████████
+        ➡ NORMAL VOLUME   + BULL  │ WR= 48.3% n=151  █████████
+
+      Sequence Pattern: Drought → Initiative:
+        DROUGHT → BALANCE (still sleeping)                 │ WR= 10.0% n= 10  ██ ✗
+        INITIATIVE (no drought — already active)           │ WR= 58.5% n= 41  ███████████
+
+      Initiative Bar Direction at σ Extremes:
+          Initiative + σ<-1 + RED → CONTINUATION SELL
+                                                        WR= 66.7% n=  3  █████████████ ★ SIGNAL
+          Initiative + σ>0.5 + GREEN → BREAKOUT
+                                                        WR= 43.8% n= 16  ████████
+
+================================================================================
+  v8 AUCTION PSYCHOLOGY COMPLETE
+================================================================================

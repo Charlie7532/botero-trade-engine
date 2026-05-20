@@ -1,0 +1,522 @@
+
+================================================================================
+  FORENSIC LAB v3 — SIGMA STRUCTURE: Higher Highs / Lower Lows
+================================================================================
+
+  Loading forensic labels from Neon...
+  → 2325 entry labels loaded
+
+  ── SIGMA STRUCTURE ANALYSIS: COST ──
+    OHLCV: 9773 bars (2006-02-17 14:30:00+00:00 → 2026-05-18 00:00:00+00:00)
+    Computing σ time series (this takes a moment)...
+    σ_tide: 296 peaks, 298 troughs
+    σ_wave: 482 peaks, 480 troughs
+
+    ┌───────────────────────────────────────────────┐
+    │ rsi_intelligence × COST (115 signals)
+    └───────────────────────────────────────────────┘
+
+    σ_TIDE Structure at Signal Time:
+            BEAR_STRUCTURE │ WR= 62.5% n= 16  ████████████ ★
+                 EXPANSION │ WR= 50.0% n=  6  ██████████
+               REVERSAL_UP │ WR= 66.7% n=  6  █████████████ ★
+             REVERSAL_DOWN │ WR= 15.4% n= 13  ███ ✗
+                     MIXED │ WR= 64.8% n= 71  ████████████ ★
+
+    σ_WAVE Structure at Signal Time:
+            BEAR_STRUCTURE │ WR= 66.7% n=  9  █████████████ ★
+               REVERSAL_UP │ WR=100.0% n=  5  ████████████████████ ★
+             REVERSAL_DOWN │ WR= 62.5% n=  8  ████████████ ★
+                     MIXED │ WR= 53.3% n= 92  ██████████
+
+    σ_TIDE Peak Structure (HH/LH) × Trough Structure (HL/LL):
+           HH+LL │ WR= 50.0% n=  6  ██████████
+        HH+MIXED │ WR= 88.9% n=  9  █████████████████
+           LH+LL │ WR= 62.5% n= 16  ████████████
+        LH+MIXED │ WR= 15.4% n= 13  ███
+        MIXED+HL │ WR= 66.7% n=  6  █████████████
+        MIXED+LL │ WR= 62.1% n= 29  ████████████
+      MIXED+MIXED │ WR= 63.3% n= 30  ████████████
+
+    σ_WAVE Peak Structure × Trough Structure:
+        HH+MIXED │ WR= 50.0% n= 22  ██████████
+           LH+LL │ WR= 66.7% n=  9  █████████████ ★
+        LH+MIXED │ WR= 62.5% n=  8  ████████████ ★
+        MIXED+HL │ WR=100.0% n=  5  ████████████████████ ★
+        MIXED+LL │ WR= 50.0% n= 22  ██████████
+      MIXED+MIXED │ WR= 56.2% n= 48  ███████████
+
+    σ_tide trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 64.8% n= 54  ████████████
+           Mild LL │ WR= 50.0% n= 26  ██████████
+             ~Same │ WR= 66.7% n=  9  █████████████
+           Mild HL │ WR= 85.7% n=  7  █████████████████ ← RISING FLOOR
+         Strong HL │ WR= 31.2% n= 16  ██████
+
+    σ_wave trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 23.1% n= 13  ████ ← SINKING FLOOR
+           Mild LL │ WR= 65.5% n= 58  █████████████
+             ~Same │ WR= 52.6% n= 19  ██████████
+           Mild HL │ WR= 45.5% n= 11  █████████
+         Strong HL │ WR= 71.4% n= 14  ██████████████ ← RISING FLOOR
+
+    COMBINED: σ_wave Structure + Fear Level:
+      REVERSAL_UP + Fear≥ANX                 │ WR=100.0% n=  4  ████████████████████ ★ SLINGSHOT
+      BEAR_STRUCTURE + Fear≥ANX              │ WR= 66.7% n=  6  █████████████
+
+    ┌───────────────────────────────────────────────┐
+    │ regression_channel × COST (195 signals)
+    └───────────────────────────────────────────────┘
+
+    σ_TIDE Structure at Signal Time:
+            BEAR_STRUCTURE │ WR= 50.0% n= 36  ██████████
+                 EXPANSION │ WR= 62.5% n=  8  ████████████ ★
+             REVERSAL_DOWN │ WR= 29.8% n= 47  █████ ✗
+                     MIXED │ WR= 64.7% n=102  ████████████ ★
+
+    σ_WAVE Structure at Signal Time:
+            BEAR_STRUCTURE │ WR= 55.6% n=  9  ███████████
+                 EXPANSION │ WR= 58.3% n= 12  ███████████
+               REVERSAL_UP │ WR= 71.4% n= 14  ██████████████ ★
+             REVERSAL_DOWN │ WR= 85.7% n= 21  █████████████████ ★
+                     MIXED │ WR= 44.5% n=137  ████████
+
+    σ_TIDE Peak Structure (HH/LH) × Trough Structure (HL/LL):
+           HH+LL │ WR= 62.5% n=  8  ████████████
+        HH+MIXED │ WR= 71.4% n=  7  ██████████████
+           LH+LL │ WR= 50.0% n= 36  ██████████
+        LH+MIXED │ WR= 29.8% n= 47  █████
+        MIXED+LL │ WR= 76.5% n= 51  ███████████████
+      MIXED+MIXED │ WR= 50.0% n= 44  ██████████
+
+    σ_WAVE Peak Structure × Trough Structure:
+           HH+LL │ WR= 58.3% n= 12  ███████████
+        HH+MIXED │ WR= 29.6% n= 27  █████ ✗
+           LH+LL │ WR= 55.6% n=  9  ███████████
+        LH+MIXED │ WR= 85.7% n= 21  █████████████████ ★
+        MIXED+HL │ WR= 71.4% n= 14  ██████████████ ★
+        MIXED+LL │ WR= 74.2% n= 31  ██████████████ ★
+      MIXED+MIXED │ WR= 38.0% n= 79  ███████ ✗
+
+    σ_tide trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 60.4% n=144  ████████████
+           Mild LL │ WR= 41.2% n= 17  ████████ ← SINKING FLOOR
+             ~Same │ WR= 27.3% n= 11  █████
+           Mild HL │ WR=  0.0% n=  3  
+         Strong HL │ WR= 30.0% n= 20  ██████
+
+    σ_wave trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 30.8% n= 26  ██████ ← SINKING FLOOR
+           Mild LL │ WR= 63.2% n= 68  ████████████
+             ~Same │ WR= 62.5% n= 32  ████████████
+           Mild HL │ WR= 47.7% n= 44  █████████
+         Strong HL │ WR= 44.0% n= 25  ████████
+
+    COMBINED: σ_wave Structure + Fear Level:
+      REVERSAL_UP + Fear≥ANX                 │ WR= 71.4% n= 14  ██████████████ ★ SLINGSHOT
+      BEAR_STRUCTURE + Fear≥ANX              │ WR= 50.0% n=  8  ██████████
+
+  ── SIGMA STRUCTURE ANALYSIS: SPY ──
+    OHLCV: 14305 bars (1993-03-08 14:30:00+00:00 → 2026-05-18 13:30:00+00:00)
+    Computing σ time series (this takes a moment)...
+    σ_tide: 421 peaks, 431 troughs
+    σ_wave: 711 peaks, 708 troughs
+
+    ┌───────────────────────────────────────────────┐
+    │ rsi_intelligence × SPY (332 signals)
+    └───────────────────────────────────────────────┘
+
+    σ_TIDE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 42.9% n= 14  ████████
+            BEAR_STRUCTURE │ WR= 69.5% n= 59  █████████████ ★
+                 EXPANSION │ WR= 66.7% n=  9  █████████████ ★
+               REVERSAL_UP │ WR= 37.5% n=  8  ███████ ✗
+             REVERSAL_DOWN │ WR= 60.3% n= 63  ████████████ ★
+                     MIXED │ WR= 48.0% n=175  █████████
+
+    σ_WAVE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 50.0% n=  6  ██████████
+            BEAR_STRUCTURE │ WR= 40.0% n=  5  ████████
+               COMPRESSION │ WR= 88.2% n= 17  █████████████████ ★
+                 EXPANSION │ WR=  0.0% n=  3   ✗
+               REVERSAL_UP │ WR= 54.9% n= 51  ██████████
+             REVERSAL_DOWN │ WR= 55.8% n= 43  ███████████
+                     MIXED │ WR= 51.7% n=207  ██████████
+
+    σ_TIDE Peak Structure (HH/LH) × Trough Structure (HL/LL):
+           HH+HL │ WR= 42.9% n= 14  ████████
+           HH+LL │ WR= 66.7% n=  9  █████████████
+        HH+MIXED │ WR= 66.7% n=  6  █████████████
+           LH+LL │ WR= 69.5% n= 59  █████████████
+        LH+MIXED │ WR= 60.3% n= 63  ████████████
+        MIXED+HL │ WR= 37.5% n=  8  ███████
+        MIXED+LL │ WR= 49.3% n= 73  █████████
+      MIXED+MIXED │ WR= 46.8% n= 94  █████████
+
+    σ_WAVE Peak Structure × Trough Structure:
+           HH+HL │ WR= 50.0% n=  6  ██████████
+           HH+LL │ WR=  0.0% n=  3   ✗
+        HH+MIXED │ WR= 64.3% n= 28  ████████████ ★
+           LH+HL │ WR= 88.2% n= 17  █████████████████ ★
+           LH+LL │ WR= 40.0% n=  5  ████████
+        LH+MIXED │ WR= 55.8% n= 43  ███████████
+        MIXED+HL │ WR= 54.9% n= 51  ██████████
+        MIXED+LL │ WR= 44.4% n= 27  ████████
+      MIXED+MIXED │ WR= 50.7% n=152  ██████████
+
+    σ_tide trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 55.3% n=197  ███████████
+           Mild LL │ WR= 57.5% n= 40  ███████████
+             ~Same │ WR= 54.5% n= 11  ██████████
+           Mild HL │ WR= 39.3% n= 28  ███████
+         Strong HL │ WR= 55.8% n= 52  ███████████ ← RISING FLOOR
+
+    σ_wave trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 60.0% n= 35  ████████████
+           Mild LL │ WR= 41.6% n= 89  ████████ ← SINKING FLOOR
+             ~Same │ WR= 62.7% n= 67  ████████████
+           Mild HL │ WR= 53.8% n=119  ██████████
+         Strong HL │ WR= 68.2% n= 22  █████████████ ← RISING FLOOR
+
+    COMBINED: σ_wave Structure + Fear Level:
+      BULL_STRUCTURE + Fear≥ANX              │ WR= 50.0% n=  4  ██████████
+      COMPRESSION + Fear≥ANX                 │ WR= 85.7% n= 14  █████████████████ ★ SLINGSHOT
+      REVERSAL_UP + Fear≥ANX                 │ WR= 62.5% n= 40  ████████████ ★ SLINGSHOT
+      REVERSAL_UP + Fear<NEU                 │ WR= 75.0% n=  4  ███████████████
+      BEAR_STRUCTURE + Fear≥ANX              │ WR= 40.0% n=  5  ████████
+
+    ┌───────────────────────────────────────────────┐
+    │ regression_channel × SPY (344 signals)
+    └───────────────────────────────────────────────┘
+
+    σ_TIDE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 11.1% n=  9  ██ ✗
+            BEAR_STRUCTURE │ WR= 63.6% n= 55  ████████████ ★
+                 EXPANSION │ WR= 61.1% n= 18  ████████████ ★
+               REVERSAL_UP │ WR= 37.5% n=  8  ███████ ✗
+             REVERSAL_DOWN │ WR= 38.1% n= 42  ███████ ✗
+                     MIXED │ WR= 57.3% n=206  ███████████
+
+    σ_WAVE Structure at Signal Time:
+            BEAR_STRUCTURE │ WR= 56.0% n= 25  ███████████
+               COMPRESSION │ WR= 75.0% n= 16  ███████████████ ★
+                 EXPANSION │ WR= 66.7% n= 15  █████████████ ★
+               REVERSAL_UP │ WR= 48.8% n= 41  █████████
+             REVERSAL_DOWN │ WR= 43.3% n= 30  ████████
+                     MIXED │ WR= 53.5% n=217  ██████████
+
+    σ_TIDE Peak Structure (HH/LH) × Trough Structure (HL/LL):
+           HH+HL │ WR= 11.1% n=  9  ██
+           HH+LL │ WR= 61.1% n= 18  ████████████
+        HH+MIXED │ WR= 53.8% n= 13  ██████████
+           LH+LL │ WR= 63.6% n= 55  ████████████
+        LH+MIXED │ WR= 38.1% n= 42  ███████
+        MIXED+HL │ WR= 37.5% n=  8  ███████
+        MIXED+LL │ WR= 57.9% n= 95  ███████████
+      MIXED+MIXED │ WR= 57.7% n= 97  ███████████
+
+    σ_WAVE Peak Structure × Trough Structure:
+           HH+LL │ WR= 66.7% n= 15  █████████████ ★
+        HH+MIXED │ WR= 75.0% n= 36  ███████████████ ★
+           LH+HL │ WR= 75.0% n= 16  ███████████████ ★
+           LH+LL │ WR= 56.0% n= 25  ███████████
+        LH+MIXED │ WR= 43.3% n= 30  ████████
+        MIXED+HL │ WR= 48.8% n= 41  █████████
+        MIXED+LL │ WR= 45.7% n= 35  █████████
+      MIXED+MIXED │ WR= 50.0% n=146  ██████████
+
+    σ_tide trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 56.8% n=236  ███████████
+           Mild LL │ WR= 63.0% n= 27  ████████████
+             ~Same │ WR= 40.0% n= 15  ████████
+           Mild HL │ WR= 27.3% n= 11  █████
+         Strong HL │ WR= 49.0% n= 49  █████████
+
+    σ_wave trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 73.7% n= 57  ██████████████
+           Mild LL │ WR= 40.9% n= 93  ████████ ← SINKING FLOOR
+             ~Same │ WR= 53.2% n= 94  ██████████
+           Mild HL │ WR= 48.5% n= 66  █████████
+         Strong HL │ WR= 67.6% n= 34  █████████████ ← RISING FLOOR
+
+    COMBINED: σ_wave Structure + Fear Level:
+      COMPRESSION + Fear≥ANX                 │ WR= 71.4% n= 14  ██████████████ ★ SLINGSHOT
+      REVERSAL_UP + Fear≥ANX                 │ WR= 50.0% n= 36  ██████████
+      REVERSAL_UP + Fear<NEU                 │ WR= 25.0% n=  4  █████
+      BEAR_STRUCTURE + Fear≥ANX              │ WR= 50.0% n= 18  ██████████
+      BEAR_STRUCTURE + Fear<NEU              │ WR=100.0% n=  5  ████████████████████
+
+  ── SIGMA STRUCTURE ANALYSIS: AAPL ──
+    OHLCV: 13191 bars (1992-07-28 13:30:00+00:00 → 2026-05-18 00:00:00+00:00)
+    Computing σ time series (this takes a moment)...
+    σ_tide: 401 peaks, 394 troughs
+    σ_wave: 670 peaks, 665 troughs
+
+    ┌───────────────────────────────────────────────┐
+    │ rsi_intelligence × AAPL (326 signals)
+    └───────────────────────────────────────────────┘
+
+    σ_TIDE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 14.3% n=  7  ██ ✗
+            BEAR_STRUCTURE │ WR= 54.8% n= 31  ██████████
+                 EXPANSION │ WR= 16.0% n= 25  ███ ✗
+               REVERSAL_UP │ WR= 51.7% n= 29  ██████████
+             REVERSAL_DOWN │ WR= 40.9% n= 44  ████████
+                     MIXED │ WR= 46.8% n=190  █████████
+
+    σ_WAVE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 87.5% n= 16  █████████████████ ★
+            BEAR_STRUCTURE │ WR= 58.3% n= 12  ███████████
+               COMPRESSION │ WR= 70.0% n= 10  ██████████████ ★
+                 EXPANSION │ WR=  0.0% n=  3   ✗
+               REVERSAL_UP │ WR= 47.1% n= 34  █████████
+             REVERSAL_DOWN │ WR= 68.0% n= 25  █████████████ ★
+                     MIXED │ WR= 36.7% n=226  ███████ ✗
+
+    σ_TIDE Peak Structure (HH/LH) × Trough Structure (HL/LL):
+           HH+HL │ WR= 14.3% n=  7  ██
+           HH+LL │ WR= 16.0% n= 25  ███
+        HH+MIXED │ WR= 29.8% n= 57  █████
+           LH+LL │ WR= 54.8% n= 31  ██████████
+        LH+MIXED │ WR= 40.9% n= 44  ████████
+        MIXED+HL │ WR= 51.7% n= 29  ██████████
+        MIXED+LL │ WR= 61.7% n= 47  ████████████
+      MIXED+MIXED │ WR= 50.0% n= 86  ██████████
+
+    σ_WAVE Peak Structure × Trough Structure:
+           HH+HL │ WR= 87.5% n= 16  █████████████████ ★
+           HH+LL │ WR=  0.0% n=  3   ✗
+        HH+MIXED │ WR= 43.9% n= 41  ████████
+           LH+HL │ WR= 70.0% n= 10  ██████████████ ★
+           LH+LL │ WR= 58.3% n= 12  ███████████
+        LH+MIXED │ WR= 68.0% n= 25  █████████████ ★
+        MIXED+HL │ WR= 47.1% n= 34  █████████
+        MIXED+LL │ WR= 16.7% n= 30  ███ ✗
+      MIXED+MIXED │ WR= 38.7% n=155  ███████ ✗
+
+    σ_tide trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 41.9% n=148  ████████ ← SINKING FLOOR
+           Mild LL │ WR= 50.0% n= 24  ██████████
+             ~Same │ WR= 21.4% n= 28  ████
+           Mild HL │ WR= 38.9% n= 18  ███████
+         Strong HL │ WR= 52.8% n=108  ██████████
+
+    σ_wave trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 39.5% n= 38  ███████ ← SINKING FLOOR
+           Mild LL │ WR= 33.7% n= 86  ██████ ← SINKING FLOOR
+             ~Same │ WR= 55.4% n= 65  ███████████
+           Mild HL │ WR= 48.5% n=103  █████████
+         Strong HL │ WR= 41.2% n= 34  ████████
+
+    COMBINED: σ_wave Structure + Fear Level:
+      BULL_STRUCTURE + Fear≥ANX              │ WR=100.0% n= 13  ████████████████████
+      COMPRESSION + Fear≥ANX                 │ WR= 62.5% n=  8  ████████████ ★ SLINGSHOT
+      REVERSAL_UP + Fear≥ANX                 │ WR= 37.0% n= 27  ███████
+      REVERSAL_UP + Fear<NEU                 │ WR=100.0% n=  3  ████████████████████
+      BEAR_STRUCTURE + Fear≥ANX              │ WR= 63.6% n= 11  ████████████
+
+    ┌───────────────────────────────────────────────┐
+    │ regression_channel × AAPL (369 signals)
+    └───────────────────────────────────────────────┘
+
+    σ_TIDE Structure at Signal Time:
+            BEAR_STRUCTURE │ WR= 56.0% n= 84  ███████████
+               COMPRESSION │ WR=100.0% n=  5  ████████████████████ ★
+                 EXPANSION │ WR= 33.3% n=  3  ██████ ✗
+               REVERSAL_UP │ WR= 16.7% n=  6  ███ ✗
+             REVERSAL_DOWN │ WR= 51.6% n= 62  ██████████
+                     MIXED │ WR= 47.5% n=202  █████████
+
+    σ_WAVE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 82.4% n= 17  ████████████████ ★
+               COMPRESSION │ WR=  0.0% n=  8   ✗
+                 EXPANSION │ WR= 50.0% n= 10  ██████████
+               REVERSAL_UP │ WR= 63.3% n= 49  ████████████ ★
+             REVERSAL_DOWN │ WR= 47.1% n= 34  █████████
+                     MIXED │ WR= 47.1% n=244  █████████
+
+    σ_TIDE Peak Structure (HH/LH) × Trough Structure (HL/LL):
+           HH+LL │ WR= 33.3% n=  3  ██████
+        HH+MIXED │ WR= 54.2% n= 24  ██████████
+           LH+HL │ WR=100.0% n=  5  ████████████████████ ★ REVERSAL
+           LH+LL │ WR= 56.0% n= 84  ███████████
+        LH+MIXED │ WR= 51.6% n= 62  ██████████
+        MIXED+HL │ WR= 16.7% n=  6  ███
+        MIXED+LL │ WR= 50.7% n=138  ██████████
+      MIXED+MIXED │ WR= 32.5% n= 40  ██████
+
+    σ_WAVE Peak Structure × Trough Structure:
+           HH+HL │ WR= 82.4% n= 17  ████████████████ ★
+           HH+LL │ WR= 50.0% n= 10  ██████████
+        HH+MIXED │ WR= 37.5% n= 32  ███████ ✗
+           LH+HL │ WR=  0.0% n=  8   ✗
+        LH+MIXED │ WR= 47.1% n= 34  █████████
+        MIXED+HL │ WR= 63.3% n= 49  ████████████ ★
+        MIXED+LL │ WR= 50.0% n= 42  ██████████
+      MIXED+MIXED │ WR= 48.2% n=170  █████████
+
+    σ_tide trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 49.1% n=222  █████████
+           Mild LL │ WR= 57.4% n= 61  ███████████
+             ~Same │ WR= 64.3% n= 14  ████████████
+           Mild HL │ WR= 54.5% n= 11  ██████████
+         Strong HL │ WR= 41.1% n= 56  ████████
+
+    σ_wave trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 73.1% n= 26  ██████████████
+           Mild LL │ WR= 47.0% n=115  █████████
+             ~Same │ WR= 43.1% n= 51  ████████
+           Mild HL │ WR= 44.3% n=140  ████████
+         Strong HL │ WR= 78.1% n= 32  ███████████████ ← RISING FLOOR
+
+    COMBINED: σ_wave Structure + Fear Level:
+      BULL_STRUCTURE + Fear≥ANX              │ WR= 84.6% n= 13  ████████████████
+      BULL_STRUCTURE + Fear<NEU              │ WR= 75.0% n=  4  ███████████████
+      COMPRESSION + Fear≥ANX                 │ WR=  0.0% n=  8  
+      REVERSAL_UP + Fear≥ANX                 │ WR= 60.9% n= 46  ████████████ ★ SLINGSHOT
+      REVERSAL_UP + Fear<NEU                 │ WR=100.0% n=  3  ████████████████████
+
+  ── SIGMA STRUCTURE ANALYSIS: QQQ ──
+    OHLCV: 8100 bars (1999-03-10 14:30:00+00:00 → 2026-05-18 13:30:00+00:00)
+    Computing σ time series (this takes a moment)...
+    σ_tide: 250 peaks, 254 troughs
+    σ_wave: 396 peaks, 398 troughs
+
+    ┌───────────────────────────────────────────────┐
+    │ rsi_intelligence × QQQ (324 signals)
+    └───────────────────────────────────────────────┘
+
+    σ_TIDE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 46.2% n= 13  █████████
+            BEAR_STRUCTURE │ WR= 35.9% n= 39  ███████ ✗
+               COMPRESSION │ WR= 60.0% n=  5  ████████████
+                 EXPANSION │ WR= 62.5% n=  8  ████████████ ★
+               REVERSAL_UP │ WR= 36.4% n= 22  ███████ ✗
+             REVERSAL_DOWN │ WR= 58.8% n= 51  ███████████
+                     MIXED │ WR= 46.8% n=186  █████████
+
+    σ_WAVE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 30.0% n= 10  ██████ ✗
+            BEAR_STRUCTURE │ WR= 26.7% n= 15  █████ ✗
+               COMPRESSION │ WR= 60.0% n=  5  ████████████
+                 EXPANSION │ WR= 66.7% n=  9  █████████████ ★
+               REVERSAL_UP │ WR= 60.4% n= 48  ████████████ ★
+             REVERSAL_DOWN │ WR= 69.2% n= 26  █████████████ ★
+                     MIXED │ WR= 42.7% n=211  ████████
+
+    σ_TIDE Peak Structure (HH/LH) × Trough Structure (HL/LL):
+           HH+HL │ WR= 46.2% n= 13  █████████
+           HH+LL │ WR= 62.5% n=  8  ████████████
+        HH+MIXED │ WR= 31.6% n= 19  ██████
+           LH+HL │ WR= 60.0% n=  5  ████████████ ★ REVERSAL
+           LH+LL │ WR= 35.9% n= 39  ███████ ✗ BEAR TRAP
+        LH+MIXED │ WR= 58.8% n= 51  ███████████
+        MIXED+HL │ WR= 36.4% n= 22  ███████
+        MIXED+LL │ WR= 56.6% n= 53  ███████████
+      MIXED+MIXED │ WR= 44.7% n=114  ████████
+
+    σ_WAVE Peak Structure × Trough Structure:
+           HH+HL │ WR= 30.0% n= 10  ██████ ✗
+           HH+LL │ WR= 66.7% n=  9  █████████████ ★
+        HH+MIXED │ WR= 37.5% n= 40  ███████ ✗
+           LH+HL │ WR= 60.0% n=  5  ████████████
+           LH+LL │ WR= 26.7% n= 15  █████ ✗
+        LH+MIXED │ WR= 69.2% n= 26  █████████████ ★
+        MIXED+HL │ WR= 60.4% n= 48  ████████████ ★
+        MIXED+LL │ WR= 36.1% n= 36  ███████ ✗
+      MIXED+MIXED │ WR= 45.9% n=135  █████████
+
+    σ_tide trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 50.0% n=132  ██████████
+           Mild LL │ WR= 43.1% n= 58  ████████ ← SINKING FLOOR
+             ~Same │ WR= 41.2% n= 17  ████████
+           Mild HL │ WR= 55.4% n= 56  ███████████ ← RISING FLOOR
+         Strong HL │ WR= 39.3% n= 61  ███████
+
+    σ_wave trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 25.8% n= 31  █████ ← SINKING FLOOR
+           Mild LL │ WR= 41.6% n= 89  ████████ ← SINKING FLOOR
+             ~Same │ WR= 46.5% n= 71  █████████
+           Mild HL │ WR= 53.2% n=109  ██████████
+         Strong HL │ WR= 70.8% n= 24  ██████████████ ← RISING FLOOR
+
+    COMBINED: σ_wave Structure + Fear Level:
+      BULL_STRUCTURE + Fear≥ANX              │ WR= 33.3% n=  9  ██████
+      COMPRESSION + Fear≥ANX                 │ WR= 50.0% n=  4  ██████████
+      REVERSAL_UP + Fear≥ANX                 │ WR= 63.2% n= 38  ████████████ ★ SLINGSHOT
+      REVERSAL_UP + Fear<NEU                 │ WR=100.0% n=  3  ████████████████████
+      BEAR_STRUCTURE + Fear≥ANX              │ WR= 26.7% n= 15  █████
+
+    ┌───────────────────────────────────────────────┐
+    │ regression_channel × QQQ (320 signals)
+    └───────────────────────────────────────────────┘
+
+    σ_TIDE Structure at Signal Time:
+            BULL_STRUCTURE │ WR=  0.0% n=  3   ✗
+            BEAR_STRUCTURE │ WR= 69.2% n= 39  █████████████ ★
+                 EXPANSION │ WR= 42.3% n= 26  ████████
+               REVERSAL_UP │ WR= 50.0% n= 20  ██████████
+             REVERSAL_DOWN │ WR= 45.1% n= 51  █████████
+                     MIXED │ WR= 54.4% n=180  ██████████
+
+    σ_WAVE Structure at Signal Time:
+            BULL_STRUCTURE │ WR= 62.5% n=  8  ████████████ ★
+            BEAR_STRUCTURE │ WR= 44.4% n=  9  ████████
+               COMPRESSION │ WR=100.0% n=  3  ████████████████████ ★
+                 EXPANSION │ WR= 60.0% n=  5  ████████████
+               REVERSAL_UP │ WR= 72.2% n= 36  ██████████████ ★
+             REVERSAL_DOWN │ WR= 59.3% n= 54  ███████████
+                     MIXED │ WR= 47.3% n=205  █████████
+
+    σ_TIDE Peak Structure (HH/LH) × Trough Structure (HL/LL):
+           HH+HL │ WR=  0.0% n=  3  
+           HH+LL │ WR= 42.3% n= 26  ████████
+        HH+MIXED │ WR= 37.5% n= 40  ███████
+           LH+LL │ WR= 69.2% n= 39  █████████████
+        LH+MIXED │ WR= 45.1% n= 51  █████████
+        MIXED+HL │ WR= 50.0% n= 20  ██████████
+        MIXED+LL │ WR= 57.5% n= 40  ███████████
+      MIXED+MIXED │ WR= 60.0% n=100  ████████████
+
+    σ_WAVE Peak Structure × Trough Structure:
+           HH+HL │ WR= 62.5% n=  8  ████████████ ★
+           HH+LL │ WR= 60.0% n=  5  ████████████
+        HH+MIXED │ WR= 61.4% n= 44  ████████████ ★
+           LH+HL │ WR=100.0% n=  3  ████████████████████ ★
+           LH+LL │ WR= 44.4% n=  9  ████████
+        LH+MIXED │ WR= 59.3% n= 54  ███████████
+        MIXED+HL │ WR= 72.2% n= 36  ██████████████ ★
+        MIXED+LL │ WR= 60.7% n= 28  ████████████ ★
+      MIXED+MIXED │ WR= 39.8% n=133  ███████ ✗
+
+    σ_tide trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 57.9% n=197  ███████████
+           Mild LL │ WR= 40.7% n= 27  ████████ ← SINKING FLOOR
+             ~Same │ WR= 66.7% n=  6  █████████████
+           Mild HL │ WR= 29.2% n= 24  █████
+         Strong HL │ WR= 51.5% n= 66  ██████████
+
+    σ_wave trough Δ (HL/LL magnitude):
+         Strong LL │ WR= 83.3% n= 12  ████████████████
+           Mild LL │ WR= 53.3% n=120  ██████████
+             ~Same │ WR= 47.5% n= 59  █████████
+           Mild HL │ WR= 52.1% n=119  ██████████
+         Strong HL │ WR= 60.0% n= 10  ████████████ ← RISING FLOOR
+
+    COMBINED: σ_wave Structure + Fear Level:
+      BULL_STRUCTURE + Fear≥ANX              │ WR= 62.5% n=  8  ████████████
+      COMPRESSION + Fear≥ANX                 │ WR=100.0% n=  3  ████████████████████ ★ SLINGSHOT
+      REVERSAL_UP + Fear≥ANX                 │ WR= 75.9% n= 29  ███████████████ ★ SLINGSHOT
+      REVERSAL_UP + Fear<NEU                 │ WR= 33.3% n=  3  ██████
+      BEAR_STRUCTURE + Fear≥ANX              │ WR= 42.9% n=  7  ████████
+
+================================================================================
+  SIGMA STRUCTURE ANALYSIS COMPLETE
+================================================================================
+  The structure of σ peaks/troughs reveals:
+    1. BULL_STRUCTURE (HH+HL): ascending floor = safe entry environment
+    2. BEAR_STRUCTURE (LH+LL): descending ceiling = dangerous entries
+    3. COMPRESSION (LH+HL): converging = breakout imminent
+    4. REVERSAL_UP (HL forming): floor ascending = slingshot tensing
+    5. The MAGNITUDE of trough deltas = how fast the floor rises/falls
+

@@ -127,7 +127,9 @@ class RegressionChannelIntelligence:
         # ══════════════════════════════════════════════════════
         dominant_cycle = detect_dominant_cycle(close)
         short_window = max(10, min(dominant_cycle, 60))
-        _, wave_slope, _ = linreg_channel(price_window, short_window)
+        reg_val_short, wave_slope, res_std_short = linreg_channel(price_window, short_window)
+        sig_wave = calc_sigma(current_price, reg_val_short, res_std_short)
+        result.sigma_wave = round(sig_wave, 2)
         result.wave_slope = round(wave_slope, 4)
 
         # Slope conjugation: the angle between the two lines

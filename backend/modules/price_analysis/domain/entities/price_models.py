@@ -87,6 +87,7 @@ class RCIntelligenceResult:
     regime: str = "FLAT"                # BULL, BEAR, FLAT (from tide_slope)
     sigma_position: float = 0.0         # Price position in σ units within channel
                                         # < -1.5 = support/entry, > +1.5 = resistance/trim
+    sigma_wave: float = 0.0             # Price position in short-regression (wave) σ units
     reg_value: float = 0.0              # Regression line value at current bar
     residual_std: float = 1.0           # σ band width (channel volatility)
 

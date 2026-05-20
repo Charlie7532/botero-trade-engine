@@ -1,0 +1,480 @@
+
+================================================================================
+  FORENSIC LAB v5 — WAVE SLOPE AUDIT + VOLUME REGRESSION + PULLBACK CLASSIFICATION
+================================================================================
+
+  Loading forensic labels...
+  → 2325 entry labels
+
+================================================================================
+  PART 1: WAVE SLOPE DEEP AUDIT + VOLUME REGRESSION + SLOPE VELOCITY
+================================================================================
+
+  ── WAVE SLOPE AUDIT: COST ──
+    Computing extended series (fixed/adaptive/volume/velocity)...
+
+    ┌───────────────────────────────────────────────────────┐
+    │ rsi_intelligence × COST (N=115)
+    └───────────────────────────────────────────────────────┘
+
+    1a. PARTIAL CORRELATION (controlling for sigma_wave):
+      wave_slope vs win (bivariate):   r=+0.0010  p=0.9919
+      sigma_wave vs win (bivariate):   r=-0.2045  p=0.0284
+      wave_slope → win | σ_wave:       r=-0.0171  p=0.8563
+      VERDICT: ❌ REDUNDANT
+
+    1b. FIXED (50-bar) vs ADAPTIVE (11-bar) wave slope:
+              Adaptive: t=+0.010  p=0.9919  μw=-0.4186  μl=-0.4194
+            Fixed (50): t=-2.246  p=0.0266  μw=-0.0535  μl=+0.0370
+
+    1c. ANGLE between Fixed and Adaptive (wave_slope_delta = fixed - adaptive):
+      Correlation with win: r=-0.1283  p=0.1719
+                 Fixed << Adapt (diverging) │ WR= 68.4% n= 38  █████████████
+                         ~Same (converging) │ WR= 56.4% n= 39  ███████████
+              Fixed >> Adapt (fixed faster) │ WR= 47.4% n= 38  █████████
+
+    2. VOLUME REGRESSION SLOPES:
+                   Volume Tide Slope (200-bar) │ r=-0.0079  p=0.9334  μw=-0.0391  μl=-0.0358
+                    Volume Wave Slope (50-bar) │ r=+0.0165  p=0.8608  μw=+0.4245  μl=+0.3760
+          Volume Slope Conjugation (wave-tide) │ r=+0.0181  p=0.8480  μw=+0.4637  μl=+0.4118
+
+      vol_tide terciles:
+          Declining vol │ WR= 63.2% n= 38  ████████████ ★
+             Stable vol │ WR= 61.5% n= 39  ████████████ ★
+             Rising vol │ WR= 47.4% n= 38  █████████
+
+      vol_wave terciles:
+          Declining vol │ WR= 63.2% n= 38  ████████████ ★
+             Stable vol │ WR= 53.8% n= 39  ██████████
+             Rising vol │ WR= 55.3% n= 38  ███████████
+
+    3. SLOPE VELOCITY (Δ wave_slope over 5 bars):
+      Correlation with win: r=-0.0761  p=0.4188
+               Decelerating (slope falling) │ WR= 60.5% n= 38  ████████████ ★
+                               Stable slope │ WR= 53.8% n= 39  ██████████
+                Accelerating (slope rising) │ WR= 57.9% n= 38  ███████████
+      Slope Accel (d²/dt²): r=-0.1356  p=0.1486
+
+    ┌───────────────────────────────────────────────────────┐
+    │ regression_channel × COST (N=195)
+    └───────────────────────────────────────────────────────┘
+
+    1a. PARTIAL CORRELATION (controlling for sigma_wave):
+      wave_slope vs win (bivariate):   r=-0.1190  p=0.0976
+      sigma_wave vs win (bivariate):   r=+0.0101  p=0.8889
+      wave_slope → win | σ_wave:       r=-0.1221  p=0.0891
+      VERDICT: ⚠ MARGINAL
+
+    1b. FIXED (50-bar) vs ADAPTIVE (11-bar) wave slope:
+              Adaptive: t=-1.665  p=0.0976  μw=-0.5000  μl=-0.3863
+            Fixed (50): t=-1.719  p=0.0872  μw=-0.1128  μl=-0.0787
+
+    1c. ANGLE between Fixed and Adaptive (wave_slope_delta = fixed - adaptive):
+      Correlation with win: r=+0.0806  p=0.2625
+                 Fixed << Adapt (diverging) │ WR= 46.2% n= 65  █████████
+                         ~Same (converging) │ WR= 53.8% n= 65  ██████████
+              Fixed >> Adapt (fixed faster) │ WR= 58.5% n= 65  ███████████
+
+    2. VOLUME REGRESSION SLOPES:
+                   Volume Tide Slope (200-bar) │ r=+0.0388  p=0.5899  μw=+0.0505  μl=+0.0341
+                    Volume Wave Slope (50-bar) │ r=+0.1406  p=0.0500  μw=+0.7544  μl=+0.4890
+          Volume Slope Conjugation (wave-tide) │ r=+0.1416  p=0.0484  μw=+0.7038  μl=+0.4550
+
+      vol_tide terciles:
+          Declining vol │ WR= 58.5% n= 65  ███████████
+             Stable vol │ WR= 32.3% n= 65  ██████ ✗
+             Rising vol │ WR= 67.7% n= 65  █████████████ ★
+
+      vol_wave terciles:
+          Declining vol │ WR= 38.5% n= 65  ███████ ✗
+             Stable vol │ WR= 60.0% n= 65  ████████████
+             Rising vol │ WR= 60.0% n= 65  ████████████
+
+    3. SLOPE VELOCITY (Δ wave_slope over 5 bars):
+      Correlation with win: r=+0.0153  p=0.8324
+               Decelerating (slope falling) │ WR= 56.9% n= 65  ███████████
+                               Stable slope │ WR= 43.1% n= 65  ████████
+                Accelerating (slope rising) │ WR= 58.5% n= 65  ███████████
+      Slope Accel (d²/dt²): r=+0.0302  p=0.6748
+
+  ── WAVE SLOPE AUDIT: SPY ──
+    Computing extended series (fixed/adaptive/volume/velocity)...
+
+    ┌───────────────────────────────────────────────────────┐
+    │ rsi_intelligence × SPY (N=332)
+    └───────────────────────────────────────────────────────┘
+
+    1a. PARTIAL CORRELATION (controlling for sigma_wave):
+      wave_slope vs win (bivariate):   r=-0.0191  p=0.7290
+      sigma_wave vs win (bivariate):   r=-0.0391  p=0.4778
+      wave_slope → win | σ_wave:       r=-0.0402  p=0.4655
+      VERDICT: ❌ REDUNDANT
+
+    1b. FIXED (50-bar) vs ADAPTIVE (8-bar) wave slope:
+              Adaptive: t=-0.347  p=0.7290  μw=-0.2636  μl=-0.2506
+            Fixed (50): t=-1.292  p=0.1973  μw=-0.0769  μl=-0.0528
+
+    1c. ANGLE between Fixed and Adaptive (wave_slope_delta = fixed - adaptive):
+      Correlation with win: r=-0.0160  p=0.7721
+                 Fixed << Adapt (diverging) │ WR= 55.5% n=110  ███████████
+                         ~Same (converging) │ WR= 52.7% n=112  ██████████
+              Fixed >> Adapt (fixed faster) │ WR= 53.6% n=110  ██████████
+
+    2. VOLUME REGRESSION SLOPES:
+                   Volume Tide Slope (200-bar) │ r=+0.0842  p=0.1260  μw=+0.1367  μl=+0.0858
+                    Volume Wave Slope (50-bar) │ r=+0.0959  p=0.0811  μw=+0.5032  μl=+0.3371
+          Volume Slope Conjugation (wave-tide) │ r=+0.0655  p=0.2340  μw=+0.3665  μl=+0.2513
+
+      vol_tide terciles:
+          Declining vol │ WR= 49.1% n=110  █████████
+             Stable vol │ WR= 56.2% n=112  ███████████
+             Rising vol │ WR= 56.4% n=110  ███████████
+
+      vol_wave terciles:
+          Declining vol │ WR= 51.8% n=110  ██████████
+             Stable vol │ WR= 44.6% n=112  ████████
+             Rising vol │ WR= 65.5% n=110  █████████████ ★
+
+    3. SLOPE VELOCITY (Δ wave_slope over 5 bars):
+      Correlation with win: r=+0.0189  p=0.7316
+               Decelerating (slope falling) │ WR= 57.3% n=110  ███████████
+                               Stable slope │ WR= 48.2% n=112  █████████
+                Accelerating (slope rising) │ WR= 56.4% n=110  ███████████
+      Slope Accel (d²/dt²): r=-0.0275  p=0.6180
+
+    ┌───────────────────────────────────────────────────────┐
+    │ regression_channel × SPY (N=344)
+    └───────────────────────────────────────────────────────┘
+
+    1a. PARTIAL CORRELATION (controlling for sigma_wave):
+      wave_slope vs win (bivariate):   r=+0.0729  p=0.1772
+      sigma_wave vs win (bivariate):   r=-0.1030  p=0.0563
+      wave_slope → win | σ_wave:       r=+0.0420  p=0.4371
+      VERDICT: ❌ REDUNDANT
+
+    1b. FIXED (50-bar) vs ADAPTIVE (8-bar) wave slope:
+              Adaptive: t=+1.352  p=0.1772  μw=-0.3076  μl=-0.3616
+            Fixed (50): t=-3.058  p=0.0024  μw=-0.0802  μl=-0.0429
+
+    1c. ANGLE between Fixed and Adaptive (wave_slope_delta = fixed - adaptive):
+      Correlation with win: r=-0.1242  p=0.0212
+                 Fixed << Adapt (diverging) │ WR= 57.9% n=114  ███████████
+                         ~Same (converging) │ WR= 58.6% n=116  ███████████
+              Fixed >> Adapt (fixed faster) │ WR= 44.7% n=114  ████████
+
+    2. VOLUME REGRESSION SLOPES:
+                   Volume Tide Slope (200-bar) │ r=+0.0366  p=0.4984  μw=+0.1649  μl=+0.1426
+                    Volume Wave Slope (50-bar) │ r=-0.1288  p=0.0168  μw=+1.1073  μl=+1.6034
+          Volume Slope Conjugation (wave-tide) │ r=-0.1374  p=0.0107  μw=+0.9424  μl=+1.4608
+
+      vol_tide terciles:
+          Declining vol │ WR= 56.1% n=114  ███████████
+             Stable vol │ WR= 50.9% n=116  ██████████
+             Rising vol │ WR= 54.4% n=114  ██████████
+
+      vol_wave terciles:
+          Declining vol │ WR= 54.4% n=114  ██████████
+             Stable vol │ WR= 54.3% n=116  ██████████
+             Rising vol │ WR= 52.6% n=114  ██████████
+
+    3. SLOPE VELOCITY (Δ wave_slope over 5 bars):
+      Correlation with win: r=+0.1555  p=0.0038
+               Decelerating (slope falling) │ WR= 53.5% n=114  ██████████
+                               Stable slope │ WR= 41.4% n=116  ████████
+                Accelerating (slope rising) │ WR= 66.7% n=114  █████████████ ★
+      Slope Accel (d²/dt²): r=+0.1011  p=0.0611
+
+================================================================================
+  PART 2: TREND-AWARE PULLBACK/ADVANCE CLASSIFICATION
+================================================================================
+
+  ── PULLBACK/ADVANCE CLASSIFICATION: COST ──
+
+    ┌───────────────────────────────────────────────────────┐
+    │ rsi_intelligence × COST (N=115)
+    └───────────────────────────────────────────────────────┘
+
+    🐂 BULL PULLBACKS (tide_slope > 0.01, N=104):
+      Pullback (wave<0):    WR= 65.7% n= 70
+      No pullback (wave≥0): WR= 35.3% n= 34
+
+      Pullback Depth (σ_wave during bull):
+                Standard pullback (σ -2→-1) │ WR= 68.2% n= 22  █████████████ ★ BUYABLE
+               Shallow pullback (σ -1→-0.5) │ WR= 56.2% n= 16  ███████████
+                       Minor dip (σ -0.5→0) │ WR= 66.7% n= 12  █████████████ ★ BUYABLE
+
+      Slingshot Formation (bull pullback + fear/sigma conditions):
+        Pullback + Fear≥ANX                           │ WR= 69.5% n= 59  █████████████ ★ SLINGSHOT
+        Pullback + Fear≥ANX + σ<-1                    │ WR= 82.4% n= 17  ████████████████ ★ SLINGSHOT
+        Pullback + Conj<-0.02 (deep angle)            │ WR= 65.7% n= 70  █████████████ ★ SLINGSHOT
+        Pullback + KV↓ (Kalman bearish)               │ WR= 63.8% n= 47  ████████████
+        Pullback + KV↑ (Kalman turning)               │ WR= 69.6% n= 23  █████████████ ★ SLINGSHOT
+        Pullback + Fear + KV↑ (SLINGSHOT)             │ WR= 78.9% n= 19  ███████████████ ★ SLINGSHOT
+
+    ┌───────────────────────────────────────────────────────┐
+    │ regression_channel × COST (N=195)
+    └───────────────────────────────────────────────────────┘
+
+    🐂 BULL PULLBACKS (tide_slope > 0.01, N=190):
+      Pullback (wave<0):    WR= 55.4% n=175
+      No pullback (wave≥0): WR= 40.0% n= 15
+
+      Pullback Depth (σ_wave during bull):
+                Standard pullback (σ -2→-1) │ WR= 60.6% n= 33  ████████████ ★ BUYABLE
+               Shallow pullback (σ -1→-0.5) │ WR= 60.5% n= 38  ████████████ ★ BUYABLE
+                       Minor dip (σ -0.5→0) │ WR= 42.3% n= 26  ████████
+
+      Slingshot Formation (bull pullback + fear/sigma conditions):
+        Pullback + Fear≥ANX                           │ WR= 56.2% n=169  ███████████
+        Pullback + Fear≥ANX + σ<-1                    │ WR= 63.3% n= 30  ████████████
+        Pullback + Conj<-0.02 (deep angle)            │ WR= 55.4% n=175  ███████████
+        Pullback + KV↓ (Kalman bearish)               │ WR= 56.8% n=111  ███████████
+        Pullback + KV↑ (Kalman turning)               │ WR= 53.1% n= 64  ██████████
+        Pullback + Fear + KV↑ (SLINGSHOT)             │ WR= 54.1% n= 61  ██████████
+
+  ── PULLBACK/ADVANCE CLASSIFICATION: SPY ──
+
+    ┌───────────────────────────────────────────────────────┐
+    │ rsi_intelligence × SPY (N=332)
+    └───────────────────────────────────────────────────────┘
+
+    🐂 BULL PULLBACKS (tide_slope > 0.01, N=213):
+      Pullback (wave<0):    WR= 57.8% n=180
+      No pullback (wave≥0): WR= 51.5% n= 33
+
+      Pullback Depth (σ_wave during bull):
+                       Deep pullback (σ<-2) │ WR= 75.0% n=  4  ███████████████ ★ BUYABLE
+                Standard pullback (σ -2→-1) │ WR= 63.2% n= 19  ████████████ ★ BUYABLE
+               Shallow pullback (σ -1→-0.5) │ WR= 70.6% n= 17  ██████████████ ★ BUYABLE
+                       Minor dip (σ -0.5→0) │ WR= 58.3% n= 36  ███████████
+
+      Slingshot Formation (bull pullback + fear/sigma conditions):
+        Pullback + Fear≥ANX                           │ WR= 58.8% n=177  ███████████
+        Pullback + Fear≥ANX + σ<-1                    │ WR= 65.2% n= 23  █████████████ ★ SLINGSHOT
+        Pullback + Conj<-0.02 (deep angle)            │ WR= 57.8% n=180  ███████████
+        Pullback + KV↓ (Kalman bearish)               │ WR= 57.3% n= 89  ███████████
+        Pullback + KV↑ (Kalman turning)               │ WR= 58.2% n= 91  ███████████
+        Pullback + Fear + KV↑ (SLINGSHOT)             │ WR= 59.6% n= 89  ███████████
+
+    🐻 BEAR MARKET ENTRIES (tide_slope < -0.01, N=86):
+      Overall WR in bear: 53.5%
+
+      Reversal Confidence (bear → potential reversal):
+        Wave turning up (counter-trend)               │ WR= 68.4% n= 19  █████████████ ★ REVERSAL
+        Wave up + deep σ                              │ WR= 58.3% n= 12  ███████████
+        Wave up + KV↑ (confirmed turn)                │ WR= 61.5% n= 13  ████████████ ★ REVERSAL
+        Slope conjugation positive (wave > tide)      │ WR= 63.6% n= 22  ████████████ ★ REVERSAL
+        Conj+ + Fear≥FEAR (slingshot)                 │ WR= 50.0% n=  4  ██████████
+
+    ➡ FLAT TREND (|tide_slope| ≤ 0.01, N=33):
+      Overall WR: 36.4%
+        σ<-1.5 (statistical extreme)                  │ WR= 28.6% n=  7  █████
+        Wave turning + σ<-1                           │ WR= 33.3% n=  6  ██████
+
+    ┌───────────────────────────────────────────────────────┐
+    │ regression_channel × SPY (N=344)
+    └───────────────────────────────────────────────────────┘
+
+    🐂 BULL PULLBACKS (tide_slope > 0.01, N=316):
+      Pullback (wave<0):    WR= 54.5% n=290
+      No pullback (wave≥0): WR= 65.4% n= 26
+
+      Pullback Depth (σ_wave during bull):
+               Shallow pullback (σ -1→-0.5) │ WR= 60.0% n= 25  ████████████
+                       Minor dip (σ -0.5→0) │ WR= 63.4% n= 41  ████████████ ★ BUYABLE
+
+      Slingshot Formation (bull pullback + fear/sigma conditions):
+        Pullback + Fear≥ANX                           │ WR= 54.0% n=285  ██████████
+        Pullback + Conj<-0.02 (deep angle)            │ WR= 54.5% n=290  ██████████
+        Pullback + KV↓ (Kalman bearish)               │ WR= 58.8% n=177  ███████████
+        Pullback + KV↑ (Kalman turning)               │ WR= 47.8% n=113  █████████
+        Pullback + Fear + KV↑ (SLINGSHOT)             │ WR= 47.3% n=112  █████████
+
+    ➡ FLAT TREND (|tide_slope| ≤ 0.01, N=27):
+      Overall WR: 33.3%
+
+  ── PULLBACK/ADVANCE CLASSIFICATION: AAPL ──
+
+    ┌───────────────────────────────────────────────────────┐
+    │ rsi_intelligence × AAPL (N=326)
+    └───────────────────────────────────────────────────────┘
+
+    🐂 BULL PULLBACKS (tide_slope > 0.01, N=171):
+      Pullback (wave<0):    WR= 45.5% n=123
+      No pullback (wave≥0): WR= 50.0% n= 48
+
+      Pullback Depth (σ_wave during bull):
+                       Deep pullback (σ<-2) │ WR= 25.0% n=  4  █████ ✗ TRAP
+                Standard pullback (σ -2→-1) │ WR= 70.6% n= 17  ██████████████ ★ BUYABLE
+               Shallow pullback (σ -1→-0.5) │ WR= 45.0% n= 40  █████████
+                       Minor dip (σ -0.5→0) │ WR= 28.6% n= 35  █████ ✗ TRAP
+
+      Slingshot Formation (bull pullback + fear/sigma conditions):
+        Pullback + Fear≥ANX                           │ WR= 45.3% n=117  █████████
+        Pullback + Fear≥ANX + σ<-1                    │ WR= 60.0% n= 20  ████████████
+        Pullback + Conj<-0.02 (deep angle)            │ WR= 45.5% n=123  █████████
+        Pullback + KV↓ (Kalman bearish)               │ WR= 38.3% n= 60  ███████
+        Pullback + KV↑ (Kalman turning)               │ WR= 52.4% n= 63  ██████████
+        Pullback + Fear + KV↑ (SLINGSHOT)             │ WR= 52.5% n= 61  ██████████
+
+    🐻 BEAR MARKET ENTRIES (tide_slope < -0.01, N=130):
+      Overall WR in bear: 33.8%
+
+      Reversal Confidence (bear → potential reversal):
+        Wave turning up (counter-trend)               │ WR= 33.3% n= 18  ██████ ✗ TRAP
+        Wave up + deep σ                              │ WR= 55.6% n=  9  ███████████
+        Wave up + Fear≥FEAR                           │ WR= 25.0% n=  4  █████ ✗ TRAP
+        Wave up + KV↑ (confirmed turn)                │ WR= 38.5% n= 13  ███████ ✗ TRAP
+        Wave still falling but σ<-2 (EXTREME)         │ WR= 80.0% n=  5  ████████████████ ★ REVERSAL
+        Slope conjugation positive (wave > tide)      │ WR= 28.9% n= 45  █████ ✗ TRAP
+        Conj+ + Fear≥FEAR (slingshot)                 │ WR= 25.8% n= 31  █████ ✗ TRAP
+
+    ➡ FLAT TREND (|tide_slope| ≤ 0.01, N=25):
+      Overall WR: 80.0%
+        σ<-1.5 (statistical extreme)                  │ WR=100.0% n=  3  ████████████████████ ★
+
+    ┌───────────────────────────────────────────────────────┐
+    │ regression_channel × AAPL (N=369)
+    └───────────────────────────────────────────────────────┘
+
+    🐂 BULL PULLBACKS (tide_slope > 0.01, N=360):
+      Pullback (wave<0):    WR= 49.7% n=332
+      No pullback (wave≥0): WR= 42.9% n= 28
+
+      Pullback Depth (σ_wave during bull):
+                       Deep pullback (σ<-2) │ WR= 50.0% n=  4  ██████████
+                Standard pullback (σ -2→-1) │ WR= 56.4% n= 55  ███████████
+               Shallow pullback (σ -1→-0.5) │ WR= 48.9% n= 47  █████████
+                       Minor dip (σ -0.5→0) │ WR= 42.6% n= 68  ████████
+
+      Slingshot Formation (bull pullback + fear/sigma conditions):
+        Pullback + Fear≥ANX                           │ WR= 50.0% n=328  ██████████
+        Pullback + Fear≥ANX + σ<-1                    │ WR= 56.1% n= 57  ███████████
+        Pullback + Conj<-0.02 (deep angle)            │ WR= 49.7% n=332  █████████
+        Pullback + KV↓ (Kalman bearish)               │ WR= 49.1% n=216  █████████
+        Pullback + KV↑ (Kalman turning)               │ WR= 50.9% n=116  ██████████
+        Pullback + Fear + KV↑ (SLINGSHOT)             │ WR= 51.8% n=114  ██████████
+
+  ── PULLBACK/ADVANCE CLASSIFICATION: QQQ ──
+
+    ┌───────────────────────────────────────────────────────┐
+    │ rsi_intelligence × QQQ (N=324)
+    └───────────────────────────────────────────────────────┘
+
+    🐂 BULL PULLBACKS (tide_slope > 0.01, N=162):
+      Pullback (wave<0):    WR= 55.3% n=141
+      No pullback (wave≥0): WR= 42.9% n= 21
+
+      Pullback Depth (σ_wave during bull):
+                Standard pullback (σ -2→-1) │ WR= 71.4% n=  7  ██████████████ ★ BUYABLE
+               Shallow pullback (σ -1→-0.5) │ WR= 77.8% n= 18  ███████████████ ★ BUYABLE
+                       Minor dip (σ -0.5→0) │ WR= 41.9% n= 31  ████████
+
+      Slingshot Formation (bull pullback + fear/sigma conditions):
+        Pullback + Fear≥ANX                           │ WR= 56.2% n=137  ███████████
+        Pullback + Fear≥ANX + σ<-1                    │ WR= 83.3% n=  6  ████████████████ ★ SLINGSHOT
+        Pullback + Conj<-0.02 (deep angle)            │ WR= 55.3% n=141  ███████████
+        Pullback + KV↓ (Kalman bearish)               │ WR= 55.7% n= 79  ███████████
+        Pullback + KV↑ (Kalman turning)               │ WR= 54.8% n= 62  ██████████
+        Pullback + Fear + KV↑ (SLINGSHOT)             │ WR= 56.9% n= 58  ███████████
+
+    🐻 BEAR MARKET ENTRIES (tide_slope < -0.01, N=135):
+      Overall WR in bear: 40.7%
+
+      Reversal Confidence (bear → potential reversal):
+        Wave turning up (counter-trend)               │ WR= 45.5% n= 22  █████████
+        Wave up + deep σ                              │ WR= 33.3% n= 12  ██████ ✗ TRAP
+        Wave up + Fear≥FEAR                           │ WR=100.0% n=  4  ████████████████████ ★ REVERSAL
+        Wave up + KV↑ (confirmed turn)                │ WR= 46.7% n= 15  █████████
+        Slope conjugation positive (wave > tide)      │ WR= 51.5% n= 33  ██████████
+        Conj+ + Fear≥FEAR (slingshot)                 │ WR= 73.3% n= 15  ██████████████ ★ REVERSAL
+
+    ➡ FLAT TREND (|tide_slope| ≤ 0.01, N=27):
+      Overall WR: 40.7%
+        σ<-1.5 (statistical extreme)                  │ WR= 33.3% n=  6  ██████
+        Wave turning + σ<-1                           │ WR= 66.7% n=  6  █████████████ ★
+
+    ┌───────────────────────────────────────────────────────┐
+    │ regression_channel × QQQ (N=320)
+    └───────────────────────────────────────────────────────┘
+
+    🐂 BULL PULLBACKS (tide_slope > 0.01, N=310):
+      Pullback (wave<0):    WR= 52.5% n=284
+      No pullback (wave≥0): WR= 50.0% n= 26
+
+      Pullback Depth (σ_wave during bull):
+                Standard pullback (σ -2→-1) │ WR= 75.0% n=  4  ███████████████ ★ BUYABLE
+               Shallow pullback (σ -1→-0.5) │ WR= 69.2% n= 26  █████████████ ★ BUYABLE
+                       Minor dip (σ -0.5→0) │ WR= 35.5% n= 31  ███████ ✗ TRAP
+
+      Slingshot Formation (bull pullback + fear/sigma conditions):
+        Pullback + Fear≥ANX                           │ WR= 52.9% n=280  ██████████
+        Pullback + Fear≥ANX + σ<-1                    │ WR= 75.0% n=  4  ███████████████ ★ SLINGSHOT
+        Pullback + Conj<-0.02 (deep angle)            │ WR= 52.5% n=284  ██████████
+        Pullback + KV↓ (Kalman bearish)               │ WR= 53.7% n=175  ██████████
+        Pullback + KV↑ (Kalman turning)               │ WR= 50.5% n=109  ██████████
+        Pullback + Fear + KV↑ (SLINGSHOT)             │ WR= 51.4% n=107  ██████████
+
+    ➡ FLAT TREND (|tide_slope| ≤ 0.01, N=10):
+      Overall WR: 80.0%
+
+================================================================================
+  PART 3: INCREMENTAL VALUE TEST — Do new features improve the model?
+================================================================================
+
+  ── INCREMENTAL VALUE TEST: COST ──
+    Computing extended series...
+
+    Base model (7 features): accuracy = 0.619
+    + Volume Tide Slope (200-bar vol regression)    acc=0.600  Δ=-0.0194  ❌ no value
+    + Volume Wave Slope (50-bar vol regression)     acc=0.635  Δ=+0.0161  ★ ADD
+    + Slope Velocity (Δwave_slope/5 bars)           acc=0.610  Δ=-0.0097  ❌ no value
+    + Wave Angle (fixed - adaptive slope)           acc=0.590  Δ=-0.0290  ❌ no value
+    + ALL NEW COMBINED                                  acc=0.594  Δ=-0.0258  marginal
+
+    Feature Importances (combined model):
+      vol_tide_slope                 imp=0.1964  ███████████████████
+      tide_slope                     imp=0.1505  ███████████████
+      slope_conjugation              imp=0.1452  ██████████████
+      vol_wave_slope                 imp=0.1127  ███████████
+      rvol                           imp=0.0976  █████████
+      slope_velocity                 imp=0.0656  ██████
+      wave_angle                     imp=0.0610  ██████
+      kalman_velocity                imp=0.0557  █████
+      tide_accel                     imp=0.0497  ████
+      sigma_wave                     imp=0.0383  ███
+      vol_up_down_ratio              imp=0.0274  ██
+
+  ── INCREMENTAL VALUE TEST: SPY ──
+    Computing extended series...
+
+    Base model (7 features): accuracy = 0.553
+    + Volume Tide Slope (200-bar vol regression)    acc=0.544  Δ=-0.0089  ❌ no value
+    + Volume Wave Slope (50-bar vol regression)     acc=0.547  Δ=-0.0060  ❌ no value
+    + Slope Velocity (Δwave_slope/5 bars)           acc=0.569  Δ=+0.0162  ★ ADD
+    + Wave Angle (fixed - adaptive slope)           acc=0.547  Δ=-0.0059  ❌ no value
+    + ALL NEW COMBINED                                  acc=0.530  Δ=-0.0237  marginal
+
+    Feature Importances (combined model):
+      tide_slope                     imp=0.1762  █████████████████
+      vol_wave_slope                 imp=0.1577  ███████████████
+      vol_tide_slope                 imp=0.1263  ████████████
+      slope_velocity                 imp=0.1060  ██████████
+      tide_accel                     imp=0.0953  █████████
+      rvol                           imp=0.0648  ██████
+      sigma_wave                     imp=0.0603  ██████
+      slope_conjugation              imp=0.0577  █████
+      wave_angle                     imp=0.0531  █████
+      kalman_velocity                imp=0.0515  █████
+      vol_up_down_ratio              imp=0.0511  █████
+
+================================================================================
+  v5 ANALYSIS COMPLETE
+================================================================================
+  Key questions answered:
+    1. Is wave_slope redundant with sigma_wave? (Partial correlation)
+    2. Does volume regression carry signal? (Volume tide/wave slopes)
+    3. Does slope velocity add value? (d(wave_slope)/dt)
+    4. Fixed vs adaptive angle? (Constant - adaptive wave slope)
+    5. Pullback buyability in bull/bear/flat trends
+

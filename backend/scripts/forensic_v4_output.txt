@@ -1,0 +1,640 @@
+
+================================================================================
+  FORENSIC LAB v4 — DATA SCIENCE + KALMAN + ADAPTIVE DELTAS
+================================================================================
+
+  Loading forensic labels...
+  → 2325 entry labels
+
+================================================================================
+  PART 1: ADAPTIVE SIGMA DELTAS — Fixed vs Normalized thresholds
+================================================================================
+
+  ── ADAPTIVE SIGMA DELTAS: COST ──
+    Computing σ + residual_std series...
+
+    Discriminative Power Comparison (t-test win vs loss):
+                      Raw Δ (absolute σ units) │ t=+0.724  p=0.4693  d=+0.083
+                 Normalized Δ (÷ residual_std) │ t=+2.969  p=0.0032***  d=+0.339
+        Vol-Adjusted Δ (× channel_width ÷ ATR) │ t=+0.747  p=0.4554  d=+0.085
+
+    WR by Raw Δ terciles:
+          Bottom 33% (-2.06 → -0.26) │ WR= 51.0% n=100  ██████████
+          Middle 33% (-0.26 → +0.02) │ WR= 60.2% n=108  ████████████
+             Top 33% (+0.02 → +1.92) │ WR= 52.0% n=102  ██████████
+
+    WR by Normalized Δ terciles:
+          Bottom 33% (-2.18 → -0.13) │ WR= 44.3% n= 97  ████████
+          Middle 33% (-0.13 → +0.02) │ WR= 69.6% n=102  █████████████
+             Top 33% (+0.02 → +1.91) │ WR= 49.5% n=111  █████████
+
+  ── ADAPTIVE SIGMA DELTAS: SPY ──
+    Computing σ + residual_std series...
+
+    Discriminative Power Comparison (t-test win vs loss):
+                      Raw Δ (absolute σ units) │ t=+0.606  p=0.5446  d=+0.047
+                 Normalized Δ (÷ residual_std) │ t=+0.073  p=0.9419  d=+0.006
+        Vol-Adjusted Δ (× channel_width ÷ ATR) │ t=+1.296  p=0.1955  d=+0.100
+
+    WR by Raw Δ terciles:
+          Bottom 33% (-2.38 → -0.18) │ WR= 51.4% n=222  ██████████
+          Middle 33% (-0.18 → +0.14) │ WR= 55.0% n=231  ██████████
+             Top 33% (+0.14 → +1.85) │ WR= 55.2% n=223  ███████████
+
+    WR by Normalized Δ terciles:
+          Bottom 33% (-2.85 → -0.12) │ WR= 50.5% n=216  ██████████
+          Middle 33% (-0.12 → +0.08) │ WR= 53.2% n=237  ██████████
+             Top 33% (+0.08 → +3.21) │ WR= 57.8% n=223  ███████████
+
+================================================================================
+  PART 2: KALMAN × SIGMA STRUCTURE INTERACTION
+================================================================================
+
+  ── KALMAN × SIGMA STRUCTURE: COST ──
+
+    rsi_intelligence × COST (N=115):
+      Kalman Velocity Zone:
+            KV_LOW │ WR= 55.2% n= 29  ███████████
+            KV_MID │ WR= 56.8% n= 44  ███████████
+           KV_HIGH │ WR= 59.5% n= 42  ███████████
+      Kalman × Wave Slope Alignment:
+            ALIGNED_UP │ WR= 42.1% n= 19  ████████
+             DIVERGENT │ WR= 55.6% n= 45  ███████████ ← DIVERGENCE
+          ALIGNED_DOWN │ WR= 64.7% n= 51  ████████████
+      Kalman + σ_wave Combined:
+        σ<-1 + KV_HIGH         │ WR= 58.8% n= 17  ███████████
+        σ>0 + KV_HIGH          │ WR= 80.0% n=  5  ████████████████ ★
+        σ<-1 + KV_LOW          │ WR= 56.2% n= 16  ███████████
+        σ[-1,0] + KV_MID       │ WR= 62.5% n=  8  ████████████ ★
+      Kalman + Fear:
+        KV_LOW+Fear≥ANX   │ WR= 65.0% n= 20  █████████████ ★
+        KV_LOW+Fear<NEU   │ WR= 20.0% n=  5  ████
+        KV_MID+Fear≥ANX   │ WR= 69.2% n= 26  █████████████ ★
+        KV_MID+Fear<NEU   │ WR= 12.5% n=  8  ██
+        KV_HIGH+Fear≥ANX   │ WR= 75.0% n= 20  ███████████████ ★
+        KV_HIGH+Fear<NEU   │ WR= 42.9% n= 14  ████████
+
+    regression_channel × COST (N=195):
+      Kalman Velocity Zone:
+            KV_LOW │ WR= 56.2% n= 73  ███████████
+            KV_MID │ WR= 50.8% n= 63  ██████████
+           KV_HIGH │ WR= 50.8% n= 59  ██████████
+      Kalman × Wave Slope Alignment:
+            ALIGNED_UP │ WR= 50.0% n=  6  ██████████
+             DIVERGENT │ WR= 48.1% n= 77  █████████
+          ALIGNED_DOWN │ WR= 56.2% n=112  ███████████
+      Kalman + σ_wave Combined:
+        σ<-1 + KV_HIGH         │ WR= 38.5% n= 13  ███████
+        σ>0 + KV_HIGH          │ WR= 42.9% n= 21  ████████
+        σ<-1 + KV_LOW          │ WR= 64.7% n= 17  ████████████ ★
+        σ[-1,0] + KV_MID       │ WR= 53.3% n= 15  ██████████
+      Kalman + Fear:
+        KV_LOW+Fear≥ANX   │ WR= 59.1% n= 66  ███████████
+        KV_LOW+Fear<NEU   │ WR= 66.7% n=  3  █████████████ ★
+        KV_MID+Fear≥ANX   │ WR= 55.6% n= 54  ███████████
+        KV_MID+Fear<NEU   │ WR= 33.3% n=  3  ██████
+        KV_HIGH+Fear≥ANX   │ WR= 53.1% n= 49  ██████████
+        KV_HIGH+Fear<NEU   │ WR= 50.0% n=  4  ██████████
+
+  ── KALMAN × SIGMA STRUCTURE: SPY ──
+
+    rsi_intelligence × SPY (N=332):
+      Kalman Velocity Zone:
+            KV_LOW │ WR= 52.6% n= 78  ██████████
+            KV_MID │ WR= 55.1% n=118  ███████████
+           KV_HIGH │ WR= 53.7% n=136  ██████████
+      Kalman × Wave Slope Alignment:
+            ALIGNED_UP │ WR= 53.8% n= 39  ██████████
+             DIVERGENT │ WR= 54.0% n=174  ██████████
+          ALIGNED_DOWN │ WR= 53.8% n=119  ██████████
+      Kalman + σ_wave Combined:
+        σ<-1 + KV_HIGH         │ WR= 55.6% n= 63  ███████████
+        σ>0 + KV_HIGH          │ WR= 48.3% n= 29  █████████
+        σ<-1 + KV_LOW          │ WR= 28.6% n=  7  █████
+        σ[-1,0] + KV_MID       │ WR= 51.1% n= 47  ██████████
+      Kalman + Fear:
+        KV_LOW+Fear≥ANX   │ WR= 54.7% n= 64  ██████████
+        KV_LOW+Fear<NEU   │ WR= 33.3% n=  3  ██████
+        KV_MID+Fear≥ANX   │ WR= 55.1% n= 89  ███████████
+        KV_MID+Fear<NEU   │ WR= 42.9% n=  7  ████████
+        KV_HIGH+Fear≥ANX   │ WR= 58.7% n= 92  ███████████
+        KV_HIGH+Fear<NEU   │ WR= 47.1% n= 17  █████████
+
+    regression_channel × SPY (N=344):
+      Kalman Velocity Zone:
+            KV_LOW │ WR= 55.2% n=145  ███████████
+            KV_MID │ WR= 52.7% n=112  ██████████
+           KV_HIGH │ WR= 52.9% n= 87  ██████████
+      Kalman × Wave Slope Alignment:
+            ALIGNED_UP │ WR= 66.7% n= 12  █████████████ ★ CONFIRMATION
+             DIVERGENT │ WR= 47.4% n=137  █████████
+          ALIGNED_DOWN │ WR= 57.4% n=195  ███████████
+      Kalman + σ_wave Combined:
+        σ>0 + KV_HIGH          │ WR= 45.7% n= 46  █████████
+        σ[-1,0] + KV_MID       │ WR= 67.7% n= 31  █████████████ ★
+      Kalman + Fear:
+        KV_LOW+Fear≥ANX   │ WR= 54.2% n=120  ██████████
+        KV_LOW+Fear<NEU   │ WR= 70.0% n= 10  ██████████████ ★
+        KV_MID+Fear≥ANX   │ WR= 54.0% n= 87  ██████████
+        KV_MID+Fear<NEU   │ WR= 50.0% n=  6  ██████████
+        KV_HIGH+Fear≥ANX   │ WR= 53.8% n= 78  ██████████
+        KV_HIGH+Fear<NEU   │ WR= 66.7% n=  6  █████████████ ★
+
+  ── KALMAN × SIGMA STRUCTURE: AAPL ──
+
+    rsi_intelligence × AAPL (N=326):
+      Kalman Velocity Zone:
+            KV_LOW │ WR= 42.4% n= 92  ████████
+            KV_MID │ WR= 45.6% n=103  █████████
+           KV_HIGH │ WR= 44.3% n=131  ████████
+      Kalman × Wave Slope Alignment:
+            ALIGNED_UP │ WR= 47.1% n= 34  █████████
+             DIVERGENT │ WR= 44.3% n=158  ████████
+          ALIGNED_DOWN │ WR= 43.3% n=134  ████████
+      Kalman + σ_wave Combined:
+        σ<-1 + KV_HIGH         │ WR= 51.7% n= 58  ██████████
+        σ>0 + KV_HIGH          │ WR= 48.1% n= 27  █████████
+        σ<-1 + KV_LOW          │ WR= 56.5% n= 23  ███████████
+        σ[-1,0] + KV_MID       │ WR= 38.3% n= 47  ███████
+      Kalman + Fear:
+        KV_LOW+Fear≥ANX   │ WR= 33.3% n= 63  ██████
+        KV_LOW+Fear<NEU   │ WR= 63.6% n= 11  ████████████ ★
+        KV_MID+Fear≥ANX   │ WR= 43.2% n= 74  ████████
+        KV_MID+Fear<NEU   │ WR= 35.3% n= 17  ███████
+        KV_HIGH+Fear≥ANX   │ WR= 40.6% n= 96  ████████
+        KV_HIGH+Fear<NEU   │ WR= 53.8% n= 13  ██████████
+
+    regression_channel × AAPL (N=369):
+      Kalman Velocity Zone:
+            KV_LOW │ WR= 47.1% n=138  █████████
+            KV_MID │ WR= 52.3% n=132  ██████████
+           KV_HIGH │ WR= 48.5% n= 99  █████████
+      Kalman × Wave Slope Alignment:
+            ALIGNED_UP │ WR= 23.1% n= 13  ████
+             DIVERGENT │ WR= 51.9% n=131  ██████████
+          ALIGNED_DOWN │ WR= 49.3% n=225  █████████
+      Kalman + σ_wave Combined:
+        σ<-1 + KV_HIGH         │ WR= 53.3% n= 30  ██████████
+        σ>0 + KV_HIGH          │ WR= 51.4% n= 35  ██████████
+        σ<-1 + KV_LOW          │ WR= 52.2% n= 23  ██████████
+        σ[-1,0] + KV_MID       │ WR= 48.9% n= 47  █████████
+      Kalman + Fear:
+        KV_LOW+Fear≥ANX   │ WR= 46.5% n=127  █████████
+        KV_LOW+Fear<NEU   │ WR= 60.0% n=  5  ████████████
+        KV_MID+Fear≥ANX   │ WR= 51.8% n=114  ██████████
+        KV_MID+Fear<NEU   │ WR= 70.0% n= 10  ██████████████ ★
+        KV_HIGH+Fear≥ANX   │ WR= 52.9% n= 87  ██████████
+        KV_HIGH+Fear<NEU   │ WR= 20.0% n= 10  ████
+
+  ── KALMAN × SIGMA STRUCTURE: QQQ ──
+
+    rsi_intelligence × QQQ (N=324):
+      Kalman Velocity Zone:
+            KV_LOW │ WR= 46.3% n= 82  █████████
+            KV_MID │ WR= 53.7% n=121  ██████████
+           KV_HIGH │ WR= 41.3% n=121  ████████
+      Kalman × Wave Slope Alignment:
+            ALIGNED_UP │ WR= 47.1% n= 34  █████████
+             DIVERGENT │ WR= 44.1% n=161  ████████
+          ALIGNED_DOWN │ WR= 51.2% n=129  ██████████
+      Kalman + σ_wave Combined:
+        σ<-1 + KV_HIGH         │ WR= 40.5% n= 42  ████████
+        σ>0 + KV_HIGH          │ WR= 31.0% n= 29  ██████
+        σ<-1 + KV_LOW          │ WR= 25.0% n=  4  █████
+        σ[-1,0] + KV_MID       │ WR= 53.3% n= 45  ██████████
+      Kalman + Fear:
+        KV_LOW+Fear≥ANX   │ WR= 48.6% n= 74  █████████
+        KV_MID+Fear≥ANX   │ WR= 55.8% n= 95  ███████████
+        KV_MID+Fear<NEU   │ WR= 50.0% n=  6  ██████████
+        KV_HIGH+Fear≥ANX   │ WR= 43.5% n= 85  ████████
+        KV_HIGH+Fear<NEU   │ WR= 54.5% n= 11  ██████████
+
+    regression_channel × QQQ (N=320):
+      Kalman Velocity Zone:
+            KV_LOW │ WR= 55.0% n=131  ██████████
+            KV_MID │ WR= 47.4% n= 97  █████████
+           KV_HIGH │ WR= 56.5% n= 92  ███████████
+      Kalman × Wave Slope Alignment:
+            ALIGNED_UP │ WR= 72.7% n= 11  ██████████████ ★ CONFIRMATION
+             DIVERGENT │ WR= 49.2% n=128  █████████
+          ALIGNED_DOWN │ WR= 54.7% n=181  ██████████
+      Kalman + σ_wave Combined:
+        σ<-1 + KV_HIGH         │ WR= 80.0% n=  5  ████████████████ ★
+        σ>0 + KV_HIGH          │ WR= 53.3% n= 45  ██████████
+        σ[-1,0] + KV_MID       │ WR= 55.0% n= 20  ███████████
+      Kalman + Fear:
+        KV_LOW+Fear≥ANX   │ WR= 56.3% n=119  ███████████
+        KV_LOW+Fear<NEU   │ WR= 16.7% n=  6  ███
+        KV_MID+Fear≥ANX   │ WR= 44.3% n= 79  ████████
+        KV_MID+Fear<NEU   │ WR= 60.0% n= 10  ████████████
+        KV_HIGH+Fear≥ANX   │ WR= 56.1% n= 82  ███████████
+        KV_HIGH+Fear<NEU   │ WR= 50.0% n=  6  ██████████
+
+================================================================================
+  PART 3: DATA SCIENCE LAB — Correlation, MI, PCA, Interactions
+================================================================================
+
+  ── DATA SCIENCE LAB: rsi_intelligence × COST (N=115) ──
+
+    Pearson Correlation with Win (point-biserial r):
+      fear_level                r=+0.2901  p=0.0017 ***  ███████████
+      tide_slope                r=-0.2349  p=0.0115 **  █████████
+      rsi_value                 r=-0.1891  p=0.0430 **  ███████
+      wave_slope                r=-0.1580  p=0.0917 *  ██████
+      slope_conjugation         r=-0.0850  p=0.3664   ███
+      kalman_velocity           r=+0.0554  p=0.5568   ██
+      tide_accel                r=-0.0462  p=0.6239   
+      sigma_wave                r=+0.0368  p=0.6964   
+      sigma_tide                r=+0.0149  p=0.8740   
+      vol_up_down_ratio         r=-0.0052  p=0.9557   
+      rvol                      r=+0.0027  p=0.9769   
+
+    Top Feature-Feature Correlations (|r| > 0.3):
+      wave_slope           × slope_conjugation    r=+0.940  ❌ REDUNDANT
+      wave_slope           × fear_level           r=-0.794  ❌ REDUNDANT
+      sigma_tide           × tide_accel           r=+0.765  ❌ REDUNDANT
+      slope_conjugation    × fear_level           r=-0.705  ❌ REDUNDANT
+      rvol                 × kalman_velocity      r=+0.660  ⚠️  CORRELATED
+      wave_slope           × tide_accel           r=+0.630  ⚠️  CORRELATED
+      tide_accel           × slope_conjugation    r=+0.611  ⚠️  CORRELATED
+      sigma_wave           × slope_conjugation    r=-0.607  ⚠️  CORRELATED
+      sigma_wave           × wave_slope           r=-0.571  ⚠️  CORRELATED
+      sigma_tide           × rsi_value            r=+0.570  ⚠️  CORRELATED
+
+    Mutual Information (non-linear dependency):
+      tide_slope                MI=0.1576  ███████████████
+      rsi_value                 MI=0.0500  █████
+      rvol                      MI=0.0397  ███
+      vol_up_down_ratio         MI=0.0198  █
+      fear_level                MI=0.0184  █
+      sigma_tide                MI=0.0141  █
+      slope_conjugation         MI=0.0125  █
+      kalman_velocity           MI=0.0098  
+      tide_accel                MI=0.0081  
+      sigma_wave                MI=0.0000  
+      wave_slope                MI=0.0000  
+
+    PCA Variance Explained:
+      PC 1:  38.2% (cumul  38.2%)  ██████████████████████████████████████
+      PC 2:  21.0% (cumul  59.1%)  ████████████████████
+      PC 3:  12.9% (cumul  72.0%)  ████████████
+      PC 4:  11.3% (cumul  83.3%)  ███████████
+      PC 5:   6.6% (cumul  89.9%)  ██████
+      PC 6:   3.5% (cumul  93.5%)  ███
+      PC 7:   2.5% (cumul  96.0%)  ██
+      PC1 loadings: wave_slope=+0.468, slope_conjugation=+0.442, fear_level=-0.408, tide_accel=+0.376
+      PC2 loadings: rvol=+0.506, sigma_wave=-0.478, kalman_velocity=+0.387, rsi_value=-0.379
+      PC3 loadings: kalman_velocity=+0.566, vol_up_down_ratio=+0.510, rsi_value=+0.375, rvol=+0.366
+
+    Feature Pair Interaction Analysis (GB with pair features):
+        tide_accel         × slope_conjugation  Δ=+0.0783 (0.609)  ★ SYNERGY
+        tide_slope         × vol_up_down_ratio  Δ=+0.0522 (0.583)  ★ SYNERGY
+        vol_up_down_ratio  × fear_level         Δ=+0.0435 (0.574)  ★ SYNERGY
+        slope_conjugation  × fear_level         Δ=+0.0435 (0.574)  ★ SYNERGY
+        wave_slope         × tide_accel         Δ=+0.0348 (0.565)  ★ SYNERGY
+        tide_accel         × fear_level         Δ=+0.0348 (0.565)  ★ SYNERGY
+        rvol               × slope_conjugation  Δ=+0.0261 (0.557)  ★ SYNERGY
+        kalman_velocity    × rsi_value          Δ=+0.0261 (0.557)  ★ SYNERGY
+
+    Conditional Probabilities (feature pairs, above/below median):
+      tide_accel≤med + tide_slope≤med                    │ WR= 87.0% n= 23  █████████████████ ★
+      sigma_tide≤med + tide_slope≤med                    │ WR= 86.4% n= 22  █████████████████ ★
+      sigma_wave≤med + wave_slope≤med                    │ WR= 78.9% n= 19  ███████████████ ★
+      sigma_wave≤med + tide_slope≤med                    │ WR= 78.6% n= 28  ███████████████ ★
+      rvol>med + tide_slope≤med                          │ WR= 76.9% n= 26  ███████████████ ★
+      tide_slope≤med + wave_slope≤med                    │ WR= 75.8% n= 33  ███████████████ ★
+      sigma_tide≤med + wave_slope≤med                    │ WR= 71.4% n= 42  ██████████████ ★
+      tide_accel≤med + wave_slope≤med                    │ WR= 70.7% n= 41  ██████████████ ★
+      rvol>med + wave_slope≤med                          │ WR= 69.0% n= 29  █████████████ ★
+      rvol≤med + tide_slope≤med                          │ WR= 68.8% n= 32  █████████████ ★
+
+    Anti-Patterns (WR < 40%):
+      sigma_tide≤med + wave_slope>med                    │ WR= 25.0% n= 16  █████ ✗ AVOID
+      tide_slope>med + wave_slope>med                    │ WR= 31.2% n= 32  ██████ ✗ AVOID
+      sigma_wave≤med + tide_slope>med                    │ WR= 33.3% n= 30  ██████ ✗ AVOID
+
+  ── DATA SCIENCE LAB: regression_channel × COST (N=195) ──
+
+    Pearson Correlation with Win (point-biserial r):
+      slope_conjugation         r=-0.2090  p=0.0034 ***  ████████
+      wave_slope                r=-0.1886  p=0.0083 ***  ███████
+      fear_level                r=+0.1228  p=0.0871 *  ████
+      tide_accel                r=-0.1062  p=0.1394   ████
+      rsi_value                 r=-0.0800  p=0.2660   ███
+      tide_slope                r=+0.0499  p=0.4882   
+      rvol                      r=-0.0470  p=0.5137   
+      sigma_tide                r=-0.0361  p=0.6160   
+      sigma_wave                r=+0.0311  p=0.6661   
+      vol_up_down_ratio         r=+0.0237  p=0.7419   
+      kalman_velocity           r=-0.0206  p=0.7746   
+
+    Top Feature-Feature Correlations (|r| > 0.3):
+      wave_slope           × slope_conjugation    r=+0.973  ❌ REDUNDANT
+      wave_slope           × tide_accel           r=+0.547  ⚠️  CORRELATED
+      sigma_tide           × rsi_value            r=+0.538  ⚠️  CORRELATED
+      vol_up_down_ratio    × kalman_velocity      r=+0.536  ⚠️  CORRELATED
+      rvol                 × kalman_velocity      r=+0.531  ⚠️  CORRELATED
+      tide_accel           × slope_conjugation    r=+0.528  ⚠️  CORRELATED
+      sigma_wave           × rsi_value            r=+0.489  ✅ OK
+      sigma_wave           × wave_slope           r=-0.488  ✅ OK
+      sigma_tide           × tide_accel           r=+0.482  ✅ OK
+      sigma_wave           × slope_conjugation    r=-0.471  ✅ OK
+
+    Mutual Information (non-linear dependency):
+      tide_slope                MI=0.1125  ███████████
+      slope_conjugation         MI=0.0805  ████████
+      wave_slope                MI=0.0567  █████
+      kalman_velocity           MI=0.0502  █████
+      fear_level                MI=0.0192  █
+      rsi_value                 MI=0.0093  
+      tide_accel                MI=0.0085  
+      sigma_tide                MI=0.0000  
+      sigma_wave                MI=0.0000  
+      rvol                      MI=0.0000  
+      vol_up_down_ratio         MI=0.0000  
+
+    PCA Variance Explained:
+      PC 1:  30.1% (cumul  30.1%)  ██████████████████████████████
+      PC 2:  19.6% (cumul  49.7%)  ███████████████████
+      PC 3:  16.0% (cumul  65.6%)  ███████████████
+      PC 4:   9.7% (cumul  75.3%)  █████████
+      PC 5:   7.1% (cumul  82.4%)  ███████
+      PC 6:   5.5% (cumul  87.9%)  █████
+      PC 7:   4.5% (cumul  92.4%)  ████
+      PC 8:   3.4% (cumul  95.8%)  ███
+      PC1 loadings: wave_slope=+0.492, slope_conjugation=+0.481, tide_accel=+0.390, sigma_tide=+0.325
+      PC2 loadings: sigma_wave=+0.567, rsi_value=+0.416, sigma_tide=+0.375, vol_up_down_ratio=+0.358
+      PC3 loadings: rvol=+0.607, kalman_velocity=+0.479, vol_up_down_ratio=+0.395, rsi_value=-0.315
+
+    Feature Pair Interaction Analysis (GB with pair features):
+        sigma_tide         × fear_level         Δ=+0.0308 (0.569)  ★ SYNERGY
+        sigma_wave         × wave_slope         Δ=+0.0308 (0.569)  ★ SYNERGY
+        tide_accel         × slope_conjugation  Δ=+0.0308 (0.569)  ★ SYNERGY
+        sigma_tide         × rsi_value          Δ=+0.0205 (0.559)  ★ SYNERGY
+        sigma_wave         × slope_conjugation  Δ=+0.0154 (0.554)  ★ SYNERGY
+        tide_accel         × fear_level         Δ=+0.0154 (0.554)  ★ SYNERGY
+        rvol               × slope_conjugation  Δ=+0.0154 (0.554)  ★ SYNERGY
+        fear_level         × rsi_value          Δ=+0.0154 (0.554)  ★ SYNERGY
+
+    Conditional Probabilities (feature pairs, above/below median):
+      sigma_wave≤med + wave_slope≤med                    │ WR= 70.6% n= 34  ██████████████ ★
+      tide_accel≤med + wave_slope≤med                    │ WR= 70.0% n= 60  ██████████████ ★
+      tide_slope≤med + wave_slope≤med                    │ WR= 68.2% n= 66  █████████████ ★
+      rvol≤med + wave_slope≤med                          │ WR= 67.9% n= 53  █████████████ ★
+      sigma_tide≤med + wave_slope≤med                    │ WR= 67.2% n= 58  █████████████ ★
+      rvol≤med + tide_accel≤med                          │ WR= 66.0% n= 47  █████████████ ★
+      sigma_tide>med + tide_accel≤med                    │ WR= 63.6% n= 33  ████████████
+      tide_accel≤med + tide_slope≤med                    │ WR= 63.2% n= 57  ████████████
+      rvol≤med + tide_slope≤med                          │ WR= 62.7% n= 51  ████████████
+      sigma_wave>med + tide_accel≤med                    │ WR= 61.2% n= 49  ████████████
+
+    Anti-Patterns (WR < 40%):
+      sigma_tide≤med + wave_slope>med                    │ WR= 30.0% n= 40  ██████ ✗ AVOID
+      tide_slope≤med + wave_slope>med                    │ WR= 31.2% n= 32  ██████ ✗ AVOID
+      tide_accel≤med + wave_slope>med                    │ WR= 31.6% n= 38  ██████ ✗ AVOID
+      sigma_wave>med + wave_slope>med                    │ WR= 33.3% n= 33  ██████ ✗ AVOID
+
+  ── DATA SCIENCE LAB: rsi_intelligence × SPY (N=332) ──
+
+    Pearson Correlation with Win (point-biserial r):
+      rsi_value                 r=-0.1720  p=0.0017 ***  ██████
+      sigma_tide                r=-0.1594  p=0.0036 ***  ██████
+      tide_slope                r=+0.0608  p=0.2695   ██
+      vol_up_down_ratio         r=-0.0584  p=0.2884   ██
+      sigma_wave                r=-0.0390  p=0.4788   
+      slope_conjugation         r=-0.0334  p=0.5447   
+      fear_level                r=+0.0304  p=0.5815   
+      wave_slope                r=-0.0191  p=0.7291   
+      tide_accel                r=-0.0178  p=0.7472   
+      kalman_velocity           r=-0.0115  p=0.8343   
+      rvol                      r=-0.0108  p=0.8442   
+
+    Top Feature-Feature Correlations (|r| > 0.3):
+      wave_slope           × slope_conjugation    r=+0.971  ❌ REDUNDANT
+      rvol                 × kalman_velocity      r=+0.795  ❌ REDUNDANT
+      sigma_tide           × tide_accel           r=+0.674  ⚠️  CORRELATED
+      sigma_tide           × rsi_value            r=+0.636  ⚠️  CORRELATED
+      sigma_wave           × slope_conjugation    r=-0.525  ⚠️  CORRELATED
+      tide_accel           × rsi_value            r=+0.494  ✅ OK
+      wave_slope           × rsi_value            r=+0.475  ✅ OK
+      wave_slope           × fear_level           r=-0.457  ✅ OK
+      sigma_wave           × wave_slope           r=-0.436  ✅ OK
+      sigma_wave           × kalman_velocity      r=-0.425  ✅ OK
+
+    Mutual Information (non-linear dependency):
+      tide_slope                MI=0.0623  ██████
+      tide_accel                MI=0.0431  ████
+      fear_level                MI=0.0339  ███
+      sigma_tide                MI=0.0237  ██
+      rvol                      MI=0.0104  █
+      sigma_wave                MI=0.0000  
+      wave_slope                MI=0.0000  
+      vol_up_down_ratio         MI=0.0000  
+      slope_conjugation         MI=0.0000  
+      kalman_velocity           MI=0.0000  
+      rsi_value                 MI=0.0000  
+
+    PCA Variance Explained:
+      PC 1:  29.3% (cumul  29.3%)  █████████████████████████████
+      PC 2:  21.2% (cumul  50.5%)  █████████████████████
+      PC 3:  15.3% (cumul  65.8%)  ███████████████
+      PC 4:  11.8% (cumul  77.6%)  ███████████
+      PC 5:   8.8% (cumul  86.4%)  ████████
+      PC 6:   5.1% (cumul  91.5%)  █████
+      PC 7:   3.6% (cumul  95.1%)  ███
+      PC1 loadings: wave_slope=+0.475, slope_conjugation=+0.447, rsi_value=+0.420, sigma_tide=+0.372
+      PC2 loadings: sigma_wave=+0.542, kalman_velocity=-0.485, slope_conjugation=-0.317, rvol=-0.283
+      PC3 loadings: rvol=+0.569, tide_slope=+0.544, kalman_velocity=+0.409, fear_level=-0.273
+
+    Feature Pair Interaction Analysis (GB with pair features):
+        tide_slope         × wave_slope         Δ=+0.0239 (0.539)  ★ SYNERGY
+        sigma_wave         × rsi_value          Δ=+0.0120 (0.527)  ★ SYNERGY
+        tide_slope         × slope_conjugation  Δ=+0.0059 (0.521)  ↑
+        tide_accel         × rsi_value          Δ=+0.0058 (0.521)  ↑
+        rvol               × rsi_value          Δ=+0.0058 (0.521)  ↑
+        sigma_tide         × vol_up_down_ratio  Δ=-0.0062 (0.509)  ↓
+        wave_slope         × fear_level         Δ=-0.0090 (0.506)  ↓
+        tide_slope         × kalman_velocity    Δ=-0.0091 (0.506)  ↓
+
+    Conditional Probabilities (feature pairs, above/below median):
+      tide_accel≤med + tide_slope>med                    │ WR= 67.2% n= 61  █████████████ ★
+      sigma_tide≤med + wave_slope>med                    │ WR= 67.1% n= 70  █████████████ ★
+      sigma_tide≤med + tide_accel≤med                    │ WR= 66.2% n=130  █████████████ ★
+      tide_slope>med + wave_slope≤med                    │ WR= 65.8% n= 73  █████████████ ★
+      sigma_tide≤med + tide_slope>med                    │ WR= 65.4% n= 78  █████████████ ★
+      sigma_tide≤med + sigma_wave≤med                    │ WR= 65.2% n= 89  █████████████ ★
+      rvol≤med + sigma_tide≤med                          │ WR= 63.0% n= 73  ████████████
+      sigma_wave≤med + tide_slope>med                    │ WR= 62.3% n= 53  ████████████
+      tide_accel≤med + wave_slope>med                    │ WR= 61.8% n= 76  ████████████
+      rvol>med + tide_accel≤med                          │ WR= 61.4% n= 88  ████████████
+
+    Anti-Patterns (WR < 40%):
+      sigma_tide>med + tide_accel≤med                    │ WR= 30.6% n= 36  ██████ ✗ AVOID
+
+  ── DATA SCIENCE LAB: regression_channel × SPY (N=344) ──
+
+    Pearson Correlation with Win (point-biserial r):
+      tide_accel                r=-0.1498  p=0.0054 ***  █████
+      sigma_wave                r=-0.0960  p=0.0754 *  ███
+      wave_slope                r=+0.0833  p=0.1230   ███
+      sigma_tide                r=-0.0786  p=0.1458   ███
+      slope_conjugation         r=+0.0783  p=0.1474   ███
+      rvol                      r=-0.0694  p=0.1991   ██
+      vol_up_down_ratio         r=-0.0559  p=0.3008   ██
+      tide_slope                r=+0.0444  p=0.4121   
+      rsi_value                 r=-0.0217  p=0.6887   
+      fear_level                r=-0.0093  p=0.8639   
+      kalman_velocity           r=-0.0019  p=0.9714   
+
+    Top Feature-Feature Correlations (|r| > 0.3):
+      wave_slope           × slope_conjugation    r=+0.995  ❌ REDUNDANT
+      rvol                 × kalman_velocity      r=+0.690  ⚠️  CORRELATED
+      sigma_tide           × rsi_value            r=+0.633  ⚠️  CORRELATED
+      sigma_tide           × slope_conjugation    r=+0.493  ✅ OK
+      sigma_tide           × wave_slope           r=+0.493  ✅ OK
+      sigma_wave           × kalman_velocity      r=-0.457  ✅ OK
+      wave_slope           × rsi_value            r=+0.454  ✅ OK
+      slope_conjugation    × rsi_value            r=+0.440  ✅ OK
+      sigma_tide           × tide_accel           r=+0.434  ✅ OK
+      wave_slope           × tide_accel           r=+0.383  ✅ OK
+
+    Mutual Information (non-linear dependency):
+      tide_slope                MI=0.0450  ████
+      tide_accel                MI=0.0201  ██
+      sigma_tide                MI=0.0000  
+      sigma_wave                MI=0.0000  
+      wave_slope                MI=0.0000  
+      rvol                      MI=0.0000  
+      vol_up_down_ratio         MI=0.0000  
+      slope_conjugation         MI=0.0000  
+      fear_level                MI=0.0000  
+      kalman_velocity           MI=0.0000  
+      rsi_value                 MI=0.0000  
+
+    PCA Variance Explained:
+      PC 1:  30.3% (cumul  30.3%)  ██████████████████████████████
+      PC 2:  20.0% (cumul  50.3%)  ████████████████████
+      PC 3:  12.9% (cumul  63.1%)  ████████████
+      PC 4:   9.7% (cumul  72.8%)  █████████
+      PC 5:   7.5% (cumul  80.3%)  ███████
+      PC 6:   6.5% (cumul  86.7%)  ██████
+      PC 7:   5.3% (cumul  92.1%)  █████
+      PC 8:   3.7% (cumul  95.8%)  ███
+      PC1 loadings: slope_conjugation=+0.496, wave_slope=+0.496, sigma_tide=+0.397, rsi_value=+0.372
+      PC2 loadings: kalman_velocity=+0.596, rvol=+0.471, sigma_wave=-0.454, vol_up_down_ratio=+0.322
+      PC3 loadings: fear_level=+0.504, tide_slope=+0.437, tide_accel=+0.340, sigma_tide=+0.338
+
+    Feature Pair Interaction Analysis (GB with pair features):
+        tide_slope         × vol_up_down_ratio  Δ=+0.0611 (0.590)  ★ SYNERGY
+        sigma_wave         × wave_slope         Δ=+0.0207 (0.549)  ★ SYNERGY
+        sigma_tide         × sigma_wave         Δ=+0.0205 (0.549)  ★ SYNERGY
+        tide_slope         × fear_level         Δ=+0.0148 (0.543)  ★ SYNERGY
+        sigma_tide         × wave_slope         Δ=+0.0147 (0.543)  ★ SYNERGY
+        tide_slope         × rsi_value          Δ=+0.0146 (0.543)  ★ SYNERGY
+        fear_level         × kalman_velocity    Δ=+0.0118 (0.540)  ★ SYNERGY
+        sigma_tide         × tide_slope         Δ=+0.0118 (0.540)  ★ SYNERGY
+
+    Conditional Probabilities (feature pairs, above/below median):
+      sigma_tide≤med + wave_slope>med                    │ WR= 74.2% n= 66  ██████████████ ★
+      tide_accel≤med + wave_slope>med                    │ WR= 69.7% n= 76  █████████████ ★
+      sigma_wave≤med + tide_accel≤med                    │ WR= 69.0% n= 87  █████████████ ★
+      tide_slope>med + wave_slope>med                    │ WR= 66.3% n= 92  █████████████ ★
+      sigma_tide≤med + sigma_wave≤med                    │ WR= 65.9% n= 91  █████████████ ★
+      rvol≤med + tide_accel≤med                          │ WR= 65.2% n= 89  █████████████ ★
+      sigma_wave≤med + tide_slope>med                    │ WR= 64.0% n= 89  ████████████
+      rvol≤med + sigma_tide≤med                          │ WR= 63.6% n= 77  ████████████
+      tide_accel≤med + tide_slope>med                    │ WR= 62.7% n= 83  ████████████
+      rvol≤med + tide_slope>med                          │ WR= 61.4% n= 88  ████████████
+
+    Anti-Patterns (WR < 40%):
+
+================================================================================
+  PART 4: BOOTSTRAP CONFIDENCE INTERVALS
+================================================================================
+
+  ── BOOTSTRAP CONFIDENCE INTERVALS (1000 resamples) ──
+    rsi×COST Gold(σ<-1+Fear+Vol)             WR=100.0%  95%CI=[100.0%, 100.0%]  n=  5  ★
+    rsi×COST KV↑+σ<-1                        WR=54.5%  95%CI=[31.8%, 72.7%]  n= 22  ⚠
+    reg×COST Gold(σ<-1+Fear+Vol)             WR=60.0%  95%CI=[30.0%, 90.0%]  n= 10  ⚠
+    reg×COST KV↑+σ<-1                        WR=31.2%  95%CI=[12.5%, 50.2%]  n= 16  ⚠
+    rsi×SPY Gold(σ<-1+Fear+Vol)              WR=81.2%  95%CI=[62.5%, 100.0%]  n= 16  ★
+    rsi×SPY KV↑+σ<-1                         WR=59.2%  95%CI=[48.7%, 71.1%]  n= 76  OK
+    rsi×QQQ Gold(σ<-1+Fear+Vol)              WR=58.8%  95%CI=[35.3%, 82.4%]  n= 17  ⚠
+    rsi×QQQ KV↑+σ<-1                         WR=40.6%  95%CI=[28.1%, 53.1%]  n= 64  ⚠
+    reg×QQQ KV↑+σ<-1                         WR=80.0%  95%CI=[40.0%, 100.0%]  n=  5  ⚠
+    rsi×AAPL Gold(σ<-1+Fear+Vol)             WR=41.2%  95%CI=[17.6%, 64.7%]  n= 17  ⚠
+    rsi×AAPL KV↑+σ<-1                        WR=51.5%  95%CI=[40.9%, 63.6%]  n= 66  OK
+    reg×AAPL Gold(σ<-1+Fear+Vol)             WR=58.8%  95%CI=[35.3%, 82.4%]  n= 17  ⚠
+    reg×AAPL KV↑+σ<-1                        WR=57.6%  95%CI=[39.4%, 72.7%]  n= 33  ⚠
+
+================================================================================
+  PART 5: EFFECT SIZES (Cohen's d)
+================================================================================
+
+  ── EFFECT SIZES (Cohen's d): rsi_intelligence × COST ──
+
+    Feature                    Cohen d  p-value    Win μ   Loss μ  Effect
+    ────────────────────────────────────────────────────────────────────────────────
+    fear_level                d=+0.6075  p=0.0017*** μw=+2.682  μl=+2.000  MEDIUM
+    tide_slope                d=-0.4844  p=0.0115** μw=+0.071  μl=+0.104  SMALL
+    rsi_value                 d=-0.3861  p=0.0430** μw=+40.618  μl=+42.629  SMALL
+    wave_slope                d=-0.3208  p=0.0917* μw=-0.128  μl=-0.063  SMALL
+    slope_conjugation         d=-0.1710  p=0.3664 μw=-0.199  μl=-0.167  negligible
+    kalman_velocity           d=+0.1111  p=0.5568 μw=-0.005  μl=-0.019  negligible
+    tide_accel                d=-0.0927  p=0.6239 μw=-0.001  μl=-0.001  negligible
+    sigma_wave                d=+0.0738  p=0.6964 μw=-0.891  μl=-0.957  negligible
+    sigma_tide                d=+0.0300  p=0.8740 μw=-1.130  μl=-1.162  negligible
+    vol_up_down_ratio         d=-0.0105  p=0.9557 μw=+0.922  μl=+0.925  negligible
+    rvol                      d=+0.0055  p=0.9769 μw=+1.011  μl=+1.009  negligible
+
+  ── EFFECT SIZES (Cohen's d): regression_channel × COST ──
+
+    Feature                    Cohen d  p-value    Win μ   Loss μ  Effect
+    ────────────────────────────────────────────────────────────────────────────────
+    slope_conjugation         d=-0.4259  p=0.0034*** μw=-0.366  μl=-0.282  SMALL
+    wave_slope                d=-0.3827  p=0.0083*** μw=-0.258  μl=-0.179  SMALL
+    fear_level                d=+0.2467  p=0.0871* μw=+2.874  μl=+2.750  SMALL
+    tide_accel                d=-0.2129  p=0.1394 μw=-0.002  μl=-0.001  SMALL
+    rsi_value                 d=-0.1600  p=0.2660 μw=+39.616  μl=+40.492  negligible
+    tide_slope                d=+0.0996  p=0.4882 μw=+0.108  μl=+0.103  negligible
+    rvol                      d=-0.0939  p=0.5137 μw=+1.008  μl=+1.042  negligible
+    sigma_tide                d=-0.0721  p=0.6160 μw=-2.237  μl=-2.201  negligible
+    sigma_wave                d=+0.0620  p=0.6661 μw=-0.251  μl=-0.310  negligible
+    vol_up_down_ratio         d=+0.0473  p=0.7419 μw=+0.951  μl=+0.939  negligible
+    kalman_velocity           d=-0.0411  p=0.7746 μw=-0.048  μl=-0.042  negligible
+
+  ── EFFECT SIZES (Cohen's d): rsi_intelligence × SPY ──
+
+    Feature                    Cohen d  p-value    Win μ   Loss μ  Effect
+    ────────────────────────────────────────────────────────────────────────────────
+    rsi_value                 d=-0.3492  p=0.0017*** μw=+42.745  μl=+44.836  SMALL
+    sigma_tide                d=-0.3229  p=0.0036*** μw=-1.387  μl=-1.023  SMALL
+    tide_slope                d=+0.1218  p=0.2695 μw=+0.028  μl=+0.018  negligible
+    vol_up_down_ratio         d=-0.1171  p=0.2884 μw=+0.930  μl=+0.978  negligible
+    sigma_wave                d=-0.0781  p=0.4788 μw=-0.417  μl=-0.342  negligible
+    slope_conjugation         d=-0.0668  p=0.5447 μw=-0.292  μl=-0.268  negligible
+    fear_level                d=+0.0607  p=0.5815 μw=+2.994  μl=+2.928  negligible
+    wave_slope                d=-0.0382  p=0.7291 μw=-0.264  μl=-0.251  negligible
+    tide_accel                d=-0.0355  p=0.7472 μw=-0.001  μl=-0.001  negligible
+    kalman_velocity           d=-0.0231  p=0.8343 μw=+0.025  μl=+0.028  negligible
+    rvol                      d=-0.0217  p=0.8442 μw=+1.111  μl=+1.120  negligible
+
+  ── EFFECT SIZES (Cohen's d): regression_channel × SPY ──
+
+    Feature                    Cohen d  p-value    Win μ   Loss μ  Effect
+    ────────────────────────────────────────────────────────────────────────────────
+    tide_accel                d=-0.3030  p=0.0054*** μw=-0.001  μl=-0.001  SMALL
+    sigma_wave                d=-0.1928  p=0.0754* μw=+0.515  μl=+0.659  negligible
+    wave_slope                d=+0.1672  p=0.1230 μw=-0.310  μl=-0.371  negligible
+    sigma_tide                d=-0.1577  p=0.1458 μw=-2.377  μl=-2.282  negligible
+    slope_conjugation         d=+0.1570  p=0.1474 μw=-0.371  μl=-0.428  negligible
+    rvol                      d=-0.1391  p=0.1991 μw=+1.096  μl=+1.157  negligible
+    vol_up_down_ratio         d=-0.1121  p=0.3008 μw=+0.949  μl=+0.981  negligible
+    tide_slope                d=+0.0888  p=0.4121 μw=+0.061  μl=+0.057  negligible
+    rsi_value                 d=-0.0434  p=0.6887 μw=+41.820  μl=+42.026  negligible
+    fear_level                d=-0.0185  p=0.8639 μw=+2.757  μl=+2.767  negligible
+    kalman_velocity           d=-0.0039  p=0.9714 μw=-0.033  μl=-0.032  negligible
+
+================================================================================
+  DATA SCIENCE ANALYSIS COMPLETE
+================================================================================

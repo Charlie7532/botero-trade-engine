@@ -1,0 +1,12 @@
+description = "Descubrir e integrar nuevas herramientas financieras (librerías, APIs, MCP servers)"
+prompt = """
+Read and follow the Research Intelligence skill to discover and evaluate new financial tools:
+
+@{.agents/skills/research-intelligence/SKILL.md}
+
+Search for and evaluate financial tools (libraries, APIs, MCP servers) relevant to:
+
+{{args}}
+
+For each candidate, provide: name, type, cost, data coverage, integration complexity, and recommendation.
+"""

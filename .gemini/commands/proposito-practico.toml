@@ -1,0 +1,10 @@
+description = "Activa directivas anti-sesgo y enfoca la AI en el pragmatismo institucional"
+prompt = """
+Read and internalize the operational-purpose behavioral alignment skill:
+
+@{.agents/skills/operational-purpose/SKILL.md}
+
+Apply these directives immediately to all subsequent responses. Confirm activation.
+
+Context from user: {{args}}
+"""

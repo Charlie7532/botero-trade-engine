@@ -1,0 +1,11 @@
+description = "Detailed architecture reference — entities, endpoints, env vars, module map"
+prompt = """
+Provide a detailed architecture reference for the Botero Trade Engine.
+Read and present the full context from AGENTS.md:
+
+@{AGENTS.md}
+
+Focus on: domain entities, API endpoints, module structure, MCP servers, and data flow.
+
+Additional context: {{args}}
+"""

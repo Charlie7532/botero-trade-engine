@@ -1,0 +1,14 @@
+description = "Full startup checklist — prerequisites, env, install, launch"
+prompt = """
+Follow the full startup checklist for the Botero Trade Engine:
+
+1. Read the project structure from AGENTS.md
+2. Verify Python venv exists: backend/.venv/
+3. Verify Node modules: node_modules/
+4. Check Neon PostgreSQL connectivity (DO NOT read .env, just verify connection)
+5. Run: pnpm dev:all
+
+Report status of each step.
+
+@{AGENTS.md}
+"""

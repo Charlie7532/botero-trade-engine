@@ -1,0 +1,12 @@
+description = "Universal Expert Mode — Activates specialist personas and tools based on context. Always loads operational-purpose and clean-architecture as behavioral baseline."
+prompt = """
+Read and activate the Expert Mode skill router:
+
+@{.agents/skills/expert-mode/SKILL.md}
+
+Based on the user's prompt below, follow the Department Resolution (Step 0) and Skill Router rules
+to determine which specialist skills to load. Then read each activated skill's SKILL.md file
+before responding.
+
+User prompt: {{args}}
+"""

@@ -351,7 +351,7 @@ class OracleSwingBacktester(OracleBacktester):
                     ohlc, labels, vol_regime_series
                 )
                 oos_sharpe, oos_wr = self._walk_forward_validation(
-                    ohlc, signal, context
+                    ohlc, labels
                 )
 
                 passport = self._build_passport(
@@ -361,6 +361,7 @@ class OracleSwingBacktester(OracleBacktester):
                     swing_breakdowns=swing_breakdowns,
                     oos_sharpe=oos_sharpe,
                     oos_win_rate=oos_wr,
+                    labels=labels,
                 )
 
                 self._passport.save_passport(passport)
@@ -404,71 +405,68 @@ class OracleSwingBacktester(OracleBacktester):
     def _walk_forward_validation(
         self,
         ohlc: pd.DataFrame,
-        signal: SignalPort,
-        context: dict | None,
+        labels: list,
     ) -> tuple[float, float]:
         """
-        Purged Walk-Forward validation (k=5 folds).
-
-        Each fold: train on first 80% of segment, test on last 20%.
-        Purge gap = max_bars (to prevent leakage).
-        Returns: (oos_sharpe, oos_win_rate) averaged across folds.
+        Chronological block validation (k=5 folds).
+        
+        Since Oracle evaluates unparameterized Alpha Ceilings, we don't need 
+        to split train/test to prevent weight leakage. Instead, we divide the 
+        pre-computed continuous labels into 5 blocks and measure the average 
+        Sharpe and Win Rate across blocks. This ensures the signal is robust 
+        across multiple market regimes and prevents a single lucky year from 
+        dominating the score.
         """
-        n = len(ohlc)
-        fold_size = n // self.WALK_FORWARD_FOLDS
-        purge_gap = self.geometry.max_bars  # 120 bars purge
-
-        oos_rets: list[float] = []
-        oos_wins = 0
-        oos_total = 0
-
-        for k in range(self.WALK_FORWARD_FOLDS):
-            test_start = fold_size * k
-            test_end = fold_size * (k + 1)
-            train_end = max(0, test_start - purge_gap)
-
-            if train_end < 60 or test_end - test_start < 20:
-                continue
-
-            test_ohlc = ohlc.iloc[test_start:test_end]
-            if test_ohlc.empty:
-                continue
-
-            try:
-                signal_df = signal.generate(test_ohlc, context)
-                entries = signal_df["signal"] == 1
-                geo = self.geometry
-                fold_labels = self.labeler.label_entries(
-                    test_ohlc, entries,
-                    profit_mult=geo.profit_mult,
-                    loss_mult=geo.loss_mult,
-                    max_bars=geo.max_bars,
-                    vol_lookback=geo.vol_lookback,
-                    entry_delay_bars=geo.entry_delay_bars,
-                    slippage_factor=geo.slippage_factor,
-                    round_trip_cost_bps=geo.round_trip_cost_bps,
-                )
-                if not fold_labels:
-                    continue
-
-                for lbl in fold_labels:
-                    oos_rets.append(lbl.return_pct)
-                    oos_wins += 1 if lbl.label == 1 else 0
-                    oos_total += 1
-            except Exception:
-                continue
-
-        if not oos_rets or oos_total == 0:
+        if not labels:
             return 0.0, 0.0
 
-        oos_avg = np.mean(oos_rets)
-        oos_std = np.std(oos_rets, ddof=1) if len(oos_rets) > 1 else 1.0
-        oos_bars = self.geometry.max_bars / 2  # Approximate
-        oos_sharpe = round(
-            float(oos_avg / max(oos_std, 1e-6)) * np.sqrt(252 / max(oos_bars, 1)), 3
-        )
-        oos_wr = round(oos_wins / oos_total * 100, 1)
-
+        n = len(ohlc)
+        fold_size = n // self.WALK_FORWARD_FOLDS
+        
+        fold_sharpes = []
+        fold_wrs = []
+        
+        for k in range(self.WALK_FORWARD_FOLDS):
+            test_start_idx = fold_size * k
+            test_end_idx = fold_size * (k + 1) if k < self.WALK_FORWARD_FOLDS - 1 else n
+            
+            try:
+                start_time = ohlc.index[test_start_idx]
+                end_time = ohlc.index[test_end_idx - 1]
+            except IndexError:
+                continue
+                
+            # Filter labels that entered within this block
+            block_labels = [
+                lbl for lbl in labels 
+                if lbl.entry_time is not None and start_time <= lbl.entry_time <= end_time
+            ]
+            
+            if len(block_labels) < 2:
+                continue
+                
+            rets = [lbl.return_pct for lbl in block_labels]
+            bars = [lbl.bars_held for lbl in block_labels]
+            wins = sum(1 for r in rets if r > 0)
+            
+            avg_ret = np.mean(rets)
+            std_ret = np.std(rets, ddof=1) if len(rets) > 1 else 1.0
+            avg_bars = max(np.mean(bars), 1)
+            
+            if std_ret > 0:
+                sharpe = float(avg_ret / max(std_ret, 1e-6)) * np.sqrt(252 / avg_bars)
+            else:
+                sharpe = 0.0
+                
+            fold_sharpes.append(sharpe)
+            fold_wrs.append(wins / len(block_labels) * 100)
+            
+        if not fold_sharpes:
+            return 0.0, 0.0
+            
+        oos_sharpe = round(float(np.mean(fold_sharpes)), 3)
+        oos_wr = round(float(np.mean(fold_wrs)), 1)
+        
         return oos_sharpe, oos_wr
 
     # ── Private helpers ────────────────────────────────────────────
@@ -645,6 +643,7 @@ class OracleSwingBacktester(OracleBacktester):
         swing_breakdowns: dict,
         oos_sharpe: float,
         oos_win_rate: float,
+        labels: list = None,
     ) -> SignalPassport:
         """Build SignalPassport from OracleResult + Swing-specific breakdowns."""
         # Reliability score for Swing: OOS is king
@@ -654,11 +653,11 @@ class OracleSwingBacktester(OracleBacktester):
             if result.floor_sharpe > 0 else 0.0
         )
         oos_norm = min(oos_sharpe / 2.0, 1.0) if oos_sharpe > 0 else 0.0
-
+ 
         # Consistency from std of returns (approximate from PF)
         avg_ret = result.avg_return_pct
         consistency = max(0.0, min(1.0, 1.0 - (abs(result.max_drawdown_pct) / max(abs(avg_ret) * result.n_entries, 0.001))))
-
+ 
         reliability = round(
             sharpe_norm * 0.25
             + robustness * 0.20
@@ -666,20 +665,57 @@ class OracleSwingBacktester(OracleBacktester):
             + consistency * 0.20,
             3,
         )
+ 
+        # Average MAE and MFE excursions (Component A) & DSR
+        avg_mae = 0.0
+        avg_mfe = 0.0
+        mfe_capture = 0.0
+        dsr = 0.0
 
-        viable = (
-            result.ceiling_sharpe >= 0.3
-            and result.n_entries >= self.MIN_ENTRIES
-            and result.win_rate >= 30
-            and oos_sharpe >= 0.1   # OOS must show some edge
-        )
-        grade = (
-            "A" if result.ceiling_sharpe >= 1.5 and oos_sharpe >= 0.8
-            else "B" if result.ceiling_sharpe >= 1.0 and oos_sharpe >= 0.4
-            else "C" if result.ceiling_sharpe >= 0.5
-            else "D"
-        )
+        if labels:
+            maes = [l.max_adverse_excursion_pct for l in labels if l.max_adverse_excursion_pct is not None]
+            mfes = [l.max_favorable_excursion_pct for l in labels if l.max_favorable_excursion_pct is not None]
+            avg_mae = float(np.mean(maes)) if maes else 0.0
+            avg_mfe = float(np.mean(mfes)) if mfes else 0.0
+            
+            if abs(avg_mfe) > 0.0001:
+                mfe_capture = result.avg_return_pct / avg_mfe
+            else:
+                mfe_capture = 0.0
 
+            # DSR multiple testing correction (against N=8 trials in create_swing_signals())
+            from scipy import stats
+            returns = [l.return_pct for l in labels]
+            skew_val = float(stats.skew(returns)) if len(returns) > 2 else 0.0
+            kurt_val = float(stats.kurtosis(returns, fisher=False)) if len(returns) > 2 else 3.0
+            
+            # Swing uses oos_sharpe for DSR (Walk-Forward OOS is the primary validity signal)
+            dsr = self._deflated_sharpe(
+                sharpe=oos_sharpe,
+                n_obs=len(returns),
+                n_trials=8,
+                skew=skew_val,
+                kurtosis=kurt_val,
+            )
+
+        # Enforce strict DSR-based grading thresholds
+        if dsr >= 0.95:
+            grade = "A"
+            evidence_status = "VALIDATED"
+            viable = True
+        elif dsr >= 0.85:
+            grade = "B"
+            evidence_status = "VALIDATED"
+            viable = True
+        elif dsr >= 0.70:
+            grade = "C"
+            evidence_status = "VALIDATED"
+            viable = True
+        else:
+            grade = "D"
+            evidence_status = "HYPOTHESIS"
+            viable = False
+ 
         return SignalPassport(
             ticker=ticker,
             department=DEPARTMENT,
@@ -714,6 +750,11 @@ class OracleSwingBacktester(OracleBacktester):
             n_by_tide_regime=swing_breakdowns["n_by_tide_regime"],
             viable=viable,
             grade=grade,
+            evidence_status=evidence_status,
+            deflated_sharpe=dsr,
+            avg_mfe_pct=avg_mfe,
+            avg_mae_pct=avg_mae,
+            mfe_capture_rate=mfe_capture,
             geometry_used={
                 "profit_mult": self.geometry.profit_mult,
                 "loss_mult": self.geometry.loss_mult,

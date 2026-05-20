@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 from backend.modules.simulation.domain.ports.signal_port import SignalPort
+from backend.modules.price_analysis.domain.rules.price_rules import ZONE_SCORES
 
 logger = logging.getLogger(__name__)
 
@@ -384,9 +385,10 @@ class RSISignalAdapter(SignalPort):
             # ═══════════════════════════════════════════════════
 
             if signal == 0:  # Only check trim if no entry signal
+                slope_long_prev = self._linreg_slope(price_window[:-4], 120) if len(price_window) >= 125 else slope_long
                 trim_signal, trim_conf = self._check_rsi_trim(
                     regime, current_rsi, rsi_slope_short,
-                    slope_short, slope_long,
+                    slope_short, slope_long, slope_long_prev,
                 )
                 if trim_signal:
                     signal = -1
@@ -402,6 +404,10 @@ class RSISignalAdapter(SignalPort):
             if signal == 1:
                 confidence = self._apply_kalman_boost(kalman_states, i, confidence)
 
+            # ── Cardwell RSI Zone confidence Modulation ──
+            if signal != 0:
+                confidence = self._apply_cardwell_modulation(current_rsi, regime, confidence)
+
             signals.append(signal)
             confidences.append(confidence)
 
@@ -413,10 +419,11 @@ class RSISignalAdapter(SignalPort):
     @staticmethod
     def _check_rsi_trim(
         regime: str, current_rsi: float, rsi_slope: float,
-        slope_short: float, slope_long: float,
+        slope_short: float, slope_long: float, slope_long_prev: float = 0.0,
     ) -> tuple[bool, float]:
         """Layer 7: Regime-Inverted RSI Trim Detection.
 
+        [HYPOTHESIS] E — Cross-Regression Transition Trim (APPROVED)
         [HYPOTHESIS] D — Advisory Only. Pending Walk-Forward DSR validation.
 
         The key insight: RSI reading is ASYMMETRIC by regime.
@@ -437,6 +444,12 @@ class RSISignalAdapter(SignalPort):
           RSI ≥ 65 + RSI falling:  confidence 0.20
           RSI ≥ 60 + RSI falling:  confidence 0.15 (weakest trim)
         """
+        # ── [HYPOTHESIS] E: BULL -> BAJISTA Transition (Cross-Regression) ──
+        if regime == "BULL":
+            decelerating = slope_long < slope_long_prev
+            if slope_short < 0 and decelerating and current_rsi > 60 and rsi_slope < 0:
+                return True, 0.20
+
         # ── BAJISTA only (slope_long between -0.02 and -0.005) ──
         # MUY_BAJISTA excluded: RSI high there = V-recovery, NOT exhaustion
         if regime == "BAJISTA":
@@ -540,6 +553,54 @@ class RSISignalAdapter(SignalPort):
             return round(reduced, 2)
 
         return base_confidence
+
+    def _apply_cardwell_modulation(self, current_rsi: float, regime: str, base_confidence: float) -> float:
+        """Modulate confidence using Cardwell RSI zone scores.
+
+        Maps price regime to Cardwell context and adjusts confidence dynamically.
+        """
+        # Map internal price regime to Cardwell regime
+        if regime == "BULL":
+            cardwell_regime = "BULL"
+        elif regime in ("BAJISTA", "MUY_BAJISTA"):
+            cardwell_regime = "BEAR"
+        else:
+            cardwell_regime = "NEUTRAL"
+
+        # Classify the bar's RSI zone (replicating _classify_zone logic)
+        if cardwell_regime == "BULL":
+            if current_rsi <= 45:
+                zone = "PULLBACK_BUY"
+            elif current_rsi <= 60:
+                zone = "HEALTHY_BULL"
+            elif current_rsi <= 80:
+                zone = "CONTINUATION"
+            else:
+                zone = "EXTREME_BULL"
+        elif cardwell_regime == "BEAR":
+            if current_rsi >= 55:
+                zone = "BOUNCE_SELL"
+            elif current_rsi >= 40:
+                zone = "HEALTHY_BEAR"
+            elif current_rsi >= 20:
+                zone = "CONTINUATION_DOWN"
+            else:
+                zone = "EXTREME_BEAR"
+        else:  # NEUTRAL
+            if current_rsi <= 35:
+                zone = "OVERSOLD"
+            elif current_rsi >= 65:
+                zone = "OVERBOUGHT"
+            elif current_rsi <= 45:
+                zone = "LEAN_BULLISH"
+            elif current_rsi >= 55:
+                zone = "LEAN_BEARISH"
+            else:
+                zone = "NEUTRAL"
+
+        coef = ZONE_SCORES.get(zone, 0.0)
+        adjusted_confidence = min(max(base_confidence + coef, 0.1), 1.0)
+        return round(adjusted_confidence, 2)
 
     @staticmethod
     def _precompute_kalman(ohlc: pd.DataFrame) -> dict:

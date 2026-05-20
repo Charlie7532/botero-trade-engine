@@ -119,6 +119,48 @@ class OracleBacktester:
             round_trip_cost_bps=g.round_trip_cost_bps * 2.0,
         )
 
+    def _deflated_sharpe(
+        self,
+        sharpe: float,
+        n_obs: int,
+        n_trials: int,
+        skew: float = 0.0,
+        kurtosis: float = 3.0,
+    ) -> float:
+        """López de Prado Deflated Sharpe Ratio.
+
+        Adjusts observed Sharpe for multiple testing bias.
+        """
+        if n_obs <= 2 or n_trials <= 0:
+            return 0.0
+
+        from scipy import stats
+
+        # Expected maximum Sharpe under null (Euler-Mascheroni approximation)
+        if n_trials <= 1:
+            e_max_sr = 0.0
+        else:
+            euler_mascheroni = 0.5772156649
+            e_max_sr = (
+                (1.0 - euler_mascheroni) * stats.norm.ppf(1.0 - 1.0 / n_trials)
+                + euler_mascheroni * stats.norm.ppf(1.0 - 1.0 / (n_trials * np.e))
+            )
+
+        # Standard error of Sharpe (Bailey & López de Prado formula)
+        variance_term = 1.0 + 0.5 * sharpe**2 - skew * sharpe + ((kurtosis - 3.0) / 4.0) * sharpe**2
+        if variance_term <= 0:
+            variance_term = 0.0001
+        
+        se_sr = np.sqrt(variance_term / (n_obs - 1.0))
+
+        if se_sr <= 0:
+            return 0.0
+
+        dsr_stat = (sharpe - e_max_sr) / se_sr
+        dsr = float(stats.norm.cdf(dsr_stat))
+        return dsr
+
+
     def __init__(
         self,
         store: HistoricalDataPort,

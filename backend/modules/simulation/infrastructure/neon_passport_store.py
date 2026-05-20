@@ -92,6 +92,12 @@ CREATE TABLE IF NOT EXISTS engine.signal_passports (
     geometry_used     JSONB,
     calibrated_at     TIMESTAMPTZ DEFAULT NOW(),
 
+    evidence_status   TEXT DEFAULT 'HYPOTHESIS',
+    deflated_sharpe    FLOAT DEFAULT 0.0,
+    avg_mfe_pct       FLOAT DEFAULT 0.0,
+    avg_mae_pct       FLOAT DEFAULT 0.0,
+    mfe_capture_rate  FLOAT DEFAULT 0.0,
+
     PRIMARY KEY (ticker, department, signal_name)
 );
 """
@@ -133,11 +139,17 @@ class NeonPassportStore(PassportStorePort):
         try:
             with conn.cursor() as cur:
                 cur.execute(_DDL)
+                # Dynamic non-destructive migrations
+                cur.execute("ALTER TABLE engine.signal_passports ADD COLUMN IF NOT EXISTS evidence_status TEXT DEFAULT 'HYPOTHESIS';")
+                cur.execute("ALTER TABLE engine.signal_passports ADD COLUMN IF NOT EXISTS deflated_sharpe FLOAT DEFAULT 0.0;")
+                cur.execute("ALTER TABLE engine.signal_passports ADD COLUMN IF NOT EXISTS avg_mfe_pct FLOAT DEFAULT 0.0;")
+                cur.execute("ALTER TABLE engine.signal_passports ADD COLUMN IF NOT EXISTS avg_mae_pct FLOAT DEFAULT 0.0;")
+                cur.execute("ALTER TABLE engine.signal_passports ADD COLUMN IF NOT EXISTS mfe_capture_rate FLOAT DEFAULT 0.0;")
             conn.commit()
-            logger.info("NeonPassportStore: schema ensured")
+            logger.info("NeonPassportStore: schema ensured and migrated")
         except Exception as e:
             conn.rollback()
-            logger.error(f"NeonPassportStore: schema creation failed: {e}")
+            logger.error(f"NeonPassportStore: schema creation/migration failed: {e}")
             raise
         finally:
             self._pool.putconn(conn)
@@ -176,7 +188,8 @@ class NeonPassportStore(PassportStorePort):
                         avg_bars_held, avg_bars_to_loss, pct_loss_hit, pct_time_hit,
                         reliability_score, consistency_score, oos_sharpe, oos_win_rate,
                         regime_breakdown, swing_breakdown, core_breakdown,
-                        viable, grade, geometry_used, calibrated_at
+                        viable, grade, geometry_used, calibrated_at,
+                        evidence_status, deflated_sharpe, avg_mfe_pct, avg_mae_pct, mfe_capture_rate
                     ) VALUES (
                         %(ticker)s, %(department)s, %(signal_name)s,
                         %(ceiling_sharpe)s, %(floor_sharpe)s, %(win_rate)s, %(profit_factor)s,
@@ -184,7 +197,8 @@ class NeonPassportStore(PassportStorePort):
                         %(avg_bars_held)s, %(avg_bars_to_loss)s, %(pct_loss_hit)s, %(pct_time_hit)s,
                         %(reliability_score)s, %(consistency_score)s, %(oos_sharpe)s, %(oos_win_rate)s,
                         %(regime_breakdown)s, %(swing_breakdown)s, %(core_breakdown)s,
-                        %(viable)s, %(grade)s, %(geometry_used)s, NOW()
+                        %(viable)s, %(grade)s, %(geometry_used)s, NOW(),
+                        %(evidence_status)s, %(deflated_sharpe)s, %(avg_mfe_pct)s, %(avg_mae_pct)s, %(mfe_capture_rate)s
                     )
                     ON CONFLICT (ticker, department, signal_name) DO UPDATE SET
                         ceiling_sharpe   = EXCLUDED.ceiling_sharpe,
@@ -209,7 +223,12 @@ class NeonPassportStore(PassportStorePort):
                         viable           = EXCLUDED.viable,
                         grade            = EXCLUDED.grade,
                         geometry_used    = EXCLUDED.geometry_used,
-                        calibrated_at    = NOW()
+                        calibrated_at    = NOW(),
+                        evidence_status  = EXCLUDED.evidence_status,
+                        deflated_sharpe  = EXCLUDED.deflated_sharpe,
+                        avg_mfe_pct      = EXCLUDED.avg_mfe_pct,
+                        avg_mae_pct      = EXCLUDED.avg_mae_pct,
+                        mfe_capture_rate = EXCLUDED.mfe_capture_rate
                 """, _to_native({
                     "ticker": passport.ticker,
                     "department": passport.department,
@@ -236,6 +255,11 @@ class NeonPassportStore(PassportStorePort):
                     "viable": passport.viable,
                     "grade": passport.grade,
                     "geometry_used": json.dumps(_to_native(passport.geometry_used)),
+                    "evidence_status": passport.evidence_status,
+                    "deflated_sharpe": passport.deflated_sharpe,
+                    "avg_mfe_pct": passport.avg_mfe_pct,
+                    "avg_mae_pct": passport.avg_mae_pct,
+                    "mfe_capture_rate": passport.mfe_capture_rate,
                 }))
             conn.commit()
             logger.info(
@@ -365,4 +389,9 @@ class NeonPassportStore(PassportStorePort):
             grade=str(row.get("grade") or "D"),
             geometry_used=geo,
             calibrated_at=str(cal) if cal else None,
+            evidence_status=str(row.get("evidence_status") or "HYPOTHESIS"),
+            deflated_sharpe=float(row.get("deflated_sharpe") or 0.0),
+            avg_mfe_pct=float(row.get("avg_mfe_pct") or 0.0),
+            avg_mae_pct=float(row.get("avg_mae_pct") or 0.0),
+            mfe_capture_rate=float(row.get("mfe_capture_rate") or 0.0),
         )

@@ -24,7 +24,9 @@ logger = logging.getLogger(__name__)
 class CompositeDecision:
     """Result of composing multiple signals."""
     entry: bool = False               # Final entry decision
-    score: float = 0.0                # Weighted composite score (0-1)
+    trim: bool = False                # Final trim decision (partial exit)
+    exit: bool = False                # Final exit decision (full exit)
+    score: float = 0.0                # Weighted composite score (0-1 for entry, 0 to -1 for trim/exit)
     method: str = "weighted_vote"     # Composition method used
     signals_active: int = 0           # How many signals fired
     signals_total: int = 0            # Total enabled signals
@@ -87,8 +89,10 @@ class StrategyComposer:
             return CompositeDecision(reason="All signal weights are zero")
 
         score = 0.0
+        trim_score = 0.0
         contributions = {}
         active_count = 0
+        trim_active_count = 0
 
         for sig in signals:
             value = outputs.get(sig.name, 0)
@@ -97,25 +101,35 @@ class StrategyComposer:
             # Only contribute if signal fires AND confidence meets threshold
             if value != 0 and conf >= sig.threshold:
                 contribution = (sig.weight / total_weight) * value * conf
-                score += contribution
+                if value > 0:
+                    score += contribution
+                    active_count += 1
+                else:
+                    trim_score += contribution
+                    trim_active_count += 1
                 contributions[sig.name] = round(contribution, 4)
-                active_count += 1
             else:
                 contributions[sig.name] = 0.0
 
         entry = score >= 0.5 and active_count >= min_required
+        trim = trim_score <= -0.5 and trim_active_count >= min_required
+        exit_flag = trim_score <= -0.8 and trim_active_count >= min_required
+        
+        final_score = score if abs(score) >= abs(trim_score) else trim_score
 
         return CompositeDecision(
             entry=entry,
-            score=round(score, 4),
+            trim=trim,
+            exit=exit_flag,
+            score=round(final_score, 4),
             method="weighted_vote",
-            signals_active=active_count,
+            signals_active=active_count + trim_active_count,
             signals_total=len(signals),
             contributions=contributions,
             reason=(
-                f"Score={score:.2f} ({'≥' if score >= 0.5 else '<'}0.5), "
-                f"Active={active_count}/{len(signals)} "
-                f"({'≥' if active_count >= min_required else '<'}min={min_required})"
+                f"Score={score:.2f}, TrimScore={trim_score:.2f}, "
+                f"Active={active_count}(in)/{trim_active_count}(out) "
+                f"(min={min_required})"
             ),
         )
 
@@ -140,11 +154,16 @@ class StrategyComposer:
         total = len(signals)
         majority_threshold = total / 2
         active = bullish + bearish
-        entry = bullish > majority_threshold and active >= min_required
+        entry = bullish > majority_threshold and bullish >= min_required
+        trim = bearish > majority_threshold and bearish >= min_required
+        
+        final_score = bullish / max(total, 1) if bullish >= bearish else -bearish / max(total, 1)
 
         return CompositeDecision(
             entry=entry,
-            score=round(bullish / max(total, 1), 4),
+            trim=trim,
+            exit=trim and bearish >= total * 0.75,
+            score=round(final_score, 4),
             method="majority",
             signals_active=active,
             signals_total=total,
@@ -156,24 +175,32 @@ class StrategyComposer:
         """Entry only when ALL enabled signals agree."""
         contributions = {}
         all_bullish = True
+        all_bearish = True
 
         for sig in signals:
             value = outputs.get(sig.name, 0)
             conf = confidences.get(sig.name, 1.0)
             if value > 0 and conf >= sig.threshold:
                 contributions[sig.name] = 1
+                all_bearish = False
+            elif value < 0 and conf >= sig.threshold:
+                contributions[sig.name] = -1
+                all_bullish = False
             else:
                 all_bullish = False
+                all_bearish = False
                 contributions[sig.name] = 0
 
         return CompositeDecision(
             entry=all_bullish and len(signals) > 0,
-            score=1.0 if all_bullish else 0.0,
+            trim=all_bearish and len(signals) > 0,
+            exit=all_bearish and len(signals) > 0,
+            score=1.0 if all_bullish else (-1.0 if all_bearish else 0.0),
             method="unanimous",
-            signals_active=sum(1 for v in contributions.values() if v > 0),
+            signals_active=sum(1 for v in contributions.values() if v != 0),
             signals_total=len(signals),
             contributions=contributions,
-            reason="All signals agree" if all_bullish else "Not all signals agree",
+            reason="All bullish" if all_bullish else ("All bearish" if all_bearish else "Mixed/No signal"),
         )
 
     def compose_series(
@@ -190,10 +217,13 @@ class StrategyComposer:
         """
         # Generate all signals
         all_outputs = {}
+        all_confidences = {}
         for signal in signals:
             if any(s.name == signal.name and s.enabled for s in profile.signals):
                 signal_df = signal.generate(ohlc, context)
                 all_outputs[signal.name] = signal_df["signal"]
+                if "confidence" in signal_df.columns:
+                    all_confidences[signal.name] = signal_df["confidence"]
 
         # Compose bar by bar
         composite_signals = []
@@ -201,8 +231,17 @@ class StrategyComposer:
 
         for i in range(len(ohlc)):
             bar_outputs = {name: int(series.iloc[i]) for name, series in all_outputs.items()}
-            decision = self.compose(profile, bar_outputs)
-            composite_signals.append(1 if decision.entry else 0)
+            bar_conf = {name: float(series.iloc[i]) for name, series in all_confidences.items()}
+            
+            decision = self.compose(profile, bar_outputs, bar_conf)
+            
+            if decision.exit or decision.trim:
+                composite_signals.append(-1)
+            elif decision.entry:
+                composite_signals.append(1)
+            else:
+                composite_signals.append(0)
+                
             composite_scores.append(decision.score)
 
         return pd.DataFrame({

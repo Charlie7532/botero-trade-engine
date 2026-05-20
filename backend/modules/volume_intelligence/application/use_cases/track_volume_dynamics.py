@@ -54,6 +54,7 @@ class KalmanVolumeTracker:
             'P': np.eye(2) * 1.0,                  # Alta incertidumbre inicial
             'prev_vel': 0.0,                        # Para calcular aceleración
             'history_len': 0,
+            'wyckoff_history': [],                  # Historial de 3 barras para [HYP-G]
         }
 
     def update(self, etf: str, observed_rvol: float, change_pct: float = None) -> dict:
@@ -106,12 +107,25 @@ class KalmanVolumeTracker:
             change_pct=change_pct,
         )
 
+        # ── [HYPOTHESIS] G: Stateful Transition Filtering ──
+        wyckoff_history = state.get('wyckoff_history', [])
+        wyckoff_history.append(wyckoff)
+        if len(wyckoff_history) > 3:
+            wyckoff_history.pop(0)
+            
+        transition_advisory = False
+        if len(wyckoff_history) == 3:
+            if wyckoff_history[0] in ("MARKUP", "ACCUMULATION") and wyckoff_history[1] in ("MARKUP", "ACCUMULATION"):
+                if wyckoff_history[2] == "DISTRIBUTION" and acceleration < -0.2:
+                    transition_advisory = True
+
         # Guardar estado para la próxima iteración
         self._states[etf] = {
             'x': x_new,
             'P': P_new,
             'prev_vel': velocity,
             'history_len': state.get('history_len', 0) + 1,
+            'wyckoff_history': wyckoff_history,
         }
 
         # Calcular confianza inversamente proporcional a la incertidumbre (P)
@@ -126,6 +140,7 @@ class KalmanVolumeTracker:
             'acceleration': round(float(acceleration), 4),
             'wyckoff_state': wyckoff,
             'confidence': round(float(confidence), 3),
+            'transition_advisory': transition_advisory,
         }
 
     def get_early_rotations(self, min_velocity: float = 0.2,

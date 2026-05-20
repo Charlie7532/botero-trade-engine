@@ -155,6 +155,7 @@ class OracleCoreBacktester(OracleBacktester):
                     signal_name=signal.name,
                     result=result,
                     core_breakdowns=core_breakdowns,
+                    labels=labels,
                 )
 
                 self._passport.save_passport(passport)
@@ -315,6 +316,7 @@ class OracleCoreBacktester(OracleBacktester):
         signal_name: str,
         result: OracleResult,
         core_breakdowns: dict,
+        labels: list = None,
     ) -> SignalPassport:
         """Build SignalPassport from OracleResult + Core-specific breakdowns."""
         # Reliability score: weighted composite
@@ -338,17 +340,54 @@ class OracleCoreBacktester(OracleBacktester):
             3,
         )
 
-        viable = (
-            result.ceiling_sharpe >= 0.3
-            and result.n_entries >= self.MIN_ENTRIES
-            and result.win_rate >= 30
-        )
-        grade = (
-            "A" if result.ceiling_sharpe >= 1.5
-            else "B" if result.ceiling_sharpe >= 1.0
-            else "C" if result.ceiling_sharpe >= 0.5
-            else "D"
-        )
+        # Average MAE and MFE excursions (Component A) & DSR
+        avg_mae = 0.0
+        avg_mfe = 0.0
+        mfe_capture = 0.0
+        dsr = 0.0
+
+        if labels:
+            maes = [l.max_adverse_excursion_pct for l in labels if l.max_adverse_excursion_pct is not None]
+            mfes = [l.max_favorable_excursion_pct for l in labels if l.max_favorable_excursion_pct is not None]
+            avg_mae = float(np.mean(maes)) if maes else 0.0
+            avg_mfe = float(np.mean(mfes)) if mfes else 0.0
+            
+            if abs(avg_mfe) > 0.0001:
+                mfe_capture = result.avg_return_pct / avg_mfe
+            else:
+                mfe_capture = 0.0
+
+            # DSR multiple testing correction (against N=6 trials in create_core_signals())
+            from scipy import stats
+            returns = [l.return_pct for l in labels]
+            skew_val = float(stats.skew(returns)) if len(returns) > 2 else 0.0
+            kurt_val = float(stats.kurtosis(returns, fisher=False)) if len(returns) > 2 else 3.0
+            
+            dsr = self._deflated_sharpe(
+                sharpe=result.ceiling_sharpe,
+                n_obs=len(returns),
+                n_trials=6,
+                skew=skew_val,
+                kurtosis=kurt_val,
+            )
+
+        # Enforce strict DSR-based grading thresholds
+        if dsr >= 0.95:
+            grade = "A"
+            evidence_status = "VALIDATED"
+            viable = True
+        elif dsr >= 0.85:
+            grade = "B"
+            evidence_status = "VALIDATED"
+            viable = True
+        elif dsr >= 0.70:
+            grade = "C"
+            evidence_status = "VALIDATED"
+            viable = True
+        else:
+            grade = "D"
+            evidence_status = "HYPOTHESIS"
+            viable = False
 
         return SignalPassport(
             ticker=ticker,
@@ -377,6 +416,11 @@ class OracleCoreBacktester(OracleBacktester):
             thesis_survival_rate=core_breakdowns["thesis_survival_rate"],
             viable=viable,
             grade=grade,
+            evidence_status=evidence_status,
+            deflated_sharpe=dsr,
+            avg_mfe_pct=avg_mfe,
+            avg_mae_pct=avg_mae,
+            mfe_capture_rate=mfe_capture,
             geometry_used={
                 "profit_mult": self.geometry.profit_mult,
                 "loss_mult": self.geometry.loss_mult,

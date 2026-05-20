@@ -71,6 +71,11 @@ class SignalPassport:
     # ── Gate integration ──────────────────────────────────────────
     viable: bool = False
     grade: str = "D"           # A/B/C/D
+    evidence_status: str = "HYPOTHESIS"  # "HYPOTHESIS" | "VALIDATED"
+    deflated_sharpe: float = 0.0
+    avg_mfe_pct: float = 0.0
+    avg_mae_pct: float = 0.0
+    mfe_capture_rate: float = 0.0
     geometry_used: dict = field(default_factory=dict)
     calibrated_at: Optional[str] = None
 

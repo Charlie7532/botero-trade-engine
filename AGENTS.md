@@ -29,6 +29,31 @@ Summary: Dependencies point inward. Domain knows nothing about infrastructure. U
 
 ---
 
+## Graphify Knowledge Graph — mandatory for architecture questions
+
+This project maintains a graphify knowledge graph at `graphify-out/`.
+Graph: 4,980 nodes · 12,695 edges · 339 communities.
+Git hooks (`post-commit`, `post-checkout`) auto-update the graph. Manual: `pnpm graphify:update`.
+
+**Full rules in `.agents/skills/graphify-protocol/SKILL.md`.** Summary:
+- **"Where is X?"** → grep. **"What connects to X?"** → graphify.
+- Before answering architecture, refactor impact, or dependency questions → **query the graph first**.
+- Key commands: `graphify query "Q" --budget 500`, `graphify path "A" "B"`, `graphify explain "X"`.
+- God Nodes: TimescaleDataStore (638 edges), SignalPort (188), AlpacaAdapter (165), VaultInterceptor (144).
+
+---
+
+## Dynamic Rules & Workflows
+
+**CRITICAL INSTRUCTION FOR ALL AI AGENTS (Claude, Gemini, Codex, Cursor):**
+You MUST use your file-reading tools to check the following directories for specific rules before proceeding with architectural or systemic changes:
+- `.agents/rules/` -> Contains specific behavioral and tool rules.
+- `.agents/workflows/` -> Contains step-by-step processes for complex tasks.
+
+Do NOT rely solely on this `AGENTS.md` file. Read the specific rule files dynamically when applicable to your task.
+
+---
+
 ## Project structure
 
 ```

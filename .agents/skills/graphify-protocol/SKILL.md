@@ -1,8 +1,13 @@
+---
+name: graphify-protocol
+description: Use this skill to query the project's knowledge graph before answering architecture questions or making refactors. Outlines when to use grep vs graphify.
+---
+
 ## graphify
 
 This project has a graphify knowledge graph at graphify-out/.
-Graph: 4,980 nodes · 12,695 edges · 339 communities.
-Last scan: 2026-05-20 · 770 files · ~542,959 words.
+Graph: 5,252 nodes · 13,400 edges · 349 communities.
+Last scan: 2026-05-20 · 789 files · ~619,938 words.
 
 ### Decision Protocol — grep vs graphify
 
@@ -31,7 +36,7 @@ Before answering any of these question types, **query the graph first**:
 4. **Dependency audit** — "what does this module depend on?" → `graphify query "dependencies of [module]"`
 5. **Cross-cutting concerns** — "what else uses this pattern?" → `graphify query "[pattern] usage"`
 
-Do NOT answer architecture questions from memory alone. The graph has 4,980 nodes of verified relationships — use it.
+Do NOT answer architecture questions from memory alone. The graph has 5,252 nodes of verified relationships — use it.
 
 ### Session Startup (architecture sessions only)
 

@@ -1,0 +1,1328 @@
+2026-05-20 20:59:21,548 [INFO] oracle_runner: Initializing TimescaleDataStore and NeonForensicStore interfaces...
+2026-05-20 20:59:21,804 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: schemas and tables ensured successfully
+2026-05-20 20:59:21,805 [INFO] oracle_runner: Target Tickers: ['MSFT', 'AMZN', 'HD', 'HON', 'IBM', 'JNJ', 'JPM', 'MCD', 'MRK', 'PEP', 'PG', 'WMT', 'XOM']
+2026-05-20 20:59:21,805 [INFO] oracle_runner: Target Signals: ['rsi_intelligence', 'regression_channel']
+2026-05-20 20:59:21,805 [INFO] oracle_runner: Target Mode: ENTRY
+2026-05-20 20:59:21,805 [INFO] oracle_runner: Executing Oracle laboratory for MSFT using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × MSFT — ENTRY ReportCard                       ║
+║  (118 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      17 ( 14.4%) ███                  ║
+║    SOLID_MOVE      36 ( 30.5%) ██████               ║
+║    SLOW_GRIND       9 (  7.6%) ██                   ║
+║    MISS             7 (  5.9%) █                    ║
+║    TRAP            32 ( 27.1%) █████                ║
+║    FALSE_SIGNAL    17 ( 14.4%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      44.9% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        27.1%                                    ║
+║    False Rate:       14.4%                                    ║
+║    Edge Ratio H=10:  0.97 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.4%                                     ║
+║    Avg MAE(10):     -4.5%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  42.4%  │  H=5:  46.6%  │  H=10: 58.5%             ║
+║    H=20: 67.0%  │  H=40: 67.8%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (65 failures):                        ║
+║    🟢 FORESEEABLE:         19 (29.2%)                         ║
+║       UNFORESEEABLE       :  42 ██████████         ║
+║       GREED_TRAP          :  11 ███                ║
+║       CONSOLIDATION_RANGE :   6 █                  ║
+║       BLACK_SWAN          :   2                    ║
+║       DISTRIBUTION_VOLUME :   2                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         46 (70.8%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       48.3% ██████████           ║
+║    FEAR       100.0% ████████████████████ ║
+║    ANXIETY     42.5% ████████             ║
+║    NEUTRAL     42.1% ████████             ║
+║    GREED       50.0% ██████████           ║
+║                                                              ║
+║  ► GRADE: D  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 20:59:38,762 [INFO] oracle_runner: Persisting 118 entry labels to database...
+2026-05-20 20:59:40,012 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 118 entry labels
+2026-05-20 20:59:40,012 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 20:59:40,047 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for MSFT (rsi_intelligence)
+2026-05-20 20:59:40,047 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 20:59:40,047 [INFO] oracle_runner: Executing Oracle laboratory for MSFT using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × MSFT — ENTRY ReportCard                     ║
+║  (173 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      28 ( 16.2%) ███                  ║
+║    SOLID_MOVE      60 ( 34.7%) ███████              ║
+║    SLOW_GRIND       9 (  5.2%) █                    ║
+║    MISS            12 (  6.9%) █                    ║
+║    TRAP            45 ( 26.0%) █████                ║
+║    FALSE_SIGNAL    19 ( 11.0%) ██                   ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      50.9% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        26.0%                                    ║
+║    False Rate:       11.0%                                    ║
+║    Edge Ratio H=10:  1.16 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.1%                                     ║
+║    Avg MAE(10):     -3.5%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  56.6%  │  H=5:  60.7%  │  H=10: 62.4%             ║
+║    H=20: 60.1%  │  H=40: 61.3%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (85 failures):                        ║
+║    🟢 FORESEEABLE:         19 (22.4%)                         ║
+║       UNFORESEEABLE       :  65 ███████████        ║
+║       CONSOLIDATION_RANGE :  12 ██                 ║
+║       GREED_TRAP          :   5 █                  ║
+║       LOW_RVOL_ENTRY      :   2                    ║
+║       BLACK_SWAN          :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         66 (77.6%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     46.9% █████████            ║
+║    NEUTRAL     90.9% ██████████████████   ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 20:59:51,802 [INFO] oracle_runner: Persisting 173 entry labels to database...
+2026-05-20 20:59:53,600 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 173 entry labels
+2026-05-20 20:59:53,600 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 20:59:53,629 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for MSFT (regression_channel)
+2026-05-20 20:59:53,629 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 20:59:53,629 [INFO] oracle_runner: Executing Oracle laboratory for AMZN using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × AMZN — ENTRY ReportCard                       ║
+║  (139 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      24 ( 17.3%) ███                  ║
+║    SOLID_MOVE      48 ( 34.5%) ███████              ║
+║    SLOW_GRIND       6 (  4.3%) █                    ║
+║    MISS             2 (  1.4%)                      ║
+║    TRAP            37 ( 26.6%) █████                ║
+║    FALSE_SIGNAL    22 ( 15.8%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      51.8% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        26.6%                                    ║
+║    False Rate:       15.8%                                    ║
+║    Edge Ratio H=10:  1.24 (MFE/MAE)                          ║
+║    Avg MFE(10):     +7.2%                                     ║
+║    Avg MAE(10):     -5.8%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  55.4%  │  H=5:  57.5%  │  H=10: 57.5%             ║
+║    H=20: 73.4%  │  H=40: 77.7%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (67 failures):                        ║
+║    🟢 FORESEEABLE:         11 (16.4%)                         ║
+║       UNFORESEEABLE       :  46 ██████████         ║
+║       GREED_TRAP          :   8 ██                 ║
+║       BLACK_SWAN          :   7 ██                 ║
+║       EARNINGS_SHOCK      :   3 █                  ║
+║       CONSOLIDATION_RANGE :   2                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         56 (83.6%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       29.2% ██████               ║
+║    FEAR       100.0% ████████████████████ ║
+║    ANXIETY     60.0% ████████████         ║
+║    NEUTRAL     53.9% ███████████          ║
+║    GREED       43.8% █████████            ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:00:01,268 [INFO] oracle_runner: Persisting 139 entry labels to database...
+2026-05-20 21:00:02,918 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 139 entry labels
+2026-05-20 21:00:02,920 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:00:02,951 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for AMZN (rsi_intelligence)
+2026-05-20 21:00:02,952 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:00:02,952 [INFO] oracle_runner: Executing Oracle laboratory for AMZN using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × AMZN — ENTRY ReportCard                     ║
+║  (227 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      44 ( 19.4%) ████                 ║
+║    SOLID_MOVE      75 ( 33.0%) ███████              ║
+║    SLOW_GRIND       7 (  3.1%) █                    ║
+║    MISS             4 (  1.8%)                      ║
+║    TRAP            67 ( 29.5%) ██████               ║
+║    FALSE_SIGNAL    30 ( 13.2%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      52.4% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        29.5%                                    ║
+║    False Rate:       13.2%                                    ║
+║    Edge Ratio H=10:  1.16 (MFE/MAE)                          ║
+║    Avg MFE(10):     +5.9%                                     ║
+║    Avg MAE(10):     -5.1%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  59.0%  │  H=5:  56.4%  │  H=10: 57.3%             ║
+║    H=20: 63.4%  │  H=40: 68.7%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (108 failures):                        ║
+║    🟢 FORESEEABLE:         13 (12.0%)                         ║
+║       UNFORESEEABLE       :  84 ████████████       ║
+║       BLACK_SWAN          :   7 █                  ║
+║       GREED_TRAP          :   7 █                  ║
+║       EARNINGS_SHOCK      :   4 █                  ║
+║       CONSOLIDATION_RANGE :   4 █                  ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         95 (88.0%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     52.4% ██████████           ║
+║    NEUTRAL     56.2% ███████████          ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:00:18,260 [INFO] oracle_runner: Persisting 227 entry labels to database...
+2026-05-20 21:00:20,653 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 227 entry labels
+2026-05-20 21:00:20,654 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:00:20,683 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for AMZN (regression_channel)
+2026-05-20 21:00:20,683 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:00:20,683 [INFO] oracle_runner: Executing Oracle laboratory for HD using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × HD — ENTRY ReportCard                         ║
+║  (129 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      14 ( 10.8%) ██                   ║
+║    SOLID_MOVE      45 ( 34.9%) ███████              ║
+║    SLOW_GRIND       8 (  6.2%) █                    ║
+║    MISS             4 (  3.1%) █                    ║
+║    TRAP            42 ( 32.6%) ███████              ║
+║    FALSE_SIGNAL    16 ( 12.4%) ██                   ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      45.7% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        32.6%                                    ║
+║    False Rate:       12.4%                                    ║
+║    Edge Ratio H=10:  1.07 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.0%                                     ║
+║    Avg MAE(10):     -3.7%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  55.8%  │  H=5:  53.5%  │  H=10: 55.0%             ║
+║    H=20: 51.2%  │  H=40: 58.9%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (70 failures):                        ║
+║    🟢 FORESEEABLE:          7 (10.0%)                         ║
+║       UNFORESEEABLE       :  62 █████████████      ║
+║       CONSOLIDATION_RANGE :   4 █                  ║
+║       BEAR_REGIME_IGNORED :   1                    ║
+║       BLACK_SWAN          :   1                    ║
+║       LOW_RVOL_ENTRY      :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         63 (90.0%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       26.7% █████                ║
+║    FEAR        50.0% ██████████           ║
+║    ANXIETY     41.0% ████████             ║
+║    NEUTRAL     78.6% ████████████████     ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:00:28,853 [INFO] oracle_runner: Persisting 129 entry labels to database...
+2026-05-20 21:00:30,206 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 129 entry labels
+2026-05-20 21:00:30,206 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:00:30,234 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for HD (rsi_intelligence)
+2026-05-20 21:00:30,235 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:00:30,235 [INFO] oracle_runner: Executing Oracle laboratory for HD using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × HD — ENTRY ReportCard                       ║
+║  (215 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      38 ( 17.7%) ████                 ║
+║    SOLID_MOVE      77 ( 35.8%) ███████              ║
+║    SLOW_GRIND      14 (  6.5%) █                    ║
+║    MISS             9 (  4.2%) █                    ║
+║    TRAP            55 ( 25.6%) █████                ║
+║    FALSE_SIGNAL    22 ( 10.2%) ██                   ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      53.5% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        25.6%                                    ║
+║    False Rate:       10.2%                                    ║
+║    Edge Ratio H=10:  1.38 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.5%                                     ║
+║    Avg MAE(10):     -3.3%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  64.7%  │  H=5:  61.9%  │  H=10: 64.2%             ║
+║    H=20: 67.9%  │  H=40: 71.6%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (100 failures):                        ║
+║    🟢 FORESEEABLE:         10 (10.0%)                         ║
+║       UNFORESEEABLE       :  89 █████████████      ║
+║       CONSOLIDATION_RANGE :   9 █                  ║
+║       LOW_RVOL_ENTRY      :   1                    ║
+║       EARNINGS_SHOCK      :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         90 (90.0%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     52.1% ██████████           ║
+║    NEUTRAL     72.7% ███████████████      ║
+║    GREED       50.0% ██████████           ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:00:43,112 [INFO] oracle_runner: Persisting 215 entry labels to database...
+2026-05-20 21:00:45,350 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 215 entry labels
+2026-05-20 21:00:45,350 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:00:45,384 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for HD (regression_channel)
+2026-05-20 21:00:45,384 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:00:45,387 [INFO] oracle_runner: Executing Oracle laboratory for HON using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × HON — ENTRY ReportCard                        ║
+║  (159 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      25 ( 15.7%) ███                  ║
+║    SOLID_MOVE      62 ( 39.0%) ████████             ║
+║    SLOW_GRIND      13 (  8.2%) ██                   ║
+║    MISS            16 ( 10.1%) ██                   ║
+║    TRAP            33 ( 20.8%) ████                 ║
+║    FALSE_SIGNAL    10 (  6.3%) █                    ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      54.7% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        20.8%                                    ║
+║    False Rate:        6.3%                                    ║
+║    Edge Ratio H=10:  1.71 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.6%                                     ║
+║    Avg MAE(10):     -2.7%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  62.9%  │  H=5:  66.0%  │  H=10: 72.3%             ║
+║    H=20: 73.0%  │  H=40: 66.7%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (72 failures):                        ║
+║    🟢 FORESEEABLE:         18 (25.0%)                         ║
+║       UNFORESEEABLE       :  52 ███████████        ║
+║       CONSOLIDATION_RANGE :  15 ███                ║
+║       GREED_TRAP          :   3 █                  ║
+║       BLACK_SWAN          :   1                    ║
+║       EARNINGS_SHOCK      :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         54 (75.0%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       60.0% ████████████         ║
+║    FEAR        66.7% █████████████        ║
+║    ANXIETY     53.3% ███████████          ║
+║    NEUTRAL     39.1% ████████             ║
+║    GREED       60.0% ████████████         ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: VIABLE                             ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:00:52,981 [INFO] oracle_runner: Persisting 159 entry labels to database...
+2026-05-20 21:00:54,663 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 159 entry labels
+2026-05-20 21:00:54,663 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:00:54,692 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for HON (rsi_intelligence)
+2026-05-20 21:00:54,692 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:00:54,692 [INFO] oracle_runner: Executing Oracle laboratory for HON using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × HON — ENTRY ReportCard                      ║
+║  (198 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      36 ( 18.2%) ████                 ║
+║    SOLID_MOVE      77 ( 38.9%) ████████             ║
+║    SLOW_GRIND      15 (  7.6%) ██                   ║
+║    MISS             6 (  3.0%) █                    ║
+║    TRAP            43 ( 21.7%) ████                 ║
+║    FALSE_SIGNAL    21 ( 10.6%) ██                   ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      57.1% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        21.7%                                    ║
+║    False Rate:       10.6%                                    ║
+║    Edge Ratio H=10:  1.20 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.0%                                     ║
+║    Avg MAE(10):     -3.4%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  64.1%  │  H=5:  63.1%  │  H=10: 67.7%             ║
+║    H=20: 69.2%  │  H=40: 65.2%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (85 failures):                        ║
+║    🟢 FORESEEABLE:         12 (14.1%)                         ║
+║       UNFORESEEABLE       :  68 ████████████       ║
+║       CONSOLIDATION_RANGE :   6 █                  ║
+║       GREED_TRAP          :   5 █                  ║
+║       BLACK_SWAN          :   3 █                  ║
+║       EARNINGS_SHOCK      :   2                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         73 (85.9%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     56.5% ███████████          ║
+║    NEUTRAL     71.4% ██████████████       ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: B  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:01:07,287 [INFO] oracle_runner: Persisting 198 entry labels to database...
+2026-05-20 21:01:09,344 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 198 entry labels
+2026-05-20 21:01:09,344 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:01:09,372 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for HON (regression_channel)
+2026-05-20 21:01:09,372 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:01:09,373 [INFO] oracle_runner: Executing Oracle laboratory for IBM using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × IBM — ENTRY ReportCard                        ║
+║  (161 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      20 ( 12.4%) ██                   ║
+║    SOLID_MOVE      48 ( 29.8%) ██████               ║
+║    SLOW_GRIND      17 ( 10.6%) ██                   ║
+║    MISS             6 (  3.7%) █                    ║
+║    TRAP            51 ( 31.7%) ██████               ║
+║    FALSE_SIGNAL    19 ( 11.8%) ██                   ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      42.2% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        31.7%                                    ║
+║    False Rate:       11.8%                                    ║
+║    Edge Ratio H=10:  1.04 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.8%                                     ║
+║    Avg MAE(10):     -3.7%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  54.0%  │  H=5:  55.9%  │  H=10: 56.5%             ║
+║    H=20: 57.1%  │  H=40: 61.5%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (93 failures):                        ║
+║    🟢 FORESEEABLE:         15 (16.1%)                         ║
+║       UNFORESEEABLE       :  75 ████████████       ║
+║       CONSOLIDATION_RANGE :   6 █                  ║
+║       DISTRIBUTION_VOLUME :   5 █                  ║
+║       GREED_TRAP          :   4 █                  ║
+║       BLACK_SWAN          :   3                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         78 (83.9%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       48.0% ██████████           ║
+║    FEAR        38.5% ████████             ║
+║    ANXIETY     51.0% ██████████           ║
+║    NEUTRAL     15.6% ███                  ║
+║    GREED       33.3% ███████              ║
+║                                                              ║
+║  ► GRADE: D  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:01:16,937 [INFO] oracle_runner: Persisting 161 entry labels to database...
+2026-05-20 21:01:18,580 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 161 entry labels
+2026-05-20 21:01:18,580 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:01:18,609 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for IBM (rsi_intelligence)
+2026-05-20 21:01:18,609 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:01:18,609 [INFO] oracle_runner: Executing Oracle laboratory for IBM using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × IBM — ENTRY ReportCard                      ║
+║  (195 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      32 ( 16.4%) ███                  ║
+║    SOLID_MOVE      55 ( 28.2%) ██████               ║
+║    SLOW_GRIND      16 (  8.2%) ██                   ║
+║    MISS            10 (  5.1%) █                    ║
+║    TRAP            46 ( 23.6%) █████                ║
+║    FALSE_SIGNAL    36 ( 18.5%) ████                 ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      44.6% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        23.6%                                    ║
+║    False Rate:       18.5%                                    ║
+║    Edge Ratio H=10:  0.99 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.5%                                     ║
+║    Avg MAE(10):     -3.5%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  55.9%  │  H=5:  58.0%  │  H=10: 58.0%             ║
+║    H=20: 63.6%  │  H=40: 60.0%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (108 failures):                        ║
+║    🟢 FORESEEABLE:         15 (13.9%)                         ║
+║       UNFORESEEABLE       :  83 ████████████       ║
+║       CONSOLIDATION_RANGE :   9 █                  ║
+║       GREED_TRAP          :   6 █                  ║
+║       EARNINGS_SHOCK      :   6 █                  ║
+║       BLACK_SWAN          :   4 █                  ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         93 (86.1%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     48.0% ██████████           ║
+║    NEUTRAL     29.2% ██████               ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: D  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:01:31,389 [INFO] oracle_runner: Persisting 195 entry labels to database...
+2026-05-20 21:01:33,432 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 195 entry labels
+2026-05-20 21:01:33,433 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:01:33,470 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for IBM (regression_channel)
+2026-05-20 21:01:33,470 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:01:33,470 [INFO] oracle_runner: Executing Oracle laboratory for JNJ using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × JNJ — ENTRY ReportCard                        ║
+║  (140 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      23 ( 16.4%) ███                  ║
+║    SOLID_MOVE      51 ( 36.4%) ███████              ║
+║    SLOW_GRIND       7 (  5.0%) █                    ║
+║    MISS            10 (  7.1%) █                    ║
+║    TRAP            28 ( 20.0%) ████                 ║
+║    FALSE_SIGNAL    21 ( 15.0%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      52.9% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        20.0%                                    ║
+║    False Rate:       15.0%                                    ║
+║    Edge Ratio H=10:  1.27 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.0%                                     ║
+║    Avg MAE(10):     -2.4%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  61.4%  │  H=5:  62.1%  │  H=10: 64.3%             ║
+║    H=20: 72.1%  │  H=40: 69.3%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (66 failures):                        ║
+║    🟢 FORESEEABLE:         18 (27.3%)                         ║
+║       UNFORESEEABLE       :  48 ███████████        ║
+║       CONSOLIDATION_RANGE :   8 ██                 ║
+║       BEAR_REGIME_IGNORED :   7 ██                 ║
+║       GREED_TRAP          :   2                    ║
+║       DISTRIBUTION_VOLUME :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         48 (72.7%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       83.3% █████████████████    ║
+║    FEAR        36.4% ███████              ║
+║    ANXIETY     51.9% ██████████           ║
+║    NEUTRAL     63.6% █████████████        ║
+║    GREED      100.0% ████████████████████ ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:01:40,932 [INFO] oracle_runner: Persisting 140 entry labels to database...
+2026-05-20 21:01:42,346 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 140 entry labels
+2026-05-20 21:01:42,346 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:01:42,374 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for JNJ (rsi_intelligence)
+2026-05-20 21:01:42,374 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:01:42,374 [INFO] oracle_runner: Executing Oracle laboratory for JNJ using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × JNJ — ENTRY ReportCard                      ║
+║  (191 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      25 ( 13.1%) ███                  ║
+║    SOLID_MOVE      57 ( 29.8%) ██████               ║
+║    SLOW_GRIND      10 (  5.2%) █                    ║
+║    MISS            18 (  9.4%) ██                   ║
+║    TRAP            44 ( 23.0%) █████                ║
+║    FALSE_SIGNAL    37 ( 19.4%) ████                 ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      42.9% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        23.0%                                    ║
+║    False Rate:       19.4%                                    ║
+║    Edge Ratio H=10:  1.23 (MFE/MAE)                          ║
+║    Avg MFE(10):     +2.9%                                     ║
+║    Avg MAE(10):     -2.4%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  53.4%  │  H=5:  54.5%  │  H=10: 57.6%             ║
+║    H=20: 57.6%  │  H=40: 67.5%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (109 failures):                        ║
+║    🟢 FORESEEABLE:         24 (22.0%)                         ║
+║       UNFORESEEABLE       :  82 ███████████        ║
+║       CONSOLIDATION_RANGE :  15 ██                 ║
+║       LOW_RVOL_ENTRY      :   7 █                  ║
+║       GREED_TRAP          :   2                    ║
+║       EARNINGS_SHOCK      :   2                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         85 (78.0%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR       100.0% ████████████████████ ║
+║    ANXIETY     44.1% █████████            ║
+║    NEUTRAL     37.5% ████████             ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: D  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:01:54,795 [INFO] oracle_runner: Persisting 191 entry labels to database...
+2026-05-20 21:01:56,804 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 191 entry labels
+2026-05-20 21:01:56,805 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:01:56,833 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for JNJ (regression_channel)
+2026-05-20 21:01:56,833 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:01:56,834 [INFO] oracle_runner: Executing Oracle laboratory for JPM using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × JPM — ENTRY ReportCard                        ║
+║  (113 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      22 ( 19.5%) ████                 ║
+║    SOLID_MOVE      35 ( 31.0%) ██████               ║
+║    SLOW_GRIND       2 (  1.8%)                      ║
+║    MISS             3 (  2.6%) █                    ║
+║    TRAP            37 ( 32.7%) ███████              ║
+║    FALSE_SIGNAL    14 ( 12.4%) ██                   ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      50.4% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        32.7%                                    ║
+║    False Rate:       12.4%                                    ║
+║    Edge Ratio H=10:  1.12 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.9%                                     ║
+║    Avg MAE(10):     -4.4%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  63.7%  │  H=5:  62.0%  │  H=10: 54.9%             ║
+║    H=20: 59.3%  │  H=40: 63.7%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (56 failures):                        ║
+║    🟢 FORESEEABLE:         16 (28.6%)                         ║
+║       UNFORESEEABLE       :  35 █████████          ║
+║       GREED_TRAP          :   6 ██                 ║
+║       DISTRIBUTION_VOLUME :   4 █                  ║
+║       BLACK_SWAN          :   3 █                  ║
+║       CONSOLIDATION_RANGE :   3 █                  ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         40 (71.4%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       11.1% ██                   ║
+║    FEAR        63.6% █████████████        ║
+║    ANXIETY     67.7% ██████████████       ║
+║    NEUTRAL     48.0% ██████████           ║
+║    GREED       66.7% █████████████        ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:02:04,179 [INFO] oracle_runner: Persisting 113 entry labels to database...
+2026-05-20 21:02:05,335 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 113 entry labels
+2026-05-20 21:02:05,336 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:02:05,364 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for JPM (rsi_intelligence)
+2026-05-20 21:02:05,365 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:02:05,365 [INFO] oracle_runner: Executing Oracle laboratory for JPM using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × JPM — ENTRY ReportCard                      ║
+║  (218 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      30 ( 13.8%) ███                  ║
+║    SOLID_MOVE      76 ( 34.9%) ███████              ║
+║    SLOW_GRIND      16 (  7.3%) █                    ║
+║    MISS            13 (  6.0%) █                    ║
+║    TRAP            62 ( 28.4%) ██████               ║
+║    FALSE_SIGNAL    21 (  9.6%) ██                   ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      48.6% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        28.4%                                    ║
+║    False Rate:        9.6%                                    ║
+║    Edge Ratio H=10:  1.09 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.3%                                     ║
+║    Avg MAE(10):     -3.9%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  57.8%  │  H=5:  56.0%  │  H=10: 61.9%             ║
+║    H=20: 63.3%  │  H=40: 69.3%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (112 failures):                        ║
+║    🟢 FORESEEABLE:         22 (19.6%)                         ║
+║       UNFORESEEABLE       :  84 ███████████        ║
+║       CONSOLIDATION_RANGE :  13 ██                 ║
+║       GREED_TRAP          :   8 █                  ║
+║       EARNINGS_SHOCK      :   4 █                  ║
+║       BLACK_SWAN          :   2                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         90 (80.4%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     48.5% ██████████           ║
+║    NEUTRAL     38.1% ████████             ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:02:18,315 [INFO] oracle_runner: Persisting 218 entry labels to database...
+2026-05-20 21:02:20,518 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 218 entry labels
+2026-05-20 21:02:20,518 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:02:20,547 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for JPM (regression_channel)
+2026-05-20 21:02:20,547 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:02:20,547 [INFO] oracle_runner: Executing Oracle laboratory for MCD using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × MCD — ENTRY ReportCard                        ║
+║  (139 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      12 (  8.6%) ██                   ║
+║    SOLID_MOVE      51 ( 36.7%) ███████              ║
+║    SLOW_GRIND       9 (  6.5%) █                    ║
+║    MISS            10 (  7.2%) █                    ║
+║    TRAP            33 ( 23.7%) █████                ║
+║    FALSE_SIGNAL    24 ( 17.3%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      45.3% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        23.7%                                    ║
+║    False Rate:       17.3%                                    ║
+║    Edge Ratio H=10:  1.24 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.0%                                     ║
+║    Avg MAE(10):     -2.4%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  54.7%  │  H=5:  64.8%  │  H=10: 59.0%             ║
+║    H=20: 56.1%  │  H=40: 59.0%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (76 failures):                        ║
+║    🟢 FORESEEABLE:         17 (22.4%)                         ║
+║       UNFORESEEABLE       :  59 ████████████       ║
+║       CONSOLIDATION_RANGE :  10 ██                 ║
+║       GREED_TRAP          :   6 █                  ║
+║       LOW_RVOL_ENTRY      :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         59 (77.6%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC      100.0% ████████████████████ ║
+║    FEAR        42.9% █████████            ║
+║    ANXIETY     31.8% ██████               ║
+║    NEUTRAL     67.6% ██████████████       ║
+║    GREED       33.3% ███████              ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:02:28,424 [INFO] oracle_runner: Persisting 139 entry labels to database...
+2026-05-20 21:02:29,893 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 139 entry labels
+2026-05-20 21:02:29,893 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:02:29,924 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for MCD (rsi_intelligence)
+2026-05-20 21:02:29,924 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:02:29,924 [INFO] oracle_runner: Executing Oracle laboratory for MCD using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × MCD — ENTRY ReportCard                      ║
+║  (227 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      25 ( 11.0%) ██                   ║
+║    SOLID_MOVE      59 ( 26.0%) █████                ║
+║    SLOW_GRIND      20 (  8.8%) ██                   ║
+║    MISS            15 (  6.6%) █                    ║
+║    TRAP            67 ( 29.5%) ██████               ║
+║    FALSE_SIGNAL    41 ( 18.1%) ████                 ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      37.0% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        29.5%                                    ║
+║    False Rate:       18.1%                                    ║
+║    Edge Ratio H=10:  0.93 (MFE/MAE)                          ║
+║    Avg MFE(10):     +2.7%                                     ║
+║    Avg MAE(10):     -2.9%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  54.2%  │  H=5:  55.1%  │  H=10: 52.0%             ║
+║    H=20: 51.1%  │  H=40: 55.1%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (143 failures):                        ║
+║    🟢 FORESEEABLE:         18 (12.6%)                         ║
+║       UNFORESEEABLE       : 123 █████████████      ║
+║       CONSOLIDATION_RANGE :  14 █                  ║
+║       GREED_TRAP          :   3                    ║
+║       EARNINGS_SHOCK      :   1                    ║
+║       BLACK_SWAN          :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:        125 (87.4%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     38.0% ████████             ║
+║    NEUTRAL     44.4% █████████            ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: D  │  VERDICT: REJECT                             ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:02:42,112 [INFO] oracle_runner: Persisting 227 entry labels to database...
+2026-05-20 21:02:44,427 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 227 entry labels
+2026-05-20 21:02:44,427 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:02:44,456 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for MCD (regression_channel)
+2026-05-20 21:02:44,456 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:02:44,456 [INFO] oracle_runner: Executing Oracle laboratory for MRK using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × MRK — ENTRY ReportCard                        ║
+║  (147 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      24 ( 16.3%) ███                  ║
+║    SOLID_MOVE      50 ( 34.0%) ███████              ║
+║    SLOW_GRIND       9 (  6.1%) █                    ║
+║    MISS             9 (  6.1%) █                    ║
+║    TRAP            30 ( 20.4%) ████                 ║
+║    FALSE_SIGNAL    25 ( 17.0%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      50.3% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        20.4%                                    ║
+║    False Rate:       17.0%                                    ║
+║    Edge Ratio H=10:  1.31 (MFE/MAE)                          ║
+║    Avg MFE(10):     +4.8%                                     ║
+║    Avg MAE(10):     -3.7%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  56.5%  │  H=5:  56.5%  │  H=10: 61.2%             ║
+║    H=20: 70.8%  │  H=40: 60.5%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (73 failures):                        ║
+║    🟢 FORESEEABLE:         18 (24.7%)                         ║
+║       UNFORESEEABLE       :  52 ███████████        ║
+║       CONSOLIDATION_RANGE :   9 ██                 ║
+║       GREED_TRAP          :   5 █                  ║
+║       BLACK_SWAN          :   2                    ║
+║       BEAR_REGIME_IGNORED :   2                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         55 (75.3%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       76.0% ███████████████      ║
+║    FEAR        62.5% ████████████         ║
+║    ANXIETY     43.4% █████████            ║
+║    NEUTRAL     45.7% █████████            ║
+║    GREED       30.0% ██████               ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:02:52,116 [INFO] oracle_runner: Persisting 147 entry labels to database...
+2026-05-20 21:02:53,622 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 147 entry labels
+2026-05-20 21:02:53,625 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:02:53,654 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for MRK (rsi_intelligence)
+2026-05-20 21:02:53,654 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:02:53,654 [INFO] oracle_runner: Executing Oracle laboratory for MRK using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × MRK — ENTRY ReportCard                      ║
+║  (180 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      32 ( 17.8%) ████                 ║
+║    SOLID_MOVE      56 ( 31.1%) ██████               ║
+║    SLOW_GRIND      11 (  6.1%) █                    ║
+║    MISS             7 (  3.9%) █                    ║
+║    TRAP            45 ( 25.0%) █████                ║
+║    FALSE_SIGNAL    29 ( 16.1%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      48.9% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        25.0%                                    ║
+║    False Rate:       16.1%                                    ║
+║    Edge Ratio H=10:  1.16 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.7%                                     ║
+║    Avg MAE(10):     -3.2%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  52.8%  │  H=5:  55.6%  │  H=10: 57.8%             ║
+║    H=20: 61.7%  │  H=40: 61.1%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (92 failures):                        ║
+║    🟢 FORESEEABLE:         15 (16.3%)                         ║
+║       UNFORESEEABLE       :  76 ████████████       ║
+║       CONSOLIDATION_RANGE :   7 █                  ║
+║       LOW_RVOL_ENTRY      :   5 █                  ║
+║       GREED_TRAP          :   3                    ║
+║       EARNINGS_SHOCK      :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         77 (83.7%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     51.7% ██████████           ║
+║    NEUTRAL     41.7% ████████             ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:03:06,862 [INFO] oracle_runner: Persisting 180 entry labels to database...
+2026-05-20 21:03:08,720 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 180 entry labels
+2026-05-20 21:03:08,720 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:03:08,753 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for MRK (regression_channel)
+2026-05-20 21:03:08,754 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:03:08,754 [INFO] oracle_runner: Executing Oracle laboratory for PEP using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × PEP — ENTRY ReportCard                        ║
+║  (186 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      31 ( 16.7%) ███                  ║
+║    SOLID_MOVE      57 ( 30.6%) ██████               ║
+║    SLOW_GRIND      14 (  7.5%) ██                   ║
+║    MISS            12 (  6.5%) █                    ║
+║    TRAP            35 ( 18.8%) ████                 ║
+║    FALSE_SIGNAL    37 ( 19.9%) ████                 ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      47.3% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        18.8%                                    ║
+║    False Rate:       19.9%                                    ║
+║    Edge Ratio H=10:  1.05 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.0%                                     ║
+║    Avg MAE(10):     -2.8%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  47.3%  │  H=5:  53.2%  │  H=10: 61.3%             ║
+║    H=20: 58.1%  │  H=40: 57.5%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (98 failures):                        ║
+║    🟢 FORESEEABLE:         13 (13.3%)                         ║
+║       UNFORESEEABLE       :  84 █████████████      ║
+║       CONSOLIDATION_RANGE :  11 ██                 ║
+║       LOW_RVOL_ENTRY      :   2                    ║
+║       EARNINGS_SHOCK      :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         85 (86.7%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       62.1% ████████████         ║
+║    FEAR        62.5% ████████████         ║
+║    ANXIETY     39.8% ████████             ║
+║    NEUTRAL     44.9% █████████            ║
+║    GREED       66.7% █████████████        ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:03:16,649 [INFO] oracle_runner: Persisting 186 entry labels to database...
+2026-05-20 21:03:18,531 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 186 entry labels
+2026-05-20 21:03:18,532 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:03:18,559 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for PEP (rsi_intelligence)
+2026-05-20 21:03:18,560 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:03:18,560 [INFO] oracle_runner: Executing Oracle laboratory for PEP using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × PEP — ENTRY ReportCard                      ║
+║  (225 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      33 ( 14.7%) ███                  ║
+║    SOLID_MOVE      79 ( 35.1%) ███████              ║
+║    SLOW_GRIND      27 ( 12.0%) ██                   ║
+║    MISS            15 (  6.7%) █                    ║
+║    TRAP            41 ( 18.2%) ████                 ║
+║    FALSE_SIGNAL    30 ( 13.3%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      49.8% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        18.2%                                    ║
+║    False Rate:       13.3%                                    ║
+║    Edge Ratio H=10:  1.29 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.0%                                     ║
+║    Avg MAE(10):     -2.3%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  54.2%  │  H=5:  60.4%  │  H=10: 68.4%             ║
+║    H=20: 71.1%  │  H=40: 79.1%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (113 failures):                        ║
+║    🟢 FORESEEABLE:         17 (15.0%)                         ║
+║       UNFORESEEABLE       :  93 ████████████       ║
+║       CONSOLIDATION_RANGE :  14 ██                 ║
+║       LOW_RVOL_ENTRY      :   3                    ║
+║       EARNINGS_SHOCK      :   2                    ║
+║       BLACK_SWAN          :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         96 (85.0%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR       100.0% ████████████████████ ║
+║    ANXIETY     47.0% █████████            ║
+║    NEUTRAL     65.2% █████████████        ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:03:32,117 [INFO] oracle_runner: Persisting 225 entry labels to database...
+2026-05-20 21:03:34,428 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 225 entry labels
+2026-05-20 21:03:34,429 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:03:34,458 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for PEP (regression_channel)
+2026-05-20 21:03:34,458 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:03:34,458 [INFO] oracle_runner: Executing Oracle laboratory for PG using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × PG — ENTRY ReportCard                         ║
+║  (230 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      37 ( 16.1%) ███                  ║
+║    SOLID_MOVE      72 ( 31.3%) ██████               ║
+║    SLOW_GRIND      17 (  7.4%) █                    ║
+║    MISS             9 (  3.9%) █                    ║
+║    TRAP            46 ( 20.0%) ████                 ║
+║    FALSE_SIGNAL    49 ( 21.3%) ████                 ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      47.4% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        20.0%                                    ║
+║    False Rate:       21.3%                                    ║
+║    Edge Ratio H=10:  0.90 (MFE/MAE)                          ║
+║    Avg MFE(10):     +2.8%                                     ║
+║    Avg MAE(10):     -3.1%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  48.3%  │  H=5:  51.3%  │  H=10: 58.7%             ║
+║    H=20: 60.4%  │  H=40: 58.3%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (121 failures):                        ║
+║    🟢 FORESEEABLE:         21 (17.4%)                         ║
+║       UNFORESEEABLE       :  99 ████████████       ║
+║       CONSOLIDATION_RANGE :   9 █                  ║
+║       GREED_TRAP          :   4                    ║
+║       LOW_RVOL_ENTRY      :   3                    ║
+║       BEAR_REGIME_IGNORED :   3                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:        100 (82.6%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       39.3% ████████             ║
+║    FEAR        50.0% ██████████           ║
+║    ANXIETY     51.2% ██████████           ║
+║    NEUTRAL     53.2% ███████████          ║
+║    GREED       33.3% ███████              ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:03:42,071 [INFO] oracle_runner: Persisting 230 entry labels to database...
+2026-05-20 21:03:44,404 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 230 entry labels
+2026-05-20 21:03:44,405 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:03:44,432 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for PG (rsi_intelligence)
+2026-05-20 21:03:44,432 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:03:44,432 [INFO] oracle_runner: Executing Oracle laboratory for PG using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × PG — ENTRY ReportCard                       ║
+║  (190 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      21 ( 11.1%) ██                   ║
+║    SOLID_MOVE      74 ( 39.0%) ████████             ║
+║    SLOW_GRIND      10 (  5.3%) █                    ║
+║    MISS            18 (  9.5%) ██                   ║
+║    TRAP            31 ( 16.3%) ███                  ║
+║    FALSE_SIGNAL    36 ( 18.9%) ████                 ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      50.0% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        16.3%                                    ║
+║    False Rate:       18.9%                                    ║
+║    Edge Ratio H=10:  1.05 (MFE/MAE)                          ║
+║    Avg MFE(10):     +2.9%                                     ║
+║    Avg MAE(10):     -2.8%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  56.3%  │  H=5:  55.8%  │  H=10: 64.7%             ║
+║    H=20: 54.2%  │  H=40: 61.0%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (95 failures):                        ║
+║    🟢 FORESEEABLE:         21 (22.1%)                         ║
+║       UNFORESEEABLE       :  73 ████████████       ║
+║       CONSOLIDATION_RANGE :  18 ███                ║
+║       GREED_TRAP          :   3                    ║
+║       EARNINGS_SHOCK      :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         74 (77.9%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     54.2% ███████████          ║
+║    NEUTRAL     31.8% ██████               ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: C  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:03:56,966 [INFO] oracle_runner: Persisting 190 entry labels to database...
+2026-05-20 21:03:58,927 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 190 entry labels
+2026-05-20 21:03:58,928 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:03:58,956 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for PG (regression_channel)
+2026-05-20 21:03:58,957 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:03:58,957 [INFO] oracle_runner: Executing Oracle laboratory for WMT using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × WMT — ENTRY ReportCard                        ║
+║  (152 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      25 ( 16.4%) ███                  ║
+║    SOLID_MOVE      40 ( 26.3%) █████                ║
+║    SLOW_GRIND      13 (  8.6%) ██                   ║
+║    MISS            14 (  9.2%) ██                   ║
+║    TRAP            42 ( 27.6%) ██████               ║
+║    FALSE_SIGNAL    18 ( 11.8%) ██                   ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      42.8% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        27.6%                                    ║
+║    False Rate:       11.8%                                    ║
+║    Edge Ratio H=10:  1.16 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.3%                                     ║
+║    Avg MAE(10):     -2.9%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  57.2%  │  H=5:  56.6%  │  H=10: 59.9%             ║
+║    H=20: 59.9%  │  H=40: 58.5%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (87 failures):                        ║
+║    🟢 FORESEEABLE:         27 (31.0%)                         ║
+║       UNFORESEEABLE       :  59 ██████████         ║
+║       CONSOLIDATION_RANGE :  12 ██                 ║
+║       GREED_TRAP          :   7 █                  ║
+║       DISTRIBUTION_VOLUME :   4 █                  ║
+║       LOW_RVOL_ENTRY      :   3 █                  ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         60 (69.0%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       75.0% ███████████████      ║
+║    FEAR        42.9% █████████            ║
+║    ANXIETY     48.7% ██████████           ║
+║    NEUTRAL     23.1% █████                ║
+║    GREED       16.7% ███                  ║
+║                                                              ║
+║  ► GRADE: D  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:04:06,412 [INFO] oracle_runner: Persisting 152 entry labels to database...
+2026-05-20 21:04:07,927 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 152 entry labels
+2026-05-20 21:04:07,927 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:04:07,956 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for WMT (rsi_intelligence)
+2026-05-20 21:04:07,956 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:04:07,956 [INFO] oracle_runner: Executing Oracle laboratory for WMT using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × WMT — ENTRY ReportCard                      ║
+║  (180 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      18 ( 10.0%) ██                   ║
+║    SOLID_MOVE      43 ( 23.9%) █████                ║
+║    SLOW_GRIND      16 (  8.9%) ██                   ║
+║    MISS            12 (  6.7%) █                    ║
+║    TRAP            58 ( 32.2%) ██████               ║
+║    FALSE_SIGNAL    33 ( 18.3%) ████                 ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      33.9% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        32.2%                                    ║
+║    False Rate:       18.3%                                    ║
+║    Edge Ratio H=10:  1.06 (MFE/MAE)                          ║
+║    Avg MFE(10):     +2.8%                                     ║
+║    Avg MAE(10):     -2.7%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  57.2%  │  H=5:  51.1%  │  H=10: 49.4%             ║
+║    H=20: 53.9%  │  H=40: 57.8%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (119 failures):                        ║
+║    🟢 FORESEEABLE:         14 (11.8%)                         ║
+║       UNFORESEEABLE       : 104 █████████████      ║
+║       CONSOLIDATION_RANGE :  11 █                  ║
+║       LOW_RVOL_ENTRY      :   2                    ║
+║       GREED_TRAP          :   1                    ║
+║       BLACK_SWAN          :   1                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:        105 (88.2%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     35.3% ███████              ║
+║    NEUTRAL     29.2% ██████               ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: F  │  VERDICT: REJECT                             ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:04:20,606 [INFO] oracle_runner: Persisting 180 entry labels to database...
+2026-05-20 21:04:22,425 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 180 entry labels
+2026-05-20 21:04:22,425 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:04:22,459 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for WMT (regression_channel)
+2026-05-20 21:04:22,459 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:04:22,459 [INFO] oracle_runner: Executing Oracle laboratory for XOM using rsi_intelligence on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 RSI_INTELLIGENCE × XOM — ENTRY ReportCard                        ║
+║  (103 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN       9 (  8.7%) ██                   ║
+║    SOLID_MOVE      48 ( 46.6%) █████████            ║
+║    SLOW_GRIND       4 (  3.9%) █                    ║
+║    MISS             8 (  7.8%) ██                   ║
+║    TRAP            29 ( 28.2%) ██████               ║
+║    FALSE_SIGNAL     5 (  4.8%) █                    ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      55.3% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        28.2%                                    ║
+║    False Rate:        4.8%                                    ║
+║    Edge Ratio H=10:  1.47 (MFE/MAE)                          ║
+║    Avg MFE(10):     +5.2%                                     ║
+║    Avg MAE(10):     -3.6%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  54.4%  │  H=5:  67.0%  │  H=10: 67.0%             ║
+║    H=20: 74.8%  │  H=40: 78.6%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (46 failures):                        ║
+║    🟢 FORESEEABLE:         20 (43.5%)                         ║
+║       UNFORESEEABLE       :  23 ████████           ║
+║       GREED_TRAP          :   9 ███                ║
+║       CONSOLIDATION_RANGE :   6 ██                 ║
+║       BEAR_REGIME_IGNORED :   4 █                  ║
+║       EARNINGS_SHOCK      :   2 █                  ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         26 (56.5%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC       90.0% ██████████████████   ║
+║    FEAR        45.5% █████████            ║
+║    ANXIETY     42.3% ████████             ║
+║    NEUTRAL     59.3% ████████████         ║
+║    GREED       55.6% ███████████          ║
+║                                                              ║
+║  ► GRADE: B  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:04:29,572 [INFO] oracle_runner: Persisting 103 entry labels to database...
+2026-05-20 21:04:30,620 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 103 entry labels
+2026-05-20 21:04:30,620 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:04:30,648 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for XOM (rsi_intelligence)
+2026-05-20 21:04:30,648 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:04:30,648 [INFO] oracle_runner: Executing Oracle laboratory for XOM using regression_channel on 1d...
+
+╔══════════════════════════════════════════════════════════════╗
+║  🟢 REGRESSION_CHANNEL × XOM — ENTRY ReportCard                      ║
+║  (147 señales +1 evaluadas, 20 años)                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  CLASIFICACIÓN:                                              ║
+║    GOLDEN_RUN      15 ( 10.2%) ██                   ║
+║    SOLID_MOVE      51 ( 34.7%) ███████              ║
+║    SLOW_GRIND       7 (  4.8%) █                    ║
+║    MISS            11 (  7.5%) █                    ║
+║    TRAP            41 ( 27.9%) ██████               ║
+║    FALSE_SIGNAL    22 ( 15.0%) ███                  ║
+║                                                              ║
+║  MÉTRICAS DE ENTRADA:                                        ║
+║    Golden Rate:      44.9% (GOLDEN + SOLID)                   ║
+║    Trap Rate:        27.9%                                    ║
+║    False Rate:       15.0%                                    ║
+║    Edge Ratio H=10:  1.16 (MFE/MAE)                          ║
+║    Avg MFE(10):     +3.9%                                     ║
+║    Avg MAE(10):     -3.3%                                     ║
+║                                                              ║
+║  WIN RATE POR HORIZONTE:                                     ║
+║    H=3:  53.7%  │  H=5:  51.0%  │  H=10: 57.1%             ║
+║    H=20: 60.5%  │  H=40: 61.2%                              ║
+║                                                              ║
+║  DIAGNÓSTICO DE FALLOS (81 failures):                        ║
+║    🟢 FORESEEABLE:         15 (18.5%)                         ║
+║       UNFORESEEABLE       :  61 ███████████        ║
+║       CONSOLIDATION_RANGE :   8 █                  ║
+║       GREED_TRAP          :   6 █                  ║
+║       BLACK_SWAN          :   3 █                  ║
+║       EARNINGS_SHOCK      :   2                    ║
+║    ⚠️ PARTIALLY:              0 ( 0.0%)                        ║
+║    🔴 UNFORESEEABLE:         66 (81.5%)                        ║
+║                                                              ║
+║  GOLDEN RATE POR RÉGIMEN (FEAR LEVEL):                       ║
+║    PANIC        0.0%                      ║
+║    FEAR         0.0%                      ║
+║    ANXIETY     42.6% █████████            ║
+║    NEUTRAL     76.0% ███████████████      ║
+║    GREED        0.0%                      ║
+║                                                              ║
+║  ► GRADE: D  │  VERDICT: MARGINAL                           ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-05-20 21:04:43,250 [INFO] oracle_runner: Persisting 147 entry labels to database...
+2026-05-20 21:04:44,743 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved 147 entry labels
+2026-05-20 21:04:44,744 [INFO] oracle_runner: Persisting entry report card to database...
+2026-05-20 21:04:44,771 [INFO] backend.modules.simulation.infrastructure.neon_forensic_store: NeonForensicStore: saved entry report card for XOM (regression_channel)
+2026-05-20 21:04:44,772 [INFO] oracle_runner: Database persistence completed.
+2026-05-20 21:04:44,773 [INFO] oracle_runner: Oracle laboratory run completed successfully! 🧪🔬🎉

@@ -1,0 +1,255 @@
+
+================================================================================
+  FORENSIC LAB v9 REAL — 6-DIMENSION BLIND SPOT AUDIT
+================================================================================
+
+  Loading labels...
+  → 2325 labels, years 1993-2026
+
+================================================================================
+  PART 1: BASE RATES (the denominator of edge)
+================================================================================
+
+  Ticker   Signal                         N       WR   CI_lo   CI_hi
+  ──────────────────────────────────────────────────────────────────────
+  AAPL     regression_channel           369    49.3% [44.3%, 54.4%]
+  AAPL     rsi_intelligence             326    44.2% [38.9%, 49.6%]
+
+  COST     regression_channel           195    52.8% [45.8%, 59.7%]
+  COST     rsi_intelligence             115    57.4% [48.3%, 66.0%]
+
+  QQQ      regression_channel           320    53.1% [47.7%, 58.5%]
+  QQQ      rsi_intelligence             324    47.2% [41.9%, 52.7%]
+
+  SPY      regression_channel           344    53.8% [48.5%, 59.0%]
+  SPY      rsi_intelligence             332    53.9% [48.5%, 59.2%]
+
+
+  Ticker   ALL SIGNALS                    N       WR
+  ──────────────────────────────────────────────────
+  AAPL     ALL                          695    46.9%
+  COST     ALL                          310    54.5%
+  QQQ      ALL                          644    50.2%
+  SPY      ALL                          676    53.8%
+
+================================================================================
+  PART 2: OUT-OF-SAMPLE VALIDATION (Train ≤2020 / Test 2021+)
+================================================================================
+
+  Train set: 1819 samples (1993-2020)
+  Test set:  506 samples (2021-2026)
+
+  Rule                                │ Train N  Train WR │ Test N   Test WR │      Δ    Verdict
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  SPY Fear≥ANX + σ<-1                 │      48     64.6% │      4     50.0% │ -14.6%    ⚠ DECAY
+  SPY σ<-1.5                          │      47     53.2% │      1      0.0% │ -53.2%    ⚠ LOW N
+  AAPL σ<-1.5                         │      74     64.9% │      9     66.7% │  +1.8%    ✅ HOLDS
+  COST Fear≥ANX                       │     172     58.7% │     63     63.5% │  +4.8%    ✅ HOLDS
+  QQQ σ<-1                            │      56     44.6% │     33     51.5% │  +6.9%    ✅ HOLDS
+  SPY tide_slope>0 + σ<-1             │      42     57.1% │      0      0.0% │  +nan%    ⚠ LOW N
+  AAPL tide_slope>0 + σ<-2            │       9     33.3% │      3     33.3% │  +0.0%    ✅ HOLDS
+  COST tide_slope>0                   │     224     51.8% │     70     64.3% │ +12.5%    ✅ HOLDS
+  SPY KV<-0.1 + σ<-0.5                │       6     66.7% │      0      0.0% │  +nan%    ⚠ LOW N
+  AAPL Fear≥FEAR + σ<-1               │     113     51.3% │     22     63.6% │ +12.3%    ✅ HOLDS
+
+================================================================================
+  PART 3: DRAWDOWN TIMING — Do wins suffer pain first?
+================================================================================
+
+  Ticker   Signal                 │     WR │ Win DD10 Win ↑10  DD first? │ Loss DD10
+  ───────────────────────────────────────────────────────────────────────────────────────────────
+  COST     rsi_intelligence       │  57.4% │   -1.64%   5.91% ✅ UP FIRST │   -3.40%
+  COST     regression_channel     │  52.8% │   -1.52%   6.28% ✅ UP FIRST │   -4.41%
+  SPY      rsi_intelligence       │  53.9% │   -1.50%   4.85% ✅ UP FIRST │   -4.99%
+  SPY      regression_channel     │  53.8% │   -1.40%   4.00% ✅ UP FIRST │   -4.34%
+  AAPL     rsi_intelligence       │  44.2% │   -2.75%  10.49% ⚠ DD FIRST │   -8.55%
+  AAPL     regression_channel     │  49.3% │   -2.72%   9.86% ⚠ DD FIRST │   -9.48%
+  QQQ      rsi_intelligence       │  47.2% │   -2.35%   7.19% ⚠ DD FIRST │   -7.44%
+  QQQ      regression_channel     │  53.1% │   -1.65%   4.80% ✅ UP FIRST │   -5.06%
+
+  ── DRAWDOWN AT σ EXTREMES (the pain before the gain) ──
+
+    COST σ<-1.5 WINS (N=24):
+      h10: DD=-1.50% (bar 3) → UP=+5.56% (bar 9)
+      h20: DD=-2.17% (bar 4) → UP=+7.58% (bar 14)
+      Verdict: ✅ TIMING OK
+
+    SPY σ<-1.5 WINS (N=25):
+      h10: DD=-1.62% (bar 3) → UP=+5.24% (bar 9)
+      h20: DD=-1.69% (bar 5) → UP=+6.94% (bar 17)
+      Verdict: ✅ TIMING OK
+
+    AAPL σ<-1.5 WINS (N=54):
+      h10: DD=-2.37% (bar 2) → UP=+10.60% (bar 8)
+      h20: DD=-3.74% (bar 7) → UP=+14.20% (bar 13)
+      Verdict: ✅ TIMING OK
+
+    QQQ σ<-1.5 WINS (N=9):
+      h10: DD=-1.60% (bar 5) → UP=+6.97% (bar 7)
+      h20: DD=-1.98% (bar 7) → UP=+9.46% (bar 14)
+      Verdict: ✅ TIMING OK
+
+================================================================================
+  PART 4: FEATURE INDEPENDENCE — Are we double-counting?
+================================================================================
+
+  CORRELATION MATRIX (|r| > 0.3 highlighted):
+
+                       sigma_wave sigma_tide fear_level tide_slope kalman_vel       rvol wave_slope slope_conj tide_accel vol_up_dow
+            sigma_wave    +1.00      -0.16      +0.14      +0.10      -0.28      -0.12      -0.44·     -0.46·     +0.05      +0.07  
+            sigma_tide    -0.16      +1.00      -0.01      -0.29      +0.07      -0.13      +0.28      +0.37·     +0.38·     +0.02  
+            fear_level    +0.14      -0.01      +1.00      -0.47·     +0.02      -0.02      -0.42·     -0.26      -0.33·     +0.04  
+            tide_slope    +0.10      -0.29      -0.47·     +1.00      -0.09      +0.04      +0.14      -0.20      +0.17      +0.00  
+            kalman_vel    -0.28      +0.07      +0.02      -0.09      +1.00      +0.67★     +0.08      +0.11      -0.02      +0.19  
+                  rvol    -0.12      -0.13      -0.02      +0.04      +0.67★     +1.00      -0.10      -0.11      +0.03      +0.15  
+            wave_slope    -0.44·     +0.28      -0.42·     +0.14      +0.08      -0.10      +1.00      +0.94★     +0.33·     -0.06  
+            slope_conj    -0.46·     +0.37·     -0.26      -0.20      +0.11      -0.11      +0.94★     +1.00      +0.26      -0.06  
+            tide_accel    +0.05      +0.38·     -0.33·     +0.17      -0.02      +0.03      +0.33·     +0.26      +1.00      -0.01  
+            vol_up_dow    +0.07      +0.02      +0.04      +0.00      +0.19      +0.15      -0.06      -0.06      -0.01      +1.00  
+
+  ── KEY REDUNDANCY CHECKS ──
+                fear_level × sigma_wave             r=+0.136  p=0.0000  ✅ INDEPENDENT
+                fear_level × kalman_velocity        r=+0.021  p=0.3116  ✅ INDEPENDENT
+                sigma_wave × kalman_velocity        r=-0.282  p=0.0000  ✅ INDEPENDENT
+                tide_slope × tide_accel             r=+0.168  p=0.0000  ✅ INDEPENDENT
+                wave_slope × slope_conjugation      r=+0.941  p=0.0000  🚨 REDUNDANT
+                      rvol × vol_up_down_ratio      r=+0.149  p=0.0000  ✅ INDEPENDENT
+
+  Enriching tickers with volume features...
+    → COST... OK (310 samples)
+    → SPY... OK (676 samples)
+    → AAPL... OK (695 samples)
+    → QQQ... OK (644 samples)
+
+================================================================================
+  PART 5: RE-AUDIT V8 DISCOVERIES (Volume-enriched, Wilson CI)
+================================================================================
+
+  ── V8 RE-AUDIT: AAPL ──
+    Base Rate (ALL signals): 46.9%
+
+    Rule                                │    N     WR            CI95   Edge │ OOS_N  OOS_WR    Verdict
+    ─────────────────────────────────────────────────────────────────────────────────────────────────────────
+    Low CV + σ<-1.5              rsi_inte │   23  73.9% [54%-87%] +27.0% │     2   50.0%   ? NO OOS
+    Low CV + σ<-1.5              regressi │    8  75.0% [41%-93%] +28.1% │     2  100.0%  ⚠ CI WEAK
+    Low CV + σ>+0.5              rsi_inte │   12  83.3% [55%-95%] +36.4% │     0    0.0%   ? NO OOS
+    Low CV + σ>+0.5              regressi │   42  40.5% [27%-56%]  -6.4% │     8   62.5%  ⚠ CI WEAK
+    Drought≥6 (DEATH)            rsi_inte │   18   0.0% [0%-18%] -46.9% │     0    0.0%  ⚠ CI WEAK
+    Drought≥6 (DEATH)            regressi │    5   0.0% [0%-43%] -46.9% │     0    0.0%    ⚠ LOW N
+    Drought + σ<-1 (floor)       rsi_inte │   23  69.6% [49%-84%] +22.7% │     1  100.0%   ? NO OOS
+    Drought + σ<-1 (floor)       regressi │    6  50.0% [19%-81%]  +3.1% │     0    0.0%    ⚠ LOW N
+    Drought + σ>0 (ceiling)      rsi_inte │   36  27.8% [16%-44%] -19.1% │     2    0.0%  ⚠ CI WEAK
+    Drought + σ>0 (ceiling)      regressi │   74  48.6% [38%-60%]  +1.7% │    14   64.3%  ⚠ CI WEAK
+    Drought + FEAR               rsi_inte │   18  72.2% [49%-88%] +25.3% │     2   50.0%   ? NO OOS
+    Drought + FEAR               regressi │    4  25.0% [5%-70%] -21.9% │     1  100.0%    ⚠ LOW N
+    Drought + ANXIETY+           rsi_inte │   85  27.1% [19%-37%] -19.8% │     5    0.0%  ⚠ CI WEAK
+    Drought + ANXIETY+           regressi │  102  44.1% [35%-54%]  -2.8% │    15   66.7%  ⚠ CI WEAK
+    Balance (quiet+narrow)       rsi_inte │   81  40.7% [31%-52%]  -6.2% │     8   12.5%  ⚠ CI WEAK
+    Balance (quiet+narrow)       regressi │  106  42.5% [33%-52%]  -4.5% │    16   56.2%  ⚠ CI WEAK
+    Initiative + σ<-1 + RED      rsi_inte │    6  83.3% [44%-97%] +36.4% │     2   50.0%    ⚠ LOW N
+    High vol + σ<-1.5 + GREEN    rsi_inte │   11  72.7% [43%-90%] +25.8% │     1  100.0%  ⚠ CI WEAK
+    High vol + σ<-1.5 + GREEN    regressi │    9  44.4% [19%-73%]  -2.5% │     0    0.0%  ⚠ CI WEAK
+
+  ── V8 RE-AUDIT: COST ──
+    Base Rate (ALL signals): 54.5%
+
+    Rule                                │    N     WR            CI95   Edge │ OOS_N  OOS_WR    Verdict
+    ─────────────────────────────────────────────────────────────────────────────────────────────────────────
+    Low CV all zones             rsi_inte │   38  73.7% [58%-85%] +19.2% │     8   87.5%   ★ ROBUST
+    Low CV all zones             regressi │   65  46.2% [35%-58%]  -8.4% │    15   26.7%  ⚠ CI WEAK
+    Mild drought (1-2)           rsi_inte │   16  68.8% [44%-86%] +14.2% │     7   57.1%  ⚠ CI WEAK
+    Mild drought (1-2)           regressi │   43  62.8% [48%-76%]  +8.3% │     8   50.0%  ⚠ CI WEAK
+    Drought + σ≥+1 (ceiling)     rsi_inte │    3  66.7% [21%-94%] +12.2% │     1  100.0%    ⚠ LOW N
+    Drought + σ≥+1 (ceiling)     regressi │    9  88.9% [56%-98%] +34.4% │     1  100.0%   ? NO OOS
+    Balance + σ≥0                rsi_inte │    6  50.0% [19%-81%]  -4.5% │     2   50.0%    ⚠ LOW N
+    Balance + σ≥0                regressi │   18  77.8% [55%-91%] +23.3% │     4   75.0%   ★ ROBUST
+    Drought → Balance            rsi_inte │    6  50.0% [19%-81%]  -4.5% │     1  100.0%    ⚠ LOW N
+    Drought → Balance            regressi │   12  58.3% [32%-81%]  +3.8% │     1  100.0%  ⚠ CI WEAK
+
+  ── V8 RE-AUDIT: SPY ──
+    Base Rate (ALL signals): 53.8%
+
+    Rule                                │    N     WR            CI95   Edge │ OOS_N  OOS_WR    Verdict
+    ─────────────────────────────────────────────────────────────────────────────────────────────────────────
+    Med CV (sweet spot)          rsi_inte │  112  59.8% [51%-68%]  +6.0% │    10   40.0%  ⚠ CI WEAK
+    Med CV (sweet spot)          regressi │  116  67.2% [58%-75%] +13.4% │    23   56.5%    🚨 DECAY
+    Balance (quiet+narrow)       rsi_inte │   37  67.6% [51%-80%] +13.7% │     2   50.0%  ⚠ CI WEAK
+    Balance (quiet+narrow)       regressi │   83  66.3% [56%-76%] +12.4% │     9   66.7%   ★ ROBUST
+    Compression BULL             rsi_inte │    7  71.4% [36%-92%] +17.6% │     2  100.0%    ⚠ LOW N
+    Compression BULL             regressi │   11  63.6% [35%-85%]  +9.8% │     3  100.0%  ⚠ CI WEAK
+    Drought + KV falling         rsi_inte │   19  63.2% [41%-81%]  +9.3% │     0    0.0%  ⚠ CI WEAK
+    Drought + KV falling         regressi │   36  72.2% [56%-84%] +18.4% │     1    0.0%   ? NO OOS
+    Quiet + BUY FLOW + σ≥0       regressi │    9  77.8% [45%-94%] +23.9% │     0    0.0%  ⚠ CI WEAK
+    Drought → Balance            rsi_inte │    8  75.0% [41%-93%] +21.2% │     0    0.0%  ⚠ CI WEAK
+    Drought → Balance            regressi │   11  81.8% [52%-95%] +28.0% │     0    0.0%  ⚠ CI WEAK
+
+  ── V8 RE-AUDIT: QQQ ──
+    Base Rate (ALL signals): 50.2%
+
+    Rule                                │    N     WR            CI95   Edge │ OOS_N  OOS_WR    Verdict
+    ─────────────────────────────────────────────────────────────────────────────────────────────────────────
+    Drought≥3 (exhaustion buy)   rsi_inte │   18  72.2% [49%-88%] +22.1% │     7   85.7%  ⚠ CI WEAK
+    Drought≥3 (exhaustion buy)   regressi │   10  60.0% [31%-83%]  +9.8% │     4   75.0%  ⚠ CI WEAK
+    Drought + σ<-1 (floor)       rsi_inte │   12  66.7% [39%-86%] +16.5% │     5   80.0%  ⚠ CI WEAK
+    Drought + σ≥+1 (ceiling)     rsi_inte │    7  85.7% [49%-97%] +35.6% │     1  100.0%    ⚠ LOW N
+    Drought + σ≥+1 (ceiling)     regressi │   27  55.6% [37%-72%]  +5.4% │     2    0.0%  ⚠ CI WEAK
+    Initiative BULL              rsi_inte │   18  61.1% [39%-80%] +11.0% │     9   66.7%  ⚠ CI WEAK
+    Initiative BULL              regressi │   30  60.0% [42%-75%]  +9.8% │    13   69.2%  ⚠ CI WEAK
+    Drought → Balance            rsi_inte │   10  80.0% [49%-94%] +29.8% │     1  100.0%  ⚠ CI WEAK
+    Drought → Balance            regressi │   10  10.0% [2%-40%] -40.2% │     2    0.0%  ⚠ CI WEAK
+
+================================================================================
+  PART 6: CROSS-TICKER CONSISTENCY — Does the pattern survive?
+================================================================================
+
+  Balance (quiet+narrow):
+    Ticker       N      WR            CI95
+    COST        73   57.5% [46%-68%] ★
+    SPY        120   66.7% [58%-74%] ★
+    AAPL       187   41.7% [35%-49%] ✗
+    QQQ        115   53.0% [44%-62%]  
+    → PARTIAL PATTERN (2/4 positive)
+
+  Initiative (loud+wide):
+    Ticker       N      WR            CI95
+    COST        21   61.9% [41%-79%] ★
+    SPY         95   46.3% [37%-56%]  
+    AAPL        72   44.4% [34%-56%] ✗
+    QQQ         65   52.3% [40%-64%]  
+    → TICKER-SPECIFIC (no universal consistency)
+
+  Low CV + σ<-1:
+    Ticker       N      WR            CI95
+    COST        36   61.1% [45%-75%] ★
+    SPY         43   55.8% [41%-70%] ★
+    AAPL        68   58.8% [47%-70%] ★
+    QQQ         35   48.6% [33%-64%]  
+    → UNIVERSAL POSITIVE PATTERN (3/4 tickers) ★★
+
+  High CV + σ neutral:
+    Ticker       N      WR            CI95
+    COST        24   62.5% [43%-79%] ★
+    SPY         77   54.5% [43%-65%]  
+    AAPL        89   43.8% [34%-54%] ✗
+    QQQ         62   46.8% [35%-59%]  
+    → TICKER-SPECIFIC (no universal consistency)
+
+  Drought≥2 + σ<-1:
+    Ticker       N      WR            CI95
+    COST         4    0.0% [0%-49%] ✗
+    SPY         12   58.3% [32%-81%] ★
+    AAPL        13   76.9% [50%-92%] ★
+    QQQ         11   72.7% [43%-90%] ★
+    → UNIVERSAL POSITIVE PATTERN (3/4 tickers) ★★
+
+  Drought≥2 + σ>0:
+    Ticker       N      WR            CI95
+    COST        22   63.6% [43%-80%] ★
+    SPY         21   57.1% [37%-76%] ★
+    AAPL        74   33.8% [24%-45%] ✗
+    QQQ         28   50.0% [33%-67%]  
+    → PARTIAL PATTERN (2/4 positive)
+
+================================================================================
+  v9 REAL AUDIT COMPLETE
+================================================================================

@@ -1,0 +1,356 @@
+
+==========================================================================================
+  FORENSIC LAB v12 — PER-FEATURE SCIENTIFIC EVALUATION
+==========================================================================================
+  López de Prado Methodology + Hypothesis Governance
+
+  Loading labels...
+  → 6807 labels, 17 tickers, 2 signals
+  → Features: 11 continuous, 7 categorical
+
+==========================================================================================
+  PART 1: UNIVARIATE PREDICTIVE POWER — Per Feature
+==========================================================================================
+
+  ── Signal: rsi_intelligence ──
+
+    Feature                │    r_pb    p-val │     MI │    AUC │     Status
+    ───────────────────────────────────────────────────────────────────────────
+    sigma_wave             │ -0.0326  0.0735  │ 0.0031 │  0.520 │     ~ WEAK
+    sigma_tide             │ -0.1149  0.0000*** │ 0.0172 │  0.569 │   ★ STRONG
+    tide_slope             │ +0.0298  0.1019  │ 0.0079 │  0.502 │     ✗ NONE
+    tide_accel             │ -0.0194  0.2873  │ 0.0000 │  0.526 │     ✗ NONE
+    wave_slope             │ -0.0279  0.1257  │ 0.0000 │  0.525 │     ✗ NONE
+    slope_conjugation      │ -0.0415  0.0228* │ 0.0015 │  0.521 │     ~ WEAK
+    fear_level             │ +0.0085  0.6418  │ 0.0082 │  0.505 │     ✗ NONE
+    kalman_velocity        │ -0.0012  0.9468  │ 0.0000 │  0.505 │     ✗ NONE
+    rvol                   │ +0.0164  0.3691  │ 0.0000 │  0.520 │     ✗ NONE
+    vol_up_down_ratio      │ -0.0418  0.0217* │ 0.0017 │  0.521 │     ~ WEAK
+    rsi_value              │ -0.1021  0.0000*** │ 0.0095 │  0.556 │   ★ STRONG
+
+    Categorical Features:
+    Feature                │     Chi2    p-val │ Cramér V │     Status
+    ─────────────────────────────────────────────────────────────────
+    regime                 │     9.06   0.0108 │   0.0548 │ • MODERATE
+    wyckoff_state          │     4.06   0.3980 │   0.0367 │     ✗ NONE
+    vol_regime             │     0.68   0.4095 │   0.0150 │     ✗ NONE
+    fear_label             │     4.73   0.4493 │   0.0396 │     ✗ NONE
+    wave_flip              │     0.07   0.7924 │   0.0048 │     ✗ NONE
+    wave_flip_direction    │     0.37   0.8290 │   0.0112 │     ✗ NONE
+    below_vwap             │     2.34   0.1262 │   0.0279 │     ✗ NONE
+
+  ── Signal: regression_channel ──
+
+    Feature                │    r_pb    p-val │     MI │    AUC │     Status
+    ───────────────────────────────────────────────────────────────────────────
+    sigma_wave             │ -0.0072  0.6585  │ 0.0000 │  0.505 │     ✗ NONE
+    sigma_tide             │ -0.0721  0.0000*** │ 0.0000 │  0.535 │ • MODERATE
+    tide_slope             │ +0.0061  0.7082  │ 0.0000 │  0.508 │     ✗ NONE
+    tide_accel             │ -0.1000  0.0000*** │ 0.0091 │  0.572 │   ★ STRONG
+    wave_slope             │ +0.0005  0.9736  │ 0.0038 │  0.505 │     ✗ NONE
+    slope_conjugation      │ -0.0010  0.9519  │ 0.0079 │  0.509 │     ✗ NONE
+    fear_level             │ +0.0264  0.1034  │ 0.0102 │  0.508 │     ✗ NONE
+    kalman_velocity        │ +0.0232  0.1538  │ 0.0097 │  0.510 │     ✗ NONE
+    rvol                   │ -0.0047  0.7701  │ 0.0100 │  0.507 │     ✗ NONE
+    vol_up_down_ratio      │ -0.0177  0.2770  │ 0.0000 │  0.506 │     ✗ NONE
+    rsi_value              │ -0.0085  0.6019  │ 0.0000 │  0.506 │     ✗ NONE
+
+    Categorical Features:
+    Feature                │     Chi2    p-val │ Cramér V │     Status
+    ─────────────────────────────────────────────────────────────────
+    regime                 │     6.53   0.0382 │   0.0415 │     ~ WEAK
+    wyckoff_state          │     9.45   0.0239 │   0.0499 │     ~ WEAK
+    vol_regime             │     1.04   0.3084 │   0.0165 │     ✗ NONE
+    fear_label             │     6.90   0.1415 │   0.0426 │     ✗ NONE
+    wave_flip              │     0.61   0.4333 │   0.0127 │     ✗ NONE
+    wave_flip_direction    │     0.78   0.6763 │   0.0144 │     ✗ NONE
+    below_vwap             │     0.00   1.0000 │   0.0000 │     ✗ NONE
+
+==========================================================================================
+  PART 2: CROSS-TICKER UNIVERSALITY — Per Feature
+==========================================================================================
+
+  ── Signal: rsi_intelligence ──
+
+    Feature                │ Positive Negative  Neutral │  % Pos │         Verdict
+    ────────────────────────────────────────────────────────────────────────────────
+    sigma_wave             │        1        5       11 │    29% │ - ✗ NO EDGE
+    sigma_tide             │        0       11        6 │    65% │ - ★★ UNIVERSAL
+    tide_slope             │        2        5       10 │    29% │ - ✗ NO EDGE
+    tide_accel             │        0        5       12 │    29% │ - ✗ NO EDGE
+    wave_slope             │        1        4       12 │    24% │ - ✗ NO EDGE
+    slope_conjugation      │        2        4       11 │    24% │ - ✗ NO EDGE
+    fear_level             │        4        3       10 │    24% │ + ✗ NO EDGE
+    kalman_velocity        │        2        1       14 │    12% │ + ✗ NO EDGE
+    rvol                   │        3        1       13 │    18% │ + ✗ NO EDGE
+    vol_up_down_ratio      │        1        4       12 │    24% │ - ✗ NO EDGE
+    rsi_value              │        0        9        8 │    53% │ - ★ PARTIAL
+
+  ── Signal: regression_channel ──
+
+    Feature                │ Positive Negative  Neutral │  % Pos │         Verdict
+    ────────────────────────────────────────────────────────────────────────────────
+    sigma_wave             │        0        2       15 │    12% │ - ✗ NO EDGE
+    sigma_tide             │        0        6       11 │    35% │ - • SPLIT
+    tide_slope             │        2        3       12 │    18% │ - ✗ NO EDGE
+    tide_accel             │        0       10        7 │    59% │ - ★ PARTIAL
+    wave_slope             │        3        4       10 │    24% │ - ✗ NO EDGE
+    slope_conjugation      │        4        3       10 │    24% │ + ✗ NO EDGE
+    fear_level             │        6        1       10 │    35% │ + • SPLIT
+    kalman_velocity        │        3        0       14 │    18% │ + ✗ NO EDGE
+    rvol                   │        0        2       15 │    12% │ - ✗ NO EDGE
+    vol_up_down_ratio      │        1        3       13 │    18% │ - ✗ NO EDGE
+    rsi_value              │        2        2       13 │    12% │ ~ ✗ NO EDGE
+
+==========================================================================================
+  PART 3: TEMPORAL STABILITY — Does Each Feature's Edge Hold?
+==========================================================================================
+
+  ── Signal: rsi_intelligence ──
+
+    Feature                │  1993-2005 │  2006-2010 │  2011-2015 │  2016-2020 │  2021-2026 │  Stable?
+    ──────────────────────────────────────────────────────────────────────────────────────────
+    sigma_wave             │   -0.079   │   -0.090   │   +0.005   │   +0.019   │   -0.035   │        ✅
+    sigma_tide             │   -0.077   │   -0.161 ★ │   -0.104 ★ │   -0.125 ★ │   -0.087   │        ✅
+    tide_slope             │   +0.191 ★ │   -0.007   │   +0.018   │   -0.142 ★ │   +0.003   │        ~
+    tide_accel             │   +0.171 ★ │   -0.110 ★ │   +0.024   │   -0.170 ★ │   -0.075   │        ⚠
+    wave_slope             │   +0.086   │   -0.049   │   -0.135 ★ │   -0.116 ★ │   -0.014   │        ⚠
+    slope_conjugation      │   +0.008   │   -0.048   │   -0.135 ★ │   -0.069   │   -0.015   │        ✅
+    fear_level             │   -0.272 ★ │   +0.056   │   +0.054   │   +0.094   │   +0.042   │        ✅
+    kalman_velocity        │   -0.075   │   -0.024   │   -0.031   │   +0.096   │   +0.015   │        ⚠
+    rvol                   │   +0.010   │   +0.045   │   -0.015   │   +0.026   │   +0.020   │        ✅
+    vol_up_down_ratio      │   +0.003   │   -0.086   │   -0.035   │   -0.054   │   -0.026   │        ✅
+    rsi_value              │   +0.013   │   -0.163 ★ │   -0.103 ★ │   -0.171 ★ │   -0.061   │        ✅
+
+  ── Signal: regression_channel ──
+
+    Feature                │  1993-2005 │  2006-2010 │  2011-2015 │  2016-2020 │  2021-2026 │  Stable?
+    ──────────────────────────────────────────────────────────────────────────────────────────
+    sigma_wave             │   +0.004   │   -0.006   │   +0.025   │   -0.004   │   -0.047   │        ~
+    sigma_tide             │   -0.066   │   +0.012   │   -0.084   │   -0.028   │   -0.170 ★ │        ✅
+    tide_slope             │   -0.084   │   +0.033   │   +0.048   │   -0.029   │   +0.019   │        🚨
+    tide_accel             │   +0.004   │   -0.049   │   -0.138 ★ │   -0.159 ★ │   -0.135 ★ │        ✅
+    wave_slope             │   +0.079   │   +0.099   │   -0.025   │   -0.016   │   -0.069   │        🚨
+    slope_conjugation      │   +0.098   │   +0.089   │   -0.038   │   -0.011   │   -0.076   │        🚨
+    fear_level             │   -0.027   │   +0.077   │   +0.080   │   -0.045   │   +0.001   │        🚨
+    kalman_velocity        │   +0.056   │   +0.007   │   +0.056   │   +0.008   │   -0.004   │        ~
+    rvol                   │   +0.088   │   -0.044   │   -0.015   │   -0.083   │   +0.064   │        🚨
+    vol_up_down_ratio      │   -0.066   │   -0.017   │   -0.019   │   -0.002   │   -0.009   │        ~
+    rsi_value              │   +0.007   │   +0.089   │   -0.003   │   +0.057   │   -0.135 ★ │        ⚠
+
+==========================================================================================
+  PART 4: OUT-OF-SAMPLE VALIDATION — Train ≤2020, Test ≥2021
+==========================================================================================
+
+  ── Signal: rsi_intelligence ──
+    Train: 2297 labels (≤2020), Test: 716 labels (≥2021)
+
+    Feature                │  Train r   Test r      Δ │ Train AUC  Test AUC │  Hold?
+    ────────────────────────────────────────────────────────────────────────────────
+    sigma_wave             │  -0.0330  -0.0347 -0.002 │     0.523     0.511 │      ✅
+    sigma_tide             │  -0.1220  -0.0874 +0.035 │     0.573     0.554 │      ✅
+    tide_slope             │  +0.0368  +0.0026 -0.034 │     0.502     0.506 │      ⚠
+    tide_accel             │  -0.0071  -0.0751 -0.068 │     0.521     0.537 │      ✅
+    wave_slope             │  -0.0292  -0.0140 +0.015 │     0.528     0.512 │      ✅
+    slope_conjugation      │  -0.0457  -0.0153 +0.030 │     0.525     0.502 │      ⚠
+    fear_level             │  -0.0019  +0.0418 +0.044 │     0.501     0.524 │      🚨
+    kalman_velocity        │  -0.0061  +0.0154 +0.022 │     0.501     0.518 │      ✅
+    rvol                   │  +0.0154  +0.0204 +0.005 │     0.520     0.521 │      ✅
+    vol_up_down_ratio      │  -0.0476  -0.0263 +0.021 │     0.522     0.517 │      ✅
+    rsi_value              │  -0.1155  -0.0609 +0.055 │     0.562     0.536 │      ✅
+
+  ── Signal: regression_channel ──
+    Train: 2796 labels (≤2020), Test: 998 labels (≥2021)
+
+    Feature                │  Train r   Test r      Δ │ Train AUC  Test AUC │  Hold?
+    ────────────────────────────────────────────────────────────────────────────────
+    sigma_wave             │  +0.0075  -0.0475 -0.055 │     0.502     0.523 │      🚨
+    sigma_tide             │  -0.0411  -0.1700 -0.129 │     0.519     0.581 │      ✅
+    tide_slope             │  +0.0027  +0.0195 +0.017 │     0.506     0.510 │      ✅
+    tide_accel             │  -0.0908  -0.1345 -0.044 │     0.568     0.584 │      ✅
+    wave_slope             │  +0.0191  -0.0693 -0.088 │     0.509     0.548 │      🚨
+    slope_conjugation      │  +0.0182  -0.0762 -0.094 │     0.505     0.554 │      🚨
+    fear_level             │  +0.0356  +0.0008 -0.035 │     0.511     0.502 │      ⚠
+    kalman_velocity        │  +0.0310  -0.0040 -0.035 │     0.514     0.501 │      ⚠
+    rvol                   │  -0.0278  +0.0640 +0.092 │     0.502     0.533 │      🚨
+    vol_up_down_ratio      │  -0.0202  -0.0086 +0.012 │     0.506     0.506 │      ✅
+    rsi_value              │  +0.0394  -0.1350 -0.174 │     0.518     0.574 │      🚨
+
+==========================================================================================
+  PART 5: RANDOM FOREST FEATURE IMPORTANCE — Purged Walk-Forward
+==========================================================================================
+
+  ── Signal: rsi_intelligence ──
+
+    Walk-Forward AUC: 0.552 (3 folds)
+
+    Feature                │ Importance     ±Std │ Rank │      Verdict
+    ─────────────────────────────────────────────────────────────────
+    sigma_tide             │     0.1899  0.0143 │    1 │ ★★ CRITICAL  █████████
+    tide_slope             │     0.1429  0.0019 │    2 │ ★ IMPORTANT  ███████
+    tide_accel             │     0.1215  0.0111 │    3 │ ★ IMPORTANT  ██████
+    rsi_value              │     0.1126  0.0171 │    4 │ ★ IMPORTANT  █████
+    wave_slope             │     0.0786  0.0135 │    5 │ • USEFUL     ███
+    kalman_velocity        │     0.0749  0.0018 │    6 │ • USEFUL     ███
+    sigma_wave             │     0.0723  0.0088 │    7 │ • USEFUL     ███
+    slope_conjugation      │     0.0711  0.0091 │    8 │ • USEFUL     ███
+    vol_up_down_ratio      │     0.0594  0.0053 │    9 │ • USEFUL     ██
+    rvol                   │     0.0526  0.0058 │   10 │ • USEFUL     ██
+    fear_level             │     0.0242  0.0087 │   11 │ ✗ MARGINAL   █
+
+  ── Signal: regression_channel ──
+
+    Walk-Forward AUC: 0.546 (3 folds)
+
+    Feature                │ Importance     ±Std │ Rank │      Verdict
+    ─────────────────────────────────────────────────────────────────
+    tide_accel             │     0.1895  0.0353 │    1 │ ★★ CRITICAL  █████████
+    wave_slope             │     0.1159  0.0193 │    2 │ ★ IMPORTANT  █████
+    rsi_value              │     0.0940  0.0079 │    3 │ • USEFUL     ████
+    slope_conjugation      │     0.0935  0.0020 │    4 │ • USEFUL     ████
+    kalman_velocity        │     0.0924  0.0059 │    5 │ • USEFUL     ████
+    tide_slope             │     0.0871  0.0039 │    6 │ • USEFUL     ████
+    sigma_tide             │     0.0864  0.0026 │    7 │ • USEFUL     ████
+    rvol                   │     0.0847  0.0135 │    8 │ • USEFUL     ████
+    sigma_wave             │     0.0815  0.0156 │    9 │ • USEFUL     ████
+    vol_up_down_ratio      │     0.0678  0.0099 │   10 │ • USEFUL     ███
+    fear_level             │     0.0072  0.0045 │   11 │ ✗ MARGINAL   
+
+==========================================================================================
+  PART 6: FEATURE CORRELATION MATRIX — Redundancy Detection
+==========================================================================================
+
+    Highly correlated pairs (|r| > 0.5):
+    Feature A              Feature B                     r       Action
+    ──────────────────────────────────────────────────────────────────────
+    sigma_tide             rsi_value                +0.503           OK
+    wave_slope             slope_conjugation        +0.942 🚨 REMOVE ONE
+    kalman_velocity        rvol                     +0.682           OK
+
+==========================================================================================
+  PART 8: CATEGORICAL FEATURES — Win Rate by Category
+==========================================================================================
+
+  ── Signal: rsi_intelligence ──
+
+    regime (base WR=48.7%):
+      BULL                      N= 1866 WR= 48.4% edge= -0.3%   █████████
+      BEAR                      N=  910 WR= 46.9% edge= -1.8%   █████████
+      FLAT                      N=  237 WR= 57.8% edge= +9.1% ★ ███████████
+
+    wyckoff_state (base WR=48.7%):
+      CONSOLIDATION             N= 2421 WR= 48.8% edge= +0.1%   █████████
+      MARKDOWN                  N=  181 WR= 51.9% edge= +3.2%   ██████████
+      ACCUMULATION              N=  173 WR= 48.0% edge= -0.7%   █████████
+      DISTRIBUTION              N=  131 WR= 50.4% edge= +1.7%   ██████████
+      MARKUP                    N=  107 WR= 40.2% edge= -8.5% ✗ ████████
+
+    vol_regime (base WR=48.7%):
+      NORMAL                    N= 3006 WR= 48.7% edge= -0.1%   █████████
+      ELEVATED                  N=    7 WR= 71.4% edge=+22.7% ★ ██████████████
+
+    fear_label (base WR=48.7%):
+      ANXIETY                   N= 1291 WR= 50.8% edge= +2.1%   ██████████
+      NEUTRAL                   N=  579 WR= 47.8% edge= -0.9%   █████████
+      PANIC                     N=  537 WR= 47.1% edge= -1.6%   █████████
+      FEAR                      N=  248 WR= 48.4% edge= -0.3%   █████████
+      CONFIDENCE                N=  221 WR= 45.2% edge= -3.5%   █████████
+      GREED                     N=  137 WR= 45.3% edge= -3.5%   █████████
+
+    wave_flip (base WR=48.7%):
+      False                     N= 2731 WR= 48.6% edge= -0.1%   █████████
+      True                      N=  282 WR= 49.6% edge= +0.9%   █████████
+
+    wave_flip_direction (base WR=48.7%):
+      0                         N= 2731 WR= 48.6% edge= -0.1%   █████████
+      -1                        N=  264 WR= 49.2% edge= +0.5%   █████████
+      1                         N=   18 WR= 55.6% edge= +6.8% ★ ███████████
+
+    below_vwap (base WR=48.7%):
+      True                      N= 2864 WR= 49.1% edge= +0.3%   █████████
+      False                     N=  149 WR= 42.3% edge= -6.4% ✗ ████████
+
+  ── Signal: regression_channel ──
+
+    regime (base WR=48.9%):
+      BULL                      N= 3635 WR= 49.0% edge= +0.0%   █████████
+      FLAT                      N=  150 WR= 45.3% edge= -3.6%   █████████
+      BEAR                      N=    9 WR= 88.9% edge=+40.0% ★ █████████████████
+
+    wyckoff_state (base WR=48.9%):
+      CONSOLIDATION             N= 3316 WR= 49.3% edge= +0.4%   █████████
+      MARKUP                    N=  238 WR= 39.9% edge= -9.0% ✗ ███████
+      ACCUMULATION              N=  234 WR= 53.0% edge= +4.1%   ██████████
+      DISTRIBUTION              N=    6 WR= 50.0% edge= +1.1%   ██████████
+
+    vol_regime (base WR=48.9%):
+      NORMAL                    N= 3784 WR= 48.9% edge= -0.1%   █████████
+      ELEVATED                  N=   10 WR= 70.0% edge=+21.1% ★ ██████████████
+
+    fear_label (base WR=48.9%):
+      ANXIETY                   N= 3211 WR= 49.3% edge= +0.4%   █████████
+      NEUTRAL                   N=  320 WR= 47.8% edge= -1.1%   █████████
+      CONFIDENCE                N=  254 WR= 45.7% edge= -3.3%   █████████
+      GREED                     N=    7 WR= 14.3% edge=-34.6% ✗ ██
+
+    wave_flip (base WR=48.9%):
+      False                     N= 3661 WR= 48.8% edge= -0.1%   █████████
+      True                      N=  133 WR= 52.6% edge= +3.7%   ██████████
+
+    wave_flip_direction (base WR=48.9%):
+      0                         N= 3661 WR= 48.8% edge= -0.1%   █████████
+      -1                        N=   79 WR= 53.2% edge= +4.2%   ██████████
+      1                         N=   54 WR= 51.9% edge= +2.9%   ██████████
+
+    below_vwap (base WR=48.9%):
+      True                      N= 3791 WR= 48.9% edge= +0.0%   █████████
+
+==========================================================================================
+  PART 7: HYPOTHESIS GOVERNANCE — Final Classification
+==========================================================================================
+
+    Classification Criteria (López de Prado + Hypothesis Governance):
+    ────────────────────────────────────────────────────────────────
+    VALIDATED (B):   |r| > 0.05, p < 0.01, ≥60% tickers positive, OOS holds
+    HYPOTHESIS-A:    |r| > 0.05, p < 0.05, ≥40% tickers positive
+    HYPOTHESIS-B:    Significant in some tickers but not universal
+    HYPOTHESIS-C:    Weak/unstable evidence
+    RETIRED (F):     No edge, or edge inverted in OOS
+    REDUNDANT:       r > 0.9 with another feature
+    
+
+  ── Signal: rsi_intelligence ──
+
+    Feature                │    r_pb   p-val │ Tickers+ │   OOS │ RF Imp │        Grade
+    ─────────────────────────────────────────────────────────────────────────────────────
+    sigma_wave             │ -0.0326 0.0735 │   6/17   │     ✅ │        │     • HYPO-B
+    sigma_tide             │ -0.1149 0.0000*** │  11/17   │     ✅ │        │   ★★ VALID-B
+    tide_slope             │ +0.0298 0.1019 │   7/17   │     🚨 │        │    ✗ RETIRED
+    tide_accel             │ -0.0194 0.2873 │   5/17   │     ✅ │        │    ✗ RETIRED
+    wave_slope             │ -0.0279 0.1257 │   5/17   │     🚨 │        │    ✗ RETIRED
+    slope_conjugation      │ -0.0415 0.0228* │   6/17   │     🚨 │        │     • HYPO-B
+    fear_level             │ +0.0085 0.6418 │   7/17   │     🚨 │        │    ✗ RETIRED
+    kalman_velocity        │ -0.0012 0.9468 │   3/17   │     🚨 │        │    ✗ RETIRED
+    rvol                   │ +0.0164 0.3691 │   4/17   │     ✅ │        │    ✗ RETIRED
+    vol_up_down_ratio      │ -0.0418 0.0217* │   5/17   │     ✅ │        │     • HYPO-B
+    rsi_value              │ -0.1021 0.0000*** │   9/17   │     ✅ │        │     ★ HYPO-A
+
+  ── Signal: regression_channel ──
+
+    Feature                │    r_pb   p-val │ Tickers+ │   OOS │ RF Imp │        Grade
+    ─────────────────────────────────────────────────────────────────────────────────────
+    sigma_wave             │ -0.0072 0.6585 │   2/17   │     🚨 │        │    ✗ RETIRED
+    sigma_tide             │ -0.0721 0.0000*** │   6/17   │     ✅ │        │     • HYPO-B
+    tide_slope             │ +0.0061 0.7082 │   5/17   │     ✅ │        │    ✗ RETIRED
+    tide_accel             │ -0.1000 0.0000*** │  10/17   │     ✅ │        │     ★ HYPO-A
+    wave_slope             │ +0.0005 0.9736 │   7/17   │     🚨 │        │    ✗ RETIRED
+    slope_conjugation      │ -0.0010 0.9519 │   7/17   │     🚨 │        │    ✗ RETIRED
+    fear_level             │ +0.0264 0.1034 │   7/17   │     🚨 │        │    ✗ RETIRED
+    kalman_velocity        │ +0.0232 0.1538 │   3/17   │     🚨 │        │    ✗ RETIRED
+    rvol                   │ -0.0047 0.7701 │   2/17   │     🚨 │        │    ✗ RETIRED
+    vol_up_down_ratio      │ -0.0177 0.2770 │   4/17   │     🚨 │        │    ✗ RETIRED
+    rsi_value              │ -0.0085 0.6019 │   4/17   │     🚨 │        │    ✗ RETIRED
+
+==========================================================================================
+  v12 PER-FEATURE EVALUATION COMPLETE
+==========================================================================================

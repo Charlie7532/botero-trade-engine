@@ -1,0 +1,153 @@
+
+===============================================================================================
+  FORENSIC LAB v13c — VWAP vs KALMAN-VWAP (S-Score)
+===============================================================================================
+  Avellaneda s-score: sigma = (price - fair_value) / uncertainty
+  Traditional VWAP:  sigma = (price - vwap) / vwap_std
+  Kalman-VWAP:       sigma = (price - x[0]) / sqrt(P[0,0])
+    AAPL: 695 labels
+    AMZN: 366 labels
+    COST: 310 labels
+    HD: 344 labels
+    HON: 357 labels
+    IBM: 356 labels
+    JNJ: 331 labels
+    JPM: 331 labels
+    MCD: 366 labels
+    MRK: 327 labels
+    MSFT: 291 labels
+    PEP: 411 labels
+    PG: 420 labels
+    QQQ: 644 labels
+    SPY: 676 labels
+    WMT: 332 labels
+    XOM: 250 labels
+
+  Total: 6775 records
+
+===============================================================================================
+  HEAD-TO-HEAD — rsi_intelligence
+===============================================================================================
+    Base WR: 48.8%, N=2998
+
+  ── VWAP Sigma (traditional) ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    vwap_sigma_wave              │ -0.1030  0.0000*** │   82% │    ★★ STRONG
+    vwap_sigma_current           │ -0.0993  0.0000*** │   88% │   ★ MODERATE
+    vwap_sigma_tide              │ -0.0641  0.0004*** │   88% │   ★ MODERATE
+
+  ── Kalman-VWAP Sigma (s-score) ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    kalman_sigma_wave            │ -0.0636  0.0005*** │   71% │   ★ MODERATE
+    kalman_sigma_current         │ -0.0628  0.0006*** │   71% │   ★ MODERATE
+    kalman_sigma_tide            │ -0.0541  0.0030** │   76% │   ★ MODERATE
+
+  ── Kalman Velocity (free derivative) ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    kalman_velocity_wave         │ -0.0329  0.0717  │   47% │       ~ WEAK
+    kalman_velocity_current      │ -0.0228  0.2116  │   47% │       ✗ NONE
+    kalman_velocity_tide         │ -0.0050  0.7828  │   53% │       ✗ NONE
+
+  ── Kalman Uncertainty (confidence) ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    kalman_uncertainty_wave      │ -0.0238  0.1933  │   94% │       ✗ NONE
+    kalman_uncertainty_current   │ -0.0240  0.1886  │   94% │       ✗ NONE
+    kalman_uncertainty_tide      │ -0.0260  0.1548  │   94% │       ✗ NONE
+
+  ── Compound signals ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    below_all_vwap               │ +0.0657  0.0003*** │   94% │   ★ MODERATE
+    below_all_kalman             │ +0.0426  0.0197* │   65% │       ~ WEAK
+
+===============================================================================================
+  HEAD-TO-HEAD — regression_channel
+===============================================================================================
+    Base WR: 49.1%, N=3777
+
+  ── VWAP Sigma (traditional) ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    vwap_sigma_wave              │ -0.0228  0.1604  │   53% │       ✗ NONE
+    vwap_sigma_current           │ -0.0256  0.1160  │   65% │       ✗ NONE
+    vwap_sigma_tide              │ -0.0091  0.5773  │   65% │       ✗ NONE
+
+  ── Kalman-VWAP Sigma (s-score) ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    kalman_sigma_wave            │ +0.0203  0.2119  │   53% │       ✗ NONE
+    kalman_sigma_current         │ +0.0229  0.1600  │   53% │       ✗ NONE
+    kalman_sigma_tide            │ +0.0232  0.1540  │   47% │       ✗ NONE
+
+  ── Kalman Velocity (free derivative) ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    kalman_velocity_wave         │ -0.0272  0.0952  │   65% │       ✗ NONE
+    kalman_velocity_current      │ -0.0343  0.0349* │   71% │       ~ WEAK
+    kalman_velocity_tide         │ -0.0469  0.0039** │   65% │       ~ WEAK
+
+  ── Kalman Uncertainty (confidence) ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    kalman_uncertainty_wave      │ -0.0095  0.5615  │   59% │       ✗ NONE
+    kalman_uncertainty_current   │ -0.0091  0.5768  │   65% │       ✗ NONE
+    kalman_uncertainty_tide      │ -0.0058  0.7198  │   59% │       ✗ NONE
+
+  ── Compound signals ──
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    below_all_vwap               │ -0.0033  0.8374  │   65% │       ✗ NONE
+    below_all_kalman             │ +0.0258  0.1131  │   53% │       ✗ NONE
+
+===============================================================================================
+  TEMPORAL STABILITY — Kalman vs VWAP Sigmas
+===============================================================================================
+
+  ── rsi_intelligence ──
+    Feature                      │  06-10 │  11-15 │  16-20 │  21-26 │ Stable?
+    ───────────────────────────────────────────────────────────────────────────
+    vwap_sigma_wave              │ -0.119★ │ -0.072 │ -0.140★ │ -0.098 │ ✅
+    kalman_sigma_wave            │ -0.068 │ -0.003 │ -0.160★ │ -0.071 │ ✅
+    vwap_sigma_current           │ -0.119★ │ -0.092 │ -0.188★ │ -0.066 │ ✅
+    kalman_sigma_current         │ -0.059 │ -0.013 │ -0.164★ │ -0.070 │ ✅
+    vwap_sigma_tide              │ -0.104★ │ -0.052 │ -0.215★ │ -0.044 │ ✅
+    kalman_sigma_tide            │ -0.048 │ -0.037 │ -0.155★ │ -0.060 │ ✅
+    kalman_velocity_wave         │ -0.033 │ -0.088 │ -0.071 │ -0.035 │ ✅
+    kalman_velocity_current      │ -0.033 │ -0.089 │ -0.039 │ -0.021 │ ✅
+
+  ── regression_channel ──
+    Feature                      │  06-10 │  11-15 │  16-20 │  21-26 │ Stable?
+    ───────────────────────────────────────────────────────────────────────────
+    vwap_sigma_wave              │ +0.011 │ -0.036 │ -0.028 │ -0.019 │ ~
+    kalman_sigma_wave            │ -0.045 │ -0.057 │ +0.020 │ +0.052 │ 🚨
+    vwap_sigma_current           │ -0.019 │ -0.004 │ -0.028 │ -0.032 │ ~
+    kalman_sigma_current         │ -0.035 │ -0.077 │ +0.037 │ +0.054 │ 🚨
+    vwap_sigma_tide              │ +0.070 │ +0.049 │ -0.038 │ -0.076 │ 🚨
+    kalman_sigma_tide            │ -0.012 │ -0.093 │ +0.063 │ +0.045 │ ⚠
+    kalman_velocity_wave         │ +0.069 │ -0.059 │ +0.016 │ -0.053 │ ⚠
+    kalman_velocity_current      │ +0.076 │ -0.028 │ +0.001 │ -0.070 │ ⚠
+
+===============================================================================================
+  CORRELATION — VWAP sigma vs Kalman sigma
+===============================================================================================
+    wave      : correlation = 0.1366
+    current   : correlation = 0.0691
+    tide      : correlation = 0.1216
+
+===============================================================================================
+  v13c COMPLETE — VWAP vs KALMAN-VWAP
+===============================================================================================

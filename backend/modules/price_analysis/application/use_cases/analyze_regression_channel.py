@@ -39,7 +39,9 @@ import numpy as np
 import pandas as pd
 
 from backend.modules.price_analysis.domain.entities.price_models import RCIntelligenceResult
-from backend.modules.quality_swing.domain.rules.regression_channel import (
+from backend.modules.shared.domain.entities.channel_snapshot import ChannelSnapshot
+from backend.modules.shared.domain.rules.compute_channel import compute_channel_snapshot
+from backend.modules.shared.domain.rules.regression_channel import (
     linreg_channel, calc_vwap, sigma_position as calc_sigma,
 )
 from backend.modules.quality_swing.domain.rules.fear_level import compute_ticker_fear_level
@@ -85,12 +87,17 @@ class RegressionChannelIntelligence:
         self,
         ohlc: pd.DataFrame,
         idx: int | None = None,
+        snapshot: ChannelSnapshot | None = None,
     ) -> RCIntelligenceResult:
         """Full regression channel analysis at a single point in time.
 
         Args:
             ohlc: DataFrame with 'open', 'high', 'low', 'close', 'volume'.
             idx: Bar index to analyze (default: last bar).
+            snapshot: Pre-computed ChannelSnapshot. When provided, skips
+                      all regression/VWAP computation and uses snapshot
+                      values directly. When None, computes internally
+                      (backward compatible).
 
         Returns:
             RCIntelligenceResult with zone, action, fear_level, conviction.
@@ -100,97 +107,95 @@ class RegressionChannelIntelligence:
         if idx is None:
             idx = len(ohlc) - 1
 
-        if idx < self.LONG_WINDOW + 5:
-            result.diagnosis = f"Insufficient data ({idx} bars, need {self.LONG_WINDOW + 5})"
-            return result
-
-        close = ohlc["close"].values.astype(float)
-        high = ohlc["high"].values.astype(float)
-        low = ohlc["low"].values.astype(float)
-        volume = ohlc["volume"].values.astype(float)
-        price_window = close[:idx + 1]
-        current_price = close[idx]
+        current_price = float(ohlc["close"].iloc[idx])
 
         # ══════════════════════════════════════════════════════
-        # LAYER 1: TIDE — Long regression (200 bars)
+        # FAST PATH: Use pre-computed ChannelSnapshot
         # ══════════════════════════════════════════════════════
-        reg_value, tide_slope, residual_std = linreg_channel(price_window, self.LONG_WINDOW)
-        sig_pos = calc_sigma(current_price, reg_value, residual_std)
-
-        result.reg_value = round(reg_value, 2)
-        result.residual_std = round(residual_std, 4)
-        result.tide_slope = round(tide_slope, 4)
-        result.sigma_position = round(sig_pos, 2)
-
-        # ══════════════════════════════════════════════════════
-        # LAYER 2: WAVE — Short regression (cycle-adaptive)
-        # ══════════════════════════════════════════════════════
-        dominant_cycle = detect_dominant_cycle(close)
-        short_window = max(10, min(dominant_cycle, 60))
-        reg_val_short, wave_slope, res_std_short = linreg_channel(price_window, short_window)
-        sig_wave = calc_sigma(current_price, reg_val_short, res_std_short)
-        result.sigma_wave = round(sig_wave, 2)
-        result.wave_slope = round(wave_slope, 4)
-
-        # Slope conjugation: the angle between the two lines
-        result.slope_conjugation = round(wave_slope - tide_slope, 4)
-
-        # ══════════════════════════════════════════════════════
-        # LAYER 3: VWAP — Institutional fair price
-        # ══════════════════════════════════════════════════════
-        vwap_val = calc_vwap(
-            close[:idx + 1], high[:idx + 1], low[:idx + 1], volume[:idx + 1],
-            self.VWAP_WINDOW,
-        )
-        result.vwap = round(vwap_val, 2)
-        result.below_vwap = current_price < vwap_val
-
-        # ══════════════════════════════════════════════════════
-        # LAYER 4: FEAR/GREED — Per-ticker contrarian bias
-        # ══════════════════════════════════════════════════════
-        bias = compute_ticker_fear_level(ohlc, idx, self.LONG_WINDOW, short_window)
-        if bias is not None:
-            result.fear_level = bias.fear_level
-            result.fear_label = bias.fear_label
-            result.tide_accel = round(bias.tide_accel, 6)
-            result.wave_flip = bias.wave_flip
-            result.wave_flip_direction = bias.wave_flip_direction
-
-        # ══════════════════════════════════════════════════════
-        # LAYER 5: REGIME — From tide slope
-        # ══════════════════════════════════════════════════════
-        if tide_slope > self.BULL_SLOPE_MIN:
-            result.regime = "BULL"
-        elif tide_slope < self.BEAR_SLOPE_MAX:
-            result.regime = "BEAR"
+        if snapshot is not None:
+            result.reg_value = round(snapshot.reg_value_tide, 2)
+            result.residual_std = round(snapshot.residual_std_tide, 4)
+            result.tide_slope = round(snapshot.tide_slope, 4)
+            result.sigma_position = round(snapshot.sigma_tide, 2)
+            result.sigma_wave = round(snapshot.sigma_wave, 2)
+            result.wave_slope = round(snapshot.wave_slope, 4)
+            result.slope_conjugation = round(snapshot.conj_wave_tide, 4)
+            result.vwap = round(snapshot.vwap_wave, 2)
+            result.below_vwap = snapshot.below_all_vwaps
+            result.fear_level = snapshot.fear_level
+            result.fear_label = snapshot.fear_label
+            result.tide_accel = round(snapshot.tide_accel, 6)
+            result.wave_flip = snapshot.wave_flip
+            result.wave_flip_direction = snapshot.wave_flip_direction
+            result.regime = snapshot.regime
+            result.vol_up_down_ratio = snapshot.vol_up_down_ratio
         else:
-            result.regime = "FLAT"
+            # ══════════════════════════════════════════════════
+            # LEGACY PATH: Compute internally (backward compat)
+            # ══════════════════════════════════════════════════
+            if idx < self.LONG_WINDOW + 5:
+                result.diagnosis = f"Insufficient data ({idx} bars, need {self.LONG_WINDOW + 5})"
+                return result
+
+            close = ohlc["close"].values.astype(float)
+            high = ohlc["high"].values.astype(float)
+            low = ohlc["low"].values.astype(float)
+            volume = ohlc["volume"].values.astype(float)
+            price_window = close[:idx + 1]
+
+            # LAYER 1: TIDE
+            reg_value, tide_slope, residual_std = linreg_channel(price_window, self.LONG_WINDOW)
+            sig_pos = calc_sigma(current_price, reg_value, residual_std)
+            result.reg_value = round(reg_value, 2)
+            result.residual_std = round(residual_std, 4)
+            result.tide_slope = round(tide_slope, 4)
+            result.sigma_position = round(sig_pos, 2)
+
+            # LAYER 2: WAVE
+            dominant_cycle = detect_dominant_cycle(close)
+            short_window = max(10, min(dominant_cycle, 60))
+            reg_val_short, wave_slope, res_std_short = linreg_channel(price_window, short_window)
+            sig_wave = calc_sigma(current_price, reg_val_short, res_std_short)
+            result.sigma_wave = round(sig_wave, 2)
+            result.wave_slope = round(wave_slope, 4)
+            result.slope_conjugation = round(wave_slope - tide_slope, 4)
+
+            # LAYER 3: VWAP
+            vwap_val = calc_vwap(
+                close[:idx + 1], high[:idx + 1], low[:idx + 1], volume[:idx + 1],
+                self.VWAP_WINDOW,
+            )
+            result.vwap = round(vwap_val, 2)
+            result.below_vwap = current_price < vwap_val
+
+            # LAYER 4: FEAR/GREED
+            bias = compute_ticker_fear_level(ohlc, idx, self.LONG_WINDOW, short_window)
+            if bias is not None:
+                result.fear_level = bias.fear_level
+                result.fear_label = bias.fear_label
+                result.tide_accel = round(bias.tide_accel, 6)
+                result.wave_flip = bias.wave_flip
+                result.wave_flip_direction = bias.wave_flip_direction
+
+            # LAYER 5: REGIME
+            if tide_slope > self.BULL_SLOPE_MIN:
+                result.regime = "BULL"
+            elif tide_slope < self.BEAR_SLOPE_MAX:
+                result.regime = "BEAR"
+            else:
+                result.regime = "FLAT"
+
+            # LAYER 6: VOLUME
+            result.vol_up_down_ratio = round(
+                self._compute_vol_ratio(close, volume, idx), 2
+            )
 
         # ══════════════════════════════════════════════════════
-        # LAYER 6: VOLUME UP/DOWN — Distribution detection
+        # INTERPRETATION (same for both paths)
         # ══════════════════════════════════════════════════════
-        result.vol_up_down_ratio = round(
-            self._compute_vol_ratio(close, volume, idx), 2
-        )
-
-        # ══════════════════════════════════════════════════════
-        # ZONE CLASSIFICATION
-        # ══════════════════════════════════════════════════════
-        result.zone = self._classify_zone(sig_pos, result.fear_level)
-
-        # ══════════════════════════════════════════════════════
-        # ACTION DETERMINATION
-        # ══════════════════════════════════════════════════════
+        result.zone = self._classify_zone(result.sigma_position, result.fear_level)
         result.action = self._determine_action(result)
-
-        # ══════════════════════════════════════════════════════
-        # COMPOSITE CONVICTION (-1.0 to +1.0)
-        # ══════════════════════════════════════════════════════
         result.conviction = self._compute_conviction(result)
-
-        # ══════════════════════════════════════════════════════
-        # DIAGNOSIS
-        # ══════════════════════════════════════════════════════
         result.diagnosis = self._build_diagnosis(result, current_price)
 
         return result

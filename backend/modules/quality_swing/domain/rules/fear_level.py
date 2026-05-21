@@ -12,6 +12,10 @@ Empirical forensic audit (2026-05-14, 20 tickers × 5 years = 20,580 obs):
   PANIC (tide+wave down+accel) → P(↑)=47.6%, Ret20d=+3.12% (best)
   Wave FLIP → 8.6% spread in P(↑) — most discriminative feature
 
+Two entry points:
+  1. classify_fear_from_snapshot(snap) — from pre-computed ChannelSnapshot (preferred)
+  2. compute_ticker_fear_level(ohlc, idx) — legacy, computes regressions internally
+
 No external dependencies beyond numpy/pandas.
 """
 import numpy as np
@@ -22,6 +26,32 @@ from backend.modules.quality_swing.domain.rules.regression_channel import linreg
 from backend.modules.shared.domain.rules.cycle_detection import detect_dominant_cycle
 
 
+def classify_fear_from_snapshot(snapshot) -> TickerSentimentBias:
+    """Create TickerSentimentBias from pre-computed ChannelSnapshot.
+
+    Preferred path: 0 regression calls, 0 duplication.
+    The ChannelSnapshot already contains tide_slope, wave_slope,
+    tide_accel, wave_flip, sigma_tide, and conj_wave_tide.
+
+    Args:
+        snapshot: ChannelSnapshot instance (from compute_channel_snapshot).
+
+    Returns:
+        TickerSentimentBias populated from snapshot values.
+    """
+    return TickerSentimentBias(
+        fear_level=snapshot.fear_level,
+        fear_label=snapshot.fear_label,
+        tide_slope=snapshot.tide_slope,
+        wave_slope=snapshot.wave_slope,
+        tide_accel=snapshot.tide_accel,
+        wave_flip=snapshot.wave_flip,
+        wave_flip_direction=snapshot.wave_flip_direction,
+        sigma_position=snapshot.sigma_tide,
+        slope_conjugation=snapshot.conj_wave_tide,
+    )
+
+
 def compute_ticker_fear_level(
     ohlc: pd.DataFrame,
     idx: int,
@@ -29,6 +59,9 @@ def compute_ticker_fear_level(
     short_window: int | None = None,
 ) -> TickerSentimentBias | None:
     """Compute per-ticker fear/greed bias from regression channel slopes.
+
+    Legacy entry point — computes regressions internally.
+    Prefer classify_fear_from_snapshot() when a ChannelSnapshot is available.
 
     Args:
         ohlc: DataFrame with 'close', 'high', 'low', 'volume' columns.
@@ -105,3 +138,4 @@ def compute_ticker_fear_level(
         sigma_position=sig_pos,
         slope_conjugation=slope_conj,
     )
+

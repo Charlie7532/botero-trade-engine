@@ -47,6 +47,7 @@ class RSIIntelligence:
         close: np.ndarray,
         regime_hint: str = "NEUTRAL",   # From VP bias, Wyckoff, or SMA slope
         period: int = 14,
+        snapshot=None,                  # ChannelSnapshot (optional context)
     ) -> RSIIntelligenceResult:
         """
         Full regime-aware RSI analysis.
@@ -55,9 +56,12 @@ class RSIIntelligence:
             close: Array of close prices (min 50 bars recommended)
             regime_hint: "BULL", "BEAR", or "NEUTRAL" from external regime detector
             period: RSI period (default 14)
+            snapshot: Pre-computed ChannelSnapshot (optional). Stored on result
+                      for downstream consumers (MetaLabeler). RSI's own analysis
+                      is fully independent of the snapshot.
         """
         result = RSIIntelligenceResult()
-
+        result.channel_snapshot = snapshot  # Store for downstream (None if not provided)
         if len(close) < period + self.SWING_LOOKBACK:
             result.diagnosis = f"Insufficient data ({len(close)} bars, need {period + self.SWING_LOOKBACK})"
             return result

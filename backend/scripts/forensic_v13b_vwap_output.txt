@@ -1,0 +1,87 @@
+
+===============================================================================================
+  TRIPLE VWAP (240/60/30) + SIGMA VWAP EVALUATION
+===============================================================================================
+  Processing 6807 labels across 17 tickers...
+    AAPL: done
+    AMZN: done
+    COST: done
+    HD: done
+    HON: done
+    IBM: done
+    JNJ: done
+    JPM: done
+    MCD: done
+    MRK: done
+    MSFT: done
+    PEP: done
+    PG: done
+    QQQ: done
+    SPY: done
+    WMT: done
+    XOM: done
+
+  Total: 6775 records
+
+  ── Signal: rsi_intelligence ──
+    Base WR: 48.8%, N=2998
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    vwap_sigma_tide              │ -0.0641  0.0004*** │   88% │   ★ MODERATE
+    vwap_dist_tide               │ -0.0429  0.0188* │   65% │       ~ WEAK
+    vwap_sigma_current           │ -0.0993  0.0000*** │   88% │   ★ MODERATE
+    vwap_dist_current            │ -0.0714  0.0001*** │   65% │   ★ MODERATE
+    vwap_sigma_wave              │ -0.1030  0.0000*** │   82% │    ★★ STRONG
+    vwap_dist_wave               │ -0.0619  0.0007*** │   82% │   ★ MODERATE
+    vwap_spread_tide_current     │ -0.0197  0.2819  │   53% │       ✗ NONE
+    vwap_spread_tide_wave        │ -0.0131  0.4730  │   59% │       ✗ NONE
+    vwap_spread_current_wave     │ -0.0101  0.5817  │   71% │       ✗ NONE
+    below_all_vwaps              │ +0.0657  0.0003*** │   94% │   ★ MODERATE
+    above_all_vwaps              │ -0.0500  0.0061** │   47% │   ★ MODERATE
+
+    ★ Below ALL 3 VWAPs: WR=52.2% (N=1435, edge=+3.4%)
+    ✗ Above ALL 3 VWAPs: WR=38.6% (N=171, edge=-10.2%)
+
+  ── Signal: regression_channel ──
+    Base WR: 49.1%, N=3777
+
+    Feature                      │     r_pb    p-val │  Tkr% │       Status
+    ───────────────────────────────────────────────────────────────────────────
+    vwap_sigma_tide              │ -0.0091  0.5773  │   65% │       ✗ NONE
+    vwap_dist_tide               │ -0.0094  0.5630  │   59% │       ✗ NONE
+    vwap_sigma_current           │ -0.0256  0.1160  │   65% │       ✗ NONE
+    vwap_dist_current            │ -0.0632  0.0001*** │   76% │   ★ MODERATE
+    vwap_sigma_wave              │ -0.0228  0.1604  │   53% │       ✗ NONE
+    vwap_dist_wave               │ -0.0616  0.0002*** │   65% │   ★ MODERATE
+    vwap_spread_tide_current     │ -0.0102  0.5319  │   53% │       ✗ NONE
+    vwap_spread_tide_wave        │ +0.0034  0.8358  │   47% │       ✗ NONE
+    vwap_spread_current_wave     │ +0.0402  0.0136* │   47% │       ~ WEAK
+    below_all_vwaps              │ -0.0039  0.8118  │   65% │       ✗ NONE
+    above_all_vwaps              │ +0.0130  0.4236  │   24% │       ✗ NONE
+
+    ★ Below ALL 3 VWAPs: WR=48.9% (N=1446, edge=-0.2%)
+
+  ── Temporal Stability — VWAP Sigmas ──
+
+    rsi_intelligence:
+    Feature                      │  06-10 │  11-15 │  16-20 │  21-26 │ Stable?
+    ──────────────────────────────────────────────────────────────────────
+    vwap_sigma_tide              │ -0.104★ │ -0.052 │ -0.215★ │ -0.044 │ ✅
+    vwap_sigma_current           │ -0.119★ │ -0.092 │ -0.188★ │ -0.066 │ ✅
+    vwap_sigma_wave              │ -0.119★ │ -0.072 │ -0.140★ │ -0.098 │ ✅
+    vwap_spread_tide_current     │ +0.023 │ -0.022 │ +0.167★ │ +0.007 │ ⚠
+    vwap_spread_tide_wave        │ +0.048 │ -0.015 │ +0.181★ │ +0.014 │ ~
+
+    regression_channel:
+    Feature                      │  06-10 │  11-15 │  16-20 │  21-26 │ Stable?
+    ──────────────────────────────────────────────────────────────────────
+    vwap_sigma_tide              │ +0.070 │ +0.049 │ -0.038 │ -0.076 │ 🚨
+    vwap_sigma_current           │ -0.019 │ -0.004 │ -0.028 │ -0.032 │ ~
+    vwap_sigma_wave              │ +0.011 │ -0.036 │ -0.028 │ -0.019 │ ~
+    vwap_spread_tide_current     │ -0.037 │ -0.074 │ +0.058 │ -0.008 │ ⚠
+    vwap_spread_tide_wave        │ -0.022 │ -0.070 │ +0.065 │ +0.019 │ ⚠
+
+===============================================================================================
+  TRIPLE VWAP EVALUATION COMPLETE
+===============================================================================================

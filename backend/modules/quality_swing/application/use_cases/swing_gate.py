@@ -70,18 +70,30 @@ class SwingGate:
         decision = SwingDecision(ticker=ticker)
 
         # ── Load OHLCV data ──
-        start = (reference_date or date.today()) - timedelta(days=400)
+        start = (reference_date or date.today()) - timedelta(days=450)
         ohlc = self._port.load_ohlc(ticker, "1d", start=start)
-        if ohlc is None or len(ohlc) < 210:
-            decision.reasoning = "INSUFFICIENT_DATA: Need 200+ bars"
+        if ohlc is None or len(ohlc) < 250:
+            decision.reasoning = "INSUFFICIENT_DATA: Need 245+ bars"
             return decision
 
-        # ── RC Intelligence — single tool replaces 6 manual computations ──
-        # Replaces: linreg_channel(), calc_vwap(), sigma_position(),
-        #           compute_ticker_fear_level(), regime detection, vol ratio
-        rc_result = self._get_rc_analysis(ohlc)
+        idx = len(ohlc) - 1
+
+        # ── Compute ChannelSnapshot ONCE — single source of truth ──
+        from backend.modules.shared.domain.rules.compute_channel import compute_channel_snapshot
+        close = ohlc["close"].values.astype(float)
+        high = ohlc["high"].values.astype(float)
+        low = ohlc["low"].values.astype(float)
+        volume = ohlc["volume"].values.astype(float)
+        channel = compute_channel_snapshot(close, high, low, volume, idx)
+
+        if channel is None:
+            decision.reasoning = "CHANNEL_FAILED: Cannot compute channel snapshot"
+            return decision
+
+        # ── RC Intelligence — interprets pre-computed snapshot ──
+        rc_result = self._get_rc_analysis(ohlc, channel)
         if rc_result is None:
-            decision.reasoning = "RC_INTEL_FAILED: Cannot compute channel"
+            decision.reasoning = "RC_INTEL_FAILED: Cannot interpret channel"
             return decision
 
         decision.sigma_position = rc_result.sigma_position
@@ -91,7 +103,6 @@ class SwingGate:
         decision.wave_slope = rc_result.wave_slope
 
         below_vwap = rc_result.below_vwap
-        idx = len(ohlc) - 1
         hookup = ohlc["close"].iloc[idx] > ohlc["close"].iloc[idx - 1] if idx > 0 else False
 
         # ── Load vol regime ──
@@ -169,9 +180,9 @@ class SwingGate:
         except Exception as e:
             logger.debug(f"SwingGate: MH snapshot not available: {e}")
 
-        # ── Compute fear bias (full entity for entry rules) ──
-        from backend.modules.quality_swing.domain.rules.fear_level import compute_ticker_fear_level
-        fear = compute_ticker_fear_level(ohlc, idx)
+        # ── Compute fear bias from pre-computed snapshot (0 regression calls) ──
+        from backend.modules.quality_swing.domain.rules.fear_level import classify_fear_from_snapshot
+        fear = classify_fear_from_snapshot(channel)
 
         # ── Load Signal Reliability Passports (multi-signal lookup) ──
         passport, passport_signal = self._load_best_passport(ticker, fear, vol_label)
@@ -285,15 +296,19 @@ class SwingGate:
 
     # ── Internal: RC Intelligence (lazy) ──────────────────────────
 
-    def _get_rc_analysis(self, ohlc):
-        """Lazy-init and call RegressionChannelIntelligence."""
+    def _get_rc_analysis(self, ohlc, channel=None):
+        """Lazy-init and call RegressionChannelIntelligence.
+
+        When channel is provided, uses the fast path (0 regression calls).
+        Otherwise computes internally (backward compat).
+        """
         try:
             if SwingGate._rc_intel is None:
                 from backend.modules.price_analysis.application.use_cases.analyze_regression_channel import (
                     RegressionChannelIntelligence,
                 )
                 SwingGate._rc_intel = RegressionChannelIntelligence()
-            return SwingGate._rc_intel.analyze(ohlc)
+            return SwingGate._rc_intel.analyze(ohlc, snapshot=channel)
         except Exception as e:
             logger.error(f"SwingGate: RCIntelligence failed: {e}")
             return None

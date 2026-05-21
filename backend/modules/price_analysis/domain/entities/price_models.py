@@ -66,6 +66,9 @@ class RSIIntelligenceResult:
     # Composite score: -1.0 (max bearish) → +1.0 (max bullish)
     rsi_conviction: float = 0.0
 
+    # Channel context (optional, for MetaLabeler pipeline)
+    channel_snapshot: object = None  # ChannelSnapshot when available
+
     diagnosis: str = ""
 
 

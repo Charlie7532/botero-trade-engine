@@ -9,33 +9,74 @@ class IndicatorSnapshot:
     Separado en:
       - PRIMITIVAS ORTOGONALES: para ML (features independientes)
       - LABELS DERIVADAS: para diagnóstico humano (redundantes con primitivas)
+    
+    v2 (2026-05-21): Added triple regression (σ_current, spreads, conjs),
+    triple VWAP (vwap_sigma_*), and pattern recognition context.
+    New fields default to None for backward compatibility with existing labels.
     """
     # ══════════════════════════════════════════════════════════
     # PRIMITIVAS ORTOGONALES — Input para ML (Tier 1)
-    # Cada campo mide una dimensión independiente del mercado
+    # Each field measures an independent market dimension
     # ══════════════════════════════════════════════════════════
-    sigma_tide: float             # Posición vs tendencia macro (200-bar)
-    sigma_wave: float             # Posición vs ciclo actual
-    tide_slope: float             # Dirección macro (normalized)
-    wave_slope: float             # Dirección micro (normalized)
-    tide_accel: float             # Aceleración de la tendencia
-    below_vwap: bool              # Descuento institucional
-    vol_up_down_ratio: float      # Acumulación vs distribución
-    wave_flip: bool               # Punto de inflexión micro
-    wave_flip_direction: int      # +1 knife stopped, -1 knife started
-    rvol: float                   # Convicción del mercado
-    
-    # ── Per-indicator (ortogonales entre sí) ──
-    rsi_value: float | None = None        # Momentum (ortogonal a posición)
-    wyckoff_state: str | None = None      # Estado de volumen (Kalman)
-    kalman_velocity: float | None = None  # Velocidad suavizada
-    vol_regime: str | None = None         # Régimen de volatilidad
-    
+
+    # ── Triple Regression Sigmas ──
+    sigma_tide: float             # vs 240-bar regression (was 200)  ★★ VALIDATED
+    sigma_wave: float             # vs cycle-adaptive regression
+    sigma_current: float | None = None  # vs 60-bar regression (NEW)
+
+    # ── Triple Slopes ──
+    tide_slope: float = 0.0      # Macro direction (normalized)
+    wave_slope: float = 0.0      # Short-term direction
+    current_slope: float | None = None  # Medium-term direction (NEW)
+
+    # ── Triple Accelerations ──
+    tide_accel: float = 0.0      # ★★ STRONG (RC r=-0.103)
+    current_accel: float | None = None  # NEW ★ MODERATE (RSI)
+    wave_accel: float | None = None     # NEW
+
+    # ── Triple Conjugations (slope diffs) ──
+    slope_conjugation: float = 0.0      # wave - tide (LEGACY name, kept for compat)
+    conj_wave_tide: float | None = None       # wave - tide (same as slope_conjugation)  ★ MODERATE
+    conj_current_tide: float | None = None    # current - tide  ★ MODERATE (RC)
+    conj_wave_current: float | None = None    # wave - current
+
+    # ── Triple Sigma Spreads ──
+    spread_tide_current: float | None = None  # σ_tide - σ_current  ★ MODERATE (✅ stable)
+    spread_tide_wave: float | None = None
+    spread_current_wave: float | None = None
+
+    # ── Triple VWAP Sigmas ──
+    vwap_sigma_tide: float | None = None      # vs 240-bar VWAP  ★ MODERATE
+    vwap_sigma_current: float | None = None   # vs 60-bar VWAP   ★ MODERATE (88% tickers)
+    vwap_sigma_wave: float | None = None      # vs cycle VWAP    ★★ STRONG (RSI)
+
+    # ── Existing primitives (carried forward) ──
+    below_vwap: bool = False      # DEPRECATED → replaced by vwap_sigma_* continuo
+    vol_up_down_ratio: float = 1.0
+    wave_flip: bool = False
+    wave_flip_direction: int = 0  # +1 knife stopped, -1 knife started
+    rvol: float = 1.0            # Relative volume (conviction)
+
+    # ── VWAP composite flags (NEW) ──
+    below_all_vwaps: bool | None = None   # Price < all 3 VWAPs = institutional discount
+    above_all_vwaps: bool | None = None   # Price > all 3 VWAPs = anti-signal (WR=38.6%)
+
+    # ── Per-indicator (orthogonal) ──
+    rsi_value: float | None = None        # Momentum (orthogonal to position)
+    wyckoff_state: str | None = None      # Volume state (Kalman)
+    kalman_velocity: float | None = None  # Smoothed velocity
+    vol_regime: str | None = None         # Volatility regime label
+
+    # ── Pattern Recognition (NEW — optional context) ──
+    candle_pattern: str | None = None     # e.g. "HAMMER", "MORNING_STAR", "NONE"
+    candle_sentiment: str | None = None   # "BULLISH" / "BEARISH" / "NEUTRAL"
+    candle_confirmation_score: float | None = None  # -1.0 to +1.0
+
     # ══════════════════════════════════════════════════════════
     # LABELS DERIVADAS — Solo para diagnóstico humano
     # Se capturan para los ReportCards, NO se pasan al ML
     # ══════════════════════════════════════════════════════════
-    regime: str = "FLAT"          # SBULL/BULL/FLAT/BEAR/SBEAR (= f(tide_slope))
+    regime: str = "FLAT"          # BULL/FLAT/BEAR (= f(tide_slope))
     fear_level: int = 2           # 0-5 GREED→PANIC (= f(tide, wave, accel))
-    fear_label: str = "NEUTRAL"   # Etiqueta legible del fear_level
-    slope_conjugation: float = 0.0  # wave - tide (= wave_slope - tide_slope)
+    fear_label: str = "NEUTRAL"   # Human-readable label
+

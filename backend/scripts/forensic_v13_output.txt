@@ -1,0 +1,158 @@
+
+===============================================================================================
+  FORENSIC LAB v13 — TRIPLE REGRESSION + VWAP EVALUATION
+===============================================================================================
+  López de Prado Committee: Evaluate BEFORE implementing
+  Proposed: TIDE(240) + CURRENT(60) + WAVE(30)
+
+  Computing triple regression on all 6,807 Oracle labels...
+  Loaded 6807 labels
+    AAPL: 695 labels, 8513 bars
+    AMZN: 366 labels, 5088 bars
+    COST: 310 labels, 5095 bars
+    HD: 344 labels, 5096 bars
+    HON: 357 labels, 5097 bars
+    IBM: 356 labels, 5096 bars
+    JNJ: 331 labels, 5087 bars
+    JPM: 331 labels, 5093 bars
+    MCD: 366 labels, 5095 bars
+    MRK: 327 labels, 5095 bars
+    MSFT: 291 labels, 5080 bars
+    PEP: 411 labels, 5574 bars
+    PG: 420 labels, 5088 bars
+    QQQ: 644 labels, 8102 bars
+    SPY: 676 labels, 9627 bars
+    WMT: 332 labels, 5087 bars
+    XOM: 250 labels, 5096 bars
+  Total: 6775 computed, 32 skipped
+
+===============================================================================================
+  COMPARISON: OLD sigma_tide (200) vs NEW sigma_tide (240)
+===============================================================================================
+
+    OLD sigma_tide (200 bars): r=-0.0809, p=0.0000
+    NEW sigma_tide (240 bars): r=-0.0989, p=0.0000
+    Δr = -0.0179
+    Correlation old↔new: 0.8735
+
+    ★ NEW (240) is 22.1% STRONGER
+
+===============================================================================================
+  PART 1: ALL TRIPLE REGRESSION FEATURES — RSI Intelligence
+===============================================================================================
+
+    Feature                      │     r_pb    p-val │     MI │    AUC │ Ticker% │       Status
+    ──────────────────────────────────────────────────────────────────────────────────────────
+    new_sigma_tide               │ -0.1191  0.0000*** │ 0.0148 │  0.570 │    88%  │    ★★ STRONG
+    new_sigma_current            │ -0.0389  0.0334* │ 0.0010 │  0.516 │    82%  │       ~ WEAK
+    new_sigma_wave               │ -0.0363  0.0469* │ 0.0068 │  0.522 │    82%  │       ~ WEAK
+    new_tide_slope               │ +0.0336  0.0656  │ 0.0151 │  0.510 │    76%  │       ~ WEAK
+    new_current_slope            │ +0.0115  0.5281  │ 0.0135 │  0.524 │    71%  │       ✗ NONE
+    new_wave_slope               │ -0.0555  0.0024** │ 0.0072 │  0.542 │    71%  │   ★ MODERATE
+    new_tide_accel               │ -0.0427  0.0194* │ 0.0306 │  0.536 │    71%  │       ~ WEAK
+    new_current_accel            │ -0.0532  0.0036** │ 0.0034 │  0.543 │    59%  │   ★ MODERATE
+    new_wave_accel               │ -0.0560  0.0022** │ 0.0000 │  0.514 │    65%  │   ★ MODERATE
+    new_conj_wave_current        │ -0.0610  0.0008*** │ 0.0008 │  0.514 │    65%  │   ★ MODERATE
+    new_conj_wave_tide           │ -0.0704  0.0001*** │ 0.0052 │  0.547 │    82%  │   ★ MODERATE
+    new_conj_current_tide        │ +0.0006  0.9727  │ 0.0339 │  0.527 │    82%  │       ✗ NONE
+    new_spread_tide_current      │ -0.0585  0.0014** │ 0.0046 │  0.537 │    76%  │   ★ MODERATE
+    new_spread_tide_wave         │ -0.0722  0.0001*** │ 0.0134 │  0.543 │    65%  │   ★ MODERATE
+    new_spread_current_wave      │ -0.0042  0.8164  │ 0.0016 │  0.507 │    88%  │       ✗ NONE
+    new_vwap_distance            │ -0.1112  0.0000*** │ 0.0176 │  0.564 │    71%  │    ★★ STRONG
+    new_std_ratio_wave_tide      │ -0.0054  0.7668  │ 0.0000 │  0.504 │    71%  │       ✗ NONE
+    new_std_ratio_current_tide   │ +0.0166  0.3643  │ 0.0168 │  0.512 │    76%  │       ✗ NONE
+
+===============================================================================================
+  PART 2: ALL TRIPLE REGRESSION FEATURES — Regression Channel
+===============================================================================================
+
+    Feature                      │     r_pb    p-val │     MI │    AUC │ Ticker% │       Status
+    ──────────────────────────────────────────────────────────────────────────────────────────
+    new_sigma_tide               │ -0.0998  0.0000*** │ 0.0082 │  0.554 │    82%  │   ★ MODERATE
+    new_sigma_current            │ +0.0228  0.1615  │ 0.0013 │  0.513 │    53%  │       ✗ NONE
+    new_sigma_wave               │ +0.0047  0.7751  │ 0.0000 │  0.505 │    47%  │       ✗ NONE
+    new_tide_slope               │ +0.0382  0.0189* │ 0.0147 │  0.528 │    59%  │       ~ WEAK
+    new_current_slope            │ -0.0427  0.0087** │ 0.0000 │  0.522 │    65%  │       ~ WEAK
+    new_wave_slope               │ -0.0232  0.1543  │ 0.0027 │  0.519 │    65%  │       ✗ NONE
+    new_tide_accel               │ -0.1025  0.0000*** │ 0.0063 │  0.561 │    65%  │    ★★ STRONG
+    new_current_accel            │ -0.0081  0.6178  │ 0.0000 │  0.502 │    53%  │       ✗ NONE
+    new_wave_accel               │ +0.0075  0.6447  │ 0.0000 │  0.508 │    65%  │       ✗ NONE
+    new_conj_wave_current        │ +0.0017  0.9179  │ 0.0089 │  0.502 │    59%  │       ✗ NONE
+    new_conj_wave_tide           │ -0.0331  0.0418* │ 0.0000 │  0.529 │    53%  │       ~ WEAK
+    new_conj_current_tide        │ -0.0604  0.0002*** │ 0.0226 │  0.537 │    53%  │   ★ MODERATE
+    new_spread_tide_current      │ -0.0946  0.0000*** │ 0.0056 │  0.560 │    71%  │   ★ MODERATE
+    new_spread_tide_wave         │ -0.0686  0.0000*** │ 0.0164 │  0.544 │    59%  │   ★ MODERATE
+    new_spread_current_wave      │ +0.0185  0.2554  │ 0.0000 │  0.503 │    65%  │       ✗ NONE
+    new_vwap_distance            │ -0.0245  0.1327  │ 0.0096 │  0.508 │    47%  │       ✗ NONE
+    new_std_ratio_wave_tide      │ -0.0258  0.1128  │ 0.0112 │  0.516 │    82%  │       ✗ NONE
+    new_std_ratio_current_tide   │ +0.0384  0.0183* │ 0.0000 │  0.515 │    35%  │       ~ WEAK
+
+===============================================================================================
+  TEMPORAL STABILITY — New Features
+===============================================================================================
+
+  ── Signal: rsi_intelligence ──
+
+    Feature                      │  2006-10 │  2011-15 │  2016-20 │  2021-26 │ Stable?
+    ────────────────────────────────────────────────────────────────────────────────
+    new_sigma_tide               │ -0.150 ★ │ -0.089   │ -0.178 ★ │ -0.088   │       ✅
+    new_sigma_current            │ +0.006   │ -0.057   │ +0.094   │ -0.052   │       ⚠
+    new_sigma_wave               │ -0.109 ★ │ -0.016   │ +0.024   │ -0.023   │       ⚠
+    new_current_slope            │ -0.102 ★ │ -0.010   │ -0.206 ★ │ -0.039   │       ✅
+    new_current_accel            │ -0.020   │ -0.114 ★ │ -0.070   │ -0.070   │       ✅
+    new_conj_wave_current        │ +0.062   │ -0.046   │ +0.011   │ -0.040   │       ⚠
+    new_conj_current_tide        │ -0.119 ★ │ -0.014   │ -0.196 ★ │ -0.057   │       ✅
+    new_spread_tide_current      │ -0.107 ★ │ -0.025   │ -0.180 ★ │ -0.027   │       ✅
+    new_vwap_distance            │ -0.112 ★ │ -0.149 ★ │ -0.077   │ -0.039   │       ✅
+    new_std_ratio_wave_tide      │ -0.070   │ +0.080   │ -0.059   │ -0.050   │       ⚠
+
+  ── Signal: regression_channel ──
+
+    Feature                      │  2006-10 │  2011-15 │  2016-20 │  2021-26 │ Stable?
+    ────────────────────────────────────────────────────────────────────────────────
+    new_sigma_tide               │ +0.022   │ -0.121 ★ │ -0.100   │ -0.133 ★ │       ⚠
+    new_sigma_current            │ +0.141 ★ │ -0.046   │ +0.056   │ -0.007   │       ⚠
+    new_sigma_wave               │ +0.001   │ +0.010   │ +0.005   │ +0.009   │       ~
+    new_current_slope            │ -0.033   │ +0.021   │ -0.079   │ -0.091   │       ⚠
+    new_current_accel            │ +0.108 ★ │ -0.085   │ +0.022   │ -0.089   │       🚨
+    new_conj_wave_current        │ +0.139 ★ │ -0.050   │ -0.019   │ -0.086   │       ⚠
+    new_conj_current_tide        │ -0.053   │ -0.022   │ -0.084   │ -0.118 ★ │       ✅
+    new_spread_tide_current      │ -0.099   │ -0.045   │ -0.122 ★ │ -0.104 ★ │       ✅
+    new_vwap_distance            │ +0.086   │ -0.061   │ -0.025   │ -0.048   │       ⚠
+    new_std_ratio_wave_tide      │ -0.065   │ +0.002   │ -0.007   │ -0.035   │       ~
+
+===============================================================================================
+  VWAP DEEP DIVE — Continuous Distance vs Boolean
+===============================================================================================
+
+  ── Signal: rsi_intelligence ──
+
+    Boolean (below_vwap):   r=+0.0325, p=0.0753
+    Continuous (vwap_dist): r=-0.1112, p=0.0000
+    Interaction (vwap×σ):  r=+0.1364, p=0.0000
+    σ_tide<-1 + below_VWAP: WR=52.3% (N=1650, base=48.8%, edge=+3.5%)
+
+    WR by VWAP distance quintile:
+      Q0: VWAP_dist=[-3.08, -0.86] WR=55.7% N=600
+      Q1: VWAP_dist=[-0.86, -0.58] WR=53.4% N=599
+      Q2: VWAP_dist=[-0.58, -0.40] WR=49.3% N=600
+      Q3: VWAP_dist=[-0.40, -0.22] WR=44.7% N=599
+      Q4: VWAP_dist=[-0.22, +1.26] WR=40.7% N=600
+
+  ── Signal: regression_channel ──
+
+    Boolean (below_vwap):   r=+0.0089, p=0.5839
+    Continuous (vwap_dist): r=-0.0245, p=0.1327
+    Interaction (vwap×σ):  r=+0.0514, p=0.0016
+    σ_tide<-1 + below_VWAP: WR=49.9% (N=3422, base=49.1%, edge=+0.7%)
+
+    WR by VWAP distance quintile:
+      Q0: VWAP_dist=[-3.82, -1.10] WR=52.1% N=756
+      Q1: VWAP_dist=[-1.10, -0.72] WR=48.6% N=755
+      Q2: VWAP_dist=[-0.72, -0.47] WR=47.4% N=755
+      Q3: VWAP_dist=[-0.47, -0.24] WR=48.3% N=756
+      Q4: VWAP_dist=[-0.24, +0.09] WR=49.3% N=755
+
+===============================================================================================
+  v13 TRIPLE REGRESSION EVALUATION COMPLETE
+===============================================================================================

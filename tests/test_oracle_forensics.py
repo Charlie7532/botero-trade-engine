@@ -438,15 +438,15 @@ class TestOracleTrainerIntegration:
         mock_vol_regime.return_value = mock_snapshot
 
         # Create synthetic database bars
-        ohlc = create_synthetic_bars(250)
+        ohlc = create_synthetic_bars(300)
         
-        # Inject one GOLDEN_RUN entry signal at index 200
-        sig_time = ohlc.index[200]
+        # Inject one GOLDEN_RUN entry signal at index 250
+        sig_time = ohlc.index[250]
         
-        # Modify close prices to generate a +4% return at index 210 (10 bars forward)
+        # Modify close prices to generate a +4% return at index 260 (10 bars forward)
         # So return_pct = 4.0% >= 3.0%, and low prices are high enough that MAE > -1.0%
-        ohlc.loc[ohlc.index[210], "close"] = 104.0
-        for i in range(201, 211):
+        ohlc.loc[ohlc.index[260], "close"] = 104.0
+        for i in range(251, 261):
             ohlc.loc[ohlc.index[i], "low"] = 99.5
             ohlc.loc[ohlc.index[i], "high"] = 104.5
 

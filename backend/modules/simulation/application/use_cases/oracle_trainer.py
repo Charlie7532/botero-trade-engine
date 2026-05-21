@@ -5,12 +5,14 @@ import numpy as np
 import pandas as pd
 
 from backend.modules.shared.domain.ports.time_series_port import TimeSeriesPort
+from backend.modules.shared.domain.rules.compute_channel import compute_channel_snapshot
 from backend.modules.simulation.domain.entities.indicator_snapshot import IndicatorSnapshot
 from backend.modules.simulation.domain.entities.signal_forensic_label import SignalForensicLabel, HorizonSnapshot
 from backend.modules.simulation.domain.entities.entry_report_card import EntryReportCard
 from backend.modules.simulation.domain.entities.exit_report_card import ExitReportCard
 
 from backend.modules.price_analysis.application.use_cases.analyze_regression_channel import RegressionChannelIntelligence
+from backend.modules.pattern_recognition.application.use_cases.detect_patterns import PatternRecognitionIntelligence
 from backend.modules.volatility_regime.domain.rules.vol_classifier import VolRegimeClassifier
 from backend.modules.entry_decision.domain.rules.vol_regime_gate import compute_vol_regime_snapshot
 from backend.modules.simulation.infrastructure.signal_adapters import RSISignalAdapter
@@ -30,6 +32,7 @@ class OracleTrainer:
     def __init__(self, store: TimeSeriesPort):
         self.store = store
         self.rc_intel = RegressionChannelIntelligence()
+        self.pattern_intel = PatternRecognitionIntelligence()
         self.vol_classifier = VolRegimeClassifier()
 
     def _precompute_vol_regimes(self, ohlc: pd.DataFrame) -> dict[int, str]:
@@ -86,9 +89,23 @@ class OracleTrainer:
         self, ohlc: pd.DataFrame, idx: int, rsi_values: np.ndarray, kalman_states: list,
         vol_regimes: dict[int, str] | None = None
     ) -> IndicatorSnapshot:
-        """Helper to build the IndicatorSnapshot at index `idx` using production rules."""
-        # 1. Analyze regression channel
-        rc_res = self.rc_intel.analyze(ohlc, idx=idx)
+        """Build IndicatorSnapshot at index `idx` using compute_channel_snapshot.
+
+        Uses the unified ChannelSnapshot (triple regression + triple VWAP)
+        instead of calling rc_intel.analyze() which internally duplicated
+        regression computations.
+        """
+        close = ohlc["close"].values.astype(float)
+        high = ohlc["high"].values.astype(float)
+        low = ohlc["low"].values.astype(float)
+        volume = ohlc["volume"].values.astype(float)
+
+        # 1. Compute channel snapshot (single call, 0 duplicates)
+        channel = compute_channel_snapshot(close, high, low, volume, idx)
+        if channel is None:
+            # Fallback: insufficient data, use legacy path
+            rc_res = self.rc_intel.analyze(ohlc, idx=idx)
+            channel = None
 
         # 2. Vol regime classification
         if vol_regimes is not None and idx in vol_regimes:
@@ -107,30 +124,95 @@ class OracleTrainer:
         rsi_val = float(rsi_values[idx]) if idx < len(rsi_values) else 50.0
 
         # 5. RVOL
-        vol = ohlc["volume"].values.astype(float)
-        avg_vol_20 = float(np.mean(vol[max(0, idx-19):idx+1])) if idx >= 1 else vol[idx]
-        rvol = vol[idx] / max(avg_vol_20, 1.0)
+        avg_vol_20 = float(np.mean(volume[max(0, idx-19):idx+1])) if idx >= 1 else volume[idx]
+        rvol = volume[idx] / max(avg_vol_20, 1.0)
 
-        return IndicatorSnapshot(
-            sigma_tide=rc_res.sigma_position,
-            sigma_wave=rc_res.sigma_wave,
-            tide_slope=rc_res.tide_slope,
-            wave_slope=rc_res.wave_slope,
-            tide_accel=rc_res.tide_accel,
-            below_vwap=rc_res.below_vwap,
-            vol_up_down_ratio=rc_res.vol_up_down_ratio,
-            wave_flip=rc_res.wave_flip,
-            wave_flip_direction=rc_res.wave_flip_direction,
-            rvol=rvol,
-            rsi_value=rsi_val,
-            wyckoff_state=wyckoff_state,
-            kalman_velocity=kalman_velocity,
-            vol_regime=vol_reg_str,
-            regime=rc_res.regime,
-            fear_level=rc_res.fear_level,
-            fear_label=rc_res.fear_label,
-            slope_conjugation=rc_res.slope_conjugation
-        )
+        # 6. Pattern recognition at this bar
+        candle_pattern = None
+        candle_sentiment = None
+        candle_score = None
+        if idx >= 3:
+            try:
+                pattern_result = self.pattern_intel.detect(ohlc.iloc[:idx+1])
+                candle_pattern = pattern_result.primary_pattern
+                candle_sentiment = pattern_result.sentiment
+                candle_score = pattern_result.confirmation_score
+            except Exception:
+                pass  # Pattern detection is optional
+
+        if channel is not None:
+            return IndicatorSnapshot(
+                # Triple regression
+                sigma_tide=channel.sigma_tide,
+                sigma_wave=channel.sigma_wave,
+                sigma_current=channel.sigma_current,
+                tide_slope=channel.tide_slope,
+                wave_slope=channel.wave_slope,
+                current_slope=channel.current_slope,
+                tide_accel=channel.tide_accel,
+                current_accel=channel.current_accel,
+                wave_accel=channel.wave_accel,
+                # Conjugations
+                slope_conjugation=channel.conj_wave_tide,
+                conj_wave_tide=channel.conj_wave_tide,
+                conj_current_tide=channel.conj_current_tide,
+                conj_wave_current=channel.conj_wave_current,
+                # Sigma spreads
+                spread_tide_current=channel.spread_tide_current,
+                spread_tide_wave=channel.spread_tide_wave,
+                spread_current_wave=channel.spread_current_wave,
+                # Triple VWAP
+                vwap_sigma_tide=channel.vwap_sigma_tide,
+                vwap_sigma_current=channel.vwap_sigma_current,
+                vwap_sigma_wave=channel.vwap_sigma_wave,
+                # Legacy VWAP (backward compat)
+                below_vwap=channel.below_all_vwaps,
+                below_all_vwaps=channel.below_all_vwaps,
+                above_all_vwaps=channel.above_all_vwaps,
+                # Existing
+                vol_up_down_ratio=channel.vol_up_down_ratio,
+                wave_flip=channel.wave_flip,
+                wave_flip_direction=channel.wave_flip_direction,
+                rvol=rvol,
+                # Per-indicator
+                rsi_value=rsi_val,
+                wyckoff_state=wyckoff_state,
+                kalman_velocity=kalman_velocity,
+                vol_regime=vol_reg_str,
+                # Pattern
+                candle_pattern=candle_pattern,
+                candle_sentiment=candle_sentiment,
+                candle_confirmation_score=candle_score,
+                # Derived
+                regime=channel.regime,
+                fear_level=channel.fear_level,
+                fear_label=channel.fear_label,
+            )
+        else:
+            # Legacy fallback (channel computation failed)
+            return IndicatorSnapshot(
+                sigma_tide=rc_res.sigma_position,
+                sigma_wave=rc_res.sigma_wave,
+                tide_slope=rc_res.tide_slope,
+                wave_slope=rc_res.wave_slope,
+                tide_accel=rc_res.tide_accel,
+                below_vwap=rc_res.below_vwap,
+                vol_up_down_ratio=rc_res.vol_up_down_ratio,
+                wave_flip=rc_res.wave_flip,
+                wave_flip_direction=rc_res.wave_flip_direction,
+                rvol=rvol,
+                rsi_value=rsi_val,
+                wyckoff_state=wyckoff_state,
+                kalman_velocity=kalman_velocity,
+                vol_regime=vol_reg_str,
+                candle_pattern=candle_pattern,
+                candle_sentiment=candle_sentiment,
+                candle_confirmation_score=candle_score,
+                regime=rc_res.regime,
+                fear_level=rc_res.fear_level,
+                fear_label=rc_res.fear_label,
+                slope_conjugation=rc_res.slope_conjugation,
+            )
 
     def _calculate_horizons(self, ohlc: pd.DataFrame, idx: int) -> dict[int, HorizonSnapshot]:
         """Calculate forward returns, MAE, MFE for each horizon from signal index `idx`."""
@@ -241,7 +323,7 @@ class OracleTrainer:
             idx = ohlc.index.get_loc(sig_time)
             
             # Ensure we have at least min bars lookback to build a valid snapshot
-            if idx < 200:
+            if idx < 245:
                 continue
 
             snapshot = self._build_snapshot(ohlc, idx, rsi_vals, kalman_states, vol_regimes)

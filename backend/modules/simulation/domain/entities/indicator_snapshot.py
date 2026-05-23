@@ -61,6 +61,21 @@ class IndicatorSnapshot:
     below_all_vwaps: bool | None = None   # Price < all 3 VWAPs = institutional discount
     above_all_vwaps: bool | None = None   # Price > all 3 VWAPs = anti-signal (WR=38.6%)
 
+    # ── Tensions: Reg σ minus VWAP σ (v15 Part 3) ──
+    tension_tide: float | None = None       # sigma_tide - vwap_sigma_tide
+    tension_current: float | None = None    # sigma_current - vwap_sigma_current
+    tension_wave: float | None = None       # sigma_wave - vwap_sigma_wave
+
+    # ── Compression (Mandelbrot squeeze, v15 Part 8) ──
+    compression_ratio: float | None = None  # residual_std_wave / residual_std_tide
+
+    # ── Geometric Features (3D vector projections) ──
+    geo_state_norm: float | None = None     # ‖σ_vector‖
+    geo_velocity_align: float | None = None # cos(velocity, ideal_entry)
+    geo_exit_align: float | None = None     # cos(velocity, ideal_exit)
+    geo_accel_align: float | None = None    # cos(velocity, acceleration)
+    geo_phase_angle: float | None = None    # arctan2(wave_slope_norm, tide_slope_norm)
+
     # ── Per-indicator (orthogonal) ──
     rsi_value: float | None = None        # Momentum (orthogonal to position)
     wyckoff_state: str | None = None      # Volume state (Kalman)

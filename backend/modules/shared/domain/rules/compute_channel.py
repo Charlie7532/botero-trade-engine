@@ -31,6 +31,7 @@ from backend.modules.shared.domain.rules.regression_channel import (
     sigma_position,
 )
 from backend.modules.shared.domain.rules.cycle_detection import detect_dominant_cycle
+from backend.modules.shared.domain.rules.geometric_features import compute_geometric_features
 
 
 # ── Fear level thresholds (from quality_swing/domain/rules/fear_level.py) ──
@@ -289,4 +290,39 @@ def compute_channel_snapshot(
         _compute_vol_ratio(close, volume, idx), 2
     )
 
+    # ══════════════════════════════════════════════════════════
+    # TENSIONS: Reg σ minus VWAP σ (Wyckoff cross-type)
+    # ══════════════════════════════════════════════════════════
+    snap.tension_tide = round(snap.sigma_tide - snap.vwap_sigma_tide, 4)
+    snap.tension_current = round(snap.sigma_current - snap.vwap_sigma_current, 4)
+    snap.tension_wave = round(snap.sigma_wave - snap.vwap_sigma_wave, 4)
+
+    # ══════════════════════════════════════════════════════════
+    # COMPRESSION RATIO (Mandelbrot squeeze)
+    # ══════════════════════════════════════════════════════════
+    snap.compression_ratio = round(
+        snap.residual_std_wave / snap.residual_std_tide
+        if snap.residual_std_tide > 0.01 else 0.0,
+        4,
+    )
+
+    # ══════════════════════════════════════════════════════════
+    # GEOMETRIC FEATURES (3D vector projections)
+    # slope_stds not available in single-bar computation — uses raw slopes.
+    # Backfill and daemon supply slope_stds for proper normalization.
+    # ══════════════════════════════════════════════════════════
+    (
+        snap.geo_state_norm,
+        snap.geo_velocity_align,
+        snap.geo_exit_align,
+        snap.geo_accel_align,
+        snap.geo_phase_angle,
+    ) = compute_geometric_features(
+        snap.sigma_tide, snap.sigma_current, snap.sigma_wave,
+        snap.tide_slope, snap.current_slope, snap.wave_slope,
+        snap.tide_accel, snap.current_accel, snap.wave_accel,
+        slope_stds=None,  # No rolling stds in single-bar mode
+    )
+
     return snap
+

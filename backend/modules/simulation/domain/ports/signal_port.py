@@ -26,6 +26,16 @@ class SignalPort(ABC):
     def name(self) -> str:
         """Unique signal identifier (e.g., 'kalman_wyckoff', 'bos_choch')."""
 
+    @property
+    def direction(self) -> str:
+        """Signal direction scope: 'long' (+1 only), 'short' (-1 only), 'both'.
+
+        Non-abstract with default 'both' — existing adapters inherit this
+        without modification. Override in adapters that support directional
+        instantiation (RSI, RC).
+        """
+        return "both"
+
     @abstractmethod
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
         """

@@ -1,0 +1,1005 @@
+{
+  "AAPL": {
+    "ticker": "AAPL",
+    "n_signals": 1141,
+    "trim_success_rate": 39.17616126205083,
+    "avg_post_trim_return": 2.9132874973362055,
+    "top_features": [
+      [
+        "tide_accel",
+        0.15
+      ],
+      [
+        "compression_ratio",
+        0.1021
+      ],
+      [
+        "current_accel",
+        0.0954
+      ],
+      [
+        "fear_level",
+        -0.0888
+      ],
+      [
+        "wave_accel",
+        0.0837
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.0583,
+      "sigma_current": 0.0524,
+      "sigma_wave": 0.0476,
+      "vwap_sigma_tide": 0.0363,
+      "vwap_sigma_current": 0.027,
+      "vwap_sigma_wave": 0.0043,
+      "tide_slope": 0.0663,
+      "current_slope": 0.0596,
+      "wave_slope": 0.0799,
+      "tide_accel": 0.15,
+      "current_accel": 0.0954,
+      "wave_accel": 0.0837,
+      "conj_wave_current": 0.0457,
+      "conj_wave_tide": 0.0488,
+      "conj_current_tide": 0.011,
+      "spread_tide_current": -0.0177,
+      "spread_tide_wave": -0.0149,
+      "spread_current_wave": -0.0015,
+      "fear_level": -0.0888,
+      "vol_up_down_ratio": 0.0302,
+      "tension_tide": 0.015,
+      "tension_current": 0.0565,
+      "tension_wave": 0.0619,
+      "compression_ratio": 0.1021,
+      "geo_state_norm": 0.0543,
+      "geo_velocity_align": -0.0371,
+      "geo_exit_align": 0.0371,
+      "geo_accel_align": 0.004,
+      "geo_phase_angle": -0.0451
+    }
+  },
+  "AMZN": {
+    "ticker": "AMZN",
+    "n_signals": 650,
+    "trim_success_rate": 40.76923076923077,
+    "avg_post_trim_return": 1.3882299145359926,
+    "top_features": [
+      [
+        "fear_level",
+        0.0734
+      ],
+      [
+        "wave_accel",
+        -0.0651
+      ],
+      [
+        "tide_accel",
+        0.0519
+      ],
+      [
+        "geo_accel_align",
+        -0.0453
+      ],
+      [
+        "vol_up_down_ratio",
+        0.0434
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": -0.0011,
+      "sigma_current": -0.0138,
+      "sigma_wave": -0.0391,
+      "vwap_sigma_tide": 0.0299,
+      "vwap_sigma_current": -0.0103,
+      "vwap_sigma_wave": -0.0197,
+      "tide_slope": 0.0394,
+      "current_slope": 0.0049,
+      "wave_slope": 0.0088,
+      "tide_accel": 0.0519,
+      "current_accel": 0.0008,
+      "wave_accel": -0.0651,
+      "conj_wave_current": 0.0057,
+      "conj_wave_tide": -0.009,
+      "conj_current_tide": -0.0161,
+      "spread_tide_current": 0.0148,
+      "spread_tide_wave": 0.0389,
+      "spread_current_wave": 0.0375,
+      "fear_level": 0.0734,
+      "vol_up_down_ratio": 0.0434,
+      "tension_tide": -0.0331,
+      "tension_current": -0.0136,
+      "tension_wave": -0.0425,
+      "compression_ratio": -0.0426,
+      "geo_state_norm": -0.028,
+      "geo_velocity_align": 0.0282,
+      "geo_exit_align": -0.0282,
+      "geo_accel_align": -0.0453,
+      "geo_phase_angle": -0.0121
+    }
+  },
+  "COST": {
+    "ticker": "COST",
+    "n_signals": 625,
+    "trim_success_rate": 42.559999999999995,
+    "avg_post_trim_return": 0.6164867160104007,
+    "top_features": [
+      [
+        "tide_slope",
+        0.2224
+      ],
+      [
+        "tension_tide",
+        -0.2123
+      ],
+      [
+        "vwap_sigma_tide",
+        0.1886
+      ],
+      [
+        "current_accel",
+        -0.1856
+      ],
+      [
+        "conj_wave_tide",
+        -0.1688
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": -0.0329,
+      "sigma_current": -0.1377,
+      "sigma_wave": 0.0667,
+      "vwap_sigma_tide": 0.1886,
+      "vwap_sigma_current": -0.1513,
+      "vwap_sigma_wave": 0.0068,
+      "tide_slope": 0.2224,
+      "current_slope": 0.1458,
+      "wave_slope": -0.1146,
+      "tide_accel": -0.0893,
+      "current_accel": -0.1856,
+      "wave_accel": 0.0147,
+      "conj_wave_current": -0.1607,
+      "conj_wave_tide": -0.1688,
+      "conj_current_tide": 0.0224,
+      "spread_tide_current": 0.123,
+      "spread_tide_wave": -0.0778,
+      "spread_current_wave": -0.1668,
+      "fear_level": -0.1381,
+      "vol_up_down_ratio": 0.0167,
+      "tension_tide": -0.2123,
+      "tension_current": -0.108,
+      "tension_wave": 0.0893,
+      "compression_ratio": 0.0419,
+      "geo_state_norm": -0.0433,
+      "geo_velocity_align": -0.1382,
+      "geo_exit_align": 0.1382,
+      "geo_accel_align": -0.051,
+      "geo_phase_angle": -0.157
+    }
+  },
+  "HD": {
+    "ticker": "HD",
+    "n_signals": 574,
+    "trim_success_rate": 44.076655052264805,
+    "avg_post_trim_return": 0.07554056654843533,
+    "top_features": [
+      [
+        "wave_slope",
+        0.2189
+      ],
+      [
+        "conj_wave_tide",
+        0.1891
+      ],
+      [
+        "current_slope",
+        0.1869
+      ],
+      [
+        "conj_current_tide",
+        0.173
+      ],
+      [
+        "spread_current_wave",
+        0.1472
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": -0.0017,
+      "sigma_current": -0.0107,
+      "sigma_wave": -0.1412,
+      "vwap_sigma_tide": -0.1119,
+      "vwap_sigma_current": -0.0242,
+      "vwap_sigma_wave": -0.121,
+      "tide_slope": -0.0075,
+      "current_slope": 0.1869,
+      "wave_slope": 0.2189,
+      "tide_accel": 0.0586,
+      "current_accel": 0.1438,
+      "wave_accel": -0.1148,
+      "conj_wave_current": 0.0988,
+      "conj_wave_tide": 0.1891,
+      "conj_current_tide": 0.173,
+      "spread_tide_current": 0.0106,
+      "spread_tide_wave": 0.1412,
+      "spread_current_wave": 0.1472,
+      "fear_level": 0.0399,
+      "vol_up_down_ratio": -0.0299,
+      "tension_tide": 0.118,
+      "tension_current": 0.001,
+      "tension_wave": -0.1323,
+      "compression_ratio": -0.0968,
+      "geo_state_norm": -0.0505,
+      "geo_velocity_align": -0.0112,
+      "geo_exit_align": 0.0112,
+      "geo_accel_align": -0.0194,
+      "geo_phase_angle": -0.029
+    }
+  },
+  "HON": {
+    "ticker": "HON",
+    "n_signals": 573,
+    "trim_success_rate": 44.50261780104712,
+    "avg_post_trim_return": 0.2855246965049631,
+    "top_features": [
+      [
+        "spread_tide_current",
+        0.2734
+      ],
+      [
+        "current_slope",
+        0.2584
+      ],
+      [
+        "conj_current_tide",
+        0.2493
+      ],
+      [
+        "wave_accel",
+        -0.2122
+      ],
+      [
+        "tension_wave",
+        -0.1943
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.1241,
+      "sigma_current": -0.178,
+      "sigma_wave": -0.1361,
+      "vwap_sigma_tide": 0.0199,
+      "vwap_sigma_current": -0.1165,
+      "vwap_sigma_wave": -0.0016,
+      "tide_slope": -0.0119,
+      "current_slope": 0.2584,
+      "wave_slope": 0.1292,
+      "tide_accel": 0.074,
+      "current_accel": -0.0288,
+      "wave_accel": -0.2122,
+      "conj_wave_current": -0.0533,
+      "conj_wave_tide": 0.1214,
+      "conj_current_tide": 0.2493,
+      "spread_tide_current": 0.2734,
+      "spread_tide_wave": 0.1831,
+      "spread_current_wave": -0.0122,
+      "fear_level": -0.1072,
+      "vol_up_down_ratio": -0.0146,
+      "tension_tide": 0.064,
+      "tension_current": -0.1768,
+      "tension_wave": -0.1943,
+      "compression_ratio": -0.0635,
+      "geo_state_norm": -0.0178,
+      "geo_velocity_align": -0.1123,
+      "geo_exit_align": 0.1123,
+      "geo_accel_align": -0.1166,
+      "geo_phase_angle": 0.0021
+    }
+  },
+  "IBM": {
+    "ticker": "IBM",
+    "n_signals": 531,
+    "trim_success_rate": 64.7834274952919,
+    "avg_post_trim_return": -2.248832781451966,
+    "top_features": [
+      [
+        "compression_ratio",
+        -0.1165
+      ],
+      [
+        "current_slope",
+        0.1142
+      ],
+      [
+        "fear_level",
+        -0.0932
+      ],
+      [
+        "tide_slope",
+        0.0864
+      ],
+      [
+        "tide_accel",
+        -0.065
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.061,
+      "sigma_current": -0.0074,
+      "sigma_wave": 0.0188,
+      "vwap_sigma_tide": -0.0214,
+      "vwap_sigma_current": -0.0056,
+      "vwap_sigma_wave": -0.0377,
+      "tide_slope": 0.0864,
+      "current_slope": 0.1142,
+      "wave_slope": 0.0412,
+      "tide_accel": -0.065,
+      "current_accel": -0.0027,
+      "wave_accel": -0.0482,
+      "conj_wave_current": -0.0626,
+      "conj_wave_tide": -0.0078,
+      "conj_current_tide": 0.0468,
+      "spread_tide_current": 0.0374,
+      "spread_tide_wave": 0.0051,
+      "spread_current_wave": -0.0462,
+      "fear_level": -0.0932,
+      "vol_up_down_ratio": 0.0099,
+      "tension_tide": 0.0503,
+      "tension_current": -0.0074,
+      "tension_wave": 0.0445,
+      "compression_ratio": -0.1165,
+      "geo_state_norm": 0.0008,
+      "geo_velocity_align": 0.0068,
+      "geo_exit_align": -0.0068,
+      "geo_accel_align": -0.0148,
+      "geo_phase_angle": 0.0139
+    }
+  },
+  "JNJ": {
+    "ticker": "JNJ",
+    "n_signals": 590,
+    "trim_success_rate": 42.3728813559322,
+    "avg_post_trim_return": 0.27541048972868387,
+    "top_features": [
+      [
+        "spread_tide_current",
+        0.1965
+      ],
+      [
+        "tension_current",
+        -0.1859
+      ],
+      [
+        "sigma_current",
+        -0.1614
+      ],
+      [
+        "conj_current_tide",
+        0.1443
+      ],
+      [
+        "compression_ratio",
+        -0.1297
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.091,
+      "sigma_current": -0.1614,
+      "sigma_wave": -0.0622,
+      "vwap_sigma_tide": 0.0434,
+      "vwap_sigma_current": -0.0766,
+      "vwap_sigma_wave": -0.1137,
+      "tide_slope": -0.0117,
+      "current_slope": 0.1296,
+      "wave_slope": -0.025,
+      "tide_accel": 0.0387,
+      "current_accel": -0.0043,
+      "wave_accel": -0.0773,
+      "conj_wave_current": -0.0764,
+      "conj_wave_tide": -0.0209,
+      "conj_current_tide": 0.1443,
+      "spread_tide_current": 0.1965,
+      "spread_tide_wave": 0.0925,
+      "spread_current_wave": -0.0721,
+      "fear_level": 0.0359,
+      "vol_up_down_ratio": 0.0033,
+      "tension_tide": -0.0012,
+      "tension_current": -0.1859,
+      "tension_wave": -0.0173,
+      "compression_ratio": -0.1297,
+      "geo_state_norm": -0.0247,
+      "geo_velocity_align": -0.0411,
+      "geo_exit_align": 0.0411,
+      "geo_accel_align": -0.055,
+      "geo_phase_angle": -0.029
+    }
+  },
+  "JPM": {
+    "ticker": "JPM",
+    "n_signals": 623,
+    "trim_success_rate": 40.44943820224719,
+    "avg_post_trim_return": 0.9661614006084199,
+    "top_features": [
+      [
+        "tide_accel",
+        -0.1095
+      ],
+      [
+        "tension_tide",
+        0.1086
+      ],
+      [
+        "sigma_tide",
+        0.1084
+      ],
+      [
+        "vol_up_down_ratio",
+        -0.1041
+      ],
+      [
+        "compression_ratio",
+        0.1014
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.1084,
+      "sigma_current": 0.0541,
+      "sigma_wave": 0.0135,
+      "vwap_sigma_tide": -0.0661,
+      "vwap_sigma_current": 0.0859,
+      "vwap_sigma_wave": 0.0455,
+      "tide_slope": 0.046,
+      "current_slope": 0.0382,
+      "wave_slope": 0.0167,
+      "tide_accel": -0.1095,
+      "current_accel": 0.0203,
+      "wave_accel": 0.0061,
+      "conj_wave_current": -0.0199,
+      "conj_wave_tide": -0.0038,
+      "conj_current_tide": 0.008,
+      "spread_tide_current": -0.0083,
+      "spread_tide_wave": 0.029,
+      "spread_current_wave": 0.0641,
+      "fear_level": 0.0952,
+      "vol_up_down_ratio": -0.1041,
+      "tension_tide": 0.1086,
+      "tension_current": 0.0251,
+      "tension_wave": -0.0063,
+      "compression_ratio": 0.1014,
+      "geo_state_norm": 0.0928,
+      "geo_velocity_align": 0.0366,
+      "geo_exit_align": -0.0366,
+      "geo_accel_align": 0.0173,
+      "geo_phase_angle": -0.0544
+    }
+  },
+  "MCD": {
+    "ticker": "MCD",
+    "n_signals": 413,
+    "trim_success_rate": 41.162227602905574,
+    "avg_post_trim_return": 0.5941303008072505,
+    "top_features": [
+      [
+        "vwap_sigma_tide",
+        0.1822
+      ],
+      [
+        "tension_tide",
+        -0.1636
+      ],
+      [
+        "wave_slope",
+        0.1341
+      ],
+      [
+        "tide_accel",
+        -0.1286
+      ],
+      [
+        "tide_slope",
+        0.1267
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.049,
+      "sigma_current": -0.0202,
+      "sigma_wave": -0.0046,
+      "vwap_sigma_tide": 0.1822,
+      "vwap_sigma_current": 0.0488,
+      "vwap_sigma_wave": 0.067,
+      "tide_slope": 0.1267,
+      "current_slope": 0.113,
+      "wave_slope": 0.1341,
+      "tide_accel": -0.1286,
+      "current_accel": -0.0202,
+      "wave_accel": 0.0154,
+      "conj_wave_current": 0.0785,
+      "conj_wave_tide": 0.1041,
+      "conj_current_tide": 0.0476,
+      "spread_tide_current": 0.0489,
+      "spread_tide_wave": 0.0297,
+      "spread_current_wave": -0.0124,
+      "fear_level": -0.0818,
+      "vol_up_down_ratio": 0.027,
+      "tension_tide": -0.1636,
+      "tension_current": -0.0615,
+      "tension_wave": -0.0568,
+      "compression_ratio": 0.079,
+      "geo_state_norm": 0.0273,
+      "geo_velocity_align": -0.1102,
+      "geo_exit_align": 0.1102,
+      "geo_accel_align": 0.0636,
+      "geo_phase_angle": 0.0122
+    }
+  },
+  "MRK": {
+    "ticker": "MRK",
+    "n_signals": 495,
+    "trim_success_rate": 46.86868686868687,
+    "avg_post_trim_return": 0.5158641189664159,
+    "top_features": [
+      [
+        "conj_wave_current",
+        -0.2192
+      ],
+      [
+        "conj_wave_tide",
+        -0.2127
+      ],
+      [
+        "tide_accel",
+        -0.1983
+      ],
+      [
+        "wave_slope",
+        -0.1922
+      ],
+      [
+        "spread_tide_current",
+        0.1647
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.0354,
+      "sigma_current": -0.1442,
+      "sigma_wave": -0.0106,
+      "vwap_sigma_tide": -0.0333,
+      "vwap_sigma_current": -0.1207,
+      "vwap_sigma_wave": 0.0061,
+      "tide_slope": 0.0663,
+      "current_slope": 0.047,
+      "wave_slope": -0.1922,
+      "tide_accel": -0.1983,
+      "current_accel": -0.1371,
+      "wave_accel": -0.0487,
+      "conj_wave_current": -0.2192,
+      "conj_wave_tide": -0.2127,
+      "conj_current_tide": 0.0084,
+      "spread_tide_current": 0.1647,
+      "spread_tide_wave": 0.0249,
+      "spread_current_wave": -0.1392,
+      "fear_level": -0.0235,
+      "vol_up_down_ratio": -0.0391,
+      "tension_tide": 0.0517,
+      "tension_current": -0.1318,
+      "tension_wave": -0.0174,
+      "compression_ratio": 0.0541,
+      "geo_state_norm": -0.0211,
+      "geo_velocity_align": -0.0186,
+      "geo_exit_align": 0.0186,
+      "geo_accel_align": -0.0776,
+      "geo_phase_angle": -0.0528
+    }
+  },
+  "MSFT": {
+    "ticker": "MSFT",
+    "n_signals": 604,
+    "trim_success_rate": 41.05960264900662,
+    "avg_post_trim_return": 0.8965818506220657,
+    "top_features": [
+      [
+        "geo_phase_angle",
+        -0.2385
+      ],
+      [
+        "conj_wave_tide",
+        -0.1819
+      ],
+      [
+        "tide_slope",
+        0.1736
+      ],
+      [
+        "conj_current_tide",
+        -0.1633
+      ],
+      [
+        "tide_accel",
+        -0.1488
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.0067,
+      "sigma_current": 0.0518,
+      "sigma_wave": 0.0811,
+      "vwap_sigma_tide": 0.044,
+      "vwap_sigma_current": 0.0506,
+      "vwap_sigma_wave": 0.0722,
+      "tide_slope": 0.1736,
+      "current_slope": -0.0898,
+      "wave_slope": -0.1295,
+      "tide_accel": -0.1488,
+      "current_accel": -0.1337,
+      "wave_accel": 0.0671,
+      "conj_wave_current": -0.0668,
+      "conj_wave_tide": -0.1819,
+      "conj_current_tide": -0.1633,
+      "spread_tide_current": -0.0535,
+      "spread_tide_wave": -0.0781,
+      "spread_current_wave": -0.0488,
+      "fear_level": -0.1116,
+      "vol_up_down_ratio": -0.0723,
+      "tension_tide": -0.0352,
+      "tension_current": 0.0461,
+      "tension_wave": 0.0747,
+      "compression_ratio": 0.1347,
+      "geo_state_norm": 0.066,
+      "geo_velocity_align": -0.1225,
+      "geo_exit_align": 0.1225,
+      "geo_accel_align": -0.0554,
+      "geo_phase_angle": -0.2385
+    }
+  },
+  "PEP": {
+    "ticker": "PEP",
+    "n_signals": 392,
+    "trim_success_rate": 52.55102040816326,
+    "avg_post_trim_return": -0.893523649854449,
+    "top_features": [
+      [
+        "tide_accel",
+        0.2514
+      ],
+      [
+        "sigma_tide",
+        0.2302
+      ],
+      [
+        "geo_state_norm",
+        0.1983
+      ],
+      [
+        "current_accel",
+        0.1325
+      ],
+      [
+        "wave_slope",
+        0.1282
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.2302,
+      "sigma_current": 0.0951,
+      "sigma_wave": -0.0276,
+      "vwap_sigma_tide": -0.01,
+      "vwap_sigma_current": 0.0622,
+      "vwap_sigma_wave": 0.069,
+      "tide_slope": -0.0312,
+      "current_slope": 0.0837,
+      "wave_slope": 0.1282,
+      "tide_accel": 0.2514,
+      "current_accel": 0.1325,
+      "wave_accel": -0.0032,
+      "conj_wave_current": 0.0965,
+      "conj_wave_tide": 0.1262,
+      "conj_current_tide": 0.0921,
+      "spread_tide_current": 0.0226,
+      "spread_tide_wave": 0.119,
+      "spread_current_wave": 0.0889,
+      "fear_level": -0.0548,
+      "vol_up_down_ratio": -0.0397,
+      "tension_tide": 0.1215,
+      "tension_current": 0.0941,
+      "tension_wave": -0.1029,
+      "compression_ratio": -0.104,
+      "geo_state_norm": 0.1983,
+      "geo_velocity_align": 0.007,
+      "geo_exit_align": -0.007,
+      "geo_accel_align": -0.0916,
+      "geo_phase_angle": -0.0036
+    }
+  },
+  "PG": {
+    "ticker": "PG",
+    "n_signals": 382,
+    "trim_success_rate": 46.8586387434555,
+    "avg_post_trim_return": -0.044504519231243045,
+    "top_features": [
+      [
+        "conj_wave_current",
+        -0.3135
+      ],
+      [
+        "sigma_current",
+        -0.3025
+      ],
+      [
+        "spread_tide_current",
+        0.2881
+      ],
+      [
+        "conj_wave_tide",
+        -0.2862
+      ],
+      [
+        "tension_current",
+        -0.286
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": -0.0078,
+      "sigma_current": -0.3025,
+      "sigma_wave": 0.107,
+      "vwap_sigma_tide": 0.0401,
+      "vwap_sigma_current": -0.2622,
+      "vwap_sigma_wave": 0.0541,
+      "tide_slope": 0.114,
+      "current_slope": 0.2046,
+      "wave_slope": -0.2787,
+      "tide_accel": 0.0625,
+      "current_accel": -0.1739,
+      "wave_accel": 0.068,
+      "conj_wave_current": -0.3135,
+      "conj_wave_tide": -0.2862,
+      "conj_current_tide": 0.1369,
+      "spread_tide_current": 0.2881,
+      "spread_tide_wave": -0.0895,
+      "spread_current_wave": -0.2838,
+      "fear_level": -0.025,
+      "vol_up_down_ratio": -0.0425,
+      "tension_tide": -0.0424,
+      "tension_current": -0.286,
+      "tension_wave": 0.1064,
+      "compression_ratio": -0.0235,
+      "geo_state_norm": -0.1368,
+      "geo_velocity_align": -0.1001,
+      "geo_exit_align": 0.1001,
+      "geo_accel_align": 0.0944,
+      "geo_phase_angle": -0.1208
+    }
+  },
+  "QQQ": {
+    "ticker": "QQQ",
+    "n_signals": 626,
+    "trim_success_rate": 37.22044728434505,
+    "avg_post_trim_return": 0.2759373268652638,
+    "top_features": [
+      [
+        "fear_level",
+        -0.2478
+      ],
+      [
+        "tide_slope",
+        0.2385
+      ],
+      [
+        "vwap_sigma_tide",
+        0.1493
+      ],
+      [
+        "geo_velocity_align",
+        -0.1447
+      ],
+      [
+        "geo_exit_align",
+        0.1447
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.0792,
+      "sigma_current": 0.0974,
+      "sigma_wave": -0.0549,
+      "vwap_sigma_tide": 0.1493,
+      "vwap_sigma_current": 0.134,
+      "vwap_sigma_wave": -0.0017,
+      "tide_slope": 0.2385,
+      "current_slope": 0.0597,
+      "wave_slope": 0.1339,
+      "tide_accel": 0.0768,
+      "current_accel": -0.0363,
+      "wave_accel": 0.053,
+      "conj_wave_current": 0.1021,
+      "conj_wave_tide": 0.0576,
+      "conj_current_tide": -0.1004,
+      "spread_tide_current": -0.0556,
+      "spread_tide_wave": 0.0867,
+      "spread_current_wave": 0.1062,
+      "fear_level": -0.2478,
+      "vol_up_down_ratio": -0.002,
+      "tension_tide": -0.0981,
+      "tension_current": 0.053,
+      "tension_wave": -0.0779,
+      "compression_ratio": 0.0694,
+      "geo_state_norm": 0.0827,
+      "geo_velocity_align": -0.1447,
+      "geo_exit_align": 0.1447,
+      "geo_accel_align": 0.0164,
+      "geo_phase_angle": -0.0304
+    }
+  },
+  "SPY": {
+    "ticker": "SPY",
+    "n_signals": 692,
+    "trim_success_rate": 34.39306358381503,
+    "avg_post_trim_return": 0.3714068291438748,
+    "top_features": [
+      [
+        "tide_slope",
+        0.2028
+      ],
+      [
+        "geo_state_norm",
+        0.1762
+      ],
+      [
+        "sigma_tide",
+        0.164
+      ],
+      [
+        "fear_level",
+        -0.1394
+      ],
+      [
+        "wave_slope",
+        0.1136
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.164,
+      "sigma_current": 0.1065,
+      "sigma_wave": -0.0167,
+      "vwap_sigma_tide": 0.077,
+      "vwap_sigma_current": 0.0695,
+      "vwap_sigma_wave": 0.0107,
+      "tide_slope": 0.2028,
+      "current_slope": 0.0794,
+      "wave_slope": 0.1136,
+      "tide_accel": -0.0229,
+      "current_accel": 0.0128,
+      "wave_accel": 0.0574,
+      "conj_wave_current": 0.078,
+      "conj_wave_tide": 0.0583,
+      "conj_current_tide": -0.057,
+      "spread_tide_current": -0.0259,
+      "spread_tide_wave": 0.0905,
+      "spread_current_wave": 0.0901,
+      "fear_level": -0.1394,
+      "vol_up_down_ratio": 0.0527,
+      "tension_tide": 0.0167,
+      "tension_current": 0.1117,
+      "tension_wave": -0.0304,
+      "compression_ratio": 0.102,
+      "geo_state_norm": 0.1762,
+      "geo_velocity_align": -0.0561,
+      "geo_exit_align": 0.0561,
+      "geo_accel_align": 0.0157,
+      "geo_phase_angle": -0.0229
+    }
+  },
+  "WMT": {
+    "ticker": "WMT",
+    "n_signals": 699,
+    "trim_success_rate": 48.640915593705294,
+    "avg_post_trim_return": -0.1463458334226765,
+    "top_features": [
+      [
+        "compression_ratio",
+        -0.1768
+      ],
+      [
+        "fear_level",
+        0.1188
+      ],
+      [
+        "geo_velocity_align",
+        0.1118
+      ],
+      [
+        "geo_exit_align",
+        -0.1118
+      ],
+      [
+        "tension_tide",
+        0.1104
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.0398,
+      "sigma_current": 0.0097,
+      "sigma_wave": 0.0485,
+      "vwap_sigma_tide": -0.0735,
+      "vwap_sigma_current": -0.0002,
+      "vwap_sigma_wave": 0.0952,
+      "tide_slope": -0.0527,
+      "current_slope": -0.0194,
+      "wave_slope": -0.0136,
+      "tide_accel": 0.0228,
+      "current_accel": -0.0245,
+      "wave_accel": 0.0935,
+      "conj_wave_current": 0.0011,
+      "conj_wave_tide": 0.0178,
+      "conj_current_tide": 0.0227,
+      "spread_tide_current": 0.0097,
+      "spread_tide_wave": -0.0318,
+      "spread_current_wave": -0.059,
+      "fear_level": 0.1188,
+      "vol_up_down_ratio": -0.0524,
+      "tension_tide": 0.1104,
+      "tension_current": 0.0142,
+      "tension_wave": 0.0101,
+      "compression_ratio": -0.1768,
+      "geo_state_norm": 0.058,
+      "geo_velocity_align": 0.1118,
+      "geo_exit_align": -0.1118,
+      "geo_accel_align": -0.0244,
+      "geo_phase_angle": 0.0127
+    }
+  },
+  "XOM": {
+    "ticker": "XOM",
+    "n_signals": 450,
+    "trim_success_rate": 44.0,
+    "avg_post_trim_return": 0.6483610446711336,
+    "top_features": [
+      [
+        "tide_slope",
+        0.2368
+      ],
+      [
+        "tide_accel",
+        -0.2114
+      ],
+      [
+        "compression_ratio",
+        0.1267
+      ],
+      [
+        "conj_wave_tide",
+        -0.1194
+      ],
+      [
+        "conj_current_tide",
+        -0.1152
+      ]
+    ],
+    "all_feature_correlations": {
+      "sigma_tide": 0.0166,
+      "sigma_current": -0.0602,
+      "sigma_wave": -0.0005,
+      "vwap_sigma_tide": 0.0439,
+      "vwap_sigma_current": -0.0436,
+      "vwap_sigma_wave": 0.0196,
+      "tide_slope": 0.2368,
+      "current_slope": 0.0003,
+      "wave_slope": -0.0573,
+      "tide_accel": -0.2114,
+      "current_accel": -0.0329,
+      "wave_accel": -0.0211,
+      "conj_wave_current": -0.0598,
+      "conj_wave_tide": -0.1194,
+      "conj_current_tide": -0.1152,
+      "spread_tide_current": 0.0719,
+      "spread_tide_wave": 0.0088,
+      "spread_current_wave": -0.0444,
+      "fear_level": -0.0587,
+      "vol_up_down_ratio": -0.0141,
+      "tension_tide": -0.04,
+      "tension_current": -0.0617,
+      "tension_wave": -0.013,
+      "compression_ratio": 0.1267,
+      "geo_state_norm": -0.028,
+      "geo_velocity_align": -0.0547,
+      "geo_exit_align": 0.0547,
+      "geo_accel_align": 0.0389,
+      "geo_phase_angle": 0.009
+    }
+  }
+}

@@ -22,12 +22,13 @@ import psycopg2.pool
 from sqlalchemy import create_engine as _create_engine
 
 from backend.modules.shared.domain.ports.time_series_port import TimeSeriesPort
+from backend.modules.shared.domain.ports.channel_snapshot_port import ChannelSnapshotPort
 from backend.modules.simulation.domain.ports.ml_data_port import MLDataPort
 
 logger = logging.getLogger(__name__)
 
 
-class TimescaleDataStore(TimeSeriesPort, MLDataPort):
+class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
     """TimescaleDB adapter for all time-series data."""
 
     def __init__(self, dsn: str | None = None, min_conn: int = 1, max_conn: int = 5):
@@ -753,3 +754,259 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort):
         finally:
             self._put(conn)
 
+    # ── Channel Snapshots ─────────────────────────────────
+
+    _CS_COLUMNS = (
+        "ticker", "timeframe", "timestamp", "schema_version",
+        "tide_window", "current_window", "wave_window",
+        "sigma_tide", "sigma_current", "sigma_wave",
+        "reg_value_tide", "reg_value_current", "reg_value_wave",
+        "residual_std_tide", "residual_std_current", "residual_std_wave",
+        "vwap_sigma_tide", "vwap_sigma_current", "vwap_sigma_wave",
+        "vwap_tide", "vwap_current", "vwap_wave",
+        "tide_slope", "current_slope", "wave_slope",
+        "tide_accel", "current_accel", "wave_accel",
+        "conj_wave_current", "conj_wave_tide", "conj_current_tide",
+        "spread_tide_current", "spread_tide_wave", "spread_current_wave",
+        "vwap_spread_tide_current", "vwap_spread_tide_wave", "vwap_spread_current_wave",
+        "fear_level", "fear_label", "regime",
+        "wave_flip", "wave_flip_direction",
+        "vol_up_down_ratio",
+        "below_all_vwaps", "above_all_vwaps",
+        "tension_tide", "tension_current", "tension_wave",
+        "compression_ratio",
+        "geo_state_norm", "geo_velocity_align", "geo_exit_align",
+        "geo_accel_align", "geo_phase_angle",
+    )
+
+    def ensure_channel_snapshots_table(self) -> None:
+        """Create engine.channel_snapshots if it doesn't exist."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("CREATE SCHEMA IF NOT EXISTS engine;")
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS engine.channel_snapshots (
+                        ticker          TEXT NOT NULL,
+                        timeframe       TEXT NOT NULL DEFAULT '1d',
+                        timestamp       TIMESTAMPTZ NOT NULL,
+                        schema_version  SMALLINT NOT NULL DEFAULT 1,
+                        computed_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                        tide_window     SMALLINT,
+                        current_window  SMALLINT,
+                        wave_window     SMALLINT,
+                        sigma_tide      DOUBLE PRECISION,
+                        sigma_current   DOUBLE PRECISION,
+                        sigma_wave      DOUBLE PRECISION,
+                        reg_value_tide  DOUBLE PRECISION,
+                        reg_value_current DOUBLE PRECISION,
+                        reg_value_wave  DOUBLE PRECISION,
+                        residual_std_tide DOUBLE PRECISION,
+                        residual_std_current DOUBLE PRECISION,
+                        residual_std_wave DOUBLE PRECISION,
+                        vwap_sigma_tide DOUBLE PRECISION,
+                        vwap_sigma_current DOUBLE PRECISION,
+                        vwap_sigma_wave DOUBLE PRECISION,
+                        vwap_tide       DOUBLE PRECISION,
+                        vwap_current    DOUBLE PRECISION,
+                        vwap_wave       DOUBLE PRECISION,
+                        tide_slope      DOUBLE PRECISION,
+                        current_slope   DOUBLE PRECISION,
+                        wave_slope      DOUBLE PRECISION,
+                        tide_accel      DOUBLE PRECISION,
+                        current_accel   DOUBLE PRECISION,
+                        wave_accel      DOUBLE PRECISION,
+                        conj_wave_current  DOUBLE PRECISION,
+                        conj_wave_tide     DOUBLE PRECISION,
+                        conj_current_tide  DOUBLE PRECISION,
+                        spread_tide_current  DOUBLE PRECISION,
+                        spread_tide_wave     DOUBLE PRECISION,
+                        spread_current_wave  DOUBLE PRECISION,
+                        vwap_spread_tide_current DOUBLE PRECISION,
+                        vwap_spread_tide_wave    DOUBLE PRECISION,
+                        vwap_spread_current_wave DOUBLE PRECISION,
+                        fear_level      SMALLINT,
+                        fear_label      TEXT,
+                        regime          TEXT,
+                        wave_flip       BOOLEAN,
+                        wave_flip_direction SMALLINT,
+                        vol_up_down_ratio DOUBLE PRECISION,
+                        below_all_vwaps BOOLEAN,
+                        above_all_vwaps BOOLEAN,
+                        tension_tide         DOUBLE PRECISION,
+                        tension_current      DOUBLE PRECISION,
+                        tension_wave         DOUBLE PRECISION,
+                        compression_ratio    DOUBLE PRECISION,
+                        geo_state_norm       DOUBLE PRECISION,
+                        geo_velocity_align   DOUBLE PRECISION,
+                        geo_exit_align       DOUBLE PRECISION,
+                        geo_accel_align      DOUBLE PRECISION,
+                        geo_phase_angle      DOUBLE PRECISION,
+                        PRIMARY KEY (ticker, timeframe, timestamp)
+                    );
+                """)
+                cur.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_cs_extreme
+                    ON engine.channel_snapshots (ticker, sigma_tide)
+                    WHERE sigma_tide < -2.0;
+                """)
+                cur.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_cs_spread
+                    ON engine.channel_snapshots (ticker, spread_tide_current);
+                """)
+                cur.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_cs_regime
+                    ON engine.channel_snapshots (ticker, regime, timestamp);
+                """)
+                # ── Migration: add new columns to existing tables ──
+                for col in (
+                    "tension_tide", "tension_current", "tension_wave",
+                    "compression_ratio",
+                    "geo_state_norm", "geo_velocity_align", "geo_exit_align",
+                    "geo_accel_align", "geo_phase_angle",
+                ):
+                    cur.execute(f"""
+                        ALTER TABLE engine.channel_snapshots
+                        ADD COLUMN IF NOT EXISTS {col} DOUBLE PRECISION;
+                    """)
+            conn.commit()
+            logger.info("engine.channel_snapshots table ensured.")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Failed to create channel_snapshots table: {e}")
+            raise
+        finally:
+            self._put(conn)
+
+    def save_snapshots_batch(
+        self,
+        ticker: str,
+        timeframe: str,
+        timestamps: list,
+        snapshots: list,
+        schema_version: int = 1,
+    ) -> int:
+        """Batch upsert ChannelSnapshot rows. Idempotent via ON CONFLICT DO UPDATE."""
+        if not snapshots:
+            return 0
+        conn = self._conn()
+        try:
+            rows = []
+            for ts, snap in zip(timestamps, snapshots):
+                d = snap.to_dict()
+                # Convert numpy types to native Python (psycopg2 can't adapt numpy.bool/int64/float64)
+                for k, v in d.items():
+                    if hasattr(v, 'item'):
+                        d[k] = v.item()
+                rows.append((
+                    ticker.upper(), timeframe, ts, schema_version,
+                    d.get("tide_window"), d.get("current_window"), d.get("wave_window"),
+                    d.get("sigma_tide"), d.get("sigma_current"), d.get("sigma_wave"),
+                    d.get("reg_value_tide"), d.get("reg_value_current"), d.get("reg_value_wave"),
+                    d.get("residual_std_tide"), d.get("residual_std_current"), d.get("residual_std_wave"),
+                    d.get("vwap_sigma_tide"), d.get("vwap_sigma_current"), d.get("vwap_sigma_wave"),
+                    d.get("vwap_tide"), d.get("vwap_current"), d.get("vwap_wave"),
+                    d.get("tide_slope"), d.get("current_slope"), d.get("wave_slope"),
+                    d.get("tide_accel"), d.get("current_accel"), d.get("wave_accel"),
+                    d.get("conj_wave_current"), d.get("conj_wave_tide"), d.get("conj_current_tide"),
+                    d.get("spread_tide_current"), d.get("spread_tide_wave"), d.get("spread_current_wave"),
+                    d.get("vwap_spread_tide_current"), d.get("vwap_spread_tide_wave"),
+                    d.get("vwap_spread_current_wave"),
+                    d.get("fear_level"), d.get("fear_label"), d.get("regime"),
+                    d.get("wave_flip"), d.get("wave_flip_direction"),
+                    d.get("vol_up_down_ratio"),
+                    d.get("below_all_vwaps"), d.get("above_all_vwaps"),
+                    d.get("tension_tide"), d.get("tension_current"), d.get("tension_wave"),
+                    d.get("compression_ratio"),
+                    d.get("geo_state_norm"), d.get("geo_velocity_align"),
+                    d.get("geo_exit_align"),
+                    d.get("geo_accel_align"), d.get("geo_phase_angle"),
+                ))
+
+            cols = ", ".join(self._CS_COLUMNS)
+            update_cols = [c for c in self._CS_COLUMNS if c not in ("ticker", "timeframe", "timestamp")]
+            set_clause = ", ".join(f"{c} = EXCLUDED.{c}" for c in update_cols)
+            set_clause += ", computed_at = NOW()"
+
+            with conn.cursor() as cur:
+                psycopg2.extras.execute_values(
+                    cur,
+                    f"""INSERT INTO engine.channel_snapshots ({cols})
+                       VALUES %s
+                       ON CONFLICT (ticker, timeframe, timestamp)
+                       DO UPDATE SET {set_clause}""",
+                    rows,
+                    page_size=500,
+                )
+            conn.commit()
+            n = len(rows)
+            logger.info(f"channel_snapshots: {ticker}/{timeframe} — upserted {n} rows")
+            return n
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"channel_snapshots: {ticker}/{timeframe} save failed: {e}")
+            raise
+        finally:
+            self._put(conn)
+
+    def load_snapshots(
+        self,
+        ticker: str,
+        timeframe: str = "1d",
+        start: Optional[date] = None,
+        end: Optional[date] = None,
+    ) -> pd.DataFrame:
+        """Load snapshots as DataFrame with timestamp index."""
+        conn = self._conn()
+        try:
+            query = "SELECT * FROM engine.channel_snapshots WHERE ticker = %s AND timeframe = %s"
+            params: list = [ticker.upper(), timeframe]
+            if start:
+                query += " AND timestamp >= %s"
+                params.append(start)
+            if end:
+                query += " AND timestamp <= %s"
+                params.append(end)
+            query += " ORDER BY timestamp"
+
+            df = pd.read_sql(query, self.engine, params=tuple(params), parse_dates=["timestamp"])
+            if not df.empty:
+                df.set_index("timestamp", inplace=True)
+            return df
+        finally:
+            self._put(conn)
+
+    def load_snapshot_at(self, ticker: str, timestamp, timeframe: str = "1d"):
+        """Load a single ChannelSnapshot at a specific timestamp."""
+        from backend.modules.shared.domain.entities.channel_snapshot import ChannelSnapshot
+
+        conn = self._conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT * FROM engine.channel_snapshots
+                    WHERE ticker = %s AND timeframe = %s AND timestamp = %s
+                """, (ticker.upper(), timeframe, timestamp))
+                row = cur.fetchone()
+                if not row:
+                    return None
+                d = dict(row)
+                return ChannelSnapshot(**{
+                    k: d[k] for k in ChannelSnapshot.__dataclass_fields__
+                    if k in d and d[k] is not None
+                })
+        finally:
+            self._put(conn)
+
+    def count_snapshots(self, ticker: str, timeframe: str = "1d") -> int:
+        """Count existing snapshots for a ticker."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT COUNT(*) FROM engine.channel_snapshots WHERE ticker = %s AND timeframe = %s",
+                    (ticker.upper(), timeframe),
+                )
+                return cur.fetchone()[0]
+        finally:
+            self._put(conn)

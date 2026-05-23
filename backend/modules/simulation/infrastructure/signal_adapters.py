@@ -198,6 +198,11 @@ class RSISignalAdapter(SignalPort):
            FLAT + cross-regression exhaustion: price bouncing + RSI peaking
          Pending: Walk-Forward DSR validation to promote from D.
 
+    Directional instantiation:
+      RSISignalAdapter()                  → emits +1, -1, 0 (backward compat)
+      RSISignalAdapter(direction='long')  → emits +1, 0 only (entries)
+      RSISignalAdapter(direction='short') → emits -1, 0 only (trims)
+
     Entry rules:
       BULL: Cross-regression pullback + RSI 33-50 + drop ≥12pts + hookup
       BEAR: Price slope negative + RSI slope positive + RSI < 40
@@ -209,9 +214,20 @@ class RSISignalAdapter(SignalPort):
       FLAT: RSI ≥ 65 + short slope positive + RSI slope negative (bounce exhaustion)
     """
 
+    def __init__(self, direction: str = "both"):
+        if direction not in ("long", "short", "both"):
+            raise ValueError(f"direction must be 'long', 'short', or 'both', got '{direction}'")
+        self._direction = direction
+
     @property
     def name(self) -> str:
-        return "rsi_intelligence"
+        if self._direction == "both":
+            return "rsi_intelligence"
+        return f"rsi_intelligence_{self._direction}"
+
+    @property
+    def direction(self) -> str:
+        return self._direction
 
     @staticmethod
     def _linreg_slope(data: np.ndarray, window: int) -> float:
@@ -231,30 +247,9 @@ class RSISignalAdapter(SignalPort):
 
     @staticmethod
     def _calc_rsi(close: np.ndarray, period: int = 14) -> np.ndarray:
-        """Wilder's RSI series."""
-        deltas = np.diff(close)
-        gains = np.where(deltas > 0, deltas, 0.0)
-        losses = np.where(deltas < 0, -deltas, 0.0)
-
-        avg_gain = np.zeros(len(gains))
-        avg_loss = np.zeros(len(gains))
-
-        if len(gains) < period:
-            return np.full(len(close), 50.0)
-
-        avg_gain[period - 1] = np.mean(gains[:period])
-        avg_loss[period - 1] = np.mean(losses[:period])
-
-        for i in range(period, len(gains)):
-            avg_gain[i] = (avg_gain[i - 1] * (period - 1) + gains[i]) / period
-            avg_loss[i] = (avg_loss[i - 1] * (period - 1) + losses[i]) / period
-
-        with np.errstate(divide='ignore', invalid='ignore'):
-            rs = np.where(avg_loss > 0, avg_gain / avg_loss, 100.0)
-        rsi = 100.0 - (100.0 / (1.0 + rs))
-        rsi[:period] = 50.0
-        # Prepend one value so rsi aligns with close (np.diff removes one element)
-        return np.concatenate(([50.0], rsi))
+        """Wilder's RSI series. Delegates to canonical rsi_math.calc_rsi()."""
+        from backend.modules.price_analysis.domain.rules.rsi_math import calc_rsi
+        return calc_rsi(close, period)
 
     @staticmethod
     def _detect_dominant_cycle(close: np.ndarray, min_period: int = 8, max_period: int = 50) -> int:
@@ -264,6 +259,91 @@ class RSISignalAdapter(SignalPort):
         """
         from backend.modules.shared.domain.rules.cycle_detection import detect_dominant_cycle
         return detect_dominant_cycle(close, min_period, max_period)
+
+    @staticmethod
+    def _classify_regime(slope_long: float) -> str:
+        """5-state regime classification from price slope (not RSI)."""
+        if slope_long > 0.02:
+            return "BULL"
+        elif slope_long > -0.005:
+            return "FLAT"
+        elif slope_long > -0.02:
+            return "BAJISTA"
+        else:
+            return "MUY_BAJISTA"
+
+    @staticmethod
+    def _check_entry(
+        regime: str, current_rsi: float, rsi_window: np.ndarray, i: int,
+        slope_long: float, slope_short: float, rsi_slope_short: float,
+    ) -> tuple[int, float]:
+        """Entry logic (signal=+1). Returns (signal, confidence).
+
+        BULL: Cross-regression pullback + RSI 33-50 + drop ≥12pts + hookup
+        MUY_BAJISTA/BAJISTA: Price slope negative + RSI slope positive + RSI < 40
+        FLAT: RSI < 35 + regression slope divergence confirmed
+        """
+        if regime == "BULL":
+            short_below_long = slope_short < slope_long
+            short_recovering = slope_short > (slope_long * 0.3)
+            rsi_in_pullback = 33 <= current_rsi <= 50
+            rsi_hooking_up = current_rsi > rsi_window[i - 1]
+            rsi_recent_high = np.max(rsi_window[max(0, i-20):i])
+            rsi_drop = rsi_recent_high - current_rsi
+            real_pullback = rsi_drop >= 12
+
+            if short_below_long and short_recovering and rsi_in_pullback and rsi_hooking_up and real_pullback:
+                depth = (50 - current_rsi) / 17
+                convergence = min((slope_long - slope_short) / 0.05, 1.0) if slope_long > slope_short else 0
+                trend_strength = min(slope_long / 0.10, 1.0)
+                confidence = round(min(depth * 0.3 + convergence * 0.3 + trend_strength * 0.4, 1.0), 2)
+                return 1, confidence
+
+        elif regime == "MUY_BAJISTA":
+            price_falling = slope_short < 0
+            rsi_recovering = rsi_slope_short > 0
+            rsi_oversold = current_rsi < 40
+
+            if price_falling and rsi_recovering and rsi_oversold:
+                div_strength = min(abs(slope_short) + abs(rsi_slope_short), 1.0)
+                return 1, round(0.5 + div_strength * 0.2, 2)
+
+        elif regime == "BAJISTA":
+            price_falling = slope_short < 0
+            rsi_recovering = rsi_slope_short > 0
+            rsi_oversold = current_rsi < 40
+
+            if price_falling and rsi_recovering and rsi_oversold:
+                div_strength = min(abs(slope_short) + abs(rsi_slope_short), 1.0)
+                return 1, round(0.5 + div_strength * 0.2, 2)
+
+        else:  # FLAT
+            if current_rsi < 35:
+                price_falling = slope_short < 0
+                rsi_recovering = rsi_slope_short > 0
+                if price_falling and rsi_recovering:
+                    return 1, 0.5
+
+        return 0, 0.0
+
+    def _check_exit(
+        self, regime: str, current_rsi: float, rsi_slope_short: float,
+        slope_short: float, slope_long: float, price_window: np.ndarray,
+    ) -> tuple[int, float]:
+        """Exit/trim logic (signal=-1). Returns (signal, confidence).
+
+        BAJISTA: RSI ≥ 60 + RSI slope negative (bear rally peaked)
+        FLAT: RSI ≥ 65 + short slope positive + RSI slope negative (bounce exhaustion)
+        BULL: Transition trim when decelerating + short falling + RSI > 60 + RSI falling
+        """
+        slope_long_prev = self._linreg_slope(price_window[:-4], 120) if len(price_window) >= 125 else slope_long
+        trim_signal, trim_conf = self._check_rsi_trim(
+            regime, current_rsi, rsi_slope_short,
+            slope_short, slope_long, slope_long_prev,
+        )
+        if trim_signal:
+            return -1, trim_conf
+        return 0, 0.0
 
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
         close = ohlc["close"].values.astype(float)
@@ -300,15 +380,7 @@ class RSISignalAdapter(SignalPort):
             slope_short = self._linreg_slope(price_window, short_slope_window)  # Adaptive micro momentum
 
             # ── REGIME CLASSIFICATION (from PRICE, not RSI) ──
-            # 5-state for trim granularity (BAJISTA vs MUY_BAJISTA)
-            if slope_long > 0.02:
-                regime = "BULL"
-            elif slope_long > -0.005:
-                regime = "FLAT"
-            elif slope_long > -0.02:
-                regime = "BAJISTA"
-            else:
-                regime = "MUY_BAJISTA"
+            regime = self._classify_regime(slope_long)
 
             # ── Layer 3: SHORT REGRESSION ON RSI (divergence) ──
             rsi_slope_short = self._linreg_slope(rsi_window, 30)
@@ -316,83 +388,19 @@ class RSISignalAdapter(SignalPort):
             signal = 0
             confidence = 0.0
 
-            # ═══════════════════════════════════════════════════
-            # ENTRY SIGNALS (signal = +1)
-            # ═══════════════════════════════════════════════════
-
-            if regime == "BULL":
-                # ── Layer 2: Cross-regression pullback (H2e — validated) ──
-                short_below_long = slope_short < slope_long
-                short_recovering = slope_short > (slope_long * 0.3)
-                rsi_in_pullback = 33 <= current_rsi <= 50
-                rsi_hooking_up = current_rsi > rsi_window[i - 1]
-                rsi_recent_high = np.max(rsi_window[max(0, i-20):i])
-                rsi_drop = rsi_recent_high - current_rsi
-                real_pullback = rsi_drop >= 12
-
-                if short_below_long and short_recovering and rsi_in_pullback and rsi_hooking_up and real_pullback:
-                    signal = 1
-                    depth = (50 - current_rsi) / 17
-                    convergence = min((slope_long - slope_short) / 0.05, 1.0) if slope_long > slope_short else 0
-                    trend_strength = min(slope_long / 0.10, 1.0)
-                    confidence = round(min(depth * 0.3 + convergence * 0.3 + trend_strength * 0.4, 1.0), 2)
-
-            elif regime == "MUY_BAJISTA":
-                # ── Layer 3: Structural divergence via regression slopes ──
-                # In severe bear: RSI oversold + recovering = contrarian entry
-                # (Mirror: NO trim here — RSI high in MUY_BAJISTA = V-recovery)
-                price_falling = slope_short < 0
-                rsi_recovering = rsi_slope_short > 0
-                rsi_oversold = current_rsi < 40
-
-                if price_falling and rsi_recovering and rsi_oversold:
-                    signal = 1
-                    div_strength = min(abs(slope_short) + abs(rsi_slope_short), 1.0)
-                    confidence = round(0.5 + div_strength * 0.2, 2)
-
-            elif regime == "BAJISTA":
-                # ── BAJISTA entry: same divergence logic as MUY_BAJISTA ──
-                price_falling = slope_short < 0
-                rsi_recovering = rsi_slope_short > 0
-                rsi_oversold = current_rsi < 40
-
-                if price_falling and rsi_recovering and rsi_oversold:
-                    signal = 1
-                    div_strength = min(abs(slope_short) + abs(rsi_slope_short), 1.0)
-                    confidence = round(0.5 + div_strength * 0.2, 2)
-
-            else:  # FLAT
-                # ── FLAT: Only extreme divergence ──
-                if current_rsi < 35:
-                    price_falling = slope_short < 0
-                    rsi_recovering = rsi_slope_short > 0
-                    if price_falling and rsi_recovering:
-                            signal = 1
-                            confidence = 0.5
-
-            # ═══════════════════════════════════════════════════
-            # TRIM SIGNALS (signal = -1) — Layer 7
-            # [HYPOTHESIS] D — Advisory Only. Pending WF-DSR.
-            #
-            # The regime-inverted RSI reading:
-            #   BULL: valid signals are at RSI LOWS (entries)
-            #   BAJISTA: valid signals are at RSI HIGHS (trims)
-            #   MUY_BAJISTA: NO trim — high RSI = V-recovery
-            #
-            # Forensic basis (110K events, 32 tickers, 20yr):
-            #   BAJISTA + RSI>=65 + RSI↓: P(fall)=52.8%, N=106
-            #   BAJISTA + RSI>=60 + RSI↓: P(fall)=52.0%, N=202
-            # ═══════════════════════════════════════════════════
-
-            if signal == 0:  # Only check trim if no entry signal
-                slope_long_prev = self._linreg_slope(price_window[:-4], 120) if len(price_window) >= 125 else slope_long
-                trim_signal, trim_conf = self._check_rsi_trim(
-                    regime, current_rsi, rsi_slope_short,
-                    slope_short, slope_long, slope_long_prev,
+            # ── ENTRY (only if direction != 'short') ──
+            if self._direction != "short":
+                signal, confidence = self._check_entry(
+                    regime, current_rsi, rsi_window, i,
+                    slope_long, slope_short, rsi_slope_short,
                 )
-                if trim_signal:
-                    signal = -1
-                    confidence = trim_conf
+
+            # ── EXIT (only if direction != 'long' AND no entry fired) ──
+            if signal == 0 and self._direction != "long":
+                signal, confidence = self._check_exit(
+                    regime, current_rsi, rsi_slope_short,
+                    slope_short, slope_long, price_window,
+                )
 
             # ── Layer 5: Fear Level Bias (dual RC channel) ──
             # Applied AFTER signal generation — modulates confidence, doesn't gate
@@ -405,7 +413,7 @@ class RSISignalAdapter(SignalPort):
                 confidence = self._apply_kalman_boost(kalman_states, i, confidence)
 
             # ── Cardwell RSI Zone confidence Modulation ──
-            if signal != 0:
+            if signal == 1:
                 confidence = self._apply_cardwell_modulation(current_rsi, regime, confidence)
 
             signals.append(signal)
@@ -1239,6 +1247,11 @@ class RegressionChannelAdapter(SignalPort):
       This yields WR=100% under THESIS geometry. The ANGLE between the two
       lines is what separates winners from losers.
 
+    Directional instantiation:
+      RegressionChannelAdapter()                  → emits +1, -1, 0 (backward compat)
+      RegressionChannelAdapter(direction='long')  → emits +1, 0 only (entries)
+      RegressionChannelAdapter(direction='short') → emits -1, 0 only (trims)
+
     Entry logic:
       BULL: σ ≤ -1.5, below VWAP, hookup → confidence modulated by fear+Kalman+vol
       BEAR: shallow (> -0.03), σ ≤ -2.0, short turning, VWAP cross
@@ -1250,9 +1263,20 @@ class RegressionChannelAdapter(SignalPort):
       σ ≥ +1.0 AND wave_flip neg AND fear≤1: signal=-1, confidence=0.15
     """
 
+    def __init__(self, direction: str = "both"):
+        if direction not in ("long", "short", "both"):
+            raise ValueError(f"direction must be 'long', 'short', or 'both', got '{direction}'")
+        self._direction = direction
+
     @property
     def name(self) -> str:
-        return "regression_channel"
+        if self._direction == "both":
+            return "regression_channel"
+        return f"regression_channel_{self._direction}"
+
+    @property
+    def direction(self) -> str:
+        return self._direction
 
     @staticmethod
     def _linreg_channel(close: np.ndarray, window: int):
@@ -1266,6 +1290,48 @@ class RegressionChannelAdapter(SignalPort):
         """Delegated to quality_swing/domain/rules/regression_channel.py."""
         from backend.modules.quality_swing.domain.rules.regression_channel import calc_vwap
         return calc_vwap(close, high, low, volume, window)
+
+    def _check_rc_entry(
+        self, regime: str, sigma_position: float, slope_long: float,
+        slope_short: float, below_vwap: bool, close: np.ndarray, i: int,
+        high_arr: np.ndarray, low_arr: np.ndarray, vol_arr: np.ndarray, vwap: float,
+    ) -> tuple[int, float]:
+        """Entry logic (signal=+1). Returns (signal, confidence).
+
+        BULL: σ ≤ -1.5, below VWAP, hookup
+        BEAR: shallow (> -0.03), σ ≤ -2.0, short turning, VWAP cross
+        FLAT: σ ≤ -2.0, hookup → WR 91.7%
+        """
+        if regime == "BULL":
+            at_support = sigma_position <= -1.5
+            hookup = close[i] > close[i - 1] if i > 0 else False
+            current_price = close[i]
+
+            if at_support and below_vwap and hookup:
+                depth = min(abs(sigma_position) / 2.0, 1.0)
+                vwap_discount = min(abs(vwap - current_price) / vwap * 100, 1.0) if vwap > 0 else 0
+                confidence = round(min(depth * 0.4 + vwap_discount * 0.3 + min(slope_long / 0.05, 1.0) * 0.3, 1.0), 2)
+                return 1, confidence
+
+        elif regime == "BEAR":
+            shallow_bear = slope_long > -0.03
+            at_extreme = sigma_position <= -2.0
+            short_turning = slope_short > 0
+            current_price = close[i]
+            prev_vwap = self._calc_vwap(
+                close[:i], high_arr[:i], low_arr[:i], vol_arr[:i], 20
+            ) if i > 20 else vwap
+            vwap_cross_up = close[i - 1] < prev_vwap and current_price >= vwap if i > 0 else False
+
+            if shallow_bear and at_extreme and short_turning and (below_vwap or vwap_cross_up):
+                confidence = round(min(abs(sigma_position) / 3.0 + 0.3, 1.0), 2)
+                return 1, confidence
+
+        else:  # FLAT
+            if sigma_position <= -2.0 and close[i] > close[i - 1]:
+                return 1, 0.4
+
+        return 0, 0.0
 
     def generate(self, ohlc: pd.DataFrame, context: dict | None = None) -> pd.DataFrame:
         close = ohlc["close"].values.astype(float)
@@ -1316,48 +1382,15 @@ class RegressionChannelAdapter(SignalPort):
             signal = 0
             confidence = 0.0
 
-            # ═══ ENTRY SIGNALS (signal = +1) ═══
+            # ── ENTRY (only if direction != 'short') ──
+            if self._direction != "short":
+                signal, confidence = self._check_rc_entry(
+                    regime, sigma_position, slope_long, slope_short,
+                    below_vwap, close, i, high_arr, low_arr, vol_arr, vwap,
+                )
 
-            if regime == "BULL":
-                # ── BULL: statistical pullback to channel support ──
-                at_support = sigma_position <= -1.5
-                # Forensic: winners have slope_short NEGATIVE (avg=-0.05).
-                # The dip itself IS the signal — entering during the pullback.
-                # Slope conjugation: wave < tide → the determinant feature (#11, -6.7% spread)
-                hookup = close[i] > close[i - 1] if i > 0 else False
-
-                if at_support and below_vwap and hookup:
-                    signal = 1
-                    depth = min(abs(sigma_position) / 2.0, 1.0)
-                    vwap_discount = min(abs(vwap - current_price) / vwap * 100, 1.0) if vwap > 0 else 0
-                    confidence = round(min(depth * 0.4 + vwap_discount * 0.3 + min(slope_long / 0.05, 1.0) * 0.3, 1.0), 2)
-
-            elif regime == "BEAR":
-                # ── BEAR: only SHALLOW bear trends + extreme σ ──
-                # Forensic: 5/5 BEAR losers were UNH with slope_long < -0.05.
-                # Winners had slope_long > -0.03 (shallow bear = pullback opportunity).
-                shallow_bear = slope_long > -0.03
-                at_extreme = sigma_position <= -2.0
-                short_turning = slope_short > 0
-                prev_vwap = self._calc_vwap(
-                    close[:i], high_arr[:i], low_arr[:i], vol_arr[:i], 20
-                ) if i > 20 else vwap
-                vwap_cross_up = close[i - 1] < prev_vwap and current_price >= vwap if i > 0 else False
-
-                if shallow_bear and at_extreme and short_turning and (below_vwap or vwap_cross_up):
-                    signal = 1
-                    confidence = round(min(abs(sigma_position) / 3.0 + 0.3, 1.0), 2)
-
-            else:  # FLAT
-                # ── FLAT: extreme σ with hookup ──
-                # Forensic: FLAT regime has WR=91.7% (THESIS). Mean reversion is almost inevitable.
-                if sigma_position <= -2.0 and close[i] > close[i - 1]:
-                    signal = 1
-                    confidence = 0.4
-
-            # ═══ TRIM SIGNALS (signal = -1) — Layer 8 ═══
-
-            if signal == 0:  # Only check trim if no entry signal
+            # ── EXIT (only if direction != 'long' AND no entry fired) ──
+            if signal == 0 and self._direction != "long":
                 trim_signal, trim_conf = self._check_trim(
                     ohlc, i, sigma_position, slope_short
                 )

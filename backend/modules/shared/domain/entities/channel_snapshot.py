@@ -118,6 +118,28 @@ class ChannelSnapshot:
     below_all_vwaps: bool = False   # Price below all 3 VWAPs = institutional discount
     above_all_vwaps: bool = False   # Price above all 3 VWAPs = anti-signal (WR=38.6%)
 
+    # ── 3 Tensions: Reg σ minus VWAP σ (Wyckoff cross-type) ──
+    # Positive tension = price above regression but BELOW vwap → stealth distribution
+    # Negative tension = price below regression but ABOVE vwap → institutional accumulation
+    # Triple tension agreement (all 3 negative) = strong institutional support (v15 Part 3)
+    tension_tide: float = 0.0       # sigma_tide - vwap_sigma_tide
+    tension_current: float = 0.0    # sigma_current - vwap_sigma_current
+    tension_wave: float = 0.0       # sigma_wave - vwap_sigma_wave
+
+    # ── Compression Ratio (Mandelbrot squeeze) ───────────────
+    # Low ratio = wave channel compressed inside tide = squeeze → breakout imminent
+    # residual_std_wave / residual_std_tide (v15 Part 8)
+    compression_ratio: float = 0.0
+
+    # ── 5 Geometric Features (3D vector projections) ─────────
+    # Slopes are normalized by their rolling σ BEFORE vector construction
+    # to prevent wave_slope variance from dominating (LdP audit correction).
+    geo_state_norm: float = 0.0     # ‖σ_vector‖ = √(σ_tide² + σ_current² + σ_wave²)
+    geo_velocity_align: float = 0.0 # cos(velocity_norm, ideal_entry_direction)
+    geo_exit_align: float = 0.0     # cos(velocity_norm, ideal_exit_direction)
+    geo_accel_align: float = 0.0    # cos(velocity_norm, acceleration_norm)
+    geo_phase_angle: float = 0.0    # arctan2(wave_slope_norm, tide_slope_norm)
+
     def to_dict(self) -> dict:
         """Serialize to dict for DB storage or JSON."""
         return asdict(self)

@@ -1,0 +1,1004 @@
+{
+  "AAPL": {
+    "ticker": "AAPL",
+    "n_signals": 141,
+    "win_rate": 51.06382978723404,
+    "top_features": [
+      [
+        "current_slope",
+        -0.4157
+      ],
+      [
+        "spread_current_wave",
+        0.3778
+      ],
+      [
+        "conj_current_tide",
+        -0.3672
+      ],
+      [
+        "sigma_current",
+        0.3429
+      ],
+      [
+        "vwap_sigma_current",
+        0.2897
+      ]
+    ],
+    "unique_features": [
+      "sigma_current",
+      "spread_current_wave",
+      "vwap_sigma_current"
+    ],
+    "optimal_delay_bars": 2,
+    "crash_wr": 50.0,
+    "slow_bleed_wr": 66.66666666666666,
+    "all_feature_correlations": {
+      "sigma_tide": 0.2076,
+      "sigma_current": 0.3429,
+      "sigma_wave": 0.0726,
+      "vwap_sigma_tide": -0.2435,
+      "vwap_sigma_current": 0.2897,
+      "vwap_sigma_wave": -0.0625,
+      "tide_slope": -0.1799,
+      "current_slope": -0.4157,
+      "wave_slope": -0.1177,
+      "tide_accel": 0.1084,
+      "current_accel": -0.0705,
+      "wave_accel": 0.1325,
+      "conj_wave_current": 0.1942,
+      "conj_wave_tide": -0.0651,
+      "conj_current_tide": -0.3672,
+      "spread_tide_current": -0.1931,
+      "spread_tide_wave": 0.0963,
+      "spread_current_wave": 0.3778,
+      "fear_level": -0.0176,
+      "vol_up_down_ratio": -0.1029,
+      "approach_bars": 0.0648
+    }
+  },
+  "AMZN": {
+    "ticker": "AMZN",
+    "n_signals": 99,
+    "win_rate": 69.6969696969697,
+    "top_features": [
+      [
+        "approach_bars",
+        0.3981
+      ],
+      [
+        "current_accel",
+        0.3724
+      ],
+      [
+        "conj_wave_current",
+        0.3705
+      ],
+      [
+        "spread_current_wave",
+        0.3051
+      ],
+      [
+        "spread_tide_current",
+        -0.2546
+      ]
+    ],
+    "unique_features": [
+      "spread_current_wave",
+      "approach_bars",
+      "spread_tide_current",
+      "current_accel"
+    ],
+    "optimal_delay_bars": 2,
+    "crash_wr": 50.0,
+    "slow_bleed_wr": 89.74358974358975,
+    "all_feature_correlations": {
+      "sigma_tide": -0.1407,
+      "sigma_current": 0.1074,
+      "sigma_wave": -0.1387,
+      "vwap_sigma_tide": -0.0107,
+      "vwap_sigma_current": 0.1453,
+      "vwap_sigma_wave": -0.1667,
+      "tide_slope": 0.0497,
+      "current_slope": -0.1868,
+      "wave_slope": 0.1428,
+      "tide_accel": -0.2087,
+      "current_accel": 0.3724,
+      "wave_accel": 0.2062,
+      "conj_wave_current": 0.3705,
+      "conj_wave_tide": 0.1425,
+      "conj_current_tide": -0.2149,
+      "spread_tide_current": -0.2546,
+      "spread_tide_wave": 0.0206,
+      "spread_current_wave": 0.3051,
+      "fear_level": -0.2277,
+      "vol_up_down_ratio": -0.147,
+      "approach_bars": 0.3981
+    }
+  },
+  "COST": {
+    "ticker": "COST",
+    "n_signals": 73,
+    "win_rate": 84.93150684931507,
+    "top_features": [
+      [
+        "conj_wave_current",
+        0.3822
+      ],
+      [
+        "vwap_sigma_tide",
+        0.3531
+      ],
+      [
+        "wave_slope",
+        0.3247
+      ],
+      [
+        "conj_wave_tide",
+        0.3025
+      ],
+      [
+        "fear_level",
+        0.2909
+      ]
+    ],
+    "unique_features": [
+      "wave_slope",
+      "vwap_sigma_tide",
+      "conj_wave_tide",
+      "fear_level"
+    ],
+    "optimal_delay_bars": 0,
+    "crash_wr": 100.0,
+    "slow_bleed_wr": 91.66666666666666,
+    "all_feature_correlations": {
+      "sigma_tide": -0.0797,
+      "sigma_current": -0.0123,
+      "sigma_wave": -0.093,
+      "vwap_sigma_tide": 0.3531,
+      "vwap_sigma_current": -0.1194,
+      "vwap_sigma_wave": -0.0912,
+      "tide_slope": 0.1731,
+      "current_slope": -0.143,
+      "wave_slope": 0.3247,
+      "tide_accel": 0.2409,
+      "current_accel": 0.1469,
+      "wave_accel": -0.1232,
+      "conj_wave_current": 0.3822,
+      "conj_wave_tide": 0.3025,
+      "conj_current_tide": -0.2477,
+      "spread_tide_current": -0.0627,
+      "spread_tide_wave": 0.0129,
+      "spread_current_wave": 0.0818,
+      "fear_level": 0.2909,
+      "vol_up_down_ratio": -0.1049,
+      "approach_bars": 0.1278
+    }
+  },
+  "HD": {
+    "ticker": "HD",
+    "n_signals": 113,
+    "win_rate": 61.06194690265486,
+    "top_features": [
+      [
+        "fear_level",
+        -0.3496
+      ],
+      [
+        "current_accel",
+        -0.2906
+      ],
+      [
+        "sigma_tide",
+        -0.2847
+      ],
+      [
+        "wave_accel",
+        -0.2838
+      ],
+      [
+        "tide_slope",
+        0.2612
+      ]
+    ],
+    "unique_features": [
+      "sigma_tide",
+      "wave_accel",
+      "fear_level",
+      "current_accel"
+    ],
+    "optimal_delay_bars": 0,
+    "crash_wr": 85.71428571428571,
+    "slow_bleed_wr": 55.00000000000001,
+    "all_feature_correlations": {
+      "sigma_tide": -0.2847,
+      "sigma_current": -0.2558,
+      "sigma_wave": -0.2376,
+      "vwap_sigma_tide": 0.048,
+      "vwap_sigma_current": -0.2116,
+      "vwap_sigma_wave": -0.2051,
+      "tide_slope": 0.2612,
+      "current_slope": 0.0036,
+      "wave_slope": -0.1834,
+      "tide_accel": 0.0125,
+      "current_accel": -0.2906,
+      "wave_accel": -0.2838,
+      "conj_wave_current": -0.1563,
+      "conj_wave_tide": -0.2411,
+      "conj_current_tide": -0.1125,
+      "spread_tide_current": 0.023,
+      "spread_tide_wave": -0.0489,
+      "spread_current_wave": -0.0825,
+      "fear_level": -0.3496,
+      "vol_up_down_ratio": -0.0548,
+      "approach_bars": -0.0847
+    }
+  },
+  "HON": {
+    "ticker": "HON",
+    "n_signals": 114,
+    "win_rate": 69.2982456140351,
+    "top_features": [
+      [
+        "fear_level",
+        -0.4584
+      ],
+      [
+        "tide_slope",
+        0.3986
+      ],
+      [
+        "conj_wave_current",
+        0.3473
+      ],
+      [
+        "spread_tide_current",
+        -0.3311
+      ],
+      [
+        "wave_slope",
+        0.3164
+      ]
+    ],
+    "unique_features": [
+      "wave_slope",
+      "spread_tide_current",
+      "fear_level"
+    ],
+    "optimal_delay_bars": 2,
+    "crash_wr": 50.0,
+    "slow_bleed_wr": 68.42105263157895,
+    "all_feature_correlations": {
+      "sigma_tide": -0.0747,
+      "sigma_current": 0.2458,
+      "sigma_wave": 0.0958,
+      "vwap_sigma_tide": 0.2447,
+      "vwap_sigma_current": 0.2043,
+      "vwap_sigma_wave": -0.0282,
+      "tide_slope": 0.3986,
+      "current_slope": 0.1341,
+      "wave_slope": 0.3164,
+      "tide_accel": 0.2088,
+      "current_accel": 0.2672,
+      "wave_accel": 0.2034,
+      "conj_wave_current": 0.3473,
+      "conj_wave_tide": 0.2547,
+      "conj_current_tide": 0.0017,
+      "spread_tide_current": -0.3311,
+      "spread_tide_wave": -0.1507,
+      "spread_current_wave": 0.2741,
+      "fear_level": -0.4584,
+      "vol_up_down_ratio": -0.1161,
+      "approach_bars": -0.022
+    }
+  },
+  "IBM": {
+    "ticker": "IBM",
+    "n_signals": 124,
+    "win_rate": 58.06451612903226,
+    "top_features": [
+      [
+        "sigma_current",
+        0.343
+      ],
+      [
+        "vwap_sigma_current",
+        0.3199
+      ],
+      [
+        "spread_tide_current",
+        -0.2754
+      ],
+      [
+        "spread_current_wave",
+        0.2373
+      ],
+      [
+        "sigma_wave",
+        0.1989
+      ]
+    ],
+    "unique_features": [
+      "spread_tide_current",
+      "sigma_current",
+      "sigma_wave",
+      "spread_current_wave",
+      "vwap_sigma_current"
+    ],
+    "optimal_delay_bars": 0,
+    "crash_wr": 53.84615384615385,
+    "slow_bleed_wr": 40.0,
+    "all_feature_correlations": {
+      "sigma_tide": 0.1036,
+      "sigma_current": 0.343,
+      "sigma_wave": 0.1989,
+      "vwap_sigma_tide": -0.042,
+      "vwap_sigma_current": 0.3199,
+      "vwap_sigma_wave": 0.0738,
+      "tide_slope": -0.1608,
+      "current_slope": 0.0589,
+      "wave_slope": 0.1077,
+      "tide_accel": -0.0221,
+      "current_accel": 0.163,
+      "wave_accel": -0.028,
+      "conj_wave_current": 0.0954,
+      "conj_wave_tide": 0.1394,
+      "conj_current_tide": 0.1073,
+      "spread_tide_current": -0.2754,
+      "spread_tide_wave": -0.0932,
+      "spread_current_wave": 0.2373,
+      "fear_level": -0.0194,
+      "vol_up_down_ratio": 0.0155,
+      "approach_bars": -0.0022
+    }
+  },
+  "JNJ": {
+    "ticker": "JNJ",
+    "n_signals": 93,
+    "win_rate": 72.04301075268818,
+    "top_features": [
+      [
+        "vwap_sigma_tide",
+        -0.3385
+      ],
+      [
+        "current_slope",
+        -0.3304
+      ],
+      [
+        "tide_slope",
+        -0.2906
+      ],
+      [
+        "conj_current_tide",
+        -0.2586
+      ],
+      [
+        "sigma_tide",
+        0.2238
+      ]
+    ],
+    "unique_features": [
+      "vwap_sigma_tide",
+      "sigma_tide"
+    ],
+    "optimal_delay_bars": 1,
+    "crash_wr": 77.77777777777779,
+    "slow_bleed_wr": 79.16666666666666,
+    "all_feature_correlations": {
+      "sigma_tide": 0.2238,
+      "sigma_current": 0.1839,
+      "sigma_wave": 0.1479,
+      "vwap_sigma_tide": -0.3385,
+      "vwap_sigma_current": 0.1607,
+      "vwap_sigma_wave": -0.0803,
+      "tide_slope": -0.2906,
+      "current_slope": -0.3304,
+      "wave_slope": -0.1681,
+      "tide_accel": -0.1106,
+      "current_accel": -0.0341,
+      "wave_accel": -0.096,
+      "conj_wave_current": -0.0273,
+      "conj_wave_tide": -0.1308,
+      "conj_current_tide": -0.2586,
+      "spread_tide_current": -0.0745,
+      "spread_tide_wave": 0.0647,
+      "spread_current_wave": 0.1117,
+      "fear_level": 0.1932,
+      "vol_up_down_ratio": 0.0398,
+      "approach_bars": -0.0485
+    }
+  },
+  "JPM": {
+    "ticker": "JPM",
+    "n_signals": 148,
+    "win_rate": 67.56756756756756,
+    "top_features": [
+      [
+        "fear_level",
+        0.2602
+      ],
+      [
+        "tide_slope",
+        -0.2028
+      ],
+      [
+        "vol_up_down_ratio",
+        -0.2012
+      ],
+      [
+        "current_slope",
+        -0.1933
+      ],
+      [
+        "wave_slope",
+        -0.173
+      ]
+    ],
+    "unique_features": [
+      "wave_slope",
+      "vol_up_down_ratio",
+      "fear_level"
+    ],
+    "optimal_delay_bars": 0,
+    "crash_wr": 85.71428571428571,
+    "slow_bleed_wr": 76.74418604651163,
+    "all_feature_correlations": {
+      "sigma_tide": 0.0146,
+      "sigma_current": 0.1307,
+      "sigma_wave": 0.1596,
+      "vwap_sigma_tide": -0.1716,
+      "vwap_sigma_current": 0.0363,
+      "vwap_sigma_wave": 0.0983,
+      "tide_slope": -0.2028,
+      "current_slope": -0.1933,
+      "wave_slope": -0.173,
+      "tide_accel": 0.0772,
+      "current_accel": 0.005,
+      "wave_accel": -0.0017,
+      "conj_wave_current": -0.0287,
+      "conj_wave_tide": -0.1135,
+      "conj_current_tide": -0.1331,
+      "spread_tide_current": -0.1347,
+      "spread_tide_wave": -0.1438,
+      "spread_current_wave": -0.0432,
+      "fear_level": 0.2602,
+      "vol_up_down_ratio": -0.2012,
+      "approach_bars": 0.1361
+    }
+  },
+  "MCD": {
+    "ticker": "MCD",
+    "n_signals": 62,
+    "win_rate": 75.80645161290323,
+    "top_features": [
+      [
+        "wave_slope",
+        -0.2216
+      ],
+      [
+        "conj_wave_tide",
+        -0.2208
+      ],
+      [
+        "vwap_sigma_tide",
+        -0.202
+      ],
+      [
+        "sigma_wave",
+        -0.1979
+      ],
+      [
+        "fear_level",
+        -0.1917
+      ]
+    ],
+    "unique_features": [
+      "vwap_sigma_tide",
+      "wave_slope",
+      "sigma_wave",
+      "conj_wave_tide",
+      "fear_level"
+    ],
+    "optimal_delay_bars": 1,
+    "crash_wr": 66.66666666666666,
+    "slow_bleed_wr": 68.18181818181817,
+    "all_feature_correlations": {
+      "sigma_tide": -0.0114,
+      "sigma_current": 0.0637,
+      "sigma_wave": -0.1979,
+      "vwap_sigma_tide": -0.202,
+      "vwap_sigma_current": 0.0267,
+      "vwap_sigma_wave": -0.0864,
+      "tide_slope": -0.0361,
+      "current_slope": -0.1186,
+      "wave_slope": -0.2216,
+      "tide_accel": -0.0574,
+      "current_accel": -0.1673,
+      "wave_accel": -0.1741,
+      "conj_wave_current": -0.1821,
+      "conj_wave_tide": -0.2208,
+      "conj_current_tide": -0.1053,
+      "spread_tide_current": -0.0833,
+      "spread_tide_wave": 0.138,
+      "spread_current_wave": 0.15,
+      "fear_level": -0.1917,
+      "vol_up_down_ratio": -0.1699,
+      "approach_bars": -0.1113
+    }
+  },
+  "MRK": {
+    "ticker": "MRK",
+    "n_signals": 103,
+    "win_rate": 66.01941747572816,
+    "top_features": [
+      [
+        "vol_up_down_ratio",
+        0.4605
+      ],
+      [
+        "approach_bars",
+        0.248
+      ],
+      [
+        "current_accel",
+        0.1263
+      ],
+      [
+        "wave_accel",
+        0.1207
+      ],
+      [
+        "spread_current_wave",
+        -0.1019
+      ]
+    ],
+    "unique_features": [
+      "approach_bars",
+      "current_accel",
+      "spread_current_wave",
+      "wave_accel",
+      "vol_up_down_ratio"
+    ],
+    "optimal_delay_bars": 2,
+    "crash_wr": 16.666666666666664,
+    "slow_bleed_wr": 75.55555555555556,
+    "all_feature_correlations": {
+      "sigma_tide": -0.0532,
+      "sigma_current": -0.059,
+      "sigma_wave": 0.0269,
+      "vwap_sigma_tide": 0.065,
+      "vwap_sigma_current": 0.0041,
+      "vwap_sigma_wave": 0.0317,
+      "tide_slope": 0.0622,
+      "current_slope": 0.0771,
+      "wave_slope": -0.0351,
+      "tide_accel": -0.0135,
+      "current_accel": 0.1263,
+      "wave_accel": 0.1207,
+      "conj_wave_current": -0.0936,
+      "conj_wave_tide": -0.0588,
+      "conj_current_tide": 0.061,
+      "spread_tide_current": 0.0363,
+      "spread_tide_wave": -0.0801,
+      "spread_current_wave": -0.1019,
+      "fear_level": 0.0927,
+      "vol_up_down_ratio": 0.4605,
+      "approach_bars": 0.248
+    }
+  },
+  "MSFT": {
+    "ticker": "MSFT",
+    "n_signals": 98,
+    "win_rate": 59.183673469387756,
+    "top_features": [
+      [
+        "spread_tide_current",
+        -0.3724
+      ],
+      [
+        "fear_level",
+        0.3475
+      ],
+      [
+        "current_slope",
+        -0.3092
+      ],
+      [
+        "tide_slope",
+        -0.3007
+      ],
+      [
+        "vwap_sigma_tide",
+        -0.2958
+      ]
+    ],
+    "unique_features": [
+      "vwap_sigma_tide",
+      "spread_tide_current",
+      "fear_level"
+    ],
+    "optimal_delay_bars": 1,
+    "crash_wr": 50.0,
+    "slow_bleed_wr": 58.536585365853654,
+    "all_feature_correlations": {
+      "sigma_tide": -0.1303,
+      "sigma_current": 0.1888,
+      "sigma_wave": 0.0898,
+      "vwap_sigma_tide": -0.2958,
+      "vwap_sigma_current": 0.1859,
+      "vwap_sigma_wave": 0.0346,
+      "tide_slope": -0.3007,
+      "current_slope": -0.3092,
+      "wave_slope": 0.003,
+      "tide_accel": -0.109,
+      "current_accel": 0.0449,
+      "wave_accel": 0.196,
+      "conj_wave_current": 0.2273,
+      "conj_wave_tide": 0.1051,
+      "conj_current_tide": -0.1988,
+      "spread_tide_current": -0.3724,
+      "spread_tide_wave": -0.2041,
+      "spread_current_wave": 0.1399,
+      "fear_level": 0.3475,
+      "vol_up_down_ratio": -0.0596,
+      "approach_bars": 0.0352
+    }
+  },
+  "PEP": {
+    "ticker": "PEP",
+    "n_signals": 86,
+    "win_rate": 63.95348837209303,
+    "top_features": [
+      [
+        "vol_up_down_ratio",
+        0.2866
+      ],
+      [
+        "sigma_tide",
+        -0.2718
+      ],
+      [
+        "tide_slope",
+        0.2593
+      ],
+      [
+        "spread_tide_wave",
+        -0.2474
+      ],
+      [
+        "tide_accel",
+        -0.2172
+      ]
+    ],
+    "unique_features": [
+      "sigma_tide",
+      "tide_accel",
+      "vol_up_down_ratio"
+    ],
+    "optimal_delay_bars": 1,
+    "crash_wr": 50.0,
+    "slow_bleed_wr": 52.0,
+    "all_feature_correlations": {
+      "sigma_tide": -0.2718,
+      "sigma_current": -0.192,
+      "sigma_wave": 0.0024,
+      "vwap_sigma_tide": 0.1717,
+      "vwap_sigma_current": -0.1573,
+      "vwap_sigma_wave": 0.0607,
+      "tide_slope": 0.2593,
+      "current_slope": 0.0933,
+      "wave_slope": -0.0357,
+      "tide_accel": -0.2172,
+      "current_accel": -0.1806,
+      "wave_accel": 0.076,
+      "conj_wave_current": -0.0549,
+      "conj_wave_tide": -0.0537,
+      "conj_current_tide": 0.0263,
+      "spread_tide_current": -0.029,
+      "spread_tide_wave": -0.2474,
+      "spread_current_wave": -0.1895,
+      "fear_level": 0.0912,
+      "vol_up_down_ratio": 0.2866,
+      "approach_bars": -0.1006
+    }
+  },
+  "PG": {
+    "ticker": "PG",
+    "n_signals": 103,
+    "win_rate": 64.07766990291263,
+    "top_features": [
+      [
+        "current_accel",
+        -0.3578
+      ],
+      [
+        "approach_bars",
+        -0.2395
+      ],
+      [
+        "spread_current_wave",
+        -0.2056
+      ],
+      [
+        "vol_up_down_ratio",
+        -0.188
+      ],
+      [
+        "sigma_current",
+        -0.1849
+      ]
+    ],
+    "unique_features": [
+      "approach_bars",
+      "current_accel",
+      "sigma_current",
+      "spread_current_wave",
+      "vol_up_down_ratio"
+    ],
+    "optimal_delay_bars": 0,
+    "crash_wr": 85.71428571428571,
+    "slow_bleed_wr": 56.09756097560976,
+    "all_feature_correlations": {
+      "sigma_tide": -0.1078,
+      "sigma_current": -0.1849,
+      "sigma_wave": 0.0298,
+      "vwap_sigma_tide": 0.0101,
+      "vwap_sigma_current": -0.0388,
+      "vwap_sigma_wave": 0.0906,
+      "tide_slope": 0.0448,
+      "current_slope": 0.0269,
+      "wave_slope": -0.1136,
+      "tide_accel": -0.1317,
+      "current_accel": -0.3578,
+      "wave_accel": -0.0449,
+      "conj_wave_current": -0.1132,
+      "conj_wave_tide": -0.1222,
+      "conj_current_tide": 0.012,
+      "spread_tide_current": 0.1317,
+      "spread_tide_wave": -0.1137,
+      "spread_current_wave": -0.2056,
+      "fear_level": -0.0762,
+      "vol_up_down_ratio": -0.188,
+      "approach_bars": -0.2395
+    }
+  },
+  "QQQ": {
+    "ticker": "QQQ",
+    "n_signals": 145,
+    "win_rate": 64.13793103448275,
+    "top_features": [
+      [
+        "sigma_wave",
+        -0.2708
+      ],
+      [
+        "vwap_sigma_current",
+        -0.2086
+      ],
+      [
+        "wave_accel",
+        -0.1931
+      ],
+      [
+        "sigma_current",
+        -0.1744
+      ],
+      [
+        "spread_tide_current",
+        0.1604
+      ]
+    ],
+    "unique_features": [
+      "spread_tide_current",
+      "sigma_current",
+      "sigma_wave",
+      "vwap_sigma_current",
+      "wave_accel"
+    ],
+    "optimal_delay_bars": 2,
+    "crash_wr": 41.66666666666667,
+    "slow_bleed_wr": 58.333333333333336,
+    "all_feature_correlations": {
+      "sigma_tide": -0.0512,
+      "sigma_current": -0.1744,
+      "sigma_wave": -0.2708,
+      "vwap_sigma_tide": -0.0594,
+      "vwap_sigma_current": -0.2086,
+      "vwap_sigma_wave": -0.0698,
+      "tide_slope": 0.1043,
+      "current_slope": 0.0739,
+      "wave_slope": -0.0745,
+      "tide_accel": -0.1572,
+      "current_accel": -0.0929,
+      "wave_accel": -0.1931,
+      "conj_wave_current": -0.1144,
+      "conj_wave_tide": -0.0898,
+      "conj_current_tide": 0.0433,
+      "spread_tide_current": 0.1604,
+      "spread_tide_wave": 0.1271,
+      "spread_current_wave": -0.0325,
+      "fear_level": -0.0644,
+      "vol_up_down_ratio": -0.0047,
+      "approach_bars": -0.0123
+    }
+  },
+  "SPY": {
+    "ticker": "SPY",
+    "n_signals": 171,
+    "win_rate": 71.34502923976608,
+    "top_features": [
+      [
+        "tide_accel",
+        -0.2491
+      ],
+      [
+        "approach_bars",
+        0.2236
+      ],
+      [
+        "vwap_sigma_current",
+        0.212
+      ],
+      [
+        "conj_current_tide",
+        -0.1841
+      ],
+      [
+        "conj_wave_tide",
+        -0.1724
+      ]
+    ],
+    "unique_features": [
+      "vwap_sigma_current",
+      "tide_accel",
+      "conj_wave_tide",
+      "approach_bars"
+    ],
+    "optimal_delay_bars": 2,
+    "crash_wr": 64.70588235294117,
+    "slow_bleed_wr": 86.66666666666667,
+    "all_feature_correlations": {
+      "sigma_tide": -0.069,
+      "sigma_current": 0.0859,
+      "sigma_wave": 0.0738,
+      "vwap_sigma_tide": -0.0497,
+      "vwap_sigma_current": 0.212,
+      "vwap_sigma_wave": 0.1286,
+      "tide_slope": 0.0543,
+      "current_slope": -0.1318,
+      "wave_slope": -0.1621,
+      "tide_accel": -0.2491,
+      "current_accel": -0.0613,
+      "wave_accel": -0.0352,
+      "conj_wave_current": -0.1397,
+      "conj_wave_tide": -0.1724,
+      "conj_current_tide": -0.1841,
+      "spread_tide_current": -0.1648,
+      "spread_tide_wave": -0.1031,
+      "spread_current_wave": 0.0469,
+      "fear_level": -0.0495,
+      "vol_up_down_ratio": -0.1004,
+      "approach_bars": 0.2236
+    }
+  },
+  "WMT": {
+    "ticker": "WMT",
+    "n_signals": 102,
+    "win_rate": 62.745098039215684,
+    "top_features": [
+      [
+        "tide_accel",
+        -0.354
+      ],
+      [
+        "vwap_sigma_current",
+        -0.2127
+      ],
+      [
+        "wave_slope",
+        -0.1719
+      ],
+      [
+        "conj_wave_tide",
+        -0.1668
+      ],
+      [
+        "sigma_tide",
+        -0.1429
+      ]
+    ],
+    "unique_features": [
+      "vwap_sigma_current",
+      "wave_slope",
+      "tide_accel",
+      "sigma_tide",
+      "conj_wave_tide"
+    ],
+    "optimal_delay_bars": 1,
+    "crash_wr": 50.0,
+    "slow_bleed_wr": 51.61290322580645,
+    "all_feature_correlations": {
+      "sigma_tide": -0.1429,
+      "sigma_current": -0.0941,
+      "sigma_wave": -0.0454,
+      "vwap_sigma_tide": -0.0696,
+      "vwap_sigma_current": -0.2127,
+      "vwap_sigma_wave": -0.037,
+      "tide_slope": -0.0021,
+      "current_slope": -0.0919,
+      "wave_slope": -0.1719,
+      "tide_accel": -0.354,
+      "current_accel": 0.0204,
+      "wave_accel": -0.0886,
+      "conj_wave_current": -0.0919,
+      "conj_wave_tide": -0.1668,
+      "conj_current_tide": -0.0824,
+      "spread_tide_current": -0.0191,
+      "spread_tide_wave": -0.0798,
+      "spread_current_wave": -0.0926,
+      "fear_level": -0.0078,
+      "vol_up_down_ratio": 0.082,
+      "approach_bars": -0.0733
+    }
+  },
+  "XOM": {
+    "ticker": "XOM",
+    "n_signals": 101,
+    "win_rate": 73.26732673267327,
+    "top_features": [
+      [
+        "fear_level",
+        -0.2704
+      ],
+      [
+        "tide_slope",
+        0.2467
+      ],
+      [
+        "spread_tide_current",
+        -0.1863
+      ],
+      [
+        "sigma_current",
+        0.1508
+      ],
+      [
+        "approach_bars",
+        0.1281
+      ]
+    ],
+    "unique_features": [
+      "sigma_current",
+      "approach_bars",
+      "spread_tide_current",
+      "fear_level"
+    ],
+    "optimal_delay_bars": 2,
+    "crash_wr": 47.05882352941176,
+    "slow_bleed_wr": 81.81818181818183,
+    "all_feature_correlations": {
+      "sigma_tide": -0.0077,
+      "sigma_current": 0.1508,
+      "sigma_wave": 0.1095,
+      "vwap_sigma_tide": 0.1123,
+      "vwap_sigma_current": 0.1054,
+      "vwap_sigma_wave": 0.083,
+      "tide_slope": 0.2467,
+      "current_slope": -0.0104,
+      "wave_slope": -0.0276,
+      "tide_accel": -0.117,
+      "current_accel": -0.0315,
+      "wave_accel": 0.0494,
+      "conj_wave_current": -0.0282,
+      "conj_wave_tide": -0.062,
+      "conj_current_tide": -0.1181,
+      "spread_tide_current": -0.1863,
+      "spread_tide_wave": -0.0855,
+      "spread_current_wave": 0.1047,
+      "fear_level": -0.2704,
+      "vol_up_down_ratio": -0.0278,
+      "approach_bars": 0.1281
+    }
+  }
+}

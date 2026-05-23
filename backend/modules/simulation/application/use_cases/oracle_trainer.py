@@ -15,7 +15,7 @@ from backend.modules.price_analysis.application.use_cases.analyze_regression_cha
 from backend.modules.pattern_recognition.application.use_cases.detect_patterns import PatternRecognitionIntelligence
 from backend.modules.volatility_regime.domain.rules.vol_classifier import VolRegimeClassifier
 from backend.modules.entry_decision.domain.rules.vol_regime_gate import compute_vol_regime_snapshot
-from backend.modules.simulation.infrastructure.signal_adapters import RSISignalAdapter
+from backend.modules.price_analysis.domain.rules.rsi_math import calc_rsi
 from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import KalmanVolumeTracker
 
 logger = logging.getLogger(__name__)
@@ -187,6 +187,18 @@ class OracleTrainer:
                 regime=channel.regime,
                 fear_level=channel.fear_level,
                 fear_label=channel.fear_label,
+                # Tensions (v15 Part 3)
+                tension_tide=channel.tension_tide,
+                tension_current=channel.tension_current,
+                tension_wave=channel.tension_wave,
+                # Compression (v15 Part 8)
+                compression_ratio=channel.compression_ratio,
+                # Geometric features (Fase 2A)
+                geo_state_norm=channel.geo_state_norm,
+                geo_velocity_align=channel.geo_velocity_align,
+                geo_exit_align=channel.geo_exit_align,
+                geo_accel_align=channel.geo_accel_align,
+                geo_phase_angle=channel.geo_phase_angle,
             )
         else:
             # Legacy fallback (channel computation failed)
@@ -278,7 +290,7 @@ class OracleTrainer:
         
         # Precompute RSI and Kalman states
         close_arr = ohlc["close"].values.astype(float)
-        rsi_vals = RSISignalAdapter._calc_rsi(close_arr, period=14)
+        rsi_vals = calc_rsi(close_arr, period=14)
         
         tracker = KalmanVolumeTracker(dt=1.0, process_noise=0.05, obs_noise=0.2)
         vol_series = ohlc["volume"].astype(float)
@@ -499,7 +511,7 @@ class OracleTrainer:
         
         # Precompute RSI and Kalman states
         close_arr = ohlc["close"].values.astype(float)
-        rsi_vals = RSISignalAdapter._calc_rsi(close_arr, period=14)
+        rsi_vals = calc_rsi(close_arr, period=14)
         
         tracker = KalmanVolumeTracker(dt=1.0, process_noise=0.05, obs_noise=0.2)
         vol_series = ohlc["volume"].astype(float)

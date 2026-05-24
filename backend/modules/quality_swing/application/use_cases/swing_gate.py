@@ -30,6 +30,7 @@ from backend.modules.quality_swing.domain.rules.swing_entry_rules import (
     is_accumulate_signal,
     is_trim_signal,
 )
+from backend.modules.shared.domain.ports.head_scorer_port import HeadScorerPort
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +49,11 @@ class SwingGate:
         self,
         data_port: SwingDataPort,
         passport_store=None,  # PassportStorePort | None
+        head_scorer: Optional[HeadScorerPort] = None,
     ):
         self._port = data_port
         self._passports = passport_store  # Optional — degrades gracefully
+        self._head_scorer = head_scorer   # Optional — ML conviction modulation
 
     def evaluate(
         self,
@@ -210,6 +213,20 @@ class SwingGate:
 
             logger.debug(f"SwingGate {ticker}: {passport_context} | {rc_context}")
 
+        # ── ML Head Scores (optional, modulates conviction) ──
+        _ml_scores = {}
+        if self._head_scorer is not None:
+            try:
+                _ml_scores = self._head_scorer.score_all(ticker, channel)
+                for hn, hs in _ml_scores.items():
+                    marker = "★" if hs.triggered else ""
+                    decision.alerts.append(
+                        f"ML[{hn}]: P={hs.probability:.3f} "
+                        f"(thr={hs.threshold:.2f}){marker}"
+                    )
+            except Exception as e:
+                logger.debug(f"SwingGate {ticker}: HeadScorer unavailable: {e}")
+
         # ── Evaluate accumulate ──
         should_accum, conviction, reason_accum = is_accumulate_signal(
             sigma_pos=rc_result.sigma_position,
@@ -256,6 +273,18 @@ class SwingGate:
                 conviction *= 0.70
                 reason_accum += f" | RC_WARNS({rc_result.conviction:+.2f})"
 
+            # ── ML conviction modulation (Druckenmiller: model MODULATES, not DECIDES) ──
+            if 'pullback_depth' in _ml_scores:
+                pd_score = _ml_scores['pullback_depth']
+                if pd_score.triggered:
+                    # Model says pullback will deepen → reduce conviction
+                    pre_ml = conviction
+                    conviction = round(conviction * 0.5, 2)
+                    reason_accum += (
+                        f" | ML_PULLBACK_WARN: P(deeper)={pd_score.probability:.2f}≥{pd_score.threshold:.2f} "
+                        f"→ conviction {pre_ml:.2f}→{conviction:.2f}"
+                    )
+
             # ── MH sizing modifier (cascade + F&G) ──
             if _mh_sizing_mod < 1.0:
                 pre_mh = conviction
@@ -277,6 +306,26 @@ class SwingGate:
         )
 
         if should_trim:
+            # ── ML swing_exit modulation ──
+            if 'swing_exit' in _ml_scores:
+                se_score = _ml_scores['swing_exit']
+                if se_score.triggered:
+                    # Model confirms exit signal → boost trim
+                    pre_ml = trim_pct
+                    trim_pct = min(trim_pct * 1.5, 0.5)
+                    reason_trim += (
+                        f" | ML_EXIT_CONFIRM: P(exit)={se_score.probability:.2f}≥{se_score.threshold:.2f} "
+                        f"→ trim {pre_ml:.0%}→{trim_pct:.0%}"
+                    )
+                elif se_score.probability < 0.3:
+                    # Model says no exit needed → reduce trim
+                    pre_ml = trim_pct
+                    trim_pct = round(trim_pct * 0.5, 2)
+                    reason_trim += (
+                        f" | ML_EXIT_CONTRA: P(exit)={se_score.probability:.2f}<0.30 "
+                        f"→ trim {pre_ml:.0%}→{trim_pct:.0%}"
+                    )
+
             decision.action = "TRIM"
             decision.conviction = trim_pct
             decision.reasoning = reason_trim

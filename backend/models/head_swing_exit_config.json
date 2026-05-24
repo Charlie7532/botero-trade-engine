@@ -1,0 +1,206 @@
+{
+  "head": "swing_exit",
+  "version": 2,
+  "description": "Is this the top of a bullish leg? (Triple Barrier 10d)",
+  "context": "BULL regime AND sigma_tide > 0 (winning positions)",
+  "horizon": 10,
+  "threshold": 0.8,
+  "dsr": 13.744327060729258,
+  "n_observations": 30443,
+  "positive_rate": 0.385277403672437,
+  "best_edge": 12.790066938524276,
+  "feature_importance": {
+    "wave_flip_direction": 0.07093066722154617,
+    "wave_accel": 0.04251735284924507,
+    "vwap_spread_tide_current": 0.036692485213279724,
+    "compression_ratio": 0.033910755068063736,
+    "current_slope": 0.0296297837048769,
+    "vwap_sigma_current": 0.029077734798192978,
+    "vwap_spread_tide_wave": 0.028798067942261696,
+    "tension_tide": 0.02596527338027954,
+    "rsi_value": 0.025530628859996796,
+    "tension_wave": 0.023588882759213448,
+    "rsi_conviction": 0.02309061773121357,
+    "tsi_tide": 0.0219098012894392,
+    "vol_up_down_ratio": 0.021842800080776215,
+    "tide_slope": 0.021449677646160126,
+    "adi_tide": 0.021429775282740593,
+    "geo_exit_align": 0.021251779049634933,
+    "adi_wave": 0.02079426683485508,
+    "tide_accel": 0.019787516444921494,
+    "rsi_divergence_strength": 0.019749505445361137,
+    "spread_tide_current": 0.019626857712864876,
+    "current_accel": 0.019524959847331047,
+    "spread_tide_wave": 0.019444696605205536,
+    "spread_current_wave": 0.01937095634639263,
+    "conj_wave_tide": 0.019356703385710716,
+    "adi_current": 0.019351184368133545,
+    "geo_velocity_align": 0.01934737339615822,
+    "tsi_wave": 0.019336704164743423,
+    "conj_current_tide": 0.019213763996958733,
+    "vwap_spread_current_wave": 0.019181281328201294,
+    "tension_current": 0.01887095347046852,
+    "sigma_current": 0.01885783113539219,
+    "tsi_current": 0.018663495779037476,
+    "wave_slope": 0.018391285091638565,
+    "vwap_sigma_tide": 0.018130986019968987,
+    "sigma_wave": 0.017937058582901955,
+    "conj_wave_current": 0.017888978123664856,
+    "geo_phase_angle": 0.017821332439780235,
+    "geo_state_norm": 0.01729719340801239,
+    "fear_level": 0.016894586384296417,
+    "vwap_sigma_wave": 0.01661282777786255,
+    "vol_adj_delta": 0.015836108475923538,
+    "geo_accel_align": 0.014947420917451382,
+    "sigma_tide": 0.014542771503329277,
+    "kalman_velocity": 0.013623467646539211,
+    "wave_flip": 0.01198185421526432,
+    "below_all_vwaps_int": 0.0,
+    "above_all_vwaps_int": 0.0,
+    "regime_encoded": 0.0
+  },
+  "fold_results": [
+    {
+      "fold": 0,
+      "train_n": 5073,
+      "test_n": 5073,
+      "accuracy": 0.5152769564360339,
+      "wr_high_p": 0.42387146136189746,
+      "wr_low_p": 0.2693452380952381,
+      "spread": 0.15452622326665938,
+      "sharpe": 0.32129437611626305
+    },
+    {
+      "fold": 1,
+      "train_n": 10146,
+      "test_n": 5073,
+      "accuracy": 0.5708653656613444,
+      "wr_high_p": 0.45255474452554745,
+      "wr_low_p": 0.28094302554027506,
+      "spread": 0.1716117189852724,
+      "sharpe": 0.3566120064244879
+    },
+    {
+      "fold": 2,
+      "train_n": 15219,
+      "test_n": 5073,
+      "accuracy": 0.5657401931795781,
+      "wr_high_p": 0.3658051689860835,
+      "wr_low_p": 0.24691358024691357,
+      "spread": 0.11889158873916994,
+      "sharpe": 0.26380580156450306
+    },
+    {
+      "fold": 3,
+      "train_n": 20292,
+      "test_n": 5073,
+      "accuracy": 0.4957618766016164,
+      "wr_high_p": 0.4972170686456401,
+      "wr_low_p": 0.35910224438902744,
+      "spread": 0.13811482425661264,
+      "sharpe": 0.27707082090618435
+    },
+    {
+      "fold": 4,
+      "train_n": 25365,
+      "test_n": 5068,
+      "accuracy": 0.51026045777427,
+      "wr_high_p": 0.5284360189573459,
+      "wr_low_p": 0.4108761329305136,
+      "spread": 0.11755988602683232,
+      "sharpe": 0.23780891933412812
+    }
+  ],
+  "per_ticker": {
+    "AAPL": {
+      "wr": null,
+      "n_signals": 5,
+      "pass": false
+    },
+    "AMZN": {
+      "wr": 62.5,
+      "n_signals": 16,
+      "pass": "True"
+    },
+    "COST": {
+      "wr": 23.076923076923077,
+      "n_signals": 13,
+      "pass": "False"
+    },
+    "HD": {
+      "wr": 45.83333333333333,
+      "n_signals": 48,
+      "pass": "False"
+    },
+    "HON": {
+      "wr": 65.51724137931035,
+      "n_signals": 29,
+      "pass": "True"
+    },
+    "IBM": {
+      "wr": null,
+      "n_signals": 0,
+      "pass": false
+    },
+    "JNJ": {
+      "wr": null,
+      "n_signals": 0,
+      "pass": false
+    },
+    "JPM": {
+      "wr": null,
+      "n_signals": 5,
+      "pass": false
+    },
+    "MCD": {
+      "wr": 10.0,
+      "n_signals": 10,
+      "pass": "False"
+    },
+    "MRK": {
+      "wr": null,
+      "n_signals": 0,
+      "pass": false
+    },
+    "MSFT": {
+      "wr": 15.0,
+      "n_signals": 20,
+      "pass": "False"
+    },
+    "PEP": {
+      "wr": null,
+      "n_signals": 0,
+      "pass": false
+    },
+    "PG": {
+      "wr": null,
+      "n_signals": 1,
+      "pass": false
+    },
+    "QQQ": {
+      "wr": 63.63636363636363,
+      "n_signals": 11,
+      "pass": "True"
+    },
+    "SPY": {
+      "wr": 82.35294117647058,
+      "n_signals": 34,
+      "pass": "True"
+    },
+    "WMT": {
+      "wr": null,
+      "n_signals": 5,
+      "pass": false
+    },
+    "XOM": {
+      "wr": 37.5,
+      "n_signals": 8,
+      "pass": "False"
+    }
+  },
+  "barriers": {
+    "profit": 0.03,
+    "stop": -0.02,
+    "time": 10
+  }
+}

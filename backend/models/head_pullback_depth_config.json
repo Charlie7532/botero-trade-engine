@@ -1,0 +1,201 @@
+{
+  "head": "pullback_depth",
+  "version": 2,
+  "description": "Will this pullback deepen? (Max drawdown 5d > -2%)",
+  "context": "BULL regime AND sigma_tide < -0.5 (in pullback)",
+  "horizon": 5,
+  "threshold": 0.8,
+  "dsr": 6.878129007483927,
+  "n_observations": 24673,
+  "positive_rate": 0.29465407530498927,
+  "best_edge": 25.036181650126487,
+  "feature_importance": {
+    "tide_accel": 0.04590845853090286,
+    "current_slope": 0.03811865672469139,
+    "conj_wave_tide": 0.03474821150302887,
+    "compression_ratio": 0.033656224608421326,
+    "tide_slope": 0.03331553936004639,
+    "tsi_tide": 0.027470650151371956,
+    "conj_current_tide": 0.02646302990615368,
+    "wave_accel": 0.026200316846370697,
+    "wave_flip_direction": 0.025988487526774406,
+    "vwap_spread_tide_current": 0.02431437373161316,
+    "vwap_sigma_wave": 0.023590559139847755,
+    "tsi_current": 0.023439884185791016,
+    "vwap_sigma_tide": 0.02335507981479168,
+    "vwap_spread_tide_wave": 0.023262059316039085,
+    "current_accel": 0.023150669410824776,
+    "vwap_sigma_current": 0.02311466820538044,
+    "rsi_conviction": 0.022927334532141685,
+    "vwap_spread_current_wave": 0.022846262902021408,
+    "adi_tide": 0.02216753549873829,
+    "tension_tide": 0.021719422191381454,
+    "vol_adj_delta": 0.02168947272002697,
+    "geo_phase_angle": 0.021473538130521774,
+    "conj_wave_current": 0.02128671295940876,
+    "wave_slope": 0.021103281527757645,
+    "spread_current_wave": 0.02086477354168892,
+    "kalman_velocity": 0.020728889852762222,
+    "sigma_current": 0.020516671240329742,
+    "geo_state_norm": 0.02000974491238594,
+    "rsi_value": 0.019669992849230766,
+    "tsi_wave": 0.019467489793896675,
+    "spread_tide_wave": 0.019375450909137726,
+    "adi_wave": 0.018954703584313393,
+    "spread_tide_current": 0.018824830651283264,
+    "geo_velocity_align": 0.018711335957050323,
+    "geo_exit_align": 0.018252387642860413,
+    "rsi_divergence_strength": 0.018209440633654594,
+    "sigma_tide": 0.01813250035047531,
+    "sigma_wave": 0.018118858337402344,
+    "tension_wave": 0.017816951498389244,
+    "adi_current": 0.017701633274555206,
+    "geo_accel_align": 0.017700128257274628,
+    "tension_current": 0.017441505566239357,
+    "vol_up_down_ratio": 0.017023419961333275,
+    "fear_level": 0.011168851517140865,
+    "wave_flip": 0.0,
+    "below_all_vwaps_int": 0.0,
+    "above_all_vwaps_int": 0.0,
+    "regime_encoded": 0.0
+  },
+  "fold_results": [
+    {
+      "fold": 0,
+      "train_n": 4112,
+      "test_n": 4112,
+      "accuracy": 0.5909533073929961,
+      "wr_high_p": 0.4809437386569873,
+      "wr_low_p": 0.28664731494920176,
+      "spread": 0.19429642370778555,
+      "sharpe": 0.4110298589261839
+    },
+    {
+      "fold": 1,
+      "train_n": 8224,
+      "test_n": 4112,
+      "accuracy": 0.6653696498054474,
+      "wr_high_p": 0.32867132867132864,
+      "wr_low_p": 0.20245398773006135,
+      "spread": 0.1262173409412673,
+      "sharpe": 0.29868711070869036
+    },
+    {
+      "fold": 2,
+      "train_n": 12336,
+      "test_n": 4112,
+      "accuracy": 0.6425097276264592,
+      "wr_high_p": 0.45387453874538747,
+      "wr_low_p": 0.16573816155988857,
+      "spread": 0.2881363771854989,
+      "sharpe": 0.6595421616331479
+    },
+    {
+      "fold": 3,
+      "train_n": 16448,
+      "test_n": 4112,
+      "accuracy": 0.5214007782101168,
+      "wr_high_p": 0.4231378763866878,
+      "wr_low_p": 0.26370757180156656,
+      "spread": 0.15943030458512125,
+      "sharpe": 0.34169623080599487
+    },
+    {
+      "fold": 4,
+      "train_n": 20560,
+      "test_n": 4108,
+      "accuracy": 0.5963972736124635,
+      "wr_high_p": 0.4129032258064516,
+      "wr_low_p": 0.21497120921305182,
+      "spread": 0.1979320165933998,
+      "sharpe": 0.43912523034030343
+    }
+  ],
+  "per_ticker": {
+    "AAPL": {
+      "wr": 43.333333333333336,
+      "n_signals": 30,
+      "pass": "False"
+    },
+    "AMZN": {
+      "wr": 69.56521739130434,
+      "n_signals": 23,
+      "pass": "True"
+    },
+    "COST": {
+      "wr": 60.0,
+      "n_signals": 15,
+      "pass": "True"
+    },
+    "HD": {
+      "wr": 40.0,
+      "n_signals": 20,
+      "pass": "False"
+    },
+    "HON": {
+      "wr": 92.3076923076923,
+      "n_signals": 13,
+      "pass": "True"
+    },
+    "IBM": {
+      "wr": null,
+      "n_signals": 1,
+      "pass": false
+    },
+    "JNJ": {
+      "wr": 42.857142857142854,
+      "n_signals": 7,
+      "pass": "False"
+    },
+    "JPM": {
+      "wr": 51.61290322580645,
+      "n_signals": 31,
+      "pass": "True"
+    },
+    "MCD": {
+      "wr": null,
+      "n_signals": 4,
+      "pass": false
+    },
+    "MRK": {
+      "wr": 50.0,
+      "n_signals": 6,
+      "pass": "False"
+    },
+    "MSFT": {
+      "wr": 25.0,
+      "n_signals": 8,
+      "pass": "False"
+    },
+    "PEP": {
+      "wr": null,
+      "n_signals": 4,
+      "pass": false
+    },
+    "PG": {
+      "wr": 50.0,
+      "n_signals": 6,
+      "pass": "False"
+    },
+    "QQQ": {
+      "wr": 70.0,
+      "n_signals": 10,
+      "pass": "True"
+    },
+    "SPY": {
+      "wr": 50.0,
+      "n_signals": 10,
+      "pass": "False"
+    },
+    "WMT": {
+      "wr": null,
+      "n_signals": 2,
+      "pass": false
+    },
+    "XOM": {
+      "wr": null,
+      "n_signals": 2,
+      "pass": false
+    }
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "head": "short_cover",
+  "version": 2,
+  "description": "Is this the bottom of a bearish leg? (Triple Barrier inverted 10d)",
+  "context": "BEAR regime AND sigma_tide < 0 (in drawdown)",
+  "horizon": 10,
+  "threshold": 0.7,
+  "dsr": 8.049632564937982,
+  "n_observations": 8326,
+  "positive_rate": 0.5569300984866683,
+  "best_edge": 6.176801005953145,
+  "feature_importance": {
+    "wave_accel": 0.031218407675623894,
+    "fear_level": 0.028967691585421562,
+    "vwap_spread_tide_wave": 0.02772838994860649,
+    "geo_exit_align": 0.027726443484425545,
+    "tension_tide": 0.027135295793414116,
+    "vwap_sigma_wave": 0.026785464957356453,
+    "vwap_spread_tide_current": 0.026324326172471046,
+    "conj_current_tide": 0.02569444850087166,
+    "sigma_wave": 0.025202032178640366,
+    "compression_ratio": 0.025122372433543205,
+    "tide_slope": 0.024906227365136147,
+    "tide_accel": 0.024678220972418785,
+    "geo_state_norm": 0.024650102481245995,
+    "spread_tide_current": 0.024638069793581963,
+    "tsi_tide": 0.024550583213567734,
+    "current_slope": 0.024091076105833054,
+    "sigma_tide": 0.02404598705470562,
+    "vwap_spread_current_wave": 0.023958975449204445,
+    "spread_current_wave": 0.023785924538969994,
+    "geo_velocity_align": 0.023528270423412323,
+    "geo_phase_angle": 0.023478882387280464,
+    "tension_current": 0.02339673787355423,
+    "vol_up_down_ratio": 0.023208199068903923,
+    "current_accel": 0.02320498414337635,
+    "rsi_conviction": 0.023119153454899788,
+    "vwap_sigma_current": 0.02302398905158043,
+    "vwap_sigma_tide": 0.02292521670460701,
+    "tsi_current": 0.02281452715396881,
+    "sigma_current": 0.02259710431098938,
+    "adi_tide": 0.022512609139084816,
+    "spread_tide_wave": 0.021930506452918053,
+    "adi_current": 0.02180749736726284,
+    "geo_accel_align": 0.021782023832201958,
+    "tsi_wave": 0.021567976102232933,
+    "kalman_velocity": 0.021092642098665237,
+    "vol_adj_delta": 0.020338833332061768,
+    "rsi_value": 0.02005011960864067,
+    "conj_wave_tide": 0.019919026643037796,
+    "conj_wave_current": 0.019132481887936592,
+    "wave_slope": 0.019010134041309357,
+    "tension_wave": 0.017562564462423325,
+    "adi_wave": 0.01731279492378235,
+    "wave_flip_direction": 0.013473710045218468,
+    "wave_flip": 0.0,
+    "rsi_divergence_strength": 0.0,
+    "below_all_vwaps_int": 0.0,
+    "above_all_vwaps_int": 0.0,
+    "regime_encoded": 0.0
+  },
+  "fold_results": [
+    {
+      "fold": 0,
+      "train_n": 1387,
+      "test_n": 1387,
+      "accuracy": 0.5407354001441961,
+      "wr_high_p": 0.5655913978494623,
+      "wr_low_p": 0.4689922480620155,
+      "spread": 0.09659914978744683,
+      "sharpe": 0.19319875149786286
+    },
+    {
+      "fold": 1,
+      "train_n": 2774,
+      "test_n": 1387,
+      "accuracy": 0.5270367700072098,
+      "wr_high_p": 0.7081545064377682,
+      "wr_low_p": 0.5476190476190477,
+      "spread": 0.16053545881872056,
+      "sharpe": 0.3296858135792127
+    },
+    {
+      "fold": 2,
+      "train_n": 4161,
+      "test_n": 1387,
+      "accuracy": 0.5349675558759913,
+      "wr_high_p": 0.5675057208237986,
+      "wr_low_p": 0.4330708661417323,
+      "spread": 0.13443485468206628,
+      "sharpe": 0.2694249517942474
+    },
+    {
+      "fold": 3,
+      "train_n": 5548,
+      "test_n": 1387,
+      "accuracy": 0.5508291276135544,
+      "wr_high_p": 0.6402877697841727,
+      "wr_low_p": 0.4787234042553192,
+      "spread": 0.1615643655288535,
+      "sharpe": 0.3334868666889856
+    },
+    {
+      "fold": 4,
+      "train_n": 6935,
+      "test_n": 1381,
+      "accuracy": 0.5691527878349022,
+      "wr_high_p": 0.6743002544529262,
+      "wr_low_p": 0.4642857142857143,
+      "spread": 0.21001454016721188,
+      "sharpe": 0.4262457393992235
+    }
+  ],
+  "per_ticker": {
+    "AAPL": {
+      "wr": 50.0,
+      "n_signals": 40,
+      "pass": "False"
+    },
+    "AMZN": {
+      "wr": 70.0,
+      "n_signals": 40,
+      "pass": "True"
+    },
+    "COST": {
+      "wr": 38.775510204081634,
+      "n_signals": 49,
+      "pass": "False"
+    },
+    "HD": {
+      "wr": 82.35294117647058,
+      "n_signals": 17,
+      "pass": "True"
+    },
+    "HON": {
+      "wr": 60.71428571428571,
+      "n_signals": 84,
+      "pass": "True"
+    },
+    "IBM": {
+      "wr": 59.74025974025974,
+      "n_signals": 77,
+      "pass": "True"
+    },
+    "JNJ": {
+      "wr": 58.333333333333336,
+      "n_signals": 108,
+      "pass": "True"
+    },
+    "JPM": {
+      "wr": 64.13043478260869,
+      "n_signals": 92,
+      "pass": "True"
+    },
+    "MCD": {
+      "wr": 86.36363636363636,
+      "n_signals": 22,
+      "pass": "True"
+    },
+    "MRK": {
+      "wr": 70.96774193548387,
+      "n_signals": 62,
+      "pass": "True"
+    },
+    "MSFT": {
+      "wr": 73.75,
+      "n_signals": 80,
+      "pass": "True"
+    },
+    "PEP": {
+      "wr": 53.086419753086425,
+      "n_signals": 81,
+      "pass": "True"
+    },
+    "PG": {
+      "wr": 60.0,
+      "n_signals": 70,
+      "pass": "True"
+    },
+    "QQQ": {
+      "wr": 66.0,
+      "n_signals": 50,
+      "pass": "True"
+    },
+    "SPY": {
+      "wr": 72.88135593220339,
+      "n_signals": 118,
+      "pass": "True"
+    },
+    "WMT": {
+      "wr": 58.06451612903226,
+      "n_signals": 31,
+      "pass": "True"
+    },
+    "XOM": {
+      "wr": 64.7887323943662,
+      "n_signals": 142,
+      "pass": "True"
+    }
+  },
+  "barriers": {
+    "profit": -0.03,
+    "stop": 0.02,
+    "time": 10
+  }
+}

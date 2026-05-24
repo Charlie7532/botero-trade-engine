@@ -131,6 +131,16 @@ class ChannelSnapshot:
     # residual_std_wave / residual_std_tide (v15 Part 8)
     compression_ratio: float = 0.0
 
+    # ── RSI Intelligence (from price_analysis module) ─────────
+    # Persisted by backfill pipeline. RSI(14) Wilder standard.
+    rsi_value: float = 0.0              # Current RSI(14) value 0-100
+    rsi_divergence_strength: float = 0.0  # Divergence magnitude (Cardwell)
+    rsi_conviction: float = 0.0         # Composite RSI conviction score
+
+    # ── Kalman Filter (from volume_intelligence module) ───────
+    kalman_velocity: float = 0.0        # Kalman-filtered price velocity
+    vol_adj_delta: float = 0.0          # Delta normalized by volatility
+
     # ── 5 Geometric Features (3D vector projections) ─────────
     # Slopes are normalized by their rolling σ BEFORE vector construction
     # to prevent wave_slope variance from dominating (LdP audit correction).

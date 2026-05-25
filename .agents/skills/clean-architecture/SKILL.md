@@ -261,6 +261,14 @@ Domain layer imports external libraries that should only exist in infrastructure
 - `volume_intelligence` — pure domain, no infra needed ✅
 - `pattern_recognition` — pure domain, no infra needed ✅
 
+**Cross-module shared ports** (in `shared/domain/ports/`):
+- `TimeSeriesPort` — OHLCV read/write
+- `TickerProfilePort` — per-ticker calibrated profiles
+- `RegimeStatePort` — regime state persistence with temporal context (Rules 15-17). Adapter: `PostgresRegimeStateAdapter`. Table: `market.regime_states`.
+
+### Stateful Classifiers
+Per AGENTS.md Rules 15-17, every classifier emitting a discrete state MUST persist transitions via `RegimeStatePort`. Consumers receive `StateSnapshot` (not raw strings). This provides `duration_bars`, `previous_state`, `trigger_event`, and `entered_at` — temporal context that enables forensic analysis and duration-aware gate decisions.
+
 ### God Files (>500 LOC in domain)
 | File | LOC |
 |---|---|

@@ -115,6 +115,37 @@ class MarketHealthProvider:
             except Exception as e:
                 logger.debug(f"MH Provider: Vol regime injection skipped: {e}")
 
+            # ── Stateful-First: Persist vol regime transitions (Rule 15-16) ──
+            # Writer: this daemon. Readers: gates, risk managers, Oracle Trainer.
+            try:
+                from backend.modules.shared.infrastructure.postgres_regime_state import (
+                    PostgresRegimeStateAdapter,
+                )
+                _regime_store = PostgresRegimeStateAdapter()
+
+                for _key, _label in [
+                    ("vol:quality:MARKET", snapshot.vol_regime_quality),
+                    ("vol:speculative:MARKET", snapshot.vol_regime_speculative),
+                ]:
+                    _current = _regime_store.get_current(_key)
+                    if _current is None or _current.current_state != _label:
+                        # Regime changed (or first-ever) → commit transition
+                        _trigger = f"VIX_Z={vix_z:.2f}" if 'vix_z' in dir() else None
+                        _regime_store.commit_transition(
+                            _key, _label, trigger=_trigger,
+                        )
+                        logger.info(
+                            f"🔄 RegimeState: {_key} "
+                            f"{_current.current_state if _current else '(none)'}→{_label}"
+                        )
+                    else:
+                        # Same regime → increment duration
+                        _regime_store.increment_duration(_key)
+
+                _regime_store.close()
+            except Exception as e:
+                logger.debug(f"MH Provider: Regime state persistence skipped: {e}")
+
             # ── Persist ──
             store.save_mcp_snapshot("market/health", "MARKET", snapshot.to_dict())
 

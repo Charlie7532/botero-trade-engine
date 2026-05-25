@@ -108,12 +108,28 @@ class SwingGate:
         below_vwap = rc_result.below_vwap
         hookup = ohlc["close"].iloc[idx] > ohlc["close"].iloc[idx - 1] if idx > 0 else False
 
-        # ── Load vol regime ──
+        # ── Load vol regime (Stateful-First: StateSnapshot preferred) ──
+        vol_snap = None
         try:
-            vol_label = self._port.load_vol_regime_label()
+            vol_snap = self._port.load_vol_regime_state()
         except Exception:
-            vol_label = "NORMAL"
-        decision.vol_regime = vol_label
+            pass
+
+        if vol_snap:
+            vol_label = vol_snap.current_state
+            decision.vol_regime = vol_label
+            decision.alerts.append(
+                f"VOL_STATE: {vol_snap.current_state} "
+                f"(day {vol_snap.duration_bars}, "
+                f"prev={vol_snap.previous_state}, "
+                f"trigger={vol_snap.trigger_event})"
+            )
+        else:
+            try:
+                vol_label = self._port.load_vol_regime_label()
+            except Exception:
+                vol_label = "NORMAL"
+            decision.vol_regime = vol_label
 
         # ── Load Market Health snapshot (Persist-then-Read from Vault) ──
         _mh_snapshot = None

@@ -1022,3 +1022,199 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                 return cur.fetchone()[0]
         finally:
             self._put(conn)
+
+    # ─── Signal Tape ────────────────────────────────────────────────────
+
+    def ensure_signal_tape_table(self) -> None:
+        """Create engine.signal_tape if it doesn't exist."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("CREATE SCHEMA IF NOT EXISTS engine;")
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS engine.signal_tape (
+                        ticker          TEXT NOT NULL,
+                        timestamp       TIMESTAMPTZ NOT NULL,
+                        bar_index       INT,
+
+                        -- 8 Head Probabilities (raw, uncut)
+                        p_long_entry       DOUBLE PRECISION,
+                        p_swing_exit       DOUBLE PRECISION,
+                        p_pullback_depth   DOUBLE PRECISION,
+                        p_trend_reversal   DOUBLE PRECISION,
+                        p_short_entry      DOUBLE PRECISION,
+                        p_short_cover      DOUBLE PRECISION,
+                        p_bounce_height    DOUBLE PRECISION,
+                        p_trend_recovery   DOUBLE PRECISION,
+
+                        -- Core Features (snapshot at decision time)
+                        sigma_tide      DOUBLE PRECISION,
+                        sigma_current   DOUBLE PRECISION,
+                        sigma_wave      DOUBLE PRECISION,
+                        tide_slope      DOUBLE PRECISION,
+                        current_slope   DOUBLE PRECISION,
+                        wave_slope      DOUBLE PRECISION,
+                        kalman_velocity DOUBLE PRECISION,
+                        rsi_value       DOUBLE PRECISION,
+                        fear_level      SMALLINT,
+                        compression_ratio DOUBLE PRECISION,
+                        vol_up_down_ratio DOUBLE PRECISION,
+                        regime          TEXT,
+                        vol_regime      TEXT,
+
+                        -- Precursor Derivatives (bar-over-bar deltas)
+                        d_sigma_wave         DOUBLE PRECISION,
+                        d_kalman_velocity    DOUBLE PRECISION,
+                        d_rsi_value          DOUBLE PRECISION,
+                        d_compression_ratio  DOUBLE PRECISION,
+                        d_fear_level         DOUBLE PRECISION,
+                        d_vol_up_down_ratio  DOUBLE PRECISION,
+                        d_tide_slope         DOUBLE PRECISION,
+                        d_wave_accel         DOUBLE PRECISION,
+
+                        -- Derived Features (Forensic Phase 1)
+                        slope_decel_wave     DOUBLE PRECISION,
+                        slope_decel_current  DOUBLE PRECISION,
+                        sigma_divergence     DOUBLE PRECISION,
+                        complacency_index    DOUBLE PRECISION,
+                        rsi_extreme_zone     SMALLINT,
+                        rsi_trap_zone        SMALLINT,
+                        rsi_bearish_div      SMALLINT,
+
+                        -- Regression-Based Barriers (informative, not decisional)
+                        barrier_reg_profit   DOUBLE PRECISION,
+                        barrier_reg_stop     DOUBLE PRECISION,
+                        expected_return      DOUBLE PRECISION,
+
+                        -- Forward Returns (REAL, for signal evaluation)
+                        fwd_return_5d        DOUBLE PRECISION,
+                        fwd_return_10d       DOUBLE PRECISION,
+                        fwd_return_20d       DOUBLE PRECISION,
+                        fwd_max_dd_5d        DOUBLE PRECISION,
+                        fwd_max_runup_5d     DOUBLE PRECISION,
+                        fwd_max_dd_10d       DOUBLE PRECISION,
+                        fwd_max_runup_10d    DOUBLE PRECISION,
+
+                        -- Optimal Point (post-hoc, for phase offset measurement)
+                        bars_to_local_min_10d  INT,
+                        bars_to_local_max_10d  INT,
+                        local_min_pct          DOUBLE PRECISION,
+                        local_max_pct          DOUBLE PRECISION,
+
+                        -- SwingGate Decision (A = baseline, B = ML-modulated)
+                        decision_a    TEXT,
+                        conviction_a  DOUBLE PRECISION,
+                        decision_b    TEXT,
+                        conviction_b  DOUBLE PRECISION,
+
+                        PRIMARY KEY (ticker, timestamp)
+                    );
+                """)
+                cur.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_st_ticker_regime
+                    ON engine.signal_tape (ticker, regime, timestamp);
+                """)
+                cur.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_st_decisions
+                    ON engine.signal_tape (ticker, decision_a, decision_b);
+                """)
+            conn.commit()
+            logger.info("engine.signal_tape table ensured.")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Failed to create signal_tape table: {e}")
+            raise
+        finally:
+            self._put(conn)
+
+    def save_signal_tape_batch(
+        self,
+        ticker: str,
+        rows: list[dict],
+        batch_size: int = 500,
+    ) -> int:
+        """Upsert a batch of signal tape rows.
+
+        Each dict in `rows` must have at least 'timestamp' plus any
+        subset of signal_tape columns.
+        """
+        if not rows:
+            return 0
+
+        COLUMNS = [
+            'ticker', 'timestamp', 'bar_index',
+            'p_long_entry', 'p_swing_exit', 'p_pullback_depth', 'p_trend_reversal',
+            'p_short_entry', 'p_short_cover', 'p_bounce_height', 'p_trend_recovery',
+            'sigma_tide', 'sigma_current', 'sigma_wave',
+            'tide_slope', 'current_slope', 'wave_slope',
+            'kalman_velocity', 'rsi_value', 'fear_level',
+            'compression_ratio', 'vol_up_down_ratio', 'regime', 'vol_regime',
+            'd_sigma_wave', 'd_kalman_velocity', 'd_rsi_value',
+            'd_compression_ratio', 'd_fear_level', 'd_vol_up_down_ratio',
+            'd_tide_slope', 'd_wave_accel',
+            'slope_decel_wave', 'slope_decel_current', 'sigma_divergence',
+            'complacency_index', 'rsi_extreme_zone', 'rsi_trap_zone', 'rsi_bearish_div',
+            'barrier_reg_profit', 'barrier_reg_stop', 'expected_return',
+            'fwd_return_5d', 'fwd_return_10d', 'fwd_return_20d',
+            'fwd_max_dd_5d', 'fwd_max_runup_5d',
+            'fwd_max_dd_10d', 'fwd_max_runup_10d',
+            'bars_to_local_min_10d', 'bars_to_local_max_10d',
+            'local_min_pct', 'local_max_pct',
+            'decision_a', 'conviction_a', 'decision_b', 'conviction_b',
+        ]
+
+        update_cols = [c for c in COLUMNS if c not in ('ticker', 'timestamp')]
+        update_clause = ", ".join(f"{c} = EXCLUDED.{c}" for c in update_cols)
+
+        placeholders = ", ".join(["%s"] * len(COLUMNS))
+        sql = f"""
+            INSERT INTO engine.signal_tape ({", ".join(COLUMNS)})
+            VALUES ({placeholders})
+            ON CONFLICT (ticker, timestamp) DO UPDATE SET {update_clause}
+        """
+
+        total = 0
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                for i in range(0, len(rows), batch_size):
+                    batch = rows[i:i + batch_size]
+                    values = []
+                    for row in batch:
+                        row['ticker'] = ticker.upper()
+                        vals = tuple(row.get(c) for c in COLUMNS)
+                        values.append(vals)
+
+                    psycopg2.extras.execute_batch(cur, sql, values, page_size=100)
+                    total += len(batch)
+                    logger.info(f"signal_tape: {ticker}/1d — upserted {len(batch)} rows")
+
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"signal_tape batch failed for {ticker}: {e}")
+            raise
+        finally:
+            self._put(conn)
+
+        return total
+
+    def load_signal_tape(
+        self,
+        ticker: str,
+        start: str | None = None,
+        end: str | None = None,
+    ) -> pd.DataFrame:
+        """Load signal tape for a ticker, optionally filtered by date range."""
+        q = "SELECT * FROM engine.signal_tape WHERE ticker = %s"
+        params: list = [ticker.upper()]
+        if start:
+            q += " AND timestamp >= %s"
+            params.append(start)
+        if end:
+            q += " AND timestamp <= %s"
+            params.append(end)
+        q += " ORDER BY timestamp"
+
+        return pd.read_sql(q, self.engine, params=params, index_col="timestamp")
+

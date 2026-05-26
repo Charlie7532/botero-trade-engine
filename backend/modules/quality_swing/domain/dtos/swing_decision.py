@@ -24,5 +24,8 @@ class SwingDecision:
     wave_slope: float = 0.0
     vol_regime: str = "NORMAL"
 
+    # ML head probabilities at decision time (8 heads)
+    ml_scores: dict[str, float] = field(default_factory=dict)
+
     # Alerts (non-blocking observations)
     alerts: list[str] = field(default_factory=list)

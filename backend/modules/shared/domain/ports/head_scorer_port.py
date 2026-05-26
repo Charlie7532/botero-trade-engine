@@ -41,6 +41,7 @@ class HeadScorerPort(abc.ABC):
         head_name: str,
         ticker: str,
         snapshot: ChannelSnapshot,
+        prev_snapshot: Optional[ChannelSnapshot] = None,
     ) -> Optional[HeadScore]:
         """Score a snapshot with one head.
 
@@ -48,6 +49,7 @@ class HeadScorerPort(abc.ABC):
             head_name: Which head to use (e.g., 'swing_exit')
             ticker: Ticker symbol (needed for per-ticker TSI/ADI)
             snapshot: Current market state
+            prev_snapshot: Optional previous market state (for stateless deltas)
 
         Returns:
             HeadScore with probability, or None if head unavailable.
@@ -59,6 +61,7 @@ class HeadScorerPort(abc.ABC):
         self,
         ticker: str,
         snapshot: ChannelSnapshot,
+        prev_snapshot: Optional[ChannelSnapshot] = None,
     ) -> dict[str, HeadScore]:
         """Score a snapshot with ALL available heads.
 

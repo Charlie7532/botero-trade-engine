@@ -101,7 +101,22 @@ COMPUTED_FEATURES = [
     'regime_encoded',
 ]
 
-ALL_FEATURES = DB_FEATURES + COMPUTED_FEATURES
+# Phase 1 derived features (from forensic analysis)
+PHASE1_FEATURES = [
+    'slope_decel_wave', 'slope_decel_current',
+    'sigma_divergence', 'complacency_index',
+    'rsi_extreme_zone', 'rsi_trap_zone', 'rsi_bearish_div',
+]
+
+# Delta features: bar-over-bar changes of key indicators
+# Forensic evidence: d_tide_slope is the strongest precursor (t=-80.96)
+DELTA_SOURCES = [
+    'sigma_wave', 'kalman_velocity', 'rsi_value', 'compression_ratio',
+    'fear_level', 'vol_up_down_ratio', 'tide_slope', 'wave_accel',
+]
+DELTA_FEATURES = [f'd_{col}' for col in DELTA_SOURCES]
+
+ALL_FEATURES = DB_FEATURES + COMPUTED_FEATURES + PHASE1_FEATURES + DELTA_FEATURES
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -112,9 +127,10 @@ HEAD_CONFIGS = {
     # ── LONG-side ──
     'long_entry': {
         'description': 'Is this a good time to buy? (20d forward return > 0)',
-        'horizon': 20,
+        'horizon': 20,  # Tested 12d (median×0.75): DSR dropped 0.84→0.69. 20d kept.
         'context_desc': 'All observations (no filter)',
         'side': 'LONG',
+        # exclude_deltas tested: DSR -1.17 without vs 0.69 with. Deltas help.
     },
     'swing_exit': {
         'description': 'Is this the top of a bullish leg? (Triple Barrier 10d)',
@@ -160,6 +176,25 @@ HEAD_CONFIGS = {
         'horizon': 60,
         'context_desc': 'tsi_tide < 30 (established downtrend)',
         'side': 'SHORT',
+    },
+    # ── ZIGZAG TURNING-POINT DETECTORS (Phase 2) ──
+    'zz_bottom_detector': {
+        'description': 'Are we near a zigzag 5% bottom? (within 3 bars of MIN)',
+        'horizon': 3,  # proximity window, not forward-return horizon
+        'context_desc': 'All observations (no filter)',
+        'side': 'LONG',
+        'label_type': 'zigzag',
+        'zz_tp_type': 'MIN',
+        'proximity_window': 3,  # bars before/after the turning point
+    },
+    'zz_top_detector': {
+        'description': 'Are we near a zigzag 5% top? (within 3 bars of MAX)',
+        'horizon': 3,
+        'context_desc': 'All observations (no filter)',
+        'side': 'SHORT',
+        'label_type': 'zigzag',
+        'zz_tp_type': 'MAX',
+        'proximity_window': 3,
     },
 }
 
@@ -225,6 +260,39 @@ def load_feature_lake(store, profile_store):
         df.loc[mask, 'adi_wave'] = tdf['tension_wave'].apply(
             lambda t: compute_adi(t, profile.adi_wave_percentiles))
 
+    # Compute delta features: bar-over-bar changes per ticker
+    # Forensic: d_tide_slope (t=-80.96) is the strongest precursor across all heads
+    for src in DELTA_SOURCES:
+        df[f'd_{src}'] = df.groupby('ticker')[src].diff().fillna(0.0)
+    print(f"    Delta features computed: {len(DELTA_FEATURES)} columns")
+
+    # ── Phase 1: Derived features (forensic-based, all purely historical) ──
+    SLOPE_DECEL_LOOKBACK = 5
+    # Slope deceleration per ticker
+    df['slope_decel_wave'] = (df.groupby('ticker')['wave_slope']
+                              .diff(SLOPE_DECEL_LOOKBACK).fillna(0.0))
+    df['slope_decel_current'] = (df.groupby('ticker')['current_slope']
+                                 .diff(SLOPE_DECEL_LOOKBACK).fillna(0.0))
+    # Sigma divergence (orthogonal timeframes)
+    df['sigma_divergence'] = df['sigma_tide'].fillna(0) - df['sigma_wave'].fillna(0)
+    # Complacency index: RSI normalized vs slope decel normalized
+    rsi_norm = (df['rsi_value'].fillna(50) - 50.0) / 50.0
+    sd_norm = (df['slope_decel_wave'] * 50.0).clip(-1, 1)
+    df['complacency_index'] = rsi_norm - sd_norm
+    # RSI zones (U-curve discovery)
+    df['rsi_extreme_zone'] = (df['rsi_value'].fillna(50) > 80).astype(int)
+    df['rsi_trap_zone'] = ((df['rsi_value'].fillna(50) >= 65) &
+                           (df['rsi_value'].fillna(50) <= 75)).astype(int)
+    # RSI bearish divergence: rolling max (NO zigzag — purely historical)
+    RSI_DIV_WINDOW = 60
+    rsi_series = df['rsi_value'].fillna(50)
+    rsi_rolling_max = rsi_series.groupby(df['ticker']).transform(
+        lambda s: s.rolling(RSI_DIV_WINDOW, min_periods=1).max()
+    )
+    # Current RSI < rolling max by 2+ points = bearish divergence
+    df['rsi_bearish_div'] = ((rsi_series < rsi_rolling_max - 2.0)).astype(int)
+    print(f"    Phase 1 features computed: {len(PHASE1_FEATURES)} columns")
+
     # Pre-load OHLCV per-ticker for labeling
     ohlcv_cache = {}
     for ticker in df['ticker'].unique():
@@ -239,6 +307,63 @@ def load_feature_lake(store, profile_store):
 # ═══════════════════════════════════════════════════════════════
 # LABELING FUNCTIONS (one per head)
 # ═══════════════════════════════════════════════════════════════
+
+
+def label_zz_turning_point(df, store, tp_type='MIN', proximity_window=3):
+    """Label bars near confirmed zigzag turning points.
+
+    CRITICAL: Zigzag is used ONLY as a LABEL — the training TARGET.
+    It is NEVER used as an input feature. The model learns to predict
+    proximity to turning points from the 63 channel-snapshot features.
+
+    Args:
+        tp_type: 'MIN' (bottoms) or 'MAX' (tops)
+        proximity_window: bars before/after the actual turning point
+
+    Returns:
+        labels: 1 = within proximity_window of a zigzag turning point, 0 = not
+    """
+    label_name = 'ZZ_BOTTOM' if tp_type == 'MIN' else 'ZZ_TOP'
+    sp(f"Labeling: {label_name} (proximity={proximity_window} bars, tp={tp_type})")
+
+    # Load confirmed zigzag points
+    from sqlalchemy import text
+    zz = pd.read_sql(
+        text("SELECT ticker, timestamp FROM engine.zigzag_points "
+             "WHERE min_swing_pct = 0.05 AND tp_type = :tp "
+             "ORDER BY ticker, timestamp"),
+        store.engine, params={'tp': tp_type}
+    )
+    print(f"    Loaded {len(zz):,d} zigzag {tp_type} points")
+
+    labels = np.zeros(len(df))
+
+    for ticker in df['ticker'].unique():
+        tk_zz = zz[zz['ticker'] == ticker]['timestamp'].values
+        if len(tk_zz) == 0:
+            continue
+
+        mask = df['ticker'] == ticker
+        tk_df = df.loc[mask]
+        tk_timestamps = tk_df['timestamp'].values
+
+        for zz_ts in tk_zz:
+            # Find bars within proximity_window of this turning point
+            time_diffs = np.abs(
+                (tk_timestamps - np.datetime64(zz_ts)).astype('timedelta64[D]').astype(int)
+            )
+            nearby = time_diffs <= proximity_window
+            if nearby.any():
+                # Map back to df indices
+                nearby_indices = tk_df.index[nearby]
+                for idx in nearby_indices:
+                    labels[df.index.get_loc(idx)] = 1
+
+    n_pos = int(labels.sum())
+    pct = n_pos / max(len(labels), 1) * 100
+    print(f"    Labeled: {len(labels):,d} total | Positive: {n_pos:,d} ({pct:.1f}%)")
+    return labels
+
 
 def label_long_entry(df, ohlcv_cache, horizon=20):
     """Label 1: price goes UP in `horizon` days."""
@@ -598,6 +723,9 @@ def apply_context(df, head_name):
         return (df['regime_encoded'] == 0) & (df['sigma_tide'] > 0.5)
     elif head_name == 'trend_recovery':
         return df['tsi_tide'] < 30
+    # ZIGZAG detectors — all observations (turning points can occur in any regime)
+    elif head_name in ('zz_bottom_detector', 'zz_top_detector'):
+        return pd.Series(True, index=df.index)
     else:
         raise ValueError(f"Unknown head: {head_name}")
 
@@ -1216,9 +1344,22 @@ def main():
             labels = label_bounce_height(df_head, ohlcv_cache, horizon=cfg['horizon'])
         elif head_name == 'trend_recovery':
             labels = label_trend_recovery(df_head, ohlcv_cache, profiles, horizon=cfg['horizon'])
+        elif head_name in ('zz_bottom_detector', 'zz_top_detector'):
+            labels = label_zz_turning_point(
+                df_head, store,
+                tp_type=cfg['zz_tp_type'],
+                proximity_window=cfg['proximity_window']
+            )
 
-        # 3. Train
-        result = train_head(head_name, df_head, labels, feature_cols, cfg['horizon'])
+        # 3. Per-head feature selection
+        if cfg.get('exclude_deltas', False):
+            head_feature_cols = [f for f in feature_cols if not f.startswith('d_')]
+            print(f"  ⚡ {head_name}: excluding delta features ({len(feature_cols)}→{len(head_feature_cols)})")
+        else:
+            head_feature_cols = feature_cols
+
+        # 4. Train
+        result = train_head(head_name, df_head, labels, head_feature_cols, cfg['horizon'])
         results[head_name] = result
 
         # 4. Persist

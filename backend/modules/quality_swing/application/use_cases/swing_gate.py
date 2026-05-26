@@ -31,6 +31,7 @@ from backend.modules.quality_swing.domain.rules.swing_entry_rules import (
     is_trim_signal,
 )
 from backend.modules.shared.domain.ports.head_scorer_port import HeadScorerPort
+from backend.modules.quality_swing.domain.rules.meta_signals import detect_meta_signals
 
 logger = logging.getLogger(__name__)
 
@@ -243,6 +244,29 @@ class SwingGate:
             except Exception as e:
                 logger.debug(f"SwingGate {ticker}: HeadScorer unavailable: {e}")
 
+        # ── Meta-Signal Detection (second-order constellations) ──
+        _meta_signals = []
+        if _ml_scores and channel:
+            _meta_signals = detect_meta_signals(_ml_scores, channel)
+            for ms in _meta_signals:
+                decision.alerts.append(
+                    f"META[{ms.name}]: {ms.level} → {ms.action} | {ms.description}"
+                )
+
+        # ── DANGER CONSTELLATION: Hard block (43.9% crash, 2.8x lift) ──
+        _danger_block = any(ms.level == "DANGER" for ms in _meta_signals)
+        if _danger_block:
+            decision.action = "HOLD"
+            danger_ms = next(ms for ms in _meta_signals if ms.level == "DANGER")
+            decision.reasoning = (
+                f"DANGER_BLOCK: {danger_ms.description} | "
+                f"Evidence: {danger_ms.evidence}"
+            )
+            decision.ml_scores = {
+                hn: hs.probability for hn, hs in _ml_scores.items()
+            }
+            return decision
+
         # ── Evaluate accumulate ──
         should_accum, conviction, reason_accum = is_accumulate_signal(
             sigma_pos=rc_result.sigma_position,
@@ -301,6 +325,19 @@ class SwingGate:
                         f"→ conviction {pre_ml:.2f}→{conviction:.2f}"
                     )
 
+            # ── ML: zz_bottom_detector boosts accumulate (Phase 2 forensic) ──
+            # DSR=13.89, edge=+41.3%, fires 3d BEFORE bottom in 89% of cases.
+            if 'zz_bottom_detector' in _ml_scores:
+                zz_bot = _ml_scores['zz_bottom_detector']
+                if zz_bot.probability >= 0.65:
+                    pre_zz = conviction
+                    conviction = min(round(conviction * 1.25, 2), 1.0)
+                    reason_accum += (
+                        f" | ZZ_BOTTOM: P={zz_bot.probability:.2f}≥0.65 "
+                        f"→ conviction {pre_zz:.2f}→{conviction:.2f} "
+                        f"(turning point ~3d ahead, DSR=13.89)"
+                    )
+
             # ── MH sizing modifier (cascade + F&G) ──
             if _mh_sizing_mod < 1.0:
                 pre_mh = conviction
@@ -322,24 +359,45 @@ class SwingGate:
         )
 
         if should_trim:
-            # ── ML swing_exit modulation ──
-            if 'swing_exit' in _ml_scores:
-                se_score = _ml_scores['swing_exit']
-                if se_score.triggered:
-                    # Model confirms exit signal → boost trim
+            # ── ML: short_entry as exit proxy (r=-0.14, 2.3x stronger than swing_exit) ──
+            if 'short_entry' in _ml_scores:
+                se_prob = _ml_scores['short_entry'].probability
+                if se_prob > 0.65:
+                    # Strong short signal confirms exit → boost trim
                     pre_ml = trim_pct
                     trim_pct = min(trim_pct * 1.5, 0.5)
                     reason_trim += (
-                        f" | ML_EXIT_CONFIRM: P(exit)={se_score.probability:.2f}≥{se_score.threshold:.2f} "
+                        f" | SHORT_EXIT_PROXY: P(short)={se_prob:.2f}>0.65 "
+                        f"→ trim {pre_ml:.0%}→{trim_pct:.0%} (r=-0.14, forensic-validated)"
+                    )
+                elif se_prob < 0.35:
+                    # No short pressure → reduce trim urgency
+                    pre_ml = trim_pct
+                    trim_pct = round(trim_pct * 0.6, 2)
+                    reason_trim += (
+                        f" | SHORT_EXIT_CONTRA: P(short)={se_prob:.2f}<0.35 "
                         f"→ trim {pre_ml:.0%}→{trim_pct:.0%}"
                     )
-                elif se_score.probability < 0.3:
-                    # Model says no exit needed → reduce trim
-                    pre_ml = trim_pct
-                    trim_pct = round(trim_pct * 0.5, 2)
+
+            # ── LONG_SQUEEZE alert modulation ──
+            if any(ms.name == "LONG_SQUEEZE" for ms in _meta_signals):
+                pre_sq = trim_pct
+                trim_pct = min(trim_pct * 1.3, 0.5)
+                reason_trim += (
+                    f" | LONG_SQUEEZE: trim {pre_sq:.0%}→{trim_pct:.0%}"
+                )
+
+            # ── ML: zz_top_detector confirms trim (Phase 2 forensic) ──
+            # DSR=30.06, 69% fires before top. Confirms ceiling → boost trim.
+            if 'zz_top_detector' in _ml_scores:
+                zz_top = _ml_scores['zz_top_detector']
+                if zz_top.probability >= 0.65:
+                    pre_zz = trim_pct
+                    trim_pct = min(round(trim_pct * 1.3, 2), 0.5)
                     reason_trim += (
-                        f" | ML_EXIT_CONTRA: P(exit)={se_score.probability:.2f}<0.30 "
-                        f"→ trim {pre_ml:.0%}→{trim_pct:.0%}"
+                        f" | ZZ_TOP: P={zz_top.probability:.2f}≥0.65 "
+                        f"→ trim {pre_zz:.0%}→{trim_pct:.0%} "
+                        f"(ceiling ~3d ahead, DSR=30.06)"
                     )
 
             decision.action = "TRIM"
@@ -350,6 +408,25 @@ class SwingGate:
             )
             return decision
 
+        # ── Short_entry exit proxy: may override HOLD → TRIM ──
+        # Forensic: P(short_entry) r=-0.14 with fwd_10d (2.3x stronger than swing_exit)
+        if 'short_entry' in _ml_scores:
+            p_short = _ml_scores['short_entry'].probability
+            if p_short > 0.55 and rc_result.sigma_position > 0:
+                # In profit + short signal rising → TRIM suggestion
+                trim_conv = round(min(p_short * 0.4, 0.3), 2)
+                decision.action = "TRIM"
+                decision.conviction = trim_conv
+                decision.reasoning = (
+                    f"SHORT_EXIT_PROXY: P(short)={p_short:.2f}>0.55 AND σ={rc_result.sigma_position:.1f}>0 "
+                    f"→ TRIM {trim_conv:.0%} (forensic: r=-0.14, stronger than swing_exit)"
+                )
+                decision.ml_scores = {
+                    hn: hs.probability for hn, hs in _ml_scores.items()
+                }
+                logger.info(f"SwingGate {ticker}: {decision.reasoning}")
+                return decision
+
         # ── Default: HOLD ──
         decision.action = "HOLD"
         decision.reasoning = (
@@ -357,6 +434,9 @@ class SwingGate:
             f"fear={rc_result.fear_label}, tide={rc_result.tide_slope:.3f}, "
             f"zone={rc_result.zone}"
         )
+        decision.ml_scores = {
+            hn: hs.probability for hn, hs in _ml_scores.items()
+        } if _ml_scores else {}
         return decision
 
     # ── Internal: RC Intelligence (lazy) ──────────────────────────

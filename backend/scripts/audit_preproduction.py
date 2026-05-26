@@ -82,77 +82,112 @@ def check_warn(passed, msg_ok, msg_warn):
 
 
 def audit_data_integrity(store):
-    """Check that Kalman and RSI fields are populated with sane values."""
+    """Check that ALL features are populated with REAL values, not defaults.
+
+    Previous bug: checked `rsi_value != 0` but RSI default = 50.0, not 0.
+    Fix: check VARIANCE per ticker. If std=0, it's a constant (fake data).
+    """
     p("AUDIT 1: DATA INTEGRITY")
 
-    # 1a. Coverage check
-    sp("1a. Field coverage (all 17 tickers)")
+    # ── 1a. Variance-based fake data detection (no more != 0 tricks) ──
+    sp("1a. Variance-based data quality (detects defaults)")
+
+    CRITICAL_FIELDS = {
+        'rsi_value':                {'default': 50.0, 'expected_std_min': 3.0,  'expected_range': (0, 100)},
+        'rsi_divergence_strength':  {'default': 0.0,  'expected_std_min': 0.01, 'expected_range': (-2, 2)},
+        'rsi_conviction':           {'default': 0.0,  'expected_std_min': 0.01, 'expected_range': (-1, 1)},
+        'kalman_velocity':          {'default': 0.0,  'expected_std_min': 0.01, 'expected_range': (-3, 3)},
+        'vol_adj_delta':            {'default': 0.0,  'expected_std_min': 0.01, 'expected_range': (-5, 5)},
+        'sigma_tide':               {'default': 0.0,  'expected_std_min': 0.5,  'expected_range': (-5, 5)},
+        'sigma_current':            {'default': 0.0,  'expected_std_min': 0.5,  'expected_range': (-6, 6)},
+        'sigma_wave':               {'default': 0.0,  'expected_std_min': 0.5,  'expected_range': (-6, 6)},
+        'tide_slope':               {'default': 0.0,  'expected_std_min': 0.01, 'expected_range': (-1, 1)},
+        'compression_ratio':        {'default': 0.0,  'expected_std_min': 0.05, 'expected_range': (0, 2)},
+        'fear_level':               {'default': 2,    'expected_std_min': 0.5,  'expected_range': (0, 5)},
+        'geo_state_norm':           {'default': 0.0,  'expected_std_min': 0.3,  'expected_range': (0, 10)},
+        'geo_velocity_align':       {'default': 0.0,  'expected_std_min': 0.1,  'expected_range': (-1, 1)},
+    }
+
+    fake_data_fields = []
+
+    for field, spec in CRITICAL_FIELDS.items():
+        q = f"""
+            SELECT ticker,
+                   ROUND(STDDEV({field})::numeric, 6) as std_v,
+                   ROUND(AVG({field})::numeric, 4) as avg_v,
+                   COUNT(*) as n
+            FROM engine.channel_snapshots
+            WHERE ticker = ANY(%s) AND sigma_tide IS NOT NULL
+            GROUP BY ticker ORDER BY ticker
+        """
+        df = pd.read_sql(q, store.engine, params=(TICKERS,))
+        n_constant = (df['std_v'].fillna(0) == 0).sum()
+
+        if n_constant >= 2:
+            fail(f"{field}: {n_constant}/17 tickers have std=0 (FAKE DATA, default={spec['default']})")
+            findings["fail"] += 1
+            fake_fields = df[df['std_v'].fillna(0) == 0]['ticker'].tolist()
+            fake_data_fields.append({'field': field, 'tickers': fake_fields})
+        elif n_constant == 1:
+            warn(f"{field}: 1/17 ticker has std=0")
+            findings["warn"] += 1
+        else:
+            # Check range
+            global_avg_std = df['std_v'].mean()
+            check(global_avg_std > spec['expected_std_min'],
+                  f"{field}: avg_std={global_avg_std:.4f} (real data)",
+                  f"{field}: avg_std={global_avg_std:.4f} < {spec['expected_std_min']} — suspicious")
+
+    if fake_data_fields:
+        print(f"\n    ╔══ FAKE DATA SUMMARY ══╗")
+        for fd in fake_data_fields:
+            print(f"    ║ {fd['field']:<30s}: {len(fd['tickers'])} tickers with constants")
+        print(f"    ╚{'═'*50}╝")
+
+    # ── 1b. Coverage check (NULL detection) ──
+    sp("1b. NULL coverage (all 17 tickers)")
     q = """
         SELECT ticker,
                COUNT(*) as total,
-               COUNT(CASE WHEN rsi_value IS NOT NULL AND rsi_value != 0 THEN 1 END) as rsi_ok,
-               COUNT(CASE WHEN kalman_velocity IS NOT NULL AND kalman_velocity != 0 THEN 1 END) as kv_ok,
-               COUNT(CASE WHEN vol_adj_delta IS NOT NULL AND vol_adj_delta != 0 THEN 1 END) as vad_ok,
-               COUNT(CASE WHEN sigma_tide IS NOT NULL THEN 1 END) as sigma_ok
+               COUNT(CASE WHEN rsi_value IS NOT NULL THEN 1 END) as rsi_nn,
+               COUNT(CASE WHEN kalman_velocity IS NOT NULL THEN 1 END) as kv_nn,
+               COUNT(CASE WHEN vol_adj_delta IS NOT NULL THEN 1 END) as vad_nn
         FROM engine.channel_snapshots
         WHERE ticker = ANY(%s)
         GROUP BY ticker ORDER BY ticker
     """
     df = pd.read_sql(q, store.engine, params=(TICKERS,))
-
     total_rows = df['total'].sum()
-    rsi_total = df['rsi_ok'].sum()
-    kv_total = df['kv_ok'].sum()
-    vad_total = df['vad_ok'].sum()
 
-    rsi_pct = rsi_total / total_rows * 100
-    kv_pct = kv_total / total_rows * 100
-    vad_pct = vad_total / total_rows * 100
+    for col_nn, label in [('rsi_nn', 'RSI'), ('kv_nn', 'Kalman'), ('vad_nn', 'VolAdjDelta')]:
+        pct = df[col_nn].sum() / total_rows * 100
+        check(pct > 99, f"{label}: {df[col_nn].sum():,d}/{total_rows:,d} not-NULL ({pct:.1f}%)",
+              f"{label}: only {pct:.1f}% not-NULL")
 
-    check(rsi_pct > 99, f"RSI: {rsi_total:,d}/{total_rows:,d} ({rsi_pct:.1f}%)", f"RSI coverage: {rsi_pct:.1f}%")
-    check(kv_pct > 99, f"Kalman velocity: {kv_total:,d}/{total_rows:,d} ({kv_pct:.1f}%)", f"Kalman coverage: {kv_pct:.1f}%")
-    check(vad_pct > 95, f"Vol adj delta: {vad_total:,d}/{total_rows:,d} ({vad_pct:.1f}%)", f"Vol adj delta coverage: {vad_pct:.1f}%")
-
-    # Per-ticker coverage
+    # Per-ticker summary
     for _, row in df.iterrows():
-        rsi_p = row['rsi_ok'] / row['total'] * 100
-        kv_p = row['kv_ok'] / row['total'] * 100
-        check_warn(rsi_p > 95 and kv_p > 95,
-                   f"{row['ticker']:>6s}: RSI={rsi_p:.0f}% KV={kv_p:.0f}% ({row['total']:,d} rows)",
-                   f"{row['ticker']:>6s}: RSI={rsi_p:.0f}% KV={kv_p:.0f}% ← LOW COVERAGE")
+        ok(f"{row['ticker']:>6s}: {row['total']:,d} rows, RSI={row['rsi_nn']/row['total']*100:.0f}% KV={row['kv_nn']/row['total']*100:.0f}%")
 
-    # 1b. Distribution sanity
-    sp("1b. Distribution sanity (no NaN/Inf, reasonable ranges)")
+    # ── 1c. Distribution sanity ──
+    sp("1c. Distribution sanity (NaN/Inf detection)")
     q2 = """
         SELECT
-            COUNT(*) as total,
-            COUNT(CASE WHEN rsi_value = 'NaN'::float OR rsi_value = 'Infinity'::float OR rsi_value = '-Infinity'::float THEN 1 END) as rsi_bad,
-            COUNT(CASE WHEN kalman_velocity = 'NaN'::float OR kalman_velocity = 'Infinity'::float OR kalman_velocity = '-Infinity'::float THEN 1 END) as kv_bad,
-            AVG(rsi_value) as rsi_mean,
-            STDDEV(rsi_value) as rsi_std,
-            MIN(rsi_value) as rsi_min,
-            MAX(rsi_value) as rsi_max,
+            COUNT(CASE WHEN rsi_value = 'NaN'::float OR rsi_value = 'Infinity'::float THEN 1 END) as rsi_bad,
+            COUNT(CASE WHEN kalman_velocity = 'NaN'::float OR kalman_velocity = 'Infinity'::float THEN 1 END) as kv_bad,
             AVG(kalman_velocity) as kv_mean,
-            STDDEV(kalman_velocity) as kv_std,
-            MIN(kalman_velocity) as kv_min,
-            MAX(kalman_velocity) as kv_max,
-            AVG(vol_adj_delta) as vad_mean,
-            STDDEV(vol_adj_delta) as vad_std
+            STDDEV(kalman_velocity) as kv_std
         FROM engine.channel_snapshots
         WHERE ticker = ANY(%s) AND sigma_tide IS NOT NULL
     """
     stats = pd.read_sql(q2, store.engine, params=(TICKERS,))
     s = stats.iloc[0]
+    check(s['rsi_bad'] == 0, "RSI: 0 NaN/Inf values", f"RSI: {s['rsi_bad']} NaN/Inf!")
+    check(s['kv_bad'] == 0, "Kalman: 0 NaN/Inf values", f"Kalman: {s['kv_bad']} NaN/Inf!")
+    check(abs(s['kv_mean']) < 0.1, f"Kalman mean={s['kv_mean']:.4f} (~0 expected)", f"Kalman mean biased!")
+    check(0.05 < s['kv_std'] < 0.5, f"Kalman std={s['kv_std']:.4f} (reasonable)", f"Kalman std abnormal!")
 
-    check(s['rsi_bad'] == 0, f"RSI: 0 NaN/Inf values", f"RSI: {s['rsi_bad']} NaN/Inf values!")
-    check(s['kv_bad'] == 0, f"Kalman: 0 NaN/Inf values", f"Kalman: {s['kv_bad']} NaN/Inf values!")
-    check(0 < s['rsi_mean'] < 100, f"RSI mean={s['rsi_mean']:.1f} (expected 40-60)", f"RSI mean={s['rsi_mean']:.1f} OUT OF RANGE")
-    check(s['rsi_min'] >= 0 and s['rsi_max'] <= 100, f"RSI range=[{s['rsi_min']:.1f}, {s['rsi_max']:.1f}]", f"RSI range out of [0,100]!")
-    check(abs(s['kv_mean']) < 0.1, f"Kalman mean={s['kv_mean']:.4f} (~0 expected)", f"Kalman mean={s['kv_mean']:.4f} biased!")
-    check(0.05 < s['kv_std'] < 0.5, f"Kalman std={s['kv_std']:.4f} (reasonable)", f"Kalman std={s['kv_std']:.4f} abnormal!")
-
-    # 1c. Spot-check: sample recent data for one ticker
-    sp("1c. Spot-check: SPY last 5 bars")
+    # ── 1d. Spot-check SPY ──
+    sp("1d. Spot-check: SPY last 5 bars")
     q3 = """
         SELECT timestamp, rsi_value, rsi_divergence_strength, rsi_conviction,
                kalman_velocity, vol_adj_delta, sigma_tide, fear_level

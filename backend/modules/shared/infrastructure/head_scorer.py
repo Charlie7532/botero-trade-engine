@@ -47,6 +47,13 @@ DB_FEATURES = [
     'geo_accel_align', 'geo_phase_angle',
 ]
 
+# Delta features: bar-over-bar changes (forensic precursors)
+# d_tide_slope is the strongest precursor (t=-80.96, ★★★ in 6/8 heads)
+DELTA_SOURCES = [
+    'sigma_wave', 'kalman_velocity', 'rsi_value', 'compression_ratio',
+    'fear_level', 'vol_up_down_ratio', 'tide_slope', 'wave_accel',
+]
+
 HEAD_DESCRIPTIONS = {
     'long_entry': 'Good time to buy? (20d forward return > 0)',
     'swing_exit': 'Top of bullish leg? (Triple Barrier 10d)',
@@ -56,7 +63,13 @@ HEAD_DESCRIPTIONS = {
     'short_cover': 'Bottom of bearish leg? (Inverted TB 10d)',
     'bounce_height': 'Bounce will go higher? (Max runup 5d > +2%)',
     'trend_recovery': 'Bearish trend ending? (TSI rises <30 → >60 in 60d)',
+    'zz_bottom_detector': 'Near a zigzag 5% bottom? (within 3 bars of MIN)',
+    'zz_top_detector': 'Near a zigzag 5% top? (within 3 bars of MAX)',
 }
+
+# Phase 1 derived features (must match unified_pretrainer_v2.py)
+SLOPE_DECEL_LOOKBACK = 5
+RSI_DIV_WINDOW = 60
 
 
 class HeadScorer(HeadScorerPort):
@@ -71,6 +84,8 @@ class HeadScorer(HeadScorerPort):
         self._models: dict[str, dict] = {}       # head_name -> {model, feature_cols, threshold, ...}
         self._profile_store = TickerProfileStore()
         self._profiles: dict[str, object] = {}   # ticker -> TickerProfile (cached)
+        self._prev_snapshots: dict[str, dict] = {}  # ticker -> previous snapshot feature dict (for deltas)
+        self._feature_cache: dict[str, tuple] = {}  # ticker -> (snapshot, feature_dict)
         self._loaded = False
 
     def _ensure_loaded(self):
@@ -109,8 +124,18 @@ class HeadScorer(HeadScorerPort):
                 self._profiles[ticker] = None
         return self._profiles[ticker]
 
-    def _snapshot_to_features(self, ticker: str, snapshot: ChannelSnapshot) -> dict:
+    def _snapshot_to_features(
+        self,
+        ticker: str,
+        snapshot: ChannelSnapshot,
+        prev_snapshot: Optional[ChannelSnapshot] = None,
+    ) -> dict:
         """Convert ChannelSnapshot to feature dict matching model expectations."""
+        # Check cache first (for multi-head scoring determinism & performance)
+        cached = self._feature_cache.get(ticker)
+        if cached and cached[0] is snapshot:
+            return cached[1]
+
         snap_dict = snapshot.to_dict()
 
         # DB features: direct from snapshot
@@ -140,6 +165,52 @@ class HeadScorer(HeadScorerPort):
         feat['below_all_vwaps_int'] = int(snapshot.below_all_vwaps)
         feat['above_all_vwaps_int'] = int(snapshot.above_all_vwaps)
 
+        # Delta features: bar-over-bar changes (forensic precursors)
+        if prev_snapshot is not None:
+            prev = prev_snapshot.to_dict()
+        else:
+            prev = self._prev_snapshots.get(ticker, {})
+
+        for src in DELTA_SOURCES:
+            curr_val = feat.get(src, 0.0)
+            prev_val = prev.get(src, curr_val)  # First bar: delta = 0
+            if prev_val is None:
+                prev_val = curr_val
+            feat[f'd_{src}'] = float(curr_val) - float(prev_val)
+
+        # Phase 1 derived features (forensic-validated, match pretrainer)
+        prev_feats = self._prev_snapshots.get(ticker, {})
+        # slope_decel: change in slope over lookback (approximated by bar-over-bar)
+        prev_wave_slope = prev_feats.get('wave_slope', feat.get('wave_slope', 0))
+        prev_current_slope = prev_feats.get('current_slope', feat.get('current_slope', 0))
+        feat['slope_decel_wave'] = feat.get('wave_slope', 0) - prev_wave_slope
+        feat['slope_decel_current'] = feat.get('current_slope', 0) - prev_current_slope
+        # sigma_divergence (orthogonal timeframes)
+        feat['sigma_divergence'] = feat.get('sigma_tide', 0) - feat.get('sigma_wave', 0)
+        # complacency_index: RSI vs slope decel
+        rsi_norm = (feat.get('rsi_value', 50) - 50.0) / 50.0
+        sd_norm = max(-1, min(1, feat['slope_decel_wave'] * 50.0))
+        feat['complacency_index'] = rsi_norm - sd_norm
+        # RSI zones
+        rsi_val = feat.get('rsi_value', 50)
+        feat['rsi_extreme_zone'] = int(rsi_val > 80)
+        feat['rsi_trap_zone'] = int(65 <= rsi_val <= 75)
+        # RSI bearish divergence (simplified: compare with stored max)
+        prev_rsi_max = prev_feats.get('_rsi_rolling_max', rsi_val)
+        new_rsi_max = max(rsi_val, prev_rsi_max * 0.99)  # Slow decay
+        feat['rsi_bearish_div'] = int(rsi_val < new_rsi_max - 2.0)
+
+        # Store current as previous for next bar (only if NOT using an explicit prev_snapshot)
+        if prev_snapshot is None:
+            prev_store = {src: feat.get(src, 0.0) for src in DELTA_SOURCES}
+            prev_store['wave_slope'] = feat.get('wave_slope', 0)
+            prev_store['current_slope'] = feat.get('current_slope', 0)
+            prev_store['_rsi_rolling_max'] = new_rsi_max
+            self._prev_snapshots[ticker] = prev_store
+
+        # Cache feature dict
+        self._feature_cache[ticker] = (snapshot, feat)
+
         return feat
 
     def score(
@@ -147,6 +218,7 @@ class HeadScorer(HeadScorerPort):
         head_name: str,
         ticker: str,
         snapshot: ChannelSnapshot,
+        prev_snapshot: Optional[ChannelSnapshot] = None,
     ) -> Optional[HeadScore]:
         """Score a snapshot with one head."""
         self._ensure_loaded()
@@ -159,7 +231,7 @@ class HeadScorer(HeadScorerPort):
         feature_cols = model_dict['feature_cols']
         threshold = model_dict.get('threshold', 0.5)
 
-        feat = self._snapshot_to_features(ticker, snapshot)
+        feat = self._snapshot_to_features(ticker, snapshot, prev_snapshot)
         X = np.array([[feat.get(f, 0) for f in feature_cols]])
 
         try:
@@ -180,12 +252,13 @@ class HeadScorer(HeadScorerPort):
         self,
         ticker: str,
         snapshot: ChannelSnapshot,
+        prev_snapshot: Optional[ChannelSnapshot] = None,
     ) -> dict[str, HeadScore]:
         """Score with ALL loaded heads."""
         self._ensure_loaded()
         results = {}
         for head_name in self._models:
-            result = self.score(head_name, ticker, snapshot)
+            result = self.score(head_name, ticker, snapshot, prev_snapshot)
             if result is not None:
                 results[head_name] = result
         return results

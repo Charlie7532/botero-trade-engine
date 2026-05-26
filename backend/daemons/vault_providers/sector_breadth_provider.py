@@ -12,7 +12,7 @@ with close = breadth percentage (0-100).
 import logging
 from datetime import datetime, UTC
 
-from backend.daemons.vault_providers import VaultProvider, register
+from backend.daemons.vault_providers import register_provider
 from backend.modules.shared.domain.rules.macro_trend_calculator import (
     calculate_breadth,
 )
@@ -41,9 +41,10 @@ def _canonicalize(sector_name: str) -> str:
     return _FINVIZ_TO_CANONICAL.get(sector_name, sector_name)
 
 
-class SectorBreadthProvider(VaultProvider):
+class SectorBreadthProvider:
     """Calculates and stores per-sector breadth (33 indicators)."""
 
+    name = "sector_breadth"
     categories = ["sector_breadth"]
 
     def run_full(self, store) -> dict:
@@ -115,4 +116,4 @@ def _compute_and_store(store) -> dict:
 
 
 # Auto-register
-register(SectorBreadthProvider())
+register_provider(SectorBreadthProvider())

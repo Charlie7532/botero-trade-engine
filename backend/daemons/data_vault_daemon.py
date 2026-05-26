@@ -1914,6 +1914,7 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         # Ensure all providers are registered
         import backend.daemons.vault_providers.ohlcv_provider  # noqa: F401
         import backend.daemons.vault_providers.breadth_provider  # noqa: F401
+        import backend.daemons.vault_providers.sector_breadth_provider  # noqa: F401
         import backend.daemons.vault_providers.remaining_providers  # noqa: F401
 
         adapter = VaultRefreshAdapter(store)
@@ -1956,6 +1957,137 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         return {"status": "error", "error": str(e)}
 
 
+def _log_cycle_report(results: dict) -> None:
+    """Log a structured Vault Cycle Report with key derived metrics.
+
+    Groups results into: Data Sources, Derived Indicators, Composite Intelligence.
+    Extracts actual metric values (not just status) for operator visibility.
+    """
+
+    def _status_icon(r: dict) -> str:
+        s = r.get("status", "?")
+        if s == "ok":
+            return "✅"
+        if s == "skipped":
+            return "⏭️"
+        return "❌"
+
+    def _fmt(r: dict, key: str, suffix: str = "", fmt: str = ".1f") -> str:
+        v = r.get(key)
+        if v is None:
+            return "—"
+        return f"{v:{fmt}}{suffix}"
+
+    lines = [
+        "",
+        "╔══════════════════════════════════════════════════════════╗",
+        "║              VAULT CYCLE REPORT                         ║",
+        "╠══════════════════════════════════════════════════════════╣",
+    ]
+
+    # ── Data Sources ──
+    ohlcv = results.get("ohlcv", {})
+    finnhub = results.get("finnhub", {})
+    gf = results.get("gurufocus", {})
+    est = results.get("estimates", {})
+    yahoo = results.get("yahoo", {})
+    uw = results.get("uw", {})
+    portfolio = results.get("portfolio", {})
+
+    lines.append("║  📦 DATA SOURCES                                        ║")
+    lines.append(f"║    OHLCV Bars     {_status_icon(ohlcv)}  {_fmt(ohlcv, 'updated', ' tickers', 'd'):>12}  (enriched: {_fmt(ohlcv, 'enriched', '', 'd')})")
+    lines.append(f"║    Finnhub        {_status_icon(finnhub)}  news={_fmt(finnhub, 'news', '', 'd')}, earnings={'✓' if finnhub.get('earnings') else '—'}")
+    lines.append(f"║    GuruFocus      {_status_icon(gf)}  {_fmt(gf, 'screened', ' screened', 'd')}")
+    lines.append(f"║    Estimates      {_status_icon(est)}  {_fmt(est, 'estimated', ' tickers', 'd')}")
+    lines.append(f"║    Yahoo Options  {_status_icon(yahoo)}  {_fmt(yahoo, 'chains', ' chains', 'd')}")
+    lines.append(f"║    Unusual Whales {_status_icon(uw)}  {_fmt(uw, 'tickers_captured', ' tickers', 'd')}")
+    lines.append(f"║    Portfolio      {_status_icon(portfolio)}  {_fmt(portfolio, 'positions', ' positions', 'd')}")
+
+    # ── Derived Indicators ──
+    vix = results.get("vix_live", {})
+    fg = results.get("fear_greed", {})
+    breadth = results.get("breadth", {})
+    sector_b = results.get("sector_breadth", {})
+    cboe = results.get("cboe", {})
+    fred = results.get("fred_macro", {})
+    indices = results.get("market_indices", {})
+
+    lines.append("║                                                          ║")
+    lines.append("║  📊 DERIVED INDICATORS                                   ║")
+
+    # VIX
+    vix_val = _fmt(vix, "vix", "")
+    vix_regime = vix.get("regime", "—")
+    lines.append(f"║    VIX            {_status_icon(vix)}  {vix_val:>6} ({vix_regime})")
+
+    # Fear & Greed
+    fg_score = _fmt(fg, "score", "")
+    fg_delta = _fmt(fg, "delta", "")
+    fg_src = fg.get("source", "—")
+    lines.append(f"║    Fear & Greed   {_status_icon(fg)}  {fg_score:>6} (Δ{fg_delta}, src={fg_src})")
+
+    # Global Breadth
+    s5th = _fmt(breadth, "s5th", "%")
+    s5fi = _fmt(breadth, "s5fi", "%")
+    s5tw = _fmt(breadth, "s5tw", "%")
+    lines.append(f"║    Breadth        {_status_icon(breadth)}  S5TH={s5th} S5FI={s5fi} S5TW={s5tw}")
+
+    # Sector Breadth
+    sb_written = _fmt(sector_b, "written", "", "d")
+    sb_skipped = _fmt(sector_b, "skipped", "", "d")
+    lines.append(f"║    Sector Breadth {_status_icon(sector_b)}  {sb_written} bars written, {sb_skipped} sectors skipped")
+
+    # CBOE
+    cboe_idx = _fmt(cboe, "indices_updated", "", "d")
+    cboe_bars = _fmt(cboe, "total_bars", "", "d")
+    lines.append(f"║    CBOE (SKEW+VV) {_status_icon(cboe)}  {cboe_idx} indices, {cboe_bars} new bars")
+
+    # FRED
+    fred_series = _fmt(fred, "series", "", "d")
+    lines.append(f"║    FRED Macro     {_status_icon(fred)}  {fred_series} series")
+
+    # Market Indices
+    idx_series = _fmt(indices, "series", "", "d")
+    lines.append(f"║    Market Indices {_status_icon(indices)}  {idx_series} series")
+
+    # ── Composite Intelligence ──
+    mh = results.get("market_health", {})
+    lines.append("║                                                          ║")
+    lines.append("║  🧠 COMPOSITE INTELLIGENCE                               ║")
+
+    conv = _fmt(mh, "convergence_score", "/6", "d")
+    conv_dir = mh.get("convergence_direction", "—")
+    fg_act = mh.get("fg_action", "—")
+    lines.append(f"║    Market Health  {_status_icon(mh)}  Convergence={conv} {conv_dir}, F&G→{fg_act}")
+
+    # ── Sourcing ──
+    guru_picks = results.get("guru_picks", {})
+    insider = results.get("insider_activity", {})
+    sec_8k = results.get("sec_8k", {})
+    cred = results.get("credibility", {})
+
+    lines.append("║                                                          ║")
+    lines.append("║  🔍 SOURCING & SURVEILLANCE                              ║")
+    lines.append(f"║    Guru Picks     {_status_icon(guru_picks)}")
+    lines.append(f"║    Insider Activ. {_status_icon(insider)}  {_fmt(insider, 'tickers', ' tickers', 'd')}, {_fmt(insider, 'clusters', ' clusters', 'd')}")
+    lines.append(f"║    SEC 8-K        {_status_icon(sec_8k)}  {_fmt(sec_8k, 'tickers_scanned', ' scanned', 'd')}, {_fmt(sec_8k, 'filings_found', ' filings', 'd')}")
+    lines.append(f"║    Analyst Cred.  {_status_icon(cred)}  {_fmt(cred, 'scored', ' scored', 'd')}")
+
+    # ── Failures ──
+    failures = [k for k, v in results.items() if v.get("status") == "error"]
+    if failures:
+        lines.append("║                                                          ║")
+        lines.append("║  ⚠️  FAILURES                                            ║")
+        for f in failures:
+            err = results[f].get("error", results[f].get("reason", "unknown"))
+            lines.append(f"║    {f:18s} → {str(err)[:35]}")
+
+    lines.append("╚══════════════════════════════════════════════════════════╝")
+
+    for line in lines:
+        logger.info(line)
+
+
 def run_cycle(store: TimescaleDataStore) -> None:
     """Run one full vault cycle — ALL data sources."""
     interceptor = VaultInterceptor(store)
@@ -1993,6 +2125,14 @@ def run_cycle(store: TimescaleDataStore) -> None:
     # ── Tier 3b: Breadth (MUST run AFTER ohlcv to use fresh closes) ──
     results["breadth"] = vault_breadth_indicators(store)
 
+    # ── Tier 3b-bis: Sector Breadth (MUST run AFTER ohlcv, same dependency) ──
+    try:
+        from backend.daemons.vault_providers.sector_breadth_provider import SectorBreadthProvider
+        results["sector_breadth"] = SectorBreadthProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Sector breadth vault failed (non-critical): {e}")
+        results["sector_breadth"] = {"status": "error", "error": str(e)}
+
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)
 
@@ -2000,8 +2140,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)
     results["uw"] = vault_uw_data(interceptor)
 
-    summary = " | ".join(f"{k}={v.get('status', '?')}" for k, v in results.items())
-    logger.info(f"═══ Vault cycle complete: {summary} ═══")
+    _log_cycle_report(results)
 
 
 def main():

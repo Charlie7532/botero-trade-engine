@@ -1002,6 +1002,12 @@ def main():
     # ══════════════════════════════════════════════════════════
     # PHASE 4: ANTI-DROP — Interaction Recovery
     # ══════════════════════════════════════════════════════════
+    # BUG FIX (2026-05-26): Previous version had two critical bugs:
+    #   1. Missing apply_context() — trained on unfiltered data, changing label
+    #      distribution (e.g. trend_recovery pos_rate jumped from ~15% to 50.6%)
+    #   2. No max-features guard — Strategy B accepted 137 features, causing
+    #      XGBoost memorization (DSR=116 with 137f = pure overfit)
+    # ══════════════════════════════════════════════════════════
     log_section("PHASE 4: ANTI-DROP (Interaction Recovery)")
     log("  Forward selection is greedy — it misses feature interactions.")
     log("  For any DROP head, try expanded feature sets to recover.")
@@ -1020,10 +1026,12 @@ def main():
         log(f"\n  ── {head_name.upper()}: DROP detected (FWD={fwd_dsr:.3f} < Prod={prod_dsr:.3f}) ──")
 
         cfg = HEAD_CONFIGS[head_name]
-        labels_ctx = all_labels[head_name]
-        df_ctx = df[df['ticker'].isin(cfg.get('tickers', df['ticker'].unique()))]
-        if len(df_ctx) != len(labels_ctx):
-            df_ctx = df.copy()
+        # FIX 1: Apply the SAME context filter used in Phase 2+3
+        labels = all_labels[head_name]
+        ctx_mask = apply_context(df, head_name)
+        df_ctx = df[ctx_mask].copy()
+        labels_ctx = labels[ctx_mask.values]
+        log(f"    Context filter: {ctx_mask.sum():,d} / {len(df):,d} rows")
 
         # Strategy A: FWD winners + top rejected features (discover pair interactions)
         fwd_winners = r['optimal_features']
@@ -1039,11 +1047,15 @@ def main():
         dsr_a = result_a['dsr'] if result_a else 0.0
         log(f"    → DSR={dsr_a:.3f}")
 
-        # Strategy B: All viable SFI features (let XGBoost discover interactions)
+        # Strategy B: Top viable SFI features (capped to prevent memorization)
+        # FIX 2: Cap at 3x production feature count
         sfi_data = sfi_results.get(head_name, {})
         viable_all = [f for f, s in sorted(sfi_data.items(), key=lambda x: -x[1]) if s > 0.005 and f in EXPANDED_FEATURES]
-        log(f"    Strategy B: All viable SFI features = {len(viable_all)}f")
-        result_b = train_quick(df_ctx, labels_ctx, viable_all, cfg['horizon'], n_splits=5, mode='dsr')
+        prod_n = production_features.get(head_name, 10)
+        max_viable = min(len(viable_all), prod_n * 3)
+        viable_capped = viable_all[:max_viable]
+        log(f"    Strategy B: Top viable SFI features = {len(viable_capped)}f (capped from {len(viable_all)}, max={max_viable})")
+        result_b = train_quick(df_ctx, labels_ctx, viable_capped, cfg['horizon'], n_splits=5, mode='dsr')
         dsr_b = result_b['dsr'] if result_b else 0.0
         log(f"    → DSR={dsr_b:.3f}")
 
@@ -1058,7 +1070,7 @@ def main():
         candidates = [
             ('FWD', fwd_dsr, fwd_winners),
             ('FWD+Rejected', dsr_a, expanded_a),
-            ('All-Viable', dsr_b, viable_all),
+            ('Top-Viable', dsr_b, viable_capped),
             ('Top-30', dsr_c, top30),
         ]
         best_name, best_dsr, best_features = max(candidates, key=lambda x: x[1])

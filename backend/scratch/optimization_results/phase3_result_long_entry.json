@@ -1,0 +1,104 @@
+{
+  "optimal_features": [
+    "sigma_high_tide",
+    "tsi_current",
+    "reg_value_tide",
+    "div_close_low_tide",
+    "conj_wave_current",
+    "vol_price_divergence"
+  ],
+  "final_dsr": 3.8489,
+  "production_dsr": 0.593,
+  "delta_vs_production": 3.256,
+  "n_features": 6,
+  "n_viable_sfi": 40,
+  "n_clusters": 12,
+  "status": "\u2605 GAIN",
+  "selection_log": [
+    {
+      "feature": "sigma_high_tide",
+      "action": "ADDED",
+      "dsr_after": 1.0,
+      "delta": 1.0,
+      "n_features": 1
+    },
+    {
+      "feature": "tsi_current",
+      "action": "ADDED",
+      "dsr_after": 1.0,
+      "delta": 0.0,
+      "n_features": 2
+    },
+    {
+      "feature": "reg_value_tide",
+      "action": "ADDED",
+      "dsr_after": 1.3814,
+      "delta": 0.3814,
+      "n_features": 3
+    },
+    {
+      "feature": "tension_tide",
+      "action": "REJECTED",
+      "dsr_after": 0.5459,
+      "delta": -0.8355,
+      "n_features": 3
+    },
+    {
+      "feature": "div_close_low_tide",
+      "action": "ADDED",
+      "dsr_after": 2.3397,
+      "delta": 0.9584,
+      "n_features": 4
+    },
+    {
+      "feature": "tension_ratio_tw",
+      "action": "REJECTED",
+      "dsr_after": 1.2555,
+      "delta": -1.0843,
+      "n_features": 4
+    },
+    {
+      "feature": "conj_wave_current",
+      "action": "ADDED",
+      "dsr_after": 3.6488,
+      "delta": 1.3091,
+      "n_features": 5
+    },
+    {
+      "feature": "slope_ratio_tc",
+      "action": "REJECTED",
+      "dsr_after": 1.4158,
+      "delta": -2.233,
+      "n_features": 5
+    },
+    {
+      "feature": "slope_ratio_tw",
+      "action": "REJECTED",
+      "dsr_after": 3.304,
+      "delta": -0.3448,
+      "n_features": 5
+    },
+    {
+      "feature": "div_high_close_tide",
+      "action": "REJECTED",
+      "dsr_after": 2.9249,
+      "delta": -0.7239,
+      "n_features": 5
+    },
+    {
+      "feature": "slope_product_tc",
+      "action": "REJECTED",
+      "dsr_after": 1.7599,
+      "delta": -1.8889,
+      "n_features": 5
+    },
+    {
+      "feature": "vol_price_divergence",
+      "action": "ADDED",
+      "dsr_after": 3.8489,
+      "delta": 0.2001,
+      "n_features": 6
+    }
+  ],
+  "elapsed_s": 56.2
+}

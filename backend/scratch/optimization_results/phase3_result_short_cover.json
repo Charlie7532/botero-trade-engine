@@ -2,23 +2,19 @@
   "optimal_features": [
     "vwap_sigma_wave",
     "div_high_close_wave",
-    "vwap_current",
-    "sigma_ratio_tw",
+    "vol_price_regime",
     "sigma_wave",
     "slope_diff_tc",
-    "wave_accel",
-    "slope_product_tc",
-    "slope_energy",
-    "d2_current_slope",
-    "d_vol_up_down_ratio"
+    "vwap_sigma_tide",
+    "d2_current_slope"
   ],
-  "final_dsr": 4.3172,
-  "production_dsr": 8.602,
-  "delta_vs_production": -4.2847,
-  "n_features": 11,
-  "n_viable_sfi": 107,
-  "n_clusters": 32,
-  "status": "\u2716 DROP",
+  "final_dsr": 5.1324,
+  "production_dsr": 3.888,
+  "delta_vs_production": 1.2444,
+  "n_features": 7,
+  "n_viable_sfi": 111,
+  "n_clusters": 33,
+  "status": "\u2605 GAIN",
   "selection_log": [
     {
       "feature": "tide_slope_sq",
@@ -56,194 +52,201 @@
       "n_features": 2
     },
     {
-      "feature": "vwap_current",
+      "feature": "vol_price_regime",
       "action": "ADDED",
-      "dsr_after": 1.771,
-      "delta": 0.3205,
+      "dsr_after": 2.1727,
+      "delta": 0.7222,
+      "n_features": 3
+    },
+    {
+      "feature": "vwap_current",
+      "action": "REJECTED",
+      "dsr_after": 1.6865,
+      "delta": -0.4862,
       "n_features": 3
     },
     {
       "feature": "sigma_ratio_tw",
-      "action": "ADDED",
-      "dsr_after": 2.914,
-      "delta": 1.143,
-      "n_features": 4
+      "action": "REJECTED",
+      "dsr_after": 1.8834,
+      "delta": -0.2893,
+      "n_features": 3
     },
     {
       "feature": "sigma_wave",
       "action": "ADDED",
-      "dsr_after": 2.9332,
-      "delta": 0.0192,
-      "n_features": 5
+      "dsr_after": 2.8895,
+      "delta": 0.7168,
+      "n_features": 4
     },
     {
       "feature": "slope_diff_tc",
       "action": "ADDED",
-      "dsr_after": 2.9828,
-      "delta": 0.0496,
-      "n_features": 6
+      "dsr_after": 2.9139,
+      "delta": 0.0244,
+      "n_features": 5
     },
     {
       "feature": "vwap_sigma_tide",
-      "action": "REJECTED",
-      "dsr_after": 2.2275,
-      "delta": -0.7553,
+      "action": "ADDED",
+      "dsr_after": 4.9157,
+      "delta": 2.0018,
       "n_features": 6
     },
     {
       "feature": "overnight_gap",
       "action": "REJECTED",
-      "dsr_after": 2.1687,
-      "delta": -0.8141,
+      "dsr_after": 2.0796,
+      "delta": -2.8361,
       "n_features": 6
     },
     {
       "feature": "d_fear_level",
       "action": "REJECTED",
-      "dsr_after": 2.0318,
-      "delta": -0.9509,
+      "dsr_after": 2.0674,
+      "delta": -2.8483,
       "n_features": 6
     },
     {
       "feature": "vol_accel_wave",
       "action": "REJECTED",
-      "dsr_after": 2.8757,
-      "delta": -0.1071,
+      "dsr_after": 2.4037,
+      "delta": -2.512,
       "n_features": 6
     },
     {
       "feature": "wave_accel",
-      "action": "ADDED",
-      "dsr_after": 3.2579,
-      "delta": 0.2752,
-      "n_features": 7
+      "action": "REJECTED",
+      "dsr_after": 1.1593,
+      "delta": -3.7564,
+      "n_features": 6
     },
     {
       "feature": "slope_product_tc",
-      "action": "ADDED",
-      "dsr_after": 3.3516,
-      "delta": 0.0937,
-      "n_features": 8
+      "action": "REJECTED",
+      "dsr_after": 4.2844,
+      "delta": -0.6313,
+      "n_features": 6
     },
     {
       "feature": "volume_ratio",
       "action": "REJECTED",
-      "dsr_after": 2.8571,
-      "delta": -0.4946,
-      "n_features": 8
+      "dsr_after": 3.2253,
+      "delta": -1.6904,
+      "n_features": 6
     },
     {
       "feature": "slope_energy",
-      "action": "ADDED",
-      "dsr_after": 3.8134,
-      "delta": 0.4618,
-      "n_features": 9
+      "action": "REJECTED",
+      "dsr_after": 2.9731,
+      "delta": -1.9425,
+      "n_features": 6
     },
     {
       "feature": "d2_current_slope",
       "action": "ADDED",
-      "dsr_after": 3.8821,
-      "delta": 0.0687,
-      "n_features": 10
+      "dsr_after": 5.1324,
+      "delta": 0.2167,
+      "n_features": 7
     },
     {
       "feature": "complacency_index",
       "action": "REJECTED",
-      "dsr_after": 2.6863,
-      "delta": -1.1959,
-      "n_features": 10
+      "dsr_after": 2.692,
+      "delta": -2.4404,
+      "n_features": 7
     },
     {
       "feature": "overnight_gap_vs_tide",
       "action": "REJECTED",
-      "dsr_after": 3.2359,
-      "delta": -0.6462,
-      "n_features": 10
+      "dsr_after": 3.2663,
+      "delta": -1.8661,
+      "n_features": 7
     },
     {
       "feature": "sigma_range_tide",
       "action": "REJECTED",
-      "dsr_after": 3.094,
-      "delta": -0.7882,
-      "n_features": 10
+      "dsr_after": 4.473,
+      "delta": -0.6594,
+      "n_features": 7
     },
     {
       "feature": "d_tide_slope",
       "action": "REJECTED",
-      "dsr_after": 2.6783,
-      "delta": -1.2039,
-      "n_features": 10
+      "dsr_after": 2.1974,
+      "delta": -2.935,
+      "n_features": 7
     },
     {
       "feature": "d_vol_up_down_ratio",
-      "action": "ADDED",
-      "dsr_after": 4.3172,
-      "delta": 0.4351,
-      "n_features": 11
+      "action": "REJECTED",
+      "dsr_after": 2.803,
+      "delta": -2.3294,
+      "n_features": 7
     },
     {
       "feature": "geo_phase_angle",
       "action": "REJECTED",
-      "dsr_after": 2.461,
-      "delta": -1.8562,
-      "n_features": 11
+      "dsr_after": 2.2941,
+      "delta": -2.8383,
+      "n_features": 7
     },
     {
       "feature": "vol_price_divergence",
       "action": "REJECTED",
-      "dsr_after": 2.4527,
-      "delta": -1.8645,
-      "n_features": 11
+      "dsr_after": 2.0675,
+      "delta": -3.0649,
+      "n_features": 7
     },
     {
       "feature": "spread_current_wave",
       "action": "REJECTED",
-      "dsr_after": 2.8573,
-      "delta": -1.4599,
-      "n_features": 11
+      "dsr_after": 3.7121,
+      "delta": -1.4202,
+      "n_features": 7
     },
     {
       "feature": "slope_ratio_tw",
       "action": "REJECTED",
-      "dsr_after": 2.2194,
-      "delta": -2.0978,
-      "n_features": 11
+      "dsr_after": 1.7076,
+      "delta": -3.4248,
+      "n_features": 7
     },
     {
       "feature": "total_displacement",
       "action": "REJECTED",
-      "dsr_after": 2.2333,
-      "delta": -2.084,
-      "n_features": 11
+      "dsr_after": 3.2949,
+      "delta": -1.8375,
+      "n_features": 7
     },
     {
       "feature": "sigma_range_wave",
       "action": "REJECTED",
-      "dsr_after": 3.4083,
-      "delta": -0.9089,
-      "n_features": 11
+      "dsr_after": 2.8781,
+      "delta": -2.2543,
+      "n_features": 7
     },
     {
       "feature": "rsi_bearish_div",
       "action": "REJECTED",
-      "dsr_after": 3.5329,
-      "delta": -0.7844,
-      "n_features": 11
+      "dsr_after": 2.7076,
+      "delta": -2.4247,
+      "n_features": 7
     },
     {
       "feature": "tension_ratio_tw",
       "action": "REJECTED",
-      "dsr_after": 3.4719,
-      "delta": -0.8454,
-      "n_features": 11
+      "dsr_after": 1.6388,
+      "delta": -3.4936,
+      "n_features": 7
     },
     {
       "feature": "triple_alignment",
       "action": "REJECTED",
-      "dsr_after": 3.04,
-      "delta": -1.2772,
-      "n_features": 11
+      "dsr_after": 3.3909,
+      "delta": -1.7414,
+      "n_features": 7
     }
   ],
-  "elapsed_s": 48.2
+  "elapsed_s": 54.8
 }

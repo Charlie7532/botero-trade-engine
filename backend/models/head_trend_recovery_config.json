@@ -5,204 +5,161 @@
   "context": "tsi_tide < 30 (established downtrend)",
   "horizon": 60,
   "threshold": 0.8,
-  "dsr": 4.6264024569561535,
+  "dsr": 7.406868764361832,
   "n_observations": 27141,
   "positive_rate": 0.08997457720791423,
-  "best_edge": 40.19697614939898,
+  "best_edge": 53.04642868560878,
   "feature_importance": {
-    "vwap_spread_tide_wave": 0.1819530725479126,
-    "vwap_sigma_tide": 0.11406255513429642,
-    "d_tide_slope": 0.11061946302652359,
-    "tide_accel": 0.05731925740838051,
-    "vwap_spread_tide_current": 0.03813726827502251,
-    "below_all_vwaps_int": 0.02317534200847149,
-    "sigma_tide": 0.01751982793211937,
-    "tension_tide": 0.01695583574473858,
-    "vwap_sigma_current": 0.016907693818211555,
-    "tsi_current": 0.015786197036504745,
-    "geo_velocity_align": 0.015578052029013634,
-    "wave_slope": 0.015440329909324646,
-    "geo_exit_align": 0.015332905575633049,
-    "tide_slope": 0.01495759841054678,
-    "compression_ratio": 0.01488492451608181,
-    "vwap_spread_current_wave": 0.014776671305298805,
-    "adi_tide": 0.014542382210493088,
-    "sigma_current": 0.0142282173037529,
-    "rsi_value": 0.013595905154943466,
-    "regime_encoded": 0.013321290723979473,
-    "current_slope": 0.01323357131332159,
-    "spread_current_wave": 0.011489085853099823,
-    "tsi_wave": 0.011120946146547794,
-    "vol_up_down_ratio": 0.010944757610559464,
-    "rsi_conviction": 0.010680409148335457,
-    "conj_current_tide": 0.010598672553896904,
-    "tsi_tide": 0.010520639829337597,
-    "current_accel": 0.010395381599664688,
-    "adi_current": 0.010261159390211105,
-    "conj_wave_tide": 0.009252894669771194,
-    "rsi_divergence_strength": 0.00920966174453497,
-    "spread_tide_current": 0.00903683714568615,
-    "tension_wave": 0.008847336284816265,
-    "conj_wave_current": 0.008843504823744297,
-    "vwap_sigma_wave": 0.00882213655859232,
-    "fear_level": 0.008519545197486877,
-    "d_wave_accel": 0.00778253935277462,
-    "geo_state_norm": 0.00769249489530921,
-    "geo_phase_angle": 0.007604258134961128,
-    "tension_current": 0.007442833390086889,
-    "sigma_wave": 0.007342670578509569,
-    "wave_accel": 0.006944593507796526,
-    "above_all_vwaps_int": 0.006680622231215239,
-    "kalman_velocity": 0.006353716365993023,
-    "adi_wave": 0.005972575396299362,
-    "vol_adj_delta": 0.005730425473302603,
-    "geo_accel_align": 0.00500482227653265,
-    "spread_tide_wave": 0.004960334859788418,
-    "d_compression_ratio": 0.00462096743285656,
-    "d_vol_up_down_ratio": 0.004477136768400669,
-    "d_rsi_value": 0.004473711363971233,
-    "d_sigma_wave": 0.003201040206477046,
-    "d_kalman_velocity": 0.0028439040761440992,
-    "wave_flip_direction": 0.0,
-    "wave_flip": 0.0,
-    "d_fear_level": 0.0
+    "vwap_spread_tide_wave": 0.3024033308029175,
+    "vwap_sigma_low_tide": 0.22862204909324646,
+    "d_tide_slope": 0.19143863022327423,
+    "residual_std_current": 0.055535223335027695,
+    "vwap_sigma_high_current": 0.04558783024549484,
+    "tension_ratio_tw": 0.03430797532200813,
+    "overnight_gap_vs_tide": 0.027085769921541214,
+    "vol_up_down_ratio": 0.02324487827718258,
+    "volume_trend": 0.021903980523347855,
+    "div_high_close_tide": 0.02019006945192814,
+    "rsi_bearish_div": 0.019009705632925034,
+    "div_close_low_current": 0.015866413712501526,
+    "d_compression_ratio": 0.014804302714765072
   },
   "fold_results": [
     {
       "fold": 0,
       "train_n": 4523,
       "test_n": 4523,
-      "accuracy": 0.9117842140172452,
-      "wr_high_p": 0.9579439252336449,
-      "wr_low_p": 0.07760479041916167,
-      "spread": 0.8803391348144832,
-      "sharpe": 2.514389600317226
+      "accuracy": 0.9314614194118948,
+      "wr_high_p": 0.8456057007125891,
+      "wr_low_p": 0.047619047619047616,
+      "spread": 0.7979866530935416,
+      "sharpe": 2.2791777195650593
     },
     {
       "fold": 1,
       "train_n": 9046,
       "test_n": 4523,
-      "accuracy": 0.858279902719434,
-      "wr_high_p": 0.2756892230576441,
-      "wr_low_p": 0.06254866337918505,
-      "spread": 0.21314055967845905,
-      "sharpe": 0.7259157879604304
+      "accuracy": 0.8790625690913111,
+      "wr_high_p": 0.43991416309012876,
+      "wr_low_p": 0.03807241746538871,
+      "spread": 0.40184174562474007,
+      "sharpe": 1.368595765398372
     },
     {
       "fold": 2,
       "train_n": 13569,
       "test_n": 4523,
-      "accuracy": 0.8598275480875525,
-      "wr_high_p": 0.45365168539325845,
-      "wr_low_p": 0.0169938470553765,
-      "spread": 0.43665783833788196,
-      "sharpe": 1.4405035600389988
+      "accuracy": 0.8914437320362592,
+      "wr_high_p": 0.55119825708061,
+      "wr_low_p": 0.028827848789774273,
+      "spread": 0.5223704082908357,
+      "sharpe": 1.7232633122223138
     },
     {
       "fold": 3,
       "train_n": 18092,
       "test_n": 4523,
-      "accuracy": 0.9378730930798143,
-      "wr_high_p": 0.7302158273381295,
-      "wr_low_p": 0.028732809430255402,
-      "spread": 0.7014830179078742,
-      "sharpe": 2.499071854324927
+      "accuracy": 0.9323457881936767,
+      "wr_high_p": 0.71900826446281,
+      "wr_low_p": 0.03525091799265606,
+      "spread": 0.6837573464701538,
+      "sharpe": 2.4359231743737957
     },
     {
       "fold": 4,
       "train_n": 22615,
       "test_n": 4466,
-      "accuracy": 0.85423197492163,
-      "wr_high_p": 0.34105960264900664,
-      "wr_low_p": 0.031827223643080424,
-      "spread": 0.3092323790059262,
-      "sharpe": 1.1628703544285344
+      "accuracy": 0.8598298253470668,
+      "wr_high_p": 0.3488372093023256,
+      "wr_low_p": 0.029182879377431907,
+      "spread": 0.3196543299248937,
+      "sharpe": 1.2020621680346517
     }
   ],
   "per_ticker": {
     "AAPL": {
-      "wr": 9.090909090909092,
-      "n_signals": 88,
-      "pass": "False"
-    },
-    "AMZN": {
-      "wr": 37.83783783783784,
-      "n_signals": 111,
-      "pass": "False"
-    },
-    "COST": {
-      "wr": 14.689265536723164,
-      "n_signals": 177,
-      "pass": "False"
-    },
-    "HD": {
-      "wr": 49.51456310679612,
-      "n_signals": 103,
-      "pass": "False"
-    },
-    "HON": {
-      "wr": 89.7196261682243,
-      "n_signals": 107,
-      "pass": "True"
-    },
-    "IBM": {
-      "wr": 91.30434782608695,
-      "n_signals": 23,
-      "pass": "True"
-    },
-    "JNJ": {
-      "wr": 67.64705882352942,
-      "n_signals": 34,
-      "pass": "True"
-    },
-    "JPM": {
-      "wr": 52.38095238095239,
-      "n_signals": 63,
-      "pass": "True"
-    },
-    "MCD": {
-      "wr": 59.130434782608695,
-      "n_signals": 115,
-      "pass": "True"
-    },
-    "MRK": {
-      "wr": 97.22222222222221,
-      "n_signals": 36,
-      "pass": "True"
-    },
-    "MSFT": {
-      "wr": 51.162790697674424,
-      "n_signals": 43,
-      "pass": "True"
-    },
-    "PEP": {
-      "wr": 60.14492753623188,
-      "n_signals": 138,
-      "pass": "True"
-    },
-    "PG": {
-      "wr": 90.9090909090909,
-      "n_signals": 88,
-      "pass": "True"
-    },
-    "QQQ": {
-      "wr": 37.61467889908257,
+      "wr": 33.02752293577982,
       "n_signals": 109,
       "pass": "False"
     },
-    "SPY": {
-      "wr": 44.642857142857146,
-      "n_signals": 112,
+    "AMZN": {
+      "wr": 63.970588235294116,
+      "n_signals": 136,
+      "pass": "True"
+    },
+    "COST": {
+      "wr": 23.18840579710145,
+      "n_signals": 69,
       "pass": "False"
     },
-    "WMT": {
-      "wr": 38.775510204081634,
+    "HD": {
+      "wr": 48.97959183673469,
       "n_signals": 98,
+      "pass": "False"
+    },
+    "HON": {
+      "wr": 91.56626506024097,
+      "n_signals": 83,
+      "pass": "True"
+    },
+    "IBM": {
+      "wr": 90.9090909090909,
+      "n_signals": 11,
+      "pass": "True"
+    },
+    "JNJ": {
+      "wr": 82.0,
+      "n_signals": 50,
+      "pass": "True"
+    },
+    "JPM": {
+      "wr": 58.620689655172406,
+      "n_signals": 87,
+      "pass": "True"
+    },
+    "MCD": {
+      "wr": 66.66666666666666,
+      "n_signals": 99,
+      "pass": "True"
+    },
+    "MRK": {
+      "wr": 83.52941176470588,
+      "n_signals": 85,
+      "pass": "True"
+    },
+    "MSFT": {
+      "wr": 38.2716049382716,
+      "n_signals": 81,
+      "pass": "False"
+    },
+    "PEP": {
+      "wr": 82.52427184466019,
+      "n_signals": 103,
+      "pass": "True"
+    },
+    "PG": {
+      "wr": 71.7948717948718,
+      "n_signals": 117,
+      "pass": "True"
+    },
+    "QQQ": {
+      "wr": 60.18518518518518,
+      "n_signals": 108,
+      "pass": "True"
+    },
+    "SPY": {
+      "wr": 100.0,
+      "n_signals": 19,
+      "pass": "True"
+    },
+    "WMT": {
+      "wr": 40.0,
+      "n_signals": 45,
       "pass": "False"
     },
     "XOM": {
       "wr": 100.0,
-      "n_signals": 19,
+      "n_signals": 45,
       "pass": "True"
     }
   }

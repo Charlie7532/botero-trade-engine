@@ -42,6 +42,7 @@ class HeadScorerPort(abc.ABC):
         ticker: str,
         snapshot: ChannelSnapshot,
         prev_snapshot: Optional[ChannelSnapshot] = None,
+        ohlcv: dict | None = None,
     ) -> Optional[HeadScore]:
         """Score a snapshot with one head.
 
@@ -50,6 +51,8 @@ class HeadScorerPort(abc.ABC):
             ticker: Ticker symbol (needed for per-ticker TSI/ADI)
             snapshot: Current market state
             prev_snapshot: Optional previous market state (for stateless deltas)
+            ohlcv: Optional dict {open, high, low, close, volume} for
+                   current bar. Enables Challenger v2 derived features.
 
         Returns:
             HeadScore with probability, or None if head unavailable.
@@ -62,8 +65,12 @@ class HeadScorerPort(abc.ABC):
         ticker: str,
         snapshot: ChannelSnapshot,
         prev_snapshot: Optional[ChannelSnapshot] = None,
+        ohlcv: dict | None = None,
     ) -> dict[str, HeadScore]:
         """Score a snapshot with ALL available heads.
+
+        Args:
+            ohlcv: Optional dict {open, high, low, close, volume}.
 
         Returns dict of head_name -> HeadScore.
         """

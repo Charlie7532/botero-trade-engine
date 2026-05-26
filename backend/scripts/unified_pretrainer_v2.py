@@ -125,6 +125,62 @@ DELTA_FEATURES = [f'd_{col}' for col in DELTA_SOURCES + CANDLE_DELTA_SOURCES]
 
 ALL_FEATURES = DB_FEATURES + COMPUTED_FEATURES + PHASE1_FEATURES + DELTA_FEATURES
 
+# ═══════════════════════════════════════════════════════════════
+# OPTIMIZED FEATURE SETS — Challenger v2 Results
+# ═══════════════════════════════════════════════════════════════
+# Each head uses its own optimized set (selected by greedy forward selection
+# + Purged Walk-Forward CV + Deflated Sharpe Ratio).
+# Heads set to None fall back to ALL_FEATURES (pending Challenger v3).
+
+OPTIMIZED_FEATURES = {
+    # ── GAINS (promoted from Challenger v2) ──
+    'long_entry': [  # 6f, DSR: 0.593 → 3.849 (+549%)
+        'sigma_high_tide', 'tsi_current', 'reg_value_tide',
+        'div_close_low_tide', 'conj_wave_current', 'vol_price_divergence',
+    ],
+    'pullback_depth': [  # 3f, DSR: 6.226 → 48.578 (+680%)
+        'atr_ratio', 'volume_trend', 'sigma_ratio_tw',
+    ],
+    'bounce_height': [  # 9f, DSR: 2.308 → 19.732 (+755%)
+        'atr_ratio', 'above_all_vwaps_int', 'vol_slope_conf',
+        'reg_value_wave', 'overnight_gap', 'kalman_slope_conf',
+        'overnight_gap_vs_tide', 'close_position', 'conj_wave_current',
+    ],
+    'trend_reversal': [  # 2f, DSR: 11.573 → 18.492 (+60%)
+        'vwap_sigma_high_tide', 'tide_slope_sq',
+    ],
+    'trend_recovery': [  # 13f, DSR: 4.626 → 7.407 (+60%)
+        'vwap_spread_tide_wave', 'd_tide_slope', 'vwap_sigma_low_tide',
+        'vwap_sigma_high_current', 'tension_ratio_tw', 'residual_std_current',
+        'overnight_gap_vs_tide', 'div_high_close_tide', 'div_close_low_current',
+        'vol_up_down_ratio', 'd_compression_ratio', 'volume_trend',
+        'rsi_bearish_div',
+    ],
+    'zz_bottom_detector': [  # 6f, DSR: 20.967 → 32.218 (+54%)
+        'rsi_value', 'complacency_index', 'atr_ratio',
+        'volume_trend', 'tension_tide', 'sigma_range_tide',
+    ],
+    'short_entry': [  # 5f, DSR: 1.705 → 1.816 (+7%)
+        'compression_ratio', 'fear_level', 'volume_trend',
+        'conj_wave_current', 'vol_adj_delta',
+    ],
+    # ── Challenger v3: optimized from expanded lake (77f) ──
+    'swing_exit': [  # 11f, DSR: 12.877 → 13.865 (+7.7%)
+        'atr_ratio', 'vwap_spread_tide_wave', 'rsi_value', 'overnight_gap',
+        'complacency_index', 'compression_ratio', 'compr_at_extreme',
+        'rsi_conviction', 'slope_ratio_tw', 'd_fear_level', 'current_accel',
+    ],
+    'short_cover': [  # 7f, DSR: 3.888 → 5.132 (+32%)
+        'vwap_sigma_wave', 'div_high_close_wave', 'vol_price_regime',
+        'sigma_wave', 'slope_diff_tc', 'vwap_sigma_tide', 'd2_current_slope',
+    ],
+    'zz_top_detector': [  # 12f, DSR: 11.104 → 10.198 (-8%, but 12f vs 72f)
+        'atr_ratio', 'sigma_high_current', 'overnight_gap', 'vol_return_interaction',
+        'wave_accel', 'rsi_value', 'vol_adj_delta', 'compr_at_extreme',
+        'vol_up_down_ratio', 'adi_tide', 'tide_slope_sq', 'volume_trend',
+    ],
+}
+
 
 # ═══════════════════════════════════════════════════════════════
 # HEAD DEFINITIONS
@@ -1297,8 +1353,14 @@ def main():
     # Load Feature Lake (shared across all heads)
     df, ohlcv_cache, profiles = load_feature_lake(store, profile_store)
 
-    feature_cols = [f for f in ALL_FEATURES if f in df.columns]
-    print(f"    Features: {len(feature_cols)} available")
+    # Expand feature lake with derived features (ATR, candle structure, volume dynamics, etc.)
+    # These are required by the optimized feature sets from Challenger v2.
+    # Lazy import to avoid circular dependency (feature_optimizer imports from this module).
+    from backend.scripts.feature_optimizer import expand_feature_lake
+    derived_features = expand_feature_lake(df)
+    all_available = ALL_FEATURES + derived_features
+    feature_cols = [f for f in all_available if f in df.columns]
+    print(f"    Features: {len(feature_cols)} available ({len(ALL_FEATURES)} base + {len(derived_features)} derived)")
 
     # ── ALWAYS run readiness assessment first ──
     readiness = assess_readiness(df, ohlcv_cache, profiles)
@@ -1364,12 +1426,24 @@ def main():
                 proximity_window=cfg['proximity_window']
             )
 
-        # 3. Per-head feature selection
-        if cfg.get('exclude_deltas', False):
+        # 3. Per-head feature selection (Challenger v2 optimized sets)
+        optimized = OPTIMIZED_FEATURES.get(head_name)
+        if optimized is not None:
+            # Use Challenger v2 optimized set — only the features that were selected
+            head_feature_cols = [f for f in optimized if f in df.columns]
+            missing = [f for f in optimized if f not in df.columns]
+            if missing:
+                print(f"  ⚠️ {head_name}: {len(missing)} optimized features missing: {missing}")
+            print(f"  ⚡ {head_name}: using OPTIMIZED set ({len(head_feature_cols)}f vs {len(feature_cols)} total)")
+        elif cfg.get('exclude_deltas', False):
             head_feature_cols = [f for f in feature_cols if not f.startswith('d_')]
             print(f"  ⚡ {head_name}: excluding delta features ({len(feature_cols)}→{len(head_feature_cols)})")
         else:
-            head_feature_cols = feature_cols
+            # Fallback: use ONLY base features (no derived) to match current production models.
+            # This prevents training on expand_feature_lake() features that head_scorer can't compute yet.
+            base_feature_cols = [f for f in ALL_FEATURES if f in df.columns]
+            head_feature_cols = base_feature_cols
+            print(f"  📋 {head_name}: using BASE features ({len(head_feature_cols)}f) — pending Challenger v3")
 
         # 4. Train
         result = train_head(head_name, df_head, labels, head_feature_cols, cfg['horizon'])

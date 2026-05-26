@@ -125,6 +125,12 @@
     "volume_slope_confirm",
     "volume_at_extreme",
     "vol_accel_wave",
+    "vol_price_corr_20d",
+    "effort_vs_result_20d",
+    "climax_vol_ratio",
+    "vol_return_interaction",
+    "vol_breakout_signal",
+    "vol_price_regime",
     "close_position",
     "body_ratio",
     "sigma_high_tide",
@@ -147,7 +153,13 @@
     "inst_rejection_high_tide",
     "vwap_sigma_high_current",
     "vwap_sigma_low_current",
-    "inst_rejection_high_current"
+    "inst_rejection_high_current",
+    "vwap_sigma_spread_tide",
+    "vwap_spread_ratio_tide",
+    "vwap_sigma_spread_current",
+    "vwap_in_channel_current",
+    "slope_div_current",
+    "vwap_accel_tide"
   ],
-  "total": 146
+  "total": 158
 }

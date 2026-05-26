@@ -237,9 +237,13 @@ def audit_model_integrity():
             check('feature_cols' in model,
                   f"{head}: pkl has 'feature_cols' key", f"{head}: pkl missing 'feature_cols' key!")
 
-            # Check feature count
+            # Check feature count — Challenger v2 heads may use 2-13 optimized features
             n_features = len(model.get('feature_cols', []))
-            check(n_features > 40, f"{head}: {n_features} features in model", f"{head}: only {n_features} features!")
+            xgb_model_inner = model.get('model')
+            expected_n = xgb_model_inner.n_features_in_ if xgb_model_inner else 0
+            check(n_features >= 2 and n_features == expected_n,
+                  f"{head}: {n_features} features (XGBoost expects {expected_n})",
+                  f"{head}: feature mismatch! pkl={n_features} vs XGBoost={expected_n}")
 
             # Check DSR stored correctly
             dsr = config.get('dsr', 0)

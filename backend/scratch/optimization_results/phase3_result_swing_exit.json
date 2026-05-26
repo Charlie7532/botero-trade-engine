@@ -13,12 +13,12 @@
     "current_accel"
   ],
   "final_dsr": 13.8648,
-  "production_dsr": 14.2474,
-  "delta_vs_production": -0.3826,
+  "production_dsr": 12.8774,
+  "delta_vs_production": 0.9874,
   "n_features": 11,
-  "n_viable_sfi": 88,
-  "n_clusters": 28,
-  "status": "\u2248 SAME",
+  "n_viable_sfi": 91,
+  "n_clusters": 29,
+  "status": "\u2605 GAIN",
   "selection_log": [
     {
       "feature": "atr_ratio",
@@ -116,6 +116,13 @@
       "action": "REJECTED",
       "dsr_after": 6.7165,
       "delta": -2.0585,
+      "n_features": 8
+    },
+    {
+      "feature": "vol_return_interaction",
+      "action": "REJECTED",
+      "dsr_after": 7.105,
+      "delta": -1.67,
       "n_features": 8
     },
     {
@@ -217,5 +224,5 @@
       "n_features": 11
     }
   ],
-  "elapsed_s": 74.9
+  "elapsed_s": 95.6
 }

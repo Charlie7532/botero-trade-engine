@@ -24,6 +24,7 @@
     "current_slope": 0.0191,
     "d2_sigma_tide": 0.0185,
     "vol_slope_conf": 0.0179,
+    "vol_return_interaction": 0.0178,
     "geo_phase_angle": 0.0168,
     "overnight_gap_vs_tide": 0.0159,
     "overnight_gap_atr": 0.0159,
@@ -31,6 +32,7 @@
     "volume_ratio": 0.0155,
     "spread_current_wave": 0.0153,
     "kalman_slope_conf": 0.0152,
+    "climax_vol_ratio": 0.0152,
     "vol_price_divergence": 0.0149,
     "geo_velocity_align": 0.0146,
     "tide_slope": 0.0143,
@@ -86,6 +88,7 @@
     "conj_wave_current": 0.0056,
     "above_all_vwaps_int": 0.0055,
     "slope_decel_current": 0.0055,
+    "vol_price_regime": 0.0054,
     "conj_current_tide": 0.0053,
     "adi_wave": 0.005,
     "sigma_min_tf": 0.005,
@@ -108,6 +111,7 @@
     "volume_accel": 0.0033,
     "kalman_velocity": 0.0028,
     "tsi_wave": 0.0028,
+    "vol_price_corr_20d": 0.0028,
     "inst_rejection_high_tide": 0.0027,
     "div_close_low_tide": 0.0027,
     "sigma_ratio_tw": 0.0026,
@@ -120,6 +124,7 @@
     "sigma_abs_dist": 0.002,
     "sigma_squared": 0.002,
     "inst_rejection_high_current": 0.0019,
+    "vol_breakout_signal": 0.0019,
     "d_sigma_wave": 0.0018,
     "d2_spread_tide_wave": 0.0016,
     "tension_current": 0.0015,
@@ -133,6 +138,7 @@
     "total_displacement": 0.0009,
     "wave_slope": 0.0009,
     "vol_accel_wave": 0.0007,
+    "effort_vs_result_20d": 0.0007,
     "slope_decel_wave": 0.0007,
     "rsi_divergence_strength": 0.0007,
     "tension_ratio_tw": 0.0006,
@@ -190,5 +196,5 @@
       "dsr": 0.0253
     }
   ],
-  "elapsed_s": 265.5
+  "elapsed_s": 197.0
 }

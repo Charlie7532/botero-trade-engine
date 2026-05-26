@@ -1,5 +1,5 @@
 {
-  "assessed_at": "2026-05-26T00:59:48.537934",
+  "assessed_at": "2026-05-26T17:22:24.930683",
   "total_observations": 93776,
   "total_tickers": 17,
   "heads": {
@@ -22,7 +22,13 @@
       "fold_grade": "A",
       "n_folds_viable": 4,
       "horizon": 20,
-      "description": "Is this a good time to buy? (20d forward return > 0)"
+      "description": "Is this a good time to buy? (20d forward return > 0)",
+      "trained": true,
+      "dsr": 3.8489219355130766,
+      "actual_positive_rate": 0.5903827218630935,
+      "best_edge": 7.357224570598682,
+      "threshold": 0.8,
+      "trained_at": "2026-05-26T17:27:06.052064"
     },
     "swing_exit": {
       "status": "READY",
@@ -43,7 +49,13 @@
       "fold_grade": "A",
       "n_folds_viable": 4,
       "horizon": 10,
-      "description": "Is this the top of a bullish leg? (Triple Barrier 10d)"
+      "description": "Is this the top of a bullish leg? (Triple Barrier 10d)",
+      "trained": true,
+      "dsr": 13.864786845494757,
+      "actual_positive_rate": 0.385277403672437,
+      "best_edge": 44.47594203903351,
+      "threshold": 0.8,
+      "trained_at": "2026-05-26T17:27:06.052189"
     },
     "pullback_depth": {
       "status": "READY",
@@ -64,7 +76,13 @@
       "fold_grade": "A",
       "n_folds_viable": 4,
       "horizon": 5,
-      "description": "Will this pullback deepen? (Max drawdown 5d > -2%)"
+      "description": "Will this pullback deepen? (Max drawdown 5d > -2%)",
+      "trained": true,
+      "dsr": 48.57841040245842,
+      "actual_positive_rate": 0.29465407530498927,
+      "best_edge": 21.57902756207617,
+      "threshold": 0.8,
+      "trained_at": "2026-05-26T17:27:06.052242"
     },
     "trend_reversal": {
       "status": "READY",
@@ -85,7 +103,13 @@
       "fold_grade": "A",
       "n_folds_viable": 4,
       "horizon": 60,
-      "description": "Is the macro trend changing? (TSI drops >50 \u2192 <30 in 60d)"
+      "description": "Is the macro trend changing? (TSI drops >50 \u2192 <30 in 60d)",
+      "trained": true,
+      "dsr": 18.492241528174077,
+      "actual_positive_rate": 0.06710377378638703,
+      "best_edge": 42.57108858591942,
+      "threshold": 0.8,
+      "trained_at": "2026-05-26T17:27:06.052261"
     },
     "short_entry": {
       "status": "READY",
@@ -106,7 +130,13 @@
       "fold_grade": "A",
       "n_folds_viable": 4,
       "horizon": 20,
-      "description": "Is this a good time to short? (20d forward return < 0)"
+      "description": "Is this a good time to short? (20d forward return < 0)",
+      "trained": true,
+      "dsr": 1.8164316315477418,
+      "actual_positive_rate": 0.40572933816266055,
+      "best_edge": 8.298015766145724,
+      "threshold": 0.75,
+      "trained_at": "2026-05-26T17:27:06.052275"
     },
     "short_cover": {
       "status": "READY",
@@ -127,7 +157,13 @@
       "fold_grade": "B",
       "n_folds_viable": 4,
       "horizon": 10,
-      "description": "Is this the bottom of a bearish leg? (Triple Barrier inverted 10d)"
+      "description": "Is this the bottom of a bearish leg? (Triple Barrier inverted 10d)",
+      "trained": true,
+      "dsr": 5.132376442200234,
+      "actual_positive_rate": 0.5569300984866683,
+      "best_edge": 9.55885890219848,
+      "threshold": 0.8,
+      "trained_at": "2026-05-26T17:27:06.052287"
     },
     "bounce_height": {
       "status": "READY",
@@ -148,7 +184,13 @@
       "fold_grade": "B",
       "n_folds_viable": 4,
       "horizon": 5,
-      "description": "Will this bounce go higher? (Max runup 5d > +2%)"
+      "description": "Will this bounce go higher? (Max runup 5d > +2%)",
+      "trained": true,
+      "dsr": 19.732081027818996,
+      "actual_positive_rate": 0.37236363636363634,
+      "best_edge": 27.398259893348296,
+      "threshold": 0.8,
+      "trained_at": "2026-05-26T17:27:06.052299"
     },
     "trend_recovery": {
       "status": "READY",
@@ -169,7 +211,13 @@
       "fold_grade": "A",
       "n_folds_viable": 4,
       "horizon": 60,
-      "description": "Is the bearish trend ending? (TSI rises <30 \u2192 >60 in 60d)"
+      "description": "Is the bearish trend ending? (TSI rises <30 \u2192 >60 in 60d)",
+      "trained": true,
+      "dsr": 7.406868764361832,
+      "actual_positive_rate": 0.08997457720791423,
+      "best_edge": 53.04642868560878,
+      "threshold": 0.8,
+      "trained_at": "2026-05-26T17:27:06.052316"
     },
     "zz_bottom_detector": {
       "status": "READY",
@@ -192,11 +240,11 @@
       "horizon": 3,
       "description": "Are we near a zigzag 5% bottom? (within 3 bars of MIN)",
       "trained": true,
-      "dsr": 13.892224315639222,
+      "dsr": 32.21797647358836,
       "actual_positive_rate": 0.12084115338679406,
-      "best_edge": 41.283229028647874,
+      "best_edge": 52.03788839634552,
       "threshold": 0.8,
-      "trained_at": "2026-05-26T01:00:41.133311"
+      "trained_at": "2026-05-26T17:27:06.052334"
     },
     "zz_top_detector": {
       "status": "READY",
@@ -219,11 +267,11 @@
       "horizon": 3,
       "description": "Are we near a zigzag 5% top? (within 3 bars of MAX)",
       "trained": true,
-      "dsr": 30.057384306970075,
+      "dsr": 10.197717787038593,
       "actual_positive_rate": 0.12104376386282205,
-      "best_edge": 35.57210303738081,
+      "best_edge": 55.82472538360801,
       "threshold": 0.8,
-      "trained_at": "2026-05-26T01:00:41.133451"
+      "trained_at": "2026-05-26T17:27:06.052347"
     }
   }
 }

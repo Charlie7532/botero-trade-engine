@@ -254,6 +254,97 @@ def expand_feature_lake(df):
         add('vol_accel_wave', vol_accel * df['wave_slope'].values.astype(float))
 
         log(f"  Volume features computed (Wyckoff dynamics: 10 features)")
+
+        # ── VOL-PRICE CORRELATION (forensic-validated: t=-50.9 at floors) ──
+        # These 6 features were selected from the Vol-Price Forencia for Challenger v3.
+        # Each was validated for orthogonality, SFI significance, and t-test at extremes.
+        n_vp = 0
+        close_vals = df['price'].values.astype(float)
+
+        for tk in df['ticker'].unique():
+            mask = (df['ticker'] == tk).values
+            idx_tk = np.where(mask)[0]
+            tk_close = close_vals[mask]
+            tk_vol = vol[mask]
+            tk_high = df.loc[mask, 'high_price'].values.astype(float) if 'high_price' in df.columns else tk_close
+            tk_low = df.loc[mask, 'low_price'].values.astype(float) if 'low_price' in df.columns else tk_close
+            n_tk = len(tk_close)
+
+            tk_returns = np.zeros(n_tk)
+            tk_returns[1:] = (tk_close[1:] - tk_close[:-1]) / np.where(tk_close[:-1] > 0, tk_close[:-1], 1.0)
+
+            # Rolling volume stats (reuse from above is not possible — we need Series)
+            tk_vol_s = pd.Series(tk_vol)
+            tk_ret_s = pd.Series(tk_returns)
+            tk_vol_ma20 = tk_vol_s.rolling(20, min_periods=1).mean()
+            tk_vol_std20 = tk_vol_s.rolling(20, min_periods=2).std().fillna(1.0)
+            tk_candle_range = tk_high - tk_low
+            tk_candle_range_safe = np.where(tk_candle_range > 0, tk_candle_range, 1e-8)
+
+            # 1. vol_price_corr_20d: Rolling Pearson correlation (vol, returns, 20d)
+            #    t=-50.9 at floors ★★★, |r|=0.478 vs rsi → moderate but unique signal
+            corr_20d = tk_vol_s.rolling(20, min_periods=20).corr(tk_ret_s).values
+            if 'vol_price_corr_20d' not in df.columns:
+                df['vol_price_corr_20d'] = 0.0
+            df.loc[mask, 'vol_price_corr_20d'] = np.nan_to_num(corr_20d, nan=0.0).astype(np.float32)
+
+            # 2. effort_vs_result_20d: Wyckoff effort/result (log-normalized)
+            #    avg_vol / (avg_range × close) — HIGH effort + LOW result = accumulation
+            #    SFI ★★, |r|=0.111 → fully orthogonal. Log-normalized to avoid billion-scale values.
+            if 'effort_vs_result_20d' not in df.columns:
+                df['effort_vs_result_20d'] = 0.0
+            tk_vol_ma20_vals = tk_vol_ma20.values
+            tk_range_ma20 = pd.Series(tk_candle_range_safe).rolling(20, min_periods=1).mean().values
+            raw_effort = safe_div(tk_vol_ma20_vals, tk_range_ma20 * np.where(tk_close > 0, tk_close, 1.0))
+            log_effort = np.log1p(np.abs(raw_effort)) * np.sign(raw_effort)
+            df.loc[mask, 'effort_vs_result_20d'] = np.nan_to_num(log_effort, nan=0.0).astype(np.float32)
+
+            # 3. climax_vol_ratio: current vol / max(vol, 20d)
+            #    SFI ★, |r|=0.101 → orthogonal. Detects volume climax events.
+            vol_max_20 = tk_vol_s.rolling(20, min_periods=5).max().values
+            climax = safe_div(tk_vol, vol_max_20)
+            if 'climax_vol_ratio' not in df.columns:
+                df['climax_vol_ratio'] = 0.0
+            df.loc[mask, 'climax_vol_ratio'] = np.nan_to_num(climax, nan=0.0).astype(np.float32)
+
+            # 4. vol_return_interaction: vol z-score × return (instantaneous)
+            #    t=-9.62 at floors ★★, |r|=0.202 → orthogonal.
+            vol_z = safe_div(tk_vol - tk_vol_ma20.values, tk_vol_std20.values)
+            vri = vol_z * tk_returns
+            if 'vol_return_interaction' not in df.columns:
+                df['vol_return_interaction'] = 0.0
+            df.loc[mask, 'vol_return_interaction'] = np.nan_to_num(vri, nan=0.0).astype(np.float32)
+
+            # 5. vol_breakout_signal: vol spike × range expansion
+            #    |r|=0.028 → MOST orthogonal feature. Detects breakout events.
+            range_mean = pd.Series(tk_candle_range_safe).rolling(20, min_periods=1).mean().values
+            range_std = pd.Series(tk_candle_range_safe).rolling(20, min_periods=2).std().fillna(1.0).values
+            range_z = safe_div(tk_candle_range - range_mean, range_std)
+            vbs = vol_z * range_z
+            if 'vol_breakout_signal' not in df.columns:
+                df['vol_breakout_signal'] = 0.0
+            df.loc[mask, 'vol_breakout_signal'] = np.nan_to_num(vbs, nan=0.0).astype(np.float32)
+
+            # 6. vol_price_regime: categorical Wyckoff vol-price state
+            #    +2=confirmed rally, +1=suspicious rally, -1=orderly decline, -2=panic, 0=neutral
+            #    t=-33.97 at floors ★★★, SFI ★. |r|=0.456 → moderate but unique regime info.
+            ret_5d = np.zeros(n_tk)
+            ret_5d[5:] = (tk_close[5:] - tk_close[:-5]) / np.where(tk_close[:-5] > 0, tk_close[:-5], 1.0)
+            regime = np.zeros(n_tk)
+            regime[(vol_z > 1.0) & (ret_5d > 0.01)] = 2.0    # Confirmed rally
+            regime[(vol_z < -0.5) & (ret_5d > 0.01)] = 1.0    # Suspicious rally
+            regime[(vol_z < -0.5) & (ret_5d < -0.01)] = -1.0  # Orderly decline
+            regime[(vol_z > 1.0) & (ret_5d < -0.01)] = -2.0   # Panic selling
+            if 'vol_price_regime' not in df.columns:
+                df['vol_price_regime'] = 0.0
+            df.loc[mask, 'vol_price_regime'] = regime.astype(np.float32)
+
+        # Register the 6 new features
+        for vp_feat in ['vol_price_corr_20d', 'effort_vs_result_20d', 'climax_vol_ratio',
+                        'vol_return_interaction', 'vol_breakout_signal', 'vol_price_regime']:
+            new_features.append(vp_feat)
+        n_vp = 6
+        log(f"  Vol-Price features computed (Forencia-validated: {n_vp} features)")
     else:
         log(f"  volume not in lake — volume features skipped", "WARN")
 
@@ -328,6 +419,80 @@ def expand_feature_lake(df):
         if not has_hl: missing.append('high/low')
         if not has_reg: missing.append('reg_value/residual_std')
         log(f"  Candle structure skipped — missing: {', '.join(missing)}", "WARN")
+
+    # ── VWAP STRUCTURAL (forensic-validated: 2 dictámenes) ──
+    # 6 features from VWAP Sigma Spread + VWAP Regression dictámenes.
+    # All orthogonal (r≤0.38) with t-stats ≥ 9.8 at zigzag turning points.
+    n_vwap_struct = 0
+    for tf in ['tide', 'current']:
+        vwap_sh = f'vwap_sigma_high_{tf}'
+        vwap_sl = f'vwap_sigma_low_{tf}'
+        if vwap_sh in df.columns and vwap_sl in df.columns:
+            # 1. VWAP σ Spread: σ(HIGH) - σ(LOW) — institutional range width
+            #    Pisos: expansión (+0.568), Techos: contracción (0.446)
+            #    t=17.9 (tide) / t=9.8 (current) at floors ★★★
+            spread = df[vwap_sh].values.astype(float) - df[vwap_sl].values.astype(float)
+            add(f'vwap_sigma_spread_{tf}', spread)
+            n_vwap_struct += 1
+
+            # 2. Spread Ratio: spread / rolling_MA20(spread) — relative institutional activity
+            #    >1 = expanding (accumulation), <1 = contracting (low interest)
+            #    t=16.0 (tide) at floors ★★★. Only for tide (current is noisier).
+            if tf == 'tide':
+                spread_ratio = np.zeros_like(spread)
+                for tk in df['ticker'].unique():
+                    mask_tk = (df['ticker'] == tk).values
+                    tk_spread = pd.Series(spread[mask_tk])
+                    tk_ma20 = tk_spread.rolling(20, min_periods=1).mean()
+                    spread_ratio[mask_tk] = safe_div(tk_spread.values, tk_ma20.values)
+                add('vwap_spread_ratio_tide', spread_ratio)
+                n_vwap_struct += 1
+
+    # 3. VWAP in Channel (Current): (VWAP - regression center) / std
+    #    t=19.1 at floors ★★★ — THE strongest VWAP signal
+    #    Pisos: VWAP rises INTO the channel (institutional buying)
+    #    Techos: VWAP stays below (institutions not participating)
+    if 'vwap_current' in df.columns and 'reg_value_current' in df.columns and 'residual_std_current' in df.columns:
+        vwap_c = df['vwap_current'].values.astype(float)
+        reg_c = df['reg_value_current'].values.astype(float)
+        std_c = df['residual_std_current'].values.astype(float)
+        std_c_safe = np.where(std_c > 0, std_c, 1e-8)
+        vinch = (vwap_c - reg_c) / std_c_safe
+        add('vwap_in_channel_current', np.nan_to_num(vinch, nan=0.0))
+        n_vwap_struct += 1
+
+    # 4. Slope Divergence (Current): current_slope - vwap_slope_current
+    #    t=-13.7 at floors ★★★ — price slope DIVERGES from VWAP slope = accumulation
+    if 'current_slope' in df.columns and 'vwap_current' in df.columns:
+        # Compute vwap_slope_current as bar-over-bar delta of vwap_current
+        vwap_slope_c = np.zeros(len(df))
+        for tk in df['ticker'].unique():
+            mask_tk = (df['ticker'] == tk).values
+            tk_vwap = df.loc[mask_tk, 'vwap_current'].values.astype(float)
+            slope = np.zeros_like(tk_vwap)
+            slope[1:] = tk_vwap[1:] - tk_vwap[:-1]
+            vwap_slope_c[mask_tk] = slope
+        slope_div = df['current_slope'].values.astype(float) - vwap_slope_c
+        add('slope_div_current', slope_div)
+        n_vwap_struct += 1
+
+    # 5. VWAP Accel (Tide): Δ(vwap_slope_tide) — VWAP momentum change
+    #    t=-10.0, r≤0.38 vs all existing ★★. Only genuinely orthogonal VWAP tide feature.
+    if 'vwap_tide' in df.columns:
+        vwap_accel = np.zeros(len(df))
+        for tk in df['ticker'].unique():
+            mask_tk = (df['ticker'] == tk).values
+            tk_vwap = df.loc[mask_tk, 'vwap_tide'].values.astype(float)
+            slope = np.zeros_like(tk_vwap)
+            slope[1:] = tk_vwap[1:] - tk_vwap[:-1]
+            accel = np.zeros_like(slope)
+            accel[1:] = slope[1:] - slope[:-1]
+            vwap_accel[mask_tk] = accel
+        add('vwap_accel_tide', vwap_accel)
+        n_vwap_struct += 1
+
+    if n_vwap_struct > 0:
+        log(f"  VWAP structural features computed (Forencia-validated: {n_vwap_struct} features)")
 
     log(f"  Generated {len(new_features)} derived features")
     return new_features
@@ -663,7 +828,12 @@ def main():
     # ── Pre-compute labels ──
     log_section("PRE-COMPUTING LABELS")
     all_labels = {}
-    heads_to_run = list(HEAD_CONFIGS.keys())
+    # Support CLI filtering: python feature_optimizer.py head1 head2 ...
+    if len(sys.argv) > 1:
+        heads_to_run = [h for h in sys.argv[1:] if h in HEAD_CONFIGS]
+        log(f"  CLI filter: running {len(heads_to_run)} heads: {heads_to_run}")
+    else:
+        heads_to_run = list(HEAD_CONFIGS.keys())
     for head_name in heads_to_run:
         try:
             t0 = time.time()
@@ -870,7 +1040,7 @@ def main():
         log(f"    → DSR={dsr_a:.3f}")
 
         # Strategy B: All viable SFI features (let XGBoost discover interactions)
-        sfi_data = all_sfi.get(head_name, {})
+        sfi_data = sfi_results.get(head_name, {})
         viable_all = [f for f, s in sorted(sfi_data.items(), key=lambda x: -x[1]) if s > 0.005 and f in EXPANDED_FEATURES]
         log(f"    Strategy B: All viable SFI features = {len(viable_all)}f")
         result_b = train_quick(df_ctx, labels_ctx, viable_all, cfg['horizon'], n_splits=5, mode='dsr')

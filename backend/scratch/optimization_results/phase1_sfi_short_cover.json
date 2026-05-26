@@ -7,10 +7,12 @@
     "tsi_tide": 0.0329,
     "d2_sigma_tide": 0.0304,
     "vwap_sigma_wave": 0.0298,
+    "effort_vs_result_20d": 0.0285,
     "bullish_score": 0.0282,
     "d_sigma_wave": 0.0276,
     "sigma_low_current": 0.0276,
     "div_high_close_wave": 0.0269,
+    "vol_price_regime": 0.0268,
     "d2_tide_accel": 0.0261,
     "vwap_current": 0.0256,
     "sigma_ratio_tw": 0.0245,
@@ -35,6 +37,7 @@
     "volume_ratio": 0.0171,
     "div_high_close_tide": 0.0171,
     "wave_flip_direction": 0.017,
+    "vol_return_interaction": 0.0169,
     "sigma_current": 0.0169,
     "tsi_current": 0.0168,
     "slope_energy": 0.0167,
@@ -101,6 +104,7 @@
     "sigma_squared": 0.0068,
     "tension_wave": 0.0065,
     "rsi_bearish_div": 0.0064,
+    "climax_vol_ratio": 0.0062,
     "tension_ratio_tw": 0.0058,
     "div_close_low_tide": 0.0058,
     "kalman_velocity": 0.0057,
@@ -114,6 +118,7 @@
     "tsi_wave": 0.0045,
     "tension_current": 0.0042,
     "body_ratio": 0.0041,
+    "vol_price_corr_20d": 0.004,
     "geo_accel_align": 0.004,
     "d_kalman_velocity": 0.0036,
     "inst_rejection_high_current": 0.0032,
@@ -123,6 +128,7 @@
     "slope_ratio_tc": 0.0031,
     "slope_decel_wave": 0.0028,
     "geo_state_norm": 0.0022,
+    "vol_breakout_signal": 0.0022,
     "spread_tide_current": 0.002,
     "sigma_phase_tc": 0.002,
     "sigma_min_tf": 0.002,
@@ -174,6 +180,10 @@
       "dsr": 0.0298
     },
     {
+      "feature": "effort_vs_result_20d",
+      "dsr": 0.0285
+    },
+    {
       "feature": "bullish_score",
       "dsr": 0.0282
     },
@@ -184,11 +194,7 @@
     {
       "feature": "sigma_low_current",
       "dsr": 0.0276
-    },
-    {
-      "feature": "div_high_close_wave",
-      "dsr": 0.0269
     }
   ],
-  "elapsed_s": 183.7
+  "elapsed_s": 127.6
 }

@@ -1,0 +1,78 @@
+Feature Optimizer — Started 2026-05-26T05:03:08.223872+00:00
+[05:03:08] [INFO] ==========================================================================================
+[05:03:08] [INFO]   FEATURE OPTIMIZER — Simons + López de Prado Protocol
+[05:03:08] [INFO] ==========================================================================================
+[05:03:08] [INFO] Started: 2026-05-26T05:03:08.224537+00:00
+[05:03:08] [INFO] ==========================================================================================
+[05:03:08] [INFO]   LOADING DATA
+[05:03:08] [INFO] ==========================================================================================
+[05:03:37] [INFO] Feature lake: 93,776 rows, 69 columns
+[05:03:37] [INFO] ==========================================================================================
+[05:03:37] [INFO]   PHASE 0: Expand Feature Lake (Simons Discovery)
+[05:03:37] [INFO] ==========================================================================================
+[05:03:39] [WARN]   Column residual_std_tide not in feature lake — skipping
+[05:03:39] [WARN]   Column residual_std_current not in feature lake — skipping
+[05:03:39] [WARN]   Column residual_std_wave not in feature lake — skipping
+[05:03:39] [INFO]   Generated 34 derived features
+[05:03:39] [INFO] Expanded lake: 97 features (63 original + 34 derived)
+[05:03:39] [INFO]   Checkpoint saved: phase0_features.json
+[05:03:39] [INFO] ==========================================================================================
+[05:03:39] [INFO]   PRODUCTION BASELINES
+[05:03:39] [INFO] ==========================================================================================
+[05:03:39] [INFO]            bounce_height: DSR=  2.308 (56f)
+[05:03:39] [INFO]               long_entry: DSR=  0.593 (63f)
+[05:03:39] [INFO]           pullback_depth: DSR=  6.226 (56f)
+[05:03:39] [INFO]              short_cover: DSR=  8.602 (56f)
+[05:03:39] [INFO]              short_entry: DSR=  1.705 (56f)
+[05:03:39] [INFO]               swing_exit: DSR= 14.247 (56f)
+[05:03:39] [INFO]           trend_recovery: DSR=  4.626 (56f)
+[05:03:39] [INFO]           trend_reversal: DSR= 11.573 (56f)
+[05:03:39] [INFO]       zz_bottom_detector: DSR= 20.967 (63f)
+[05:03:39] [INFO]          zz_top_detector: DSR= 25.783 (63f)
+[05:03:39] [INFO] ==========================================================================================
+[05:03:39] [INFO]   PRE-COMPUTING LABELS
+[05:03:39] [INFO] ==========================================================================================
+[05:03:46] [INFO]               long_entry:  93,436 valid, pos=0.590 (6.2s)
+[05:03:56] [INFO]               swing_exit:  93,606 valid, pos=0.397 (10.7s)
+[05:04:18] [INFO]           pullback_depth:  93,759 valid, pos=0.297 (21.2s)
+[05:07:04] [INFO]           trend_reversal:  93,606 valid, pos=0.381 (166.4s)
+[05:07:10] [INFO]              short_entry:  93,436 valid, pos=0.409 (6.0s)
+[05:07:21] [INFO]              short_cover:  93,606 valid, pos=0.483 (10.8s)
+[05:07:38] [INFO]            bounce_height:  93,759 valid, pos=0.345 (17.2s)
+[05:09:52] [INFO]           trend_recovery:  93,606 valid, pos=0.506 (133.8s)
+[05:09:53] [INFO]       zz_bottom_detector:  93,776 valid, pos=0.121 (0.9s)
+[05:09:54] [INFO]          zz_top_detector:  93,776 valid, pos=0.121 (0.9s)
+[05:09:54] [INFO] ==========================================================================================
+[05:09:54] [INFO]   PHASE 1: Single Feature Importance (SFI)
+[05:09:54] [INFO] ==========================================================================================
+[05:09:54] [INFO] Testing 97 features × 10 heads
+[05:09:54] [INFO] 
+  ── SFI: LONG_ENTRY ──
+[05:10:15] [INFO]     SFI [10/97] tide_slope                          DSR= -1.000
+[05:10:34] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  0.000
+[05:10:50] [INFO]     SFI [30/97] rsi_value                           DSR=  0.000
+[05:10:52] [INFO]     SFI [31/97] rsi_divergence_strength             DSR=  1.352 ★
+[05:11:09] [INFO]     SFI [40/97] tsi_tide                            DSR=  0.000
+[05:11:26] [INFO]     SFI [50/97] slope_decel_current                 DSR=  0.000
+[05:11:43] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:12:02] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  0.000
+[05:12:21] [INFO]     SFI [80/97] compr_at_extreme                    DSR=  0.000
+[05:12:39] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:12:51] [INFO] 
+  Top 10 features for long_entry:
+[05:12:51] [INFO]      1. rsi_divergence_strength             DSR=  1.352 
+[05:12:51] [INFO]      2. sigma_tide                          DSR=  1.000 
+[05:12:51] [INFO]      3. sigma_current                       DSR=  0.000 
+[05:12:51] [INFO]      4. sigma_wave                          DSR=  0.000 
+[05:12:51] [INFO]      5. vwap_sigma_tide                     DSR=  0.000 
+[05:12:51] [INFO]      6. vwap_sigma_current                  DSR=  0.000 
+[05:12:51] [INFO]      7. vwap_sigma_wave                     DSR=  0.000 
+[05:12:51] [INFO]      8. tension_tide                        DSR=  0.000 
+[05:12:51] [INFO]      9. tension_current                     DSR=  0.000 
+[05:12:51] [INFO]     10. tension_wave                        DSR=  0.000 
+[05:12:51] [INFO]   SFI completed for long_entry in 177s
+[05:12:51] [INFO]   Checkpoint saved: phase1_sfi_long_entry.json
+[05:12:51] [INFO] 
+  ── SFI: SWING_EXIT ──
+[05:13:01] [INFO]     SFI [10/97] tide_slope                          DSR=  1.953 ★
+[05:13:02] [INFO]     SFI [11/97] current_slope                       DSR=  1.167 ★

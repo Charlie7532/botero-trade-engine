@@ -1,0 +1,207 @@
+{
+  "optimal_features": [
+    "atr_ratio",
+    "vwap_spread_tide_wave",
+    "complacency_index",
+    "compr_at_extreme",
+    "d_wave_accel",
+    "geo_phase_angle",
+    "tide_slope_sq",
+    "slope_ratio_tw",
+    "volume_ratio",
+    "vol_price_divergence",
+    "vol_up_down_ratio"
+  ],
+  "final_dsr": 11.4875,
+  "production_dsr": 14.2474,
+  "delta_vs_production": -2.7599,
+  "n_features": 11,
+  "n_viable_sfi": 79,
+  "n_clusters": 26,
+  "status": "\u2716 DROP",
+  "selection_log": [
+    {
+      "feature": "atr_ratio",
+      "action": "ADDED",
+      "dsr_after": 1.7262,
+      "delta": 1.7262,
+      "n_features": 1
+    },
+    {
+      "feature": "vwap_spread_tide_wave",
+      "action": "ADDED",
+      "dsr_after": 4.2345,
+      "delta": 2.5084,
+      "n_features": 2
+    },
+    {
+      "feature": "rsi_value",
+      "action": "REJECTED",
+      "dsr_after": 4.0618,
+      "delta": -0.1727,
+      "n_features": 2
+    },
+    {
+      "feature": "d2_tide_accel",
+      "action": "REJECTED",
+      "dsr_after": 3.456,
+      "delta": -0.7785,
+      "n_features": 2
+    },
+    {
+      "feature": "residual_std_wave",
+      "action": "REJECTED",
+      "dsr_after": 3.5526,
+      "delta": -0.6819,
+      "n_features": 2
+    },
+    {
+      "feature": "complacency_index",
+      "action": "ADDED",
+      "dsr_after": 4.5989,
+      "delta": 0.3643,
+      "n_features": 3
+    },
+    {
+      "feature": "compr_at_extreme",
+      "action": "ADDED",
+      "dsr_after": 5.0324,
+      "delta": 0.4335,
+      "n_features": 4
+    },
+    {
+      "feature": "compression_ratio",
+      "action": "REJECTED",
+      "dsr_after": 3.8589,
+      "delta": -1.1735,
+      "n_features": 4
+    },
+    {
+      "feature": "slope_product_tc",
+      "action": "REJECTED",
+      "dsr_after": 4.6876,
+      "delta": -0.3447,
+      "n_features": 4
+    },
+    {
+      "feature": "d_wave_accel",
+      "action": "ADDED",
+      "dsr_after": 6.2897,
+      "delta": 1.2573,
+      "n_features": 5
+    },
+    {
+      "feature": "rsi_trap_zone",
+      "action": "REJECTED",
+      "dsr_after": 5.8825,
+      "delta": -0.4072,
+      "n_features": 5
+    },
+    {
+      "feature": "rsi_conviction",
+      "action": "REJECTED",
+      "dsr_after": 6.0318,
+      "delta": -0.2578,
+      "n_features": 5
+    },
+    {
+      "feature": "geo_phase_angle",
+      "action": "ADDED",
+      "dsr_after": 7.5745,
+      "delta": 1.2848,
+      "n_features": 6
+    },
+    {
+      "feature": "overnight_gap_vs_tide",
+      "action": "REJECTED",
+      "dsr_after": 6.315,
+      "delta": -1.2595,
+      "n_features": 6
+    },
+    {
+      "feature": "tide_slope_sq",
+      "action": "ADDED",
+      "dsr_after": 7.5936,
+      "delta": 0.0191,
+      "n_features": 7
+    },
+    {
+      "feature": "slope_ratio_tw",
+      "action": "ADDED",
+      "dsr_after": 9.2221,
+      "delta": 1.6285,
+      "n_features": 8
+    },
+    {
+      "feature": "volume_ratio",
+      "action": "ADDED",
+      "dsr_after": 10.9672,
+      "delta": 1.7451,
+      "n_features": 9
+    },
+    {
+      "feature": "vol_price_divergence",
+      "action": "ADDED",
+      "dsr_after": 11.0178,
+      "delta": 0.0506,
+      "n_features": 10
+    },
+    {
+      "feature": "d_fear_level",
+      "action": "REJECTED",
+      "dsr_after": 8.3858,
+      "delta": -2.632,
+      "n_features": 10
+    },
+    {
+      "feature": "bullish_score",
+      "action": "REJECTED",
+      "dsr_after": 9.4032,
+      "delta": -1.6146,
+      "n_features": 10
+    },
+    {
+      "feature": "current_accel",
+      "action": "REJECTED",
+      "dsr_after": 10.2458,
+      "delta": -0.772,
+      "n_features": 10
+    },
+    {
+      "feature": "tide_accel",
+      "action": "REJECTED",
+      "dsr_after": 8.06,
+      "delta": -2.9578,
+      "n_features": 10
+    },
+    {
+      "feature": "volume_trend",
+      "action": "REJECTED",
+      "dsr_after": 7.2727,
+      "delta": -3.7451,
+      "n_features": 10
+    },
+    {
+      "feature": "vol_up_down_ratio",
+      "action": "ADDED",
+      "dsr_after": 11.4875,
+      "delta": 0.4697,
+      "n_features": 11
+    },
+    {
+      "feature": "d_compression_ratio",
+      "action": "REJECTED",
+      "dsr_after": 10.6725,
+      "delta": -0.815,
+      "n_features": 11
+    },
+    {
+      "feature": "wave_flip",
+      "action": "REJECTED",
+      "dsr_after": 9.9865,
+      "delta": -1.501,
+      "n_features": 11
+    }
+  ],
+  "elapsed_s": 73.4
+}

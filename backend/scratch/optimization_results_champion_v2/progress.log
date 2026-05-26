@@ -1,4 +1,4 @@
-nohup: ignoring input
+Feature Optimizer — Started 2026-05-26T11:52:35.838261+00:00
 [11:52:35] [INFO] ==========================================================================================
 [11:52:35] [INFO]   FEATURE OPTIMIZER — Simons + López de Prado Protocol
 [11:52:35] [INFO] ==========================================================================================
@@ -6,13 +6,6 @@ nohup: ignoring input
 [11:52:35] [INFO] ==========================================================================================
 [11:52:35] [INFO]   LOADING DATA
 [11:52:35] [INFO] ==========================================================================================
-
-  ── STEP 0: Loading Feature Lake ──
-    Raw observations: 93,776
-    Loaded 17 ticker profiles
-    Delta features computed: 8 columns
-    Phase 1 features computed: 7 columns
-    OHLCV cache: 17 tickers
 [11:53:10] [INFO] Feature lake: 93,776 rows, 76 columns
 [11:53:10] [INFO] ==========================================================================================
 [11:53:10] [INFO]   PHASE 0: Expand Feature Lake (Simons Discovery)
@@ -39,47 +32,15 @@ nohup: ignoring input
 [11:53:14] [INFO] ==========================================================================================
 [11:53:14] [INFO]   PRE-COMPUTING LABELS
 [11:53:14] [INFO] ==========================================================================================
-
-  ── Labeling: LONG_ENTRY (horizon=20d) ──
-    Labeled: 93,436 / 93,776 | Base WR: 59.0%
 [11:53:21] [INFO]               long_entry:  93,436 valid, pos=0.590 (6.9s)
-
-  ── Labeling: SWING_EXIT (Triple Barrier: profit=+3.0%, stop=-2.0%, time=10d) ──
-    Labeled: 93,606 / 93,776 | Exit rate: 39.7%
 [11:53:33] [INFO]               swing_exit:  93,606 valid, pos=0.397 (11.9s)
-
-  ── Labeling: PULLBACK_DEPTH (threshold=-2.0%, horizon=5d) ──
-    Labeled: 93,759 / 93,776 | Deep pullback rate: 29.7%
 [11:53:57] [INFO]           pullback_depth:  93,759 valid, pos=0.297 (24.0s)
-
-  ── Labeling: TREND_REVERSAL (TSI_tide drops to <30 in 60d) ──
-    Labeled: 93,606 / 93,776 | Reversal rate: 38.1%
 [11:56:55] [INFO]           trend_reversal:  93,606 valid, pos=0.381 (178.2s)
-
-  ── Labeling: SHORT_ENTRY (horizon=20d) ──
-    Labeled: 93,436 / 93,776 | Base WR: 40.9%
 [11:57:02] [INFO]              short_entry:  93,436 valid, pos=0.409 (6.8s)
-
-  ── Labeling: SHORT_COVER (Inverted TB: drop=-3.0%, bounce=+2.0%, time=10d) ──
-    Labeled: 93,606 / 93,776 | Cover rate: 48.3%
 [11:57:14] [INFO]              short_cover:  93,606 valid, pos=0.483 (12.5s)
-
-  ── Labeling: BOUNCE_HEIGHT (threshold=+2.0%, horizon=5d) ──
-    Labeled: 93,759 / 93,776 | High bounce rate: 34.5%
 [11:57:36] [INFO]            bounce_height:  93,759 valid, pos=0.345 (22.1s)
-
-  ── Labeling: TREND_RECOVERY (TSI_tide rises to >60 in 60d) ──
-    Labeled: 93,606 / 93,776 | Recovery rate: 50.6%
 [12:00:00] [INFO]           trend_recovery:  93,606 valid, pos=0.506 (144.0s)
-
-  ── Labeling: ZZ_BOTTOM (proximity=3 bars, tp=MIN) ──
-    Loaded 2,466 zigzag MIN points
-    Labeled: 93,776 total | Positive: 11,332 (12.1%)
 [12:00:02] [INFO]       zz_bottom_detector:  93,776 valid, pos=0.121 (1.3s)
-
-  ── Labeling: ZZ_TOP (proximity=3 bars, tp=MAX) ──
-    Loaded 2,467 zigzag MAX points
-    Labeled: 93,776 total | Positive: 11,351 (12.1%)
 [12:00:04] [INFO]          zz_top_detector:  93,776 valid, pos=0.121 (1.9s)
 [12:00:04] [INFO] ==========================================================================================
 [12:00:04] [INFO]   PHASE 1: Single Feature Importance (SFI)

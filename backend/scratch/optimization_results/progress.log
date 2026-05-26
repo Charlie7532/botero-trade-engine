@@ -1,78 +1,397 @@
-Feature Optimizer — Started 2026-05-26T05:03:08.223872+00:00
-[05:03:08] [INFO] ==========================================================================================
-[05:03:08] [INFO]   FEATURE OPTIMIZER — Simons + López de Prado Protocol
-[05:03:08] [INFO] ==========================================================================================
-[05:03:08] [INFO] Started: 2026-05-26T05:03:08.224537+00:00
-[05:03:08] [INFO] ==========================================================================================
-[05:03:08] [INFO]   LOADING DATA
-[05:03:08] [INFO] ==========================================================================================
-[05:03:37] [INFO] Feature lake: 93,776 rows, 69 columns
-[05:03:37] [INFO] ==========================================================================================
-[05:03:37] [INFO]   PHASE 0: Expand Feature Lake (Simons Discovery)
-[05:03:37] [INFO] ==========================================================================================
-[05:03:39] [WARN]   Column residual_std_tide not in feature lake — skipping
-[05:03:39] [WARN]   Column residual_std_current not in feature lake — skipping
-[05:03:39] [WARN]   Column residual_std_wave not in feature lake — skipping
-[05:03:39] [INFO]   Generated 34 derived features
-[05:03:39] [INFO] Expanded lake: 97 features (63 original + 34 derived)
-[05:03:39] [INFO]   Checkpoint saved: phase0_features.json
-[05:03:39] [INFO] ==========================================================================================
-[05:03:39] [INFO]   PRODUCTION BASELINES
-[05:03:39] [INFO] ==========================================================================================
-[05:03:39] [INFO]            bounce_height: DSR=  2.308 (56f)
-[05:03:39] [INFO]               long_entry: DSR=  0.593 (63f)
-[05:03:39] [INFO]           pullback_depth: DSR=  6.226 (56f)
-[05:03:39] [INFO]              short_cover: DSR=  8.602 (56f)
-[05:03:39] [INFO]              short_entry: DSR=  1.705 (56f)
-[05:03:39] [INFO]               swing_exit: DSR= 14.247 (56f)
-[05:03:39] [INFO]           trend_recovery: DSR=  4.626 (56f)
-[05:03:39] [INFO]           trend_reversal: DSR= 11.573 (56f)
-[05:03:39] [INFO]       zz_bottom_detector: DSR= 20.967 (63f)
-[05:03:39] [INFO]          zz_top_detector: DSR= 25.783 (63f)
-[05:03:39] [INFO] ==========================================================================================
-[05:03:39] [INFO]   PRE-COMPUTING LABELS
-[05:03:39] [INFO] ==========================================================================================
-[05:03:46] [INFO]               long_entry:  93,436 valid, pos=0.590 (6.2s)
-[05:03:56] [INFO]               swing_exit:  93,606 valid, pos=0.397 (10.7s)
-[05:04:18] [INFO]           pullback_depth:  93,759 valid, pos=0.297 (21.2s)
-[05:07:04] [INFO]           trend_reversal:  93,606 valid, pos=0.381 (166.4s)
-[05:07:10] [INFO]              short_entry:  93,436 valid, pos=0.409 (6.0s)
-[05:07:21] [INFO]              short_cover:  93,606 valid, pos=0.483 (10.8s)
-[05:07:38] [INFO]            bounce_height:  93,759 valid, pos=0.345 (17.2s)
-[05:09:52] [INFO]           trend_recovery:  93,606 valid, pos=0.506 (133.8s)
-[05:09:53] [INFO]       zz_bottom_detector:  93,776 valid, pos=0.121 (0.9s)
-[05:09:54] [INFO]          zz_top_detector:  93,776 valid, pos=0.121 (0.9s)
-[05:09:54] [INFO] ==========================================================================================
-[05:09:54] [INFO]   PHASE 1: Single Feature Importance (SFI)
-[05:09:54] [INFO] ==========================================================================================
-[05:09:54] [INFO] Testing 97 features × 10 heads
-[05:09:54] [INFO] 
-  ── SFI: LONG_ENTRY ──
-[05:10:15] [INFO]     SFI [10/97] tide_slope                          DSR= -1.000
-[05:10:34] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  0.000
-[05:10:50] [INFO]     SFI [30/97] rsi_value                           DSR=  0.000
-[05:10:52] [INFO]     SFI [31/97] rsi_divergence_strength             DSR=  1.352 ★
-[05:11:09] [INFO]     SFI [40/97] tsi_tide                            DSR=  0.000
-[05:11:26] [INFO]     SFI [50/97] slope_decel_current                 DSR=  0.000
-[05:11:43] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
-[05:12:02] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  0.000
-[05:12:21] [INFO]     SFI [80/97] compr_at_extreme                    DSR=  0.000
-[05:12:39] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
-[05:12:51] [INFO] 
+Feature Optimizer — Started 2026-05-26T13:00:44.291901+00:00
+[13:00:44] [INFO] ==========================================================================================
+[13:00:44] [INFO]   FEATURE OPTIMIZER — Simons + López de Prado Protocol
+[13:00:44] [INFO] ==========================================================================================
+[13:00:44] [INFO] Started: 2026-05-26T13:00:44.295715+00:00
+[13:00:44] [INFO] ==========================================================================================
+[13:00:44] [INFO]   LOADING DATA
+[13:00:44] [INFO] ==========================================================================================
+[13:01:03] [INFO]     SFI [119/146] vol_price_divergence                SFI= 0.0058 AUC=0.4942 ★
+[13:01:08] [INFO]     SFI [120/146] volume_exhaustion                   SFI= 0.0023 AUC=0.4977
+[13:01:28] [INFO] Feature lake: 93,776 rows, 82 columns
+[13:01:28] [INFO] ==========================================================================================
+[13:01:28] [INFO]   PHASE 0: Expand Feature Lake (Simons Discovery)
+[13:01:28] [INFO] ==========================================================================================
+[13:01:31] [INFO]   ATR features computed
+[13:01:31] [INFO]   Overnight gap features computed
+[13:01:32] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[13:01:32] [INFO]   Candle structure features computed (23 features)
+[13:01:32] [INFO]   Generated 71 derived features
+[13:01:32] [INFO] Expanded lake: 146 features (75 original + 71 derived)
+[13:01:32] [INFO]   Checkpoint saved: phase0_features.json
+[13:01:32] [INFO] ==========================================================================================
+[13:01:32] [INFO]   PRODUCTION BASELINES
+[13:01:32] [INFO] ==========================================================================================
+[13:01:32] [INFO]            bounce_height: DSR=  2.308 (56f)
+[13:01:32] [INFO]               long_entry: DSR=  0.593 (63f)
+[13:01:32] [INFO]           pullback_depth: DSR=  6.226 (56f)
+[13:01:32] [INFO]              short_cover: DSR=  8.602 (56f)
+[13:01:32] [INFO]              short_entry: DSR=  1.705 (56f)
+[13:01:32] [INFO]               swing_exit: DSR= 14.247 (56f)
+[13:01:32] [INFO]           trend_recovery: DSR=  4.626 (56f)
+[13:01:32] [INFO]           trend_reversal: DSR= 11.573 (56f)
+[13:01:32] [INFO]       zz_bottom_detector: DSR= 20.967 (63f)
+[13:01:32] [INFO]          zz_top_detector: DSR= 25.783 (63f)
+[13:01:32] [INFO] ==========================================================================================
+[13:01:32] [INFO]   PRE-COMPUTING LABELS
+[13:01:32] [INFO] ==========================================================================================
+[13:01:37] [INFO]     SFI [126/146] sigma_high_tide                     SFI= 0.0144 AUC=0.5144 ★
+[13:01:42] [INFO]               long_entry:  93,436 valid, pos=0.590 (9.5s)
+[13:01:45] [INFO]     SFI [127/146] sigma_low_tide                      SFI= 0.0112 AUC=0.5112 ★
+[13:01:58] [INFO]               swing_exit:  93,606 valid, pos=0.397 (16.1s)
+[13:01:58] [INFO]     SFI [129/146] div_high_close_tide                 SFI= 0.0060 AUC=0.4940 ★
+[13:02:05] [INFO]     SFI [130/146] div_close_low_tide                  SFI= 0.0093 AUC=0.5093 ★
+[13:02:25] [INFO]           pullback_depth:  93,759 valid, pos=0.297 (27.1s)
+[13:02:34] [INFO]     SFI [135/146] div_close_low_current               SFI= 0.0066 AUC=0.5066 ★
+[13:03:00] [INFO]     SFI [140/146] div_close_low_wave                  SFI= 0.0031 AUC=0.5031
+[13:03:29] [INFO]     SFI [146/146] inst_rejection_high_current         SFI= 0.0105 AUC=0.5105 ★
+[13:03:29] [INFO] 
   Top 10 features for long_entry:
-[05:12:51] [INFO]      1. rsi_divergence_strength             DSR=  1.352 
-[05:12:51] [INFO]      2. sigma_tide                          DSR=  1.000 
-[05:12:51] [INFO]      3. sigma_current                       DSR=  0.000 
-[05:12:51] [INFO]      4. sigma_wave                          DSR=  0.000 
-[05:12:51] [INFO]      5. vwap_sigma_tide                     DSR=  0.000 
-[05:12:51] [INFO]      6. vwap_sigma_current                  DSR=  0.000 
-[05:12:51] [INFO]      7. vwap_sigma_wave                     DSR=  0.000 
-[05:12:51] [INFO]      8. tension_tide                        DSR=  0.000 
-[05:12:51] [INFO]      9. tension_current                     DSR=  0.000 
-[05:12:51] [INFO]     10. tension_wave                        DSR=  0.000 
-[05:12:51] [INFO]   SFI completed for long_entry in 177s
-[05:12:51] [INFO]   Checkpoint saved: phase1_sfi_long_entry.json
-[05:12:51] [INFO] 
+[13:03:29] [INFO]      1. tsi_current                         DSR=  0.015 
+[13:03:29] [INFO]      2. sigma_high_tide                     DSR=  0.014 ★NEW
+[13:03:29] [INFO]      3. residual_std_tide                   DSR=  0.012 
+[13:03:29] [INFO]      4. reg_value_tide                      DSR=  0.012 
+[13:03:29] [INFO]      5. spread_tide_current                 DSR=  0.012 
+[13:03:29] [INFO]      6. sigma_phase_tc                      DSR=  0.012 ★NEW
+[13:03:29] [INFO]      7. sigma_low_tide                      DSR=  0.011 ★NEW
+[13:03:29] [INFO]      8. tension_tide                        DSR=  0.011 
+[13:03:29] [INFO]      9. price_vwap_div                      DSR=  0.011 ★NEW
+[13:03:29] [INFO]     10. current_slope                       DSR=  0.011 
+[13:03:29] [INFO]   SFI completed for long_entry in 416s
+[13:03:29] [INFO]   Checkpoint saved: phase1_sfi_long_entry.json
+[13:03:29] [INFO] 
   ── SFI: SWING_EXIT ──
-[05:13:01] [INFO]     SFI [10/97] tide_slope                          DSR=  1.953 ★
-[05:13:02] [INFO]     SFI [11/97] current_slope                       DSR=  1.167 ★
+[13:03:38] [INFO]     SFI [3/146] sigma_wave                          SFI= 0.0069 AUC=0.4931 ★
+[13:03:41] [INFO]     SFI [4/146] vwap_sigma_tide                     SFI= 0.0070 AUC=0.5070 ★
+[13:03:44] [INFO]     SFI [5/146] vwap_sigma_current                  SFI= 0.0073 AUC=0.5073 ★
+[13:03:55] [INFO]     SFI [9/146] tension_wave                        SFI= 0.0101 AUC=0.5101 ★
+[13:03:59] [INFO]     SFI [10/146] tide_slope                          SFI= 0.0168 AUC=0.5168 ★
+[13:04:04] [INFO]     SFI [11/146] current_slope                       SFI= 0.0196 AUC=0.5196 ★
+[13:04:10] [INFO]     SFI [13/146] tide_accel                          SFI= 0.0098 AUC=0.4902 ★
+[13:04:13] [INFO]     SFI [14/146] current_accel                       SFI= 0.0100 AUC=0.5100 ★
+[13:04:16] [INFO]     SFI [15/146] wave_accel                          SFI= 0.0111 AUC=0.5111 ★
+[13:04:19] [INFO]     SFI [16/146] conj_wave_current                   SFI= 0.0059 AUC=0.5059 ★
+[13:04:23] [INFO]     SFI [17/146] conj_wave_tide                      SFI= 0.0078 AUC=0.5078 ★
+[13:04:26] [INFO]     SFI [18/146] conj_current_tide                   SFI= 0.0054 AUC=0.5054 ★
+[13:04:29] [INFO]     SFI [19/146] spread_tide_current                 SFI= 0.0093 AUC=0.5093 ★
+[13:04:32] [INFO]     SFI [20/146] spread_tide_wave                    SFI= 0.0094 AUC=0.4906 ★
+[13:04:36] [INFO]     SFI [21/146] spread_current_wave                 SFI= 0.0163 AUC=0.5163 ★
+[13:04:42] [INFO]     SFI [22/146] vwap_spread_tide_current            SFI= 0.0248 AUC=0.5248 ★
+[13:04:46] [INFO]     SFI [23/146] vwap_spread_tide_wave               SFI= 0.0357 AUC=0.5357 ★
+[13:04:53] [INFO]     SFI [25/146] compression_ratio                   SFI= 0.0264 AUC=0.5264 ★
+[13:04:56] [INFO]     SFI [26/146] fear_level                          SFI= 0.0193 AUC=0.5193 ★
+[13:04:59] [INFO]     SFI [27/146] vol_up_down_ratio                   SFI= 0.0071 AUC=0.5071 ★
+[13:05:02] [INFO]     SFI [28/146] wave_flip                           SFI= 0.0065 AUC=0.4935 ★
+[13:05:05] [INFO]     SFI [29/146] wave_flip_direction                 SFI= 0.0061 AUC=0.4939 ★
+[13:05:08] [INFO]     SFI [30/146] rsi_value                           SFI= 0.0311 AUC=0.5311 ★
+[13:05:15] [INFO]     SFI [32/146] rsi_conviction                      SFI= 0.0207 AUC=0.5207 ★
+[13:05:22] [INFO]     SFI [34/146] vol_adj_delta                       SFI= 0.0136 AUC=0.5136 ★
+[13:05:26] [INFO]     SFI [35/146] geo_state_norm                      SFI= 0.0097 AUC=0.5097 ★
+[13:05:29] [INFO]     SFI [36/146] geo_velocity_align                  SFI= 0.0151 AUC=0.5151 ★
+[13:05:34] [INFO]     SFI [37/146] geo_exit_align                      SFI= 0.0146 AUC=0.5146 ★
+[13:05:41] [INFO]     SFI [39/146] geo_phase_angle                     SFI= 0.0177 AUC=0.5177 ★
+[13:05:46] [INFO]     SFI [40/146] residual_std_tide                   SFI= 0.0294 AUC=0.5294 ★
+[13:05:51] [INFO]     SFI [41/146] residual_std_current                SFI= 0.0078 AUC=0.5078 ★
+[13:05:54] [INFO]     SFI [42/146] residual_std_wave                   SFI= 0.0300 AUC=0.5300 ★
+[13:06:04] [INFO]     SFI [45/146] reg_value_wave                      SFI= 0.0055 AUC=0.5055 ★
+[13:06:09] [INFO]           trend_reversal:  93,606 valid, pos=0.381 (224.3s)
+[13:06:13] [INFO]     SFI [47/146] vwap_current                        SFI= 0.0101 AUC=0.5101 ★
+[13:06:17] [INFO]              short_entry:  93,436 valid, pos=0.409 (7.8s)
+[13:06:20] [INFO]     SFI [49/146] tsi_tide                            SFI= 0.0075 AUC=0.5075 ★
+[13:06:25] [INFO]     SFI [50/146] tsi_current                         SFI= 0.0011 AUC=0.5011
+[13:06:33] [INFO]     SFI [52/146] adi_tide                            SFI= 0.0074 AUC=0.5074 ★
+[13:06:35] [INFO]              short_cover:  93,606 valid, pos=0.483 (18.4s)
+[13:06:37] [INFO]     SFI [53/146] adi_current                         SFI= 0.0058 AUC=0.4942 ★
+[13:06:41] [INFO]     SFI [54/146] adi_wave                            SFI= 0.0052 AUC=0.5052 ★
+[13:06:45] [INFO]     SFI [56/146] above_all_vwaps_int                 SFI= 0.0055 AUC=0.5055 ★
+[13:06:53] [INFO]     SFI [59/146] slope_decel_current                 SFI= 0.0058 AUC=0.5058 ★
+[13:06:56] [INFO]     SFI [60/146] sigma_divergence                    SFI= 0.0094 AUC=0.4906 ★
+[13:06:59] [INFO]     SFI [61/146] complacency_index                   SFI= 0.0284 AUC=0.5284 ★
+[13:07:03] [INFO]            bounce_height:  93,759 valid, pos=0.345 (27.7s)
+[13:07:04] [INFO]     SFI [63/146] rsi_trap_zone                       SFI= 0.0218 AUC=0.5218 ★
+[13:07:12] [INFO]     SFI [66/146] d_kalman_velocity                   SFI= 0.0103 AUC=0.4897 ★
+[13:07:18] [INFO]     SFI [68/146] d_compression_ratio                 SFI= 0.0070 AUC=0.4930 ★
+[13:07:21] [INFO]     SFI [69/146] d_fear_level                        SFI= 0.0142 AUC=0.4858 ★
+[13:07:25] [INFO]     SFI [70/146] d_vol_up_down_ratio                 SFI= 0.0039 AUC=0.5039
+[13:07:28] [INFO]     SFI [71/146] d_tide_slope                        SFI= 0.0085 AUC=0.4915 ★
+[13:07:32] [INFO]     SFI [72/146] d_wave_accel                        SFI= 0.0228 AUC=0.5228 ★
+[13:07:42] [INFO]     SFI [78/146] slope_ratio_tw                      SFI= 0.0161 AUC=0.5161 ★
+[13:07:48] [INFO]     SFI [80/146] slope_diff_tc                       SFI= 0.0052 AUC=0.5052 ★
+[13:07:52] [INFO]     SFI [81/146] slope_diff_tw                       SFI= 0.0084 AUC=0.5084 ★
+[13:07:56] [INFO]     SFI [82/146] slope_diff_cw                       SFI= 0.0061 AUC=0.5061 ★
+[13:07:59] [INFO]     SFI [83/146] tide_slope_sq                       SFI= 0.0168 AUC=0.5168 ★
+[13:08:03] [INFO]     SFI [84/146] current_slope_sq                    SFI= 0.0138 AUC=0.5138 ★
+[13:08:06] [INFO]     SFI [85/146] wave_slope_sq                       SFI= 0.0082 AUC=0.5082 ★
+[13:08:09] [INFO]     SFI [86/146] slope_energy                        SFI= 0.0115 AUC=0.5115 ★
+[13:08:13] [INFO]     SFI [87/146] slope_product_tc                    SFI= 0.0251 AUC=0.5251 ★
+[13:08:16] [INFO]     SFI [88/146] slope_phase_tw                      SFI= 0.0084 AUC=0.5084 ★
+[13:08:19] [INFO]     SFI [89/146] sigma_phase_tc                      SFI= 0.0093 AUC=0.5093 ★
+[13:08:23] [INFO]     SFI [90/146] rsi_sigma_interact                  SFI= 0.0002 AUC=0.5002
+[13:08:27] [INFO]     SFI [91/146] kalman_slope_conf                   SFI= 0.0145 AUC=0.5145 ★
+[13:08:30] [INFO]     SFI [92/146] compr_at_extreme                    SFI= 0.0266 AUC=0.5266 ★
+[13:08:33] [INFO]     SFI [93/146] vol_slope_conf                      SFI= 0.0196 AUC=0.5196 ★
+[13:08:37] [INFO]     SFI [94/146] d2_sigma_tide                       SFI= 0.0182 AUC=0.5182 ★
+[13:08:43] [INFO]     SFI [96/146] d2_tide_accel                       SFI= 0.0306 AUC=0.5306 ★
+[13:08:47] [INFO]     SFI [97/146] d2_current_slope                    SFI= 0.0099 AUC=0.5099 ★
+[13:08:49] [INFO]     SFI [98/146] d2_tension_tide                     SFI= 0.0090 AUC=0.5090 ★
+[13:08:52] [INFO]     SFI [99/146] d2_conj_wave_tide                   SFI= 0.0103 AUC=0.5103 ★
+[13:08:56] [INFO]     SFI [100/146] d2_vwap_sigma_tide                  SFI= 0.0232 AUC=0.5232 ★
+[13:09:06] [INFO]     SFI [103/146] bullish_score                       SFI= 0.0119 AUC=0.5119 ★
+[13:09:20] [INFO]     SFI [108/146] sigma_max_tf                        SFI= 0.0067 AUC=0.4933 ★
+[13:09:26] [INFO]     SFI [110/146] atr_14                              SFI= 0.0201 AUC=0.5201 ★
+[13:09:30] [INFO]     SFI [111/146] atr_ratio                           SFI= 0.0801 AUC=0.5801 ★
+[13:09:32] [INFO]     SFI [112/146] overnight_gap                       SFI= 0.0282 AUC=0.5282 ★
+[13:09:36] [INFO]     SFI [113/146] overnight_gap_atr                   SFI= 0.0155 AUC=0.4845 ★
+[13:09:40] [INFO]     SFI [114/146] overnight_gap_vs_tide               SFI= 0.0174 AUC=0.5174 ★
+[13:09:44] [INFO]     SFI [115/146] volume_ratio                        SFI= 0.0157 AUC=0.5157 ★
+[13:09:46] [INFO]     SFI [116/146] volume_sigma                        SFI= 0.0111 AUC=0.5111 ★
+[13:09:52] [INFO]     SFI [118/146] volume_trend                        SFI= 0.0076 AUC=0.5076 ★
+[13:09:55] [INFO]     SFI [119/146] vol_price_divergence                SFI= 0.0149 AUC=0.5149 ★
+[13:09:57] [INFO]     SFI [120/146] volume_exhaustion                   SFI= 0.0049 AUC=0.5049
+[13:10:00] [INFO]     SFI [121/146] volume_slope_confirm                SFI= 0.0252 AUC=0.5252 ★
+[13:10:04] [INFO]           trend_recovery:  93,606 valid, pos=0.506 (181.2s)
+[13:10:05] [INFO]     SFI [122/146] volume_at_extreme                   SFI= 0.0131 AUC=0.5131 ★
+[13:10:06] [INFO]       zz_bottom_detector:  93,776 valid, pos=0.121 (1.8s)
+[13:10:08] [INFO]          zz_top_detector:  93,776 valid, pos=0.121 (1.8s)
+[13:10:08] [INFO] ==========================================================================================
+[13:10:08] [INFO]   PHASE 1: Single Feature Importance (SFI)
+[13:10:08] [INFO] ==========================================================================================
+[13:10:08] [INFO] Testing 146 features × 10 heads
+[13:10:08] [INFO] 
+  ── SFI: LONG_ENTRY ──
+[13:10:15] [INFO]     SFI [124/146] close_position                      SFI= 0.0062 AUC=0.4938 ★
+[13:10:34] [INFO]     SFI [1/146] sigma_tide                          SFI= 0.0094 AUC=0.5094 ★
+[13:10:52] [INFO]     SFI [126/146] sigma_high_tide                     SFI= 0.0118 AUC=0.5118 ★
+[13:11:17] [INFO]     SFI [128/146] sigma_range_tide                    SFI= 0.0204 AUC=0.5204 ★
+[13:11:42] [INFO]     SFI [130/146] div_close_low_tide                  SFI= 0.0031 AUC=0.5031
+[13:12:11] [INFO]     SFI [132/146] sigma_low_current                   SFI= 0.0077 AUC=0.5077 ★
+[13:12:33] [INFO]     SFI [133/146] sigma_range_current                 SFI= 0.0107 AUC=0.5107 ★
+[13:12:38] [INFO]     SFI [5/146] vwap_sigma_current                  SFI= 0.0053 AUC=0.5053 ★
+[13:12:43] [INFO]     SFI [134/146] div_high_close_current              SFI= 0.0052 AUC=0.5052 ★
+[13:13:35] [INFO]     SFI [7/146] tension_tide                        SFI= 0.0110 AUC=0.5110 ★
+[13:13:40] [INFO]     SFI [138/146] sigma_range_wave                    SFI= 0.0060 AUC=0.5060 ★
+[13:14:04] [INFO]     SFI [8/146] tension_current                     SFI= 0.0092 AUC=0.5092 ★
+[13:14:15] [INFO]     SFI [140/146] div_close_low_wave                  SFI= 0.0056 AUC=0.5056 ★
+[13:14:31] [INFO]     SFI [141/146] vwap_sigma_high_tide                SFI= 0.0067 AUC=0.5067 ★
+[13:14:52] [INFO]     SFI [10/146] tide_slope                          SFI= 0.0005 AUC=0.5005
+[13:15:08] [INFO]     SFI [145/146] vwap_sigma_low_current              SFI= 0.0077 AUC=0.5077 ★
+[13:15:17] [INFO]     SFI [11/146] current_slope                       SFI= 0.0103 AUC=0.5103 ★
+[13:15:17] [INFO] 
+  Top 10 features for swing_exit:
+[13:15:17] [INFO]      1. atr_ratio                           DSR=  0.080 ★NEW
+[13:15:17] [INFO]      2. vwap_spread_tide_wave               DSR=  0.036 
+[13:15:17] [INFO]      3. rsi_value                           DSR=  0.031 
+[13:15:17] [INFO]      4. d2_tide_accel                       DSR=  0.031 ★NEW
+[13:15:17] [INFO]      5. residual_std_wave                   DSR=  0.030 
+[13:15:17] [INFO]      6. residual_std_tide                   DSR=  0.029 
+[13:15:17] [INFO]      7. complacency_index                   DSR=  0.028 
+[13:15:17] [INFO]      8. overnight_gap                       DSR=  0.028 ★NEW
+[13:15:17] [INFO]      9. compr_at_extreme                    DSR=  0.027 ★NEW
+[13:15:17] [INFO]     10. compression_ratio                   DSR=  0.026 
+[13:15:17] [INFO]   SFI completed for swing_exit in 708s
+[13:15:17] [INFO]   Checkpoint saved: phase1_sfi_swing_exit.json
+[13:15:18] [INFO] 
+  ── SFI: PULLBACK_DEPTH ──
+[13:15:28] [INFO]     SFI [1/146] sigma_tide                          SFI= 0.0143 AUC=0.5143 ★
+[13:16:14] [INFO]     SFI [5/146] vwap_sigma_current                  SFI= 0.0179 AUC=0.5179 ★
+[13:16:22] [INFO]     SFI [6/146] vwap_sigma_wave                     SFI= 0.0138 AUC=0.5138 ★
+[13:16:38] [INFO]     SFI [9/146] tension_wave                        SFI= 0.0060 AUC=0.5060 ★
+[13:16:50] [INFO]     SFI [10/146] tide_slope                          SFI= 0.0209 AUC=0.5209 ★
+[13:16:55] [INFO]     SFI [11/146] current_slope                       SFI= 0.0311 AUC=0.5311 ★
+[13:17:05] [INFO]     SFI [12/146] wave_slope                          SFI= 0.0232 AUC=0.5232 ★
+[13:17:11] [INFO]     SFI [13/146] tide_accel                          SFI= 0.0391 AUC=0.5391 ★
+[13:17:12] [INFO]     SFI [16/146] conj_wave_current                   SFI= 0.0086 AUC=0.5086 ★
+[13:17:18] [INFO]     SFI [14/146] current_accel                       SFI= 0.0236 AUC=0.5236 ★
+[13:17:32] [INFO]     SFI [16/146] conj_wave_current                   SFI= 0.0065 AUC=0.5065 ★
+[13:17:39] [INFO]     SFI [17/146] conj_wave_tide                      SFI= 0.0263 AUC=0.5263 ★
+[13:17:46] [INFO]     SFI [18/146] conj_current_tide                   SFI= 0.0344 AUC=0.5344 ★
+[13:17:59] [INFO]     SFI [20/146] spread_tide_wave                    SFI= 0.0040 AUC=0.5040
+[13:18:02] [INFO]     SFI [19/146] spread_tide_current                 SFI= 0.0111 AUC=0.5111 ★
+[13:18:05] [INFO]     SFI [21/146] spread_current_wave                 SFI= 0.0086 AUC=0.5086 ★
+[13:18:13] [INFO]     SFI [22/146] vwap_spread_tide_current            SFI= 0.0195 AUC=0.5195 ★
+[13:18:19] [INFO]     SFI [23/146] vwap_spread_tide_wave               SFI= 0.0312 AUC=0.5312 ★
+[13:18:20] [INFO]     SFI [20/146] spread_tide_wave                    SFI= 0.0067 AUC=0.5067 ★
+[13:18:27] [INFO]     SFI [24/146] vwap_spread_current_wave            SFI= 0.0223 AUC=0.5223 ★
+[13:18:33] [INFO]     SFI [25/146] compression_ratio                   SFI= 0.0372 AUC=0.5372 ★
+[13:18:39] [INFO]     SFI [26/146] fear_level                          SFI= 0.0150 AUC=0.5150 ★
+[13:18:46] [INFO]     SFI [27/146] vol_up_down_ratio                   SFI= 0.0055 AUC=0.4945 ★
+[13:18:53] [INFO]     SFI [28/146] wave_flip                           SFI= 0.0056 AUC=0.5056 ★
+[13:18:59] [INFO]     SFI [29/146] wave_flip_direction                 SFI= 0.0053 AUC=0.5053 ★
+[13:19:07] [INFO]     SFI [30/146] rsi_value                           SFI= 0.0117 AUC=0.5117 ★
+[13:19:18] [INFO]     SFI [32/146] rsi_conviction                      SFI= 0.0256 AUC=0.5256 ★
+[13:19:25] [INFO]     SFI [33/146] kalman_velocity                     SFI= 0.0077 AUC=0.5077 ★
+[13:19:33] [INFO]     SFI [34/146] vol_adj_delta                       SFI= 0.0220 AUC=0.5220 ★
+[13:19:39] [INFO]     SFI [35/146] geo_state_norm                      SFI= 0.0136 AUC=0.5136 ★
+[13:19:48] [INFO]     SFI [36/146] geo_velocity_align                  SFI= 0.0059 AUC=0.5059 ★
+[13:20:00] [INFO]     SFI [38/146] geo_accel_align                     SFI= 0.0090 AUC=0.5090 ★
+[13:20:06] [INFO]     SFI [39/146] geo_phase_angle                     SFI= 0.0090 AUC=0.5090 ★
+[13:20:15] [INFO]     SFI [40/146] residual_std_tide                   SFI= 0.0057 AUC=0.5057 ★
+[13:20:22] [INFO]     SFI [41/146] residual_std_current                SFI= 0.0193 AUC=0.5193 ★
+[13:20:29] [INFO]     SFI [42/146] residual_std_wave                   SFI= 0.0306 AUC=0.5306 ★
+[13:20:42] [INFO]     SFI [44/146] reg_value_current                   SFI= 0.0169 AUC=0.4831 ★
+[13:20:51] [INFO]     SFI [45/146] reg_value_wave                      SFI= 0.0174 AUC=0.4826 ★
+[13:21:00] [INFO]     SFI [46/146] vwap_tide                           SFI= 0.0068 AUC=0.4932 ★
+[13:21:03] [INFO]     SFI [30/146] rsi_value                           SFI= 0.0002 AUC=0.4998
+[13:21:09] [INFO]     SFI [47/146] vwap_current                        SFI= 0.0068 AUC=0.4932 ★
+[13:21:16] [INFO]     SFI [48/146] vwap_wave                           SFI= 0.0157 AUC=0.4843 ★
+[13:21:22] [INFO]     SFI [49/146] tsi_tide                            SFI= 0.0122 AUC=0.5122 ★
+[13:21:28] [INFO]     SFI [50/146] tsi_current                         SFI= 0.0145 AUC=0.5145 ★
+[13:21:33] [INFO]     SFI [32/146] rsi_conviction                      SFI= 0.0118 AUC=0.5118 ★
+[13:21:34] [INFO]     SFI [51/146] tsi_wave                            SFI= 0.0203 AUC=0.5203 ★
+[13:21:40] [INFO]     SFI [52/146] adi_tide                            SFI= 0.0062 AUC=0.4938 ★
+[13:21:55] [INFO]     SFI [54/146] adi_wave                            SFI= 0.0056 AUC=0.5056 ★
+[13:22:02] [INFO]     SFI [55/146] below_all_vwaps_int                 SFI= 0.0082 AUC=0.5082 ★
+[13:22:07] [INFO]     SFI [56/146] above_all_vwaps_int                 SFI= 0.0121 AUC=0.5121 ★
+[13:22:30] [INFO]     SFI [59/146] slope_decel_current                 SFI= 0.0340 AUC=0.5340 ★
+[13:22:55] [INFO]     SFI [60/146] sigma_divergence                    SFI= 0.0040 AUC=0.5040
+[13:23:18] [INFO]     SFI [61/146] complacency_index                   SFI= 0.0098 AUC=0.5098 ★
+[13:23:50] [INFO]     SFI [65/146] d_sigma_wave                        SFI= 0.0093 AUC=0.4907 ★
+[13:24:01] [INFO]     SFI [67/146] d_rsi_value                         SFI= 0.0180 AUC=0.5180 ★
+[13:24:40] [INFO]     SFI [70/146] d_vol_up_down_ratio                 SFI= 0.0069 AUC=0.5069 ★
+[13:24:43] [INFO]     SFI [71/146] d_tide_slope                        SFI= 0.0395 AUC=0.5395 ★
+[13:24:51] [INFO]     SFI [40/146] residual_std_tide                   SFI= 0.0116 AUC=0.5116 ★
+[13:24:51] [INFO]     SFI [72/146] d_wave_accel                        SFI= 0.0126 AUC=0.5126 ★
+[13:25:01] [INFO]     SFI [76/146] sigma_ratio_tw                      SFI= 0.0090 AUC=0.4910 ★
+[13:25:07] [INFO]     SFI [77/146] slope_ratio_tc                      SFI= 0.0071 AUC=0.5071 ★
+[13:25:13] [INFO]     SFI [78/146] slope_ratio_tw                      SFI= 0.0086 AUC=0.5086 ★
+[13:25:29] [INFO]     SFI [79/146] tension_ratio_tw                    SFI= 0.0114 AUC=0.5114 ★
+[13:25:32] [INFO]     SFI [42/146] residual_std_wave                   SFI= 0.0060 AUC=0.4940 ★
+[13:25:49] [INFO]     SFI [80/146] slope_diff_tc                       SFI= 0.0350 AUC=0.5350 ★
+[13:26:17] [INFO]     SFI [43/146] reg_value_tide                      SFI= 0.0120 AUC=0.4880 ★
+[13:26:18] [INFO]     SFI [81/146] slope_diff_tw                       SFI= 0.0254 AUC=0.5254 ★
+[13:26:30] [INFO]     SFI [82/146] slope_diff_cw                       SFI= 0.0080 AUC=0.5080 ★
+[13:26:42] [INFO]     SFI [83/146] tide_slope_sq                       SFI= 0.0209 AUC=0.5209 ★
+[13:26:45] [INFO]     SFI [44/146] reg_value_current                   SFI= 0.0095 AUC=0.5095 ★
+[13:26:59] [INFO]     SFI [84/146] current_slope_sq                    SFI= 0.0319 AUC=0.5319 ★
+[13:27:08] [INFO]     SFI [85/146] wave_slope_sq                       SFI= 0.0151 AUC=0.5151 ★
+[13:27:11] [INFO]     SFI [86/146] slope_energy                        SFI= 0.0424 AUC=0.5424 ★
+[13:27:28] [INFO]     SFI [87/146] slope_product_tc                    SFI= 0.0442 AUC=0.5442 ★
+[13:27:49] [INFO]     SFI [46/146] vwap_tide                           SFI= 0.0063 AUC=0.4937 ★
+[13:27:51] [INFO]     SFI [88/146] slope_phase_tw                      SFI= 0.0254 AUC=0.5254 ★
+[13:28:16] [INFO]     SFI [90/146] rsi_sigma_interact                  SFI= 0.0162 AUC=0.5162 ★
+[13:28:17] [INFO]     SFI [47/146] vwap_current                        SFI= 0.0071 AUC=0.4929 ★
+[13:28:19] [INFO]     SFI [91/146] kalman_slope_conf                   SFI= 0.0326 AUC=0.5326 ★
+[13:28:26] [INFO]     SFI [92/146] compr_at_extreme                    SFI= 0.0371 AUC=0.5371 ★
+[13:28:32] [INFO]     SFI [48/146] vwap_wave                           SFI= 0.0059 AUC=0.4941 ★
+[13:28:33] [INFO]     SFI [93/146] vol_slope_conf                      SFI= 0.0176 AUC=0.5176 ★
+[13:28:41] [INFO]     SFI [94/146] d2_sigma_tide                       SFI= 0.0179 AUC=0.5179 ★
+[13:28:55] [INFO]     SFI [96/146] d2_tide_accel                       SFI= 0.0370 AUC=0.5370 ★
+[13:29:01] [INFO]     SFI [97/146] d2_current_slope                    SFI= 0.0239 AUC=0.5239 ★
+[13:29:06] [INFO]     SFI [98/146] d2_tension_tide                     SFI= 0.0164 AUC=0.5164 ★
+[13:29:09] [INFO]     SFI [50/146] tsi_current                         SFI= 0.0138 AUC=0.5138 ★
+[13:29:16] [INFO]     SFI [100/146] d2_vwap_sigma_tide                  SFI= 0.0185 AUC=0.5185 ★
+[13:29:27] [INFO]     SFI [102/146] triple_alignment                    SFI= 0.0075 AUC=0.5075 ★
+[13:29:31] [INFO]     SFI [103/146] bullish_score                       SFI= 0.0084 AUC=0.5084 ★
+[13:29:38] [INFO]     SFI [52/146] adi_tide                            SFI= 0.0105 AUC=0.5105 ★
+[13:29:49] [INFO]     SFI [106/146] sigma_abs_dist                      SFI= 0.0126 AUC=0.5126 ★
+[13:29:52] [INFO]     SFI [53/146] adi_current                         SFI= 0.0094 AUC=0.5094 ★
+[13:29:54] [INFO]     SFI [107/146] sigma_squared                       SFI= 0.0126 AUC=0.5126 ★
+[13:30:00] [INFO]     SFI [108/146] sigma_max_tf                        SFI= 0.0095 AUC=0.5095 ★
+[13:30:14] [INFO]     SFI [110/146] atr_14                              SFI= 0.0268 AUC=0.5268 ★
+[13:30:20] [INFO]     SFI [111/146] atr_ratio                           SFI= 0.0955 AUC=0.5955 ★
+[13:30:27] [INFO]     SFI [112/146] overnight_gap                       SFI= 0.0485 AUC=0.5485 ★
+[13:30:40] [INFO]     SFI [114/146] overnight_gap_vs_tide               SFI= 0.0386 AUC=0.5386 ★
+[13:30:48] [INFO]     SFI [57/146] regime_encoded                      SFI= 0.0054 AUC=0.4946 ★
+[13:30:50] [INFO]     SFI [115/146] volume_ratio                        SFI= 0.0101 AUC=0.5101 ★
+[13:30:56] [INFO]     SFI [116/146] volume_sigma                        SFI= 0.0138 AUC=0.5138 ★
+[13:31:10] [INFO]     SFI [118/146] volume_trend                        SFI= 0.0150 AUC=0.5150 ★
+[13:31:15] [INFO]     SFI [119/146] vol_price_divergence                SFI= 0.0233 AUC=0.5233 ★
+[13:31:18] [INFO]     SFI [120/146] volume_exhaustion                   SFI= 0.0062 AUC=0.5062 ★
+[13:31:19] [INFO]     SFI [59/146] slope_decel_current                 SFI= 0.0086 AUC=0.4914 ★
+[13:31:24] [INFO]     SFI [121/146] volume_slope_confirm                SFI= 0.0474 AUC=0.5474 ★
+[13:31:35] [INFO]     SFI [60/146] sigma_divergence                    SFI= 0.0067 AUC=0.5067 ★
+[13:31:36] [INFO]     SFI [122/146] volume_at_extreme                   SFI= 0.0261 AUC=0.5261 ★
+[13:31:44] [INFO]     SFI [123/146] vol_accel_wave                      SFI= 0.0078 AUC=0.5078 ★
+[13:32:15] [INFO]     SFI [127/146] sigma_low_tide                      SFI= 0.0189 AUC=0.5189 ★
+[13:32:23] [INFO]     SFI [128/146] sigma_range_tide                    SFI= 0.0340 AUC=0.5340 ★
+[13:32:55] [INFO]     SFI [129/146] div_high_close_tide                 SFI= 0.0115 AUC=0.5115 ★
+[13:33:09] [INFO]     SFI [130/146] div_close_low_tide                  SFI= 0.0174 AUC=0.5174 ★
+[13:33:29] [INFO]     SFI [131/146] sigma_high_current                  SFI= 0.0072 AUC=0.4928 ★
+[13:33:32] [INFO]     SFI [132/146] sigma_low_current                   SFI= 0.0058 AUC=0.5058 ★
+[13:33:34] [INFO]     SFI [133/146] sigma_range_current                 SFI= 0.0247 AUC=0.5247 ★
+[13:33:39] [INFO]     SFI [134/146] div_high_close_current              SFI= 0.0104 AUC=0.5104 ★
+[13:33:41] [INFO]     SFI [135/146] div_close_low_current               SFI= 0.0100 AUC=0.5100 ★
+[13:33:55] [INFO]     SFI [136/146] sigma_high_wave                     SFI= 0.0055 AUC=0.4945 ★
+[13:34:20] [INFO]     SFI [137/146] sigma_low_wave                      SFI= 0.0093 AUC=0.5093 ★
+[13:34:59] [INFO]     SFI [140/146] div_close_low_wave                  SFI= 0.0063 AUC=0.4937 ★
+[13:35:08] [INFO]     SFI [141/146] vwap_sigma_high_tide                SFI= 0.0081 AUC=0.5081 ★
+[13:35:10] [INFO]     SFI [70/146] d_vol_up_down_ratio                 SFI= 0.0012 AUC=0.4988
+[13:35:12] [INFO]     SFI [142/146] vwap_sigma_low_tide                 SFI= 0.0084 AUC=0.5084 ★
+[13:35:47] [INFO]     SFI [145/146] vwap_sigma_low_current              SFI= 0.0076 AUC=0.5076 ★
+[13:35:50] [INFO] 
+  Top 10 features for pullback_depth:
+[13:35:50] [INFO]      1. atr_ratio                           DSR=  0.095 ★NEW
+[13:35:50] [INFO]      2. overnight_gap                       DSR=  0.049 ★NEW
+[13:35:50] [INFO]      3. volume_slope_confirm                DSR=  0.047 ★NEW
+[13:35:50] [INFO]      4. slope_product_tc                    DSR=  0.044 ★NEW
+[13:35:50] [INFO]      5. slope_energy                        DSR=  0.042 ★NEW
+[13:35:50] [INFO]      6. d_tide_slope                        DSR=  0.040 
+[13:35:50] [INFO]      7. tide_accel                          DSR=  0.039 
+[13:35:50] [INFO]      8. overnight_gap_vs_tide               DSR=  0.039 ★NEW
+[13:35:50] [INFO]      9. compression_ratio                   DSR=  0.037 
+[13:35:50] [INFO]     10. compr_at_extreme                    DSR=  0.037 ★NEW
+[13:35:50] [INFO]   SFI completed for pullback_depth in 1232s
+[13:35:50] [INFO]   Checkpoint saved: phase1_sfi_pullback_depth.json
+[13:35:50] [INFO] 
+  ── SFI: TREND_REVERSAL ──
+[13:36:13] [INFO]     SFI [1/146] sigma_tide                          SFI= 0.2968 AUC=0.7968 ★
+[13:36:32] [INFO]     SFI [2/146] sigma_current                       SFI= 0.0161 AUC=0.5161 ★
+[13:37:00] [INFO]     SFI [3/146] sigma_wave                          SFI= 0.0051 AUC=0.5051 ★
+[13:37:00] [INFO]     SFI [77/146] slope_ratio_tc                      SFI= 0.0070 AUC=0.5070 ★
+[13:37:19] [INFO]     SFI [4/146] vwap_sigma_tide                     SFI= 0.3791 AUC=0.8791 ★
+[13:37:39] [INFO]     SFI [78/146] slope_ratio_tw                      SFI= 0.0067 AUC=0.5067 ★
+[13:37:43] [INFO]     SFI [5/146] vwap_sigma_current                  SFI= 0.2587 AUC=0.7587 ★
+[13:38:13] [INFO]     SFI [6/146] vwap_sigma_wave                     SFI= 0.1457 AUC=0.6457 ★
+[13:38:14] [INFO]     SFI [79/146] tension_ratio_tw                    SFI= 0.0087 AUC=0.5087 ★
+[13:38:30] [INFO]     SFI [7/146] tension_tide                        SFI= 0.0502 AUC=0.5502 ★
+[13:38:44] [INFO]     SFI [80/146] slope_diff_tc                       SFI= 0.0011 AUC=0.5011
+[13:38:51] [INFO]     SFI [8/146] tension_current                     SFI= 0.2446 AUC=0.7446 ★
+[13:39:19] [INFO]     SFI [9/146] tension_wave                        SFI= 0.1473 AUC=0.6473 ★
+[13:39:43] [INFO]     SFI [10/146] tide_slope                          SFI= 0.1571 AUC=0.6571 ★
+[13:40:00] [INFO]     SFI [82/146] slope_diff_cw                       SFI= 0.0077 AUC=0.5077 ★
+[13:40:06] [INFO]     SFI [11/146] current_slope                       SFI= 0.2831 AUC=0.7831 ★
+[13:40:52] [INFO]     SFI [12/146] wave_slope                          SFI= 0.1778 AUC=0.6778 ★
+[13:41:11] [INFO]     SFI [13/146] tide_accel                          SFI= 0.3451 AUC=0.8451 ★
+[13:41:45] [INFO]     SFI [14/146] current_accel                       SFI= 0.0559 AUC=0.5559 ★
+[13:42:10] [INFO]     SFI [15/146] wave_accel                          SFI= 0.0387 AUC=0.5387 ★
+[13:42:33] [INFO]     SFI [16/146] conj_wave_current                   SFI= 0.0543 AUC=0.5543 ★
+[13:42:50] [INFO]     SFI [17/146] conj_wave_tide                      SFI= 0.1471 AUC=0.6471 ★
+[13:43:15] [INFO]     SFI [18/146] conj_current_tide                   SFI= 0.2353 AUC=0.7353 ★
+[13:43:21] [INFO]     SFI [87/146] slope_product_tc                    SFI= 0.0060 AUC=0.5060 ★
+[13:43:25] [INFO]     SFI [19/146] spread_tide_current                 SFI= 0.2439 AUC=0.7439 ★
+[13:43:27] [INFO]     SFI [20/146] spread_tide_wave                    SFI= 0.2329 AUC=0.7329 ★
+[13:43:44] [INFO]     SFI [21/146] spread_current_wave                 SFI= 0.0292 AUC=0.5292 ★
+[13:43:47] [INFO]     SFI [22/146] vwap_spread_tide_current            SFI= 0.3223 AUC=0.8223 ★
+[13:43:48] [INFO]     SFI [89/146] sigma_phase_tc                      SFI= 0.0111 AUC=0.5111 ★
+[13:43:56] [INFO]     SFI [23/146] vwap_spread_tide_wave               SFI= 0.3741 AUC=0.8741 ★
+[13:44:21] [INFO]     SFI [24/146] vwap_spread_current_wave            SFI= 0.2756 AUC=0.7756 ★
+[13:44:25] [INFO]     SFI [90/146] rsi_sigma_interact                  SFI= 0.0083 AUC=0.5083 ★
+[13:45:01] [INFO]     SFI [25/146] compression_ratio                   SFI= 0.0133 AUC=0.5133 ★
+[13:45:07] [INFO]     SFI [26/146] fear_level                          SFI= 0.2019 AUC=0.7019 ★
+[13:45:35] [INFO]     SFI [27/146] vol_up_down_ratio                   SFI= 0.0118 AUC=0.5118 ★
+[13:45:45] [INFO]     SFI [28/146] wave_flip                           SFI= 0.0071 AUC=0.4929 ★
+[13:46:26] [INFO]     SFI [30/146] rsi_value                           SFI= 0.2074 AUC=0.7074 ★
+[13:47:20] [INFO]     SFI [32/146] rsi_conviction                      SFI= 0.2129 AUC=0.7129 ★
+[13:48:36] [INFO]     SFI [34/146] vol_adj_delta                       SFI= 0.0146 AUC=0.5146 ★
+[13:48:45] [INFO]     SFI [35/146] geo_state_norm                      SFI= 0.1252 AUC=0.6252 ★
+[13:49:32] [INFO]     SFI [36/146] geo_velocity_align                  SFI= 0.2880 AUC=0.7880 ★
+[13:49:58] [INFO]     SFI [37/146] geo_exit_align                      SFI= 0.2881 AUC=0.7881 ★
+[13:50:10] [INFO]     SFI [38/146] geo_accel_align                     SFI= 0.0616 AUC=0.5616 ★
+[13:50:54] [INFO]     SFI [39/146] geo_phase_angle                     SFI= 0.2008 AUC=0.7008 ★
+[13:50:58] [INFO]     SFI [40/146] residual_std_tide                   SFI= 0.0327 AUC=0.4673 ★
+[13:51:18] [INFO]     SFI [100/146] d2_vwap_sigma_tide                  SFI= 0.0060 AUC=0.4940 ★
+[13:51:44] [INFO]     SFI [41/146] residual_std_current                SFI= 0.0564 AUC=0.5564 ★
+[13:52:22] [INFO]     SFI [42/146] residual_std_wave                   SFI= 0.0322 AUC=0.5322 ★
+[13:52:47] [INFO]     SFI [43/146] reg_value_tide                      SFI= 0.0126 AUC=0.4874 ★
+[13:53:35] [INFO]     SFI [44/146] reg_value_current                   SFI= 0.0058 AUC=0.4942 ★
+[13:53:39] [INFO]     SFI [45/146] reg_value_wave                      SFI= 0.0184 AUC=0.4816 ★
+[13:53:56] [INFO]     SFI [46/146] vwap_tide                           SFI= 0.0746 AUC=0.4254 ★
+[13:54:45] [INFO]     SFI [47/146] vwap_current                        SFI= 0.0391 AUC=0.4609 ★
+[13:54:55] [INFO]     SFI [105/146] price_vwap_div                      SFI= 0.0110 AUC=0.5110 ★
+[13:55:03] [INFO]     SFI [48/146] vwap_wave                           SFI= 0.0052 AUC=0.5052 ★
+[13:55:39] [INFO]     SFI [49/146] tsi_tide                            SFI= 0.2141 AUC=0.7141 ★
+[13:56:12] [INFO]     SFI [50/146] tsi_current                         SFI= 0.2842 AUC=0.7842 ★
+[13:56:17] [INFO]     SFI [51/146] tsi_wave                            SFI= 0.1796 AUC=0.6796 ★
+[13:56:57] [INFO]     SFI [52/146] adi_tide                            SFI= 0.0753 AUC=0.5753 ★
+[13:57:22] [INFO]     SFI [53/146] adi_current                         SFI= 0.2466 AUC=0.7466 ★
+[13:57:27] [INFO]     SFI [109/146] sigma_min_tf                        SFI= 0.0067 AUC=0.5067 ★

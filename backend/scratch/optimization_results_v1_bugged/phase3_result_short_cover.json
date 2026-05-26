@@ -1,0 +1,127 @@
+{
+  "optimal_features": [
+    "sigma_wave",
+    "vwap_spread_tide_wave",
+    "tsi_current"
+  ],
+  "final_dsr": 10.9897,
+  "production_dsr": 8.602,
+  "delta_vs_production": 2.3877,
+  "n_features": 3,
+  "status": "\u2605 GAIN",
+  "selection_log": [
+    {
+      "feature": "sigma_wave",
+      "action": "ADDED",
+      "dsr_after": 1.0,
+      "delta": 1.0,
+      "n_features": 1
+    },
+    {
+      "feature": "vwap_spread_tide_wave",
+      "action": "ADDED",
+      "dsr_after": 1.1872,
+      "delta": 0.1872,
+      "n_features": 2
+    },
+    {
+      "feature": "tsi_current",
+      "action": "ADDED",
+      "dsr_after": 10.9897,
+      "delta": 9.8025,
+      "n_features": 3
+    },
+    {
+      "feature": "d2_current_slope",
+      "action": "REJECTED",
+      "dsr_after": 3.4245,
+      "delta": -7.5652,
+      "n_features": 3
+    },
+    {
+      "feature": "vwap_sigma_current",
+      "action": "REJECTED",
+      "dsr_after": 3.5878,
+      "delta": -7.402,
+      "n_features": 3
+    },
+    {
+      "feature": "geo_exit_align",
+      "action": "REJECTED",
+      "dsr_after": 5.6869,
+      "delta": -5.3028,
+      "n_features": 3
+    },
+    {
+      "feature": "d2_sigma_tide",
+      "action": "REJECTED",
+      "dsr_after": 4.6164,
+      "delta": -6.3734,
+      "n_features": 3
+    },
+    {
+      "feature": "wave_slope_sq",
+      "action": "REJECTED",
+      "dsr_after": 6.0075,
+      "delta": -4.9822,
+      "n_features": 3
+    },
+    {
+      "feature": "compression_ratio",
+      "action": "REJECTED",
+      "dsr_after": 5.0356,
+      "delta": -5.9542,
+      "n_features": 3
+    },
+    {
+      "feature": "slope_product_tc",
+      "action": "REJECTED",
+      "dsr_after": 6.4972,
+      "delta": -4.4925,
+      "n_features": 3
+    },
+    {
+      "feature": "tide_accel",
+      "action": "REJECTED",
+      "dsr_after": 2.6372,
+      "delta": -8.3525,
+      "n_features": 3
+    },
+    {
+      "feature": "geo_accel_align",
+      "action": "REJECTED",
+      "dsr_after": 6.5571,
+      "delta": -4.4327,
+      "n_features": 3
+    },
+    {
+      "feature": "slope_ratio_tw",
+      "action": "REJECTED",
+      "dsr_after": 3.9418,
+      "delta": -7.0479,
+      "n_features": 3
+    },
+    {
+      "feature": "tension_ratio_tw",
+      "action": "REJECTED",
+      "dsr_after": 2.8521,
+      "delta": -8.1376,
+      "n_features": 3
+    },
+    {
+      "feature": "conj_wave_tide",
+      "action": "REJECTED",
+      "dsr_after": 7.156,
+      "delta": -3.8338,
+      "n_features": 3
+    },
+    {
+      "feature": "sigma_ratio_tw",
+      "action": "REJECTED",
+      "dsr_after": 7.0583,
+      "delta": -3.9314,
+      "n_features": 3
+    }
+  ],
+  "elapsed_s": 26.7
+}

@@ -92,6 +92,9 @@ DB_FEATURES = [
     'kalman_velocity', 'vol_adj_delta',
     'geo_state_norm', 'geo_velocity_align', 'geo_exit_align',
     'geo_accel_align', 'geo_phase_angle',
+    'residual_std_tide', 'residual_std_current', 'residual_std_wave',
+    'reg_value_tide', 'reg_value_current', 'reg_value_wave',
+    'vwap_tide', 'vwap_current', 'vwap_wave',
 ]
 
 COMPUTED_FEATURES = [
@@ -114,7 +117,11 @@ DELTA_SOURCES = [
     'sigma_wave', 'kalman_velocity', 'rsi_value', 'compression_ratio',
     'fear_level', 'vol_up_down_ratio', 'tide_slope', 'wave_accel',
 ]
-DELTA_FEATURES = [f'd_{col}' for col in DELTA_SOURCES]
+# Candle structure delta sources (Wyckoff close position, HIGH/LOW divergence)
+CANDLE_DELTA_SOURCES = [
+    'close_position', 'div_high_close_tide', 'div_close_low_tide',
+]
+DELTA_FEATURES = [f'd_{col}' for col in DELTA_SOURCES + CANDLE_DELTA_SOURCES]
 
 ALL_FEATURES = DB_FEATURES + COMPUTED_FEATURES + PHASE1_FEATURES + DELTA_FEATURES
 
@@ -214,7 +221,11 @@ def load_feature_lake(store, profile_store):
                cs.wave_flip,
                cs.below_all_vwaps, cs.above_all_vwaps,
                cs.regime,
-               ob.close as price
+               ob.open as open_price,
+               ob.high as high_price,
+               ob.low as low_price,
+               ob.close as price,
+               ob.volume as volume
         FROM engine.channel_snapshots cs
         JOIN market.ohlcv_bars ob
             ON ob.ticker = cs.ticker AND ob.timeframe = '1d' AND ob.time = cs.timestamp
@@ -748,13 +759,15 @@ def purged_walk_forward_cv(n, n_splits=5, purge_gap=20):
 
 
 def compute_dsr(fold_sharpes):
-    """Deflated Sharpe Ratio."""
+    """Deflated Sharpe Ratio — corregido para caso degenerado."""
     if len(fold_sharpes) < 2:
         return 0.0
     mean_sr = np.mean(fold_sharpes)
     std_sr = np.std(fold_sharpes, ddof=1)
     if std_sr < 1e-8:
-        return mean_sr * 10
+        # Caso degenerado: todos los folds idénticos.
+        # No hay evidencia de robustez — retornar mean crudo, no inflado.
+        return float(mean_sr) if mean_sr > 0 else 0.0
     t_stat = mean_sr / (std_sr / np.sqrt(len(fold_sharpes)))
     return float(t_stat)
 

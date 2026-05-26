@@ -1,0 +1,105 @@
+{
+  "optimal_features": [
+    "residual_std_tide",
+    "tension_tide",
+    "sigma_tide",
+    "tension_ratio_tw",
+    "slope_product_tc",
+    "d2_vwap_sigma_tide",
+    "sigma_abs_dist"
+  ],
+  "final_dsr": 1.378,
+  "production_dsr": 0.593,
+  "delta_vs_production": 0.785,
+  "n_features": 7,
+  "n_viable_sfi": 30,
+  "n_clusters": 12,
+  "status": "\u2605 GAIN",
+  "selection_log": [
+    {
+      "feature": "tsi_current",
+      "action": "REJECTED",
+      "dsr_after": 0.0,
+      "delta": 0.0,
+      "n_features": 0
+    },
+    {
+      "feature": "residual_std_tide",
+      "action": "ADDED",
+      "dsr_after": 0.3755,
+      "delta": 0.3755,
+      "n_features": 1
+    },
+    {
+      "feature": "tension_tide",
+      "action": "ADDED",
+      "dsr_after": 0.6098,
+      "delta": 0.2343,
+      "n_features": 2
+    },
+    {
+      "feature": "sigma_tide",
+      "action": "ADDED",
+      "dsr_after": 0.7061,
+      "delta": 0.0963,
+      "n_features": 3
+    },
+    {
+      "feature": "slope_decel_current",
+      "action": "REJECTED",
+      "dsr_after": 0.6693,
+      "delta": -0.0368,
+      "n_features": 3
+    },
+    {
+      "feature": "tension_ratio_tw",
+      "action": "ADDED",
+      "dsr_after": 0.9762,
+      "delta": 0.2701,
+      "n_features": 4
+    },
+    {
+      "feature": "slope_ratio_tc",
+      "action": "REJECTED",
+      "dsr_after": 0.4646,
+      "delta": -0.5116,
+      "n_features": 4
+    },
+    {
+      "feature": "slope_ratio_tw",
+      "action": "REJECTED",
+      "dsr_after": 0.4247,
+      "delta": -0.5514,
+      "n_features": 4
+    },
+    {
+      "feature": "slope_product_tc",
+      "action": "ADDED",
+      "dsr_after": 1.0645,
+      "delta": 0.0883,
+      "n_features": 5
+    },
+    {
+      "feature": "vol_price_divergence",
+      "action": "REJECTED",
+      "dsr_after": 0.5409,
+      "delta": -0.5235,
+      "n_features": 5
+    },
+    {
+      "feature": "d2_vwap_sigma_tide",
+      "action": "ADDED",
+      "dsr_after": 1.1952,
+      "delta": 0.1307,
+      "n_features": 6
+    },
+    {
+      "feature": "sigma_abs_dist",
+      "action": "ADDED",
+      "dsr_after": 1.378,
+      "delta": 0.1828,
+      "n_features": 7
+    }
+  ],
+  "elapsed_s": 62.6
+}

@@ -1,0 +1,27 @@
+{
+  "optimal_features": [
+    "sigma_tide"
+  ],
+  "final_dsr": 1.0,
+  "production_dsr": 0.593,
+  "delta_vs_production": 0.407,
+  "n_features": 1,
+  "status": "\u2605 GAIN",
+  "selection_log": [
+    {
+      "feature": "rsi_divergence_strength",
+      "action": "REJECTED",
+      "dsr_after": 0.0,
+      "delta": 0.0,
+      "n_features": 0
+    },
+    {
+      "feature": "sigma_tide",
+      "action": "ADDED",
+      "dsr_after": 1.0,
+      "delta": 1.0,
+      "n_features": 1
+    }
+  ],
+  "elapsed_s": 6.3
+}

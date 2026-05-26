@@ -1,0 +1,149 @@
+{
+  "n_viable": 89,
+  "n_clusters": 27,
+  "clusters": {
+    "4": [
+      "above_all_vwaps_int",
+      "rsi_trap_zone",
+      "rsi_value",
+      "vwap_sigma_current",
+      "vwap_sigma_wave"
+    ],
+    "1": [
+      "adi_current",
+      "conj_current_tide",
+      "current_slope",
+      "rsi_conviction",
+      "sigma_phase_tc",
+      "slope_diff_tc",
+      "spread_tide_current",
+      "tension_current",
+      "tsi_current",
+      "vwap_spread_current_wave"
+    ],
+    "12": [
+      "adi_tide",
+      "price_vwap_div",
+      "regime_encoded",
+      "tension_tide",
+      "tide_slope",
+      "tsi_tide",
+      "vol_slope_conf",
+      "vwap_spread_tide_current",
+      "vwap_spread_tide_wave"
+    ],
+    "6": [
+      "adi_wave",
+      "conj_wave_current",
+      "conj_wave_tide",
+      "geo_phase_angle",
+      "slope_diff_cw",
+      "slope_diff_tw",
+      "slope_phase_tw",
+      "spread_current_wave",
+      "tension_wave",
+      "tsi_wave",
+      "wave_slope"
+    ],
+    "3": [
+      "below_all_vwaps_int",
+      "fear_level",
+      "geo_exit_align",
+      "geo_velocity_align",
+      "vwap_sigma_tide"
+    ],
+    "8": [
+      "bullish_score",
+      "sigma_current",
+      "sigma_max_tf",
+      "sigma_min_tf",
+      "sigma_wave"
+    ],
+    "10": [
+      "complacency_index",
+      "slope_decel_wave"
+    ],
+    "13": [
+      "compr_at_extreme",
+      "geo_state_norm",
+      "sigma_abs_dist",
+      "sigma_squared",
+      "total_displacement"
+    ],
+    "14": [
+      "compression_ratio"
+    ],
+    "5": [
+      "current_accel",
+      "d2_current_slope",
+      "slope_decel_current"
+    ],
+    "16": [
+      "current_slope_sq",
+      "slope_product_tc"
+    ],
+    "11": [
+      "d2_conj_wave_tide",
+      "d_wave_accel",
+      "wave_accel"
+    ],
+    "7": [
+      "d2_sigma_current",
+      "d2_sigma_tide",
+      "d2_spread_tide_wave",
+      "d2_tension_tide",
+      "d2_tide_accel",
+      "d2_vwap_sigma_tide",
+      "d_rsi_value",
+      "d_sigma_wave"
+    ],
+    "24": [
+      "d_compression_ratio"
+    ],
+    "26": [
+      "d_kalman_velocity"
+    ],
+    "2": [
+      "d_tide_slope",
+      "rsi_sigma_interact",
+      "sigma_divergence",
+      "sigma_tide",
+      "spread_tide_wave",
+      "tide_accel"
+    ],
+    "25": [
+      "geo_accel_align"
+    ],
+    "27": [
+      "kalman_slope_conf"
+    ],
+    "18": [
+      "rsi_divergence_strength"
+    ],
+    "19": [
+      "rsi_extreme_zone"
+    ],
+    "20": [
+      "sigma_ratio_tw"
+    ],
+    "15": [
+      "slope_energy",
+      "wave_slope_sq"
+    ],
+    "23": [
+      "slope_ratio_tc"
+    ],
+    "22": [
+      "slope_ratio_tw"
+    ],
+    "21": [
+      "tension_ratio_tw"
+    ],
+    "17": [
+      "tide_slope_sq"
+    ],
+    "9": [
+      "vol_up_down_ratio"
+    ]
+  }
+}

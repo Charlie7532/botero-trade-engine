@@ -2,39 +2,28 @@
   "head": "long_entry",
   "sfi": {
     "tsi_current": 0.0148,
-    "sigma_high_tide": 0.0144,
     "residual_std_tide": 0.0122,
-    "reg_value_tide": 0.0119,
     "spread_tide_current": 0.0119,
     "sigma_phase_tc": 0.0119,
-    "sigma_low_tide": 0.0112,
     "tension_tide": 0.0112,
     "price_vwap_div": 0.0112,
     "current_slope": 0.0109,
     "adi_tide": 0.0107,
-    "reg_value_current": 0.0105,
-    "inst_rejection_high_current": 0.0105,
     "rsi_conviction": 0.0103,
     "adi_current": 0.01,
     "sigma_tide": 0.0099,
     "slope_decel_current": 0.0097,
     "tension_current": 0.0093,
-    "div_close_low_tide": 0.0093,
     "tension_ratio_tw": 0.0091,
     "rsi_sigma_interact": 0.009,
     "conj_wave_current": 0.0086,
     "slope_diff_cw": 0.0081,
-    "vwap_wave": 0.0077,
-    "vwap_tide": 0.0072,
-    "vwap_current": 0.0072,
     "spread_tide_wave": 0.007,
     "sigma_divergence": 0.007,
     "slope_ratio_tc": 0.007,
     "slope_ratio_tw": 0.007,
     "sigma_min_tf": 0.0069,
-    "div_close_low_current": 0.0066,
     "slope_product_tc": 0.0063,
-    "div_high_close_tide": 0.006,
     "residual_std_wave": 0.006,
     "vol_price_divergence": 0.0058,
     "d2_vwap_sigma_tide": 0.0057,
@@ -42,19 +31,15 @@
     "sigma_squared": 0.0055,
     "regime_encoded": 0.0054,
     "vwap_sigma_current": 0.0054,
-    "sigma_range_current": 0.005,
     "current_slope_sq": 0.0049,
     "tsi_wave": 0.0049,
     "atr_ratio": 0.0047,
-    "reg_value_wave": 0.0047,
     "volume_slope_confirm": 0.0046,
     "sigma_max_tf": 0.0046,
     "current_accel": 0.0044,
-    "vwap_sigma_high_current": 0.0044,
     "conj_wave_tide": 0.0043,
     "triple_alignment": 0.0043,
     "wave_slope": 0.0041,
-    "vwap_sigma_high_tide": 0.0041,
     "vwap_sigma_wave": 0.004,
     "slope_diff_tw": 0.004,
     "slope_phase_tw": 0.004,
@@ -67,9 +52,6 @@
     "rsi_divergence_strength": 0.0036,
     "wave_accel": 0.0035,
     "d_rsi_value": 0.0033,
-    "vwap_sigma_low_tide": 0.0032,
-    "div_close_low_wave": 0.0031,
-    "close_position": 0.0031,
     "kalman_slope_conf": 0.0031,
     "vwap_spread_current_wave": 0.0029,
     "residual_std_current": 0.0028,
@@ -77,13 +59,11 @@
     "d_compression_ratio": 0.0026,
     "fear_level": 0.0026,
     "vwap_spread_tide_current": 0.0025,
-    "inst_rejection_high_tide": 0.0023,
     "overnight_gap_atr": 0.0023,
     "volume_exhaustion": 0.0023,
     "complacency_index": 0.0022,
     "tension_wave": 0.0022,
     "d_wave_accel": 0.0022,
-    "sigma_low_wave": 0.0021,
     "volume_at_extreme": 0.002,
     "vol_adj_delta": 0.0019,
     "rsi_trap_zone": 0.0019,
@@ -97,7 +77,6 @@
     "d_kalman_velocity": 0.0015,
     "tide_accel": 0.0014,
     "above_all_vwaps_int": 0.0014,
-    "div_high_close_wave": 0.0013,
     "conj_current_tide": 0.0013,
     "slope_diff_tc": 0.0013,
     "d2_sigma_tide": 0.0013,
@@ -108,18 +87,12 @@
     "d_tide_slope": 0.001,
     "atr_14": 0.0009,
     "tide_slope_sq": 0.0009,
-    "vwap_sigma_low_current": 0.0009,
     "compr_at_extreme": 0.0008,
-    "sigma_low_current": 0.0008,
-    "body_ratio": 0.0008,
-    "sigma_range_tide": 0.0008,
     "vol_accel_wave": 0.0008,
-    "sigma_range_wave": 0.0008,
     "volume_ratio": 0.0008,
     "tsi_tide": 0.0008,
     "rsi_bearish_div": 0.0007,
     "kalman_velocity": 0.0007,
-    "div_high_close_current": 0.0007,
     "tide_slope": 0.0007,
     "slope_decel_wave": 0.0007,
     "vwap_spread_tide_wave": 0.0007,
@@ -128,7 +101,6 @@
     "vwap_sigma_tide": 0.0006,
     "sigma_wave": 0.0006,
     "d_sigma_wave": 0.0005,
-    "sigma_high_current": 0.0005,
     "geo_exit_align": 0.0005,
     "d2_conj_wave_tide": 0.0004,
     "volume_accel": 0.0004,
@@ -141,12 +113,8 @@
     "rsi_value": 0.0003,
     "sigma_ratio_tw": 0.0002,
     "volume_trend": 0.0002,
-    "sigma_high_wave": 0.0001,
     "rsi_extreme_zone": 0.0001,
-    "d2_tide_accel": 0.0001,
-    "d_close_position": 0.0,
-    "d_div_high_close_tide": 0.0,
-    "d_div_close_low_tide": 0.0
+    "d2_tide_accel": 0.0001
   },
   "top_10": [
     {
@@ -154,16 +122,8 @@
       "dsr": 0.0148
     },
     {
-      "feature": "sigma_high_tide",
-      "dsr": 0.0144
-    },
-    {
       "feature": "residual_std_tide",
       "dsr": 0.0122
-    },
-    {
-      "feature": "reg_value_tide",
-      "dsr": 0.0119
     },
     {
       "feature": "spread_tide_current",
@@ -172,10 +132,6 @@
     {
       "feature": "sigma_phase_tc",
       "dsr": 0.0119
-    },
-    {
-      "feature": "sigma_low_tide",
-      "dsr": 0.0112
     },
     {
       "feature": "tension_tide",
@@ -188,7 +144,19 @@
     {
       "feature": "current_slope",
       "dsr": 0.0109
+    },
+    {
+      "feature": "adi_tide",
+      "dsr": 0.0107
+    },
+    {
+      "feature": "rsi_conviction",
+      "dsr": 0.0103
+    },
+    {
+      "feature": "adi_current",
+      "dsr": 0.01
     }
   ],
-  "elapsed_s": 416.0
+  "elapsed_s": 258.5
 }

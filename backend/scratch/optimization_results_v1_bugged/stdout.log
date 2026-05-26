@@ -1,0 +1,932 @@
+nohup: ignoring input
+[05:03:08] [INFO] ==========================================================================================
+[05:03:08] [INFO]   FEATURE OPTIMIZER — Simons + López de Prado Protocol
+[05:03:08] [INFO] ==========================================================================================
+[05:03:08] [INFO] Started: 2026-05-26T05:03:08.224537+00:00
+[05:03:08] [INFO] ==========================================================================================
+[05:03:08] [INFO]   LOADING DATA
+[05:03:08] [INFO] ==========================================================================================
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 8 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+[05:03:37] [INFO] Feature lake: 93,776 rows, 69 columns
+[05:03:37] [INFO] ==========================================================================================
+[05:03:37] [INFO]   PHASE 0: Expand Feature Lake (Simons Discovery)
+[05:03:37] [INFO] ==========================================================================================
+[05:03:39] [WARN]   Column residual_std_tide not in feature lake — skipping
+[05:03:39] [WARN]   Column residual_std_current not in feature lake — skipping
+[05:03:39] [WARN]   Column residual_std_wave not in feature lake — skipping
+[05:03:39] [INFO]   Generated 34 derived features
+[05:03:39] [INFO] Expanded lake: 97 features (63 original + 34 derived)
+[05:03:39] [INFO]   Checkpoint saved: phase0_features.json
+[05:03:39] [INFO] ==========================================================================================
+[05:03:39] [INFO]   PRODUCTION BASELINES
+[05:03:39] [INFO] ==========================================================================================
+[05:03:39] [INFO]            bounce_height: DSR=  2.308 (56f)
+[05:03:39] [INFO]               long_entry: DSR=  0.593 (63f)
+[05:03:39] [INFO]           pullback_depth: DSR=  6.226 (56f)
+[05:03:39] [INFO]              short_cover: DSR=  8.602 (56f)
+[05:03:39] [INFO]              short_entry: DSR=  1.705 (56f)
+[05:03:39] [INFO]               swing_exit: DSR= 14.247 (56f)
+[05:03:39] [INFO]           trend_recovery: DSR=  4.626 (56f)
+[05:03:39] [INFO]           trend_reversal: DSR= 11.573 (56f)
+[05:03:39] [INFO]       zz_bottom_detector: DSR= 20.967 (63f)
+[05:03:39] [INFO]          zz_top_detector: DSR= 25.783 (63f)
+[05:03:39] [INFO] ==========================================================================================
+[05:03:39] [INFO]   PRE-COMPUTING LABELS
+[05:03:39] [INFO] ==========================================================================================
+
+  ── Labeling: LONG_ENTRY (horizon=20d) ──
+    Labeled: 93,436 / 93,776 | Base WR: 59.0%
+[05:03:46] [INFO]               long_entry:  93,436 valid, pos=0.590 (6.2s)
+
+  ── Labeling: SWING_EXIT (Triple Barrier: profit=+3.0%, stop=-2.0%, time=10d) ──
+    Labeled: 93,606 / 93,776 | Exit rate: 39.7%
+[05:03:56] [INFO]               swing_exit:  93,606 valid, pos=0.397 (10.7s)
+
+  ── Labeling: PULLBACK_DEPTH (threshold=-2.0%, horizon=5d) ──
+    Labeled: 93,759 / 93,776 | Deep pullback rate: 29.7%
+[05:04:18] [INFO]           pullback_depth:  93,759 valid, pos=0.297 (21.2s)
+
+  ── Labeling: TREND_REVERSAL (TSI_tide drops to <30 in 60d) ──
+    Labeled: 93,606 / 93,776 | Reversal rate: 38.1%
+[05:07:04] [INFO]           trend_reversal:  93,606 valid, pos=0.381 (166.4s)
+
+  ── Labeling: SHORT_ENTRY (horizon=20d) ──
+    Labeled: 93,436 / 93,776 | Base WR: 40.9%
+[05:07:10] [INFO]              short_entry:  93,436 valid, pos=0.409 (6.0s)
+
+  ── Labeling: SHORT_COVER (Inverted TB: drop=-3.0%, bounce=+2.0%, time=10d) ──
+    Labeled: 93,606 / 93,776 | Cover rate: 48.3%
+[05:07:21] [INFO]              short_cover:  93,606 valid, pos=0.483 (10.8s)
+
+  ── Labeling: BOUNCE_HEIGHT (threshold=+2.0%, horizon=5d) ──
+    Labeled: 93,759 / 93,776 | High bounce rate: 34.5%
+[05:07:38] [INFO]            bounce_height:  93,759 valid, pos=0.345 (17.2s)
+
+  ── Labeling: TREND_RECOVERY (TSI_tide rises to >60 in 60d) ──
+    Labeled: 93,606 / 93,776 | Recovery rate: 50.6%
+[05:09:52] [INFO]           trend_recovery:  93,606 valid, pos=0.506 (133.8s)
+
+  ── Labeling: ZZ_BOTTOM (proximity=3 bars, tp=MIN) ──
+    Loaded 2,466 zigzag MIN points
+    Labeled: 93,776 total | Positive: 11,332 (12.1%)
+[05:09:53] [INFO]       zz_bottom_detector:  93,776 valid, pos=0.121 (0.9s)
+
+  ── Labeling: ZZ_TOP (proximity=3 bars, tp=MAX) ──
+    Loaded 2,467 zigzag MAX points
+    Labeled: 93,776 total | Positive: 11,351 (12.1%)
+[05:09:54] [INFO]          zz_top_detector:  93,776 valid, pos=0.121 (0.9s)
+[05:09:54] [INFO] ==========================================================================================
+[05:09:54] [INFO]   PHASE 1: Single Feature Importance (SFI)
+[05:09:54] [INFO] ==========================================================================================
+[05:09:54] [INFO] Testing 97 features × 10 heads
+[05:09:54] [INFO] 
+  ── SFI: LONG_ENTRY ──
+[05:10:15] [INFO]     SFI [10/97] tide_slope                          DSR= -1.000
+[05:10:34] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  0.000
+[05:10:50] [INFO]     SFI [30/97] rsi_value                           DSR=  0.000
+[05:10:52] [INFO]     SFI [31/97] rsi_divergence_strength             DSR=  1.352 ★
+[05:11:09] [INFO]     SFI [40/97] tsi_tide                            DSR=  0.000
+[05:11:26] [INFO]     SFI [50/97] slope_decel_current                 DSR=  0.000
+[05:11:43] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:12:02] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  0.000
+[05:12:21] [INFO]     SFI [80/97] compr_at_extreme                    DSR=  0.000
+[05:12:39] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:12:51] [INFO] 
+  Top 10 features for long_entry:
+[05:12:51] [INFO]      1. rsi_divergence_strength             DSR=  1.352 
+[05:12:51] [INFO]      2. sigma_tide                          DSR=  1.000 
+[05:12:51] [INFO]      3. sigma_current                       DSR=  0.000 
+[05:12:51] [INFO]      4. sigma_wave                          DSR=  0.000 
+[05:12:51] [INFO]      5. vwap_sigma_tide                     DSR=  0.000 
+[05:12:51] [INFO]      6. vwap_sigma_current                  DSR=  0.000 
+[05:12:51] [INFO]      7. vwap_sigma_wave                     DSR=  0.000 
+[05:12:51] [INFO]      8. tension_tide                        DSR=  0.000 
+[05:12:51] [INFO]      9. tension_current                     DSR=  0.000 
+[05:12:51] [INFO]     10. tension_wave                        DSR=  0.000 
+[05:12:51] [INFO]   SFI completed for long_entry in 177s
+[05:12:51] [INFO]   Checkpoint saved: phase1_sfi_long_entry.json
+[05:12:51] [INFO] 
+  ── SFI: SWING_EXIT ──
+[05:13:01] [INFO]     SFI [10/97] tide_slope                          DSR=  1.953 ★
+[05:13:02] [INFO]     SFI [11/97] current_slope                       DSR=  1.167 ★
+[05:13:11] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  0.000
+[05:13:24] [INFO]     SFI [22/97] vwap_spread_tide_current            DSR=  1.176 ★
+[05:13:28] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR=  3.074 ★
+[05:13:32] [INFO]     SFI [24/97] vwap_spread_current_wave            DSR=  1.903 ★
+[05:13:35] [INFO]     SFI [25/97] compression_ratio                   DSR=  1.630 ★
+[05:13:49] [INFO]     SFI [30/97] rsi_value                           DSR=  0.000
+[05:14:06] [INFO]     SFI [40/97] tsi_tide                            DSR=  0.000
+[05:14:16] [INFO]     SFI [50/97] slope_decel_current                 DSR=  1.000 ★
+[05:14:26] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:14:37] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  1.000
+[05:14:38] [INFO]     SFI [71/97] tide_slope_sq                       DSR=  1.953 ★
+[05:14:49] [INFO]     SFI [80/97] compr_at_extreme                    DSR=  1.000
+[05:15:00] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:15:09] [INFO] 
+  Top 10 features for swing_exit:
+[05:15:09] [INFO]      1. vwap_spread_tide_wave               DSR=  3.074 
+[05:15:09] [INFO]      2. tide_slope                          DSR=  1.953 
+[05:15:09] [INFO]      3. tide_slope_sq                       DSR=  1.953 ★NEW
+[05:15:09] [INFO]      4. vwap_spread_current_wave            DSR=  1.903 
+[05:15:09] [INFO]      5. compression_ratio                   DSR=  1.630 
+[05:15:09] [INFO]      6. vwap_spread_tide_current            DSR=  1.176 
+[05:15:09] [INFO]      7. current_slope                       DSR=  1.167 
+[05:15:09] [INFO]      8. slope_decel_current                 DSR=  1.000 
+[05:15:09] [INFO]      9. vwap_sigma_tide                     DSR=  1.000 
+[05:15:09] [INFO]     10. d_tide_slope                        DSR=  1.000 
+[05:15:09] [INFO]   SFI completed for swing_exit in 137s
+[05:15:09] [INFO]   Checkpoint saved: phase1_sfi_swing_exit.json
+[05:15:09] [INFO] 
+  ── SFI: PULLBACK_DEPTH ──
+[05:15:15] [INFO]     SFI [5/97] vwap_sigma_current                  DSR=  1.920 ★
+[05:15:21] [INFO]     SFI [10/97] tide_slope                          DSR= -0.513
+[05:15:23] [INFO]     SFI [11/97] current_slope                       DSR=  1.937 ★
+[05:15:24] [INFO]     SFI [12/97] wave_slope                          DSR=  1.957 ★
+[05:15:25] [INFO]     SFI [13/97] tide_accel                          DSR=  5.248 ★
+[05:15:27] [INFO]     SFI [14/97] current_accel                       DSR=  1.327 ★
+[05:15:30] [INFO]     SFI [16/97] conj_wave_current                   DSR=  1.926 ★
+[05:15:32] [INFO]     SFI [18/97] conj_current_tide                   DSR=  1.749 ★
+[05:15:34] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  1.000
+[05:15:38] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR=  2.057 ★
+[05:15:44] [INFO]     SFI [30/97] rsi_value                           DSR=  1.000
+[05:15:53] [INFO]     SFI [40/97] tsi_tide                            DSR=  1.000
+[05:15:55] [INFO]     SFI [42/97] tsi_wave                            DSR=  1.909 ★
+[05:15:57] [INFO]     SFI [44/97] adi_current                         DSR=  1.000 ★
+[05:16:03] [INFO]     SFI [50/97] slope_decel_current                 DSR=  1.994 ★
+[05:16:11] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:16:14] [INFO]     SFI [62/97] d_tide_slope                        DSR=  7.689 ★
+[05:16:15] [INFO]     SFI [63/97] d_wave_accel                        DSR=  1.990 ★
+[05:16:19] [INFO]     SFI [66/97] slope_ratio_tw                      DSR=  1.000 ★
+[05:16:23] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  1.014 ★
+[05:16:26] [INFO]     SFI [72/97] current_slope_sq                    DSR=  1.383 ★
+[05:16:28] [INFO]     SFI [74/97] slope_energy                        DSR=  4.648 ★
+[05:16:29] [INFO]     SFI [75/97] slope_product_tc                    DSR= 13.205 ★
+[05:16:34] [INFO]     SFI [80/97] compr_at_extreme                    DSR=  0.850
+[05:16:35] [INFO]     SFI [81/97] vol_slope_conf                      DSR=  3.985 ★
+[05:16:40] [INFO]     SFI [85/97] d2_current_slope                    DSR=  2.085 ★
+[05:16:41] [INFO]     SFI [86/97] d2_tension_tide                     DSR=  1.998 ★
+[05:16:45] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:16:51] [INFO]     SFI [97/97] sigma_min_tf                        DSR=  1.575 ★
+[05:16:51] [INFO] 
+  Top 10 features for pullback_depth:
+[05:16:51] [INFO]      1. slope_product_tc                    DSR= 13.205 ★NEW
+[05:16:51] [INFO]      2. d_tide_slope                        DSR=  7.689 
+[05:16:51] [INFO]      3. tide_accel                          DSR=  5.248 
+[05:16:51] [INFO]      4. slope_energy                        DSR=  4.648 ★NEW
+[05:16:51] [INFO]      5. vol_slope_conf                      DSR=  3.985 ★NEW
+[05:16:51] [INFO]      6. d2_current_slope                    DSR=  2.085 ★NEW
+[05:16:51] [INFO]      7. vwap_spread_tide_wave               DSR=  2.057 
+[05:16:51] [INFO]      8. d2_tension_tide                     DSR=  1.998 ★NEW
+[05:16:51] [INFO]      9. slope_decel_current                 DSR=  1.994 
+[05:16:51] [INFO]     10. d_wave_accel                        DSR=  1.990 
+[05:16:51] [INFO]   SFI completed for pullback_depth in 103s
+[05:16:51] [INFO]   Checkpoint saved: phase1_sfi_pullback_depth.json
+[05:16:52] [INFO] 
+  ── SFI: TREND_REVERSAL ──
+[05:16:53] [INFO]     SFI [1/97] sigma_tide                          DSR=  4.288 ★
+[05:16:58] [INFO]     SFI [4/97] vwap_sigma_tide                     DSR= 27.688 ★
+[05:16:59] [INFO]     SFI [5/97] vwap_sigma_current                  DSR= 10.672 ★
+[05:17:01] [INFO]     SFI [6/97] vwap_sigma_wave                     DSR=  1.000 ★
+[05:17:04] [INFO]     SFI [8/97] tension_current                     DSR=  4.837 ★
+[05:17:06] [INFO]     SFI [9/97] tension_wave                        DSR=  1.724 ★
+[05:17:07] [INFO]     SFI [10/97] tide_slope                          DSR=  1.990 ★
+[05:17:09] [INFO]     SFI [11/97] current_slope                       DSR= 10.957 ★
+[05:17:11] [INFO]     SFI [12/97] wave_slope                          DSR=  6.800 ★
+[05:17:12] [INFO]     SFI [13/97] tide_accel                          DSR=  5.613 ★
+[05:17:18] [INFO]     SFI [17/97] conj_wave_tide                      DSR=  4.267 ★
+[05:17:19] [INFO]     SFI [18/97] conj_current_tide                   DSR=  1.935 ★
+[05:17:21] [INFO]     SFI [19/97] spread_tide_current                 DSR=  1.815 ★
+[05:17:22] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  3.621 ★
+[05:17:25] [INFO]     SFI [22/97] vwap_spread_tide_current            DSR= 14.820 ★
+[05:17:27] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR= 12.103 ★
+[05:17:28] [INFO]     SFI [24/97] vwap_spread_current_wave            DSR= 23.928 ★
+[05:17:36] [INFO]     SFI [30/97] rsi_value                           DSR= 14.637 ★
+[05:17:39] [INFO]     SFI [32/97] rsi_conviction                      DSR=  5.929 ★
+[05:17:45] [INFO]     SFI [36/97] geo_velocity_align                  DSR=  9.088 ★
+[05:17:46] [INFO]     SFI [37/97] geo_exit_align                      DSR=  9.326 ★
+[05:17:49] [INFO]     SFI [39/97] geo_phase_angle                     DSR=  4.607 ★
+[05:17:51] [INFO]     SFI [40/97] tsi_tide                            DSR=  1.000
+[05:17:52] [INFO]     SFI [41/97] tsi_current                         DSR=  6.811 ★
+[05:17:54] [INFO]     SFI [42/97] tsi_wave                            DSR=  8.459 ★
+[05:17:58] [INFO]     SFI [44/97] adi_current                         DSR= 25.632 ★
+[05:18:01] [INFO]     SFI [46/97] below_all_vwaps_int                 DSR= 10.027 ★
+[05:18:05] [INFO]     SFI [50/97] slope_decel_current                 DSR=  1.000
+[05:18:07] [INFO]     SFI [51/97] sigma_divergence                    DSR=  3.621 ★
+[05:18:09] [INFO]     SFI [52/97] complacency_index                   DSR= 10.114 ★
+[05:18:18] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:18:21] [INFO]     SFI [62/97] d_tide_slope                        DSR=  6.364 ★
+[05:18:25] [INFO]     SFI [65/97] slope_ratio_tc                      DSR= 15.732 ★
+[05:18:27] [INFO]     SFI [66/97] slope_ratio_tw                      DSR=  4.523 ★
+[05:18:30] [INFO]     SFI [68/97] slope_diff_tc                       DSR=  1.713 ★
+[05:18:32] [INFO]     SFI [69/97] slope_diff_tw                       DSR=  4.127 ★
+[05:18:34] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  1.000
+[05:18:36] [INFO]     SFI [71/97] tide_slope_sq                       DSR=  1.990 ★
+[05:18:42] [INFO]     SFI [75/97] slope_product_tc                    DSR=  2.820 ★
+[05:18:43] [INFO]     SFI [76/97] slope_phase_tw                      DSR=  4.127 ★
+[05:18:45] [INFO]     SFI [77/97] sigma_phase_tc                      DSR=  1.815 ★
+[05:18:49] [INFO]     SFI [80/97] compr_at_extreme                    DSR= -1.000
+[05:18:59] [INFO]     SFI [88/97] d2_vwap_sigma_tide                  DSR=  1.151 ★
+[05:19:02] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:19:07] [INFO]     SFI [94/97] sigma_abs_dist                      DSR=  3.360 ★
+[05:19:09] [INFO]     SFI [95/97] sigma_squared                       DSR=  3.360 ★
+[05:19:10] [INFO]     SFI [96/97] sigma_max_tf                        DSR=  5.814 ★
+[05:19:12] [INFO]     SFI [97/97] sigma_min_tf                        DSR=  4.050 ★
+[05:19:12] [INFO] 
+  Top 10 features for trend_reversal:
+[05:19:12] [INFO]      1. vwap_sigma_tide                     DSR= 27.688 
+[05:19:12] [INFO]      2. adi_current                         DSR= 25.632 
+[05:19:12] [INFO]      3. vwap_spread_current_wave            DSR= 23.928 
+[05:19:12] [INFO]      4. slope_ratio_tc                      DSR= 15.732 ★NEW
+[05:19:12] [INFO]      5. vwap_spread_tide_current            DSR= 14.820 
+[05:19:12] [INFO]      6. rsi_value                           DSR= 14.637 
+[05:19:12] [INFO]      7. vwap_spread_tide_wave               DSR= 12.103 
+[05:19:12] [INFO]      8. current_slope                       DSR= 10.957 
+[05:19:12] [INFO]      9. vwap_sigma_current                  DSR= 10.672 
+[05:19:12] [INFO]     10. complacency_index                   DSR= 10.114 
+[05:19:12] [INFO]   SFI completed for trend_reversal in 140s
+[05:19:12] [INFO]   Checkpoint saved: phase1_sfi_trend_reversal.json
+[05:19:12] [INFO] 
+  ── SFI: SHORT_ENTRY ──
+[05:19:13] [INFO]     SFI [1/97] sigma_tide                          DSR=  1.639 ★
+[05:19:23] [INFO]     SFI [10/97] tide_slope                          DSR= -0.034
+[05:19:33] [INFO]     SFI [19/97] spread_tide_current                 DSR=  1.188 ★
+[05:19:35] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  0.000
+[05:19:37] [INFO]     SFI [22/97] vwap_spread_tide_current            DSR=  1.095 ★
+[05:19:38] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR=  1.174 ★
+[05:19:40] [INFO]     SFI [25/97] compression_ratio                   DSR=  5.547 ★
+[05:19:45] [INFO]     SFI [30/97] rsi_value                           DSR=  0.000
+[05:19:46] [INFO]     SFI [31/97] rsi_divergence_strength             DSR=  1.363 ★
+[05:19:51] [INFO]     SFI [36/97] geo_velocity_align                  DSR=  1.000 ★
+[05:19:53] [INFO]     SFI [37/97] geo_exit_align                      DSR=  1.466 ★
+[05:19:56] [INFO]     SFI [40/97] tsi_tide                            DSR= -1.988
+[05:20:09] [INFO]     SFI [50/97] slope_decel_current                 DSR=  1.000
+[05:20:19] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:20:31] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  0.000
+[05:20:36] [INFO]     SFI [75/97] slope_product_tc                    DSR=  1.127 ★
+[05:20:38] [INFO]     SFI [77/97] sigma_phase_tc                      DSR=  1.188 ★
+[05:20:41] [INFO]     SFI [80/97] compr_at_extreme                    DSR=  0.000
+[05:20:52] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:20:59] [INFO] 
+  Top 10 features for short_entry:
+[05:20:59] [INFO]      1. compression_ratio                   DSR=  5.547 
+[05:20:59] [INFO]      2. sigma_tide                          DSR=  1.639 
+[05:20:59] [INFO]      3. geo_exit_align                      DSR=  1.466 
+[05:20:59] [INFO]      4. rsi_divergence_strength             DSR=  1.363 
+[05:20:59] [INFO]      5. spread_tide_current                 DSR=  1.188 
+[05:20:59] [INFO]      6. sigma_phase_tc                      DSR=  1.188 ★NEW
+[05:20:59] [INFO]      7. vwap_spread_tide_wave               DSR=  1.174 
+[05:20:59] [INFO]      8. slope_product_tc                    DSR=  1.127 ★NEW
+[05:20:59] [INFO]      9. vwap_spread_tide_current            DSR=  1.095 
+[05:20:59] [INFO]     10. geo_velocity_align                  DSR=  1.000 
+[05:20:59] [INFO]   SFI completed for short_entry in 107s
+[05:20:59] [INFO]   Checkpoint saved: phase1_sfi_short_entry.json
+[05:20:59] [INFO] 
+  ── SFI: SHORT_COVER ──
+[05:21:02] [INFO]     SFI [3/97] sigma_wave                          DSR=  1.994 ★
+[05:21:03] [INFO]     SFI [5/97] vwap_sigma_current                  DSR=  1.000 ★
+[05:21:05] [INFO]     SFI [7/97] tension_tide                        DSR=  1.907 ★
+[05:21:07] [INFO]     SFI [10/97] tide_slope                          DSR= -1.000
+[05:21:10] [INFO]     SFI [14/97] current_accel                       DSR=  1.760 ★
+[05:21:15] [INFO]     SFI [20/97] spread_tide_wave                    DSR= -1.000
+[05:21:17] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR=  1.980 ★
+[05:21:21] [INFO]     SFI [30/97] rsi_value                           DSR=  1.000
+[05:21:26] [INFO]     SFI [37/97] geo_exit_align                      DSR=  1.000 ★
+[05:21:28] [INFO]     SFI [40/97] tsi_tide                            DSR=  0.000
+[05:21:29] [INFO]     SFI [41/97] tsi_current                         DSR=  1.970 ★
+[05:21:35] [INFO]     SFI [50/97] slope_decel_current                 DSR=  0.000
+[05:21:41] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:21:48] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  0.000
+[05:21:51] [INFO]     SFI [73/97] wave_slope_sq                       DSR=  1.000 ★
+[05:21:55] [INFO]     SFI [80/97] compr_at_extreme                    DSR= -1.000
+[05:21:57] [INFO]     SFI [82/97] d2_sigma_tide                       DSR=  1.000 ★
+[05:21:59] [INFO]     SFI [85/97] d2_current_slope                    DSR=  1.800 ★
+[05:22:02] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:22:04] [INFO]     SFI [93/97] price_vwap_div                      DSR=  1.907 ★
+[05:22:07] [INFO] 
+  Top 10 features for short_cover:
+[05:22:07] [INFO]      1. sigma_wave                          DSR=  1.994 
+[05:22:07] [INFO]      2. vwap_spread_tide_wave               DSR=  1.980 
+[05:22:07] [INFO]      3. tsi_current                         DSR=  1.970 
+[05:22:07] [INFO]      4. tension_tide                        DSR=  1.907 
+[05:22:07] [INFO]      5. price_vwap_div                      DSR=  1.907 ★NEW
+[05:22:07] [INFO]      6. d2_current_slope                    DSR=  1.800 ★NEW
+[05:22:07] [INFO]      7. current_accel                       DSR=  1.760 
+[05:22:07] [INFO]      8. vwap_sigma_current                  DSR=  1.000 
+[05:22:07] [INFO]      9. geo_exit_align                      DSR=  1.000 
+[05:22:07] [INFO]     10. wave_slope_sq                       DSR=  1.000 ★NEW
+[05:22:07] [INFO]   SFI completed for short_cover in 68s
+[05:22:07] [INFO]   Checkpoint saved: phase1_sfi_short_cover.json
+[05:22:07] [INFO] 
+  ── SFI: BOUNCE_HEIGHT ──
+[05:22:12] [INFO]     SFI [5/97] vwap_sigma_current                  DSR=  5.267 ★
+[05:22:13] [INFO]     SFI [6/97] vwap_sigma_wave                     DSR=  1.281 ★
+[05:22:16] [INFO]     SFI [10/97] tide_slope                          DSR=  1.375 ★
+[05:22:19] [INFO]     SFI [14/97] current_accel                       DSR=  3.564 ★
+[05:22:21] [INFO]     SFI [16/97] conj_wave_current                   DSR=  1.995 ★
+[05:22:24] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  0.000
+[05:22:26] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR=  5.455 ★
+[05:22:31] [INFO]     SFI [30/97] rsi_value                           DSR=  5.495 ★
+[05:22:35] [INFO]     SFI [36/97] geo_velocity_align                  DSR=  2.000 ★
+[05:22:36] [INFO]     SFI [37/97] geo_exit_align                      DSR=  7.513 ★
+[05:22:38] [INFO]     SFI [39/97] geo_phase_angle                     DSR=  1.313 ★
+[05:22:38] [INFO]     SFI [40/97] tsi_tide                            DSR=  1.137 ★
+[05:22:49] [INFO]     SFI [50/97] slope_decel_current                 DSR=  0.600
+[05:22:50] [INFO]     SFI [52/97] complacency_index                   DSR=  1.938 ★
+[05:22:55] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:22:59] [INFO]     SFI [66/97] slope_ratio_tw                      DSR=  1.366 ★
+[05:23:02] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  0.964
+[05:23:03] [INFO]     SFI [71/97] tide_slope_sq                       DSR=  1.683 ★
+[05:23:06] [INFO]     SFI [75/97] slope_product_tc                    DSR=  3.192 ★
+[05:23:07] [INFO]     SFI [78/97] rsi_sigma_interact                  DSR=  2.824 ★
+[05:23:08] [INFO]     SFI [79/97] kalman_slope_conf                   DSR=  1.951 ★
+[05:23:09] [INFO]     SFI [80/97] compr_at_extreme                    DSR= -1.000
+[05:23:09] [INFO]     SFI [81/97] vol_slope_conf                      DSR=  2.040 ★
+[05:23:12] [INFO]     SFI [85/97] d2_current_slope                    DSR=  2.958 ★
+[05:23:15] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:23:19] [INFO] 
+  Top 10 features for bounce_height:
+[05:23:19] [INFO]      1. geo_exit_align                      DSR=  7.513 
+[05:23:19] [INFO]      2. rsi_value                           DSR=  5.495 
+[05:23:19] [INFO]      3. vwap_spread_tide_wave               DSR=  5.455 
+[05:23:19] [INFO]      4. vwap_sigma_current                  DSR=  5.267 
+[05:23:19] [INFO]      5. current_accel                       DSR=  3.564 
+[05:23:19] [INFO]      6. slope_product_tc                    DSR=  3.192 ★NEW
+[05:23:19] [INFO]      7. d2_current_slope                    DSR=  2.958 ★NEW
+[05:23:19] [INFO]      8. rsi_sigma_interact                  DSR=  2.824 ★NEW
+[05:23:19] [INFO]      9. vol_slope_conf                      DSR=  2.040 ★NEW
+[05:23:19] [INFO]     10. geo_velocity_align                  DSR=  2.000 
+[05:23:19] [INFO]   SFI completed for bounce_height in 72s
+[05:23:19] [INFO]   Checkpoint saved: phase1_sfi_bounce_height.json
+[05:23:19] [INFO] 
+  ── SFI: TREND_RECOVERY ──
+[05:23:20] [INFO]     SFI [1/97] sigma_tide                          DSR=  1.884 ★
+[05:23:23] [INFO]     SFI [4/97] vwap_sigma_tide                     DSR=  9.264 ★
+[05:23:24] [INFO]     SFI [5/97] vwap_sigma_current                  DSR=  1.000 ★
+[05:23:26] [INFO]     SFI [7/97] tension_tide                        DSR=  1.000 ★
+[05:23:27] [INFO]     SFI [8/97] tension_current                     DSR=  2.000 ★
+[05:23:29] [INFO]     SFI [10/97] tide_slope                          DSR=  1.663 ★
+[05:23:30] [INFO]     SFI [11/97] current_slope                       DSR=  2.402 ★
+[05:23:32] [INFO]     SFI [13/97] tide_accel                          DSR=  1.629 ★
+[05:23:37] [INFO]     SFI [19/97] spread_tide_current                 DSR=  1.812 ★
+[05:23:38] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  1.998 ★
+[05:23:40] [INFO]     SFI [22/97] vwap_spread_tide_current            DSR=  7.150 ★
+[05:23:41] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR=  4.270 ★
+[05:23:42] [INFO]     SFI [24/97] vwap_spread_current_wave            DSR=  1.306 ★
+[05:23:43] [INFO]     SFI [25/97] compression_ratio                   DSR=  1.702 ★
+[05:23:44] [INFO]     SFI [26/97] fear_level                          DSR=  1.873 ★
+[05:23:47] [INFO]     SFI [30/97] rsi_value                           DSR=  1.959 ★
+[05:23:48] [INFO]     SFI [31/97] rsi_divergence_strength             DSR=  1.893 ★
+[05:23:53] [INFO]     SFI [36/97] geo_velocity_align                  DSR=  5.195 ★
+[05:23:54] [INFO]     SFI [37/97] geo_exit_align                      DSR=  7.632 ★
+[05:23:57] [INFO]     SFI [39/97] geo_phase_angle                     DSR=  3.489 ★
+[05:23:57] [INFO]     SFI [40/97] tsi_tide                            DSR=  0.000
+[05:23:59] [INFO]     SFI [41/97] tsi_current                         DSR=  1.917 ★
+[05:24:02] [INFO]     SFI [44/97] adi_current                         DSR=  1.212 ★
+[05:24:04] [INFO]     SFI [47/97] above_all_vwaps_int                 DSR=  1.000 ★
+[05:24:07] [INFO]     SFI [50/97] slope_decel_current                 DSR=  0.000
+[05:24:08] [INFO]     SFI [51/97] sigma_divergence                    DSR=  1.998 ★
+[05:24:09] [INFO]     SFI [52/97] complacency_index                   DSR=  1.879 ★
+[05:24:16] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:24:18] [INFO]     SFI [62/97] d_tide_slope                        DSR=  1.612 ★
+[05:24:25] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  0.000
+[05:24:31] [INFO]     SFI [77/97] sigma_phase_tc                      DSR=  1.812 ★
+[05:24:32] [INFO]     SFI [78/97] rsi_sigma_interact                  DSR=  1.890 ★
+[05:24:34] [INFO]     SFI [80/97] compr_at_extreme                    DSR=  0.000
+[05:24:40] [INFO]     SFI [86/97] d2_tension_tide                     DSR=  1.982 ★
+[05:24:43] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:24:46] [INFO]     SFI [93/97] price_vwap_div                      DSR=  1.000 ★
+[05:24:50] [INFO] 
+  Top 10 features for trend_recovery:
+[05:24:50] [INFO]      1. vwap_sigma_tide                     DSR=  9.264 
+[05:24:50] [INFO]      2. geo_exit_align                      DSR=  7.632 
+[05:24:50] [INFO]      3. vwap_spread_tide_current            DSR=  7.150 
+[05:24:50] [INFO]      4. geo_velocity_align                  DSR=  5.195 
+[05:24:50] [INFO]      5. vwap_spread_tide_wave               DSR=  4.270 
+[05:24:50] [INFO]      6. geo_phase_angle                     DSR=  3.489 
+[05:24:50] [INFO]      7. current_slope                       DSR=  2.402 
+[05:24:50] [INFO]      8. tension_current                     DSR=  2.000 
+[05:24:50] [INFO]      9. spread_tide_wave                    DSR=  1.998 
+[05:24:50] [INFO]     10. sigma_divergence                    DSR=  1.998 
+[05:24:50] [INFO]   SFI completed for trend_recovery in 90s
+[05:24:50] [INFO]   Checkpoint saved: phase1_sfi_trend_recovery.json
+[05:24:50] [INFO] 
+  ── SFI: ZZ_BOTTOM_DETECTOR ──
+[05:24:52] [INFO]     SFI [1/97] sigma_tide                          DSR= 18.409 ★
+[05:24:54] [INFO]     SFI [2/97] sigma_current                       DSR=  7.047 ★
+[05:24:57] [INFO]     SFI [3/97] sigma_wave                          DSR=  5.668 ★
+[05:24:59] [INFO]     SFI [4/97] vwap_sigma_tide                     DSR= 90.299 ★
+[05:25:02] [INFO]     SFI [5/97] vwap_sigma_current                  DSR= 13.753 ★
+[05:25:05] [INFO]     SFI [6/97] vwap_sigma_wave                     DSR= 10.595 ★
+[05:25:07] [INFO]     SFI [7/97] tension_tide                        DSR=  3.969 ★
+[05:25:14] [INFO]     SFI [10/97] tide_slope                          DSR=  1.494 ★
+[05:25:16] [INFO]     SFI [11/97] current_slope                       DSR=  4.807 ★
+[05:25:18] [INFO]     SFI [12/97] wave_slope                          DSR= 12.760 ★
+[05:25:20] [INFO]     SFI [13/97] tide_accel                          DSR=  4.903 ★
+[05:25:22] [INFO]     SFI [14/97] current_accel                       DSR=  8.394 ★
+[05:25:25] [INFO]     SFI [15/97] wave_accel                          DSR=  4.567 ★
+[05:25:27] [INFO]     SFI [16/97] conj_wave_current                   DSR=  7.820 ★
+[05:25:29] [INFO]     SFI [17/97] conj_wave_tide                      DSR=  8.994 ★
+[05:25:31] [INFO]     SFI [18/97] conj_current_tide                   DSR=  4.223 ★
+[05:25:35] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  3.612 ★
+[05:25:37] [INFO]     SFI [21/97] spread_current_wave                 DSR=  5.095 ★
+[05:25:39] [INFO]     SFI [22/97] vwap_spread_tide_current            DSR=  8.552 ★
+[05:25:41] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR=  3.880 ★
+[05:25:44] [INFO]     SFI [24/97] vwap_spread_current_wave            DSR= 16.352 ★
+[05:25:46] [INFO]     SFI [25/97] compression_ratio                   DSR=  3.444 ★
+[05:25:48] [INFO]     SFI [26/97] fear_level                          DSR= 19.175 ★
+[05:25:50] [INFO]     SFI [27/97] vol_up_down_ratio                   DSR=  7.089 ★
+[05:25:55] [INFO]     SFI [30/97] rsi_value                           DSR=  8.669 ★
+[05:25:59] [INFO]     SFI [32/97] rsi_conviction                      DSR= 10.251 ★
+[05:26:06] [INFO]     SFI [35/97] geo_state_norm                      DSR=  4.839 ★
+[05:26:08] [INFO]     SFI [36/97] geo_velocity_align                  DSR= 18.519 ★
+[05:26:10] [INFO]     SFI [37/97] geo_exit_align                      DSR= 19.623 ★
+[05:26:12] [INFO]     SFI [38/97] geo_accel_align                     DSR=  1.000 ★
+[05:26:14] [INFO]     SFI [39/97] geo_phase_angle                     DSR= 17.000 ★
+[05:26:17] [INFO]     SFI [40/97] tsi_tide                            DSR=  0.687
+[05:26:19] [INFO]     SFI [41/97] tsi_current                         DSR=  4.333 ★
+[05:26:20] [INFO]     SFI [42/97] tsi_wave                            DSR=  8.252 ★
+[05:26:22] [INFO]     SFI [43/97] adi_tide                            DSR=  4.707 ★
+[05:26:27] [INFO]     SFI [45/97] adi_wave                            DSR=  1.000 ★
+[05:26:28] [INFO]     SFI [46/97] below_all_vwaps_int                 DSR=  1.936 ★
+[05:26:34] [INFO]     SFI [49/97] slope_decel_wave                    DSR= 11.207 ★
+[05:26:36] [INFO]     SFI [50/97] slope_decel_current                 DSR=  6.956 ★
+[05:26:38] [INFO]     SFI [51/97] sigma_divergence                    DSR=  3.612 ★
+[05:26:41] [INFO]     SFI [52/97] complacency_index                   DSR=  9.866 ★
+[05:26:50] [INFO]     SFI [58/97] d_rsi_value                         DSR= 13.323 ★
+[05:26:53] [INFO]     SFI [59/97] d_compression_ratio                 DSR=  2.751 ★
+[05:26:54] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:26:59] [INFO]     SFI [62/97] d_tide_slope                        DSR=  4.892 ★
+[05:27:01] [INFO]     SFI [63/97] d_wave_accel                        DSR= 14.443 ★
+[05:27:12] [INFO]     SFI [68/97] slope_diff_tc                       DSR=  4.112 ★
+[05:27:14] [INFO]     SFI [69/97] slope_diff_tw                       DSR=  8.919 ★
+[05:27:16] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  7.803 ★
+[05:27:18] [INFO]     SFI [71/97] tide_slope_sq                       DSR=  1.166 ★
+[05:27:20] [INFO]     SFI [72/97] current_slope_sq                    DSR=  2.756 ★
+[05:27:22] [INFO]     SFI [73/97] wave_slope_sq                       DSR=  4.432 ★
+[05:27:25] [INFO]     SFI [74/97] slope_energy                        DSR=  4.261 ★
+[05:27:27] [INFO]     SFI [75/97] slope_product_tc                    DSR=  5.292 ★
+[05:27:29] [INFO]     SFI [76/97] slope_phase_tw                      DSR=  8.919 ★
+[05:27:33] [INFO]     SFI [78/97] rsi_sigma_interact                  DSR=  8.234 ★
+[05:27:35] [INFO]     SFI [79/97] kalman_slope_conf                   DSR=  2.653 ★
+[05:27:37] [INFO]     SFI [80/97] compr_at_extreme                    DSR=  5.528 ★
+[05:27:40] [INFO]     SFI [81/97] vol_slope_conf                      DSR=  6.240 ★
+[05:27:42] [INFO]     SFI [82/97] d2_sigma_tide                       DSR=  4.847 ★
+[05:27:44] [INFO]     SFI [83/97] d2_sigma_current                    DSR=  1.995 ★
+[05:27:46] [INFO]     SFI [84/97] d2_tide_accel                       DSR=  5.065 ★
+[05:27:48] [INFO]     SFI [85/97] d2_current_slope                    DSR=  8.359 ★
+[05:27:50] [INFO]     SFI [86/97] d2_tension_tide                     DSR=  2.880 ★
+[05:27:52] [INFO]     SFI [87/97] d2_conj_wave_tide                   DSR=  3.310 ★
+[05:27:54] [INFO]     SFI [88/97] d2_vwap_sigma_tide                  DSR=  3.474 ★
+[05:27:58] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:28:00] [INFO]     SFI [91/97] bullish_score                       DSR= 12.392 ★
+[05:28:02] [INFO]     SFI [92/97] total_displacement                  DSR=  4.494 ★
+[05:28:05] [INFO]     SFI [93/97] price_vwap_div                      DSR=  3.969 ★
+[05:28:07] [INFO]     SFI [94/97] sigma_abs_dist                      DSR=  6.115 ★
+[05:28:09] [INFO]     SFI [95/97] sigma_squared                       DSR=  6.115 ★
+[05:28:12] [INFO]     SFI [96/97] sigma_max_tf                        DSR=  8.662 ★
+[05:28:14] [INFO]     SFI [97/97] sigma_min_tf                        DSR=  7.547 ★
+[05:28:14] [INFO] 
+  Top 10 features for zz_bottom_detector:
+[05:28:14] [INFO]      1. vwap_sigma_tide                     DSR= 90.299 
+[05:28:14] [INFO]      2. geo_exit_align                      DSR= 19.623 
+[05:28:14] [INFO]      3. fear_level                          DSR= 19.175 
+[05:28:14] [INFO]      4. geo_velocity_align                  DSR= 18.519 
+[05:28:14] [INFO]      5. sigma_tide                          DSR= 18.409 
+[05:28:14] [INFO]      6. geo_phase_angle                     DSR= 17.000 
+[05:28:14] [INFO]      7. vwap_spread_current_wave            DSR= 16.352 
+[05:28:14] [INFO]      8. d_wave_accel                        DSR= 14.443 
+[05:28:14] [INFO]      9. vwap_sigma_current                  DSR= 13.753 
+[05:28:14] [INFO]     10. d_rsi_value                         DSR= 13.323 
+[05:28:14] [INFO]   SFI completed for zz_bottom_detector in 203s
+[05:28:14] [INFO]   Checkpoint saved: phase1_sfi_zz_bottom_detector.json
+[05:28:14] [INFO] 
+  ── SFI: ZZ_TOP_DETECTOR ──
+[05:28:18] [INFO]     SFI [2/97] sigma_current                       DSR=  9.073 ★
+[05:28:20] [INFO]     SFI [3/97] sigma_wave                          DSR=  8.122 ★
+[05:28:28] [INFO]     SFI [7/97] tension_tide                        DSR=  5.202 ★
+[05:28:30] [INFO]     SFI [8/97] tension_current                     DSR=  2.731 ★
+[05:28:34] [INFO]     SFI [10/97] tide_slope                          DSR=  3.060 ★
+[05:28:36] [INFO]     SFI [11/97] current_slope                       DSR=  2.531 ★
+[05:28:38] [INFO]     SFI [12/97] wave_slope                          DSR=  4.935 ★
+[05:28:40] [INFO]     SFI [13/97] tide_accel                          DSR=  1.981 ★
+[05:28:42] [INFO]     SFI [14/97] current_accel                       DSR=  3.682 ★
+[05:28:44] [INFO]     SFI [15/97] wave_accel                          DSR=  3.069 ★
+[05:28:47] [INFO]     SFI [16/97] conj_wave_current                   DSR=  5.050 ★
+[05:28:49] [INFO]     SFI [17/97] conj_wave_tide                      DSR=  4.253 ★
+[05:28:51] [INFO]     SFI [18/97] conj_current_tide                   DSR=  1.761 ★
+[05:28:53] [INFO]     SFI [19/97] spread_tide_current                 DSR=  2.000 ★
+[05:28:55] [INFO]     SFI [20/97] spread_tide_wave                    DSR=  1.000
+[05:28:59] [INFO]     SFI [22/97] vwap_spread_tide_current            DSR=  1.850 ★
+[05:29:02] [INFO]     SFI [23/97] vwap_spread_tide_wave               DSR=  2.333 ★
+[05:29:04] [INFO]     SFI [24/97] vwap_spread_current_wave            DSR=  3.072 ★
+[05:29:07] [INFO]     SFI [25/97] compression_ratio                   DSR=  1.219 ★
+[05:29:15] [INFO]     SFI [30/97] rsi_value                           DSR=  1.000
+[05:29:23] [INFO]     SFI [35/97] geo_state_norm                      DSR=  1.201 ★
+[05:29:33] [INFO]     SFI [40/97] tsi_tide                            DSR=  0.295
+[05:29:35] [INFO]     SFI [41/97] tsi_current                         DSR=  2.166 ★
+[05:29:37] [INFO]     SFI [42/97] tsi_wave                            DSR=  2.565 ★
+[05:29:40] [INFO]     SFI [43/97] adi_tide                            DSR=  1.000 ★
+[05:29:42] [INFO]     SFI [44/97] adi_current                         DSR=  1.925 ★
+[05:29:57] [INFO]     SFI [49/97] slope_decel_wave                    DSR=  4.549 ★
+[05:29:59] [INFO]     SFI [50/97] slope_decel_current                 DSR=  2.772 ★
+[05:30:16] [INFO]     SFI [56/97] d_sigma_wave                        DSR=  1.933 ★
+[05:30:22] [INFO]     SFI [58/97] d_rsi_value                         DSR=  2.000 ★
+[05:30:26] [INFO]     SFI [60/97] d_fear_level                        DSR=  0.000
+[05:30:31] [INFO]     SFI [62/97] d_tide_slope                        DSR=  2.165 ★
+[05:30:35] [INFO]     SFI [63/97] d_wave_accel                        DSR=  6.466 ★
+[05:30:46] [INFO]     SFI [68/97] slope_diff_tc                       DSR=  1.809 ★
+[05:30:48] [INFO]     SFI [69/97] slope_diff_tw                       DSR=  4.377 ★
+[05:30:51] [INFO]     SFI [70/97] slope_diff_cw                       DSR=  4.854 ★
+[05:30:55] [INFO]     SFI [72/97] current_slope_sq                    DSR=  2.779 ★
+[05:30:58] [INFO]     SFI [73/97] wave_slope_sq                       DSR=  3.889 ★
+[05:31:00] [INFO]     SFI [74/97] slope_energy                        DSR= 13.888 ★
+[05:31:03] [INFO]     SFI [75/97] slope_product_tc                    DSR=  5.303 ★
+[05:31:06] [INFO]     SFI [76/97] slope_phase_tw                      DSR=  4.377 ★
+[05:31:08] [INFO]     SFI [77/97] sigma_phase_tc                      DSR=  2.000 ★
+[05:31:13] [INFO]     SFI [79/97] kalman_slope_conf                   DSR=  2.019 ★
+[05:31:15] [INFO]     SFI [80/97] compr_at_extreme                    DSR= -0.049
+[05:31:17] [INFO]     SFI [81/97] vol_slope_conf                      DSR=  2.535 ★
+[05:31:20] [INFO]     SFI [82/97] d2_sigma_tide                       DSR=  2.370 ★
+[05:31:22] [INFO]     SFI [83/97] d2_sigma_current                    DSR=  1.997 ★
+[05:31:25] [INFO]     SFI [84/97] d2_tide_accel                       DSR=  3.722 ★
+[05:31:27] [INFO]     SFI [85/97] d2_current_slope                    DSR=  3.421 ★
+[05:31:29] [INFO]     SFI [86/97] d2_tension_tide                     DSR=  2.245 ★
+[05:31:32] [INFO]     SFI [87/97] d2_conj_wave_tide                   DSR=  3.172 ★
+[05:31:34] [INFO]     SFI [88/97] d2_vwap_sigma_tide                  DSR=  1.989 ★
+[05:31:38] [INFO]     SFI [90/97] triple_alignment                    DSR=  0.000
+[05:31:43] [INFO]     SFI [93/97] price_vwap_div                      DSR=  5.202 ★
+[05:31:50] [INFO]     SFI [96/97] sigma_max_tf                        DSR=  1.989 ★
+[05:31:52] [INFO]     SFI [97/97] sigma_min_tf                        DSR=  4.157 ★
+[05:31:52] [INFO] 
+  Top 10 features for zz_top_detector:
+[05:31:52] [INFO]      1. slope_energy                        DSR= 13.888 ★NEW
+[05:31:52] [INFO]      2. sigma_current                       DSR=  9.073 
+[05:31:52] [INFO]      3. sigma_wave                          DSR=  8.122 
+[05:31:52] [INFO]      4. d_wave_accel                        DSR=  6.466 
+[05:31:52] [INFO]      5. slope_product_tc                    DSR=  5.303 ★NEW
+[05:31:52] [INFO]      6. tension_tide                        DSR=  5.202 
+[05:31:52] [INFO]      7. price_vwap_div                      DSR=  5.202 ★NEW
+[05:31:52] [INFO]      8. conj_wave_current                   DSR=  5.050 
+[05:31:52] [INFO]      9. wave_slope                          DSR=  4.935 
+[05:31:52] [INFO]     10. slope_diff_cw                       DSR=  4.854 ★NEW
+[05:31:52] [INFO]   SFI completed for zz_top_detector in 218s
+[05:31:52] [INFO]   Checkpoint saved: phase1_sfi_zz_top_detector.json
+[05:31:52] [INFO]   Checkpoint saved: phase1_sfi_matrix.json
+[05:31:52] [INFO] ==========================================================================================
+[05:31:52] [INFO]   PHASE 2: Orthogonality Clustering
+[05:31:52] [INFO] ==========================================================================================
+[05:31:52] [INFO] Viable features (SFI > 0.1 in any head): 89 / 97
+[05:31:52] [INFO] Clusters found: 27
+[05:31:52] [INFO]   Cluster 1: ['adi_current', 'conj_current_tide', 'current_slope', 'rsi_conviction', 'sigma_phase_tc', 'slope_diff_tc', 'spread_tide_current', 'tension_current', 'tsi_current', 'vwap_spread_current_wave']
+[05:31:52] [INFO]   Cluster 2: ['d_tide_slope', 'rsi_sigma_interact', 'sigma_divergence', 'sigma_tide', 'spread_tide_wave', 'tide_accel']
+[05:31:52] [INFO]   Cluster 3: ['below_all_vwaps_int', 'fear_level', 'geo_exit_align', 'geo_velocity_align', 'vwap_sigma_tide']
+[05:31:52] [INFO]   Cluster 4: ['above_all_vwaps_int', 'rsi_trap_zone', 'rsi_value', 'vwap_sigma_current', 'vwap_sigma_wave']
+[05:31:52] [INFO]   Cluster 5: ['current_accel', 'd2_current_slope', 'slope_decel_current']
+[05:31:52] [INFO]   Cluster 6: ['adi_wave', 'conj_wave_current', 'conj_wave_tide', 'geo_phase_angle', 'slope_diff_cw', 'slope_diff_tw', 'slope_phase_tw', 'spread_current_wave', 'tension_wave', 'tsi_wave', 'wave_slope']
+[05:31:52] [INFO]   Cluster 7: ['d2_sigma_current', 'd2_sigma_tide', 'd2_spread_tide_wave', 'd2_tension_tide', 'd2_tide_accel', 'd2_vwap_sigma_tide', 'd_rsi_value', 'd_sigma_wave']
+[05:31:52] [INFO]   Cluster 8: ['bullish_score', 'sigma_current', 'sigma_max_tf', 'sigma_min_tf', 'sigma_wave']
+[05:31:52] [INFO]   Cluster 9: ['vol_up_down_ratio']
+[05:31:52] [INFO]   Cluster 10: ['complacency_index', 'slope_decel_wave']
+[05:31:52] [INFO]   Cluster 11: ['d2_conj_wave_tide', 'd_wave_accel', 'wave_accel']
+[05:31:52] [INFO]   Cluster 12: ['adi_tide', 'price_vwap_div', 'regime_encoded', 'tension_tide', 'tide_slope', 'tsi_tide', 'vol_slope_conf', 'vwap_spread_tide_current', 'vwap_spread_tide_wave']
+[05:31:52] [INFO]   Cluster 13: ['compr_at_extreme', 'geo_state_norm', 'sigma_abs_dist', 'sigma_squared', 'total_displacement']
+[05:31:52] [INFO]   Cluster 14: ['compression_ratio']
+[05:31:52] [INFO]   Cluster 15: ['slope_energy', 'wave_slope_sq']
+[05:31:52] [INFO]   Cluster 16: ['current_slope_sq', 'slope_product_tc']
+[05:31:52] [INFO]   Cluster 17: ['tide_slope_sq']
+[05:31:52] [INFO]   Cluster 18: ['rsi_divergence_strength']
+[05:31:52] [INFO]   Cluster 19: ['rsi_extreme_zone']
+[05:31:52] [INFO]   Cluster 20: ['sigma_ratio_tw']
+[05:31:52] [INFO]   Cluster 21: ['tension_ratio_tw']
+[05:31:52] [INFO]   Cluster 22: ['slope_ratio_tw']
+[05:31:52] [INFO]   Cluster 23: ['slope_ratio_tc']
+[05:31:52] [INFO]   Cluster 24: ['d_compression_ratio']
+[05:31:52] [INFO]   Cluster 25: ['geo_accel_align']
+[05:31:52] [INFO]   Cluster 26: ['d_kalman_velocity']
+[05:31:52] [INFO]   Cluster 27: ['kalman_slope_conf']
+[05:31:52] [INFO]   Checkpoint saved: phase2_clusters.json
+[05:31:52] [INFO] ==========================================================================================
+[05:31:52] [INFO]   PHASE 3: Sequential Forward Selection
+[05:31:52] [INFO] ==========================================================================================
+[05:31:52] [INFO] 
+  ── FORWARD SELECTION: LONG_ENTRY ──
+[05:31:53] [INFO]   Candidates: 2 (from 27 clusters)
+[05:31:53] [INFO]   Top 5 candidates: [('rsi_divergence_strength', '1.352'), ('sigma_tide', '1.000')]
+[05:31:56] [INFO]     FWD [1/2] ❌ REJECTED 'rsi_divergence_strength' → DSR=0.0000 (Δ=+0.0000) [0f]
+[05:31:59] [INFO]     FWD [2/2] ✅ ADDED 'sigma_tide' → DSR=1.0000 (Δ=+1.0000) [1f]
+[05:31:59] [INFO] 
+  ★ RESULT LONG_ENTRY: 1 features, DSR=1.0000
+[05:31:59] [INFO]     Production: DSR=0.593 (63f) → Optimized: DSR=1.000 (1f) [★ GAIN]
+[05:31:59] [INFO]     Features: ['sigma_tide']
+[05:31:59] [INFO]     Elapsed: 6s
+[05:31:59] [INFO]   Checkpoint saved: phase3_result_long_entry.json
+[05:31:59] [INFO] 
+  ── FORWARD SELECTION: SWING_EXIT ──
+[05:31:59] [INFO]   Candidates: 15 (from 27 clusters)
+[05:31:59] [INFO]   Top 5 candidates: [('vwap_spread_tide_wave', '3.074'), ('tide_slope_sq', '1.953'), ('vwap_spread_current_wave', '1.903'), ('compression_ratio', '1.630'), ('slope_decel_current', '1.000')]
+[05:32:01] [INFO]     FWD [1/15] ✅ ADDED 'vwap_spread_tide_wave' → DSR=1.6579 (Δ=+1.6579) [1f]
+[05:32:03] [INFO]     FWD [2/15] ✅ ADDED 'tide_slope_sq' → DSR=2.1631 (Δ=+0.5051) [2f]
+[05:32:05] [INFO]     FWD [3/15] ✅ ADDED 'vwap_spread_current_wave' → DSR=2.6361 (Δ=+0.4730) [3f]
+[05:32:08] [INFO]     FWD [4/15] ✅ ADDED 'compression_ratio' → DSR=2.6687 (Δ=+0.0326) [4f]
+[05:32:10] [INFO]     FWD [5/15] ❌ REJECTED 'slope_decel_current' → DSR=0.9441 (Δ=-1.7246) [4f]
+[05:32:13] [INFO]     FWD [6/15] ❌ REJECTED 'vwap_sigma_tide' → DSR=1.6003 (Δ=-1.0684) [4f]
+[05:32:16] [INFO]     FWD [7/15] ❌ REJECTED 'total_displacement' → DSR=1.8906 (Δ=-0.7782) [4f]
+[05:32:18] [INFO]     FWD [8/15] ❌ REJECTED 'd_tide_slope' → DSR=1.6194 (Δ=-1.0494) [4f]
+[05:32:21] [INFO]     FWD [9/15] ❌ REJECTED 'slope_ratio_tc' → DSR=2.4462 (Δ=-0.2226) [4f]
+[05:32:24] [INFO]     FWD [10/15] ✅ ADDED 'conj_wave_current' → DSR=3.0471 (Δ=+0.3783) [5f]
+[05:32:27] [INFO]     FWD [11/15] ❌ REJECTED 'sigma_current' → DSR=2.4180 (Δ=-0.6291) [5f]
+[05:32:31] [INFO]     FWD [12/15] ✅ ADDED 'slope_energy' → DSR=3.0991 (Δ=+0.0521) [6f]
+[05:32:35] [INFO]     FWD [13/15] ❌ REJECTED 'vwap_sigma_wave' → DSR=2.2082 (Δ=-0.8909) [6f]
+[05:32:37] [INFO]     FWD [14/15] ❌ REJECTED 'slope_product_tc' → DSR=2.5714 (Δ=-0.5278) [6f]
+[05:32:41] [INFO]     FWD [15/15] ✅ ADDED 'complacency_index' → DSR=13.2854 (Δ=+10.1862) [7f]
+[05:32:41] [INFO] 
+  ★ RESULT SWING_EXIT: 7 features, DSR=13.2854
+[05:32:41] [INFO]     Production: DSR=14.247 (56f) → Optimized: DSR=13.285 (7f) [✖ DROP]
+[05:32:41] [INFO]     Features: ['vwap_spread_tide_wave', 'tide_slope_sq', 'vwap_spread_current_wave', 'compression_ratio', 'conj_wave_current', 'slope_energy', 'complacency_index']
+[05:32:41] [INFO]     Elapsed: 42s
+[05:32:41] [INFO]   Checkpoint saved: phase3_result_swing_exit.json
+[05:32:41] [INFO] 
+  ── FORWARD SELECTION: PULLBACK_DEPTH ──
+[05:32:41] [INFO]   Candidates: 17 (from 27 clusters)
+[05:32:41] [INFO]   Top 5 candidates: [('slope_product_tc', '13.205'), ('d_tide_slope', '7.689'), ('slope_energy', '4.648'), ('vol_slope_conf', '3.985'), ('d2_current_slope', '2.085')]
+[05:32:42] [INFO]     FWD [1/17] ✅ ADDED 'slope_product_tc' → DSR=3.2349 (Δ=+3.2349) [1f]
+[05:32:45] [INFO]     FWD [2/17] ✅ ADDED 'd_tide_slope' → DSR=3.6100 (Δ=+0.3751) [2f]
+[05:32:46] [INFO]     FWD [3/17] ✅ ADDED 'slope_energy' → DSR=5.2004 (Δ=+1.5904) [3f]
+[05:32:48] [INFO]     FWD [4/17] ❌ REJECTED 'vol_slope_conf' → DSR=3.0400 (Δ=-2.1604) [3f]
+[05:32:50] [INFO]     FWD [5/17] ✅ ADDED 'd2_current_slope' → DSR=8.1989 (Δ=+2.9984) [4f]
+[05:32:52] [INFO]     FWD [6/17] ❌ REJECTED 'd2_tension_tide' → DSR=6.3420 (Δ=-1.8568) [4f]
+[05:32:54] [INFO]     FWD [7/17] ❌ REJECTED 'd_wave_accel' → DSR=5.6253 (Δ=-2.5735) [4f]
+[05:32:57] [INFO]     FWD [8/17] ❌ REJECTED 'wave_slope' → DSR=7.1953 (Δ=-1.0036) [4f]
+[05:32:59] [INFO]     FWD [9/17] ❌ REJECTED 'current_slope' → DSR=8.1385 (Δ=-0.0603) [4f]
+[05:33:01] [INFO]     FWD [10/17] ✅ ADDED 'vwap_sigma_current' → DSR=13.2493 (Δ=+5.0504) [5f]
+[05:33:04] [INFO]     FWD [11/17] ❌ REJECTED 'sigma_min_tf' → DSR=5.9740 (Δ=-7.2753) [5f]
+[05:33:06] [INFO]     FWD [12/17] ❌ REJECTED 'slope_ratio_tw' → DSR=7.1876 (Δ=-6.0617) [5f]
+[05:33:09] [INFO]     FWD [13/17] ❌ REJECTED 'geo_state_norm' → DSR=7.6159 (Δ=-5.6334) [5f]
+[05:33:11] [INFO]     FWD [14/17] ❌ REJECTED 'slope_ratio_tc' → DSR=8.1330 (Δ=-5.1163) [5f]
+[05:33:13] [INFO]     FWD [15/17] ✅ ADDED 'geo_accel_align' → DSR=14.3011 (Δ=+1.0519) [6f]
+[05:33:17] [INFO]     FWD [16/17] ❌ REJECTED 'geo_exit_align' → DSR=6.8420 (Δ=-7.4591) [6f]
+[05:33:19] [INFO]     FWD [17/17] ❌ REJECTED 'compression_ratio' → DSR=6.4778 (Δ=-7.8234) [6f]
+[05:33:20] [INFO] 
+  ★ RESULT PULLBACK_DEPTH: 6 features, DSR=14.3011
+[05:33:20] [INFO]     Production: DSR=6.226 (56f) → Optimized: DSR=14.301 (6f) [★ GAIN]
+[05:33:20] [INFO]     Features: ['slope_product_tc', 'd_tide_slope', 'slope_energy', 'd2_current_slope', 'vwap_sigma_current', 'geo_accel_align']
+[05:33:20] [INFO]     Elapsed: 38s
+[05:33:20] [INFO]   Checkpoint saved: phase3_result_pullback_depth.json
+[05:33:20] [INFO] 
+  ── FORWARD SELECTION: TREND_REVERSAL ──
+[05:33:20] [INFO]   Candidates: 16 (from 27 clusters)
+[05:33:20] [INFO]   Top 5 candidates: [('vwap_sigma_tide', '27.688'), ('adi_current', '25.632'), ('slope_ratio_tc', '15.732'), ('vwap_spread_tide_current', '14.820'), ('rsi_value', '14.637')]
+[05:33:22] [INFO]     FWD [1/16] ✅ ADDED 'vwap_sigma_tide' → DSR=12.1378 (Δ=+12.1378) [1f]
+[05:33:25] [INFO]     FWD [2/16] ❌ REJECTED 'adi_current' → DSR=12.0197 (Δ=-0.1182) [1f]
+[05:33:28] [INFO]     FWD [3/16] ❌ REJECTED 'slope_ratio_tc' → DSR=11.3433 (Δ=-0.7946) [1f]
+[05:33:32] [INFO]     FWD [4/16] ✅ ADDED 'vwap_spread_tide_current' → DSR=23.3883 (Δ=+11.2505) [2f]
+[05:33:35] [INFO]     FWD [5/16] ❌ REJECTED 'rsi_value' → DSR=17.5903 (Δ=-5.7981) [2f]
+[05:33:38] [INFO]     FWD [6/16] ❌ REJECTED 'complacency_index' → DSR=17.6668 (Δ=-5.7215) [2f]
+[05:33:41] [INFO]     FWD [7/16] ❌ REJECTED 'tsi_wave' → DSR=20.7158 (Δ=-2.6726) [2f]
+[05:33:45] [INFO]     FWD [8/16] ❌ REJECTED 'd_tide_slope' → DSR=13.2881 (Δ=-10.1002) [2f]
+[05:33:48] [INFO]     FWD [9/16] ❌ REJECTED 'sigma_max_tf' → DSR=17.6845 (Δ=-5.7038) [2f]
+[05:33:51] [INFO]     FWD [10/16] ❌ REJECTED 'slope_ratio_tw' → DSR=15.3895 (Δ=-7.9988) [2f]
+[05:33:54] [INFO]     FWD [11/16] ❌ REJECTED 'sigma_abs_dist' → DSR=16.6263 (Δ=-6.7620) [2f]
+[05:33:57] [INFO]     FWD [12/16] ❌ REJECTED 'slope_product_tc' → DSR=13.3060 (Δ=-10.0824) [2f]
+[05:34:01] [INFO]     FWD [13/16] ❌ REJECTED 'tide_slope_sq' → DSR=12.3518 (Δ=-11.0365) [2f]
+[05:34:04] [INFO]     FWD [14/16] ❌ REJECTED 'd2_vwap_sigma_tide' → DSR=21.8184 (Δ=-1.5700) [2f]
+[05:34:07] [INFO]     FWD [15/16] ❌ REJECTED 'slope_decel_current' → DSR=18.8314 (Δ=-4.5569) [2f]
+[05:34:10] [INFO]     FWD [16/16] ❌ REJECTED 'tension_ratio_tw' → DSR=20.0741 (Δ=-3.3143) [2f]
+[05:34:10] [INFO] 
+  ★ RESULT TREND_REVERSAL: 2 features, DSR=23.3883
+[05:34:10] [INFO]     Production: DSR=11.573 (56f) → Optimized: DSR=23.388 (2f) [★ GAIN]
+[05:34:10] [INFO]     Features: ['vwap_sigma_tide', 'vwap_spread_tide_current']
+[05:34:10] [INFO]     Elapsed: 50s
+[05:34:10] [INFO]   Checkpoint saved: phase3_result_trend_reversal.json
+[05:34:10] [INFO] 
+  ── FORWARD SELECTION: SHORT_ENTRY ──
+[05:34:10] [INFO]   Candidates: 14 (from 27 clusters)
+[05:34:10] [INFO]   Top 5 candidates: [('compression_ratio', '5.547'), ('sigma_tide', '1.639'), ('geo_exit_align', '1.466'), ('rsi_divergence_strength', '1.363'), ('sigma_phase_tc', '1.188')]
+[05:34:13] [INFO]     FWD [1/14] ✅ ADDED 'compression_ratio' → DSR=0.5381 (Δ=+0.5381) [1f]
+[05:34:15] [INFO]     FWD [2/14] ❌ REJECTED 'sigma_tide' → DSR=-0.2588 (Δ=-0.7968) [1f]
+[05:34:18] [INFO]     FWD [3/14] ✅ ADDED 'geo_exit_align' → DSR=1.8051 (Δ=+1.2670) [2f]
+[05:34:20] [INFO]     FWD [4/14] ✅ ADDED 'rsi_divergence_strength' → DSR=2.3194 (Δ=+0.5143) [3f]
+[05:34:22] [INFO]     FWD [5/14] ❌ REJECTED 'sigma_phase_tc' → DSR=1.2459 (Δ=-1.0734) [3f]
+[05:34:25] [INFO]     FWD [6/14] ❌ REJECTED 'vwap_spread_tide_wave' → DSR=1.3634 (Δ=-0.9559) [3f]
+[05:34:28] [INFO]     FWD [7/14] ❌ REJECTED 'slope_product_tc' → DSR=0.3869 (Δ=-1.9324) [3f]
+[05:34:30] [INFO]     FWD [8/14] ❌ REJECTED 'slope_decel_current' → DSR=2.2578 (Δ=-0.0616) [3f]
+[05:34:32] [INFO]     FWD [9/14] ❌ REJECTED 'wave_accel' → DSR=1.7575 (Δ=-0.5619) [3f]
+[05:34:35] [INFO]     FWD [10/14] ❌ REJECTED 'd_rsi_value' → DSR=1.9964 (Δ=-0.3230) [3f]
+[05:34:37] [INFO]     FWD [11/14] ❌ REJECTED 'slope_ratio_tw' → DSR=1.6391 (Δ=-0.6803) [3f]
+[05:34:40] [INFO]     FWD [12/14] ❌ REJECTED 'tension_ratio_tw' → DSR=0.9945 (Δ=-1.3249) [3f]
+[05:34:42] [INFO]     FWD [13/14] ❌ REJECTED 'geo_phase_angle' → DSR=1.0181 (Δ=-1.3013) [3f]
+[05:34:45] [INFO]     FWD [14/14] ❌ REJECTED 'tide_slope_sq' → DSR=0.3842 (Δ=-1.9352) [3f]
+[05:34:45] [INFO] 
+  ★ RESULT SHORT_ENTRY: 3 features, DSR=2.3194
+[05:34:45] [INFO]     Production: DSR=1.705 (56f) → Optimized: DSR=2.319 (3f) [★ GAIN]
+[05:34:45] [INFO]     Features: ['compression_ratio', 'geo_exit_align', 'rsi_divergence_strength']
+[05:34:45] [INFO]     Elapsed: 34s
+[05:34:45] [INFO]   Checkpoint saved: phase3_result_short_entry.json
+[05:34:45] [INFO] 
+  ── FORWARD SELECTION: SHORT_COVER ──
+[05:34:45] [INFO]   Candidates: 16 (from 27 clusters)
+[05:34:45] [INFO]   Top 5 candidates: [('sigma_wave', '1.994'), ('vwap_spread_tide_wave', '1.980'), ('tsi_current', '1.970'), ('d2_current_slope', '1.800'), ('vwap_sigma_current', '1.000')]
+[05:34:46] [INFO]     FWD [1/16] ✅ ADDED 'sigma_wave' → DSR=1.0000 (Δ=+1.0000) [1f]
+[05:34:48] [INFO]     FWD [2/16] ✅ ADDED 'vwap_spread_tide_wave' → DSR=1.1872 (Δ=+0.1872) [2f]
+[05:34:49] [INFO]     FWD [3/16] ✅ ADDED 'tsi_current' → DSR=10.9897 (Δ=+9.8025) [3f]
+[05:34:51] [INFO]     FWD [4/16] ❌ REJECTED 'd2_current_slope' → DSR=3.4245 (Δ=-7.5652) [3f]
+[05:34:53] [INFO]     FWD [5/16] ❌ REJECTED 'vwap_sigma_current' → DSR=3.5878 (Δ=-7.4020) [3f]
+[05:34:54] [INFO]     FWD [6/16] ❌ REJECTED 'geo_exit_align' → DSR=5.6869 (Δ=-5.3028) [3f]
+[05:34:56] [INFO]     FWD [7/16] ❌ REJECTED 'd2_sigma_tide' → DSR=4.6164 (Δ=-6.3734) [3f]
+[05:34:57] [INFO]     FWD [8/16] ❌ REJECTED 'wave_slope_sq' → DSR=6.0075 (Δ=-4.9822) [3f]
+[05:34:59] [INFO]     FWD [9/16] ❌ REJECTED 'compression_ratio' → DSR=5.0356 (Δ=-5.9542) [3f]
+[05:35:00] [INFO]     FWD [10/16] ❌ REJECTED 'slope_product_tc' → DSR=6.4972 (Δ=-4.4925) [3f]
+[05:35:03] [INFO]     FWD [11/16] ❌ REJECTED 'tide_accel' → DSR=2.6372 (Δ=-8.3525) [3f]
+[05:35:04] [INFO]     FWD [12/16] ❌ REJECTED 'geo_accel_align' → DSR=6.5571 (Δ=-4.4327) [3f]
+[05:35:06] [INFO]     FWD [13/16] ❌ REJECTED 'slope_ratio_tw' → DSR=3.9418 (Δ=-7.0479) [3f]
+[05:35:08] [INFO]     FWD [14/16] ❌ REJECTED 'tension_ratio_tw' → DSR=2.8521 (Δ=-8.1376) [3f]
+[05:35:10] [INFO]     FWD [15/16] ❌ REJECTED 'conj_wave_tide' → DSR=7.1560 (Δ=-3.8338) [3f]
+[05:35:12] [INFO]     FWD [16/16] ❌ REJECTED 'sigma_ratio_tw' → DSR=7.0583 (Δ=-3.9314) [3f]
+[05:35:12] [INFO] 
+  ★ RESULT SHORT_COVER: 3 features, DSR=10.9897
+[05:35:12] [INFO]     Production: DSR=8.602 (56f) → Optimized: DSR=10.990 (3f) [★ GAIN]
+[05:35:12] [INFO]     Features: ['sigma_wave', 'vwap_spread_tide_wave', 'tsi_current']
+[05:35:12] [INFO]     Elapsed: 27s
+[05:35:12] [INFO]   Checkpoint saved: phase3_result_short_cover.json
+[05:35:12] [INFO] 
+  ── FORWARD SELECTION: BOUNCE_HEIGHT ──
+[05:35:12] [INFO]   Candidates: 17 (from 27 clusters)
+[05:35:12] [INFO]   Top 5 candidates: [('geo_exit_align', '7.513'), ('rsi_value', '5.495'), ('vwap_spread_tide_wave', '5.455'), ('current_accel', '3.564'), ('slope_product_tc', '3.192')]
+[05:35:13] [INFO]     FWD [1/17] ✅ ADDED 'geo_exit_align' → DSR=1.2815 (Δ=+1.2815) [1f]
+[05:35:15] [INFO]     FWD [2/17] ✅ ADDED 'rsi_value' → DSR=2.3387 (Δ=+1.0573) [2f]
+[05:35:17] [INFO]     FWD [3/17] ✅ ADDED 'vwap_spread_tide_wave' → DSR=2.8643 (Δ=+0.5256) [3f]
+[05:35:18] [INFO]     FWD [4/17] ✅ ADDED 'current_accel' → DSR=2.8691 (Δ=+0.0047) [4f]
+[05:35:20] [INFO]     FWD [5/17] ✅ ADDED 'slope_product_tc' → DSR=4.7315 (Δ=+1.8625) [5f]
+[05:35:22] [INFO]     FWD [6/17] ❌ REJECTED 'rsi_sigma_interact' → DSR=2.9593 (Δ=-1.7722) [5f]
+[05:35:24] [INFO]     FWD [7/17] ❌ REJECTED 'conj_wave_current' → DSR=2.9180 (Δ=-1.8136) [5f]
+[05:35:26] [INFO]     FWD [8/17] ✅ ADDED 'kalman_slope_conf' → DSR=7.0672 (Δ=+2.3357) [6f]
+[05:35:28] [INFO]     FWD [9/17] ❌ REJECTED 'complacency_index' → DSR=3.4001 (Δ=-3.6672) [6f]
+[05:35:30] [INFO]     FWD [10/17] ❌ REJECTED 'tide_slope_sq' → DSR=6.5145 (Δ=-0.5527) [6f]
+[05:35:32] [INFO]     FWD [11/17] ❌ REJECTED 'slope_ratio_tw' → DSR=2.4420 (Δ=-4.6252) [6f]
+[05:35:34] [INFO]     FWD [12/17] ❌ REJECTED 'adi_current' → DSR=3.6201 (Δ=-3.4471) [6f]
+[05:35:36] [INFO]     FWD [13/17] ❌ REJECTED 'sigma_current' → DSR=2.9434 (Δ=-4.1239) [6f]
+[05:35:38] [INFO]     FWD [14/17] ❌ REJECTED 'd_wave_accel' → DSR=3.7432 (Δ=-3.3240) [6f]
+[05:35:40] [INFO]     FWD [15/17] ❌ REJECTED 'tension_ratio_tw' → DSR=2.7870 (Δ=-4.2803) [6f]
+[05:35:42] [INFO]     FWD [16/17] ❌ REJECTED 'd2_tension_tide' → DSR=5.2331 (Δ=-1.8341) [6f]
+[05:35:44] [INFO]     FWD [17/17] ❌ REJECTED 'rsi_divergence_strength' → DSR=3.6309 (Δ=-3.4364) [6f]
+[05:35:44] [INFO] 
+  ★ RESULT BOUNCE_HEIGHT: 6 features, DSR=7.0672
+[05:35:44] [INFO]     Production: DSR=2.308 (56f) → Optimized: DSR=7.067 (6f) [★ GAIN]
+[05:35:44] [INFO]     Features: ['geo_exit_align', 'rsi_value', 'vwap_spread_tide_wave', 'current_accel', 'slope_product_tc', 'kalman_slope_conf']
+[05:35:44] [INFO]     Elapsed: 32s
+[05:35:44] [INFO]   Checkpoint saved: phase3_result_bounce_height.json
+[05:35:44] [INFO] 
+  ── FORWARD SELECTION: TREND_RECOVERY ──
+[05:35:44] [INFO]   Candidates: 13 (from 27 clusters)
+[05:35:44] [INFO]   Top 5 candidates: [('vwap_sigma_tide', '9.264'), ('vwap_spread_tide_current', '7.150'), ('geo_phase_angle', '3.489'), ('current_slope', '2.402'), ('sigma_divergence', '1.998')]
+[05:35:46] [INFO]     FWD [1/13] ✅ ADDED 'vwap_sigma_tide' → DSR=4.9688 (Δ=+4.9688) [1f]
+[05:35:48] [INFO]     FWD [2/13] ✅ ADDED 'vwap_spread_tide_current' → DSR=6.0030 (Δ=+1.0342) [2f]
+[05:35:51] [INFO]     FWD [3/13] ✅ ADDED 'geo_phase_angle' → DSR=6.3047 (Δ=+0.3017) [3f]
+[05:35:53] [INFO]     FWD [4/13] ❌ REJECTED 'current_slope' → DSR=5.4430 (Δ=-0.8618) [3f]
+[05:35:56] [INFO]     FWD [5/13] ✅ ADDED 'sigma_divergence' → DSR=6.3118 (Δ=+0.0070) [4f]
+[05:35:59] [INFO]     FWD [6/13] ✅ ADDED 'd2_tension_tide' → DSR=6.4665 (Δ=+0.1548) [5f]
+[05:36:02] [INFO]     FWD [7/13] ✅ ADDED 'rsi_value' → DSR=6.6692 (Δ=+0.2027) [6f]
+[05:36:04] [INFO]     FWD [8/13] ✅ ADDED 'rsi_divergence_strength' → DSR=6.7553 (Δ=+0.0861) [7f]
+[05:36:07] [INFO]     FWD [9/13] ✅ ADDED 'complacency_index' → DSR=6.9510 (Δ=+0.1957) [8f]
+[05:36:10] [INFO]     FWD [10/13] ❌ REJECTED 'compression_ratio' → DSR=6.3868 (Δ=-0.5642) [8f]
+[05:36:14] [INFO]     FWD [11/13] ✅ ADDED 'slope_ratio_tc' → DSR=7.8380 (Δ=+0.8870) [9f]
+[05:36:17] [INFO]     FWD [12/13] ❌ REJECTED 'slope_product_tc' → DSR=7.6564 (Δ=-0.1816) [9f]
+[05:36:20] [INFO]     FWD [13/13] ❌ REJECTED 'rsi_extreme_zone' → DSR=7.3676 (Δ=-0.4703) [9f]
+[05:36:20] [INFO] 
+  ★ RESULT TREND_RECOVERY: 9 features, DSR=7.8380
+[05:36:20] [INFO]     Production: DSR=4.626 (56f) → Optimized: DSR=7.838 (9f) [★ GAIN]
+[05:36:20] [INFO]     Features: ['vwap_sigma_tide', 'vwap_spread_tide_current', 'geo_phase_angle', 'sigma_divergence', 'd2_tension_tide', 'rsi_value', 'rsi_divergence_strength', 'complacency_index', 'slope_ratio_tc']
+[05:36:20] [INFO]     Elapsed: 36s
+[05:36:20] [INFO]   Checkpoint saved: phase3_result_trend_recovery.json
+[05:36:20] [INFO] 
+  ── FORWARD SELECTION: ZZ_BOTTOM_DETECTOR ──
+[05:36:20] [INFO]   Candidates: 22 (from 27 clusters)
+[05:36:20] [INFO]   Top 5 candidates: [('vwap_sigma_tide', '90.299'), ('sigma_tide', '18.409'), ('geo_phase_angle', '17.000'), ('vwap_spread_current_wave', '16.352'), ('d_wave_accel', '14.443')]
+[05:36:24] [INFO]     FWD [1/22] ✅ ADDED 'vwap_sigma_tide' → DSR=10.5255 (Δ=+10.5255) [1f]
+[05:36:28] [INFO]     FWD [2/22] ✅ ADDED 'sigma_tide' → DSR=22.2894 (Δ=+11.7639) [2f]
+[05:36:34] [INFO]     FWD [3/22] ✅ ADDED 'geo_phase_angle' → DSR=24.1929 (Δ=+1.9035) [3f]
+[05:36:38] [INFO]     FWD [4/22] ❌ REJECTED 'vwap_spread_current_wave' → DSR=23.1205 (Δ=-1.0724) [3f]
+[05:36:44] [INFO]     FWD [5/22] ❌ REJECTED 'd_wave_accel' → DSR=23.9138 (Δ=-0.2791) [3f]
+[05:36:49] [INFO]     FWD [6/22] ✅ ADDED 'vwap_sigma_current' → DSR=32.6487 (Δ=+8.4558) [4f]
+[05:36:54] [INFO]     FWD [7/22] ❌ REJECTED 'd_rsi_value' → DSR=24.7199 (Δ=-7.9288) [4f]
+[05:37:01] [INFO]     FWD [8/22] ❌ REJECTED 'bullish_score' → DSR=26.6616 (Δ=-5.9870) [4f]
+[05:37:06] [INFO]     FWD [9/22] ❌ REJECTED 'slope_decel_wave' → DSR=21.1304 (Δ=-11.5183) [4f]
+[05:37:12] [INFO]     FWD [10/22] ❌ REJECTED 'vwap_spread_tide_current' → DSR=22.2333 (Δ=-10.4153) [4f]
+[05:37:17] [INFO]     FWD [11/22] ❌ REJECTED 'current_accel' → DSR=26.1408 (Δ=-6.5078) [4f]
+[05:37:23] [INFO]     FWD [12/22] ❌ REJECTED 'vol_up_down_ratio' → DSR=27.8326 (Δ=-4.8161) [4f]
+[05:37:29] [INFO]     FWD [13/22] ❌ REJECTED 'sigma_abs_dist' → DSR=30.9208 (Δ=-1.7278) [4f]
+[05:37:34] [INFO]     FWD [14/22] ❌ REJECTED 'slope_product_tc' → DSR=19.2460 (Δ=-13.4026) [4f]
+[05:37:40] [INFO]     FWD [15/22] ❌ REJECTED 'wave_slope_sq' → DSR=17.2363 (Δ=-15.4123) [4f]
+[05:37:45] [INFO]     FWD [16/22] ❌ REJECTED 'compression_ratio' → DSR=31.4618 (Δ=-1.1868) [4f]
+[05:37:50] [INFO]     FWD [17/22] ❌ REJECTED 'd_compression_ratio' → DSR=28.0756 (Δ=-4.5730) [4f]
+[05:37:56] [INFO]     FWD [18/22] ❌ REJECTED 'kalman_slope_conf' → DSR=20.8683 (Δ=-11.7804) [4f]
+[05:38:02] [INFO]     FWD [19/22] ❌ REJECTED 'tide_slope_sq' → DSR=20.9375 (Δ=-11.7112) [4f]
+[05:38:07] [INFO]     FWD [20/22] ❌ REJECTED 'geo_accel_align' → DSR=29.6851 (Δ=-2.9635) [4f]
+[05:38:13] [INFO]     FWD [21/22] ❌ REJECTED 'tension_ratio_tw' → DSR=30.7696 (Δ=-1.8791) [4f]
+[05:38:18] [INFO]     FWD [22/22] ❌ REJECTED 'd_kalman_velocity' → DSR=27.4351 (Δ=-5.2136) [4f]
+[05:38:18] [INFO] 
+  ★ RESULT ZZ_BOTTOM_DETECTOR: 4 features, DSR=32.6487
+[05:38:18] [INFO]     Production: DSR=20.967 (63f) → Optimized: DSR=32.649 (4f) [★ GAIN]
+[05:38:18] [INFO]     Features: ['vwap_sigma_tide', 'sigma_tide', 'geo_phase_angle', 'vwap_sigma_current']
+[05:38:18] [INFO]     Elapsed: 117s
+[05:38:18] [INFO]   Checkpoint saved: phase3_result_zz_bottom_detector.json
+[05:38:18] [INFO] 
+  ── FORWARD SELECTION: ZZ_TOP_DETECTOR ──
+[05:38:18] [INFO]   Candidates: 20 (from 27 clusters)
+[05:38:18] [INFO]   Top 5 candidates: [('slope_energy', '13.888'), ('sigma_current', '9.073'), ('d_wave_accel', '6.466'), ('slope_product_tc', '5.303'), ('price_vwap_div', '5.202')]
+[05:38:22] [INFO]     FWD [1/20] ✅ ADDED 'slope_energy' → DSR=2.4989 (Δ=+2.4989) [1f]
+[05:38:27] [INFO]     FWD [2/20] ✅ ADDED 'sigma_current' → DSR=10.6563 (Δ=+8.1574) [2f]
+[05:38:32] [INFO]     FWD [3/20] ✅ ADDED 'd_wave_accel' → DSR=16.6090 (Δ=+5.9527) [3f]
+[05:38:37] [INFO]     FWD [4/20] ✅ ADDED 'slope_product_tc' → DSR=22.0308 (Δ=+5.4218) [4f]
+[05:38:42] [INFO]     FWD [5/20] ✅ ADDED 'price_vwap_div' → DSR=22.9211 (Δ=+0.8903) [5f]
+[05:38:47] [INFO]     FWD [6/20] ❌ REJECTED 'conj_wave_current' → DSR=12.2174 (Δ=-10.7037) [5f]
+[05:38:53] [INFO]     FWD [7/20] ✅ ADDED 'slope_decel_wave' → DSR=26.5037 (Δ=+3.5826) [6f]
+[05:38:59] [INFO]     FWD [8/20] ❌ REJECTED 'd2_tide_accel' → DSR=11.3055 (Δ=-15.1982) [6f]
+[05:39:05] [INFO]     FWD [9/20] ❌ REJECTED 'current_accel' → DSR=13.2594 (Δ=-13.2444) [6f]
+[05:39:10] [INFO]     FWD [10/20] ❌ REJECTED 'vwap_spread_current_wave' → DSR=21.1721 (Δ=-5.3317) [6f]
+[05:39:15] [INFO]     FWD [11/20] ❌ REJECTED 'd_tide_slope' → DSR=19.6218 (Δ=-6.8819) [6f]
+[05:39:20] [INFO]     FWD [12/20] ❌ REJECTED 'kalman_slope_conf' → DSR=25.9269 (Δ=-0.5768) [6f]
+[05:39:25] [INFO]     FWD [13/20] ❌ REJECTED 'compression_ratio' → DSR=9.2788 (Δ=-17.2249) [6f]
+[05:39:30] [INFO]     FWD [14/20] ❌ REJECTED 'geo_state_norm' → DSR=23.7797 (Δ=-2.7240) [6f]
+[05:39:35] [INFO]     FWD [15/20] ❌ REJECTED 'rsi_value' → DSR=16.3462 (Δ=-10.1575) [6f]
+[05:39:39] [INFO]     FWD [16/20] ❌ REJECTED 'geo_exit_align' → DSR=16.4828 (Δ=-10.0209) [6f]
+[05:39:44] [INFO]     FWD [17/20] ❌ REJECTED 'd_kalman_velocity' → DSR=21.1972 (Δ=-5.3065) [6f]
+[05:39:49] [INFO]     FWD [18/20] ❌ REJECTED 'vol_up_down_ratio' → DSR=16.3147 (Δ=-10.1890) [6f]
+[05:39:53] [INFO]     FWD [19/20] ❌ REJECTED 'slope_ratio_tc' → DSR=18.7715 (Δ=-7.7323) [6f]
+[05:39:58] [INFO]     FWD [20/20] ❌ REJECTED 'tide_slope_sq' → DSR=18.5822 (Δ=-7.9215) [6f]
+[05:39:58] [INFO] 
+  ★ RESULT ZZ_TOP_DETECTOR: 6 features, DSR=26.5037
+[05:39:58] [INFO]     Production: DSR=25.783 (63f) → Optimized: DSR=26.504 (6f) [★ GAIN]
+[05:39:58] [INFO]     Features: ['slope_energy', 'sigma_current', 'd_wave_accel', 'slope_product_tc', 'price_vwap_div', 'slope_decel_wave']
+[05:39:58] [INFO]     Elapsed: 100s
+[05:39:58] [INFO]   Checkpoint saved: phase3_result_zz_top_detector.json
+[05:39:59] [INFO] ==========================================================================================
+[05:39:59] [INFO]   PHASE 4: COMPARATIVE DICTAMEN
+[05:39:59] [INFO] ==========================================================================================
+[05:39:59] [INFO] 
+                    Head │   Prod │  SFI→FWD │      Δ │  Feat │   Status
+[05:39:59] [INFO]   ─────────────────────────────────────────────────────────────────
+[05:39:59] [INFO]               long_entry │   0.59 │    1.000 │  +0.41 │     1 │   ★ GAIN
+[05:39:59] [INFO]               swing_exit │  14.25 │   13.285 │  -0.96 │     7 │   ✖ DROP
+[05:39:59] [INFO]           pullback_depth │   6.23 │   14.301 │  +8.07 │     6 │   ★ GAIN
+[05:39:59] [INFO]           trend_reversal │  11.57 │   23.388 │ +11.81 │     2 │   ★ GAIN
+[05:39:59] [INFO]              short_entry │   1.70 │    2.319 │  +0.61 │     3 │   ★ GAIN
+[05:39:59] [INFO]              short_cover │   8.60 │   10.990 │  +2.39 │     3 │   ★ GAIN
+[05:39:59] [INFO]            bounce_height │   2.31 │    7.067 │  +4.76 │     6 │   ★ GAIN
+[05:39:59] [INFO]           trend_recovery │   4.63 │    7.838 │  +3.21 │     9 │   ★ GAIN
+[05:39:59] [INFO]       zz_bottom_detector │  20.97 │   32.649 │ +11.68 │     4 │   ★ GAIN
+[05:39:59] [INFO]          zz_top_detector │  25.78 │   26.504 │  +0.72 │     6 │   ★ GAIN
+[05:39:59] [INFO] 
+  Gains: 9/10
+[05:39:59] [INFO] ==========================================================================================
+[05:39:59] [INFO]   FEATURE UNIVERSALITY MAP
+[05:39:59] [INFO] ==========================================================================================
+[05:39:59] [INFO]   complacency_index                   │  2/10 heads
+[05:39:59] [INFO]   compression_ratio                   │  2/10 heads
+[05:39:59] [INFO]   conj_wave_current                   │  1/10 heads
+[05:39:59] [INFO]   current_accel                       │  1/10 heads
+[05:39:59] [INFO]   d2_current_slope                    │  1/10 heads ★NEW
+[05:39:59] [INFO]   d2_tension_tide                     │  1/10 heads ★NEW
+[05:39:59] [INFO]   d_tide_slope                        │  1/10 heads
+[05:39:59] [INFO]   d_wave_accel                        │  1/10 heads
+[05:39:59] [INFO]   geo_accel_align                     │  1/10 heads
+[05:39:59] [INFO]   geo_exit_align                      │  2/10 heads
+[05:39:59] [INFO]   geo_phase_angle                     │  2/10 heads
+[05:39:59] [INFO]   kalman_slope_conf                   │  1/10 heads ★NEW
+[05:39:59] [INFO]   price_vwap_div                      │  1/10 heads ★NEW
+[05:39:59] [INFO]   rsi_divergence_strength             │  2/10 heads
+[05:39:59] [INFO]   rsi_value                           │  2/10 heads
+[05:39:59] [INFO]   sigma_current                       │  1/10 heads
+[05:39:59] [INFO]   sigma_divergence                    │  1/10 heads
+[05:39:59] [INFO]   sigma_tide                          │  2/10 heads
+[05:39:59] [INFO]   sigma_wave                          │  1/10 heads
+[05:39:59] [INFO]   slope_decel_wave                    │  1/10 heads
+[05:39:59] [INFO]   slope_energy                        │  3/10 heads ★NEW
+[05:39:59] [INFO]   slope_product_tc                    │  3/10 heads ★NEW
+[05:39:59] [INFO]   slope_ratio_tc                      │  1/10 heads ★NEW
+[05:39:59] [INFO]   tide_slope_sq                       │  1/10 heads ★NEW
+[05:39:59] [INFO]   tsi_current                         │  1/10 heads
+[05:39:59] [INFO]   vwap_sigma_current                  │  2/10 heads
+[05:39:59] [INFO]   vwap_sigma_tide                     │  3/10 heads
+[05:39:59] [INFO]   vwap_spread_current_wave            │  1/10 heads
+[05:39:59] [INFO]   vwap_spread_tide_current            │  2/10 heads
+[05:39:59] [INFO]   vwap_spread_tide_wave               │  3/10 heads
+[05:39:59] [INFO] 
+  ZIGZAG-ONLY features (potential discriminators for entry heads):
+[05:39:59] [INFO]     → d_wave_accel
+[05:39:59] [INFO]     → price_vwap_div
+[05:39:59] [INFO]     → sigma_current
+[05:39:59] [INFO]     → slope_decel_wave
+[05:39:59] [INFO]   Checkpoint saved: final_report.json
+[05:39:59] [INFO] ==========================================================================================
+[05:39:59] [INFO]   ★★★ OPTIMIZATION COMPLETE ★★★
+[05:39:59] [INFO] ==========================================================================================
+[05:39:59] [INFO] Total time: 36.8 min (0.6 hrs)
+[05:39:59] [INFO] Results: /root/botero-trade/backend/scratch/optimization_results
+[05:39:59] [INFO] Next: Review dictamen → persist winners to production

@@ -1,0 +1,112 @@
+{
+  "optimal_features": [
+    "vwap_sigma_tide",
+    "vwap_spread_tide_current",
+    "geo_phase_angle",
+    "sigma_divergence",
+    "d2_tension_tide",
+    "rsi_value",
+    "rsi_divergence_strength",
+    "complacency_index",
+    "slope_ratio_tc"
+  ],
+  "final_dsr": 7.838,
+  "production_dsr": 4.6264,
+  "delta_vs_production": 3.2116,
+  "n_features": 9,
+  "status": "\u2605 GAIN",
+  "selection_log": [
+    {
+      "feature": "vwap_sigma_tide",
+      "action": "ADDED",
+      "dsr_after": 4.9688,
+      "delta": 4.9688,
+      "n_features": 1
+    },
+    {
+      "feature": "vwap_spread_tide_current",
+      "action": "ADDED",
+      "dsr_after": 6.003,
+      "delta": 1.0342,
+      "n_features": 2
+    },
+    {
+      "feature": "geo_phase_angle",
+      "action": "ADDED",
+      "dsr_after": 6.3047,
+      "delta": 0.3017,
+      "n_features": 3
+    },
+    {
+      "feature": "current_slope",
+      "action": "REJECTED",
+      "dsr_after": 5.443,
+      "delta": -0.8618,
+      "n_features": 3
+    },
+    {
+      "feature": "sigma_divergence",
+      "action": "ADDED",
+      "dsr_after": 6.3118,
+      "delta": 0.007,
+      "n_features": 4
+    },
+    {
+      "feature": "d2_tension_tide",
+      "action": "ADDED",
+      "dsr_after": 6.4665,
+      "delta": 0.1548,
+      "n_features": 5
+    },
+    {
+      "feature": "rsi_value",
+      "action": "ADDED",
+      "dsr_after": 6.6692,
+      "delta": 0.2027,
+      "n_features": 6
+    },
+    {
+      "feature": "rsi_divergence_strength",
+      "action": "ADDED",
+      "dsr_after": 6.7553,
+      "delta": 0.0861,
+      "n_features": 7
+    },
+    {
+      "feature": "complacency_index",
+      "action": "ADDED",
+      "dsr_after": 6.951,
+      "delta": 0.1957,
+      "n_features": 8
+    },
+    {
+      "feature": "compression_ratio",
+      "action": "REJECTED",
+      "dsr_after": 6.3868,
+      "delta": -0.5642,
+      "n_features": 8
+    },
+    {
+      "feature": "slope_ratio_tc",
+      "action": "ADDED",
+      "dsr_after": 7.838,
+      "delta": 0.887,
+      "n_features": 9
+    },
+    {
+      "feature": "slope_product_tc",
+      "action": "REJECTED",
+      "dsr_after": 7.6564,
+      "delta": -0.1816,
+      "n_features": 9
+    },
+    {
+      "feature": "rsi_extreme_zone",
+      "action": "REJECTED",
+      "dsr_after": 7.3676,
+      "delta": -0.4703,
+      "n_features": 9
+    }
+  ],
+  "elapsed_s": 35.7
+}

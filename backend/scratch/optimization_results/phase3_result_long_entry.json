@@ -1,0 +1,107 @@
+{
+  "optimal_features": [
+    "sigma_high_tide",
+    "div_high_close_tide"
+  ],
+  "final_dsr": 1.0,
+  "production_dsr": 3.8489,
+  "delta_vs_production": -2.8489,
+  "n_features": 2,
+  "n_viable_sfi": 40,
+  "n_clusters": 13,
+  "status": "\u2716 DROP",
+  "selection_log": [
+    {
+      "feature": "sigma_high_tide",
+      "action": "ADDED",
+      "dsr_after": 1.0,
+      "delta": 1.0,
+      "n_features": 1
+    },
+    {
+      "feature": "tsi_current",
+      "action": "REJECTED",
+      "dsr_after": 1.0,
+      "delta": -0.0,
+      "n_features": 1
+    },
+    {
+      "feature": "residual_std_tide",
+      "action": "REJECTED",
+      "dsr_after": 0.6483,
+      "delta": -0.3517,
+      "n_features": 1
+    },
+    {
+      "feature": "tension_tide",
+      "action": "REJECTED",
+      "dsr_after": -1.0,
+      "delta": -2.0,
+      "n_features": 1
+    },
+    {
+      "feature": "div_close_low_tide",
+      "action": "REJECTED",
+      "dsr_after": 1.0,
+      "delta": 0.0,
+      "n_features": 1
+    },
+    {
+      "feature": "tension_ratio_tw",
+      "action": "REJECTED",
+      "dsr_after": 1.0,
+      "delta": 0.0,
+      "n_features": 1
+    },
+    {
+      "feature": "slope_diff_cw",
+      "action": "REJECTED",
+      "dsr_after": 1.0,
+      "delta": -0.0,
+      "n_features": 1
+    },
+    {
+      "feature": "slope_ratio_tw",
+      "action": "REJECTED",
+      "dsr_after": 1.0,
+      "delta": 0.0,
+      "n_features": 1
+    },
+    {
+      "feature": "div_high_close_tide",
+      "action": "ADDED",
+      "dsr_after": 1.0,
+      "delta": 0.0,
+      "n_features": 2
+    },
+    {
+      "feature": "slope_ratio_tc",
+      "action": "REJECTED",
+      "dsr_after": -1.0,
+      "delta": -2.0,
+      "n_features": 2
+    },
+    {
+      "feature": "slope_product_tc",
+      "action": "REJECTED",
+      "dsr_after": -1.0,
+      "delta": -2.0,
+      "n_features": 2
+    },
+    {
+      "feature": "d2_spread_tide_wave",
+      "action": "REJECTED",
+      "dsr_after": 1.0,
+      "delta": -0.0,
+      "n_features": 2
+    },
+    {
+      "feature": "vol_price_divergence",
+      "action": "REJECTED",
+      "dsr_after": 1.0,
+      "delta": -0.0,
+      "n_features": 2
+    }
+  ],
+  "elapsed_s": 59.8
+}

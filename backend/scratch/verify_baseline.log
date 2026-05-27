@@ -1,0 +1,76 @@
+Loading data...
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+Expanding feature lake...
+[23:29:00] [INFO]   ATR features computed
+[23:29:00] [INFO]   Overnight gap features computed
+[23:29:00] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[23:29:01] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[23:29:01] [INFO]   Candle structure features computed (23 features)
+[23:29:02] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[23:29:02] [INFO]   Generated 83 derived features
+
+Computing pullback_depth labels...
+
+  ── Labeling: PULLBACK_DEPTH (threshold=-2.0%, horizon=5d) ──
+    Labeled: 93,776 / 93,776 | Deep pullback rate: 29.7%
+  Context: 24,679 / 93,776 rows
+  Pos rate: 0.295
+
+======================================================================
+  TESTING: PULLBACK_DEPTH
+  Production features: ['atr_ratio', 'volume_trend', 'sigma_ratio_tw']
+  Horizon: 5d | Context rows: 24,679
+======================================================================
+  DSR (V4 pipeline, 5 folds): 18.1787
+  Fold sharpes: [np.float64(0.4711), np.float64(0.4216), np.float64(0.5818), np.float64(0.4654), np.float64(0.4725)]
+  Mean AUC: 0.5888
+  DSR (V4 pipeline, 7 folds): 5.3589
+  Fold sharpes: [np.float64(0.379), np.float64(0.5889), np.float64(0.4451), np.float64(0.2892), np.float64(0.7361), np.float64(0.0764), np.float64(0.5434)]
+  DSR (V4 pipeline, 3 folds): 4.4683
+  Fold sharpes: [np.float64(0.5527), np.float64(0.697), np.float64(0.3011)]
+
+Computing zz_top labels...
+
+  ── Labeling: ZZ_TOP (proximity=3 bars, tp=MAX) ──
+    Loaded 2,467 zigzag MAX points
+    Labeled: 93,776 total | Positive: 11,351 (12.1%)
+
+======================================================================
+  TESTING: ZZ_TOP_DETECTOR
+  Production features: ['atr_ratio', 'sigma_high_current', 'overnight_gap', 'vol_return_interaction', 'wave_accel', 'rsi_value', 'vol_adj_delta', 'compr_at_extreme', 'vol_up_down_ratio', 'adi_tide', 'tide_slope_sq', 'volume_trend']
+  Horizon: 3d | Context rows: 93,776
+======================================================================
+  DSR (V4 pipeline, 5 folds): 10.1977
+  Fold sharpes: [np.float64(1.0659), np.float64(0.9478), np.float64(0.8867), np.float64(1.3129), np.float64(0.7335)]
+  Mean AUC: 0.7648
+  DSR (V4 pipeline, 7 folds): 10.4502
+  Fold sharpes: [np.float64(0.9873), np.float64(0.9856), np.float64(0.722), np.float64(0.9602), np.float64(1.1311), np.float64(1.3914), np.float64(0.6526)]
+  DSR (V4 pipeline, 3 folds): 8.4918
+  Fold sharpes: [np.float64(0.9217), np.float64(1.2379), np.float64(1.3966)]
+
+Computing long_entry labels...
+
+  ── Labeling: LONG_ENTRY (horizon=20d) ──
+    Labeled: 93,470 / 93,776 | Base WR: 59.0%
+  Pos rate: 0.590
+
+======================================================================
+  TESTING: LONG_ENTRY
+  Production features: ['sigma_high_tide', 'tsi_current', 'reg_value_tide', 'div_close_low_tide', 'conj_wave_current', 'vol_price_divergence']
+  Horizon: 20d | Context rows: 93,776
+======================================================================
+  DSR (V4 pipeline, 5 folds): 2.5921
+  Fold sharpes: [np.float64(0.0816), np.float64(0.3007), np.float64(0.1714), np.float64(0.1834), np.float64(-0.0271)]
+  Mean AUC: 0.5111
+  DSR (V4 pipeline, 7 folds): 3.5220
+  Fold sharpes: [np.float64(0.2091), np.float64(0.0583), np.float64(0.3882), np.float64(0.2199), np.float64(0.6039), np.float64(0.2967), np.float64(0.0421)]
+  DSR (V4 pipeline, 3 folds): 4.8578
+  Fold sharpes: [np.float64(0.2066), np.float64(0.241), np.float64(0.1124)]
+
+★ VERIFICATION COMPLETE

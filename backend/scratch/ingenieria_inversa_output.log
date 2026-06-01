@@ -1,0 +1,59 @@
+========================================================================================================================
+  INGENIERÍA INVERSA — La Película del Giro
+  'Sé qué ES cada punto. ¿Qué lo delata ANTES?'
+========================================================================================================================
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+[22:22:33] [INFO]   ATR features computed
+[22:22:33] [INFO]   Overnight gap features computed
+[22:22:33] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[22:22:33] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[22:22:34] [INFO]   Candle structure features computed (23 features)
+[22:22:35] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[22:22:35] [INFO]   Generated 83 derived features
+  Feature Lake: 93,776 bars × 165 cols
+  Matched zigzag: 4,792
+  Archetypes: {'HH': np.int64(1308), 'LL': np.int64(1080), 'HL': np.int64(737), 'HH_TO_LH': np.int64(589), 'LL_TO_HL': np.int64(579), 'LH': np.int64(499)}
+  Profile features available: 22/22
+
+========================================================================================================================
+  PART 1: ARCHETYPE PROFILES — Cohen's d Effect Size
+  |d| > 0.2 = small, |d| > 0.5 = medium, |d| > 0.8 = large
+========================================================================================================================
+
+  ── HL (N=737) ──
+  TOP 10 discriminators at t-1 (anticipatory):
+  Feature                           Cohen d      Effect     Direction
+  ──────────────────────────────────────────────────────────────────────
+  atr_ratio                          +0.746      MEDIUM    ↑ ELEVATED
+  vwap_sigma_wave                    -0.613      MEDIUM   ↓ DEPRESSED
+  d_wave_accel                       +0.589      MEDIUM    ↑ ELEVATED
+  compression_ratio                  +0.570      MEDIUM    ↑ ELEVATED
+  residual_std_wave                  +0.484       small    ↑ ELEVATED
+  total_displacement                 +0.439       small    ↑ ELEVATED
+  vwap_sigma_current                 -0.408       small   ↓ DEPRESSED
+  current_slope                      +0.273       small    ↑ ELEVATED
+  residual_std_current               +0.271       small    ↑ ELEVATED
+  current_accel                      -0.257       small   ↓ DEPRESSED
+
+  ── LL (N=1080) ──
+  TOP 10 discriminators at t-1 (anticipatory):
+  Feature                           Cohen d      Effect     Direction
+  ──────────────────────────────────────────────────────────────────────
+  atr_ratio                          +1.559       LARGE    ↑ ELEVATED
+  vwap_sigma_current                 -1.255       LARGE   ↓ DEPRESSED
+  vwap_sigma_tide                    -1.108       LARGE   ↓ DEPRESSED
+  vwap_sigma_wave                    -1.083       LARGE   ↓ DEPRESSED
+  sigma_tide                         -1.048       LARGE   ↓ DEPRESSED
+  wave_slope                         -0.990       LARGE   ↓ DEPRESSED
+  geo_exit_align                     -0.915       LARGE   ↓ DEPRESSED
+  d_wave_accel                       +0.893       LARGE    ↑ ELEVATED
+  sigma_squared                      +0.857       LARGE    ↑ ELEVATED
+  tsi_wave                           -0.849       LARGE   ↓ DEPRESSED
+
+  ── LL_TO_HL (N=579) ──

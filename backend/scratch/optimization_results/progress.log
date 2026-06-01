@@ -2442,3 +2442,241 @@ Feature Optimizer — Started 2026-05-26T21:21:28.242622+00:00
 [00:37:15] [INFO]   Candle structure features computed (23 features)
 [00:37:16] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
 [00:37:16] [INFO]   Generated 83 derived features
+[15:14:24] [INFO]   ATR features computed
+[15:14:24] [INFO]   Overnight gap features computed
+[15:14:25] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[15:14:25] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[15:14:26] [INFO]   Candle structure features computed (23 features)
+[15:14:26] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[15:14:26] [INFO]   Generated 83 derived features
+[15:16:45] [INFO]   ATR features computed
+[15:16:45] [INFO]   Overnight gap features computed
+[15:16:45] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[15:16:46] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[15:16:46] [INFO]   Candle structure features computed (23 features)
+[15:16:47] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[15:16:47] [INFO]   Generated 83 derived features
+[00:39:44] [INFO]   ATR features computed
+[00:39:44] [INFO]   Overnight gap features computed
+[00:39:44] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[00:39:45] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[00:39:45] [INFO]   Candle structure features computed (23 features)
+[00:39:46] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[00:39:46] [INFO]   Generated 83 derived features
+[00:56:58] [INFO]   ATR features computed
+[00:56:58] [INFO]   Overnight gap features computed
+[00:56:59] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[00:56:59] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[00:56:59] [INFO]   Candle structure features computed (23 features)
+[00:57:00] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[00:57:00] [INFO]   Generated 83 derived features
+[00:58:06] [INFO]   ATR features computed
+[00:58:06] [INFO]   Overnight gap features computed
+[00:58:06] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[00:58:07] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[00:58:07] [INFO]   Candle structure features computed (23 features)
+[00:58:08] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[00:58:08] [INFO]   Generated 83 derived features
+[01:59:37] [INFO]   ATR features computed
+[01:59:37] [INFO]   Overnight gap features computed
+[01:59:37] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[01:59:38] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[01:59:38] [INFO]   Candle structure features computed (23 features)
+[01:59:39] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[01:59:39] [INFO]   Generated 83 derived features
+[02:19:15] [INFO]   ATR features computed
+[02:19:15] [INFO]   Overnight gap features computed
+[02:19:15] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[02:19:16] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[02:19:16] [INFO]   Candle structure features computed (23 features)
+[02:19:17] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[02:19:17] [INFO]   Generated 83 derived features
+[02:25:07] [INFO]   ATR features computed
+[02:25:08] [INFO]   Overnight gap features computed
+[02:25:08] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[02:25:09] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[02:25:09] [INFO]   Candle structure features computed (23 features)
+[02:25:10] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[02:25:10] [INFO]   Generated 83 derived features
+[02:27:40] [INFO]   ATR features computed
+[02:27:40] [INFO]   Overnight gap features computed
+[02:27:41] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[02:27:41] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[02:27:41] [INFO]   Candle structure features computed (23 features)
+[02:27:42] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[02:27:42] [INFO]   Generated 83 derived features
+[16:17:00] [INFO]   ATR features computed
+[16:17:00] [INFO]   Overnight gap features computed
+[16:17:00] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[16:17:01] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[16:17:01] [INFO]   Candle structure features computed (23 features)
+[16:17:02] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[16:17:02] [INFO]   Generated 83 derived features
+[16:26:13] [INFO]   ATR features computed
+[16:26:13] [INFO]   Overnight gap features computed
+[16:26:13] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[16:26:14] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[16:26:14] [INFO]   Candle structure features computed (23 features)
+[16:26:15] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[16:26:15] [INFO]   Generated 83 derived features
+[16:44:26] [INFO]   ATR features computed
+[16:44:26] [INFO]   Overnight gap features computed
+[16:44:26] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[16:44:27] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[16:44:27] [INFO]   Candle structure features computed (23 features)
+[16:44:28] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[16:44:28] [INFO]   Generated 83 derived features
+[16:49:41] [INFO]   ATR features computed
+[16:49:41] [INFO]   Overnight gap features computed
+[16:49:42] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[16:49:42] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[16:49:42] [INFO]   Candle structure features computed (23 features)
+[16:49:43] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[16:49:43] [INFO]   Generated 83 derived features
+[17:00:38] [INFO]   ATR features computed
+[17:00:38] [INFO]   Overnight gap features computed
+[17:00:38] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[17:00:39] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[17:00:39] [INFO]   Candle structure features computed (23 features)
+[17:00:40] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[17:00:40] [INFO]   Generated 83 derived features
+[17:07:48] [INFO]   ATR features computed
+[17:07:49] [INFO]   Overnight gap features computed
+[17:07:49] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[17:07:49] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[17:07:49] [INFO]   Candle structure features computed (23 features)
+[17:07:50] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[17:07:50] [INFO]   Generated 83 derived features
+[17:18:08] [INFO]   ATR features computed
+[17:18:08] [INFO]   Overnight gap features computed
+[17:18:09] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[17:18:09] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[17:18:09] [INFO]   Candle structure features computed (23 features)
+[17:18:10] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[17:18:10] [INFO]   Generated 83 derived features
+[19:05:00] [INFO]   ATR features computed
+[19:05:00] [INFO]   Overnight gap features computed
+[19:05:00] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[19:05:01] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[19:05:01] [INFO]   Candle structure features computed (23 features)
+[19:05:02] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[19:05:02] [INFO]   Generated 83 derived features
+[19:09:50] [INFO]   ATR features computed
+[19:09:50] [INFO]   Overnight gap features computed
+[19:09:50] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[19:09:51] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[19:09:51] [INFO]   Candle structure features computed (23 features)
+[19:09:52] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[19:09:52] [INFO]   Generated 83 derived features
+[19:20:18] [INFO]   ATR features computed
+[19:20:18] [INFO]   Overnight gap features computed
+[19:20:18] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[19:20:19] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[19:20:19] [INFO]   Candle structure features computed (23 features)
+[19:20:20] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[19:20:20] [INFO]   Generated 83 derived features
+[19:59:00] [INFO]   ATR features computed
+[19:59:00] [INFO]   Overnight gap features computed
+[19:59:01] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[19:59:02] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[19:59:02] [INFO]   Candle structure features computed (23 features)
+[19:59:03] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[19:59:03] [INFO]   Generated 83 derived features
+[20:02:56] [INFO]   ATR features computed
+[20:02:56] [INFO]   Overnight gap features computed
+[20:02:57] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[20:02:57] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[20:02:57] [INFO]   Candle structure features computed (23 features)
+[20:02:58] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[20:02:58] [INFO]   Generated 83 derived features
+[20:21:26] [INFO]   ATR features computed
+[20:21:26] [INFO]   Overnight gap features computed
+[20:21:27] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[20:21:27] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[20:21:27] [INFO]   Candle structure features computed (23 features)
+[20:21:28] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[20:21:28] [INFO]   Generated 83 derived features
+[21:12:43] [INFO]   ATR features computed
+[21:12:43] [INFO]   Overnight gap features computed
+[21:12:44] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[21:12:44] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[21:12:45] [INFO]   Candle structure features computed (23 features)
+[21:12:46] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[21:12:46] [INFO]   Generated 83 derived features
+[21:25:44] [INFO]   ATR features computed
+[21:25:45] [INFO]   Overnight gap features computed
+[21:25:45] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[21:25:45] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[21:25:46] [INFO]   Candle structure features computed (23 features)
+[21:25:47] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[21:25:47] [INFO]   Generated 83 derived features
+[21:31:53] [INFO]   ATR features computed
+[21:31:53] [INFO]   Overnight gap features computed
+[21:31:54] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[21:31:54] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[21:31:54] [INFO]   Candle structure features computed (23 features)
+[21:31:56] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[21:31:56] [INFO]   Generated 83 derived features
+[21:37:35] [INFO]   ATR features computed
+[21:37:35] [INFO]   Overnight gap features computed
+[21:37:36] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[21:37:36] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[21:37:36] [INFO]   Candle structure features computed (23 features)
+[21:37:37] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[21:37:37] [INFO]   Generated 83 derived features
+[21:47:15] [INFO]   ATR features computed
+[21:47:15] [INFO]   Overnight gap features computed
+[21:47:15] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[21:47:16] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[21:47:16] [INFO]   Candle structure features computed (23 features)
+[21:47:17] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[21:47:17] [INFO]   Generated 83 derived features
+[22:05:23] [INFO]   ATR features computed
+[22:05:23] [INFO]   Overnight gap features computed
+[22:05:23] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[22:05:24] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[22:05:24] [INFO]   Candle structure features computed (23 features)
+[22:05:25] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[22:05:25] [INFO]   Generated 83 derived features
+[22:22:33] [INFO]   ATR features computed
+[22:22:33] [INFO]   Overnight gap features computed
+[22:22:33] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[22:22:33] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[22:22:34] [INFO]   Candle structure features computed (23 features)
+[22:22:35] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[22:22:35] [INFO]   Generated 83 derived features
+[22:55:25] [INFO]   ATR features computed
+[22:55:25] [INFO]   Overnight gap features computed
+[22:55:25] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[22:55:26] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[22:55:26] [INFO]   Candle structure features computed (23 features)
+[22:55:27] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[22:55:27] [INFO]   Generated 83 derived features
+[22:59:35] [INFO]   ATR features computed
+[22:59:35] [INFO]   Overnight gap features computed
+[22:59:35] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[22:59:36] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[22:59:36] [INFO]   Candle structure features computed (23 features)
+[22:59:37] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[22:59:37] [INFO]   Generated 83 derived features
+[23:19:07] [INFO]   ATR features computed
+[23:19:07] [INFO]   Overnight gap features computed
+[23:19:08] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[23:19:08] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[23:19:08] [INFO]   Candle structure features computed (23 features)
+[23:19:10] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[23:19:10] [INFO]   Generated 83 derived features
+[23:48:46] [INFO]   ATR features computed
+[23:48:46] [INFO]   Overnight gap features computed
+[23:48:47] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[23:48:47] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[23:48:48] [INFO]   Candle structure features computed (23 features)
+[23:48:49] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[23:48:49] [INFO]   Generated 83 derived features
+[23:49:47] [INFO]   ATR features computed
+[23:49:47] [INFO]   Overnight gap features computed
+[23:49:48] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[23:49:48] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[23:49:48] [INFO]   Candle structure features computed (23 features)
+[23:49:49] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[23:49:49] [INFO]   Generated 83 derived features

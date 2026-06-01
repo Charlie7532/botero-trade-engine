@@ -1,0 +1,18 @@
+
+==============================================================================================================
+  SIGNAL CASCADE PROTOCOL — Conditional Probabilities
+==============================================================================================================
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+[02:27:40] [INFO]   ATR features computed
+[02:27:40] [INFO]   Overnight gap features computed
+[02:27:41] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[02:27:41] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[02:27:41] [INFO]   Candle structure features computed (23 features)
+[02:27:42] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[02:27:42] [INFO]   Generated 83 derived features

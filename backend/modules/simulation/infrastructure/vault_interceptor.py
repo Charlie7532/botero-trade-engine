@@ -136,3 +136,48 @@ class VaultInterceptor:
         if breadth_data:
             self.store.save_mcp_snapshot("macro/breadth", "MARKET", breadth_data)
         return breadth_data
+
+    # ── UW Phase 1: Gamma / Vol / Structure Interception ──
+
+    def intercept_spot_gex(self, ticker: str, data: list[dict]) -> list[dict]:
+        """Vault Spot GEX by strike (real dealer data) and return unchanged."""
+        if data:
+            self.store.save_mcp_snapshot("uw/spot_gex", ticker, data)
+        return data
+
+    def intercept_greeks(self, ticker: str, data: list[dict]) -> list[dict]:
+        """Vault per-strike per-expiry Greeks and return unchanged."""
+        if data:
+            self.store.save_mcp_snapshot("uw/greeks", ticker, data)
+        return data
+
+    def intercept_iv_term_structure(self, ticker: str, data: list[dict]) -> list[dict]:
+        """Vault IV Term Structure and return unchanged."""
+        if data:
+            self.store.save_mcp_snapshot("uw/iv_term_structure", ticker, data)
+        return data
+
+    def intercept_vol_stats(self, ticker: str, data: dict) -> dict:
+        """Vault Vol Stats (IV/RV/IV Rank) and return unchanged."""
+        if data:
+            self.store.save_mcp_snapshot("uw/vol_stats", ticker, data)
+        return data
+
+    def intercept_max_pain(self, ticker: str, data: list[dict]) -> list[dict]:
+        """Vault Max Pain per expiry and return unchanged."""
+        if data:
+            self.store.save_mcp_snapshot("uw/max_pain", ticker, data)
+        return data
+
+    def intercept_oi_per_strike(self, ticker: str, data: list[dict]) -> list[dict]:
+        """Vault OI distribution by strike and return unchanged."""
+        if data:
+            self.store.save_mcp_snapshot("uw/oi_per_strike", ticker, data)
+        return data
+
+    def intercept_sector_tide(self, sector: str, data: list[dict]) -> list[dict]:
+        """Vault per-sector net premium flow and return unchanged."""
+        if data:
+            self.store.save_mcp_snapshot("uw/sector_tide", sector.upper(), data)
+        return data
+

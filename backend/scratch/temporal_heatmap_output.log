@@ -1,0 +1,381 @@
+==============================================================================================================
+  TEMPORAL ACTIVATION HEATMAP — Day-by-Day Feature Signatures
+==============================================================================================================
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+[02:19:15] [INFO]   ATR features computed
+[02:19:15] [INFO]   Overnight gap features computed
+[02:19:15] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[02:19:16] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[02:19:16] [INFO]   Candle structure features computed (23 features)
+[02:19:17] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[02:19:17] [INFO]   Generated 83 derived features
+
+==============================================================================================================
+  ARCHETYPE: HL
+==============================================================================================================
+  N points: 754
+
+  Cohen's d Heatmap (top 15 features by max |d|):
+  Feature                     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1   t=0   t+1   t+2   t+3   t+4   t+5   t+6   t+7  max|d|
+  ----------------------------------------------------------------------------------------------------------------------------------------------
+  vwap_sigma_wave             ·     ▫     ▫     ▓     ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓   ▓▓    ▓▓    ▓     ▫     ·     ·     1.119
+  wave_accel                  ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓   ▓▓    ▓     ▓     ▫     ·     ·     0.934
+  total_displacement          ▪     ▪     ·     ·     █     █     █     ██    ██    ███   ████  ██    ·     ▫     ▫     ▓     ▓     ▓     0.893
+  vwap_sigma_current          ·     ·     ·     ·     ▫     ▓     ▓     ▓▓    ▓▓    ▓▓▓   ▓▓▓▓  ▓▓▓   ▓▓    ▓▓    ▓     ▓     ▓     ▫     0.839
+  current_accel               ·     ·     ·     ·     ▫     ▓     ▓     ▓     ▓▓    ▓▓    ▓▓▓   ▓▓    ▓▓    ▓     ▓     ▓     ▓     ▫     0.684
+  compression_ratio           ██    ██    ██    ██    ██    ██    ██    ██    ██    ███   ███   ███   ███   ███   ███   ███   ███   ███   0.683
+  sigma_tide                  ▪     ▪     ▪     ·     ·     ·     ▫     ▓     ▓     ▓▓    ▓▓▓   ▓▓    ▓▓    ▓     ▓     ▓     ▫     ▫     0.620
+  volume_at_extreme           ·     ·     ·     ·     ·     ▪     ▪     █     ▪     █     ██    █     ·     ▫     ▫     ▫     ▓     ▫     0.448
+  tsi_wave                    ▪     ·     ·     ·     ·     ·     ·     ▫     ▓     ▓     ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓     ▓     0.382
+  vwap_spread_tide_wave       ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     0.321
+  current_slope               ██    ██    ██    ██    ██    ██    ██    █     █     █     █     █     █     █     █     █     █     █     0.313
+  tsi_current                 █     █     █     █     █     █     █     █     █     █     █     █     ▪     ▪     ▪     ▪     ▪     ▪     0.297
+  wave_slope                  ▪     ▪     ▪     ▪     ▪     ·     ·     ·     ·     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▫     ·     0.289
+  sigma_squared               ·     ·     ·     ·     ·     ·     ·     ·     ·     ▪     █     ▪     ·     ·     ·     ▫     ▫     ▫     0.285
+  vwap_sigma_tide             █     █     █     ▪     ▪     ·     ·     ·     ·     ▫     ▓     ▓     ·     ·     ·     ·     ·     ·     0.271
+
+  ── NARRATIVE: HL ──
+     t-10: wave_accel                 BAJA (moderada, d=-0.376)
+     t-10: compression_ratio          SUBE (moderada, d=+0.375)
+     t-10: vwap_spread_tide_wave      BAJA (moderada, d=-0.314)
+     t-10: current_slope              SUBE (moderada, d=+0.307)
+     t-10: tsi_current                SUBE (leve, d=+0.297)
+     t-10: vwap_sigma_tide            SUBE (leve, d=+0.184)
+      t-7: vwap_sigma_wave            BAJA (leve, d=-0.211)
+      t-6: total_displacement         SUBE (leve, d=+0.156)
+      t-5: vwap_sigma_current         BAJA (leve, d=-0.189)
+      t-5: current_accel              BAJA (leve, d=-0.157)
+      t-3: sigma_tide                 BAJA (leve, d=-0.212)
+      t-3: volume_at_extreme          SUBE (leve, d=+0.153)
+      t-2: tsi_wave                   BAJA (leve, d=-0.154)
+      t-1: wave_slope                 BAJA (leve, d=-0.155)
+      t=0: sigma_squared              SUBE (leve, d=+0.285)
+
+  ── TRIGGER SIGNAL (steepest change near t=0) ──
+    total_displacement         d(t-3)=+0.327 → d(t=0)=+0.893  Δ=0.567 ↗
+    vwap_sigma_wave            d(t-3)=-0.578 → d(t=0)=-1.119  Δ=0.541 ↘
+    vwap_sigma_current         d(t-3)=-0.348 → d(t=0)=-0.839  Δ=0.491 ↘
+    current_accel              d(t-3)=-0.270 → d(t=0)=-0.684  Δ=0.414 ↘
+    sigma_tide                 d(t-3)=-0.212 → d(t=0)=-0.620  Δ=0.408 ↘
+
+  ── SNAPSHOT at t=0: Feature values ──
+    vwap_sigma_wave            pop=   0.286  HL=  -1.205  d=-1.119
+    wave_accel                 pop=   0.000  HL=  -0.088  d=-0.934
+    total_displacement         pop=   3.224  HL=   4.569  d=+0.893
+    vwap_sigma_current         pop=   0.415  HL=  -0.684  d=-0.839
+    current_accel              pop=  -0.000  HL=  -0.008  d=-0.684
+    compression_ratio          pop=   0.374  HL=   0.501  d=+0.602
+    sigma_tide                 pop=   0.017  HL=  -0.850  d=-0.620
+    volume_at_extreme          pop=   1.184  HL=   1.719  d=+0.448
+    tsi_wave                   pop=  50.500  HL=  40.961  d=-0.330
+    vwap_spread_tide_wave      pop=  -4.997  HL=  -8.202  d=-0.280
+
+==============================================================================================================
+  ARCHETYPE: LL
+==============================================================================================================
+  N points: 1107
+
+  Cohen's d Heatmap (top 15 features by max |d|):
+  Feature                     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1   t=0   t+1   t+2   t+3   t+4   t+5   t+6   t+7  max|d|
+  ----------------------------------------------------------------------------------------------------------------------------------------------
+  vwap_sigma_current          ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  1.681
+  below_all_vwaps_int         ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  1.574
+  vwap_sigma_wave             ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓    1.573
+  sigma_squared               █     ██    ██    ██    ██    ███   ███   ███   ████  ████  ████  ████  ███   ███   ███   ██    ██    ██    1.526
+  sigma_tide                  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  1.471
+  vwap_sigma_tide             ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  1.436
+  volume_at_extreme           ██    ██    ██    ██    ██    ███   ███   ███   ████  ████  ████  ████  ███   ██    ██    █     █     █     1.404
+  wave_accel                  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓   ▓▓    ▓▓    ▓     ▓     ▫     ▓     1.396
+  wave_slope                  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  1.372
+  current_accel               ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   1.338
+  total_displacement          ▪     █     █     █     █     █     ██    ███   ███   ████  ████  ███   █     █     █     ▪     ▪     ▪     1.325
+  geo_exit_align              ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  1.201
+  tsi_wave                    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  1.179
+  fear_level                  ███   ███   ███   ███   ███   ███   ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  1.061
+  vwap_spread_current_wave    ███   ███   ███   ███   ███   ███   ███   ███   ███   ████  ████  ████  ████  ████  ████  ████  ████  ████  1.036
+
+  ── NARRATIVE: LL ──
+     t-10: vwap_sigma_current         BAJA (fuerte, d=-0.909)
+     t-10: below_all_vwaps_int        SUBE (fuerte, d=+0.823)
+     t-10: vwap_sigma_wave            BAJA (fuerte, d=-0.789)
+     t-10: sigma_squared              SUBE (leve, d=+0.272)
+     t-10: sigma_tide                 BAJA (fuerte, d=-0.746)
+     t-10: vwap_sigma_tide            BAJA (fuerte, d=-0.824)
+     t-10: volume_at_extreme          SUBE (moderada, d=+0.309)
+     t-10: wave_accel                 BAJA (fuerte, d=-0.697)
+     t-10: wave_slope                 BAJA (fuerte, d=-0.702)
+     t-10: current_accel              BAJA (fuerte, d=-0.621)
+     t-10: geo_exit_align             BAJA (fuerte, d=-0.757)
+     t-10: tsi_wave                   BAJA (fuerte, d=-0.713)
+     t-10: fear_level                 SUBE (fuerte, d=+0.716)
+     t-10: vwap_spread_current_wave   SUBE (fuerte, d=+0.526)
+      t-9: total_displacement         SUBE (leve, d=+0.162)
+
+  ── TRIGGER SIGNAL (steepest change near t=0) ──
+    total_displacement         d(t-3)=+0.561 → d(t=0)=+1.325  Δ=0.764 ↗
+    sigma_squared              d(t-3)=+0.772 → d(t=0)=+1.526  Δ=0.754 ↗
+    volume_at_extreme          d(t-3)=+0.751 → d(t=0)=+1.404  Δ=0.653 ↗
+    current_accel              d(t-3)=-0.917 → d(t=0)=-1.338  Δ=0.421 ↘
+    wave_accel                 d(t-3)=-0.981 → d(t=0)=-1.396  Δ=0.415 ↘
+
+  ── SNAPSHOT at t=0: Feature values ──
+    vwap_sigma_current         pop=   0.415  LL=  -1.784  d=-1.681
+    below_all_vwaps_int        pop=   0.164  LL=   0.747  d=+1.574
+    vwap_sigma_wave            pop=   0.286  LL=  -1.803  d=-1.573
+    sigma_squared              pop=   1.954  LL=   6.148  d=+1.526
+    sigma_tide                 pop=   0.017  LL=  -2.040  d=-1.471
+    vwap_sigma_tide            pop=   0.707  LL=  -1.130  d=-1.436
+    volume_at_extreme          pop=   1.184  LL=   2.877  d=+1.404
+    wave_accel                 pop=   0.000  LL=  -0.133  d=-1.396
+    wave_slope                 pop=   0.040  LL=  -0.452  d=-1.350
+    current_accel              pop=  -0.000  LL=  -0.016  d=-1.338
+
+==============================================================================================================
+  ARCHETYPE: LL_TO_HL
+==============================================================================================================
+  N points: 588
+
+  Cohen's d Heatmap (top 15 features by max |d|):
+  Feature                     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1   t=0   t+1   t+2   t+3   t+4   t+5   t+6   t+7  max|d|
+  ----------------------------------------------------------------------------------------------------------------------------------------------
+  vwap_sigma_wave             ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓   ▓▓▓   ▓▓    ▓▓    ▓     ▫     ·     1.161
+  vwap_sigma_current          ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓    ▓▓    ▓▓    ▓▓    1.021
+  wave_accel                  ▓▓    ▓▓▓   ▓▓    ▓▓    ▓▓▓   ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓   ▓▓    ▓▓    ▓     ▓     ▓     ▓     0.956
+  below_all_vwaps_int         █     ██    ██    ██    ██    ██    ██    ██    ███   ███   ████  ███   ██    ██    █     █     ▪     ▪     0.935
+  vwap_sigma_tide             ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   0.884
+  sigma_tide                  ▓     ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓    ▓▓    ▓▓    ▓     ▓     ▓     0.744
+  current_accel               ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓▓    ▓▓    ▓▓▓   ▓▓    ▓     ▓     ▓     ▫     ·     ·     0.673
+  geo_exit_align              ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓    0.657
+  fear_level                  ██    ██    ██    ██    ██    ██    ██    ██    ██    ███   ███   ███   ███   ███   ███   ███   ███   ██    0.616
+  tsi_wave                    ▓     ▓     ▓     ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓    ▓▓    ▓▓    0.588
+  compression_ratio           ██    ██    ██    ██    ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   0.580
+  total_displacement          ·     ·     ·     ▪     ▪     █     █     ▪     █     █     ███   ▪     ·     ▫     ▓     ▓     ▓     ▓     0.526
+  wave_slope                  ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓    ▓▓    ▓▓    ▓▓    ▓     ▓     0.523
+  vwap_spread_tide_wave       ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    0.470
+  vwap_spread_current_wave    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    0.442
+
+  ── NARRATIVE: LL_TO_HL ──
+     t-10: vwap_sigma_wave            BAJA (moderada, d=-0.310)
+     t-10: vwap_sigma_current         BAJA (moderada, d=-0.381)
+     t-10: wave_accel                 BAJA (moderada, d=-0.459)
+     t-10: below_all_vwaps_int        SUBE (leve, d=+0.299)
+     t-10: vwap_sigma_tide            BAJA (fuerte, d=-0.507)
+     t-10: sigma_tide                 BAJA (leve, d=-0.289)
+     t-10: current_accel              BAJA (leve, d=-0.206)
+     t-10: geo_exit_align             BAJA (moderada, d=-0.355)
+     t-10: fear_level                 SUBE (moderada, d=+0.368)
+     t-10: tsi_wave                   BAJA (leve, d=-0.252)
+     t-10: compression_ratio          SUBE (moderada, d=+0.488)
+     t-10: wave_slope                 BAJA (moderada, d=-0.358)
+     t-10: vwap_spread_tide_wave      SUBE (moderada, d=+0.401)
+     t-10: vwap_spread_current_wave   SUBE (moderada, d=+0.348)
+      t-5: total_displacement         SUBE (leve, d=+0.168)
+
+  ── TRIGGER SIGNAL (steepest change near t=0) ──
+    vwap_sigma_wave            d(t-3)=-0.610 → d(t=0)=-1.161  Δ=0.551 ↘
+    below_all_vwaps_int        d(t-3)=+0.465 → d(t=0)=+0.935  Δ=0.469 ↗
+    wave_accel                 d(t-3)=-0.533 → d(t=0)=-0.956  Δ=0.423 ↘
+    vwap_sigma_current         d(t-3)=-0.607 → d(t=0)=-1.021  Δ=0.413 ↘
+    current_accel              d(t-3)=-0.270 → d(t=0)=-0.673  Δ=0.403 ↘
+
+  ── SNAPSHOT at t=0: Feature values ──
+    vwap_sigma_wave            pop=   0.286  LL_TO_HL=  -1.260  d=-1.161
+    vwap_sigma_current         pop=   0.415  LL_TO_HL=  -0.922  d=-1.021
+    wave_accel                 pop=   0.000  LL_TO_HL=  -0.090  d=-0.956
+    below_all_vwaps_int        pop=   0.164  LL_TO_HL=   0.510  d=+0.935
+    vwap_sigma_tide            pop=   0.707  LL_TO_HL=  -0.425  d=-0.884
+    sigma_tide                 pop=   0.017  LL_TO_HL=  -1.023  d=-0.744
+    current_accel              pop=  -0.000  LL_TO_HL=  -0.008  d=-0.673
+    geo_exit_align             pop=   0.255  LL_TO_HL=  -0.146  d=-0.632
+    fear_level                 pop=   1.977  LL_TO_HL=   2.814  d=+0.594
+    tsi_wave                   pop=  50.500  LL_TO_HL=  34.159  d=-0.566
+
+==============================================================================================================
+  ARCHETYPE: HH
+==============================================================================================================
+  N points: 1340
+
+  Cohen's d Heatmap (top 15 features by max |d|):
+  Feature                     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1   t=0   t+1   t+2   t+3   t+4   t+5   t+6   t+7  max|d|
+  ----------------------------------------------------------------------------------------------------------------------------------------------
+  vwap_sigma_wave             ██    ██    ██    ███   ███   ███   ███   ███   ███   ████  ████  ███   ██    █     ▪     ·     ·     ▫     1.146
+  vwap_sigma_current          ██    ██    ██    ███   ███   ███   ███   ███   ███   ████  ████  ███   ███   ██    ██    ██    █     █     1.021
+  wave_accel                  █     █     ██    ██    ███   ██    ██    ███   ██    ███   ████  ███   ▪     ·     ▫     ▓     ▫     ·     0.936
+  sigma_tide                  ██    ██    ██    ██    ███   ███   ███   ███   ███   ███   ████  ███   ███   ██    ██    ██    ██    █     0.922
+  current_accel               █     █     ██    ██    ██    ██    ██    ███   ███   ███   ████  ███   ██    ██    █     █     █     █     0.899
+  tsi_wave                    █     █     ██    ██    ██    ██    ██    ██    ███   ███   ███   ███   ███   ███   ███   ██    ██    ██    0.754
+  wave_slope                  █     █     █     █     ██    ██    ██    ██    ██    ███   ███   ███   ███   ███   ███   ██    ██    █     0.695
+  total_displacement          ·     ·     ·     ·     ·     ·     ·     ▪     ▪     █     ███   █     ·     ·     ·     ·     ·     ·     0.642
+  vwap_sigma_tide             █     █     █     █     █     ██    ██    ██    ██    ██    ███   ██    ██    █     █     █     █     █     0.598
+  fear_level                  ▓     ▓     ▓     ▓     ▓     ▓     ▓▓    ▓▓    ▓▓    ▓▓    ▓▓▓   ▓▓▓   ▓▓    ▓▓    ▓▓    ▓▓    ▓     ▓     0.548
+  geo_exit_align              █     █     █     ██    ██    ██    ██    ██    ██    ██    ███   ███   ██    ██    ██    ██    ██    ██    0.530
+  volume_at_extreme           ·     ·     ·     ·     ·     ▪     ·     ▪     ▪     █     ███   █     ▪     ·     ·     ·     ▫     ▫     0.530
+  compression_ratio           ██    ██    ██    ██    ██    ██    ██    ██    █     ██    ██    ██    ██    ██    ██    ██    ██    ██    0.496
+  tsi_current                 █     █     █     █     █     █     █     █     █     ██    ██    ██    ██    ██    ██    ██    ██    ██    0.423
+  rsi_conviction              █     █     █     █     █     █     █     ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    ██    0.410
+
+  ── NARRATIVE: HH ──
+     t-10: vwap_sigma_wave            SUBE (moderada, d=+0.357)
+     t-10: vwap_sigma_current         SUBE (moderada, d=+0.383)
+     t-10: wave_accel                 SUBE (leve, d=+0.229)
+     t-10: sigma_tide                 SUBE (moderada, d=+0.337)
+     t-10: current_accel              SUBE (leve, d=+0.263)
+     t-10: tsi_wave                   SUBE (leve, d=+0.284)
+     t-10: wave_slope                 SUBE (leve, d=+0.203)
+     t-10: vwap_sigma_tide            SUBE (leve, d=+0.174)
+     t-10: fear_level                 BAJA (leve, d=-0.188)
+     t-10: geo_exit_align             SUBE (leve, d=+0.233)
+     t-10: compression_ratio          SUBE (moderada, d=+0.316)
+     t-10: tsi_current                SUBE (leve, d=+0.165)
+     t-10: rsi_conviction             SUBE (leve, d=+0.181)
+      t-1: total_displacement         SUBE (leve, d=+0.297)
+      t-1: volume_at_extreme          SUBE (leve, d=+0.277)
+
+  ── TRIGGER SIGNAL (steepest change near t=0) ──
+    total_displacement         d(t-3)=+0.114 → d(t=0)=+0.642  Δ=0.528 ↗
+    vwap_sigma_wave            d(t-3)=+0.690 → d(t=0)=+1.146  Δ=0.456 ↗
+    wave_accel                 d(t-3)=+0.502 → d(t=0)=+0.936  Δ=0.434 ↗
+    volume_at_extreme          d(t-3)=+0.109 → d(t=0)=+0.530  Δ=0.420 ↗
+    current_accel              d(t-3)=+0.535 → d(t=0)=+0.899  Δ=0.364 ↗
+
+  ── SNAPSHOT at t=0: Feature values ──
+    vwap_sigma_wave            pop=   0.286  HH=   1.808  d=+1.146
+    vwap_sigma_current         pop=   0.415  HH=   1.750  d=+1.021
+    wave_accel                 pop=   0.000  HH=   0.089  d=+0.936
+    sigma_tide                 pop=   0.017  HH=   1.303  d=+0.922
+    current_accel              pop=  -0.000  HH=   0.011  d=+0.899
+    tsi_wave                   pop=  50.500  HH=  72.023  d=+0.747
+    wave_slope                 pop=   0.040  HH=   0.287  d=+0.684
+    total_displacement         pop=   3.224  HH=   4.190  d=+0.642
+    vwap_sigma_tide            pop=   0.707  HH=   1.472  d=+0.598
+    fear_level                 pop=   1.977  HH=   1.207  d=-0.548
+
+==============================================================================================================
+  ARCHETYPE: LH
+==============================================================================================================
+  N points: 507
+
+  Cohen's d Heatmap (top 15 features by max |d|):
+  Feature                     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1   t=0   t+1   t+2   t+3   t+4   t+5   t+6   t+7  max|d|
+  ----------------------------------------------------------------------------------------------------------------------------------------------
+  vwap_spread_current_wave    ███   ███   ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  ████  1.150
+  vwap_sigma_tide             ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  1.146
+  current_slope               ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  1.117
+  wave_accel                  ·     ▪     █     ██    ███   █     ██    ██    ██    ██    ████  ███   ██    █     ▪     █     █     ██    1.094
+  tsi_current                 ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  0.962
+  wave_slope                  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  0.960
+  vwap_spread_tide_wave       ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ████  ████  ████  ████  ████  ████  ████  ████  0.924
+  below_all_vwaps_int         ████  ████  ████  ████  ███   ████  ███   ███   ███   ███   █     ███   ███   ████  ████  ████  ████  ████  0.913
+  geo_exit_align              ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  0.896
+  vwap_sigma_current          ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  ▓▓▓▓  0.875
+  sigma_tide                  ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓▓  ▓▓▓   0.800
+  fear_level                  ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   0.779
+  compression_ratio           ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   0.767
+  tsi_wave                    ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   0.725
+  rsi_conviction              ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   ▓▓▓   0.720
+
+  ── NARRATIVE: LH ──
+     t-10: vwap_spread_current_wave   SUBE (fuerte, d=+0.764)
+     t-10: vwap_sigma_tide            BAJA (fuerte, d=-0.983)
+     t-10: current_slope              BAJA (fuerte, d=-0.732)
+     t-10: tsi_current                BAJA (fuerte, d=-0.662)
+     t-10: wave_slope                 BAJA (fuerte, d=-0.870)
+     t-10: vwap_spread_tide_wave      SUBE (fuerte, d=+0.656)
+     t-10: below_all_vwaps_int        SUBE (fuerte, d=+0.875)
+     t-10: geo_exit_align             BAJA (fuerte, d=-0.848)
+     t-10: vwap_sigma_current         BAJA (fuerte, d=-0.867)
+     t-10: sigma_tide                 BAJA (fuerte, d=-0.708)
+     t-10: fear_level                 SUBE (fuerte, d=+0.779)
+     t-10: compression_ratio          SUBE (fuerte, d=+0.643)
+     t-10: tsi_wave                   BAJA (fuerte, d=-0.697)
+     t-10: rsi_conviction             BAJA (fuerte, d=-0.625)
+      t-8: wave_accel                 SUBE (leve, d=+0.174)
+
+  ── TRIGGER SIGNAL (steepest change near t=0) ──
+    wave_accel                 d(t-3)=+0.333 → d(t=0)=+1.094  Δ=0.761 ↗
+    below_all_vwaps_int        d(t-3)=+0.659 → d(t=0)=+0.271  Δ=0.388 ↘
+    vwap_sigma_current         d(t-3)=-0.737 → d(t=0)=-0.365  Δ=0.373 ↗
+    sigma_tide                 d(t-3)=-0.668 → d(t=0)=-0.368  Δ=0.300 ↗
+    vwap_sigma_tide            d(t-3)=-0.978 → d(t=0)=-0.767  Δ=0.212 ↗
+
+  ── SNAPSHOT at t=0: Feature values ──
+    vwap_spread_current_wave   pop=  -0.787  LH=   2.829  d=+0.996
+    vwap_sigma_tide            pop=   0.707  LH=  -0.274  d=-0.767
+    current_slope              pop=   0.039  LH=  -0.162  d=-0.944
+    wave_accel                 pop=   0.000  LH=   0.103  d=+1.094
+    tsi_current                pop=  50.500  LH=  26.378  d=-0.836
+    wave_slope                 pop=   0.040  LH=  -0.252  d=-0.804
+    vwap_spread_tide_wave      pop=  -4.997  LH=   4.280  d=+0.811
+    below_all_vwaps_int        pop=   0.164  LH=   0.264  d=+0.271
+    geo_exit_align             pop=   0.255  LH=  -0.257  d=-0.806
+    vwap_sigma_current         pop=   0.415  LH=  -0.063  d=-0.365
+
+==============================================================================================================
+  ARCHETYPE: HH_TO_LH
+==============================================================================================================
+  N points: 603
+
+  Cohen's d Heatmap (top 15 features by max |d|):
+  Feature                     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1   t=0   t+1   t+2   t+3   t+4   t+5   t+6   t+7  max|d|
+  ----------------------------------------------------------------------------------------------------------------------------------------------
+  wave_accel                  █     ▪     █     ██    ██    ██    █     ██    ██    ███   ████  ███   ██    ▪     ·     ·     ·     ▪     0.957
+  compression_ratio           ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   ███   0.714
+  vwap_sigma_wave             ▓     ▓     ▓     ▓     ▓     ▫     ▫     ·     ·     █     ███   █     ▫     ▓     ▓▓    ▓▓    ▓▓▓   ▓▓▓   0.573
+  vwap_sigma_current          ▓▓    ▓▓    ▓▓    ▓▓    ▓     ▓▓    ▓     ▓     ▓     ·     █     ·     ▓     ▓     ▓▓    ▓▓    ▓▓    ▓▓▓   0.519
+  sigma_tide                  ▓▓    ▓     ▓▓    ▓     ▓     ▓     ▓     ▓     ▓     ▫     ▪     ·     ▓     ▓     ▓▓    ▓▓    ▓▓    ▓▓    0.457
+  vwap_sigma_tide             ▓▓    ▓     ▓▓    ▓     ▓     ▓     ▓     ▓     ▓     ▫     ·     ▓     ▓     ▓▓    ▓▓    ▓▓    ▓▓    ▓▓    0.439
+  rsi_conviction              ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓▓    ▓▓    ▓▓    ▓▓    ▓     ▓     ▓     ▓     ▓     ▓     ▓     0.364
+  current_accel               ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▫     ▫     ·     █     ·     ▫     ▓     ▓     ▓     ▓▓    ▓▓    0.335
+  tsi_current                 ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓▓    ▓▓    0.326
+  current_slope               ▫     ▫     ▫     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     0.288
+  wave_slope                  ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▫     ·     ·     ·     ▫     ▓     ▓     ▓     ▓     0.288
+  below_all_vwaps_int         ▪     ▪     ·     ▪     ·     ·     ·     ·     ·     ▫     ▓     ▫     ·     ▪     █     █     █     █     0.287
+  tsi_wave                    ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▫     ▫     ·     ·     ·     ▫     ▓     ▓     ▓     ▓     0.286
+  geo_exit_align              ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▓     ▫     ·     ·     ▫     ▓     ▓     ▓     ▓     ▓     0.285
+  vwap_spread_current_wave    █     █     █     █     █     █     █     █     █     █     █     █     █     █     █     █     █     █     0.283
+
+  ── NARRATIVE: HH_TO_LH ──
+     t-10: wave_accel                 SUBE (leve, d=+0.195)
+     t-10: compression_ratio          SUBE (fuerte, d=+0.574)
+     t-10: vwap_sigma_wave            BAJA (leve, d=-0.260)
+     t-10: vwap_sigma_current         BAJA (moderada, d=-0.354)
+     t-10: sigma_tide                 BAJA (moderada, d=-0.304)
+     t-10: vwap_sigma_tide            BAJA (moderada, d=-0.308)
+     t-10: rsi_conviction             BAJA (leve, d=-0.217)
+     t-10: current_accel              BAJA (leve, d=-0.236)
+     t-10: tsi_current                BAJA (leve, d=-0.191)
+     t-10: wave_slope                 BAJA (leve, d=-0.168)
+     t-10: tsi_wave                   BAJA (leve, d=-0.153)
+     t-10: geo_exit_align             BAJA (leve, d=-0.198)
+     t-10: vwap_spread_current_wave   SUBE (leve, d=+0.159)
+      t-7: current_slope              BAJA (leve, d=-0.160)
+      t=0: below_all_vwaps_int        BAJA (leve, d=-0.241)
+
+  ── TRIGGER SIGNAL (steepest change near t=0) ──
+    wave_accel                 d(t-3)=+0.395 → d(t=0)=+0.957  Δ=0.562 ↗
+    vwap_sigma_wave            d(t-3)=+0.020 → d(t=0)=+0.573  Δ=0.553 ↗
+    vwap_sigma_current         d(t-3)=-0.175 → d(t=0)=+0.244  Δ=0.419 ↗
+    current_accel              d(t-3)=-0.147 → d(t=0)=+0.224  Δ=0.371 ↗
+    sigma_tide                 d(t-3)=-0.189 → d(t=0)=+0.127  Δ=0.315 ↗
+
+  ── SNAPSHOT at t=0: Feature values ──
+    wave_accel                 pop=   0.000  HH_TO_LH=   0.090  d=+0.957
+    compression_ratio          pop=   0.374  HH_TO_LH=   0.525  d=+0.714
+    vwap_sigma_wave            pop=   0.286  HH_TO_LH=   1.050  d=+0.573
+    vwap_sigma_current         pop=   0.415  HH_TO_LH=   0.735  d=+0.244
+    sigma_tide                 pop=   0.017  HH_TO_LH=   0.194  d=+0.127
+    vwap_sigma_tide            pop=   0.707  HH_TO_LH=   0.700  d=-0.006
+    rsi_conviction             pop=   0.062  HH_TO_LH=  -0.022  d=-0.332
+    current_accel              pop=  -0.000  HH_TO_LH=   0.003  d=+0.224
+    tsi_current                pop=  50.500  HH_TO_LH=  43.516  d=-0.242
+    current_slope              pop=   0.039  HH_TO_LH=  -0.004  d=-0.201
+
+==============================================================================================================
+  COMPLETE — 113s
+==============================================================================================================

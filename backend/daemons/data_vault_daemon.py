@@ -2140,6 +2140,17 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)
     results["uw"] = vault_uw_data(interceptor)
 
+    # ── Tier 4b: UW Gamma / Vol / Structure (Phase 1 unlock) ──
+    try:
+        from backend.daemons.vault_providers.uw_gamma_provider import UWGammaProvider
+        uw_provider = UWGammaProvider()
+        results["uw_gamma"] = uw_provider.run_full(store, tickers=neon_tickers)
+        # TTL cleanup: purge UW snapshots older than 30 days (lightweight query)
+        uw_provider.purge_stale_snapshots(store, ttl_days=30)
+    except Exception as e:
+        logger.warning(f"UW Gamma vault failed (non-critical): {e}")
+        results["uw_gamma"] = {"status": "error", "error": str(e)}
+
     _log_cycle_report(results)
 
 

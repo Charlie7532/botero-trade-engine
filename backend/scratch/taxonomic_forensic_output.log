@@ -1,0 +1,561 @@
+
+==============================================================================================================
+  TAXONOMIC FORENSIC ANALYSIS — Zigzag Movement Archetypes
+==============================================================================================================
+  Methodology: Welch t-test + Cohen's d + Bonferroni + Orthogonality
+  Incorporating 7 blind spots from session audit
+
+  ── Loading Feature Lake ──
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+  Base: 93,776 obs × 82 cols
+[00:39:44] [INFO]   ATR features computed
+[00:39:44] [INFO]   Overnight gap features computed
+[00:39:44] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[00:39:45] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[00:39:45] [INFO]   Candle structure features computed (23 features)
+[00:39:46] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[00:39:46] [INFO]   Generated 83 derived features
+  Expanded: +83 derived → 165 total cols
+
+  ── Loading Zigzag Points ──
+  Loaded: 4,933 zigzag points
+
+  ── PHASE 1: Structural Classification ──
+
+  Total classified points: 4,933
+
+  Archetype            N    Avg Swing   Avg Days   Avg Prec Leg    Avg Tempo
+  ---------------------------------------------------------------------------
+  HL                 754      +13.56%        29d         -8.13%          75d
+  LL                1107      +13.67%        21d        -12.61%          38d
+  LL_TO_HL           588      +13.84%        26d         -8.14%          63d
+  HH                1340      -10.01%        17d        +17.93%          70d
+  LH                 507      -10.64%        10d         +8.85%          31d
+  HH_TO_LH           603      -10.06%        13d         +8.34%          44d
+  FIRST               34       +1.38%        46d         -3.44%           0d
+
+  ── PHASE 2: Temporal Snapshot Extraction ──
+  Computed RSI Quadrant Coherence features (blind spot #3)
+  Features to extract: 156
+  Offsets: [-7, -5, -3, -1, 0, 1, 3, 5, 7]
+  Matched: 4,809 / 4,933 zigzag points (97.5%)
+  Total snapshot records: 43,248 (4809 points × 9 offsets)
+
+  ── PHASE 3: Statistical Analysis (Prado Protocol) ──
+
+  Analyzing HL (N=738) vs population...
+    Significant features (|d| ≥ 0.3): 388 / 1404
+
+  Analyzing LL (N=1088) vs population...
+    Significant features (|d| ≥ 0.3): 295 / 1404
+
+  Analyzing LL_TO_HL (N=580) vs population...
+    Significant features (|d| ≥ 0.3): 20 / 1404
+
+  Analyzing HH (N=1312) vs population...
+    Significant features (|d| ≥ 0.3): 286 / 1404
+
+  Analyzing LH (N=500) vs population...
+    Significant features (|d| ≥ 0.3): 531 / 1404
+
+  Analyzing HH_TO_LH (N=591) vs population...
+    Significant features (|d| ≥ 0.3): 108 / 1404
+
+  Total tests: 8,424
+  Significant after Bonferroni + Cohen's d: 1,628
+
+  ── PHASE 4: Synthesis — Vigilance Table ──
+
+==============================================================================================================
+  ARCHETYPE: HL (N=738) | Swing=+13.5% | Preceding Leg=-8.1% | Tempo=76d | Consec=2.1
+==============================================================================================================
+
+  PRE_ALERT (offsets [-7, -5]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_tide                  +0.602    ▲   +16.25    +1.0318    +0.2504  t=-7
+    vwap_sigma_high_current          +0.579    ▲   +14.05    +1.6396    +0.4166  t=-7
+    vwap_sigma_low_current           +0.569    ▲   +14.17    +0.8456    -0.3670  t=-7
+    vwap_sigma_low_tide              +0.566    ▲   +13.92    +1.9342    +0.5155  t=-7
+    vwap_sigma_high_tide             +0.552    ▲   +13.40    +2.3795    +0.9866  t=-7
+    geo_exit_align                   +0.539    ▲   +13.94    +0.4210    +0.0740  t=-7
+    geo_velocity_align               -0.539    ▼   -13.94    -0.4210    -0.0740  t=-7
+    inst_rejection_high_current      +0.537    ▲   +12.79    +1.4151    +0.3118  t=-7
+    vwap_in_channel_current          -0.537    ▼   -12.79    -1.4151    -0.3118  t=-7
+    vwap_sigma_current               +0.531    ▲   +13.71    +0.5961    -0.0773  t=-7
+
+  DETECTION (offsets [-3, -1]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_tide                  +0.619    ▲   +16.88    +0.7911    -0.0082  t=-3
+    vwap_sigma_high_tide             +0.577    ▲   +14.26    +2.0059    +0.6040  t=-3
+    vwap_sigma_low_tide              +0.575    ▲   +14.31    +1.4852    +0.0802  t=-3
+    inst_rejection_high_current      +0.560    ▲   +13.76    +1.1732    +0.0815  t=-3
+    vwap_in_channel_current          -0.560    ▼   -13.76    -1.1732    -0.0815  t=-3
+    vwap_sigma_high_current          +0.558    ▲   +13.58    +0.8835    -0.1837  t=-3
+    below_all_vwaps_int              -0.545    ▼   -15.49    +0.1309    +0.3719  t=-3
+    tsi_current                      +0.541    ▲   +13.36   +57.7642   +41.8330  t=-3
+    geo_velocity_align               -0.527    ▼   -13.42    -0.3065    +0.0283  t=-3
+    geo_exit_align                   +0.527    ▲   +13.42    +0.3065    -0.0283  t=-3
+
+  TURN (offsets [0]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_tide                  +0.695    ▲   +19.08    +0.3609    -0.5029  t=+0
+    vwap_sigma_low_tide              +0.642    ▲   +16.12    +0.8171    -0.6007  t=+0
+    vwap_sigma_high_tide             +0.634    ▲   +15.51    +1.3867    -0.0328  t=+0
+    below_all_vwaps_int              -0.612    ▼   -15.80    +0.2385    +0.5341  t=+0
+    geo_velocity_align               -0.586    ▼   -13.89    -0.1605    +0.1949  t=+0
+    geo_exit_align                   +0.586    ▲   +13.89    +0.1605    -0.1949  t=+0
+    vwap_sigma_high_current          +0.577    ▲   +13.98    -0.0550    -1.0326  t=+0
+    inst_rejection_high_current      +0.566    ▲   +14.03    +0.9203    -0.1195  t=+0
+    vwap_in_channel_current          -0.566    ▼   -14.03    -0.9203    +0.1195  t=+0
+    tsi_current                      +0.551    ▲   +13.54   +55.4187   +39.2510  t=+0
+
+  HEALTH (offsets [1, 3, 5, 7]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_tide                  +0.641    ▲   +17.54    +0.8503    +0.0621  t=+7
+    vwap_sigma_low_tide              +0.611    ▲   +15.30    +1.4919    +0.0896  t=+7
+    vwap_sigma_high_tide             +0.608    ▲   +15.05    +1.9441    +0.5585  t=+7
+    geo_exit_align                   +0.602    ▲   +15.71    +0.2640    -0.0917  t=+7
+    geo_velocity_align               -0.602    ▼   -15.71    -0.2640    +0.0917  t=+7
+    inst_rejection_high_current      +0.585    ▲   +14.64    +0.7572    -0.2676  t=+7
+    vwap_in_channel_current          -0.585    ▼   -14.64    -0.7572    +0.2676  t=+7
+    tsi_current                      +0.581    ▲   +14.31   +53.5403   +37.2127  t=+7
+    adi_current                      -0.550    ▼   -13.13   +48.6680   +63.1990  t=+7
+    tension_current                  -0.540    ▼   -13.54    -0.5336    +0.1033  t=+7
+
+==============================================================================================================
+  ARCHETYPE: LL (N=1088) | Swing=+13.6% | Preceding Leg=-12.6% | Tempo=38d | Consec=0.9
+==============================================================================================================
+
+  PRE_ALERT (offsets [-7, -5]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_high_current          -0.453    ▼   -13.28    -0.4863    +0.4166  t=-7
+    vwap_sigma_low_current           -0.443    ▼   -12.78    -1.2794    -0.3670  t=-7
+    vwap_sigma_current               -0.423    ▼   -11.85    -0.6126    -0.0773  t=-7
+    rsi_value                        -0.418    ▼   -12.07   +43.6398   +47.7985  t=-7
+    inst_rejection_high_current      -0.380    ▼   -11.25    -0.4172    +0.3118  t=-7
+    vwap_in_channel_current          +0.380    ▲   +11.25    +0.4172    -0.3118  t=-7
+    vwap_sigma_tide                  -0.367    ▼   -10.17    -0.2369    +0.2504  t=-7
+    geo_exit_align                   -0.361    ▼   -10.11    -0.1620    +0.0740  t=-7
+    geo_velocity_align               +0.361    ▲   +10.11    +0.1620    -0.0740  t=-7
+    rsi_sigma_interact               -0.359    ▼   -10.52   -27.9669    -4.5668  t=-7
+
+  DETECTION (offsets [-3, -1]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_high_current          -0.476    ▼   -13.60    -1.0972    -0.1837  t=-3
+    vwap_sigma_low_current           -0.446    ▼   -12.69    -1.9581    -1.0382  t=-3
+    vwap_sigma_current               -0.437    ▼   -12.31    -1.0381    -0.4895  t=-3
+    vwap_sigma_tide                  -0.425    ▼   -11.65    -0.5668    -0.0082  t=-3
+    inst_rejection_high_current      -0.417    ▼   -12.19    -0.6898    +0.0815  t=-3
+    vwap_in_channel_current          +0.417    ▲   +12.19    +0.6898    -0.0815  t=-3
+    rsi_conviction                   -0.416    ▼   -12.05    -0.1104    -0.0119  t=-3
+    below_all_vwaps_int              +0.409    ▲   +11.25    +0.5662    +0.3719  t=-3
+    rsi_value                        -0.409    ▼   -11.75   +39.7110   +43.5832  t=-3
+    geo_velocity_align               +0.403    ▲   +11.51    +0.2767    +0.0283  t=-3
+
+  TURN (offsets [0]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_high_current          -0.558    ▼   -16.54    -1.9322    -1.0326  t=+0
+    vwap_sigma_current               -0.545    ▼   -16.36    -1.7841    -1.2391  t=+0
+    vwap_sigma_low_current           -0.527    ▼   -15.14    -2.8361    -1.9265  t=+0
+    vwap_sigma_tide                  -0.488    ▼   -13.63    -1.1305    -0.5029  t=+0
+    geo_velocity_align               +0.474    ▲   +14.41    +0.4620    +0.1949  t=+0
+    geo_exit_align                   -0.474    ▼   -14.41    -0.4620    -0.1949  t=+0
+    vwap_sigma_low_tide              -0.451    ▼   -12.86    -1.5873    -0.6007  t=+0
+    tsi_wave                         -0.445    ▼   -13.95   +17.6728   +28.7901  t=+0
+    below_all_vwaps_int              +0.444    ▲   +12.80    +0.7472    +0.5341  t=+0
+    vwap_sigma_high_tide             -0.437    ▼   -12.61    -0.9854    -0.0328  t=+0
+
+  HEALTH (offsets [1, 3, 5, 7]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_high_current          -0.518    ▼   -15.05    -0.9087    -0.0838  t=+7
+    vwap_sigma_low_current           -0.501    ▼   -14.34    -1.6723    -0.8306  t=+7
+    inst_rejection_high_current      -0.488    ▼   -14.23    -1.0645    -0.2676  t=+7
+    vwap_in_channel_current          +0.488    ▲   +14.23    +1.0645    +0.2676  t=+7
+    geo_velocity_align               +0.488    ▲   +14.20    +0.3741    +0.0917  t=+7
+    geo_exit_align                   -0.488    ▼   -14.20    -0.3741    -0.0917  t=+7
+    vwap_sigma_current               -0.481    ▼   -13.83    -0.7009    -0.2075  t=+7
+    tsi_current                      -0.481    ▼   -14.32   +24.7564   +37.2127  t=+7
+    adi_current                      +0.456    ▲   +13.77   +73.7894   +63.1990  t=+7
+    vwap_sigma_tide                  -0.455    ▼   -12.63    -0.5144    +0.0621  t=+7
+
+==============================================================================================================
+  ARCHETYPE: LL_TO_HL (N=580) | Swing=+13.8% | Preceding Leg=-8.1% | Tempo=63d | Consec=0.0
+==============================================================================================================
+
+  PRE_ALERT: No significant features
+
+  DETECTION (offsets [-3, -1]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    volume_at_extreme                -0.333    ▼   -10.27    +1.1461    +1.7236  t=-1
+    rsi_value                        +0.323    ▲    +7.57   +44.9516   +41.9341  t=-1
+    sigma_max_tf                     +0.317    ▲    +7.30    +0.4561    +0.1181  t=-1
+    sigma_squared                    -0.301    ▼    -9.02    +1.8629    +3.0415  t=-1
+
+  TURN (offsets [0]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    total_displacement               -0.350    ▼    -8.80    +4.0144    +4.7336  t=+0
+    sigma_max_tf                     +0.343    ▲    +7.87    -0.1651    -0.4957  t=+0
+    volume_at_extreme                -0.335    ▼    -9.75    +1.5311    +2.1974  t=+0
+    rsi_value                        +0.333    ▲    +7.97   +40.3695   +37.6024  t=+0
+    geo_state_norm                   -0.329    ▼    -8.17    +2.6036    +3.0056  t=+0
+    sigma_current                    +0.328    ▲    +6.91    -1.2064    -1.5938  t=+0
+    sigma_low_current                +0.316    ▲    +6.73    -1.4053    -1.8069  t=+0
+    sigma_squared                    -0.311    ▼    -9.41    +2.5971    +4.2394  t=+0
+    sigma_high_current               +0.307    ▲    +6.32    -0.5741    -0.9131  t=+0
+    sigma_abs_dist                   -0.302    ▼    -7.73    +1.3395    +1.6827  t=+0
+
+  HEALTH (offsets [1, 3, 5, 7]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    rsi_value                        +0.318    ▲    +7.43   +49.9878   +47.6236  t=+3
+    slope_phase_tw                   -0.308    ▼    -6.88    +0.0559    +0.1665  t=+3
+    volume_at_extreme                -0.305    ▼    -8.32    +1.1507    +1.5657  t=+1
+    conj_wave_tide                   +0.300    ▲    +7.11    -0.0553    -0.2014  t=+3
+    slope_diff_tw                    -0.300    ▼    -7.11    +0.0553    +0.2014  t=+3
+
+==============================================================================================================
+  ARCHETYPE: HH (N=1312) | Swing=-10.0% | Preceding Leg=+17.9% | Tempo=70d | Consec=1.1
+==============================================================================================================
+
+  PRE_ALERT (offsets [-7, -5]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_current               +0.498    ▲   +15.33    +1.0252    +0.4324  t=-7
+    rsi_value                        +0.494    ▲   +14.94   +57.9715   +52.7695  t=-7
+    vwap_sigma_low_current           +0.449    ▲   +13.31    +1.3615    +0.3627  t=-7
+    vwap_sigma_high_current          +0.448    ▲   +13.20    +2.1129    +1.1291  t=-7
+    vwap_sigma_wave                  +0.436    ▲   +13.37    +0.9020    +0.4132  t=-7
+    sigma_tide                       +0.403    ▲   +12.16    +0.6027    +0.0598  t=-7
+    rsi_sigma_interact               +0.400    ▲   +11.63   +44.9802   +16.4794  t=-7
+    sigma_high_tide                  +0.393    ▲   +11.81    +0.7854    +0.2695  t=-7
+    sigma_low_tide                   +0.389    ▲   +11.72    +0.3613    -0.1851  t=-7
+    above_all_vwaps_int              +0.380    ▲   +11.25    +0.6547    +0.4768  t=-7
+
+  DETECTION (offsets [-3, -1]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_current               +0.563    ▲   +17.99    +1.3505    +0.6850  t=-3
+    rsi_value                        +0.536    ▲   +16.67   +61.4394   +55.7375  t=-3
+    vwap_sigma_low_current           +0.527    ▲   +16.00    +1.8987    +0.7179  t=-3
+    vwap_sigma_high_current          +0.523    ▲   +15.67    +2.6568    +1.4813  t=-3
+    vwap_sigma_wave                  +0.489    ▲   +15.90    +1.2982    +0.7758  t=-3
+    sigma_tide                       +0.468    ▲   +14.58    +0.9068    +0.2535  t=-3
+    sigma_high_tide                  +0.467    ▲   +14.36    +1.0652    +0.4464  t=-3
+    sigma_low_tide                   +0.463    ▲   +14.51    +0.6473    -0.0102  t=-3
+    rsi_sigma_interact               +0.461    ▲   +13.64   +64.1207   +28.0475  t=-3
+    geo_velocity_align               -0.424    ▼   -13.09    -0.5116    -0.2576  t=-3
+
+  TURN (offsets [0]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_current               +0.526    ▲   +16.22    +1.5501    +0.9081  t=+0
+    vwap_sigma_low_current           +0.520    ▲   +15.53    +2.2170    +0.9922  t=+0
+    rsi_value                        +0.510    ▲   +15.45   +65.3607   +60.1095  t=+0
+    vwap_sigma_high_current          +0.503    ▲   +14.88    +3.0496    +1.8095  t=+0
+    rsi_sigma_interact               +0.449    ▲   +13.14   +81.7817   +39.5008  t=+0
+    sigma_low_tide                   +0.449    ▲   +13.65    +0.7410    +0.0614  t=+0
+    sigma_tide                       +0.447    ▲   +13.43    +1.0942    +0.4343  t=+0
+    geo_exit_align                   +0.443    ▲   +13.62    +0.5182    +0.2454  t=+0
+    geo_velocity_align               -0.443    ▼   -13.62    -0.5182    -0.2454  t=+0
+    sigma_high_tide                  +0.439    ▲   +13.15    +1.1962    +0.5444  t=+0
+
+  HEALTH (offsets [1, 3, 5, 7]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_current               +0.569    ▲   +18.24    +0.8891    +0.3390  t=+7
+    vwap_sigma_low_current           +0.525    ▲   +15.88    +1.3024    +0.3143  t=+7
+    vwap_sigma_high_current          +0.519    ▲   +15.69    +2.1426    +1.1237  t=+7
+    rsi_value                        +0.497    ▲   +15.18   +55.5714   +51.9157  t=+5
+    sigma_tide                       +0.474    ▲   +14.79    +0.5637    -0.0082  t=+7
+    vwap_in_channel_current          -0.473    ▼   -14.06    -1.7146    -0.7569  t=+7
+    inst_rejection_high_current      +0.473    ▲   +14.06    +1.7146    +0.7569  t=+7
+    rsi_sigma_interact               +0.468    ▲   +13.97   +37.6493    +9.2517  t=+7
+    rsi_conviction                   +0.468    ▲   +14.55    +0.1621    +0.0664  t=+7
+    geo_exit_align                   +0.466    ▲   +14.61    +0.5120    +0.2389  t=+7
+
+==============================================================================================================
+  ARCHETYPE: LH (N=500) | Swing=-10.7% | Preceding Leg=+8.9% | Tempo=31d | Consec=1.8
+==============================================================================================================
+
+  PRE_ALERT (offsets [-7, -5]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_current               -0.831    ▼   -18.28    -0.6249    +0.4324  t=-7
+    vwap_sigma_low_current           -0.808    ▼   -19.04    -1.4469    +0.3627  t=-7
+    vwap_sigma_high_current          -0.802    ▼   -19.79    -0.6425    +1.1291  t=-7
+    rsi_value                        -0.790    ▼   -18.21   +44.0697   +52.7695  t=-7
+    vwap_sigma_tide                  -0.747    ▼   -16.24    -0.4952    +0.5338  t=-7
+    geo_exit_align                   -0.739    ▼   -16.03    -0.2555    +0.2141  t=-7
+    geo_velocity_align               +0.739    ▲   +16.03    +0.2555    -0.2141  t=-7
+    vwap_sigma_low_tide              -0.684    ▼   -15.95    -0.8272    +0.9300  t=-7
+    below_all_vwaps_int              +0.672    ▲   +11.74    +0.4590    +0.1936  t=-7
+    vwap_sigma_high_tide             -0.662    ▼   -15.47    -0.3118    +1.3847  t=-7
+
+  DETECTION (offsets [-3, -1]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_current               -0.964    ▼   -20.46    -0.5235    +0.6850  t=-3
+    vwap_sigma_low_current           -0.919    ▼   -21.50    -1.3576    +0.7179  t=-3
+    vwap_sigma_high_current          -0.915    ▼   -23.16    -0.5451    +1.4813  t=-3
+    rsi_value                        -0.874    ▼   -18.83   +46.0652   +55.7375  t=-3
+    vwap_sigma_tide                  -0.866    ▼   -18.70    -0.5386    +0.6587  t=-3
+    geo_exit_align                   -0.862    ▼   -18.59    -0.2781    +0.2576  t=-3
+    geo_velocity_align               +0.862    ▲   +18.59    +0.2781    -0.2576  t=-3
+    vwap_sigma_low_tide              -0.786    ▼   -18.30    -0.9427    +1.1001  t=-3
+    sigma_tide                       -0.781    ▼   -15.24    -0.9033    +0.2535  t=-3
+    sigma_high_tide                  -0.778    ▼   -15.84    -0.6310    +0.4464  t=-3
+
+  TURN (offsets [0]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_current               -0.971    ▼   -23.24    -0.3077    +0.9081  t=+0
+    vwap_sigma_low_current           -0.933    ▼   -24.19    -1.1647    +0.9922  t=+0
+    geo_exit_align                   -0.927    ▼   -21.41    -0.3425    +0.2454  t=+0
+    geo_velocity_align               +0.927    ▲   +21.41    +0.3425    -0.2454  t=+0
+    vwap_sigma_high_current          -0.911    ▼   -25.02    -0.3482    +1.8095  t=+0
+    vwap_sigma_tide                  -0.895    ▼   -21.25    -0.4509    +0.7659  t=+0
+    rsi_value                        -0.867    ▼   -20.41   +51.0882   +60.1095  t=+0
+    vwap_sigma_low_tide              -0.815    ▼   -20.45    -0.9655    +1.1740  t=+0
+    vwap_sigma_high_tide             -0.789    ▼   -20.24    -0.4141    +1.6570  t=+0
+    above_all_vwaps_int              -0.787    ▼   -18.90    +0.1800    +0.5572  t=+0
+
+  HEALTH (offsets [1, 3, 5, 7]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_current               -0.984    ▼   -21.49    -0.6138    +0.3390  t=+7
+    geo_velocity_align               +0.952    ▲   +20.93    +0.3176    -0.2389  t=+7
+    geo_exit_align                   -0.952    ▼   -20.93    -0.3176    +0.2389  t=+7
+    vwap_sigma_low_current           -0.934    ▼   -22.63    -1.3904    +0.3143  t=+7
+    vwap_sigma_high_current          -0.923    ▼   -23.93    -0.6142    +1.1237  t=+7
+    vwap_sigma_tide                  -0.890    ▼   -19.54    -0.6609    +0.4897  t=+7
+    tsi_current                      -0.871    ▼   -21.76   +24.0250   +49.3070  t=+7
+    inst_rejection_high_current      -0.867    ▼   -21.84    -0.9748    +0.7569  t=+7
+    vwap_in_channel_current          +0.867    ▲   +21.84    +0.9748    -0.7569  t=+7
+    adi_current                      +0.854    ▲   +23.04   +73.4420   +51.2812  t=+7
+
+==============================================================================================================
+  ARCHETYPE: HH_TO_LH (N=591) | Swing=-10.0% | Preceding Leg=+8.3% | Tempo=44d | Consec=0.0
+==============================================================================================================
+
+  PRE_ALERT (offsets [-7, -5]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    rsi_value                        -0.411    ▼   -10.23   +48.6345   +52.7695  t=-7
+    rsi_sigma_interact               -0.378    ▼    -9.66    -9.9936   +17.7441  t=-5
+    vwap_sigma_wave                  -0.362    ▼    -8.24    -0.0032    +0.4577  t=-5
+    bullish_score                    -0.362    ▼    -7.93    +0.4636    +0.5882  t=-5
+    vwap_sigma_current               -0.357    ▼    -8.59    +0.0027    +0.4639  t=-5
+    vwap_sigma_high_current          -0.340    ▼    -8.93    +0.4088    +1.1716  t=-5
+    rsi_trap_zone                    -0.328    ▼   -10.50    +0.0288    +0.1310  t=-5
+    sigma_min_tf                     -0.326    ▼    -7.38    -1.1140    -0.7206  t=-5
+    vwap_sigma_low_current           -0.323    ▼    -8.40    -0.3243    +0.4088  t=-5
+    above_all_vwaps_int              -0.319    ▼    -7.22    +0.3232    +0.4806  t=-5
+
+  DETECTION (offsets [-3, -1]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    rsi_value                        -0.409    ▼   -10.02   +51.2867   +55.7375  t=-3
+    vwap_sigma_high_current          -0.403    ▼   -11.05    +0.5912    +1.4813  t=-3
+    rsi_sigma_interact               -0.402    ▼   -10.59    -3.0927   +28.0475  t=-3
+    rsi_trap_zone                    -0.383    ▼   -12.88    +0.0423    +0.1723  t=-3
+    vwap_sigma_low_current           -0.380    ▼   -10.16    -0.1426    +0.7179  t=-3
+    vwap_sigma_current               -0.364    ▼    -8.75    +0.2327    +0.6850  t=-3
+    vwap_sigma_wave                  -0.335    ▼    -7.47    +0.3875    +0.7758  t=-3
+    above_all_vwaps_int              -0.328    ▼    -7.32    +0.3570    +0.5196  t=-3
+    sigma_high_tide                  -0.327    ▼    -8.04    -0.0133    +0.4464  t=-3
+    bullish_score                    -0.324    ▼    -6.98    +0.5711    +0.6736  t=-3
+
+  TURN (offsets [0]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    sigma_abs_dist                   -0.406    ▼   -10.20    +0.9806    +1.3242  t=+0
+    rsi_sigma_interact               -0.395    ▼   -10.72    +4.1186   +39.5008  t=+0
+    vwap_sigma_high_current          -0.393    ▼   -11.03    +0.8821    +1.8095  t=+0
+    rsi_value                        -0.392    ▼   -10.11   +56.0843   +60.1095  t=+0
+    vwap_sigma_low_current           -0.391    ▼   -10.87    +0.0979    +0.9922  t=+0
+    total_displacement               -0.371    ▼    -9.26    +3.1718    +3.7848  t=+0
+    geo_state_norm                   -0.364    ▼    -8.90    +2.0560    +2.4118  t=+0
+    sigma_squared                    -0.363    ▼   -10.10    +1.4409    +2.5254  t=+0
+    rsi_trap_zone                    -0.362    ▼    -9.47    +0.1218    +0.2759  t=+0
+    volume_at_extreme                -0.338    ▼   -10.02    +1.0556    +1.5503  t=+0
+
+  HEALTH (offsets [1, 3, 5, 7]):
+    Feature                          Cohen d  Dir    t-stat   Arch Mean    Pop Mean  Best t
+    -----------------------------------------------------------------------------------------------
+    vwap_sigma_high_current          -0.412    ▼   -10.74    +0.3330    +1.1237  t=+7
+    rsi_sigma_interact               -0.388    ▼    -9.99   -15.2543    +9.2517  t=+7
+    vwap_sigma_low_current           -0.382    ▼    -9.98    -0.4361    +0.3143  t=+7
+    vwap_sigma_current               -0.380    ▼    -8.50    -0.0755    +0.3390  t=+7
+    rsi_value                        -0.366    ▼    -9.18   +49.0004   +51.9157  t=+5
+    rsi_trap_zone                    -0.363    ▼   -11.42    +0.0372    +0.1606  t=+1
+    adi_wave                         +0.355    ▲    +8.76   +61.8587   +52.6166  t=+7
+    sigma_high_tide                  -0.353    ▼    -7.87    -0.1773    +0.2668  t=+7
+    sigma_max_tf                     -0.348    ▼    -7.68    +0.5488    +0.8476  t=+5
+    rsi_conviction                   -0.340    ▼    -7.43    -0.0116    +0.0702  t=+7
+
+==============================================================================================================
+  COMPASS: Tempo per Archetype (blind spot #1)
+==============================================================================================================
+
+  Archetype            N   Median     Mean      P25      P75      Std
+  -----------------------------------------------------------------
+  HL                 738      54d      76d      24d     108d      72d
+  LL                1088      25d      38d      10d      53d      41d
+  LL_TO_HL           580      41d      63d      12d      87d      70d
+  HH                1312      50d      70d      19d      95d      70d
+  LH                 500      21d      31d       8d      41d      33d
+  HH_TO_LH           591      33d      44d      15d      60d      42d
+
+==============================================================================================================
+  PRECEDING LEG: Esperanza Calibration per Archetype
+==============================================================================================================
+
+  Archetype            N     Median       Mean        P25        P75
+  -----------------------------------------------------------------
+  HL                 738     -7.10%     -8.14%     -9.36%     -5.90%
+  LL                1088    -11.12%    -12.55%    -15.69%     -7.68%
+  LL_TO_HL           580     -7.16%     -8.14%     -9.64%     -5.88%
+  HH                1312    +15.05%    +17.86%     +9.99%    +22.15%
+  LH                 500     +7.21%     +8.85%     +6.01%     +9.98%
+  HH_TO_LH           591     +7.07%     +8.31%     +6.02%     +9.43%
+
+==============================================================================================================
+  VWAP SIGMA SLOPES: Rate of Change between offsets (blind spot #2)
+==============================================================================================================
+
+  HL:
+    vwap_sigma_wave           slope(t-3→t-1)=-0.2005/bar  slope(t-7→t0)=-0.2262/bar
+      t-7=+0.379 → t-5=+0.208 → t-3=-0.114 → t-1=-0.515 → t+0=-1.205 → t+1=-0.342 → t+3=+0.269 → t+5=+0.578 → t+7=+0.696
+    vwap_sigma_current        slope(t-3→t-1)=-0.1880/bar  slope(t-7→t0)=-0.1907/bar
+      t-7=+0.650 → t-5=+0.542 → t-3=+0.286 → t-1=-0.090 → t+0=-0.684 → t+1=-0.091 → t+3=+0.267 → t+5=+0.464 → t+7=+0.567
+    vwap_sigma_tide           slope(t-3→t-1)=-0.0922/bar  slope(t-7→t0)=-0.0996/bar
+      t-7=+1.058 → t-5=+1.006 → t-3=+0.883 → t-1=+0.699 → t+0=+0.361 → t+1=+0.675 → t+3=+0.839 → t+5=+0.920 → t+7=+0.967
+
+  LL:
+    vwap_sigma_wave           slope(t-3→t-1)=-0.1686/bar  slope(t-7→t0)=-0.1913/bar
+      t-7=-0.465 → t-5=-0.607 → t-3=-0.794 → t-1=-1.131 → t+0=-1.804 → t+1=-0.790 → t+3=-0.297 → t+5=+0.000 → t+7=+0.108
+    vwap_sigma_current        slope(t-3→t-1)=-0.1539/bar  slope(t-7→t0)=-0.1770/bar
+      t-7=-0.545 → t-5=-0.680 → t-3=-0.884 → t-1=-1.192 → t+0=-1.784 → t+1=-1.039 → t+3=-0.749 → t+5=-0.565 → t+7=-0.451
+    vwap_sigma_tide           slope(t-3→t-1)=-0.1191/bar  slope(t-7→t0)=-0.1351/bar
+      t-7=-0.185 → t-5=-0.289 → t-3=-0.448 → t-1=-0.686 → t+0=-1.131 → t+1=-0.666 → t+3=-0.532 → t+5=-0.449 → t+7=-0.412
+
+  LL_TO_HL:
+    vwap_sigma_wave           slope(t-3→t-1)=-0.1621/bar  slope(t-7→t0)=-0.1924/bar
+      t-7=+0.086 → t-5=+0.003 → t-3=-0.158 → t-1=-0.482 → t+0=-1.260 → t+1=-0.326 → t+3=+0.271 → t+5=+0.508 → t+7=+0.536
+    vwap_sigma_current        slope(t-3→t-1)=-0.1157/bar  slope(t-7→t0)=-0.1474/bar
+      t-7=+0.110 → t-5=+0.036 → t-3=-0.091 → t-1=-0.322 → t+0=-0.922 → t+1=-0.302 → t+3=+0.068 → t+5=+0.232 → t+7=+0.281
+    vwap_sigma_tide           slope(t-3→t-1)=-0.0668/bar  slope(t-7→t0)=-0.0884/bar
+      t-7=+0.194 → t-5=+0.151 → t-3=+0.091 → t-1=-0.043 → t+0=-0.425 → t+1=-0.048 → t+3=+0.139 → t+5=+0.224 → t+7=+0.244
+
+==============================================================================================================
+  CROSS-ARCHETYPE: HL vs LL→HL Discrimination (blind spot #7)
+==============================================================================================================
+
+  HL (N=738) vs LL→HL Reversal (N=580)
+
+    Feature                          Cohen d    t-stat     HL Mean    Rev Mean
+    --------------------------------------------------------------------------------
+  ★ vwap_sigma_tide                  -0.742   +13.15    +0.3609    -0.4247
+  ★ vwap_spread_tide_wave            +0.575   -10.41    -8.2021    +0.2042
+  ★ adi_current                      +0.529    -9.51   +39.9065   +55.6379
+  ★ tension_current                  +0.522    -9.37    -0.9857    -0.2840
+  ★ tsi_current                      -0.513    +9.17   +55.4187   +40.5862
+  ★ vwap_spread_tide_current         +0.507    -9.20    -6.6663    -0.3562
+  ★ geo_exit_align                   -0.506    +9.12    +0.1605    -0.1462
+  ★ geo_velocity_align               +0.506    -9.12    -0.1605    +0.1462
+  ★ current_slope                    -0.503    +8.81    +0.0918    -0.0497
+  · tsi_tide                         -0.493    +8.92   +56.0854   +40.9914
+  · vwap_spread_current_wave         +0.479    -8.33    -1.3048    +0.7676
+  · adi_tide                         +0.422    -7.62   +39.5285   +53.2121
+  · fear_level                       +0.418    -7.45    +2.2724    +2.8138
+  · rsi_conviction                   -0.417    +7.48    +0.1194    +0.0043
+  · d_tide_slope                     -0.410    +7.34    -0.0002    -0.0008
+
+==============================================================================================================
+  SEQUENCE DEPTH: Does preceding bear depth modulate reversal strength? (blind spot #5)
+==============================================================================================================
+
+  LL_TO_HL: Correlation(n_consecutive, swing_return) = +nan (p=nan)
+    Depth 0 (580 obs): avg swing = +13.77%
+
+  HH_TO_LH: Correlation(n_consecutive, swing_return) = +nan (p=nan)
+    Depth 0 (591 obs): avg swing = -10.05%
+
+==============================================================================================================
+  ORTHOGONALITY: Correlation matrix of top features at t=0
+==============================================================================================================
+
+  ⚠️ High correlations (|r| > 0.7) among top features:
+    geo_exit_align                 ↔ geo_velocity_align             r=-1.000
+    vwap_sigma_low_tide            ↔ vwap_sigma_high_tide           r=+0.989
+    sigma_tide                     ↔ sigma_low_tide                 r=+0.985
+    sigma_tide                     ↔ sigma_high_tide                r=+0.985
+    vwap_sigma_low_current         ↔ vwap_sigma_high_current        r=+0.978
+    sigma_low_tide                 ↔ sigma_high_tide                r=+0.975
+    vwap_sigma_tide                ↔ vwap_sigma_low_tide            r=+0.916
+    vwap_sigma_current             ↔ rsi_value                      r=+0.915
+    vwap_sigma_current             ↔ vwap_sigma_low_current         r=+0.907
+    vwap_sigma_tide                ↔ vwap_sigma_high_tide           r=+0.904
+    vwap_sigma_current             ↔ vwap_sigma_high_current        r=+0.899
+    vwap_sigma_low_current         ↔ rsi_value                      r=+0.868
+    vwap_sigma_high_current        ↔ rsi_value                      r=+0.855
+    vwap_sigma_current             ↔ sigma_tide                     r=+0.837
+    vwap_sigma_high_current        ↔ sigma_high_tide                r=+0.824
+    vwap_sigma_low_current         ↔ sigma_tide                     r=+0.821
+    vwap_sigma_low_current         ↔ sigma_low_tide                 r=+0.815
+    vwap_sigma_high_current        ↔ sigma_tide                     r=+0.815
+    geo_exit_align                 ↔ fear_level                     r=-0.814
+    geo_velocity_align             ↔ fear_level                     r=+0.814
+    vwap_sigma_current             ↔ sigma_high_tide                r=+0.813
+    vwap_sigma_low_current         ↔ sigma_high_tide                r=+0.811
+    geo_exit_align                 ↔ tsi_wave                       r=+0.806
+    geo_velocity_align             ↔ tsi_wave                       r=-0.806
+    vwap_sigma_current             ↔ sigma_low_tide                 r=+0.803
+    rsi_value                      ↔ sigma_tide                     r=+0.797
+    vwap_sigma_high_current        ↔ sigma_low_tide                 r=+0.792
+    geo_exit_align                 ↔ vwap_sigma_tide                r=+0.782
+    geo_velocity_align             ↔ vwap_sigma_tide                r=-0.782
+    vwap_sigma_current             ↔ above_all_vwaps_int            r=+0.773
+    rsi_value                      ↔ sigma_high_tide                r=+0.767
+    vwap_sigma_high_current        ↔ vwap_sigma_tide                r=+0.766
+    vwap_sigma_low_current         ↔ vwap_sigma_tide                r=+0.764
+    rsi_value                      ↔ sigma_low_tide                 r=+0.760
+    geo_exit_align                 ↔ vwap_sigma_high_current        r=+0.758
+    geo_velocity_align             ↔ vwap_sigma_high_current        r=-0.758
+    rsi_value                      ↔ above_all_vwaps_int            r=+0.757
+    fear_level                     ↔ tsi_wave                       r=-0.752
+    vwap_sigma_low_current         ↔ geo_exit_align                 r=+0.752
+    vwap_sigma_low_current         ↔ geo_velocity_align             r=-0.752
+    vwap_sigma_high_current        ↔ above_all_vwaps_int            r=+0.752
+    geo_exit_align                 ↔ vwap_sigma_low_tide            r=+0.742
+    geo_velocity_align             ↔ vwap_sigma_low_tide            r=-0.742
+    vwap_sigma_low_current         ↔ above_all_vwaps_int            r=+0.739
+    geo_exit_align                 ↔ vwap_sigma_high_tide           r=+0.732
+    geo_velocity_align             ↔ vwap_sigma_high_tide           r=-0.732
+    vwap_sigma_current             ↔ geo_exit_align                 r=+0.731
+    vwap_sigma_current             ↔ geo_velocity_align             r=-0.731
+    vwap_sigma_current             ↔ tsi_wave                       r=+0.730
+    vwap_sigma_current             ↔ vwap_sigma_tide                r=+0.722
+    vwap_sigma_low_current         ↔ tsi_wave                       r=+0.720
+    vwap_sigma_high_current        ↔ tsi_wave                       r=+0.717
+    vwap_sigma_tide                ↔ fear_level                     r=-0.707
+
+==============================================================================================================
+  COMPLETE — 186s
+==============================================================================================================

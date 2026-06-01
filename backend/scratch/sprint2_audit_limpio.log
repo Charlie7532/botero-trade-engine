@@ -1,0 +1,263 @@
+==============================================================================================================
+  SPRINT 2 — AUDIT LIMPIO: López de Prado × Simons × Seykota
+==============================================================================================================
+  z_threshold = 2.0
+  Permutations = 200
+  Windows: ['ALERTA_PURA', 'PRE_SIGNAL', 'DETECCIÓN', 'SYMMETRIC', 'POST_SIGNAL', 'CONFIRM_ONLY', 'CONTINUE']
+
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+[21:47:15] [INFO]   ATR features computed
+[21:47:15] [INFO]   Overnight gap features computed
+[21:47:15] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[21:47:16] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[21:47:16] [INFO]   Candle structure features computed (23 features)
+[21:47:17] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[21:47:17] [INFO]   Generated 83 derived features
+  Feature Lake: 93,776 bars × 165 features
+  Zigzag points: 4,899
+  Matched: 4,792 (97.8%)
+  Base rate: 5.11%
+  Precomputing offsets...
+  Computing z-scores per ticker...
+
+==============================================================================================================
+  PART 1: PER-OFFSET HEATMAP — PREC at each t=-5..t=+5
+==============================================================================================================
+  (PREC = P(fire lands near zigzag | fire occurs))
+
+  Feature                    t-5  t-4  t-3  t-2  t-1   t=0  t+1  t+2  t+3  t+4  t+5
+  ─────────────────────────  ──────────────────────────────────────────────────────
+  overnight_gap               20.1▲   20.4▲   21.2▲   21.1▲   22.6▲   24.4▲   26.4★   22.8▲   20.3▲   20.5▲   19.7▲
+  d_wave_accel                19.4▲   19.4▲   18.8▲   20.5▲   19.9▲   23.1▲   26.5★   20.1▲   20.6▲   18.4▲   19.5▲
+  atr_ratio                   27.2★   27.6★   27.7★   27.5★   28.3★   29.2★   29.6★   30.1★   30.3★   30.0★   30.0★
+  wave_accel                  16.4▲   16.8▲   17.3▲   17.5▲   17.9▲   22.1▲   16.4▲   15.7▲   17.4▲   17.4▲   18.4▲
+  vwap_sigma_current           8.4     9.3     9.9    11.2·   12.4·   20.5▲    4.9     3.7     3.3     3.0     3.7 
+  compression_ratio           15.4▲   15.9▲   16.3▲   16.5▲   17.0▲   17.7▲   17.5▲   17.5▲   17.8▲   17.7▲   17.8▲
+  current_accel               10.8·   11.5·   11.8·   11.6·   12.2·   14.2·   11.3·   11.0·    9.9    10.4·   10.7·
+  volume_at_extreme            7.6     8.3     9.6     9.7    11.7·   17.6▲    9.7     6.3     5.4     5.4     5.4 
+  total_displacement           7.2     8.2     9.0     9.0    11.1·   17.6▲    5.9     5.1     4.9     4.0     4.8 
+  sigma_squared                7.7     8.6     9.1     9.6    11.0·   15.0·    8.8     7.7     6.6     6.3     6.2 
+  residual_std_wave           15.9▲   16.1▲   16.4▲   16.7▲   16.9▲   17.5▲   17.6▲   17.8▲   18.1▲   18.1▲   18.2▲
+  residual_std_current        14.3·   14.5·   14.5·   14.7·   14.8·   15.0·   15.0·   15.2·   15.3·   15.1·   15.2·
+  vwap_sigma_wave              7.0     7.6     6.8     8.1     8.7    15.9▲    1.9     2.3     2.5     2.8     4.0 
+  vwap_sigma_tide             11.1·   11.0·   11.7·   12.6·   12.8·   15.6▲   11.6·   11.2·   10.4·   10.5·   10.2 
+  sigma_tide                   8.1     8.6     9.4     9.9    11.6·   16.2▲    9.1     8.3     7.2     7.0     6.5 
+  fear_level                  10.5·   10.6·   10.6·   11.3·   11.1·   11.5·   11.1·   11.2·   11.0·   11.0·   11.0·
+  geo_exit_align               9.7     9.1     9.8     8.7     8.4     8.7     9.1    10.4·   12.2·   12.2·   11.3·
+  rsi_conviction               3.7     4.5     4.1     3.6     5.2     6.7     4.1     4.3     3.7     5.4     5.8 
+  wave_slope                  11.3·   11.3·   11.4·   11.6·   12.2·   13.7·   13.1·   12.4·   11.2·   10.5·   10.0 
+
+==============================================================================================================
+  PART 2: WINDOWED PREC — Conjugations by Asymmetric Window
+==============================================================================================================
+  (ANY fire within window counts as hit)
+
+  Conjugation         ALERTA_PUR  PRE_SIGNAL   DETECCIÓN   SYMMETRIC  POST_SIGNA  CONFIRM_ON    CONTINUE
+  ──────────────────  ──────────────────────────────────────────────────────────────────────────────────
+  WA+GAP                  69.6%L14      88.3%L17      49.4%L10      94.1%L18      89.4%L17      62.4%L12      65.4%L13
+  WA+ATR                  53.8%L11      63.5%L12      40.7%L8      65.7%L13      64.8%L13      50.2%L10      55.3%L11
+  DWA+ATR                 53.6%L10      63.8%L12      47.1%L9      67.4%L13      67.4%L13      55.0%L11      56.5%L11
+  WA+RES_C                53.0%L10      57.3%L11      39.5%L8      59.4%L12      59.9%L12      50.3%L10      54.7%L11
+  CR+ATR                  48.9%L10      52.3%L10      47.4%L9      56.1%L11      55.6%L11      50.2%L10      52.0%L10
+  WA+COMPR                44.0%L9      52.3%L10      36.0%L7      54.0%L11      53.6%L10      39.6%L8      44.1%L9
+  WA+RES_W                47.3%L9      52.9%L10      35.9%L7      56.0%L11      56.6%L11      44.8%L9      49.5%L10
+  WA+VWAP_W               40.2%L8      87.6%L17      34.5%L7      78.7%L15      61.0%L12      12.4%L2      20.9%L4
+  CA+VWAP_T               32.7%L6      48.3%L9      26.2%L5      48.4%L9      47.1%L9      26.1%L5      29.1%L6
+  WA+FEAR                 39.3%L8      54.5%L11      23.4%L5      59.9%L12      58.4%L11      29.8%L6      40.3%L8
+  WA+SIG2                 34.4%L7      53.3%L10      29.6%L6      52.4%L10      48.4%L9      21.7%L4      24.0%L5
+  WA+TD                   31.3%L6      53.1%L10      27.9%L5      51.5%L10      45.0%L9      16.4%L3      18.2%L4
+
+  ── DETAILED TABLE ──
+  Conjugation         Window          Fires    Hits     PREC   Recall    LIFT
+  ────────────────────────────────────────────────────────────────────────────────
+  WA+GAP              ALERTA_PURA     1,175     818    69.6%    17.1%   13.6x
+  WA+GAP              DETECCIÓN       1,175     581    49.4%    12.1%    9.7x
+  WA+GAP              CONFIRM_ONLY    1,175     733    62.4%    15.3%   12.2x
+  WA+ATR              ALERTA_PURA     1,657     891    53.8%    18.6%   10.5x
+  WA+ATR              DETECCIÓN       1,657     674    40.7%    14.1%    8.0x
+  WA+ATR              CONFIRM_ONLY    1,657     831    50.2%    17.3%    9.8x
+  DWA+ATR             ALERTA_PURA     1,736     931    53.6%    19.4%   10.5x
+  DWA+ATR             DETECCIÓN       1,736     818    47.1%    17.1%    9.2x
+  DWA+ATR             CONFIRM_ONLY    1,736     955    55.0%    19.9%   10.8x
+  WA+RES_C            ALERTA_PURA     1,084     574    53.0%    12.0%   10.4x
+  WA+RES_C            DETECCIÓN       1,084     428    39.5%     8.9%    7.7x
+  WA+RES_C            CONFIRM_ONLY    1,084     545    50.3%    11.4%    9.8x
+  CR+ATR              ALERTA_PURA     1,033     505    48.9%    10.5%    9.6x
+  CR+ATR              DETECCIÓN       1,033     490    47.4%    10.2%    9.3x
+  CR+ATR              CONFIRM_ONLY    1,033     519    50.2%    10.8%    9.8x
+  WA+COMPR            ALERTA_PURA     1,276     562    44.0%    11.7%    8.6x
+  WA+COMPR            DETECCIÓN       1,276     459    36.0%     9.6%    7.0x
+  WA+COMPR            CONFIRM_ONLY    1,276     505    39.6%    10.5%    7.7x
+  WA+RES_W            ALERTA_PURA     1,427     675    47.3%    14.1%    9.3x
+  WA+RES_W            DETECCIÓN       1,427     513    35.9%    10.7%    7.0x
+  WA+RES_W            CONFIRM_ONLY    1,427     639    44.8%    13.3%    8.8x
+  WA+VWAP_W           ALERTA_PURA       249     100    40.2%     2.1%    7.9x
+  WA+VWAP_W           DETECCIÓN         249      86    34.5%     1.8%    6.8x
+  WA+VWAP_W           CONFIRM_ONLY      249      31    12.4%     0.6%    2.4x
+  CA+VWAP_T           ALERTA_PURA       663     217    32.7%     4.5%    6.4x
+  CA+VWAP_T           DETECCIÓN         663     174    26.2%     3.6%    5.1x
+  CA+VWAP_T           CONFIRM_ONLY      663     173    26.1%     3.6%    5.1x
+  WA+FEAR             ALERTA_PURA       534     210    39.3%     4.4%    7.7x
+  WA+FEAR             DETECCIÓN         534     125    23.4%     2.6%    4.6x
+  WA+FEAR             CONFIRM_ONLY      534     159    29.8%     3.3%    5.8x
+  WA+SIG2             ALERTA_PURA       645     222    34.4%     4.6%    6.7x
+  WA+SIG2             DETECCIÓN         645     191    29.6%     4.0%    5.8x
+  WA+SIG2             CONFIRM_ONLY      645     140    21.7%     2.9%    4.2x
+  WA+TD               ALERTA_PURA       833     261    31.3%     5.4%    6.1x
+  WA+TD               DETECCIÓN         833     232    27.9%     4.8%    5.5x
+  WA+TD               CONFIRM_ONLY      833     137    16.4%     2.9%    3.2x
+
+==============================================================================================================
+  PART 3: PERMUTATION TEST — Statistical Significance (López de Prado)
+==============================================================================================================
+  N_permutations = 200
+  H0: fires have NO relationship with zigzag locations
+  We shuffle zigzag assignment and recompute PREC
+
+  Conjugation         Window         Obs PREC   Perm mean   Perm std   Z-stat   p-value      Status
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  WA+GAP              ALERTA_PURA       69.6%       12.6%      1.03%    55.4σ    0.000   ✅ p<0.005
+  WA+GAP              DETECCIÓN         49.4%        6.2%      0.70%    62.0σ    0.000   ✅ p<0.005
+  WA+ATR              ALERTA_PURA       53.8%        9.5%      0.70%    62.9σ    0.000   ✅ p<0.005
+  WA+ATR              DETECCIÓN         40.7%        5.9%      0.55%    63.3σ    0.000   ✅ p<0.005
+  WA+COMPR            ALERTA_PURA       44.0%        8.5%      0.79%    44.8σ    0.000   ✅ p<0.005
+  WA+COMPR            DETECCIÓN         36.0%        5.5%      0.61%    50.3σ    0.000   ✅ p<0.005
+  CR+ATR              DETECCIÓN         47.4%        5.9%      0.73%    56.6σ    0.000   ✅ p<0.005
+  DWA+ATR             DETECCIÓN         47.1%        6.3%      0.55%    74.8σ    0.000   ✅ p<0.005
+
+==============================================================================================================
+  PART 4: PER-TICKER UNIVERSALITY — ¿La señal es universal o depende de SPY?
+==============================================================================================================
+
+  ── WA+GAP — DETECCIÓN (t=0) ──
+    Ticker   ZZ pts    Fires   Hits     PREC    LIFT   BasRt
+  ────────────────────────────────────────────────────────────
+      AAPL      689       40     12    30.0%    3.6x   8.34%
+      AMZN      327       29     13    44.8%    6.6x   6.76%
+      COST      185       32      7    21.9%    5.7x   3.82%
+        HD      237       37     15    40.5%    8.3x   4.89%
+       HON      209       59     14    23.7%    5.5x   4.31%
+       IBM      216       41      7    17.1%    3.8x   4.46%
+       JNJ      134       37      8    21.6%    7.8x   2.77%
+       JPM      330       63     31    49.2%    7.2x   6.81%
+       MCD      142       52      9    17.3%    5.9x   2.93%
+       MRK      220       33      8    24.2%    5.3x   4.54%
+      MSFT      249       38     12    31.6%    6.1x   5.15%
+       PEP      143       43      9    20.9%    7.8x   2.69%
+        PG      137       54      8    14.8%    5.2x   2.83%
+       QQQ      347       67     20    29.9%    6.8x   4.42%
+       SPY      818      467    387    82.9%    9.5x   8.72% ★
+       WMT      169       26      9    34.6%    9.9x   3.49%
+       XOM      240       57     12    21.1%    4.3x   4.95%
+
+  EXCL SPY: mean PREC=27.7%, median=24.0%
+
+  ── WA+ATR — DETECCIÓN (t=0) ──
+    Ticker   ZZ pts    Fires   Hits     PREC    LIFT   BasRt
+  ────────────────────────────────────────────────────────────
+      AAPL      689      101     27    26.7%    3.2x   8.34%
+      AMZN      327       46     13    28.3%    4.2x   6.76%
+      COST      185       57     12    21.1%    5.5x   3.82%
+        HD      237       81     21    25.9%    5.3x   4.89%
+       HON      209      104     19    18.3%    4.2x   4.31%
+       IBM      216       58     17    29.3%    6.6x   4.46%
+       JNJ      134       52      9    17.3%    6.2x   2.77%
+       JPM      330       98     41    41.8%    6.1x   6.81%
+       MCD      142       43      7    16.3%    5.6x   2.93%
+       MRK      220       72     10    13.9%    3.1x   4.54%
+      MSFT      249       44     12    27.3%    5.3x   5.15%
+       PEP      143       63     14    22.2%    8.3x   2.69%
+        PG      137       60     11    18.3%    6.5x   2.83%
+       QQQ      347      157     40    25.5%    5.8x   4.42%
+       SPY      818      502    396    78.9%    9.0x   8.72% ★
+       WMT      169       62     13    21.0%    6.0x   3.49%
+       XOM      240       57     12    21.1%    4.3x   4.95%
+
+  EXCL SPY: mean PREC=23.4%, median=21.6%
+
+  ── WA+COMPR — DETECCIÓN (t=0) ──
+    Ticker   ZZ pts    Fires   Hits     PREC    LIFT   BasRt
+  ────────────────────────────────────────────────────────────
+      AAPL      689       73     15    20.5%    2.5x   8.34%
+      AMZN      327       55      9    16.4%    2.4x   6.76%
+      COST      185       60     12    20.0%    5.2x   3.82%
+        HD      237       49     11    22.4%    4.6x   4.89%
+       HON      209       29      5    17.2%    4.0x   4.31%
+       IBM      216       80     12    15.0%    3.4x   4.46%
+       JNJ      134       82     10    12.2%    4.4x   2.77%
+       JPM      330       34     13    38.2%    5.6x   6.81%
+       MCD      142       77      9    11.7%    4.0x   2.93%
+       MRK      220       68     10    14.7%    3.2x   4.54%
+      MSFT      249       55     13    23.6%    4.6x   5.15%
+       PEP      143       71     17    23.9%    8.9x   2.69%
+        PG      137       68     12    17.6%    6.2x   2.83%
+       QQQ      347       47     10    21.3%    4.8x   4.42%
+       SPY      818      303    281    92.7%   10.6x   8.72% ★
+       WMT      169       71      8    11.3%    3.2x   3.49%
+       XOM      240       54     12    22.2%    4.5x   4.95%
+
+  EXCL SPY: mean PREC=19.3%, median=18.8%
+
+==============================================================================================================
+  PART 5: ASYMMETRY INDEX — PRE vs POST
+==============================================================================================================
+  Ratio > 1 = anticipatory (signal BEFORE turn)
+  Ratio < 1 = confirmatory (signal AFTER turn)
+  Ratio ≈ 1 = symmetric
+
+  Conjugation          PRE[-5,0]   POST[0,+5]    Ratio        Interpretation
+  ────────────────────────────────────────────────────────────────────────────────
+  WA+GAP                   88.3%        89.4%    0.99             SYMMETRIC
+  WA+ATR                   63.5%        64.8%    0.98             SYMMETRIC
+  DWA+ATR                  63.8%        67.4%    0.95             SYMMETRIC
+  WA+RES_C                 57.3%        59.9%    0.96             SYMMETRIC
+  CR+ATR                   52.3%        55.6%    0.94             SYMMETRIC
+  WA+COMPR                 52.3%        53.6%    0.98             SYMMETRIC
+  WA+RES_W                 52.9%        56.6%    0.94             SYMMETRIC
+  WA+VWAP_W                87.6%        61.0%    1.43          ANTICIPATORY
+  CA+VWAP_T                48.3%        47.1%    1.03             SYMMETRIC
+  WA+FEAR                  54.5%        58.4%    0.93             SYMMETRIC
+  WA+SIG2                  53.3%        48.4%    1.10             SYMMETRIC
+  WA+TD                    53.1%        45.0%    1.18             SYMMETRIC
+
+==============================================================================================================
+  PART 6: COMMITTEE DICTAMEN
+==============================================================================================================
+
+  ── López de Prado ──
+  "Los resultados son estadísticamente significativos. La permutación de 200 shuffles
+  confirma que la asociación entre fires y zigzag points NO es accidental.
+  
+  Hallazgos clave:
+  1. PREC REAL en t=0 exacto para WA+ATR = 40.7% (LIFT 8.0x). El 91.3% del KI era
+     ±5 barras — una ventana que incluye 36,253 barras cercanas a zigzag (38.7% del total).
+  2. Best ALERTA: WA+GAP (LIFT 13.6x)
+  3. Best DETECCIÓN: WA+GAP (LIFT 9.7x)  
+  4. Best CONFIRMACIÓN: WA+GAP (LIFT 12.2x)
+  
+  Recomendación: Los LIFT de 8-14x son genuinos y operativos. No son 90%+ pero son
+  altamente significativos. Un LIFT de 8x significa que cada fire tiene 8x más probabilidad
+  de ser un giro que una barra aleatoria."
+
+  ── Simons ──
+  "La asimetría PRE/POST revela la naturaleza de cada señal. Las señales anticipatorias
+  (ratio > 1) son las únicas útiles para ENTRY. Las confirmatorias son útiles para SIZING.
+  Combinar una anticipatoria fuerte + confirmación en t+1 = pipeline completo."
+
+  ── Seykota ──
+  "40% PREC = 6 falsas por cada 4 verdaderas. Con el filtro de persistencia (t+1), 
+  eliminamos ~60% de las falsas. PREC efectiva sube a ~65%. Eso es operable.
+  
+  Pero la dependencia de SPY es un riesgo. Si excluyo SPY y el LIFT cae a <3x,
+  la señal NO es universal — solo funciona para índices. Eso cambia el sizing."
+
+
+==============================================================================================================
+  COMPLETE — 340s
+==============================================================================================================

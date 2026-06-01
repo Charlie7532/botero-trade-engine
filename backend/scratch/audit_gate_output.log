@@ -1,0 +1,614 @@
+
+==============================================================================================================
+  FORENSE DE PRECISIÓN — ML Heads vs Zigzag Ground Truth
+==============================================================================================================
+
+  ── Cargando Feature Lake, Zigzag y Modelos ──
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+  Feature Lake base: 93,776 observations, 82 cols
+[15:16:45] [INFO]   ATR features computed
+[15:16:45] [INFO]   Overnight gap features computed
+[15:16:45] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[15:16:46] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[15:16:46] [INFO]   Candle structure features computed (23 features)
+[15:16:47] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[15:16:47] [INFO]   Generated 83 derived features
+  Derived features added: 83 cols → total 165 cols
+  Zigzag points: 4,933 turns
+
+  ── Marcando ground truth: barras cerca de breakpoints del zigzag ──
+  Bars near bottoms (±3d): 16,091
+  Bars near tops (±3d): 16,029
+
+==============================================================================================================
+  HEAD: long_entry (detecta BOTTOMs, side=LONG)
+==============================================================================================================
+  Features: 6 | Threshold: 0.800 | DSR: 3.849
+  Features: ['sigma_high_tide', 'tsi_current', 'reg_value_tide', 'div_close_low_tide', 'conj_wave_current', 'vol_price_divergence']
+  Config: Is this a good time to buy? (20d forward return > 0)
+  Total signals fired: 221 / 93,776 (0.2%)
+
+  ── PRECISIÓN vs Zigzag BOTTOMs ──
+
+  ┌─────────────────────────────────────────────────┐
+  │ MÉTRICAS DE CLASIFICACIÓN vs Zigzag (±3 bars)   │
+  ├─────────────────────────────────────────────────┤
+  │ Señales disparadas (Total):            221      │
+  │ True Positives (aciertos):               79      │
+  │ False Positives (falsas):               142      │
+  │ False Negatives (no capturó):        16,012      │
+  │ Turns totales en el zigzag:          16,091      │
+  ├─────────────────────────────────────────────────┤
+  │ PRECISION (cuando dispara, acierta):    35.7%   │
+  │ RECALL (de todos los turns, capturó):     0.5%   │
+  │ F1 Score:                                0.010   │
+  └─────────────────────────────────────────────────┘
+
+  ── Distancia temporal al breakpoint cuando dispara ──
+  Media: 1.9 bars | Mediana: 2 bars
+  En t=0 (exacto):       23 (29.1%)
+  En t±1 (1 bar):        38 (48.1%)
+  En t±2 (2 bars):       50 (63.3%)
+  En t±3 (3 bars):       62 (78.5%)
+
+  ── Magnitud del retorno cuando ACIERTA (True Positives) ──
+  N con retorno: 79
+  Retorno medio del tramo:    +24.65%
+  Retorno mediana:             +19.15%
+  P25=+13.48%  P75=+27.28%
+  Win Rate (swing > 0):        100.0%
+  Duración media del tramo:    49 días
+
+  ── Magnitud cuando FALLA (False Positives — señal sin turn) ──
+  N con forward 20d: 142 (de 142 FP)
+  Retorno 20d medio:    +6.82%
+  Retorno 20d mediana:  +4.92%
+  Win Rate (20d > 0):    97.2%
+  MDD P10 estimate:      +1.20%
+
+  ── Desglose por ticker (Top 5 y Bottom 5) ──
+
+    Ticker │  Signals │    TP │    FP │  Precision │   Recall │  Turns
+  ---------------------------------------------------------------------------
+      AAPL │        8 │     8 │     0 │     100.0% │     0.3% │   2396
+       JPM │        1 │     1 │     0 │     100.0% │     0.1% │   1099
+       SPY │        7 │     5 │     2 │      71.4% │     0.3% │   1900
+       IBM │        3 │     2 │     1 │      66.7% │     0.3% │    782
+       HON │        4 │     2 │     2 │      50.0% │     0.3% │    743
+  ...........................................................................
+       PEP │       10 │     1 │     9 │      10.0% │     0.2% │    504
+       JNJ │        0 │     0 │     0 │       0.0% │     0.0% │    479
+       WMT │        0 │     0 │     0 │       0.0% │     0.0% │    607
+
+  ── Señales por régimen de tendencia (tide_slope) ──
+  TIDE_UP      │ Signals:    173 │ TP:    59 │ Prec:  34.1% │ Recall:   0.6%
+  TIDE_DOWN    │ Signals:     48 │ TP:    20 │ Prec:  41.7% │ Recall:   0.3%
+
+  ── Señales por las 8 firmas de pendiente RC (Tide/Curr/Wave ±) ──
+
+                Firma RC │     Obs │  Signals │    TP │  Precision │   Recall │  Turns
+  -------------------------------------------------------------------------------------
+          T(+) C(-) W(-) │  13,512 │       70 │    43 │      61.4% │     1.1% │   4033  ★
+          T(+) C(+) W(-) │  13,383 │       14 │     8 │      57.1% │     0.3% │   2791
+          T(-) C(-) W(-) │   8,347 │       28 │    16 │      57.1% │     0.5% │   3209
+          T(-) C(-) W(+) │   5,010 │       10 │     3 │      30.0% │     0.4% │    803
+          T(-) C(+) W(+) │   9,115 │       10 │     1 │      10.0% │     0.1% │   1137
+          T(+) C(-) W(+) │   8,518 │       71 │     7 │       9.9% │     0.9% │    743
+          T(+) C(+) W(+) │  32,258 │       18 │     1 │       5.6% │     0.0% │   2431
+          T(-) C(+) W(-) │   3,633 │        0 │     0 │       0.0% │     0.0% │    944
+
+  ── Señales por zona de riesgo VWAP (vwap_sigma_tide) ──
+
+                  Risk Zone │  Signals │    TP │  Precision │   Recall │  Turns
+  --------------------------------------------------------------------------------
+            CRISIS (< -1.5) │       51 │    34 │      66.7% │     1.2% │   2913
+         DANGER (-1.5,-0.5) │       42 │    19 │      45.2% │     0.5% │   3737
+         NEUTRAL (-0.5,0.5) │       87 │    21 │      24.1% │     0.6% │   3587
+               SAFE (> 0.5) │       41 │     5 │      12.2% │     0.1% │   5854
+
+  ── COMBINED: Tide Regime × VWAP Zone (Sweet Spot Analysis) ──
+
+                           Combined Regime │  Signals │    TP │  Precision │   Recall
+  -------------------------------------------------------------------------------------
+            ★ SWEET SPOT: T(+) & VWAP<tide │      108 │    46 │      42.6% │     1.5%
+                SAFE BULL: T(+) & VWAP>0.5 │       31 │     4 │      12.9% │     0.1%
+      NEUTRAL BULL: T(+) & VWAP∈[-0.5,0.5] │       86 │    20 │      23.3% │     0.8%
+             DANGER BEAR: T(-) & VWAP<-0.5 │       37 │    18 │      48.6% │     0.4%
+             CRISIS BEAR: T(-) & VWAP<-1.5 │       32 │    17 │      53.1% │     0.7%
+
+==============================================================================================================
+  HEAD: zz_bottom_detector (detecta BOTTOMs, side=LONG)
+==============================================================================================================
+  Features: 6 | Threshold: 0.800 | DSR: 32.218
+  Features: ['rsi_value', 'complacency_index', 'atr_ratio', 'volume_trend', 'tension_tide', 'sigma_range_tide']
+  Config: Are we near a zigzag 5% bottom? (within 3 bars of MIN)
+  Total signals fired: 5,501 / 93,776 (5.9%)
+
+  ── PRECISIÓN vs Zigzag BOTTOMs ──
+
+  ┌─────────────────────────────────────────────────┐
+  │ MÉTRICAS DE CLASIFICACIÓN vs Zigzag (±3 bars)   │
+  ├─────────────────────────────────────────────────┤
+  │ Señales disparadas (Total):          5,501      │
+  │ True Positives (aciertos):            4,224      │
+  │ False Positives (falsas):             1,277      │
+  │ False Negatives (no capturó):        11,867      │
+  │ Turns totales en el zigzag:          16,091      │
+  ├─────────────────────────────────────────────────┤
+  │ PRECISION (cuando dispara, acierta):    76.8%   │
+  │ RECALL (de todos los turns, capturó):    26.3%   │
+  │ F1 Score:                                0.391   │
+  └─────────────────────────────────────────────────┘
+
+  ── Distancia temporal al breakpoint cuando dispara ──
+  Media: 1.7 bars | Mediana: 1 bars
+  En t=0 (exacto):     1316 (31.2%)
+  En t±1 (1 bar):      2375 (56.2%)
+  En t±2 (2 bars):     2982 (70.6%)
+  En t±3 (3 bars):     3486 (82.5%)
+
+  ── Magnitud del retorno cuando ACIERTA (True Positives) ──
+  N con retorno: 4,221
+  Retorno medio del tramo:    +12.99%
+  Retorno mediana:             +9.66%
+  P25=+6.80%  P75=+15.88%
+  Win Rate (swing > 0):        100.0%
+  Duración media del tramo:    10 días
+
+  ── Magnitud cuando FALLA (False Positives — señal sin turn) ──
+  N con forward 20d: 1,271 (de 1,277 FP)
+  Retorno 20d medio:    -1.27%
+  Retorno 20d mediana:  -0.92%
+  Win Rate (20d > 0):    45.1%
+  MDD P10 estimate:      -15.34%
+
+  ── Desglose por ticker (Top 5 y Bottom 5) ──
+
+    Ticker │  Signals │    TP │    FP │  Precision │   Recall │  Turns
+  ---------------------------------------------------------------------------
+       SPY │     1067 │  1015 │    52 │      95.1% │    53.4% │   1900
+       JPM │      489 │   383 │   106 │      78.3% │    34.8% │   1099
+       QQQ │      565 │   435 │   130 │      77.0% │    29.7% │   1467
+        HD │      272 │   203 │    69 │      74.6% │    24.6% │    824
+      AMZN │      422 │   311 │   111 │      73.7% │    27.2% │   1142
+  ...........................................................................
+       MCD │      114 │    78 │    36 │      68.4% │    15.5% │    502
+       MRK │      206 │   137 │    69 │      66.5% │    17.6% │    777
+        PG │       88 │    58 │    30 │      65.9% │    11.7% │    494
+
+  ── Señales por régimen de tendencia (tide_slope) ──
+  TIDE_UP      │ Signals:   2942 │ TP:  2194 │ Prec:  74.6% │ Recall:  21.9%
+  TIDE_DOWN    │ Signals:   2559 │ TP:  2030 │ Prec:  79.3% │ Recall:  33.3%
+
+  ── Señales por las 8 firmas de pendiente RC (Tide/Curr/Wave ±) ──
+
+                Firma RC │     Obs │  Signals │    TP │  Precision │   Recall │  Turns
+  -------------------------------------------------------------------------------------
+          T(-) C(+) W(+) │   9,115 │      276 │   224 │      81.2% │    19.7% │   1137
+          T(+) C(-) W(+) │   8,518 │      189 │   151 │      79.9% │    20.3% │    743
+          T(-) C(-) W(-) │   8,347 │     1610 │  1286 │      79.9% │    40.1% │   3209
+          T(+) C(+) W(+) │  32,258 │      471 │   367 │      77.9% │    15.1% │   2431
+          T(-) C(+) W(-) │   3,633 │      296 │   229 │      77.4% │    24.3% │    944
+          T(-) C(-) W(+) │   5,010 │      377 │   291 │      77.2% │    36.2% │    803
+          T(+) C(+) W(-) │  13,383 │      842 │   620 │      73.6% │    22.2% │   2791
+          T(+) C(-) W(-) │  13,512 │     1440 │  1056 │      73.3% │    26.2% │   4033  ★
+
+  ── Señales por zona de riesgo VWAP (vwap_sigma_tide) ──
+
+                  Risk Zone │  Signals │    TP │  Precision │   Recall │  Turns
+  --------------------------------------------------------------------------------
+            CRISIS (< -1.5) │     1792 │  1432 │      79.9% │    49.2% │   2913
+         DANGER (-1.5,-0.5) │     1360 │  1022 │      75.1% │    27.3% │   3737
+         NEUTRAL (-0.5,0.5) │     1151 │   837 │      72.7% │    23.3% │   3587
+               SAFE (> 0.5) │     1198 │   933 │      77.9% │    15.9% │   5854
+
+  ── COMBINED: Tide Regime × VWAP Zone (Sweet Spot Analysis) ──
+
+                           Combined Regime │  Signals │    TP │  Precision │   Recall
+  -------------------------------------------------------------------------------------
+            ★ SWEET SPOT: T(+) & VWAP<tide │     1338 │   986 │      73.7% │    32.7%
+                SAFE BULL: T(+) & VWAP>0.5 │     1132 │   872 │      77.0% │    15.8%
+      NEUTRAL BULL: T(+) & VWAP∈[-0.5,0.5] │      870 │   599 │      68.9% │    23.8%
+             DANGER BEAR: T(-) & VWAP<-0.5 │     2212 │  1731 │      78.3% │    37.0%
+             CRISIS BEAR: T(-) & VWAP<-1.5 │     1419 │  1126 │      79.4% │    48.3%
+
+==============================================================================================================
+  HEAD: short_entry (detecta TOPs, side=SHORT)
+==============================================================================================================
+  Features: 5 | Threshold: 0.750 | DSR: 1.816
+  Features: ['compression_ratio', 'fear_level', 'volume_trend', 'conj_wave_current', 'vol_adj_delta']
+  Config: Is this a good time to short? (20d forward return < 0)
+  Total signals fired: 196 / 93,776 (0.2%)
+
+  ── PRECISIÓN vs Zigzag TOPs ──
+
+  ┌─────────────────────────────────────────────────┐
+  │ MÉTRICAS DE CLASIFICACIÓN vs Zigzag (±3 bars)   │
+  ├─────────────────────────────────────────────────┤
+  │ Señales disparadas (Total):            196      │
+  │ True Positives (aciertos):               67      │
+  │ False Positives (falsas):               129      │
+  │ False Negatives (no capturó):        15,962      │
+  │ Turns totales en el zigzag:          16,029      │
+  ├─────────────────────────────────────────────────┤
+  │ PRECISION (cuando dispara, acierta):    34.2%   │
+  │ RECALL (de todos los turns, capturó):     0.4%   │
+  │ F1 Score:                                0.008   │
+  └─────────────────────────────────────────────────┘
+
+  ── Distancia temporal al breakpoint cuando dispara ──
+  Media: 2.6 bars | Mediana: 3 bars
+  En t=0 (exacto):        9 (13.4%)
+  En t±1 (1 bar):        21 (31.3%)
+  En t±2 (2 bars):       32 (47.8%)
+  En t±3 (3 bars):       43 (64.2%)
+
+  ── Magnitud del retorno cuando ACIERTA (True Positives) ──
+
+  ── Magnitud cuando FALLA (False Positives — señal sin turn) ──
+  N con forward 20d: 129 (de 129 FP)
+  Retorno 20d medio:    -1.36%
+  Retorno 20d mediana:  -2.53%
+  Win Rate (20d > 0):    37.2%
+  MDD P10 estimate:      -10.88%
+
+  ── Desglose por ticker (Top 5 y Bottom 5) ──
+
+    Ticker │  Signals │    TP │    FP │  Precision │   Recall │  Turns
+  ---------------------------------------------------------------------------
+        HD │        1 │     1 │     0 │     100.0% │     0.1% │    837
+       MCD │        1 │     1 │     0 │     100.0% │     0.2% │    514
+       WMT │        9 │     6 │     3 │      66.7% │     1.0% │    598
+       XOM │        3 │     2 │     1 │      66.7% │     0.2% │    839
+       QQQ │        2 │     1 │     1 │      50.0% │     0.1% │   1479
+  ...........................................................................
+       MRK │        8 │     0 │     8 │       0.0% │     0.0% │    782
+       PEP │        0 │     0 │     0 │       0.0% │     0.0% │    505
+        PG │       10 │     0 │    10 │       0.0% │     0.0% │    488
+
+  ── Señales por régimen de tendencia (tide_slope) ──
+  TIDE_UP      │ Signals:    108 │ TP:    33 │ Prec:  30.6% │ Recall:   0.3%
+  TIDE_DOWN    │ Signals:     88 │ TP:    34 │ Prec:  38.6% │ Recall:   0.6%
+
+  ── Señales por las 8 firmas de pendiente RC (Tide/Curr/Wave ±) ──
+
+                Firma RC │     Obs │  Signals │    TP │  Precision │   Recall │  Turns
+  -------------------------------------------------------------------------------------
+          T(-) C(+) W(+) │   9,115 │       24 │    13 │      54.2% │     0.6% │   2047
+          T(+) C(-) W(-) │  13,512 │       10 │     5 │      50.0% │     0.3% │   1831  ★
+          T(-) C(-) W(+) │   5,010 │        4 │     2 │      50.0% │     0.2% │   1299
+          T(+) C(+) W(-) │  13,383 │       41 │    14 │      34.1% │     1.0% │   1340
+          T(-) C(-) W(-) │   8,347 │       46 │    15 │      32.6% │     0.8% │   1967
+          T(-) C(+) W(-) │   3,633 │       14 │     4 │      28.6% │     0.8% │    523
+          T(+) C(+) W(+) │  32,258 │       52 │    13 │      25.0% │     0.2% │   5718
+          T(+) C(-) W(+) │   8,518 │        5 │     1 │      20.0% │     0.1% │   1304
+
+  ── Señales por zona de riesgo VWAP (vwap_sigma_tide) ──
+
+                  Risk Zone │  Signals │    TP │  Precision │   Recall │  Turns
+  --------------------------------------------------------------------------------
+            CRISIS (< -1.5) │       32 │    10 │      31.2% │     0.7% │   1457
+         DANGER (-1.5,-0.5) │       20 │     8 │      40.0% │     0.3% │   2661
+         NEUTRAL (-0.5,0.5) │       40 │    10 │      25.0% │     0.4% │   2650
+               SAFE (> 0.5) │      104 │    39 │      37.5% │     0.4% │   9261
+
+  ── COMBINED: Tide Regime × VWAP Zone (Sweet Spot Analysis) ──
+
+                           Combined Regime │  Signals │    TP │  Precision │   Recall
+  -------------------------------------------------------------------------------------
+            ★ SWEET SPOT: T(+) & VWAP<tide │       12 │     3 │      25.0% │     0.2%
+                SAFE BULL: T(+) & VWAP>0.5 │       89 │    29 │      32.6% │     0.4%
+      NEUTRAL BULL: T(+) & VWAP∈[-0.5,0.5] │       15 │     1 │       6.7% │     0.1%
+             DANGER BEAR: T(-) & VWAP<-0.5 │       48 │    15 │      31.2% │     0.5%
+             CRISIS BEAR: T(-) & VWAP<-1.5 │       31 │     9 │      29.0% │     0.7%
+
+==============================================================================================================
+  HEAD: zz_top_detector (detecta TOPs, side=SHORT)
+==============================================================================================================
+  Features: 12 | Threshold: 0.800 | DSR: 10.198
+  Features: ['atr_ratio', 'sigma_high_current', 'overnight_gap', 'vol_return_interaction', 'wave_accel', 'rsi_value', 'vol_adj_delta', 'compr_at_extreme', 'vol_up_down_ratio', 'adi_tide', 'tide_slope_sq', 'volume_trend']
+  Config: Are we near a zigzag 5% top? (within 3 bars of MAX)
+  Total signals fired: 3,164 / 93,776 (3.4%)
+
+  ── PRECISIÓN vs Zigzag TOPs ──
+
+  ┌─────────────────────────────────────────────────┐
+  │ MÉTRICAS DE CLASIFICACIÓN vs Zigzag (±3 bars)   │
+  ├─────────────────────────────────────────────────┤
+  │ Señales disparadas (Total):          3,164      │
+  │ True Positives (aciertos):            2,549      │
+  │ False Positives (falsas):               615      │
+  │ False Negatives (no capturó):        13,480      │
+  │ Turns totales en el zigzag:          16,029      │
+  ├─────────────────────────────────────────────────┤
+  │ PRECISION (cuando dispara, acierta):    80.6%   │
+  │ RECALL (de todos los turns, capturó):    15.9%   │
+  │ F1 Score:                                0.266   │
+  └─────────────────────────────────────────────────┘
+
+  ── Distancia temporal al breakpoint cuando dispara ──
+  Media: 1.5 bars | Mediana: 1 bars
+  En t=0 (exacto):      822 (32.2%)
+  En t±1 (1 bar):      1559 (61.2%)
+  En t±2 (2 bars):     1932 (75.8%)
+  En t±3 (3 bars):     2215 (86.9%)
+
+  ── Magnitud del retorno cuando ACIERTA (True Positives) ──
+
+  ── Magnitud cuando FALLA (False Positives — señal sin turn) ──
+  N con forward 20d: 614 (de 615 FP)
+  Retorno 20d medio:    +4.95%
+  Retorno 20d mediana:  +4.14%
+  Win Rate (20d > 0):    67.3%
+  MDD P10 estimate:      -8.53%
+
+  ── Desglose por ticker (Top 5 y Bottom 5) ──
+
+    Ticker │  Signals │    TP │    FP │  Precision │   Recall │  Turns
+  ---------------------------------------------------------------------------
+       SPY │     1040 │   999 │    41 │      96.1% │    53.0% │   1885
+       JPM │      276 │   232 │    44 │      84.1% │    21.1% │   1100
+       PEP │       36 │    30 │     6 │      83.3% │     5.9% │    505
+       QQQ │      273 │   213 │    60 │      78.0% │    14.4% │   1479
+      MSFT │       78 │    60 │    18 │      76.9% │     6.9% │    869
+  ...........................................................................
+       MRK │       65 │    41 │    24 │      63.1% │     5.2% │    782
+        PG │       37 │    21 │    16 │      56.8% │     4.3% │    488
+       WMT │       40 │    22 │    18 │      55.0% │     3.7% │    598
+
+  ── Señales por régimen de tendencia (tide_slope) ──
+  TIDE_UP      │ Signals:   1408 │ TP:  1105 │ Prec:  78.5% │ Recall:  10.8%
+  TIDE_DOWN    │ Signals:   1756 │ TP:  1444 │ Prec:  82.2% │ Recall:  24.7%
+
+  ── Señales por las 8 firmas de pendiente RC (Tide/Curr/Wave ±) ──
+
+                Firma RC │     Obs │  Signals │    TP │  Precision │   Recall │  Turns
+  -------------------------------------------------------------------------------------
+          T(-) C(+) W(-) │   3,633 │      152 │   139 │      91.4% │    26.6% │    523
+          T(+) C(+) W(-) │  13,383 │      247 │   223 │      90.3% │    16.6% │   1340
+          T(-) C(+) W(+) │   9,115 │      322 │   275 │      85.4% │    13.4% │   2047
+          T(-) C(-) W(-) │   8,347 │      823 │   666 │      80.9% │    33.9% │   1967
+          T(+) C(-) W(+) │   8,518 │      232 │   185 │      79.7% │    14.2% │   1304
+          T(-) C(-) W(+) │   5,010 │      459 │   364 │      79.3% │    28.0% │   1299
+          T(+) C(+) W(+) │  32,258 │      446 │   349 │      78.3% │     6.1% │   5718
+          T(+) C(-) W(-) │  13,512 │      483 │   348 │      72.0% │    19.0% │   1831  ★
+
+  ── Señales por zona de riesgo VWAP (vwap_sigma_tide) ──
+
+                  Risk Zone │  Signals │    TP │  Precision │   Recall │  Turns
+  --------------------------------------------------------------------------------
+            CRISIS (< -1.5) │      743 │   616 │      82.9% │    42.3% │   1457
+         DANGER (-1.5,-0.5) │      844 │   638 │      75.6% │    24.0% │   2661
+         NEUTRAL (-0.5,0.5) │      667 │   537 │      80.5% │    20.3% │   2650
+               SAFE (> 0.5) │      910 │   758 │      83.3% │     8.2% │   9261
+
+  ── COMBINED: Tide Regime × VWAP Zone (Sweet Spot Analysis) ──
+
+                           Combined Regime │  Signals │    TP │  Precision │   Recall
+  -------------------------------------------------------------------------------------
+            ★ SWEET SPOT: T(+) & VWAP<tide │      475 │   341 │      71.8% │    27.4%
+                SAFE BULL: T(+) & VWAP>0.5 │      769 │   634 │      82.4% │     7.7%
+      NEUTRAL BULL: T(+) & VWAP∈[-0.5,0.5] │      302 │   230 │      76.2% │    20.0%
+             DANGER BEAR: T(-) & VWAP<-0.5 │     1250 │  1013 │      81.0% │    30.4%
+             CRISIS BEAR: T(-) & VWAP<-1.5 │      601 │   509 │      84.7% │    40.7%
+
+==============================================================================================================
+  HEAD: swing_exit (detecta TOPs, side=LONG)
+==============================================================================================================
+  Features: 11 | Threshold: 0.800 | DSR: 13.865
+  Features: ['atr_ratio', 'vwap_spread_tide_wave', 'rsi_value', 'overnight_gap', 'complacency_index', 'compression_ratio', 'compr_at_extreme', 'rsi_conviction', 'slope_ratio_tw', 'd_fear_level', 'current_accel']
+  Config: Is this the top of a bullish leg? (Triple Barrier 10d)
+  Total signals fired: 1,645 / 93,776 (1.8%)
+
+  ── PRECISIÓN vs Zigzag TOPs ──
+
+  ┌─────────────────────────────────────────────────┐
+  │ MÉTRICAS DE CLASIFICACIÓN vs Zigzag (±3 bars)   │
+  ├─────────────────────────────────────────────────┤
+  │ Señales disparadas (Total):          1,645      │
+  │ True Positives (aciertos):              955      │
+  │ False Positives (falsas):               690      │
+  │ False Negatives (no capturó):        15,074      │
+  │ Turns totales en el zigzag:          16,029      │
+  ├─────────────────────────────────────────────────┤
+  │ PRECISION (cuando dispara, acierta):    58.1%   │
+  │ RECALL (de todos los turns, capturó):     6.0%   │
+  │ F1 Score:                                0.108   │
+  └─────────────────────────────────────────────────┘
+
+  ── Distancia temporal al breakpoint cuando dispara ──
+  Media: 1.3 bars | Mediana: 1 bars
+  En t=0 (exacto):      421 (44.1%)
+  En t±1 (1 bar):       626 (65.5%)
+  En t±2 (2 bars):      740 (77.5%)
+  En t±3 (3 bars):      823 (86.2%)
+
+  ── Magnitud del retorno cuando ACIERTA (True Positives) ──
+
+  ── Magnitud cuando FALLA (False Positives — señal sin turn) ──
+  N con forward 20d: 690 (de 690 FP)
+  Retorno 20d medio:    +2.46%
+  Retorno 20d mediana:  +1.71%
+  Win Rate (20d > 0):    69.4%
+  MDD P10 estimate:      -5.52%
+
+  ── Desglose por ticker (Top 5 y Bottom 5) ──
+
+    Ticker │  Signals │    TP │    FP │  Precision │   Recall │  Turns
+  ---------------------------------------------------------------------------
+       MCD │       14 │    10 │     4 │      71.4% │     1.9% │    514
+       JPM │       78 │    53 │    25 │      67.9% │     4.8% │   1100
+       JNJ │        6 │     4 │     2 │      66.7% │     0.8% │    476
+       SPY │      809 │   535 │   274 │      66.1% │    28.4% │   1885
+      COST │       13 │     8 │     5 │      61.5% │     1.2% │    646
+  ...........................................................................
+       QQQ │      269 │   113 │   156 │      42.0% │     7.6% │   1479
+      MSFT │       34 │    14 │    20 │      41.2% │     1.6% │    869
+        PG │       10 │     4 │     6 │      40.0% │     0.8% │    488
+
+  ── Señales por régimen de tendencia (tide_slope) ──
+  TIDE_UP      │ Signals:   1046 │ TP:   509 │ Prec:  48.7% │ Recall:   5.0%
+  TIDE_DOWN    │ Signals:    599 │ TP:   446 │ Prec:  74.5% │ Recall:   7.6%
+
+  ── Señales por las 8 firmas de pendiente RC (Tide/Curr/Wave ±) ──
+
+                Firma RC │     Obs │  Signals │    TP │  Precision │   Recall │  Turns
+  -------------------------------------------------------------------------------------
+          T(-) C(-) W(+) │   5,010 │      156 │   129 │      82.7% │     9.9% │   1299
+          T(-) C(+) W(+) │   9,115 │      111 │    83 │      74.8% │     4.1% │   2047
+          T(-) C(-) W(-) │   8,347 │      274 │   195 │      71.2% │     9.9% │   1967
+          T(-) C(+) W(-) │   3,633 │       58 │    39 │      67.2% │     7.5% │    523
+          T(+) C(-) W(+) │   8,518 │      185 │   109 │      58.9% │     8.4% │   1304
+          T(+) C(+) W(+) │  32,258 │      442 │   209 │      47.3% │     3.7% │   5718
+          T(+) C(-) W(-) │  13,512 │      287 │   134 │      46.7% │     7.3% │   1831  ★
+          T(+) C(+) W(-) │  13,383 │      132 │    57 │      43.2% │     4.3% │   1340
+
+  ── Señales por zona de riesgo VWAP (vwap_sigma_tide) ──
+
+                  Risk Zone │  Signals │    TP │  Precision │   Recall │  Turns
+  --------------------------------------------------------------------------------
+            CRISIS (< -1.5) │      236 │   159 │      67.4% │    10.9% │   1457
+         DANGER (-1.5,-0.5) │      260 │   177 │      68.1% │     6.7% │   2661
+         NEUTRAL (-0.5,0.5) │      316 │   190 │      60.1% │     7.2% │   2650
+               SAFE (> 0.5) │      833 │   429 │      51.5% │     4.6% │   9261
+
+  ── COMBINED: Tide Regime × VWAP Zone (Sweet Spot Analysis) ──
+
+                           Combined Regime │  Signals │    TP │  Precision │   Recall
+  -------------------------------------------------------------------------------------
+            ★ SWEET SPOT: T(+) & VWAP<tide │      185 │    92 │      49.7% │     7.4%
+                SAFE BULL: T(+) & VWAP>0.5 │      740 │   365 │      49.3% │     4.4%
+      NEUTRAL BULL: T(+) & VWAP∈[-0.5,0.5] │      203 │    92 │      45.3% │     8.0%
+             DANGER BEAR: T(-) & VWAP<-0.5 │      393 │   284 │      72.3% │     8.5%
+             CRISIS BEAR: T(-) & VWAP<-1.5 │      202 │   140 │      69.3% │    11.2%
+
+==============================================================================================================
+  HEAD: short_cover (detecta BOTTOMs, side=SHORT)
+==============================================================================================================
+  Features: 7 | Threshold: 0.800 | DSR: 5.132
+  Features: ['vwap_sigma_wave', 'div_high_close_wave', 'vol_price_regime', 'sigma_wave', 'slope_diff_tc', 'vwap_sigma_tide', 'd2_current_slope']
+  Config: Is this the bottom of a bearish leg? (Triple Barrier inverted 10d)
+  Total signals fired: 71 / 93,776 (0.1%)
+
+  ── PRECISIÓN vs Zigzag BOTTOMs ──
+
+  ┌─────────────────────────────────────────────────┐
+  │ MÉTRICAS DE CLASIFICACIÓN vs Zigzag (±3 bars)   │
+  ├─────────────────────────────────────────────────┤
+  │ Señales disparadas (Total):             71      │
+  │ True Positives (aciertos):               17      │
+  │ False Positives (falsas):                54      │
+  │ False Negatives (no capturó):        16,074      │
+  │ Turns totales en el zigzag:          16,091      │
+  ├─────────────────────────────────────────────────┤
+  │ PRECISION (cuando dispara, acierta):    23.9%   │
+  │ RECALL (de todos los turns, capturó):     0.1%   │
+  │ F1 Score:                                0.002   │
+  └─────────────────────────────────────────────────┘
+
+  ── Distancia temporal al breakpoint cuando dispara ──
+  Media: 1.9 bars | Mediana: 1 bars
+  En t=0 (exacto):        4 (23.5%)
+  En t±1 (1 bar):         9 (52.9%)
+  En t±2 (2 bars):       11 (64.7%)
+  En t±3 (3 bars):       14 (82.4%)
+
+  ── Magnitud del retorno cuando ACIERTA (True Positives) ──
+  N con retorno: 17
+  Retorno medio del tramo:    +18.93%
+  Retorno mediana:             +14.56%
+  P25=+7.30%  P75=+29.10%
+  Win Rate (swing > 0):        100.0%
+  Duración media del tramo:    19 días
+
+  ── Magnitud cuando FALLA (False Positives — señal sin turn) ──
+  N con forward 20d: 54 (de 54 FP)
+  Retorno 20d medio:    +0.29%
+  Retorno 20d mediana:  +0.26%
+  Win Rate (20d > 0):    57.4%
+  MDD P10 estimate:      -11.97%
+
+  ── Desglose por ticker (Top 5 y Bottom 5) ──
+
+    Ticker │  Signals │    TP │    FP │  Precision │   Recall │  Turns
+  ---------------------------------------------------------------------------
+       JPM │        6 │     4 │     2 │      66.7% │     0.4% │   1099
+       SPY │        3 │     2 │     1 │      66.7% │     0.1% │   1900
+       IBM │        2 │     1 │     1 │      50.0% │     0.1% │    782
+       QQQ │        4 │     2 │     2 │      50.0% │     0.1% │   1467
+      AMZN │        3 │     1 │     2 │      33.3% │     0.1% │   1142
+  ...........................................................................
+       PEP │        0 │     0 │     0 │       0.0% │     0.0% │    504
+        PG │        0 │     0 │     0 │       0.0% │     0.0% │    494
+       WMT │        0 │     0 │     0 │       0.0% │     0.0% │    607
+
+  ── Señales por régimen de tendencia (tide_slope) ──
+  TIDE_UP      │ Signals:     34 │ TP:     5 │ Prec:  14.7% │ Recall:   0.1%
+  TIDE_DOWN    │ Signals:     37 │ TP:    12 │ Prec:  32.4% │ Recall:   0.2%
+
+  ── Señales por las 8 firmas de pendiente RC (Tide/Curr/Wave ±) ──
+
+                Firma RC │     Obs │  Signals │    TP │  Precision │   Recall │  Turns
+  -------------------------------------------------------------------------------------
+          T(+) C(+) W(-) │  13,383 │        1 │     1 │     100.0% │     0.0% │   2791
+          T(+) C(-) W(-) │  13,512 │        2 │     2 │     100.0% │     0.0% │   4033  ★
+          T(-) C(-) W(-) │   8,347 │        7 │     6 │      85.7% │     0.2% │   3209
+          T(-) C(+) W(+) │   9,115 │       23 │     5 │      21.7% │     0.4% │   1137
+          T(-) C(-) W(+) │   5,010 │        7 │     1 │      14.3% │     0.1% │    803
+          T(+) C(+) W(+) │  32,258 │       31 │     2 │       6.5% │     0.1% │   2431
+          T(+) C(-) W(+) │   8,518 │        0 │     0 │       0.0% │     0.0% │    743
+          T(-) C(+) W(-) │   3,633 │        0 │     0 │       0.0% │     0.0% │    944
+
+  ── Señales por zona de riesgo VWAP (vwap_sigma_tide) ──
+
+                  Risk Zone │  Signals │    TP │  Precision │   Recall │  Turns
+  --------------------------------------------------------------------------------
+            CRISIS (< -1.5) │        7 │     7 │     100.0% │     0.2% │   2913
+         DANGER (-1.5,-0.5) │       18 │     5 │      27.8% │     0.1% │   3737
+         NEUTRAL (-0.5,0.5) │       11 │     3 │      27.3% │     0.1% │   3587
+               SAFE (> 0.5) │       35 │     2 │       5.7% │     0.0% │   5854
+
+  ── COMBINED: Tide Regime × VWAP Zone (Sweet Spot Analysis) ──
+
+                           Combined Regime │  Signals │    TP │  Precision │   Recall
+  -------------------------------------------------------------------------------------
+            ★ SWEET SPOT: T(+) & VWAP<tide │        3 │     2 │      66.7% │     0.1%
+                SAFE BULL: T(+) & VWAP>0.5 │       26 │     1 │       3.8% │     0.0%
+      NEUTRAL BULL: T(+) & VWAP∈[-0.5,0.5] │        6 │     2 │      33.3% │     0.1%
+             DANGER BEAR: T(-) & VWAP<-0.5 │       23 │    10 │      43.5% │     0.2%
+             CRISIS BEAR: T(-) & VWAP<-1.5 │        5 │     5 │     100.0% │     0.2%
+
+==============================================================================================================
+  SÍNTESIS — RESPUESTAS AL ARCHITECT
+==============================================================================================================
+
+  Las métricas de arriba responden CADA pregunta planteada:
+
+  1. PRECISIÓN respecto al zigzag → Precision column
+     (cuando el ML head dispara, ¿cuántas veces hay un turn real dentro de ±3 bars?)
+
+  2. ASERTIVIDAD → F1 Score = balance precision/recall
+
+  3. MAGNITUD del retorno del tramo → "swing_return" de los True Positives
+     (el retorno real desde el bottom hasta el next top del zigzag)
+
+  4. TIPO de entradas donde funciona → Desglose por ticker y por régimen
+
+  5. CUÁNTAS NO CAPTURÓ → False Negatives (turns que existieron sin señal)
+     Recall = % de turns capturados
+
+  6. CUANDO FALLA → Forward 20d return de los False Positives
+     (qué pasa si entramos en una señal falsa)
+
+  7. ESTADÍSTICA completa → Precision, Recall, F1, WR, MDD, desglose per-ticker
+
+
+==============================================================================================================
+  FORENSE COMPLETO
+==============================================================================================================

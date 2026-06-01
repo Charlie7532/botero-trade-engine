@@ -1,0 +1,212 @@
+
+==============================================================================================================
+  FEATURE CURATION — Prado Protocol: Orthogonal Selection with Prior Validation
+==============================================================================================================
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+[00:58:06] [INFO]   ATR features computed
+[00:58:06] [INFO]   Overnight gap features computed
+[00:58:06] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[00:58:07] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[00:58:07] [INFO]   Candle structure features computed (23 features)
+[00:58:08] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[00:58:08] [INFO]   Generated 83 derived features
+
+  Validated features available: 36 / 36
+
+==============================================================================================================
+  STEP 1: Correlation Matrix of Validated Features
+==============================================================================================================
+
+  High correlations (|r| > 0.7) among 36 validated features:
+  Feature A                      Feature B                             r
+  ------------------------------------------------------------------------
+  geo_state_norm                 total_displacement             +0.981
+  adi_current                    tension_current                +0.979
+  sigma_tide                     rsi_sigma_interact             +0.966
+  wave_slope                     conj_wave_tide                 +0.960
+  vwap_spread_tide_current       vwap_spread_tide_wave          +0.954
+  tide_slope                     vwap_spread_tide_current       -0.917
+  vwap_sigma_current             rsi_value                      +0.901
+  tsi_current                    adi_current                    -0.896
+  wave_slope                     tsi_wave                       +0.885
+  current_slope                  vwap_spread_current_wave       -0.881
+  tsi_current                    tension_current                -0.877
+  current_slope                  tsi_current                    +0.866
+  tsi_wave                       conj_wave_tide                 +0.855
+  tide_slope                     vwap_spread_tide_wave          -0.850
+  geo_phase_angle                tsi_wave                       +0.850
+  vwap_sigma_wave                rsi_value                      +0.845
+  tsi_current                    vwap_spread_current_wave       -0.831
+  conj_wave_current              conj_wave_tide                 +0.822
+  volume_at_extreme              sigma_squared                  +0.813
+  wave_slope                     conj_wave_current              +0.812
+  vwap_sigma_current             sigma_tide                     +0.794
+  geo_exit_align                 fear_level                     -0.788
+  current_slope                  tension_current                -0.765
+  vwap_sigma_current             vwap_sigma_wave                +0.764
+  vwap_sigma_tide                geo_exit_align                 +0.761
+  geo_exit_align                 tsi_wave                       +0.760
+  rsi_value                      sigma_tide                     +0.760
+  current_slope                  adi_current                    -0.755
+  vwap_sigma_current             geo_exit_align                 +0.752
+  vwap_sigma_current             rsi_sigma_interact             +0.752
+  vwap_sigma_tide                vwap_spread_tide_wave          -0.746
+  rsi_value                      rsi_sigma_interact             +0.745
+  geo_exit_align                 geo_phase_angle                +0.743
+  vwap_sigma_wave                sigma_current                  +0.735
+  tsi_wave                       fear_level                     -0.728
+  vwap_spread_current_wave       tension_current                +0.723
+  wave_slope                     geo_phase_angle                +0.720
+  geo_phase_angle                fear_level                     -0.717
+  adi_current                    vwap_spread_current_wave       +0.713
+  vwap_sigma_current             vwap_sigma_tide                +0.707
+  tsi_wave                       conj_wave_current              +0.702
+  rsi_value                      sigma_current                  +0.701
+
+  Total high-correlation pairs: 42
+
+==============================================================================================================
+  STEP 2: Hierarchical Clustering (distance = 1 - |correlation|)
+==============================================================================================================
+
+  Number of clusters (at |r| > 0.7 threshold): 20
+
+==============================================================================================================
+  STEP 3: Cluster Representatives — Best Feature per Cluster
+==============================================================================================================
+
+  Cluster 1 (3 members):
+    ★ SELECTED: vwap_spread_tide_wave          (max_d=0.575, role=Regime signature)
+       alias:    vwap_spread_tide_current       (max_d=0.507, r with best=+0.954)
+    ⚠️ alias:    tide_slope                     (max_d=0.000, r with best=-0.850) ← PARTIAL OVERLAP (r=-0.850), may carry unique info
+
+  Cluster 2 (5 members):
+    ★ SELECTED: tsi_current                    (max_d=0.871, role=Current momentum)
+       alias:    adi_current                    (max_d=0.854, r with best=-0.896)
+       alias:    tension_current                (max_d=0.522, r with best=-0.877)
+    ⚠️ alias:    vwap_spread_current_wave       (max_d=0.479, r with best=-0.831) ← PARTIAL OVERLAP (r=-0.831), may carry unique info
+       alias:    current_slope                  (max_d=0.000, r with best=+0.866)
+
+  Cluster 4 (2 members):
+    ★ SELECTED: sigma_tide                     (max_d=0.808, role=Long-term structural support)
+       alias:    rsi_sigma_interact             (max_d=0.461, r with best=+0.966)
+
+  Cluster 5 (3 members):
+    ★ SELECTED: vwap_sigma_current             (max_d=1.062, role=HL/LL discriminator #1)
+       alias:    rsi_value                      (max_d=0.867, r with best=+0.901)
+    ⚠️ alias:    vwap_sigma_wave                (max_d=0.739, r with best=+0.764) ← PARTIAL OVERLAP (r=+0.764), may carry unique info
+
+  Cluster 6 (3 members):
+    ★ SELECTED: geo_exit_align                 (max_d=0.927, role=Multi-TF geometric alignment)
+    ⚠️ alias:    fear_level                     (max_d=0.739, r with best=-0.788) ← PARTIAL OVERLAP (r=-0.788), may carry unique info
+    ⚠️ alias:    geo_phase_angle                (max_d=0.000, r with best=+0.743) ← PARTIAL OVERLAP (r=+0.743), may carry unique info
+
+  Cluster 9 (4 members):
+    ★ SELECTED: tsi_wave                       (max_d=0.814, role=Wave momentum)
+       alias:    conj_wave_tide                 (max_d=0.300, r with best=+0.855)
+       alias:    wave_slope                     (max_d=0.000, r with best=+0.885)
+    ⚠️ alias:    conj_wave_current              (max_d=0.000, r with best=+0.702) ← PARTIAL OVERLAP (r=+0.702), may carry unique info
+
+  Cluster 16 (2 members):
+    ★ SELECTED: total_displacement             (max_d=0.371, role=Total channel displacement)
+       alias:    geo_state_norm                 (max_d=0.329, r with best=+0.981)
+
+  Cluster 17 (2 members):
+    ★ SELECTED: sigma_squared                  (max_d=0.363, role=Price dispersion (reversal key))
+    ⚠️ alias:    volume_at_extreme              (max_d=0.338, r with best=+0.813) ← PARTIAL OVERLAP (r=+0.813), may carry unique info
+
+==============================================================================================================
+  STEP 4: Contextual Uniqueness Check
+==============================================================================================================
+  Features eliminated as aliases but with r < 0.85 to their representative:
+  (These MAY carry unique contextual information)
+    tide_slope                     (rep=vwap_spread_tide_wave, r=-0.850, max_d=0.000, role=TIDE direction (T+ vs T-))
+    vwap_spread_current_wave       (rep=tsi_current, r=-0.831, max_d=0.479, role=Regime signature)
+      → RESCUED: max_d=0.479 ≥ 0.3 AND r < 0.85
+    vwap_sigma_wave                (rep=vwap_sigma_current, r=+0.764, max_d=0.739, role=Short-term pressure)
+      → RESCUED: max_d=0.739 ≥ 0.3 AND r < 0.85
+    fear_level                     (rep=geo_exit_align, r=-0.788, max_d=0.739, role=Contrarian indicator)
+      → RESCUED: max_d=0.739 ≥ 0.3 AND r < 0.85
+    geo_phase_angle                (rep=geo_exit_align, r=+0.743, max_d=0.000, role=Phase angle (never studied))
+    conj_wave_current              (rep=tsi_wave, r=+0.702, max_d=0.000, role=Wave-Current alignment)
+    volume_at_extreme              (rep=sigma_squared, r=+0.813, max_d=0.338, role=Volume exhaustion (reversal))
+      → RESCUED: max_d=0.338 ≥ 0.3 AND r < 0.85
+
+==============================================================================================================
+  STEP 5: Mandatory Additions (RC Architecture)
+==============================================================================================================
+  + tide_slope                     (max |r| with selected = 0.850)
+  + current_slope                  (max |r| with selected = 0.881)
+  + wave_slope                     (max |r| with selected = 0.885)
+
+==============================================================================================================
+  STEP 6: New Derived Features (from Blind Spots)
+==============================================================================================================
+  + slope_ratio_wt (wave/tide speed ratio, max |r| with selected = 0.010)
+
+==============================================================================================================
+  FINAL CURATED SET
+==============================================================================================================
+
+  Total features: 28
+
+    # Feature                           Max d Role                                          Source
+  ------------------------------------------------------------------------------------------------------------------------
+    1 vwap_spread_tide_wave             0.575 Regime signature                              EGII Breakpoints
+    2 tsi_current                       0.871 Current momentum                              Taxonomy Forensic
+    3 rsi_conviction                    0.809 RSI momentum quality                          EGII Breakpoints
+    4 sigma_tide                        0.808 Long-term structural support                  EGII Breakpoints
+    5 vwap_sigma_current                1.062 HL/LL discriminator #1                        EGII Breakpoints
+    6 geo_exit_align                    0.927 Multi-TF geometric alignment                  Taxonomy Forensic
+    7 vwap_sigma_tide                   0.968 Risk gate (MDD predictor)                     EGII Breakpoints
+    8 below_all_vwaps_int               0.850 All-VWAP breakdown flag                       EGII Breakpoints
+    9 tsi_wave                          0.814 Wave momentum                                 EGII Breakpoints
+   10 current_accel                       TBD Current deceleration                          Ciclo Vida Señal
+   11 sigma_current                     0.328 Current channel position                      Taxonomy Forensic
+   12 wave_accel                          TBD Phase detection (decel = imminent turn)       Ciclo Vida Señal
+   13 slope_decel_wave                    TBD Wave deceleration                             Feature Optimizer
+   14 vol_up_down_ratio                   TBD Wyckoff volume analysis                       Oracle Training
+   15 d_sigma_wave                        TBD Latigazo (mean reversion, USE CAUTION)        Audit Verified
+   16 total_displacement                0.371 Total channel displacement                    Taxonomy Forensic
+   17 sigma_squared                     0.363 Price dispersion (reversal key)               Taxonomy Forensic
+   18 compression_ratio                   TBD Bollinger squeeze                             Multiple sessions
+   19 rsi_divergence_strength             TBD Divergence detector                           Oracle Training
+   20 kalman_velocity                     TBD Kalman-filtered momentum                      Oracle Training
+   21 vwap_spread_current_wave          0.479 Regime signature                              EGII Breakpoints
+   22 vwap_sigma_wave                   0.739 Short-term pressure                           EGII Breakpoints
+   23 fear_level                        0.739 Contrarian indicator                          EGII Breakpoints
+   24 volume_at_extreme                 0.338 Volume exhaustion (reversal)                  Taxonomy Forensic
+   25 tide_slope                          TBD TIDE direction (T+ vs T-)                     RC Forensics
+   26 current_slope                       TBD CURRENT direction                             RC Forensics
+   27 wave_slope                          TBD WAVE direction                                RC Forensics
+   28 slope_ratio_wt                      TBD Derived/New                                   This session
+
+  ⚠️ Remaining high correlations (|r| > 0.7):
+    tsi_wave                       ↔ wave_slope                     r=+0.885
+    vwap_spread_current_wave       ↔ current_slope                  r=-0.881
+    tsi_current                    ↔ current_slope                  r=+0.866
+    vwap_spread_tide_wave          ↔ tide_slope                     r=-0.850
+    tsi_current                    ↔ vwap_spread_current_wave       r=-0.831
+    sigma_squared                  ↔ volume_at_extreme              r=+0.813
+    sigma_tide                     ↔ vwap_sigma_current             r=+0.794
+    geo_exit_align                 ↔ fear_level                     r=-0.788
+    vwap_sigma_current             ↔ vwap_sigma_wave                r=+0.764
+    geo_exit_align                 ↔ vwap_sigma_tide                r=+0.761
+    geo_exit_align                 ↔ tsi_wave                       r=+0.760
+    vwap_sigma_current             ↔ geo_exit_align                 r=+0.752
+    vwap_spread_tide_wave          ↔ vwap_sigma_tide                r=-0.746
+    sigma_current                  ↔ vwap_sigma_wave                r=+0.735
+    tsi_wave                       ↔ fear_level                     r=-0.728
+    vwap_sigma_current             ↔ vwap_sigma_tide                r=+0.707
+
+  ── COMPARISON ──
+  Original Feature Lake:     156 features
+  Prado Ultra-Minimal:         6 features (would lose contextual info)
+  Curated Set (this):        28 features (orthogonal + validated)
+  High correlations:          16 pairs (vs 53 before)

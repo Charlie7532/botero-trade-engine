@@ -1,0 +1,316 @@
+
+==============================================================================================================
+  ARCHETYPE VALIDATION ENGINE — XGBoost + Purged CV + SHAP
+==============================================================================================================
+
+  ── STEP 0: Loading Feature Lake ──
+    Raw observations: 93,776
+    Loaded 17 ticker profiles
+    Delta features computed: 11 columns
+    Phase 1 features computed: 7 columns
+    OHLCV cache: 17 tickers
+[01:59:37] [INFO]   ATR features computed
+[01:59:37] [INFO]   Overnight gap features computed
+[01:59:37] [INFO]   Volume features computed (Wyckoff dynamics: 10 features)
+[01:59:38] [INFO]   Vol-Price features computed (Forencia-validated: 6 features)
+[01:59:38] [INFO]   Candle structure features computed (23 features)
+[01:59:39] [INFO]   VWAP structural features computed (Forencia-validated: 6 features)
+[01:59:39] [INFO]   Generated 83 derived features
+
+  ── Loading & classifying zigzag points ──
+    Loaded: 4,933 zigzag points
+    HL           N=754
+    LL           N=1107
+    LL_TO_HL     N=588
+    HH           N=1340
+    LH           N=507
+    HH_TO_LH     N=603
+
+==============================================================================================================
+  PHASE 1: A/B Feature Set Validation
+==============================================================================================================
+
+  Feature sets:
+    SET A (Original):  72 features
+    SET B (Tier 1):    15 features
+    SET C (Tier 2):    22 features
+    Clean observations: 93,776
+
+  ── SET A_original: BOTTOM DETECTOR (72f) ──
+
+  ── HEAD: bottom_A_original (N=93,776, pos_rate=12.1%, features=72) ──
+    Fold 0: N_test=15,629 WR(P≥.65)=0.514 spread=0.478
+    Fold 1: N_test=15,629 WR(P≥.65)=0.377 spread=0.359
+    Fold 2: N_test=15,629 WR(P≥.65)=0.364 spread=0.350
+    Fold 3: N_test=15,629 WR(P≥.65)=0.467 spread=0.359
+    Fold 4: N_test=15,628 WR(P≥.65)=0.331 spread=0.310
+    ★ DSR=12.575 ✅ | Avg WR(P≥.65)=0.411
+    Top 10 features:
+      above_all_vwaps_int            0.1270 ████████████
+      rsi_value                      0.1195 ███████████
+      vwap_sigma_current             0.0660 ██████
+      vwap_sigma_wave                0.0426 ████
+      current_accel                  0.0348 ███
+      reg_value_tide                 0.0287 ██
+      d_wave_accel                   0.0274 ██
+      vwap_wave                      0.0222 ██
+      reg_value_wave                 0.0188 █
+      geo_state_norm                 0.0184 █
+
+  ── SET A_original: TOP DETECTOR (72f) ──
+
+  ── HEAD: top_A_original (N=93,776, pos_rate=12.1%, features=72) ──
+    Fold 0: N_test=15,629 WR(P≥.65)=0.359 spread=0.292
+    Fold 1: N_test=15,629 WR(P≥.65)=0.288 spread=0.251
+    Fold 2: N_test=15,629 WR(P≥.65)=0.256 spread=0.226
+    Fold 3: N_test=15,629 WR(P≥.65)=0.458 spread=0.362
+    Fold 4: N_test=15,628 WR(P≥.65)=0.204 spread=0.163
+    ★ DSR=11.104 ✅ | Avg WR(P≥.65)=0.313
+    Top 10 features:
+      residual_std_wave              0.0513 █████
+      sigma_current                  0.0453 ████
+      vwap_sigma_wave                0.0349 ███
+      slope_decel_current            0.0332 ███
+      current_slope                  0.0331 ███
+      tsi_wave                       0.0306 ███
+      reg_value_wave                 0.0297 ██
+      vwap_spread_tide_wave          0.0285 ██
+      rsi_value                      0.0281 ██
+      wave_slope                     0.0271 ██
+
+  ── SET B_tier1: BOTTOM DETECTOR (15f) ──
+
+  ── HEAD: bottom_B_tier1 (N=93,776, pos_rate=12.1%, features=15) ──
+    Fold 0: N_test=15,629 WR(P≥.65)=0.465 spread=0.428
+    Fold 1: N_test=15,629 WR(P≥.65)=0.341 spread=0.324
+    Fold 2: N_test=15,629 WR(P≥.65)=0.344 spread=0.330
+    Fold 3: N_test=15,629 WR(P≥.65)=0.454 spread=0.356
+    Fold 4: N_test=15,628 WR(P≥.65)=0.353 spread=0.325
+    ★ DSR=16.626 ✅ | Avg WR(P≥.65)=0.392
+    Top 10 features:
+      vwap_sigma_current             0.2783 ███████████████████████████
+      vwap_sigma_wave                0.1934 ███████████████████
+      wave_accel                     0.0878 ████████
+      wave_slope                     0.0768 ███████
+      current_slope                  0.0656 ██████
+      vwap_spread_tide_wave          0.0571 █████
+      vwap_sigma_tide                0.0451 ████
+      rsi_conviction                 0.0420 ████
+      tide_slope                     0.0363 ███
+      total_displacement             0.0328 ███
+
+  ── SET B_tier1: TOP DETECTOR (15f) ──
+
+  ── HEAD: top_B_tier1 (N=93,776, pos_rate=12.1%, features=15) ──
+    Fold 0: N_test=15,629 WR(P≥.65)=0.361 spread=0.282
+    Fold 1: N_test=15,629 WR(P≥.65)=0.207 spread=0.169
+    Fold 2: N_test=15,629 WR(P≥.65)=0.188 spread=0.149
+    Fold 3: N_test=15,629 WR(P≥.65)=0.370 spread=0.230
+    Fold 4: N_test=15,628 WR(P≥.65)=0.270 spread=0.214
+    ★ DSR=17.560 ✅ | Avg WR(P≥.65)=0.279
+    Top 10 features:
+      wave_accel                     0.1372 █████████████
+      vwap_sigma_wave                0.1302 █████████████
+      vwap_spread_tide_wave          0.1052 ██████████
+      current_slope                  0.0916 █████████
+      wave_slope                     0.0810 ████████
+      tide_slope                     0.0771 ███████
+      tsi_wave                       0.0685 ██████
+      vwap_sigma_current             0.0672 ██████
+      rsi_conviction                 0.0460 ████
+      total_displacement             0.0434 ████
+
+  ── SET C_tier2: BOTTOM DETECTOR (22f) ──
+
+  ── HEAD: bottom_C_tier2 (N=93,776, pos_rate=12.1%, features=22) ──
+    Fold 0: N_test=15,629 WR(P≥.65)=0.474 spread=0.438
+    Fold 1: N_test=15,629 WR(P≥.65)=0.356 spread=0.340
+    Fold 2: N_test=15,629 WR(P≥.65)=0.325 spread=0.311
+    Fold 3: N_test=15,629 WR(P≥.65)=0.469 spread=0.385
+    Fold 4: N_test=15,628 WR(P≥.65)=0.337 spread=0.312
+    ★ DSR=19.629 ✅ | Avg WR(P≥.65)=0.392
+    Top 10 features:
+      below_all_vwaps_int            0.1980 ███████████████████
+      vwap_sigma_current             0.1677 ████████████████
+      vwap_sigma_wave                0.1342 █████████████
+      wave_accel                     0.0561 █████
+      wave_slope                     0.0525 █████
+      current_accel                  0.0493 ████
+      compression_ratio              0.0415 ████
+      vwap_sigma_tide                0.0409 ████
+      current_slope                  0.0350 ███
+      vwap_spread_tide_wave          0.0348 ███
+
+  ── SET C_tier2: TOP DETECTOR (22f) ──
+
+  ── HEAD: top_C_tier2 (N=93,776, pos_rate=12.1%, features=22) ──
+    Fold 0: N_test=15,629 WR(P≥.65)=0.350 spread=0.275
+    Fold 1: N_test=15,629 WR(P≥.65)=0.197 spread=0.158
+    Fold 2: N_test=15,629 WR(P≥.65)=0.167 spread=0.131
+    Fold 3: N_test=15,629 WR(P≥.65)=0.343 spread=0.232
+    Fold 4: N_test=15,628 WR(P≥.65)=0.287 spread=0.236
+    ★ DSR=12.589 ✅ | Avg WR(P≥.65)=0.269
+    Top 10 features:
+      vwap_sigma_wave                0.1002 ██████████
+      compression_ratio              0.0883 ████████
+      wave_accel                     0.0874 ████████
+      vwap_spread_tide_wave          0.0822 ████████
+      wave_slope                     0.0750 ███████
+      current_slope                  0.0677 ██████
+      current_accel                  0.0557 █████
+      tsi_wave                       0.0519 █████
+      vwap_sigma_current             0.0483 ████
+      tide_slope                     0.0476 ████
+
+==============================================================================================================
+  PHASE 1 RESULTS: A/B Comparison
+==============================================================================================================
+
+  Set             Head       Features      DSR  WR(P≥.65)   Status
+  -----------------------------------------------------------------
+  A_original      bottom           72  12.575     0.411        ✅
+  A_original      top              72  11.104     0.313        ✅
+  B_tier1         bottom           15  16.626     0.392        ✅
+  B_tier1         top              15  17.560     0.279        ✅
+  C_tier2         bottom           22  19.629     0.392        ✅
+  C_tier2         top              22  12.589     0.269        ✅
+
+==============================================================================================================
+  PHASE 2: Archetype Classifiers (3-class)
+==============================================================================================================
+
+  ── HEAD: archetype_bottom (N=11,332, classes={'HL': 3576, 'LL': 5031, 'LL_TO_HL': 2725}, features=22) ──
+    Fold 0: acc=0.608 | HL: 304/524 (58%) | LL: 665/923 (72%) | LL_TO_HL: 178/441 (40%)
+    Fold 1: acc=0.573 | HL: 471/917 (51%) | LL: 500/730 (68%) | LL_TO_HL: 111/241 (46%)
+    Fold 2: acc=0.566 | HL: 416/729 (57%) | LL: 522/782 (67%) | LL_TO_HL: 130/377 (34%)
+    Fold 3: acc=0.530 | HL: 282/513 (55%) | LL: 481/602 (80%) | LL_TO_HL: 237/773 (31%)
+    Fold 4: acc=0.584 | HL: 374/634 (59%) | LL: 553/762 (73%) | LL_TO_HL: 175/492 (36%)
+
+    ★ Mean accuracy: 0.572 (baseline=0.333)
+
+    Confusion Matrix (rows=true, cols=predicted):
+                            HL         LL   LL_TO_HL   Recall
+    -----------------------------------------------------
+                 HL       1847        457        676   62.0%
+                 LL        630       2721        817   65.3%
+           LL_TO_HL        840        621        831   36.3%
+          Precision     55.7%     71.6%     35.8%
+
+    Top 10 features:
+      below_all_vwaps_int            0.2985 █████████████████████████████
+      vwap_sigma_current             0.0795 ███████
+      vwap_sigma_tide                0.0712 ███████
+      geo_exit_align                 0.0483 ████
+      current_slope                  0.0361 ███
+      rsi_conviction                 0.0356 ███
+      volume_at_extreme              0.0354 ███
+      fear_level                     0.0351 ███
+      vwap_spread_tide_wave          0.0326 ███
+      tide_slope                     0.0311 ███
+
+  ── HEAD: archetype_top (N=11,351, classes={'HH': 6249, 'LH': 2349, 'HH_TO_LH': 2753}, features=22) ──
+    Fold 0: acc=0.623 | HH: 658/829 (79%) | LH: 363/687 (53%) | HH_TO_LH: 157/375 (42%)
+    Fold 1: acc=0.677 | HH: 904/1059 (85%) | LH: 136/287 (47%) | HH_TO_LH: 240/545 (44%)
+    Fold 2: acc=0.683 | HH: 888/1029 (86%) | LH: 164/360 (46%) | HH_TO_LH: 239/502 (48%)
+    Fold 3: acc=0.509 | HH: 534/706 (76%) | LH: 240/602 (40%) | HH_TO_LH: 189/583 (32%)
+    Fold 4: acc=0.699 | HH: 841/956 (88%) | LH: 225/423 (53%) | HH_TO_LH: 255/512 (50%)
+
+    ★ Mean accuracy: 0.638 (baseline=0.333)
+
+    Confusion Matrix (rows=true, cols=predicted):
+                            HH         LH   HH_TO_LH   Recall
+    -----------------------------------------------------
+                 HH       3825        548        835   73.4%
+                 LH        211       1128        602   58.1%
+           HH_TO_LH        543        683       1080   46.8%
+          Precision     83.5%     47.8%     42.9%
+
+    Top 10 features:
+      vwap_sigma_current             0.1667 ████████████████
+      vwap_sigma_tide                0.1140 ███████████
+      geo_exit_align                 0.0686 ██████
+      sigma_tide                     0.0543 █████
+      below_all_vwaps_int            0.0471 ████
+      rsi_conviction                 0.0446 ████
+      current_accel                  0.0407 ████
+      vwap_spread_tide_wave          0.0378 ███
+      current_slope                  0.0348 ███
+      compression_ratio              0.0337 ███
+
+==============================================================================================================
+  PHASE 2B: Temporal Proximity Regressors
+==============================================================================================================
+
+  ── HEAD: temporal_bottom (N=93,776, y_mean=18.7, features=22) ──
+    Fold 0: MAE=6.69d R²=0.447 ±3d_acc=0.263
+    Fold 1: MAE=7.02d R²=0.278 ±3d_acc=0.266
+    Fold 2: MAE=6.34d R²=0.355 ±3d_acc=0.308
+    Fold 3: MAE=7.34d R²=0.337 ±3d_acc=0.249
+    Fold 4: MAE=7.08d R²=0.327 ±3d_acc=0.247
+
+    ★ Mean MAE: 6.89 days
+
+    Top 10 features:
+      vwap_sigma_current             0.2554 █████████████████████████
+      rsi_conviction                 0.0999 █████████
+      current_accel                  0.0734 ███████
+      compression_ratio              0.0621 ██████
+      geo_exit_align                 0.0619 ██████
+      tsi_wave                       0.0587 █████
+      wave_slope                     0.0493 ████
+      vwap_sigma_tide                0.0453 ████
+      wave_accel                     0.0398 ███
+      tide_slope                     0.0343 ███
+
+  ── HEAD: temporal_top (N=93,776, y_mean=18.5, features=22) ──
+    Fold 0: MAE=8.75d R²=0.121 ±3d_acc=0.166
+    Fold 1: MAE=8.77d R²=0.019 ±3d_acc=0.134
+    Fold 2: MAE=8.90d R²=-0.023 ±3d_acc=0.118
+    Fold 3: MAE=8.81d R²=0.154 ±3d_acc=0.146
+    Fold 4: MAE=8.76d R²=0.070 ±3d_acc=0.142
+
+    ★ Mean MAE: 8.80 days
+
+    Top 10 features:
+      compression_ratio              0.1296 ████████████
+      vwap_spread_tide_wave          0.1065 ██████████
+      current_slope                  0.0868 ████████
+      wave_accel                     0.0791 ███████
+      tide_slope                     0.0763 ███████
+      rsi_conviction                 0.0694 ██████
+      current_accel                  0.0530 █████
+      vwap_spread_current_wave       0.0417 ████
+      wave_slope                     0.0395 ███
+      vwap_sigma_tide                0.0328 ███
+
+==============================================================================================================
+  PHASE 3: SHAP Temporal Activation Sequences
+==============================================================================================================
+    ⚠️ SHAP not available, skipping temporal analysis
+    ⚠️ SHAP not available, skipping temporal analysis
+
+==============================================================================================================
+  FINAL SUMMARY
+==============================================================================================================
+
+  ── Phase 1: Feature Set Validation ──
+    B_tier1: Bottom DSR=16.626 (132% of baseline) | Top DSR=17.560 (158% of baseline)
+    C_tier2: Bottom DSR=19.629 (156% of baseline) | Top DSR=12.589 (113% of baseline)
+
+  ── Phase 2: Archetype Classifiers ──
+    Bottom (HL/LL/LL→HL): accuracy=0.572
+      HL: recall=0.620 precision=0.557
+      LL: recall=0.653 precision=0.716
+      LL_TO_HL: recall=0.363 precision=0.358
+    Top (HH/LH/HH→LH): accuracy=0.638
+      HH: recall=0.734 precision=0.835
+      LH: recall=0.581 precision=0.478
+      HH_TO_LH: recall=0.468 precision=0.429
+
+  ── Phase 2B: Temporal Regressors ──
+    Days to MIN: MAE=6.89d
+    Days to MAX: MAE=8.80d
+
+==============================================================================================================
+  COMPLETE — 296s
+==============================================================================================================

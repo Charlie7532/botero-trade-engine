@@ -33,6 +33,9 @@ class RotationSignal:
     # ── Sub-sector Leadership (on-demand drill-down) ──
     top_subsector: str = ""              # Sub-sector with highest breadth
     bottom_subsector: str = ""           # Sub-sector with lowest breadth
+    # ── UW Sector Tide Confirmation ──
+    uw_flow_confirmation: str = "UNKNOWN"  # CONFIRMS, CONTRADICTS, UNKNOWN
+    uw_net_premium: float = 0.0            # Net premium flow from UW sector_tide
 
 
 @dataclass

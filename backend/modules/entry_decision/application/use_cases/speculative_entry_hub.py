@@ -222,6 +222,37 @@ class SpeculativeEntryHub:
             else "NONE"
         )
 
+        # ── UW Enrichment: Max Pain tactical distance ──
+        max_pain_dist = opts.get("max_pain_distance_pct", 0.0)
+        if abs(max_pain_dist) > 1.0 and report.max_pain > 0:
+            report.alerts = report.alerts or []
+            direction = "BELOW" if max_pain_dist < 0 else "ABOVE"
+            report.alerts.append(
+                f"MAX_PAIN: {direction} by {abs(max_pain_dist):.1f}% "
+                f"(MP=${report.max_pain:.2f}) — gravity {'pulling UP' if max_pain_dist < 0 else 'pulling DOWN'}"
+            )
+
+        # ── UW Enrichment: IV structure + Short Interest ──
+        try:
+            # Only attempt if provider is UWGammaAdapter
+            if hasattr(self._options_provider, 'get_iv_term_structure'):
+                iv_ts = self._options_provider.get_iv_term_structure(ticker)
+                if iv_ts.is_backwardation:
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"IV_BACKWARDATION: Front={iv_ts.front_iv:.1%} > Back={iv_ts.back_iv:.1%} "
+                        f"— panic pricing, gamma squeeze risk"
+                    )
+                vol_stats = self._options_provider.get_vol_stats(ticker)
+                if vol_stats.iv_rank > 0:
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"UW_VOL: IV_Rank={vol_stats.iv_rank:.0f} "
+                        f"VRP={vol_stats.variance_risk_premium:+.1f}%"
+                    )
+        except Exception as e:
+            logger.debug(f"SpecHub {ticker}: UW IV/vol enrichment skipped: {e}")
+
         # 8 Forces: VIX Trend Context
         if vix_trend:
             report.vix_trend_direction = vix_trend.direction
@@ -269,6 +300,26 @@ class SpeculativeEntryHub:
         report.flow_consecutive_days = persistence.consecutive_days
         report.flow_darkpool_confirmed = persistence.darkpool_aligned
         report.flow_hours_since_latest = persistence.hours_since_latest
+
+        # ── UW Enrichment: Short Interest warning ──
+        try:
+            si_data = store.load_mcp_latest("uw/short_interest", ticker)
+            if si_data and isinstance(si_data, dict):
+                dtc = float(si_data.get("days_to_cover", 0) or 0)
+                si_pct = float(si_data.get("si_float", 0) or 0)
+                if dtc > 5 or si_pct > 15:
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"SHORT_SQUEEZE_RISK: DTC={dtc:.1f} SI={si_pct:.1f}% "
+                        f"— high short interest, squeeze potential"
+                    )
+                elif dtc > 3:
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"SHORT_INTEREST: DTC={dtc:.1f} SI={si_pct:.1f}%"
+                    )
+        except Exception as e:
+            logger.debug(f"SpecHub {ticker}: short interest skipped: {e}")
 
         # DEAD_SIGNAL = stale flow, abort
         if persistence.persistence_grade == "DEAD_SIGNAL":

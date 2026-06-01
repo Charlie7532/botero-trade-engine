@@ -370,6 +370,48 @@ class QualityEntryGate:
             report.vix_ma20 = vix_trend.ma20
             report.vix_percentile_90d = vix_trend.percentile_90d
 
+        # ── UW Enrichment: Per-ticker IV Rank + Short Interest ──
+        try:
+            if hasattr(self._options_provider, 'get_vol_stats'):
+                _vol_stats = self._options_provider.get_vol_stats(ticker)
+                if _vol_stats.iv_rank > 0:
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"UW_VOL: IV_Rank={_vol_stats.iv_rank:.0f} "
+                        f"VRP={_vol_stats.variance_risk_premium:+.1f}%"
+                    )
+                    # High IV Rank on a Quality position → expensive to add
+                    if _vol_stats.iv_rank > 80:
+                        _health_sizing *= 0.8
+                        report.alerts.append(
+                            f"UW_IV_EXPENSIVE: IV Rank {_vol_stats.iv_rank:.0f}>80 "
+                            f"→ protection expensive, sizing {_health_sizing:.0%}"
+                        )
+        except Exception as e:
+            logger.debug(f"QualityGate {ticker}: UW vol_stats skipped: {e}")
+
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            _si_store = TimescaleDataStore()
+            _si_data = _si_store.load_mcp_latest("uw/short_interest", ticker)
+            _si_store.close()
+            if _si_data and isinstance(_si_data, dict):
+                _dtc = float(_si_data.get("days_to_cover", 0) or 0)
+                _si_pct = float(_si_data.get("si_float", 0) or 0)
+                if _dtc > 5 or _si_pct > 15:
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"SHORT_INTEREST_HIGH: DTC={_dtc:.1f} SI_Float={_si_pct:.1f}% "
+                        f"— squeeze risk, entry timing may be volatile"
+                    )
+                elif _dtc > 3:
+                    report.alerts = report.alerts or []
+                    report.alerts.append(
+                        f"SHORT_INTEREST: DTC={_dtc:.1f} SI_Float={_si_pct:.1f}%"
+                    )
+        except Exception as e:
+            logger.debug(f"QualityGate {ticker}: short interest skipped: {e}")
+
         # ── Step 3: Volume Profile — Institutional Bias ──
         try:
             vp_result = self.volume_profile.compute(prices)

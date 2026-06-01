@@ -82,6 +82,44 @@ class MarketHealthProvider:
                 spy_close = spy_df["close"]
                 spy_pct = float(spy_close.iloc[-1] / spy_close.iloc[-20] - 1)
 
+            # ── UW Enrichment: Sector Tide → G3 Flow Direction ──
+            flow_direction = "NEUTRAL"
+            try:
+                _sectors = ["TECHNOLOGY", "FINANCIALS", "HEALTHCARE", "ENERGY", "CONSUMER CYCLICAL"]
+                _net_flow = 0.0
+                _sectors_found = 0
+                for _sector in _sectors:
+                    _tide = store.load_mcp_latest("uw/sector_tide", _sector)
+                    if _tide and isinstance(_tide, list) and len(_tide) > 0:
+                        # Sum last hour of net premium flow
+                        _recent = _tide[-12:] if len(_tide) > 12 else _tide
+                        for _bar in _recent:
+                            _net_flow += float(_bar.get("close", 0) or 0)
+                        _sectors_found += 1
+                if _sectors_found >= 2:
+                    if _net_flow > 1_000_000:
+                        flow_direction = "BULLISH"
+                    elif _net_flow < -1_000_000:
+                        flow_direction = "BEARISH"
+                    logger.debug(
+                        f"MH Provider: sector_tide net_flow=${_net_flow:,.0f} → {flow_direction} "
+                        f"({_sectors_found} sectors)"
+                    )
+            except Exception as e:
+                logger.debug(f"MH Provider: sector_tide read skipped: {e}")
+
+            # ── UW Enrichment: Vol Stats SPY → G2 IV Rank ──
+            iv_rank_spy = None
+            try:
+                _vol_stats = store.load_mcp_latest("uw/vol_stats", "SPY")
+                if _vol_stats and isinstance(_vol_stats, dict):
+                    _iv_rank = float(_vol_stats.get("iv_rank", 0) or 0)
+                    if _iv_rank > 0:
+                        iv_rank_spy = _iv_rank
+                        logger.debug(f"MH Provider: SPY IV Rank = {iv_rank_spy:.1f}")
+            except Exception as e:
+                logger.debug(f"MH Provider: vol_stats read skipped: {e}")
+
             # ── Compute ──
             snapshot = compute_market_health(
                 s5fi_df=s5fi,
@@ -97,6 +135,7 @@ class MarketHealthProvider:
                 rotation_phase=rotation_phase,
                 dominant_rotation=dominant_rotation,
                 capitulation_level=capitulation_level,
+                flow_direction=flow_direction,
                 spy_pct_change_20d=spy_pct,
             )
 

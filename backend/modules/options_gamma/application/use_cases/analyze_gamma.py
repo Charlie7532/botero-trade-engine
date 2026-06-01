@@ -101,6 +101,26 @@ class OptionsAwareness:
             "opex_time_weight": analysis.opex.time_weight,
         }
 
+        # ── UW Enrichment: IV Structure + Vol Stats (only when UWGammaAdapter) ──
+        if hasattr(self._adapter, 'get_iv_term_structure'):
+            try:
+                iv_ts = self._adapter.get_iv_term_structure(symbol)
+                result["is_backwardation"] = iv_ts.is_backwardation
+                result["ultra_front_iv"] = iv_ts.ultra_front_iv
+                result["term_spread"] = iv_ts.term_spread
+            except Exception:
+                pass
+
+        if hasattr(self._adapter, 'get_vol_stats'):
+            try:
+                vs = self._adapter.get_vol_stats(symbol)
+                result["iv_rank"] = vs.iv_rank
+                result["variance_risk_premium"] = vs.variance_risk_premium
+            except Exception:
+                pass
+
+        return result
+
     def get_gamma_regime(self, symbol: str) -> GammaRegime:
         """Direct access to gamma regime for internal use."""
         analysis = self._analyze(symbol)

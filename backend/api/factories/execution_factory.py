@@ -104,9 +104,13 @@ def build_market_data():
 
 
 def build_options_provider():
-    """Build the default OptionsDataPort implementation (yfinance)."""
-    from backend.modules.options_gamma.infrastructure.yfinance_adapter import YFinanceOptionsAdapter
-    return YFinanceOptionsAdapter()
+    """Build the default OptionsDataPort implementation.
+
+    Primary: UWGammaAdapter (reads from Vault — dealer-calculated GEX/Greeks/IV).
+    Fallback: YFinanceOptionsAdapter (built into UWGammaAdapter for missing data).
+    """
+    from backend.modules.options_gamma.infrastructure.uw_gamma_adapter import UWGammaAdapter
+    return UWGammaAdapter()
 
 
 def build_flow_data():

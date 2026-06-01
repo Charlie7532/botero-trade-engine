@@ -200,6 +200,38 @@ class SwingGate:
         except Exception as e:
             logger.debug(f"SwingGate: MH snapshot not available: {e}")
 
+        # ── UW IV Rank gate (per-ticker vol pricing) ──
+        # Low IV Rank → options are cheap → accumulate (protection is cheap)
+        # High IV Rank → options are expensive → reduce conviction (smart money buying puts)
+        _iv_rank = None
+        try:
+            _store = TimescaleDataStore()
+            _vol_snap = _store.load_mcp_latest("uw/vol_stats", ticker)
+            _store.close()
+            if _vol_snap and isinstance(_vol_snap, dict):
+                _iv_rank = float(_vol_snap.get("iv_rank", 0) or 0)
+                if _iv_rank > 0:
+                    decision.alerts.append(
+                        f"UW_IV_RANK: {_iv_rank:.0f}/100 "
+                        f"(IV={float(_vol_snap.get('iv', 0) or 0):.1f}%, "
+                        f"RV={float(_vol_snap.get('rv', 0) or 0):.1f}%)"
+                    )
+                    if _iv_rank < 20:
+                        # Options historically cheap → accumulate with higher conviction
+                        _mh_sizing_mod = min(_mh_sizing_mod * 1.15, 1.0)
+                        decision.alerts.append(
+                            "UW_IV_CHEAP: IV Rank <20 → options cheap, sizing +15%"
+                        )
+                    elif _iv_rank > 80:
+                        # Options historically expensive → smart money hedging
+                        _mh_sizing_mod *= 0.75
+                        decision.alerts.append(
+                            f"UW_IV_EXPENSIVE: IV Rank >80 → protection expensive, "
+                            f"sizing {_mh_sizing_mod:.0%}"
+                        )
+        except Exception as e:
+            logger.debug(f"SwingGate: UW IV Rank skipped: {e}")
+
         # ── Compute fear bias from pre-computed snapshot (0 regression calls) ──
         from backend.modules.quality_swing.domain.rules.fear_level import classify_fear_from_snapshot
         fear = classify_fear_from_snapshot(channel)

@@ -95,6 +95,9 @@ class RotationScanner:
             elif s.dimension == "asset_class":
                 asset_flows[s.name] = s.rs_score
 
+        # ── UW Sector Tide flow confirmation (Vault-First) ──
+        self._enrich_with_sector_tide(signals)
+
         cycle_phase = self._detect_cycle_phase(asset_flows)
         dominant = self._detect_dominant_rotation(sector_flows, intl_flows)
 
@@ -613,6 +616,80 @@ class RotationScanner:
             logger.debug(f"RotationScanner: sector divergence failed for {etf}: {e}")
 
         return sb_200, sb_50, sb_20, div_score_20, div_score_60, div_type
+
+    # ══════════════════════════════════════════════════════════
+    # UW SECTOR TIDE FLOW CONFIRMATION (Vault-First)
+    # ══════════════════════════════════════════════════════════
+
+    # Canonical → UW sector tide ticker mapping
+    _SECTOR_TO_UW_TIDE = {
+        "Technology": "TECHNOLOGY",
+        "Financials": "FINANCIALS",
+        "Healthcare": "HEALTHCARE",
+        "Energy": "ENERGY",
+        "Consumer Discretionary": "CONSUMER CYCLICAL",
+    }
+
+    def _enrich_with_sector_tide(self, signals: list) -> None:
+        """Read UW sector_tide from Vault and set flow confirmation on sector signals.
+
+        CONFIRMS: Weinstein Advancing (stage 2) + UW bullish flow,
+                  or Weinstein Declining (stage 4) + UW bearish flow.
+        CONTRADICTS: Stage direction vs flow direction mismatch.
+        UNKNOWN: No UW data available for this sector.
+        """
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            store = TimescaleDataStore()
+
+            for signal in signals:
+                if signal.dimension != "sector":
+                    continue
+
+                uw_ticker = self._SECTOR_TO_UW_TIDE.get(signal.name)
+                if not uw_ticker:
+                    continue
+
+                tide = store.load_mcp_latest("uw/sector_tide", uw_ticker)
+                if not tide or not isinstance(tide, list) or len(tide) == 0:
+                    continue
+
+                # Sum net premium from recent bars (last hour ≈ 12 × 5min bars)
+                recent = tide[-12:] if len(tide) > 12 else tide
+                net_premium = sum(
+                    float(bar.get("close", 0) or 0) for bar in recent
+                )
+                signal.uw_net_premium = round(net_premium, 2)
+
+                # Determine flow direction from net premium
+                if net_premium > 500_000:
+                    uw_bullish = True
+                    uw_bearish = False
+                elif net_premium < -500_000:
+                    uw_bullish = False
+                    uw_bearish = True
+                else:
+                    # Flow is negligible — cannot confirm or contradict
+                    continue
+
+                # Compare against Weinstein stage
+                if signal.stage == 2 and uw_bullish:
+                    signal.uw_flow_confirmation = "CONFIRMS"
+                elif signal.stage == 4 and uw_bearish:
+                    signal.uw_flow_confirmation = "CONFIRMS"
+                elif signal.stage == 2 and uw_bearish:
+                    signal.uw_flow_confirmation = "CONTRADICTS"
+                elif signal.stage == 4 and uw_bullish:
+                    signal.uw_flow_confirmation = "CONTRADICTS"
+                elif signal.stage in (1, 3):
+                    # Basing/Topping — flow gives directional hint
+                    signal.uw_flow_confirmation = (
+                        "CONFIRMS" if uw_bullish else "CONTRADICTS"
+                    )
+
+            store.close()
+        except Exception as e:
+            logger.debug(f"RotationScanner: UW sector_tide enrichment skipped: {e}")
 
 
 def _avg_flow(flows: dict[str, float], names: list[str]) -> float:

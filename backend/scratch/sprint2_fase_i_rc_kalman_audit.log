@@ -1,0 +1,162 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  FASE I: AUDITORÍA DE CONEXIÓN RC ↔ KALMAN
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Lake: 91,252 rows × 36 features
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 1: FEATURE GROUPS — RC vs KALMAN
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  RC Slope features (7): ['wave_slope', 'conj_wave_tide', 'current_accel', 'tide_accel', 'current_slope', 'conj_current_tide', 'tide_slope']
+  Kalman Conjugation features (1): ['kf_conjugation_pred_val']
+  All Kalman features (6): kf_conjugation_pred_val, kf_rsi_pred_val, kf_price_pred_val, kf_price_filt_vel, kf_price_pred_vel, kf_price_pred_trend_5bar...
+  Sigma features (4): ['vwap_sigma_current', 'vwap_sigma_tide', 'vwap_sigma_wave', 'sigma_tide']
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 2: SHAP RANKINGS — RC vs KALMAN en Modelo PISO y TECHO
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  === PISO ===
+  Feature                             SHAP |value|   Rank Group          
+  ─────────────────────────────────── ──────────── ────── ───────────────
+  ★ kf_rsi_pred_val                         1.5475      1 KF-OTHER       
+  ★ kf_price_filt_vel                       0.1643      5 KF-OTHER       
+  ★ kf_price_pred_val                       0.1630      6 KF-OTHER       
+  ★ tide_slope                              0.0858     11 RC-SLOPE       
+  ★ conj_current_tide                       0.0761     14 RC-SLOPE       
+  ★ wave_slope                              0.0705     15 RC-SLOPE       
+    current_slope                           0.0670     17 RC-SLOPE       
+    current_accel                           0.0652     19 RC-SLOPE       
+    conj_wave_tide                          0.0482     25 RC-SLOPE       
+    tide_accel                              0.0268     33 RC-SLOPE       
+    kf_conjugation_pred_val                 0.0268     34 KF-CONJUGATION 
+
+  === TECHO ===
+  Feature                             SHAP |value|   Rank Group          
+  ─────────────────────────────────── ──────────── ────── ───────────────
+  ★ kf_rsi_pred_val                         0.7338      1 KF-OTHER       
+  ★ kf_price_filt_vel                       0.2081      2 KF-OTHER       
+  ★ kf_price_pred_val                       0.1413      5 KF-OTHER       
+  ★ wave_slope                              0.0650     12 RC-SLOPE       
+  ★ tide_slope                              0.0631     14 RC-SLOPE       
+    current_slope                           0.0576     16 RC-SLOPE       
+    conj_current_tide                       0.0441     20 RC-SLOPE       
+    conj_wave_tide                          0.0427     22 RC-SLOPE       
+    kf_conjugation_pred_val                 0.0278     28 KF-CONJUGATION 
+    tide_accel                              0.0261     29 RC-SLOPE       
+    current_accel                           0.0236     33 RC-SLOPE       
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 3: CORRELACIÓN CRUZADA — ¿El Kalman subsume las slopes?
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  RC features in lake: 7
+  Kalman features in lake: 5
+
+  RC Feature                Kalman Feature                       Pearson r Interpretation      
+  ───────────────────────── ─────────────────────────────────── ────────── ────────────────────
+  wave_slope                kf_conjugation_pred_val                  0.947 SUBSUMED            
+  conj_wave_tide            kf_conjugation_pred_val                  0.991 SUBSUMED            
+  current_accel             kf_conjugation_pred_val                  0.560 PARTIAL overlap     
+  tide_accel                kf_rsi_pred_val                          0.425 COMPLEMENTARY       
+  current_slope             kf_conjugation_pred_val                  0.369 COMPLEMENTARY       
+  conj_current_tide         kf_conjugation_pred_val                  0.473 COMPLEMENTARY       
+  tide_slope                kf_conjugation_pred_val                 -0.202 INDEPENDENT         
+
+  ★ conj_wave_tide × kf_conjugation_pred_val: r = 0.9905
+    → El Kalman de conjugation ABSORBE la slope cruda
+
+  Tide slope sign distribution: +1 (bull) = 72.4%, -1 (bear) = 27.6%, 0 = 0.0%
+    tide_slope_SIGN × kf_conjugation_pred_val: r = -0.1331 → IGNORES direction
+    tide_slope_SIGN × kf_rsi_pred_val: r = 0.0848 → IGNORES direction
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 4: ABLATION TEST — ¿Las slopes aportan más allá del Kalman?
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Feature subsets:
+    Kalman features: 6 indices
+    RC slope features: 7 indices
+    Temporal features: 6 indices
+
+  --- ABLATION: MODELO PISO ---
+  Positivos: 11,962 (13.1%)
+
+  Test A: Full model (all 36 features) — baseline
+    AUC = 0.8865 ± 0.0157
+
+  Test B: Only Kalman (6 features)
+    AUC = 0.8811 ± 0.0147
+
+  Test C: Kalman + RC slopes (13 features)
+    AUC = 0.8843 ± 0.0155
+
+  Test D: Kalman + tide_slope SIGN (7 features)
+    AUC = 0.8812 ± 0.0144
+
+  Test                                     AUC      ±  Δ vs Kalman
+  ─────────────────────────────────── ──────── ────── ────────────
+  A: Full model (baseline)              0.8865 0.0157      +0.0054
+  B: Only Kalman                        0.8811 0.0147       (base)
+  C: Kalman + RC slopes                 0.8843 0.0155      +0.0031
+  D: Kalman + tide_sign                 0.8812 0.0144      +0.0001
+
+  --- ABLATION: MODELO TECHO ---
+  Positivos: 11,757 (12.9%)
+
+  Test A: Full model
+    AUC = 0.7630 ± 0.0125
+
+  Test B: Only Kalman
+    AUC = 0.7610 ± 0.0109
+
+  Test C: Kalman + RC slopes
+    AUC = 0.7599 ± 0.0084
+
+  Test D: Kalman + tide_slope SIGN
+    AUC = 0.7613 ± 0.0112
+
+  Test                                     AUC      ±  Δ vs Kalman
+  ─────────────────────────────────── ──────── ────── ────────────
+  A: Full model (baseline)              0.7630 0.0125      +0.0020
+  B: Only Kalman                        0.7610 0.0109       (base)
+  C: Kalman + RC slopes                 0.7599 0.0084      -0.0011
+  D: Kalman + tide_sign                 0.7613 0.0112      +0.0003
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 6: ANÁLISIS DIRECCIONAL — ¿WITH_TREND vs AGAINST_TREND?
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  PISOS por dirección de TIDE:
+    WITH_TREND (tide > 0):    7,820 (65.4%)
+    AGAINST_TREND (tide < 0): 4,142 (34.6%)
+    FLAT (tide ≈ 0):          0 (0.0%)
+
+  Feature                         WITH_TREND μ  AGAINST μ        Δ Interpretation      
+  ────────────────────────────── ───────────── ────────── ──────── ────────────────────
+  tide_slope                            0.1030    -0.1000  +0.2030 DIFFERS             
+  current_slope                         0.0129    -0.1100  +0.1228 DIFFERS             
+  wave_slope                           -0.1524    -0.2267  +0.0743 similar             
+  conj_wave_tide                       -0.2554    -0.1267  -0.1287 DIFFERS             
+  kf_conjugation_pred_val              -0.2780    -0.1478  -0.1302 DIFFERS             
+  kf_rsi_pred_val                      39.6465    40.1841  -0.5376 DIFFERS             
+  vwap_sigma_current                   -0.8240    -0.8613  +0.0373 similar             
+  sigma_tide                           -1.3043    -0.4757  -0.8286 DIFFERS             
+
+  TECHOS por dirección de TIDE:
+    WITH_TREND (tide > 0):    7,954 (67.7%)
+    AGAINST_TREND (tide < 0): 3,803 (32.3%)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  VEREDICTO: ¿SLOPES CONECTADAS O DESCONECTADAS?
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Δ AUC al agregar slopes al Kalman:
+    PISO:  +0.0031 (REDUNDANTE)
+    TECHO: -0.0011 (REDUNDANTE)
+
+  → Las slopes son REDUNDANTES con el Kalman.
+    El canal Kalman de conjugation ya INTERPRETA las slopes.
+    Usar kf_conjugation_pred_val como proxy suficiente.
+
+  Tiempo total: 119.8s

@@ -1,0 +1,51 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  FASE F: PURGEDKFOLD — AUC REAL SIN LEAKAGE TEMPORAL
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+=== 1. CARGA ===
+  Data: 91,252 × 30
+
+=== 2. PURGEDKFOLD (embargo=10 barras, 5 folds temporales per-ticker) ===
+
+=== 3. XGBOOST CON PURGEDKFOLD ===
+  Fold 1: train=72,839 test=18,243 AUC=0.7517 P=0.571 R=0.699 F1=0.628
+  Fold 2: train=72,669 test=18,243 AUC=0.7505 P=0.499 R=0.594 F1=0.542
+  Fold 3: train=72,669 test=18,243 AUC=0.7255 P=0.424 R=0.510 F1=0.463
+  Fold 4: train=72,669 test=18,243 AUC=0.7223 P=0.482 R=0.546 F1=0.512
+  Fold 5: train=72,802 test=18,280 AUC=0.6725 P=0.424 R=0.505 F1=0.461
+
+  XGBoost PurgedKFold: AUC = 0.7245 ± 0.0287
+  XGBoost GroupKFold:  AUC = 0.736 (reported earlier)
+  Delta: +0.0115
+  → ✅ Señal genuina
+
+=== 4. LIGHTGBM CON PURGEDKFOLD ===
+  Fold 1: AUC=0.7513 P=0.573 R=0.697 F1=0.629
+  Fold 2: AUC=0.7516 P=0.497 R=0.595 F1=0.541
+  Fold 3: AUC=0.7287 P=0.429 R=0.514 F1=0.468
+  Fold 4: AUC=0.7251 P=0.484 R=0.552 F1=0.516
+  Fold 5: AUC=0.6687 P=0.423 R=0.517 F1=0.466
+
+  LightGBM PurgedKFold: AUC = 0.7251 ± 0.0303
+  XGBoost PurgedKFold:  AUC = 0.7245 ± 0.0287
+  → LightGBM gana
+
+=== 5. AUC POR FAMILIA DE FEATURES ===
+  Solo Kalman (5 feats): AUC = 0.7274 ± 0.0191
+  Solo Canal (25 feats): AUC = 0.6953 ± 0.0297
+
+=== 6. DEFLATED SHARPE RATIO ===
+  Sharpe-like (AUC excess): 7.818
+  DSR (n_trials=5, T=5): 0.984
+  → ✅ Significativo
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  RESUMEN FASE F
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  AUC GroupKFold (reportado):    0.736
+  AUC PurgedKFold (XGBoost):    0.7245 ± 0.0287
+  AUC PurgedKFold (LightGBM):   0.7251 ± 0.0303
+  Delta por leakage temporal:   +0.0115
+  DSR:                          0.984
+  Tiempo: 54.9s

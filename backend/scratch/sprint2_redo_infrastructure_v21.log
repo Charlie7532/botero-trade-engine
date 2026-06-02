@@ -1,0 +1,159 @@
+[20:38:50] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:38:50] [INFO]   SPRINT 2-REDO — FASE A v2.1: Feature Lake Construction
+[20:38:50] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:38:50] [INFO] Started at 2026-06-01T20:38:50.559674+00:00
+[20:38:50] [INFO] Tickers: 17
+[20:38:50] [INFO] Zigzag scales: ['3%', '5%', '7%']
+[20:38:50] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:38:50] [INFO]   STEP 1: Loading Channel Snapshots
+[20:38:50] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:38:51] [INFO]   AAPL: 8,264 snapshots (1993-07-23 → 2026-05-21)
+[20:38:51] [INFO]   AMZN: 4,839 snapshots (2007-02-28 → 2026-05-21)
+[20:38:52] [INFO]   COST: 4,846 snapshots (2007-02-16 → 2026-05-21)
+[20:38:52] [INFO]   HD: 4,847 snapshots (2007-02-15 → 2026-05-21)
+[20:38:53] [INFO]   HON: 4,848 snapshots (2007-02-14 → 2026-05-21)
+[20:38:53] [INFO]   IBM: 4,847 snapshots (2007-02-15 → 2026-05-21)
+[20:38:54] [INFO]   JNJ: 4,838 snapshots (2007-03-01 → 2026-05-21)
+[20:38:54] [INFO]   JPM: 4,844 snapshots (2007-02-21 → 2026-05-21)
+[20:38:54] [INFO]   MCD: 4,846 snapshots (2007-02-16 → 2026-05-21)
+[20:38:55] [INFO]   MRK: 4,846 snapshots (2007-02-16 → 2026-05-21)
+[20:38:55] [INFO]   MSFT: 4,831 snapshots (2007-03-12 → 2026-05-21)
+[20:38:56] [INFO]   PEP: 5,325 snapshots (2005-03-23 → 2026-05-21)
+[20:38:56] [INFO]   PG: 4,839 snapshots (2007-02-28 → 2026-05-21)
+[20:38:57] [INFO]   QQQ: 6,595 snapshots (2000-03-06 → 2026-05-26)
+[20:38:58] [INFO]   SPY: 8,112 snapshots (1994-03-02 → 2026-05-26)
+[20:38:58] [INFO]   WMT: 4,838 snapshots (2007-03-01 → 2026-05-21)
+[20:38:58] [INFO]   XOM: 4,847 snapshots (2007-02-15 → 2026-05-21)
+[20:38:59] [INFO]   TOTAL: 91,252 snapshots, 17 tickers
+[20:38:59] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:38:59] [INFO]   STEP 1b: Loading OHLCV Data
+[20:38:59] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:38:59] [INFO]   AAPL: 8,520 bars
+[20:38:59] [INFO]   AMZN: 5,095 bars
+[20:38:59] [INFO]   COST: 5,102 bars
+[20:38:59] [INFO]   HD: 5,103 bars
+[20:39:00] [INFO]   HON: 5,104 bars
+[20:39:00] [INFO]   IBM: 5,103 bars
+[20:39:00] [INFO]   JNJ: 5,094 bars
+[20:39:00] [INFO]   JPM: 5,100 bars
+[20:39:00] [INFO]   MCD: 5,102 bars
+[20:39:01] [INFO]   MRK: 5,102 bars
+[20:39:01] [INFO]   MSFT: 5,087 bars
+[20:39:01] [INFO]   PEP: 5,581 bars
+[20:39:02] [INFO]   PG: 5,095 bars
+[20:39:02] [INFO]   QQQ: 6,849 bars
+[20:39:02] [INFO]   SPY: 8,366 bars
+[20:39:02] [INFO]   WMT: 5,094 bars
+[20:39:03] [INFO]   XOM: 5,103 bars
+[20:39:03] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:39:03] [INFO]   STEP 1c: Loading Multi-Scale Zigzag
+[20:39:03] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:39:03] [INFO]   3%: 8,216 points, 17 tickers
+[20:39:03] [INFO]   5%: 4,313 points, 17 tickers
+[20:39:03] [INFO]   7%: 2,663 points, 17 tickers
+[20:39:03] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:39:03] [INFO]   STEP 2: Aligning Snapshots with Multi-Scale Zigzag
+[20:39:03] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:39:16] [INFO]   AAPL: aligned (8,264 bars)
+[20:39:22] [INFO]   AMZN: aligned (4,839 bars)
+[20:39:28] [INFO]   COST: aligned (4,846 bars)
+[20:39:35] [INFO]   HD: aligned (4,847 bars)
+[20:39:41] [INFO]   HON: aligned (4,848 bars)
+[20:39:48] [INFO]   IBM: aligned (4,847 bars)
+[20:39:54] [INFO]   JNJ: aligned (4,838 bars)
+[20:40:01] [INFO]   JPM: aligned (4,844 bars)
+[20:40:09] [INFO]   MCD: aligned (4,846 bars)
+[20:40:16] [INFO]   MRK: aligned (4,846 bars)
+[20:40:23] [INFO]   MSFT: aligned (4,831 bars)
+[20:40:31] [INFO]   PEP: aligned (5,325 bars)
+[20:40:37] [INFO]   PG: aligned (4,839 bars)
+[20:40:46] [INFO]   QQQ: aligned (6,595 bars)
+[20:40:58] [INFO]   SPY: aligned (8,112 bars)
+[20:41:05] [INFO]   WMT: aligned (4,838 bars)
+[20:41:12] [INFO]   XOM: aligned (4,847 bars)
+[20:41:12] [INFO]   TOTAL: 91,252 OHLCV bars aligned
+[20:41:12] [INFO]   Zigzag 3%: 42,076 hits (46.1%, ±3 bars)
+[20:41:12] [INFO]   Zigzag 5%: 25,542 hits (28.0%, ±3 bars)
+[20:41:12] [INFO]   Zigzag 7%: 16,805 hits (18.4%, ±3 bars)
+[20:41:12] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:41:12] [INFO]   STEP 3: Full Kalman Filter (5 channels × 8 outputs)
+[20:41:12] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:41:15] [INFO]   AAPL: 5 Kalman channels computed (8264 bars)
+[20:41:17] [INFO]   AMZN: 5 Kalman channels computed (4839 bars)
+[20:41:19] [INFO]   COST: 5 Kalman channels computed (4846 bars)
+[20:41:21] [INFO]   HD: 5 Kalman channels computed (4847 bars)
+[20:41:23] [INFO]   HON: 5 Kalman channels computed (4848 bars)
+[20:41:25] [INFO]   IBM: 5 Kalman channels computed (4847 bars)
+[20:41:26] [INFO]   JNJ: 5 Kalman channels computed (4838 bars)
+[20:41:28] [INFO]   JPM: 5 Kalman channels computed (4844 bars)
+[20:41:30] [INFO]   MCD: 5 Kalman channels computed (4846 bars)
+[20:41:32] [INFO]   MRK: 5 Kalman channels computed (4846 bars)
+[20:41:33] [INFO]   MSFT: 5 Kalman channels computed (4831 bars)
+[20:41:35] [INFO]   PEP: 5 Kalman channels computed (5325 bars)
+[20:41:37] [INFO]   PG: 5 Kalman channels computed (4839 bars)
+[20:41:39] [INFO]   QQQ: 5 Kalman channels computed (6595 bars)
+[20:41:42] [INFO]   SPY: 5 Kalman channels computed (8112 bars)
+[20:41:44] [INFO]   WMT: 5 Kalman channels computed (4838 bars)
+[20:41:45] [INFO]   XOM: 5 Kalman channels computed (4847 bars)
+[20:41:45] [INFO]   price: norm_innov μ=0.000 σ=2.215 (should be ~N(0,1) if model is correct)
+[20:41:45] [INFO]   rvol: norm_innov μ=0.000 σ=1.304 (should be ~N(0,1) if model is correct)
+[20:41:45] [INFO]   tension: norm_innov μ=-0.001 σ=1.225 (should be ~N(0,1) if model is correct)
+[20:41:45] [INFO]   rsi: norm_innov μ=0.000 σ=0.837 (should be ~N(0,1) if model is correct)
+[20:41:45] [INFO]   conjugation: norm_innov μ=0.000 σ=0.438 (should be ~N(0,1) if model is correct)
+[20:41:46] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:41:46] [INFO]   STEP 4: Deltas (Δ), Accelerations (Δ²), and Derived Features
+[20:41:46] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:41:51] [INFO]   Computed 289 Δ features, 102 Δ² features per-ticker
+[20:41:51] [INFO]   Computing vol_of_vol_ratio...
+[20:41:51] [INFO]   vol_of_vol_ratio: μ=0.1123 σ=0.0662
+[20:41:51] [INFO]   Computing channel_sentiment (DCSI)...
+[20:41:52] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:41:52] [INFO]   STEP 5: Self-Audit
+[20:41:52] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:41:52] [INFO]   ✅ No duplicates
+[20:41:52] [WARN]   ⚠️ kf_price_norm_innov: μ=0.000 σ=2.215 (expected ~N(0,1))
+[20:41:52] [INFO]   ✅ kf_rvol_norm_innov: μ=0.000 σ=1.304 — well-calibrated
+[20:41:52] [INFO]   ✅ kf_tension_norm_innov: μ=-0.001 σ=1.225 — well-calibrated
+[20:41:52] [INFO]   ✅ kf_rsi_norm_innov: μ=0.000 σ=0.837 — well-calibrated
+[20:41:52] [WARN]   ⚠️ kf_conjugation_norm_innov: μ=0.000 σ=0.438 (expected ~N(0,1))
+[20:41:52] [INFO] 
+  Correlation check (new features vs existing):
+[20:41:52] [INFO]     vol_of_vol_ratio × compression_ratio: r=0.303 ✅
+[20:41:52] [INFO]     vol_of_vol_ratio × kalman_velocity: r=-0.073 ✅
+[20:41:52] [INFO]     vol_of_vol_ratio × conj_wave_tide: r=-0.138 ✅
+[20:41:52] [INFO]     kf_conjugation_filt_vel × compression_ratio: r=0.021 ✅
+[20:41:52] [INFO]     kf_conjugation_filt_vel × kalman_velocity: r=-0.024 ✅
+[20:41:52] [INFO]     kf_conjugation_filt_vel × conj_wave_tide: r=0.269 ✅
+[20:41:52] [INFO]     kf_conjugation_innov × compression_ratio: r=0.025 ✅
+[20:41:52] [INFO]     kf_conjugation_innov × kalman_velocity: r=-0.046 ✅
+[20:41:52] [INFO]     kf_conjugation_innov × conj_wave_tide: r=-0.243 ✅
+[20:41:52] [INFO]   ✅ Hit rate zigzag 3%: 46.1% of bars are near a turn
+[20:41:52] [INFO]   ✅ Hit rate zigzag 5%: 28.0% of bars are near a turn
+[20:41:52] [INFO]   ✅ Hit rate zigzag 7%: 18.4% of bars are near a turn
+[20:41:52] [INFO] 
+  Rows per ticker:
+[20:41:52] [INFO]     AAPL: 8,264
+[20:41:52] [INFO]     AMZN: 4,839
+[20:41:52] [INFO]     COST: 4,846
+[20:41:52] [INFO]     HD: 4,847
+[20:41:52] [INFO]     HON: 4,848
+[20:41:52] [INFO]     IBM: 4,847
+[20:41:52] [INFO]     JNJ: 4,838
+[20:41:52] [INFO]     JPM: 4,844
+[20:41:52] [INFO]     MCD: 4,846
+[20:41:52] [INFO]     MRK: 4,846
+[20:41:52] [INFO]     MSFT: 4,831
+[20:41:52] [INFO]     PEP: 5,325
+[20:41:52] [INFO]     PG: 4,839
+[20:41:52] [INFO]     QQQ: 6,595
+[20:41:52] [INFO]     SPY: 8,112
+[20:41:52] [INFO]     WMT: 4,838
+[20:41:52] [INFO]     XOM: 4,847
+[20:41:52] [INFO] 
+  Total columns: 137
+[20:41:52] [INFO]   Total rows: 91,252
+[20:41:52] [INFO]   ✅ ALL AUDITS PASSED
+[20:41:52] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:41:52] [INFO]   STEP 6: Export
+[20:41:52] [INFO] ══════════════════════════════════════════════════════════════════════════════════════════
+[20:41:53] [INFO]   PKL: sprint2_redo_lake_v21.pkl (48.1 MB)

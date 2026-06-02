@@ -1,0 +1,152 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  ESTADÍSTICAS DE DETALLE POR ARQUETIPO — UTILIDAD PRÁCTICA
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 1: ENTRENAR MODELOS Y OBTENER PREDICCIONES POR ARQUETIPO
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 2: MÉTRICAS GLOBALES (Test set completo)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  === PISO (Bottoms) ===
+  AUC:       0.9021
+  Precision: 0.3618  (de las alarmas, ¿cuántas son reales?)
+  Recall:    0.8374  (de los giros reales, ¿cuántos detectamos?)
+  F1:        0.5053
+  TP=1,700  FP=2,999  FN=330  TN=13,222
+  Total positivos: 2,030 (11.1%)
+
+  === TECHO (Tops) ===
+  AUC:       0.7516
+  Precision: 0.2134  (de las alarmas, ¿cuántas son reales?)
+  Recall:    0.6330  (de los giros reales, ¿cuántos detectamos?)
+  F1:        0.3192
+  TP=1,266  FP=4,666  FN=734  TN=11,585
+  Total positivos: 2,000 (11.0%)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 3: MÉTRICAS POR ARQUETIPO
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Archetype         n_test   n_pos   prev      AUC    Prec  Recall      F1     TP     FP     FN
+  ─────────────── ──────── ─────── ────── ──────── ─────── ─────── ─────── ────── ────── ──────
+  HL                   496     317  63.9%   0.7218   0.762   0.625   0.686    198     62    119
+  LL                 1,942   1,619  83.4%   0.7271   0.884   0.873   0.878  1,413    185    206
+  HH                 1,839   1,549  84.2%   0.6418   0.886   0.651   0.750  1,008    130    541
+  LH                   570     346  60.7%   0.6702   0.708   0.497   0.584    172     71    174
+  FAR→PISO          13,404       1   0.0%   0.7882   0.000   0.000   0.000      0  2,464      1
+  FAR→TECHO         13,404       2   0.0%   0.2891   0.000   0.000   0.000      0  4,190      2
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 4: DISTRIBUCIÓN DE PROBABILIDADES POR ARQUETIPO
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Archetype       p10    p25    p50    p75    p90    p95    p99 │ % > 0.5 % > 0.7 % > 0.8
+  ──────────── ────── ────── ────── ────── ────── ────── ────── │ ─────── ─────── ───────
+  HL            0.055  0.233  0.543  0.743  0.824  0.864  0.906 │   52.4%   29.8%   14.5%
+  LL            0.348  0.599  0.762  0.839  0.884  0.908  0.941 │   82.3%   61.3%   38.6%
+  HH            0.270  0.429  0.547  0.651  0.737  0.778  0.842 │   61.9%   16.2%    3.4%
+  LH            0.080  0.210  0.450  0.616  0.742  0.809  0.909 │   42.6%   14.7%    5.8%
+  FAR           0.234  0.355  0.495  0.625  0.741  0.803  0.875 │   49.1%   14.5%    5.2%
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 5: MÉTRICAS POR TICKER (Modelo PISO)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Ticker     n_test   n_pos      AUC    Prec  Recall      F1
+  ──────── ──────── ─────── ──────── ─────── ─────── ───────
+  QQQ           454      53   0.9580   0.547   0.774   0.641
+  SPY         8,112     750   0.9301   0.383   0.857   0.530
+  WMT         4,838     538   0.8833   0.326   0.840   0.470
+  XOM         4,847     689   0.8671   0.361   0.819   0.501
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 6: UTILIDAD PRÁCTICA — CALIDAD DE ALERTAS
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Si el Sentinel Gate emite una ALARMA cuando prob > threshold:
+  ¿Cuántas alertas diarias? ¿Qué % son verdaderas?
+
+  Asumimos: ~250 días/año × 17 tickers = 4,250 ticker-días en test
+
+  === Modelo PISO ===
+   Threshold    Alertas       TP       FP  Precision   Recall  Alert/day
+  ────────── ────────── ──────── ──────── ────────── ──────── ──────────
+         0.3      6,354    1,890    4,464      29.7%    93.1%        5.9
+         0.4      5,492    1,805    3,687      32.9%    88.9%        5.1
+         0.5      4,699    1,700    2,999      36.2%    83.7%        4.4
+         0.6      3,905    1,561    2,344      40.0%    76.9%        3.6
+         0.7      2,842    1,287    1,555      45.3%    63.4%        2.6
+         0.8      1,543      817      726      52.9%    40.2%        1.4
+         0.9        227      158       69      69.6%     7.8%        0.2
+
+  === Modelo TECHO ===
+   Threshold    Alertas       TP       FP  Precision   Recall  Alert/day
+  ────────── ────────── ──────── ──────── ────────── ──────── ──────────
+         0.3     10,524    1,779    8,745      16.9%    88.9%        9.8
+         0.4      8,585    1,600    6,985      18.6%    80.0%        8.0
+         0.5      5,932    1,266    4,666      21.3%    63.3%        5.5
+         0.6      3,063      770    2,293      25.1%    38.5%        2.9
+         0.7      1,175      369      806      31.4%    18.4%        1.1
+         0.8        247      104      143      42.1%     5.2%        0.2
+         0.9         14        9        5      64.3%     0.4%        0.0
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 7: UTILIDAD POR DEPARTAMENTO DE TRADING
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  === QUALITY DEPARTMENT — Timing de Acumulación ===
+  Objetivo: detectar HL (pullback) para acumular en posiciones MOAT
+  Giros HL en test set: 317 verdaderos de 496 barras HL
+  HL detectados (prob > 0.5): 198 de 317 (62.5%)
+  Falsas alarmas HL: 62
+
+  === QUALITY SWING — Acumulación en Pánico / Trim en Complacencia ===
+  LL para comprar pánico, HH para trimear en complacencia
+    LL: 1413/1619 detectados (87.3%), 185 FP
+    HH: 1008/1549 detectados (65.1%), 130 FP
+
+  === SPECULATIVE DEPARTMENT — Short en Rebote Fallido ===
+  LH para shortar rebotes en bear market
+  LH detectados (prob > 0.5): 172 de 346 (49.7%)
+  Falsas alarmas LH: 71
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  RESUMEN: ¿QUÉ CONSTRUIMOS Y PARA QUÉ SIRVE?
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  El ejercicio de ingeniería inversa del ZigZag produjo:
+
+  1. UN SISTEMA DE DETECCIÓN DE GIROS con 4 detectores especializados
+     - Input:  6 features Kalman + 6 temporales + contexto RC
+     - Output: probabilidad de giro por tipo (HL/LL/HH/LH) por barra
+     - AUC:    0.887 (PISO), 0.763 (TECHO)
+
+  2. UN MAPA DE FIRMAS PREDICTIVAS por arquetipo
+     - HL (Pullback):       RSI neutral, DECRESCENDO, SILENCIO
+     - LL (Capitulación):   RSI oversold, CRESCENDO, PÁNICO
+     - HH (Agotamiento):    RSI overbought, PLANO, COMPLACENCIA
+     - LH (Rebote fallido): RSI neutral, CRESCENDO, BEAR MARKET
+
+  3. THRESHOLDS CALIBRADOS por densidad
+     - LL: density ≥ 8 → LIFT 16.6x
+     - LH: density ≥ 8 → LIFT 23.4x
+     - HL: density ≥ 8 → LIFT 12.8x (pero solo 10% cruzan)
+     - HH: density ≥ 8 → LIFT 5.5x (detector débil)
+
+  4. EVIDENCIA DE QUE LA SEÑAL ES REAL
+     - DSR 0.984 (no es suerte)
+     - PurgedKFold con embargo (no es autocorrelación)
+     - 17 tickers × 20 años (no es overfit a un período)
+
+  5. REGLAS DE DISEÑO PARA PRODUCCIÓN
+     - Detección: solo Kalman (6 features)
+     - Contexto:  tide_slope sign para sizing
+     - Gate:      3 niveles (ALARMA → PRESURIZACIÓN → EXPLOSIÓN)
+     - Separar:   PISO y TECHO son modelos DISTINTOS
+     - Separar:   HL y LL necesitan thresholds diferentes
+
+
+  Tiempo total: 23.6s

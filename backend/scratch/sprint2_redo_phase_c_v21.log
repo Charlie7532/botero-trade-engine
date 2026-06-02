@@ -1,0 +1,248 @@
+[22:13:31] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:13:31] [INFO]   SPRINT 2-REDO — FASE C v2.1: La Película del Giro
+[22:13:31] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:13:31] [INFO] Started at 2026-06-01T22:13:31.648448+00:00
+[22:13:31] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:13:31] [INFO]   STEP 1: Load Data
+[22:13:31] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:13:31] [INFO]   Feature Lake: 91,252 rows × 137 columns
+[22:13:31] [INFO]   Top 30 features from Phase B selected
+[22:13:31] [INFO]     # 1 wave_slope                               Score=0.918
+[22:13:31] [INFO]     # 2 conj_wave_tide                           Score=0.898
+[22:13:31] [INFO]     # 3 vwap_sigma_current                       Score=0.895
+[22:13:31] [INFO]     # 4 current_accel                            Score=0.895
+[22:13:31] [INFO]     # 5 d_current_slope                          Score=0.893
+[22:13:31] [INFO]     # 6 kf_conjugation_pred_val                  Score=0.881
+[22:13:31] [INFO]     # 7 rsi_value                                Score=0.880
+[22:13:31] [INFO]     # 8 kf_rsi_pred_val                          Score=0.863
+[22:13:31] [INFO]     # 9 kf_price_pred_val                        Score=0.862
+[22:13:31] [INFO]     #10 vwap_sigma_tide                          Score=0.844
+[22:13:31] [INFO]     #11 tide_accel                               Score=0.843
+[22:13:31] [INFO]     #12 d_tide_slope                             Score=0.842
+[22:13:31] [INFO]     #13 vwap_spread_tide_wave                    Score=0.841
+[22:13:31] [INFO]     #14 current_slope                            Score=0.840
+[22:13:31] [INFO]     #15 geo_velocity_align                       Score=0.810
+[22:13:31] [INFO]     #16 geo_exit_align                           Score=0.809
+[22:13:31] [INFO]     #17 conj_current_tide                        Score=0.791
+[22:13:31] [INFO]     #18 kf_price_filt_vel                        Score=0.781
+[22:13:31] [INFO]     #19 kf_price_pred_vel                        Score=0.781
+[22:13:31] [INFO]     #20 fear_level                               Score=0.781
+[22:13:31] [INFO]     #21 vwap_spread_current_wave                 Score=0.777
+[22:13:31] [INFO]     #22 vwap_spread_tide_current                 Score=0.776
+[22:13:31] [INFO]     #23 vwap_wave                                Score=0.770
+[22:13:32] [INFO]     #24 reg_value_current                        Score=0.768
+[22:13:32] [INFO]     #25 geo_phase_angle                          Score=0.766
+[22:13:32] [INFO]     #26 vwap_sigma_wave                          Score=0.757
+[22:13:32] [INFO]     #27 tide_slope                               Score=0.756
+[22:13:32] [INFO]     #28 sigma_tide                               Score=0.752
+[22:13:32] [INFO]     #29 reg_value_tide                           Score=0.750
+[22:13:32] [INFO]     #30 vwap_tide                                Score=0.749
+[22:13:32] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:13:32] [INFO]   STEP 2: Classify Archetypes
+[22:13:32] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:13:33] [INFO]   Scale 3%: 18655 classified turns
+[22:13:33] [INFO]     HL: 4,844 (26.0%)
+[22:13:33] [INFO]     LL: 4,530 (24.3%)
+[22:13:33] [INFO]     HH: 4,781 (25.6%)
+[22:13:33] [INFO]     LH: 4,500 (24.1%)
+[22:13:35] [INFO]   Scale 5%: 10164 classified turns
+[22:13:35] [INFO]     HL: 2,656 (26.1%)
+[22:13:35] [INFO]     LL: 2,449 (24.1%)
+[22:13:35] [INFO]     HH: 2,618 (25.8%)
+[22:13:35] [INFO]     LH: 2,441 (24.0%)
+[22:13:36] [INFO]   Scale 7%: 6352 classified turns
+[22:13:36] [INFO]     HL: 1,668 (26.3%)
+[22:13:36] [INFO]     LL: 1,501 (23.6%)
+[22:13:36] [INFO]     HH: 1,673 (26.3%)
+[22:13:36] [INFO]     LH: 1,510 (23.8%)
+[22:13:36] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:13:36] [INFO]   STEP 3: Reverse-Engineer Every Turn (Scale 5%)
+[22:13:36] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:13:36] [INFO]   [1/17] AAPL...
+[22:14:10] [INFO]   [2/17] AMZN...
+[22:14:22] [INFO]   [3/17] COST...
+[22:14:28] [INFO]   [4/17] HD...
+[22:14:36] [INFO]   [5/17] HON...
+[22:14:44] [INFO]   [6/17] IBM...
+[22:14:51] [INFO]   [7/17] JNJ...
+[22:14:56] [INFO]   [8/17] JPM...
+[22:15:07] [INFO]   [9/17] MCD...
+[22:15:13] [INFO]   [10/17] MRK...
+[22:15:21] [INFO]   [11/17] MSFT...
+[22:15:30] [INFO]   [12/17] PEP...
+[22:15:35] [INFO]   [13/17] PG...
+[22:15:40] [INFO]   [14/17] QQQ...
+[22:15:52] [INFO]   [15/17] SPY...
+[22:16:03] [INFO]   [16/17] WMT...
+[22:16:09] [INFO]   [17/17] XOM...
+[22:16:17] [INFO]   Total turns analyzed: 10161
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   STEP 4: Primacy Rankings — Which Feature Fires First?
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   Turns with alarm detected: 7755/10161 (76.3%)
+[22:16:17] [INFO] 
+  Feature                                   Fires  %Primacy  Med Lead  Mean Lead
+[22:16:17] [INFO]   ──────────────────────────────────────── ────── ───────── ───────── ──────────
+[22:16:17] [INFO]   kf_price_pred_val                           993     12.8%       1.0        2.4
+[22:16:17] [INFO]   kf_price_filt_vel                           931     12.0%       2.0        3.2
+[22:16:17] [INFO]   vwap_sigma_wave                             428      5.5%       2.0        3.4
+[22:16:17] [INFO]   sigma_tide                                  385      5.0%       1.0        1.9
+[22:16:17] [INFO]   tide_slope                                  376      4.8%       1.0        1.1
+[22:16:17] [INFO]   vwap_sigma_current                          367      4.7%       1.0        2.5
+[22:16:17] [INFO]   d_current_slope                             351      4.5%       1.0        1.9
+[22:16:17] [INFO]   d_tide_slope                                313      4.0%       1.0        1.6
+[22:16:17] [INFO]   wave_slope                                  313      4.0%       1.0        1.5
+[22:16:17] [INFO]   current_slope                               270      3.5%       1.0        1.1
+[22:16:17] [INFO]   vwap_sigma_tide                             261      3.4%       1.0        1.7
+[22:16:17] [INFO]   rsi_value                                   257      3.3%       1.0        2.7
+[22:16:17] [INFO]   kf_rsi_pred_val                             254      3.3%       1.0        2.6
+[22:16:17] [INFO]   vwap_spread_current_wave                    248      3.2%       1.0        1.3
+[22:16:17] [INFO]   vwap_spread_tide_current                    218      2.8%       1.0        1.4
+[22:16:17] [INFO]   geo_phase_angle                             214      2.8%       3.0        3.6
+[22:16:17] [INFO]   kf_conjugation_pred_val                     209      2.7%       1.0        1.3
+[22:16:17] [INFO]   conj_current_tide                           189      2.4%       1.0        1.2
+[22:16:17] [INFO]   current_accel                               173      2.2%       1.0        2.0
+[22:16:17] [INFO]   fear_level                                  156      2.0%       1.0        1.3
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   STEP 5: Archetype Profiles
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO] 
+  ═══ HL — 2653 turns ═══
+[22:16:17] [INFO]   Ramp slope:      μ=+0.073  med=+0.006
+[22:16:17] [INFO]   Explosion density: μ=2.6  med=1  p75=4  max=20
+[22:16:17] [INFO]   Avg density curve (last 10 bars before turn):
+[22:16:17] [INFO]     Bars:     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1
+[22:16:17] [INFO]     Avg:       2.1   2.2   2.2   2.2   2.3   2.3   2.3   2.4   2.5   3.1
+[22:16:17] [INFO]   Top alarm features for HL:
+[22:16:17] [INFO]     kf_price_pred_val                         334 (12.6%)
+[22:16:17] [INFO]     kf_price_filt_vel                         208 (7.8%)
+[22:16:17] [INFO]     vwap_sigma_wave                           170 (6.4%)
+[22:16:17] [INFO]     vwap_sigma_current                        150 (5.7%)
+[22:16:17] [INFO]     sigma_tide                                132 (5.0%)
+[22:16:17] [INFO] 
+  ═══ LL — 2442 turns ═══
+[22:16:17] [INFO]   Ramp slope:      μ=+0.086  med=+0.000
+[22:16:17] [INFO]   Explosion density: μ=3.8  med=3  p75=6  max=21
+[22:16:17] [INFO]   Avg density curve (last 10 bars before turn):
+[22:16:17] [INFO]     Bars:     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1
+[22:16:17] [INFO]     Avg:       2.2   2.2   2.3   2.3   2.3   2.4   2.5   2.6   2.8   3.1
+[22:16:17] [INFO]   Top alarm features for LL:
+[22:16:17] [INFO]     kf_price_pred_val                         247 (10.1%)
+[22:16:17] [INFO]     kf_price_filt_vel                         189 (7.7%)
+[22:16:17] [INFO]     vwap_sigma_wave                           134 (5.5%)
+[22:16:17] [INFO]     sigma_tide                                130 (5.3%)
+[22:16:17] [INFO]     vwap_sigma_tide                           126 (5.2%)
+[22:16:17] [INFO] 
+  ═══ HH — 2613 turns ═══
+[22:16:17] [INFO]   Ramp slope:      μ=-0.003  med=+0.000
+[22:16:17] [INFO]   Explosion density: μ=2.1  med=0  p75=3  max=17
+[22:16:17] [INFO]   Avg density curve (last 10 bars before turn):
+[22:16:17] [INFO]     Bars:     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1
+[22:16:17] [INFO]     Avg:       2.0   2.0   2.0   2.0   2.0   1.9   2.0   2.0   1.9   1.9
+[22:16:17] [INFO]   Top alarm features for HH:
+[22:16:17] [INFO]     kf_price_filt_vel                         198 (7.6%)
+[22:16:17] [INFO]     kf_price_pred_val                         172 (6.6%)
+[22:16:17] [INFO]     d_current_slope                           103 (3.9%)
+[22:16:17] [INFO]     d_tide_slope                               99 (3.8%)
+[22:16:17] [INFO]     tide_slope                                 81 (3.1%)
+[22:16:17] [INFO] 
+  ═══ LH — 2433 turns ═══
+[22:16:17] [INFO]   Ramp slope:      μ=+0.025  med=+0.000
+[22:16:17] [INFO]   Explosion density: μ=2.3  med=0  p75=4  max=20
+[22:16:17] [INFO]   Avg density curve (last 10 bars before turn):
+[22:16:17] [INFO]     Bars:     t-10   t-9   t-8   t-7   t-6   t-5   t-4   t-3   t-2   t-1
+[22:16:17] [INFO]     Avg:       2.2   2.3   2.2   2.3   2.3   2.4   2.4   2.4   2.4   2.4
+[22:16:17] [INFO]   Top alarm features for LH:
+[22:16:17] [INFO]     kf_price_filt_vel                         336 (13.8%)
+[22:16:17] [INFO]     kf_price_pred_val                         238 (9.8%)
+[22:16:17] [INFO]     d_current_slope                            80 (3.3%)
+[22:16:17] [INFO]     wave_slope                                 80 (3.3%)
+[22:16:17] [INFO]     tide_slope                                 79 (3.2%)
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   STEP 6: BOTTOM vs TOP Comparison
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO] 
+  ═══ BOTTOM — 5095 turns ═══
+[22:16:17] [INFO]   Alarm lead: μ=1.9  med=1
+[22:16:17] [INFO]   Ramp slope: μ=+0.079  med=+0.000
+[22:16:17] [INFO]   Explosion:  μ=3.2  med=2
+[22:16:17] [INFO] 
+  Top alarm features (BOTTOM):
+[22:16:17] [INFO]     kf_price_pred_val                         581 (11.4%)
+[22:16:17] [INFO]     kf_price_filt_vel                         397 (7.8%)
+[22:16:17] [INFO]     vwap_sigma_wave                           304 (6.0%)
+[22:16:17] [INFO]     vwap_sigma_current                        272 (5.3%)
+[22:16:17] [INFO]     sigma_tide                                262 (5.1%)
+[22:16:17] [INFO]     tide_slope                                216 (4.2%)
+[22:16:17] [INFO]     vwap_sigma_tide                           204 (4.0%)
+[22:16:17] [INFO]     wave_slope                                169 (3.3%)
+[22:16:17] [INFO]     d_current_slope                           168 (3.3%)
+[22:16:17] [INFO]     kf_rsi_pred_val                           161 (3.2%)
+[22:16:17] [INFO] 
+  ═══ TOP — 5046 turns ═══
+[22:16:17] [INFO]   Alarm lead: μ=2.3  med=1
+[22:16:17] [INFO]   Ramp slope: μ=+0.011  med=+0.000
+[22:16:17] [INFO]   Explosion:  μ=2.2  med=0
+[22:16:17] [INFO] 
+  Top alarm features (TOP):
+[22:16:17] [INFO]     kf_price_filt_vel                         534 (10.6%)
+[22:16:17] [INFO]     kf_price_pred_val                         410 (8.1%)
+[22:16:17] [INFO]     d_current_slope                           183 (3.6%)
+[22:16:17] [INFO]     d_tide_slope                              170 (3.4%)
+[22:16:17] [INFO]     tide_slope                                160 (3.2%)
+[22:16:17] [INFO]     wave_slope                                144 (2.9%)
+[22:16:17] [INFO]     vwap_spread_tide_current                  125 (2.5%)
+[22:16:17] [INFO]     rsi_value                                 124 (2.5%)
+[22:16:17] [INFO]     vwap_sigma_wave                           123 (2.4%)
+[22:16:17] [INFO]     vwap_spread_current_wave                  122 (2.4%)
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   STEP 7: Feature × Archetype Activation Heatmap (% active at t=0)
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   Feature                                 HL     LL     HH     LH  Δ(HL-LL)  Δ(HH-LH)
+[22:16:17] [INFO]   ─────────────────────────────────── ────── ────── ────── ────── ───────── ─────────
+[22:16:17] [INFO]   wave_slope                           11.8%  15.7%   9.2%  12.5%     -4.0%     -3.3%
+[22:16:17] [INFO]   conj_wave_tide                       11.6%  14.0%  10.0%  12.1%     -2.4%     -2.1%
+[22:16:17] [INFO]   vwap_sigma_current                    5.0%  23.0%   2.2%   0.8%    -18.0%     +1.4%
+[22:16:17] [INFO]   current_accel                         8.7%  16.9%  10.3%  10.4%     -8.2%     -0.1%
+[22:16:17] [INFO]   d_current_slope                       8.7%  16.9%  10.3%  10.4%     -8.2%     -0.1%
+[22:16:17] [INFO]   kf_conjugation_pred_val              11.9%  13.8%  10.1%  12.4%     -1.9%     -2.3%
+[22:16:17] [INFO]   rsi_value                             5.1%  21.4%   6.4%   1.4%    -16.3%     +5.1%
+[22:16:17] [INFO]   kf_rsi_pred_val                       7.4%  20.4%   6.2%   1.6%    -12.9%     +4.6%
+[22:16:17] [INFO]   kf_price_pred_val                    13.6%  23.5%  13.2%  11.6%     -9.9%     +1.6%
+[22:16:17] [INFO]   vwap_sigma_tide                       7.3%  21.7%   2.7%   5.5%    -14.4%     -2.8%
+[22:16:17] [INFO]   tide_accel                            8.9%  14.0%   8.7%   8.0%     -5.1%     +0.7%
+[22:16:17] [INFO]   d_tide_slope                          8.9%  14.0%   8.7%   8.0%     -5.1%     +0.7%
+[22:16:17] [INFO]   vwap_spread_tide_wave                11.6%  11.8%  10.6%  11.8%     -0.1%     -1.1%
+[22:16:17] [INFO]   current_slope                        10.9%  12.2%   9.3%  11.5%     -1.4%     -2.2%
+[22:16:17] [INFO]   geo_velocity_align                    1.1%   1.4%   0.5%   0.6%     -0.2%     -0.2%
+[22:16:17] [INFO]   geo_exit_align                        1.1%   1.4%   0.5%   0.6%     -0.2%     -0.2%
+[22:16:17] [INFO]   conj_current_tide                    10.3%  11.5%  10.1%  10.5%     -1.2%     -0.4%
+[22:16:17] [INFO]   kf_price_filt_vel                    19.4%  14.1%   8.6%  15.9%     +5.3%     -7.3%
+[22:16:17] [INFO]   kf_price_pred_vel                    19.4%  14.1%   8.6%  15.9%     +5.3%     -7.3%
+[22:16:17] [INFO]   fear_level                            7.7%  11.4%   2.8%   5.6%     -3.7%     -2.8%
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   STEP 8: Self-Audit
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   Alarm lead range: [1, 10] bars
+[22:16:17] [INFO]   ✅ Leads within [1, 10]
+[22:16:17] [INFO]   ✅ Density always ≥ 0
+[22:16:17] [INFO]   HL: 2653 turns
+[22:16:17] [INFO]   LL: 2442 turns
+[22:16:17] [INFO]   HH: 2613 turns
+[22:16:17] [INFO]   LH: 2433 turns
+[22:16:17] [INFO]   Classified: 10141  Unknown: 20
+[22:16:17] [INFO]   ✅ ALL SELF-AUDITS PASSED
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:17] [INFO]   STEP 9: Export
+[22:16:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:18] [INFO]   PKL: sprint2_redo_phase_c_v21.pkl (4.0 MB)
+[22:16:18] [INFO]   CSV: sprint2_redo_phase_c_v21.csv (0.7 MB)
+[22:16:18] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:18] [INFO]   SUMMARY
+[22:16:18] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[22:16:18] [INFO]   Turns analyzed: 10161
+[22:16:18] [INFO]   Turns with alarm: 7755 (76.3%)
+[22:16:18] [INFO]   Top alarm feature: ('kf_price_pred_val', 993)
+[22:16:18] [INFO]   Archetypes: HL=2653 LL=2442 HH=2613 LH=2433
+[22:16:18] [INFO]   Audit: ✅ PASSED
+[22:16:18] [INFO]   Time: 167s (2.8min)

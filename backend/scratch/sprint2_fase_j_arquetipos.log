@@ -1,0 +1,179 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  FASE J: SEGMENTACIÓN POR ARQUETIPOS — HL vs LL / HH vs LH
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Lake: 91,252 rows × 36 features
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 1: CLASIFICAR GIROS EN ARQUETIPOS
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Using vwap_wave as price proxy (reg_value_wave not found)
+
+  Turn classification:
+    Higher Low (HL):   1,578
+    Lower Low (LL):    3,527
+    Higher High (HH):  3,160
+    Lower High (LH):   1,899
+    First turn (no prev): 34
+
+  Bars per archetype (±3 window):
+    HL bars: 3,339
+    LL bars: 11,202
+    HH bars: 9,919
+    LH bars: 4,656
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 2: SHAP PROMEDIO POR ARQUETIPO
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Training PISO model for SHAP extraction...
+  Computing SHAP for HL (3339 bars) and LL (11202 bars)...
+
+  === PISO: SHAP Comparación HL vs LL ===
+  Feature                                SHAP_HL    SHAP_LL  Δ (LL-HL) Dominant    
+  ─────────────────────────────────── ────────── ────────── ────────── ────────────
+  kf_rsi_pred_val                         0.9389     0.9352    -0.0036 SHARED      
+  kf_price_pred_trend_5bar                0.3772     0.3053    -0.0718 SHARED      
+  rsi_value                               0.2466     0.2107    -0.0359 SHARED      
+  kf_price_filt_vel                       0.2251     0.2268    +0.0017 SHARED      
+  kf_price_pred_val                       0.1813     0.1842    +0.0029 SHARED      
+  vwap_sigma_current                      0.1227     0.1365    +0.0138 SHARED      
+  rsi_z_trend_5bar                        0.1155     0.1173    +0.0019 SHARED      
+  vwap_spread_tide_wave                   0.1392     0.0844    -0.0549 ★ HL        
+  reg_value_tide                          0.1340     0.0849    -0.0491 ★ HL        
+  wave_slope                              0.1362     0.0667    -0.0695 ★ HL        
+  vwap_sigma_tide                         0.1266     0.0674    -0.0592 ★ HL        
+  tide_slope                              0.0979     0.0676    -0.0303 ★ HL        
+  current_slope                           0.1053     0.0602    -0.0451 ★ HL        
+  vwap_spread_current_wave                0.0802     0.0744    -0.0057 SHARED      
+  vwap_sigma_wave                         0.0808     0.0730    -0.0079 SHARED      
+  conj_current_tide                       0.0837     0.0595    -0.0242 SHARED      
+  vwap_wave                               0.0784     0.0639    -0.0144 SHARED      
+  kf_price_pred_vel                       0.0696     0.0726    +0.0031 SHARED      
+  current_accel                           0.0891     0.0481    -0.0410 ★ HL        
+  vwap_spread_tide_current                0.0769     0.0590    -0.0179 SHARED      
+
+  Training TECHO model for SHAP extraction...
+  Computing SHAP for HH (9919 bars) and LH (4656 bars)...
+
+  === TECHO: SHAP Comparación HH vs LH ===
+  Feature                                SHAP_HH    SHAP_LH  Δ (LH-HH) Dominant    
+  ─────────────────────────────────── ────────── ────────── ────────── ────────────
+  kf_rsi_pred_val                         0.5085     0.7183    +0.2098 SHARED      
+  kf_price_filt_vel                       0.2459     0.3129    +0.0670 SHARED      
+  kf_price_pred_trend_5bar                0.1827     0.2533    +0.0706 SHARED      
+  kf_price_pred_val                       0.1490     0.2001    +0.0510 SHARED      
+  rsi_value                               0.1308     0.1748    +0.0440 SHARED      
+  rsi_z_trend_5bar                        0.0950     0.1658    +0.0709 ★ LH        
+  vwap_spread_tide_current                0.1239     0.0905    -0.0334 SHARED      
+  wave_slope                              0.0669     0.1475    +0.0806 ★ LH        
+  conj_current_tide                       0.0486     0.1194    +0.0708 ★ LH        
+  vwap_spread_tide_wave                   0.0633     0.0995    +0.0362 ★ LH        
+  sigma_tide                              0.1010     0.0614    -0.0396 ★ HH        
+  rolling_density_3bar                    0.0692     0.0912    +0.0220 SHARED      
+  vwap_sigma_wave                         0.0747     0.0775    +0.0028 SHARED      
+  tide_slope                              0.0763     0.0707    -0.0056 SHARED      
+  conj_wave_tide                          0.0377     0.0971    +0.0594 ★ LH        
+  current_slope                           0.0465     0.0831    +0.0367 ★ LH        
+  reg_value_tide                          0.0575     0.0704    +0.0129 SHARED      
+  vwap_wave                               0.0453     0.0774    +0.0321 ★ LH        
+  rolling_density_5bar                    0.0525     0.0636    +0.0111 SHARED      
+  reg_value_current                       0.0470     0.0511    +0.0041 SHARED      
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 3: DENSIDAD Y LIFT POR ARQUETIPO
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Archetype         n_bars  Density μ  Density med    rd3 μ    rd3 med
+  ─────────────── ──────── ────────── ──────────── ──────── ──────────
+  HL                 3,339       1.92          0.0     1.93        0.7
+  LL                11,202       2.47          1.0     2.44        1.0
+  HH                 9,919       1.39          0.0     1.39        0.0
+  LH                 4,656       2.82          1.0     2.88        1.3
+  FAR (neg)         37,364       0.71          0.0     0.70        0.0
+
+  Archetype    Level           % at level      % far     LIFT
+  ──────────── ─────────────── ────────── ────────── ────────
+  HL           ALARMA               50.4%      18.2%     2.8x ✅
+  HL           PRESURIZACIÓN        21.6%       3.7%     5.9x ✅
+  HL           EXPLOSIÓN            10.1%       0.8%    12.8x ✅
+  LL           ALARMA               53.7%      18.2%     2.9x ✅
+  LL           PRESURIZACIÓN        26.6%       3.7%     7.2x ✅
+  LL           EXPLOSIÓN            13.1%       0.8%    16.6x ✅
+  HH           ALARMA               35.4%      18.2%     1.9x ⚠️
+  HH           PRESURIZACIÓN        11.9%       3.7%     3.2x ✅
+  HH           EXPLOSIÓN             4.3%       0.8%     5.5x ✅
+  LH           ALARMA               56.6%      18.2%     3.1x ✅
+  LH           PRESURIZACIÓN        32.0%       3.7%     8.7x ✅
+  LH           EXPLOSIÓN            18.5%       0.8%    23.4x ✅
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 4: CRESCENDO TEMPORAL POR ARQUETIPO
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  === HL ===
+  Phase            Density μ  KF_trend μ        n
+  ─────────────── ────────── ─────────── ────────
+  PRECURSOR            2.733     -0.0391    7,412
+  APPROACH             2.568     -0.1073    3,183
+  INFLECTION           2.548     -0.1363    1,061
+  PROPAGATION          2.532      0.1855    3,183
+  → 🔻 DECRESCENDO (ramp = -0.185)
+
+  === LL ===
+  Phase            Density μ  KF_trend μ        n
+  ─────────────── ────────── ─────────── ────────
+  PRECURSOR            2.117     -0.0122   27,680
+  APPROACH             2.511     -0.1393   11,881
+  INFLECTION           2.914     -0.0982    3,964
+  PROPAGATION          2.880      0.3999   11,892
+  → ✅ CRESCENDO (ramp = +0.796)
+
+  === HH ===
+  Phase            Density μ  KF_trend μ        n
+  ─────────────── ────────── ─────────── ────────
+  PRECURSOR            1.402      0.0160   22,432
+  APPROACH             1.434      0.0851    9,638
+  INFLECTION           1.546      0.0607    3,216
+  PROPAGATION          1.548     -0.3425    9,645
+  → ➖ PLANO (ramp = +0.144)
+
+  === LH ===
+  Phase            Density μ  KF_trend μ        n
+  ─────────────── ────────── ─────────── ────────
+  PRECURSOR            3.251     -0.0063   13,693
+  APPROACH             3.501      0.1220    5,871
+  INFLECTION           3.557      0.1719    1,957
+  PROPAGATION          3.486     -0.1014    5,871
+  → ✅ CRESCENDO (ramp = +0.306)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  STEP 5: FEATURE MEANS POR ARQUETIPO (barras en t=0)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Feature                            HL μ     LL μ        Δ │     HH μ     LH μ        Δ
+  ────────────────────────────── ──────── ──────── ──────── │ ──────── ──────── ────────
+  kf_rsi_pred_val                  49.952   37.113  -12.839 │   64.750   47.574  -17.176
+  rsi_value                        51.231   38.501  -12.730 │   63.549   46.938  -16.611
+  vwap_sigma_current                0.524   -1.194   -1.718 │    1.488   -0.521   -2.008
+  vwap_sigma_tide                   0.639   -0.437   -1.076 │    1.332   -0.432   -1.764
+  sigma_tide                        0.391   -1.384   -1.775 │    1.025   -0.895   -1.920
+  tide_slope                        0.023    0.029   +0.006 │    0.045    0.005   -0.040
+  current_slope                     0.160   -0.085   -0.246 │    0.124   -0.178   -0.302
+  wave_slope                        0.303   -0.287   -0.590 │    0.265   -0.342   -0.607
+  conj_wave_tide                    0.280   -0.316   -0.596 │    0.220   -0.347   -0.567
+  kf_conjugation_pred_val           0.278   -0.337   -0.615 │    0.236   -0.349   -0.584
+  kf_price_pred_val                -0.400   -0.730   -0.330 │    0.592    0.400   -0.191
+  kf_price_filt_vel                -0.055   -0.015   +0.040 │    0.001    0.104   +0.103
+  fear_level                        1.472    3.088   +1.616 │    1.203    3.212   +2.009
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  VEREDICTO: ¿LOS SUB-TIPOS TIENEN FIRMAS DISTINTAS?
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  PISO: 7/20 top features tienen SHAP >30% diferente entre HL y LL
+  → ✅ HL y LL son FENÓMENOS DISTINTOS — necesitan thresholds separados
+
+  TECHO: 8/20 top features tienen SHAP >30% diferente entre HH y LH
+  → ✅ HH y LH son FENÓMENOS DISTINTOS — necesitan thresholds separados
+
+  Tiempo total: 32.8s

@@ -1,0 +1,643 @@
+SPRINT 2-REDO — FASE B — 2026-05-29T23:49:13.257968+00:00
+==============================================================================================================
+
+
+==============================================================================================================
+  SPRINT 2-REDO — FASE B: FEATURES INDIVIDUALES
+==============================================================================================================
+
+==============================================================================================================
+  FASE B — STEP 0: Load Phase A Data
+==============================================================================================================
+[23:49:13]   Phase A lake: 4189 matched, 154 features, 17 tickers
+[23:49:49]   Feature Lake reloaded: 91,252 obs × 165 cols
+[23:49:53]   Z-scores recomputed for 154 features
+
+==============================================================================================================
+  FASE B — STEP 1: Compute Feature × Layer × Ticker Metrics
+==============================================================================================================
+[23:49:53]   Computing 154 features × 4 layers × 17 tickers
+[23:50:44]     Processed 20/154 features...
+[23:51:36]     Processed 40/154 features...
+[23:52:24]     Processed 60/154 features...
+[23:53:13]     Processed 80/154 features...
+[23:54:02]     Processed 100/154 features...
+[23:54:48]     Processed 120/154 features...
+[23:55:37]     Processed 140/154 features...
+[23:56:09]   ✅ Complete: 154 features × 4 layers × 17 tickers
+
+==============================================================================================================
+  FASE B — STEP 2: Aggregate Global Metrics
+==============================================================================================================
+[23:56:09]   Aggregated 154 features × 4 layers
+
+==============================================================================================================
+  FASE B — STEP 3: Persistence Ratio Classification
+==============================================================================================================
+
+  ── Persistence Classification ──
+[23:57:26]   Feature                             │    ZZ% │   NZZ% │  Ratio │        Class
+[23:57:26]   ───────────────────────────────────────────────────────────────────────────
+[23:57:26]   body_ratio                          │   2.6% │   0.5% │  5.18x │  CONFIRMADOR
+[23:57:26]   slope_ratio_tw                      │  18.2% │   4.5% │  4.04x │  CONFIRMADOR
+[23:57:26]   d_vol_up_down_ratio                 │  67.8% │  17.9% │  3.78x │  CONFIRMADOR
+[23:57:26]   d_sigma_wave                        │  30.8% │   8.4% │  3.67x │  CONFIRMADOR
+[23:57:26]   d_rsi_value                         │  14.0% │   4.8% │  2.92x │  CONFIRMADOR
+[23:57:26]   d2_sigma_tide                       │  39.7% │  14.2% │  2.79x │  CONFIRMADOR
+[23:57:26]   d2_vwap_sigma_tide                  │  41.2% │  14.8% │  2.78x │  CONFIRMADOR
+[23:57:26]   d2_sigma_current                    │  29.5% │  10.9% │  2.71x │  CONFIRMADOR
+[23:57:26]   d2_spread_tide_wave                 │  32.7% │  12.1% │  2.70x │  CONFIRMADOR
+[23:57:26]   overnight_gap                       │  37.1% │  15.0% │  2.47x │  CONFIRMADOR
+[23:57:26]   d_wave_accel                        │  41.2% │  17.4% │  2.37x │  CONFIRMADOR
+[23:57:26]   vol_return_interaction              │  26.1% │  11.8% │  2.22x │  CONFIRMADOR
+[23:57:26]   overnight_gap_atr                   │  14.9% │   7.3% │  2.06x │  CONFIRMADOR
+[23:57:26]   d2_tide_accel                       │  32.5% │  15.8% │  2.05x │  CONFIRMADOR
+[23:57:26]   d2_tension_tide                     │  46.3% │  25.1% │  1.84x │      NEUTRAL
+[23:57:26]   sigma_range_tide                    │  53.7% │  31.8% │  1.69x │      NEUTRAL
+[23:57:26]   vwap_sigma_spread_tide              │  53.7% │  31.8% │  1.69x │      NEUTRAL
+[23:57:26]   vwap_spread_ratio_tide              │  22.4% │  13.5% │  1.67x │      NEUTRAL
+[23:57:26]   overnight_gap_vs_tide               │  28.1% │  17.2% │  1.63x │      NEUTRAL
+[23:57:26]   sigma_range_wave                    │  31.2% │  19.6% │  1.59x │      NEUTRAL
+[23:57:26]   sigma_range_current                 │  35.2% │  22.6% │  1.56x │      NEUTRAL
+[23:57:26]   vwap_sigma_spread_current           │  35.2% │  22.6% │  1.56x │      NEUTRAL
+[23:57:26]   vol_breakout_signal                 │  19.6% │  13.0% │  1.51x │      NEUTRAL
+[23:57:26]   vol_accel_wave                      │  48.5% │  35.8% │  1.36x │      NEUTRAL
+[23:57:26]   d_kalman_velocity                   │  40.7% │  31.1% │  1.31x │      NEUTRAL
+[23:57:26]   volume_sigma                        │  21.8% │  17.9% │  1.21x │      NEUTRAL
+[23:57:26]   volume_accel                        │  38.1% │  31.5% │  1.21x │      NEUTRAL
+[23:57:26]   vwap_accel_tide                     │  41.6% │  34.8% │  1.20x │      NEUTRAL
+[23:57:26]   div_close_low_tide                  │  15.1% │  12.9% │  1.17x │      NEUTRAL
+[23:57:26]   climax_vol_ratio                    │  26.2% │  22.6% │  1.16x │      NEUTRAL
+[23:57:26]   volume_exhaustion                   │  22.8% │  19.9% │  1.15x │      NEUTRAL
+[23:57:26]   d_fear_level                        │  22.9% │  20.1% │  1.14x │      NEUTRAL
+[23:57:26]   volume_trend                        │  76.9% │  69.0% │  1.11x │      NEUTRAL
+[23:57:26]   volume_ratio                        │  25.0% │  22.6% │  1.10x │      NEUTRAL
+[23:57:26]   slope_decel_wave                    │  85.9% │  78.1% │  1.10x │      NEUTRAL
+[23:57:26]   geo_exit_align                      │  89.7% │  83.7% │  1.07x │      NEUTRAL
+[23:57:26]   geo_velocity_align                  │  89.7% │  83.7% │  1.07x │      NEUTRAL
+[23:57:26]   slope_energy                        │  94.8% │  88.8% │  1.07x │      NEUTRAL
+[23:57:26]   wave_slope                          │  92.6% │  87.1% │  1.06x │      NEUTRAL
+[23:57:26]   tsi_wave                            │  91.3% │  87.1% │  1.05x │      NEUTRAL
+[23:57:26]   slope_phase_tw                      │  91.5% │  87.5% │  1.04x │      NEUTRAL
+[23:57:26]   conj_wave_tide                      │  91.4% │  87.6% │  1.04x │      NEUTRAL
+[23:57:26]   slope_diff_tw                       │  91.4% │  87.6% │  1.04x │      NEUTRAL
+[23:57:26]   wave_slope_sq                       │  91.0% │  87.4% │  1.04x │      NEUTRAL
+[23:57:26]   vwap_spread_current_wave            │  97.0% │  93.5% │  1.04x │      NEUTRAL
+[23:57:26]   atr_ratio                           │  95.3% │  92.3% │  1.03x │      NEUTRAL
+[23:57:26]   conj_wave_current                   │  89.0% │  86.2% │  1.03x │      NEUTRAL
+[23:57:26]   slope_diff_cw                       │  89.0% │  86.2% │  1.03x │      NEUTRAL
+[23:57:26]   atr_14                              │  96.0% │  93.3% │  1.03x │      NEUTRAL
+[23:57:26]   inst_rejection_high_current         │  94.2% │  91.8% │  1.03x │      NEUTRAL
+[23:57:26]   vwap_in_channel_current             │  94.2% │  91.8% │  1.03x │      NEUTRAL
+[23:57:26]   current_slope                       │  97.5% │  95.1% │  1.03x │      NEUTRAL
+[23:57:26]   compression_ratio                   │  90.1% │  88.0% │  1.02x │      NEUTRAL
+[23:57:26]   slope_div_current                   │  69.9% │  68.5% │  1.02x │      NEUTRAL
+[23:57:26]   slope_decel_current                 │  89.7% │  87.9% │  1.02x │      NEUTRAL
+[23:57:26]   volume_slope_confirm                │  63.4% │  62.2% │  1.02x │      NEUTRAL
+[23:57:26]   residual_std_current                │  98.2% │  96.5% │  1.02x │      NEUTRAL
+[23:57:26]   conj_current_tide                   │  97.0% │  95.4% │  1.02x │      NEUTRAL
+[23:57:26]   slope_diff_tc                       │  97.0% │  95.4% │  1.02x │      NEUTRAL
+[23:57:26]   sigma_low_tide                      │  74.8% │  73.8% │  1.01x │      NEUTRAL
+[23:57:26]   current_slope_sq                    │  95.9% │  94.6% │  1.01x │      NEUTRAL
+[23:57:26]   fear_level                          │  92.4% │  91.1% │  1.01x │      NEUTRAL
+[23:57:26]   slope_product_tc                    │  97.0% │  96.2% │  1.01x │      NEUTRAL
+[23:57:26]   residual_std_wave                   │  91.7% │  91.1% │  1.01x │      NEUTRAL
+[23:57:26]   residual_std_tide                   │  99.6% │  99.2% │  1.00x │      NEUTRAL
+[23:57:26]   vol_price_regime                    │  33.5% │  33.4% │  1.00x │      NEUTRAL
+[23:57:26]   tide_slope_sq                       │  99.2% │  98.8% │  1.00x │      NEUTRAL
+[23:57:26]   vwap_current                        │ 100.0% │  99.7% │  1.00x │      NEUTRAL
+[23:57:26]   vwap_spread_tide_wave               │  98.0% │  97.7% │  1.00x │      NEUTRAL
+[23:57:26]   vwap_tide                           │ 100.0% │  99.9% │  1.00x │      NEUTRAL
+[23:57:26]   reg_value_current                   │  99.5% │  99.4% │  1.00x │      NEUTRAL
+[23:57:26]   vwap_wave                           │  99.5% │  99.5% │  1.00x │      NEUTRAL
+[23:57:26]   tide_slope                          │  98.9% │  98.9% │  1.00x │      NEUTRAL
+[23:57:26]   regime_encoded                      │  99.1% │  99.2% │  1.00x │      NEUTRAL
+[23:57:26]   reg_value_wave                      │  98.5% │  99.0% │  0.99x │      NEUTRAL
+[23:57:26]   inst_rejection_high_tide            │  97.4% │  98.1% │  0.99x │      NEUTRAL
+[23:57:26]   geo_phase_angle                     │  56.7% │  57.1% │  0.99x │      NEUTRAL
+[23:57:26]   reg_value_tide                      │  99.1% │  99.8% │  0.99x │      NEUTRAL
+[23:57:26]   effort_vs_result_20d                │  95.1% │  96.0% │  0.99x │      NEUTRAL
+[23:57:26]   vwap_spread_tide_current            │  97.6% │  98.6% │  0.99x │      NEUTRAL
+[23:57:26]   sigma_divergence                    │  62.6% │  63.3% │  0.99x │      NEUTRAL
+[23:57:26]   spread_tide_wave                    │  62.6% │  63.3% │  0.99x │      NEUTRAL
+[23:57:26]   below_all_vwaps_int                 │  83.3% │  85.9% │  0.97x │      NEUTRAL
+[23:57:26]   sigma_high_tide                     │  71.6% │  74.6% │  0.96x │      NEUTRAL
+[23:57:26]   kalman_velocity                     │  27.5% │  28.9% │  0.95x │      NEUTRAL
+[23:57:26]   vwap_sigma_high_tide                │  83.6% │  88.7% │  0.94x │      NEUTRAL
+[23:57:26]   kalman_slope_conf                   │  34.2% │  37.1% │  0.92x │      NEUTRAL
+[23:57:26]   vwap_sigma_low_tide                 │  80.3% │  88.4% │  0.91x │      NEUTRAL
+[23:57:26]   div_close_low_current               │  10.0% │  11.2% │  0.89x │      NEUTRAL
+[23:57:26]   vol_slope_conf                      │  68.1% │  77.5% │  0.88x │      NEUTRAL
+[23:57:26]   tide_accel                          │  76.0% │  86.8% │  0.88x │      NEUTRAL
+[23:57:26]   d_tide_slope                        │  75.8% │  86.7% │  0.87x │      NEUTRAL
+[23:57:26]   d2_current_slope                    │  64.7% │  74.8% │  0.86x │      NEUTRAL
+[23:57:26]   current_accel                       │  64.6% │  74.8% │  0.86x │      NEUTRAL
+[23:57:26]   volume_at_extreme                   │  39.8% │  46.5% │  0.86x │      NEUTRAL
+[23:57:26]   sigma_low_current                   │  43.9% │  52.4% │  0.84x │      NEUTRAL
+[23:57:26]   compr_at_extreme                    │  66.8% │  79.9% │  0.84x │      NEUTRAL
+[23:57:26]   vwap_sigma_high_current             │  65.9% │  79.3% │  0.83x │      NEUTRAL
+[23:57:26]   sigma_low_wave                      │  23.1% │  28.1% │  0.82x │      NEUTRAL
+[23:57:26]   vwap_sigma_low_current              │  62.2% │  78.2% │  0.79x │      NEUTRAL
+[23:57:26]   price_vwap_div                      │  69.3% │  88.3% │  0.78x │      NEUTRAL
+[23:57:26]   tension_tide                        │  69.3% │  88.3% │  0.78x │      NEUTRAL
+[23:57:26]   spread_current_wave                 │  42.4% │  54.4% │  0.78x │      NEUTRAL
+[23:57:26]   d2_conj_wave_tide                   │  45.2% │  60.4% │  0.75x │      NEUTRAL
+[23:57:26]   div_close_low_wave                  │   7.5% │  10.2% │  0.74x │      NEUTRAL
+[23:57:26]   vwap_sigma_tide                     │  60.8% │  82.4% │  0.74x │      NEUTRAL
+[23:57:26]   wave_accel                          │  44.4% │  60.3% │  0.74x │      NEUTRAL
+[23:57:26]   sigma_high_current                  │  37.6% │  51.9% │  0.72x │      NEUTRAL
+[23:57:26]   sigma_high_wave                     │  19.6% │  27.5% │  0.71x │      NEUTRAL
+[23:57:26]   vol_price_corr_20d                  │  57.3% │  80.5% │  0.71x │      NEUTRAL
+[23:57:26]   tension_current                     │  49.1% │  69.5% │  0.71x │      NEUTRAL
+[23:57:26]   sigma_squared                       │  50.4% │  75.6% │  0.67x │      NEUTRAL
+[23:57:26]   sigma_abs_dist                      │  50.2% │  75.6% │  0.66x │      NEUTRAL
+[23:57:26]   rsi_divergence_strength             │  52.3% │  78.9% │  0.66x │      NEUTRAL
+[23:57:26]   spread_tide_current                 │  45.9% │  69.4% │  0.66x │      NEUTRAL
+[23:57:26]   sigma_tide                          │  49.6% │  75.4% │  0.66x │      NEUTRAL
+[23:57:26]   vol_adj_delta                       │  18.3% │  28.9% │  0.63x │      NEUTRAL
+[23:57:26]   rsi_sigma_interact                  │  47.2% │  75.6% │  0.62x │      NEUTRAL
+[23:57:26]   tension_wave                        │  31.0% │  50.3% │  0.62x │      NEUTRAL
+[23:57:26]   wave_flip                           │   2.6% │   4.5% │  0.58x │      NEUTRAL
+[23:57:26]   rsi_trap_zone                       │  40.4% │  71.4% │  0.57x │      NEUTRAL
+[23:57:26]   rsi_conviction                      │  30.4% │  56.5% │  0.54x │      NEUTRAL
+[23:57:26]   div_high_close_wave                 │   6.3% │  12.3% │  0.51x │      NEUTRAL
+[23:57:26]   d_compression_ratio                 │  17.4% │  35.8% │  0.49x │     DETECTOR
+[23:57:26]   sigma_min_tf                        │  26.0% │  56.1% │  0.46x │     DETECTOR
+[23:57:26]   geo_state_norm                      │  22.8% │  54.5% │  0.42x │     DETECTOR
+[23:57:26]   total_displacement                  │  22.2% │  54.9% │  0.40x │     DETECTOR
+[23:57:26]   sigma_max_tf                        │  21.4% │  59.3% │  0.36x │     DETECTOR
+[23:57:26]   rsi_value                           │  22.4% │  69.8% │  0.32x │     DETECTOR
+[23:57:26]   div_high_close_current              │   4.4% │  15.3% │  0.29x │     DETECTOR
+[23:57:26]   rsi_bearish_div                     │  18.6% │  66.3% │  0.28x │     DETECTOR
+[23:57:26]   vwap_sigma_current                  │  17.1% │  62.9% │  0.27x │     DETECTOR
+[23:57:26]   div_high_close_tide                 │   5.0% │  19.3% │  0.26x │     DETECTOR
+[23:57:26]   sigma_current                       │  14.0% │  54.6% │  0.26x │     DETECTOR
+[23:57:26]   vwap_sigma_wave                     │   7.4% │  35.3% │  0.21x │     DETECTOR
+[23:57:26]   rsi_extreme_zone                    │  10.9% │  65.7% │  0.17x │     DETECTOR
+[23:57:26]   vol_up_down_ratio                   │   8.1% │  54.0% │  0.15x │     DETECTOR
+[23:57:26]   sigma_wave                          │   4.0% │  30.6% │  0.13x │     DETECTOR
+[23:57:26]   sigma_ratio_tw                      │   0.0% │   1.5% │  0.00x │     DETECTOR
+[23:57:26]   slope_ratio_tc                      │   0.0% │  15.8% │  0.00x │     DETECTOR
+[23:57:26]   tension_ratio_tw                    │   0.0% │   7.1% │  0.00x │     DETECTOR
+[23:57:26] 
+  Classification: 31 DETECTOR, 109 NEUTRAL, 14 CONFIRMADOR
+
+==============================================================================================================
+  FASE B — STEP 4: Stratified Analysis (RC, Trend, Archetype)
+==============================================================================================================
+[00:01:41]   wave_accel: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:05:48]   d_wave_accel: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:09:56]   atr_ratio: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:14:01]   overnight_gap: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:18:02]   compression_ratio: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:22:10]   vwap_sigma_current: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:26:21]   vwap_sigma_wave: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:30:28]   residual_std_wave: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:34:33]   residual_std_current: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:38:36]   sigma_current: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:42:35]   sigma_tide: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:46:40]   total_displacement: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:50:40]   volume_at_extreme: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:54:40]   fear_level: stratified across RC(8) × Trend(2) × Archetype(6)
+[00:58:39]   current_accel: stratified across RC(8) × Trend(2) × Archetype(6)
+[01:02:49]   rsi_value: stratified across RC(8) × Trend(2) × Archetype(6)
+[01:06:54]   compr_at_extreme: stratified across RC(8) × Trend(2) × Archetype(6)
+[01:11:03]   geo_state_norm: stratified across RC(8) × Trend(2) × Archetype(6)
+
+==============================================================================================================
+  FASE B — STEP 5: Generate Report
+==============================================================================================================
+
+  ── GLOBAL RANKING — ALERTA ──
+[01:11:03]   Feature                             │  Fires │  Hits │    PREC │  Recall │   LIFT │   Drift │    E[V] │         Type
+[01:11:03]   ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+[01:11:03]   overnight_gap                       │   3626 │   929 │   25.6% │   22.2% │   5.6x │  -0.91% │  +0.22% │  CONFIRMADOR
+[01:11:03]   tsi_wave                            │     85 │    21 │   24.7% │    0.5% │   5.4x │  -1.31% │  -0.25% │      NEUTRAL
+[01:11:03]   d_wave_accel                        │   4345 │   996 │   22.9% │   23.8% │   5.0x │  -0.38% │  +0.05% │  CONFIRMADOR
+[01:11:03]   vol_return_interaction              │   3242 │   734 │   22.6% │   17.5% │   4.9x │  -0.65% │  +0.49% │  CONFIRMADOR
+[01:11:03]   div_high_close_tide                 │   4109 │   860 │   20.9% │   20.5% │   4.6x │  -0.85% │  +0.48% │     DETECTOR
+[01:11:03]   d2_tide_accel                       │   4427 │   923 │   20.8% │   22.0% │   4.5x │  -0.66% │  +0.07% │  CONFIRMADOR
+[01:11:03]   div_close_low_tide                  │   3467 │   698 │   20.1% │   16.7% │   4.4x │  -1.07% │  -0.80% │      NEUTRAL
+[01:11:03]   vwap_sigma_current                  │   2517 │   498 │   19.8% │   11.9% │   4.3x │  -0.58% │  +0.76% │     DETECTOR
+[01:11:03]   sigma_range_tide                    │   3524 │   695 │   19.7% │   16.6% │   4.3x │  -1.23% │  -0.35% │      NEUTRAL
+[01:11:03]   vwap_sigma_spread_tide              │   3524 │   695 │   19.7% │   16.6% │   4.3x │  -1.23% │  -0.35% │      NEUTRAL
+[01:11:03]   atr_ratio                           │   3386 │   659 │   19.5% │   15.7% │   4.2x │  -0.56% │  -0.01% │      NEUTRAL
+[01:11:03]   sigma_low_current                   │   2770 │   525 │   19.0% │   12.5% │   4.1x │  -0.64% │  +0.43% │      NEUTRAL
+[01:11:03]   vwap_sigma_wave                     │   2142 │   399 │   18.6% │    9.5% │   4.1x │  -0.92% │  +0.78% │     DETECTOR
+[01:11:03]   d2_sigma_tide                       │   4538 │   840 │   18.5% │   20.1% │   4.0x │  -1.28% │  -0.38% │  CONFIRMADOR
+[01:11:03]   d2_vwap_sigma_tide                  │   4532 │   831 │   18.3% │   19.8% │   4.0x │  -0.98% │  -0.19% │  CONFIRMADOR
+[01:11:03]   volume_at_extreme                   │   3270 │   597 │   18.3% │   14.3% │   4.0x │  -0.69% │  +0.37% │      NEUTRAL
+[01:11:03]   wave_accel                          │   4536 │   828 │   18.3% │   19.8% │   4.0x │  -0.17% │  +0.28% │      NEUTRAL
+[01:11:03]   d2_conj_wave_tide                   │   4529 │   825 │   18.2% │   19.7% │   4.0x │  -0.12% │  +0.29% │      NEUTRAL
+[01:11:03]   vol_accel_wave                      │   3868 │   694 │   17.9% │   16.6% │   3.9x │  -0.16% │  +0.33% │      NEUTRAL
+[01:11:03]   sigma_range_current                 │   3452 │   606 │   17.6% │   14.5% │   3.8x │  -0.97% │  -0.22% │      NEUTRAL
+[01:11:03]   vwap_sigma_spread_current           │   3452 │   606 │   17.6% │   14.5% │   3.8x │  -0.97% │  -0.22% │      NEUTRAL
+[01:11:03]   div_high_close_current              │   4245 │   744 │   17.5% │   17.8% │   3.8x │  -0.58% │  +0.63% │     DETECTOR
+[01:11:03]   total_displacement                  │   3684 │   639 │   17.3% │   15.3% │   3.8x │  -0.63% │  +0.22% │     DETECTOR
+[01:11:03]   sigma_current                       │   3140 │   543 │   17.3% │   13.0% │   3.8x │  -0.46% │  +0.34% │     DETECTOR
+[01:11:03]   vol_breakout_signal                 │   3700 │   634 │   17.1% │   15.1% │   3.7x │  -0.84% │  +0.15% │      NEUTRAL
+[01:11:03]   overnight_gap_vs_tide               │   4202 │   719 │   17.1% │   17.2% │   3.7x │  -0.57% │  -0.10% │      NEUTRAL
+[01:11:03]   volume_ratio                        │   3638 │   621 │   17.1% │   14.8% │   3.7x │  -0.69% │  +0.30% │      NEUTRAL
+[01:11:03]   geo_state_norm                      │   3698 │   630 │   17.0% │   15.0% │   3.7x │  -0.56% │  +0.24% │     DETECTOR
+[01:11:03]   div_close_low_current               │   3714 │   632 │   17.0% │   15.1% │   3.7x │  -0.57% │  -0.27% │      NEUTRAL
+[01:11:03]   sigma_wave                          │   2628 │   431 │   16.4% │   10.3% │   3.6x │  -0.31% │  +0.31% │     DETECTOR
+
+  ── GLOBAL RANKING — DETECCIÓN ──
+[01:11:03]   Feature                             │  Fires │  Hits │    PREC │  Recall │   LIFT │   Drift │    E[V] │         Type
+[01:11:03]   ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+[01:11:03]   tsi_wave                            │     85 │    23 │   27.1% │    0.5% │   5.9x │  +0.00% │  +1.41% │      NEUTRAL
+[01:11:03]   vwap_sigma_current                  │   2517 │   502 │   19.9% │   12.0% │   4.3x │  +0.00% │  +2.42% │     DETECTOR
+[01:11:03]   atr_ratio                           │   3386 │   643 │   19.0% │   15.3% │   4.1x │  +0.00% │  +0.65% │      NEUTRAL
+[01:11:03]   volume_at_extreme                   │   3270 │   585 │   17.9% │   14.0% │   3.9x │  +0.00% │  +1.18% │      NEUTRAL
+[01:11:03]   vol_return_interaction              │   3242 │   579 │   17.9% │   13.8% │   3.9x │  +0.00% │  +0.70% │  CONFIRMADOR
+[01:11:03]   total_displacement                  │   3684 │   653 │   17.7% │   15.6% │   3.9x │  +0.00% │  +1.29% │     DETECTOR
+[01:11:03]   geo_state_norm                      │   3698 │   639 │   17.3% │   15.3% │   3.8x │  +0.00% │  +1.31% │     DETECTOR
+[01:11:03]   vwap_sigma_wave                     │   2142 │   367 │   17.1% │    8.8% │   3.7x │  +0.00% │  +2.11% │     DETECTOR
+[01:11:03]   sigma_current                       │   3140 │   515 │   16.4% │   12.3% │   3.6x │  +0.00% │  +1.24% │     DETECTOR
+[01:11:03]   sigma_tide                          │   3249 │   532 │   16.4% │   12.7% │   3.6x │  +0.00% │  +1.38% │      NEUTRAL
+[01:11:03]   sigma_min_tf                        │   3964 │   645 │   16.3% │   15.4% │   3.5x │  +0.00% │  +0.78% │     DETECTOR
+[01:11:03]   sigma_abs_dist                      │   3482 │   550 │   15.8% │   13.1% │   3.4x │  +0.00% │  +1.16% │      NEUTRAL
+[01:11:03]   overnight_gap                       │   3626 │   561 │   15.5% │   13.4% │   3.4x │  +0.00% │  +0.46% │  CONFIRMADOR
+[01:11:03]   sigma_low_tide                      │   3162 │   489 │   15.5% │   11.7% │   3.4x │  +0.00% │  +1.28% │      NEUTRAL
+[01:11:03]   sigma_max_tf                        │   4327 │   669 │   15.5% │   16.0% │   3.4x │  +0.00% │  +1.45% │     DETECTOR
+[01:11:03]   rsi_value                           │   3540 │   544 │   15.4% │   13.0% │   3.3x │  +0.00% │  +1.34% │     DETECTOR
+[01:11:03]   sigma_low_current                   │   2770 │   424 │   15.3% │   10.1% │   3.3x │  +0.00% │  +1.26% │      NEUTRAL
+[01:11:03]   sigma_squared                       │   3947 │   599 │   15.2% │   14.3% │   3.3x │  +0.00% │  +1.10% │      NEUTRAL
+[01:11:03]   wave_accel                          │   4536 │   683 │   15.1% │   16.3% │   3.3x │  +0.00% │  +0.59% │      NEUTRAL
+[01:11:03]   sigma_range_tide                    │   3524 │   529 │   15.0% │   12.6% │   3.3x │  +0.00% │  +0.47% │      NEUTRAL
+[01:11:03]   vwap_sigma_spread_tide              │   3524 │   529 │   15.0% │   12.6% │   3.3x │  +0.00% │  +0.47% │      NEUTRAL
+[01:11:03]   d2_conj_wave_tide                   │   4529 │   679 │   15.0% │   16.2% │   3.3x │  +0.00% │  +0.55% │      NEUTRAL
+[01:11:03]   vwap_sigma_tide                     │   3261 │   474 │   14.5% │   11.3% │   3.2x │  +0.00% │  +1.46% │      NEUTRAL
+[01:11:03]   compr_at_extreme                    │   3687 │   530 │   14.4% │   12.7% │   3.1x │  +0.00% │  +1.01% │      NEUTRAL
+[01:11:03]   d_wave_accel                        │   4345 │   621 │   14.3% │   14.8% │   3.1x │  +0.00% │  +0.24% │  CONFIRMADOR
+[01:11:03]   wave_slope_sq                       │   2588 │   368 │   14.2% │    8.8% │   3.1x │  +0.00% │  +0.41% │      NEUTRAL
+[01:11:03]   sigma_high_tide                     │   3209 │   436 │   13.6% │   10.4% │   3.0x │  +0.00% │  +0.92% │      NEUTRAL
+[01:11:03]   slope_energy                        │   3930 │   523 │   13.3% │   12.5% │   2.9x │  +0.00% │  +0.37% │      NEUTRAL
+[01:11:03]   sigma_wave                          │   2628 │   349 │   13.3% │    8.3% │   2.9x │  +0.00% │  +0.67% │     DETECTOR
+[01:11:03]   d2_tide_accel                       │   4427 │   579 │   13.1% │   13.8% │   2.8x │  +0.00% │  +0.26% │  CONFIRMADOR
+
+  ── GLOBAL RANKING — CONFIRMACIÓN ──
+[01:11:03]   Feature                             │  Fires │  Hits │    PREC │  Recall │   LIFT │   Drift │    E[V] │         Type
+[01:11:03]   ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+[01:11:03]   tsi_wave                            │     85 │    22 │   25.9% │    0.5% │   5.6x │  +0.00% │  +1.13% │      NEUTRAL
+[01:11:03]   d_rsi_value                         │   4503 │  1134 │   25.2% │   27.1% │   5.5x │  +0.00% │  +0.65% │  CONFIRMADOR
+[01:11:03]   overnight_gap                       │   3626 │   910 │   25.1% │   21.7% │   5.5x │  +0.00% │  +0.73% │  CONFIRMADOR
+[01:11:03]   d_wave_accel                        │   4345 │  1088 │   25.0% │   26.0% │   5.5x │  +0.00% │  +0.71% │  CONFIRMADOR
+[01:11:03]   d_sigma_wave                        │   4583 │  1065 │   23.2% │   25.4% │   5.1x │  +0.00% │  +0.71% │  CONFIRMADOR
+[01:11:03]   d2_sigma_current                    │   4475 │   977 │   21.8% │   23.3% │   4.8x │  +0.00% │  +0.50% │  CONFIRMADOR
+[01:11:03]   d2_sigma_tide                       │   4538 │   969 │   21.4% │   23.1% │   4.7x │  +0.00% │  +0.42% │  CONFIRMADOR
+[01:11:03]   atr_ratio                           │   3386 │   694 │   20.5% │   16.6% │   4.5x │  +0.00% │  +0.39% │      NEUTRAL
+[01:11:03]   d2_vwap_sigma_tide                  │   4532 │   923 │   20.4% │   22.0% │   4.4x │  +0.00% │  +0.51% │  CONFIRMADOR
+[01:11:03]   vol_return_interaction              │   3242 │   655 │   20.2% │   15.6% │   4.4x │  +0.00% │  +0.41% │  CONFIRMADOR
+[01:11:03]   d2_tide_accel                       │   4427 │   882 │   19.9% │   21.1% │   4.3x │  +0.00% │  +0.37% │  CONFIRMADOR
+[01:11:03]   d2_spread_tide_wave                 │   4758 │   929 │   19.5% │   22.2% │   4.3x │  +0.00% │  +0.45% │  CONFIRMADOR
+[01:11:03]   sigma_range_tide                    │   3524 │   658 │   18.7% │   15.7% │   4.1x │  +0.00% │  +0.32% │      NEUTRAL
+[01:11:03]   vwap_sigma_spread_tide              │   3524 │   658 │   18.7% │   15.7% │   4.1x │  +0.00% │  +0.32% │      NEUTRAL
+[01:11:03]   div_close_low_tide                  │   3467 │   634 │   18.3% │   15.1% │   4.0x │  +0.00% │  +1.77% │      NEUTRAL
+[01:11:03]   vol_accel_wave                      │   3868 │   686 │   17.7% │   16.4% │   3.9x │  +0.00% │  +0.37% │      NEUTRAL
+[01:11:03]   d2_tension_tide                     │   4850 │   784 │   16.2% │   18.7% │   3.5x │  +0.00% │  +0.35% │      NEUTRAL
+[01:11:03]   div_high_close_tide                 │   4109 │   660 │   16.1% │   15.8% │   3.5x │  +0.00% │  +0.95% │     DETECTOR
+[01:11:03]   wave_slope_sq                       │   2588 │   392 │   15.1% │    9.4% │   3.3x │  +0.00% │  +0.49% │      NEUTRAL
+[01:11:03]   sigma_range_current                 │   3452 │   512 │   14.8% │   12.2% │   3.2x │  +0.00% │  +0.03% │      NEUTRAL
+[01:11:03]   vwap_sigma_spread_current           │   3452 │   512 │   14.8% │   12.2% │   3.2x │  +0.00% │  +0.03% │      NEUTRAL
+[01:11:03]   overnight_gap_vs_tide               │   4202 │   623 │   14.8% │   14.9% │   3.2x │  +0.00% │  +0.21% │      NEUTRAL
+[01:11:03]   overnight_gap_atr                   │   3781 │   542 │   14.3% │   12.9% │   3.1x │  +0.00% │  +0.10% │  CONFIRMADOR
+[01:11:03]   div_high_close_current              │   4245 │   603 │   14.2% │   14.4% │   3.1x │  +0.00% │  +1.04% │     DETECTOR
+[01:11:03]   sigma_low_tide                      │   3162 │   448 │   14.2% │   10.7% │   3.1x │  +0.00% │  +0.87% │      NEUTRAL
+[01:11:03]   slope_energy                        │   3930 │   556 │   14.1% │   13.3% │   3.1x │  +0.00% │  +0.36% │      NEUTRAL
+[01:11:03]   div_close_low_current               │   3714 │   525 │   14.1% │   12.5% │   3.1x │  +0.00% │  +1.33% │      NEUTRAL
+[01:11:03]   slope_decel_wave                    │   4442 │   606 │   13.6% │   14.5% │   3.0x │  +0.00% │  +0.32% │      NEUTRAL
+[01:11:03]   wave_slope                          │   4389 │   595 │   13.6% │   14.2% │   3.0x │  +0.00% │  +0.41% │      NEUTRAL
+[01:11:03]   vwap_spread_ratio_tide              │   3718 │   499 │   13.4% │   11.9% │   2.9x │  +0.00% │  +0.24% │      NEUTRAL
+
+  ── GLOBAL RANKING — CONTINUACIÓN ──
+[01:11:03]   Feature                             │  Fires │  Hits │    PREC │  Recall │   LIFT │   Drift │    E[V] │         Type
+[01:11:03]   ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+[01:11:03]   tsi_wave                            │     85 │    21 │   24.7% │    0.5% │   5.4x │  +0.00% │  +1.15% │      NEUTRAL
+[01:11:03]   overnight_gap                       │   3626 │   828 │   22.8% │   19.8% │   5.0x │  +0.00% │  +0.42% │  CONFIRMADOR
+[01:11:03]   d_wave_accel                        │   4345 │   972 │   22.4% │   23.2% │   4.9x │  +0.00% │  +0.35% │  CONFIRMADOR
+[01:11:03]   atr_ratio                           │   3386 │   732 │   21.6% │   17.5% │   4.7x │  +0.00% │  +0.25% │      NEUTRAL
+[01:11:03]   d2_tide_accel                       │   4427 │   852 │   19.2% │   20.3% │   4.2x │  +0.00% │  +0.21% │  CONFIRMADOR
+[01:11:03]   div_high_close_tide                 │   4109 │   729 │   17.7% │   17.4% │   3.9x │  +0.00% │  +0.63% │     DETECTOR
+[01:11:03]   div_close_low_tide                  │   3467 │   613 │   17.7% │   14.6% │   3.9x │  +0.00% │  +0.54% │      NEUTRAL
+[01:11:03]   vol_return_interaction              │   3242 │   561 │   17.3% │   13.4% │   3.8x │  +0.00% │  +0.03% │  CONFIRMADOR
+[01:11:03]   d2_sigma_tide                       │   4538 │   775 │   17.1% │   18.5% │   3.7x │  +0.00% │  +0.12% │  CONFIRMADOR
+[01:11:03]   sigma_range_tide                    │   3524 │   594 │   16.9% │   14.2% │   3.7x │  +0.00% │  +0.15% │      NEUTRAL
+[01:11:03]   vwap_sigma_spread_tide              │   3524 │   594 │   16.9% │   14.2% │   3.7x │  +0.00% │  +0.15% │      NEUTRAL
+[01:11:03]   d2_vwap_sigma_tide                  │   4532 │   758 │   16.7% │   18.1% │   3.6x │  +0.00% │  +0.20% │  CONFIRMADOR
+[01:11:03]   d2_conj_wave_tide                   │   4529 │   742 │   16.4% │   17.7% │   3.6x │  +0.00% │  +0.29% │      NEUTRAL
+[01:11:03]   wave_accel                          │   4536 │   740 │   16.3% │   17.7% │   3.6x │  +0.00% │  +0.26% │      NEUTRAL
+[01:11:03]   sigma_ratio_tw                      │    434 │    70 │   16.1% │    1.7% │   3.5x │  +0.00% │  +0.36% │     DETECTOR
+[01:11:03]   div_high_close_current              │   4245 │   655 │   15.4% │   15.6% │   3.4x │  +0.00% │  +0.73% │     DETECTOR
+[01:11:03]   tension_wave                        │   2443 │   376 │   15.4% │    9.0% │   3.4x │  +0.00% │  +0.91% │      NEUTRAL
+[01:11:03]   wave_slope_sq                       │   2588 │   390 │   15.1% │    9.3% │   3.3x │  +0.00% │  +0.28% │      NEUTRAL
+[01:11:03]   d2_sigma_current                    │   4475 │   664 │   14.8% │   15.9% │   3.2x │  +0.00% │  +0.05% │  CONFIRMADOR
+[01:11:03]   tension_ratio_tw                    │    408 │    59 │   14.5% │    1.4% │   3.2x │  +0.00% │  +0.53% │     DETECTOR
+[01:11:03]   sigma_divergence                    │   3263 │   471 │   14.4% │   11.2% │   3.1x │  +0.00% │  +0.46% │      NEUTRAL
+[01:11:03]   spread_tide_wave                    │   3263 │   471 │   14.4% │   11.2% │   3.1x │  +0.00% │  +0.46% │      NEUTRAL
+[01:11:03]   kalman_slope_conf                   │   4531 │   652 │   14.4% │   15.6% │   3.1x │  +0.00% │  +0.20% │      NEUTRAL
+[01:11:03]   slope_decel_wave                    │   4442 │   637 │   14.3% │   15.2% │   3.1x │  +0.00% │  +0.38% │      NEUTRAL
+[01:11:03]   vol_accel_wave                      │   3868 │   552 │   14.3% │   13.2% │   3.1x │  +0.00% │  +0.17% │      NEUTRAL
+[01:11:03]   d2_tension_tide                     │   4850 │   689 │   14.2% │   16.4% │   3.1x │  +0.00% │  +0.06% │      NEUTRAL
+[01:11:03]   sigma_wave                          │   2628 │   372 │   14.2% │    8.9% │   3.1x │  +0.00% │  +0.03% │     DETECTOR
+[01:11:03]   div_close_low_current               │   3714 │   525 │   14.1% │   12.5% │   3.1x │  +0.00% │  +0.46% │      NEUTRAL
+[01:11:03]   rsi_conviction                      │    543 │    75 │   13.8% │    1.8% │   3.0x │  +0.00% │  +0.57% │      NEUTRAL
+[01:11:03]   sigma_range_current                 │   3452 │   475 │   13.8% │   11.3% │   3.0x │  +0.00% │  +0.31% │      NEUTRAL
+
+  ── STRATIFIED BY RC SIGNATURE (DETECCIÓN layer) ──
+[01:11:03] 
+  wave_accel:
+[01:11:03]     RC Signature         │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ───────────────────────────────────────────────────────
+[01:11:03]     T(-)C(-)W(-)         │   181 │   716 │  25.3% │    +2.1%
+[01:11:03]     T(-)C(-)W(+)         │    55 │   225 │  24.4% │    +0.2%
+[01:11:03]     T(-)C(+)W(-)         │    35 │   185 │  18.9% │    +9.2%
+[01:11:03]     T(+)C(+)W(-)         │    92 │   492 │  18.7% │    +9.1%
+[01:11:03]     T(+)C(-)W(+)         │    40 │   214 │  18.7% │    -4.4%
+[01:11:03]     T(+)C(-)W(-)         │   137 │   834 │  16.4% │    +7.8%
+[01:11:03]     T(-)C(+)W(+)         │    68 │   423 │  16.1% │    +1.1%
+[01:11:03]     T(+)C(+)W(+)         │    75 │  1100 │   6.8% │    +2.0%
+[01:11:03] 
+  d_wave_accel:
+[01:11:03]     RC Signature         │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ───────────────────────────────────────────────────────
+[01:11:03]     T(-)C(-)W(-)         │   192 │   716 │  26.8% │    +1.3%
+[01:11:03]     T(-)C(-)W(+)         │    53 │   225 │  23.6% │    +1.2%
+[01:11:03]     T(-)C(+)W(-)         │    34 │   185 │  18.4% │    +0.1%
+[01:11:03]     T(+)C(-)W(-)         │   127 │   834 │  15.2% │    +2.2%
+[01:11:03]     T(-)C(+)W(+)         │    63 │   423 │  14.9% │    +3.3%
+[01:11:03]     T(+)C(-)W(+)         │    31 │   214 │  14.5% │    +2.3%
+[01:11:03]     T(+)C(+)W(-)         │    52 │   492 │  10.6% │    -0.8%
+[01:11:03]     T(+)C(+)W(+)         │    69 │  1100 │   6.3% │    +3.3%
+[01:11:03] 
+  atr_ratio:
+[01:11:03]     RC Signature         │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ───────────────────────────────────────────────────────
+[01:11:03]     T(-)C(-)W(-)         │   286 │   716 │  39.9% │    +3.7%
+[01:11:03]     T(-)C(-)W(+)         │    55 │   225 │  24.4% │    +1.3%
+[01:11:03]     T(+)C(-)W(-)         │   152 │   834 │  18.2% │    +5.6%
+[01:11:03]     T(-)C(+)W(-)         │    25 │   185 │  13.5% │    -0.5%
+[01:11:03]     T(-)C(+)W(+)         │    46 │   423 │  10.9% │    +4.0%
+[01:11:03]     T(+)C(+)W(-)         │    46 │   492 │   9.3% │    +1.4%
+[01:11:03]     T(+)C(-)W(+)         │    13 │   214 │   6.1% │    -4.7%
+[01:11:03]     T(+)C(+)W(+)         │    20 │  1100 │   1.8% │    +3.0%
+[01:11:03] 
+  overnight_gap:
+[01:11:03]     RC Signature         │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ───────────────────────────────────────────────────────
+[01:11:03]     T(-)C(-)W(-)         │   168 │   716 │  23.5% │    +3.3%
+[01:11:03]     T(+)C(-)W(-)         │   135 │   834 │  16.2% │    +4.8%
+[01:11:03]     T(-)C(+)W(-)         │    29 │   185 │  15.7% │    +0.2%
+[01:11:03]     T(+)C(+)W(-)         │    75 │   492 │  15.2% │    +6.0%
+[01:11:03]     T(-)C(-)W(+)         │    31 │   225 │  13.8% │    -0.1%
+[01:11:03]     T(-)C(+)W(+)         │    44 │   423 │  10.4% │    -0.9%
+[01:11:03]     T(+)C(-)W(+)         │    16 │   214 │   7.5% │    -1.6%
+[01:11:03]     T(+)C(+)W(+)         │    63 │  1100 │   5.7% │    +1.0%
+[01:11:03] 
+  compression_ratio:
+[01:11:03]     RC Signature         │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ───────────────────────────────────────────────────────
+[01:11:03]     T(+)C(+)W(-)         │    98 │   492 │  19.9% │    +3.3%
+[01:11:03]     T(+)C(-)W(-)         │   101 │   834 │  12.1% │    +3.4%
+[01:11:03]     T(-)C(-)W(-)         │    65 │   716 │   9.1% │    +1.4%
+[01:11:03]     T(+)C(-)W(+)         │    18 │   214 │   8.4% │    -1.6%
+[01:11:03]     T(+)C(+)W(+)         │    92 │  1100 │   8.4% │    +2.3%
+[01:11:03]     T(-)C(-)W(+)         │    17 │   225 │   7.6% │    -3.5%
+[01:11:03]     T(-)C(+)W(-)         │    13 │   185 │   7.0% │    -3.2%
+[01:11:03]     T(-)C(+)W(+)         │     9 │   423 │   2.1% │    -0.1%
+[01:11:03] 
+  vwap_sigma_current:
+[01:11:03]     RC Signature         │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ───────────────────────────────────────────────────────
+[01:11:03]     T(+)C(-)W(-)         │   255 │   834 │  30.6% │   +13.9%
+[01:11:03]     T(-)C(-)W(-)         │   133 │   716 │  18.6% │   +14.8%
+[01:11:03]     T(+)C(+)W(-)         │    56 │   492 │  11.4% │   +13.3%
+[01:11:03]     T(-)C(+)W(-)         │    11 │   185 │   5.9% │    +5.6%
+[01:11:03]     T(-)C(+)W(+)         │    15 │   423 │   3.5% │    -8.5%
+[01:11:03]     T(+)C(+)W(+)         │    26 │  1100 │   2.4% │    -7.8%
+[01:11:03]     T(+)C(-)W(+)         │     3 │   214 │   1.4% │    +1.7%
+[01:11:03]     T(-)C(-)W(+)         │     3 │   225 │   1.3% │   +29.5%
+[01:11:03] 
+  vwap_sigma_wave:
+[01:11:03]     RC Signature         │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ───────────────────────────────────────────────────────
+[01:11:03]     T(-)C(+)W(-)         │    39 │   185 │  21.1% │   +12.8%
+[01:11:03]     T(+)C(+)W(-)         │   101 │   492 │  20.5% │   +13.7%
+[01:11:03]     T(+)C(-)W(-)         │   105 │   834 │  12.6% │   +15.0%
+[01:11:03]     T(-)C(-)W(-)         │    65 │   716 │   9.1% │   +15.7%
+[01:11:03]     T(-)C(+)W(+)         │    13 │   423 │   3.1% │    -4.8%
+[01:11:03]     T(+)C(+)W(+)         │    32 │  1100 │   2.9% │    +2.3%
+[01:11:03]     T(+)C(-)W(+)         │     6 │   214 │   2.8% │    +6.4%
+[01:11:03]     T(-)C(-)W(+)         │     6 │   225 │   2.7% │    +0.4%
+[01:11:03] 
+  residual_std_wave:
+[01:11:03]     RC Signature         │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ───────────────────────────────────────────────────────
+[01:11:03]     T(+)C(-)W(-)         │   120 │   834 │  14.4% │    +4.7%
+[01:11:03]     T(+)C(+)W(-)         │    68 │   492 │  13.8% │    +3.3%
+[01:11:03]     T(+)C(-)W(+)         │    24 │   214 │  11.2% │    -2.7%
+[01:11:03]     T(-)C(-)W(+)         │    21 │   225 │   9.3% │    -2.3%
+[01:11:03]     T(-)C(-)W(-)         │    59 │   716 │   8.2% │    +2.9%
+[01:11:03]     T(-)C(+)W(-)         │    11 │   185 │   5.9% │    -2.5%
+[01:11:03]     T(+)C(+)W(+)         │    52 │  1100 │   4.7% │    +1.1%
+[01:11:03]     T(-)C(+)W(+)         │    17 │   423 │   4.0% │    +2.5%
+
+  ── STRATIFIED BY WITH/AGAINST TREND (DETECCIÓN layer) ──
+[01:11:03]   Feature                             │ WT Hits │    WT% │ AT Hits │    AT% │  Discrim
+[01:11:03]   ─────────────────────────────────────────────────────────────────────────────────────
+[01:11:03]   wave_accel                          │   378/2051 │  18.4% │   305/2138 │  14.3% │     ✖ NO
+[01:11:03]   d_wave_accel                        │   298/2051 │  14.5% │   323/2138 │  15.1% │     ✖ NO
+[01:11:03]   atr_ratio                           │   315/2051 │  15.4% │   328/2138 │  15.3% │     ✖ NO
+[01:11:03]   overnight_gap                       │   299/2051 │  14.6% │   262/2138 │  12.3% │     ✖ NO
+[01:11:03]   compression_ratio                   │   222/2051 │  10.8% │   191/2138 │   8.9% │     ✖ NO
+[01:11:03]   vwap_sigma_current                  │   331/2051 │  16.1% │   171/2138 │   8.0% │    ✅ YES
+[01:11:03]   vwap_sigma_wave                     │   243/2051 │  11.8% │   124/2138 │   5.8% │    ✅ YES
+[01:11:03]   residual_std_wave                   │   202/2051 │   9.8% │   170/2138 │   8.0% │     ✖ NO
+[01:11:03]   residual_std_current                │   170/2051 │   8.3% │   158/2138 │   7.4% │     ✖ NO
+[01:11:03]   sigma_current                       │   365/2051 │  17.8% │   150/2138 │   7.0% │    ✅ YES
+[01:11:03]   sigma_tide                          │   386/2051 │  18.8% │   146/2138 │   6.8% │    ✅ YES
+[01:11:03]   total_displacement                  │   452/2051 │  22.0% │   201/2138 │   9.4% │    ✅ YES
+[01:11:03]   volume_at_extreme                   │   393/2051 │  19.2% │   192/2138 │   9.0% │    ✅ YES
+[01:11:03]   fear_level                          │    94/2051 │   4.6% │   207/2138 │   9.7% │    ✅ YES
+[01:11:03]   current_accel                       │   333/2051 │  16.2% │   235/2138 │  11.0% │    ✅ YES
+[01:11:03]   rsi_value                           │   298/2051 │  14.5% │   246/2138 │  11.5% │     ✖ NO
+[01:11:03]   compr_at_extreme                    │   353/2051 │  17.2% │   177/2138 │   8.3% │    ✅ YES
+[01:11:03]   geo_state_norm                      │   448/2051 │  21.8% │   191/2138 │   8.9% │    ✅ YES
+
+  ── STRATIFIED BY FULL ARCHETYPE (ALERTA layer) ──
+[01:11:03] 
+  wave_accel:
+[01:11:03]     Archetype    │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ─────────────────────────────────────────────
+[01:11:03]     HL           │   103 │   663 │  15.5% │   +14.0%
+[01:11:03]     LL           │   222 │   925 │  24.0% │   +14.7%
+[01:11:03]     LL_TO_HL     │   111 │   508 │  21.9% │   +14.8%
+[01:11:03]     HH           │   152 │  1162 │  13.1% │   -11.0%
+[01:11:03]     LH           │   120 │   420 │  28.6% │   -12.0%
+[01:11:03]     HH_TO_LH     │   120 │   511 │  23.5% │   -11.1%
+[01:11:03] 
+  d_wave_accel:
+[01:11:03]     Archetype    │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ─────────────────────────────────────────────
+[01:11:03]     HL           │   120 │   663 │  18.1% │   +14.7%
+[01:11:03]     LL           │   262 │   925 │  28.3% │   +14.7%
+[01:11:03]     LL_TO_HL     │   122 │   508 │  24.0% │   +13.8%
+[01:11:03]     HH           │   222 │  1162 │  19.1% │   -11.3%
+[01:11:03]     LH           │   147 │   420 │  35.0% │   -12.2%
+[01:11:03]     HH_TO_LH     │   123 │   511 │  24.1% │   -12.1%
+[01:11:03] 
+  atr_ratio:
+[01:11:03]     Archetype    │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ─────────────────────────────────────────────
+[01:11:03]     HL           │    50 │   663 │   7.5% │   +14.1%
+[01:11:03]     LL           │   209 │   925 │  22.6% │   +15.4%
+[01:11:03]     LL_TO_HL     │    87 │   508 │  17.1% │   +15.6%
+[01:11:03]     HH           │   114 │  1162 │   9.8% │   -11.4%
+[01:11:03]     LH           │   131 │   420 │  31.2% │   -12.9%
+[01:11:03]     HH_TO_LH     │    68 │   511 │  13.3% │   -11.9%
+[01:11:03] 
+  overnight_gap:
+[01:11:03]     Archetype    │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ─────────────────────────────────────────────
+[01:11:03]     HL           │   124 │   663 │  18.7% │   +14.5%
+[01:11:03]     LL           │   287 │   925 │  31.0% │   +14.7%
+[01:11:03]     LL_TO_HL     │   124 │   508 │  24.4% │   +15.0%
+[01:11:03]     HH           │   166 │  1162 │  14.3% │   -11.3%
+[01:11:03]     LH           │   130 │   420 │  31.0% │   -12.6%
+[01:11:03]     HH_TO_LH     │    98 │   511 │  19.2% │   -11.2%
+[01:11:03] 
+  compression_ratio:
+[01:11:03]     Archetype    │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ─────────────────────────────────────────────
+[01:11:03]     HL           │    69 │   663 │  10.4% │   +13.9%
+[01:11:03]     LL           │   110 │   925 │  11.9% │   +13.3%
+[01:11:03]     LL_TO_HL     │    47 │   508 │   9.3% │   +13.8%
+[01:11:03]     HH           │    71 │  1162 │   6.1% │   -10.8%
+[01:11:03]     LH           │    62 │   420 │  14.8% │   -11.5%
+[01:11:03]     HH_TO_LH     │    74 │   511 │  14.5% │   -10.4%
+[01:11:03] 
+  vwap_sigma_current:
+[01:11:03]     Archetype    │  Hits │ Total │   Hit% │   E[ret]
+[01:11:03]     ─────────────────────────────────────────────
+[01:11:03]     HL           │    49 │   663 │   7.4% │   +13.7%
+[01:11:03]     LL           │   249 │   925 │  26.9% │   +14.7%
+[01:11:03]     LL_TO_HL     │    47 │   508 │   9.3% │   +12.5%
+[01:11:03]     HH           │    40 │  1162 │   3.4% │   -11.2%
+[01:11:03]     LH           │    83 │   420 │  19.8% │   -12.7%
+[01:11:03]     HH_TO_LH     │    30 │   511 │   5.9% │   -10.6%
+
+  ── PER-TICKER UNIVERSALITY — Top 5 features (DETECCIÓN) ──
+[01:11:03] 
+  tsi_wave:
+[01:11:03]       Ticker │  Fires │  Hits │    PREC │   LIFT
+[01:11:03]     ────────────────────────────────────────
+[01:11:03]          SPY │     85 │    23 │   27.1% │   9.3x
+[01:11:03] 
+  vwap_sigma_current:
+[01:11:03]       Ticker │  Fires │  Hits │    PREC │   LIFT
+[01:11:03]     ────────────────────────────────────────
+[01:11:03]         AAPL │    176 │    42 │   23.9% │   2.9x
+[01:11:03]         AMZN │    137 │    38 │   27.7% │   4.1x
+[01:11:03]         COST │    136 │    25 │   18.4% │   4.8x
+[01:11:03]           HD │    131 │    23 │   17.6% │   3.6x
+[01:11:03]          HON │    141 │    29 │   20.6% │   4.7x
+[01:11:03]          IBM │    101 │    22 │   21.8% │   4.9x
+[01:11:03]          JNJ │    134 │    25 │   18.7% │   6.7x
+[01:11:03]          JPM │    118 │    31 │   26.3% │   3.8x
+[01:11:03]          MCD │    149 │    25 │   16.8% │   5.7x
+[01:11:03]          MRK │    138 │    24 │   17.4% │   3.8x
+[01:11:03]         MSFT │    137 │    29 │   21.2% │   4.1x
+[01:11:03]          PEP │    143 │    27 │   18.9% │   7.0x
+[01:11:03]           PG │    108 │    18 │   16.7% │   5.8x
+[01:11:03]          QQQ │    181 │    41 │   22.7% │   4.8x
+[01:11:03]          SPY │    342 │    54 │   15.8% │   5.4x
+[01:11:03]          WMT │    140 │    29 │   20.7% │   5.9x
+[01:11:03]          XOM │    105 │    20 │   19.0% │   3.8x
+[01:11:03]     EXCL SPY: mean PREC=20.5%, median=19.8%
+[01:11:03] 
+  atr_ratio:
+[01:11:03]       Ticker │  Fires │  Hits │    PREC │   LIFT
+[01:11:03]     ────────────────────────────────────────
+[01:11:03]         AAPL │    338 │    79 │   23.4% │   2.8x
+[01:11:03]         AMZN │    174 │    38 │   21.8% │   3.2x
+[01:11:03]         COST │    200 │    24 │   12.0% │   3.1x
+[01:11:03]           HD │    185 │    38 │   20.5% │   4.2x
+[01:11:03]          HON │    173 │    30 │   17.3% │   4.0x
+[01:11:03]          IBM │    167 │    32 │   19.2% │   4.3x
+[01:11:03]          JNJ │    163 │    24 │   14.7% │   5.3x
+[01:11:03]          JPM │    221 │    75 │   33.9% │   5.0x
+[01:11:03]          MCD │    114 │    17 │   14.9% │   5.1x
+[01:11:03]          MRK │    184 │    28 │   15.2% │   3.3x
+[01:11:03]         MSFT │    175 │    36 │   20.6% │   4.0x
+[01:11:03]          PEP │    159 │    22 │   13.8% │   5.1x
+[01:11:03]           PG │    152 │    21 │   13.8% │   4.8x
+[01:11:03]          QQQ │    365 │    80 │   21.9% │   4.7x
+[01:11:03]          SPY │    293 │    44 │   15.0% │   5.1x
+[01:11:03]          WMT │    179 │    23 │   12.8% │   3.7x
+[01:11:03]          XOM │    144 │    32 │   22.2% │   4.5x
+[01:11:03]     EXCL SPY: mean PREC=18.6%, median=18.3%
+[01:11:03] 
+  volume_at_extreme:
+[01:11:03]       Ticker │  Fires │  Hits │    PREC │   LIFT
+[01:11:03]     ────────────────────────────────────────
+[01:11:03]         AAPL │    270 │    64 │   23.7% │   2.8x
+[01:11:03]         AMZN │    151 │    39 │   25.8% │   3.8x
+[01:11:03]         COST │    161 │    26 │   16.1% │   4.2x
+[01:11:03]           HD │    194 │    31 │   16.0% │   3.3x
+[01:11:03]          HON │    187 │    30 │   16.0% │   3.7x
+[01:11:03]          IBM │    158 │    28 │   17.7% │   4.0x
+[01:11:03]          JNJ │    190 │    24 │   12.6% │   4.5x
+[01:11:03]          JPM │    177 │    37 │   20.9% │   3.1x
+[01:11:03]          MCD │    181 │    25 │   13.8% │   4.7x
+[01:11:03]          MRK │    152 │    26 │   17.1% │   3.8x
+[01:11:03]         MSFT │    165 │    31 │   18.8% │   3.6x
+[01:11:03]          PEP │    194 │    37 │   19.1% │   7.1x
+[01:11:03]           PG │    192 │    24 │   12.5% │   4.4x
+[01:11:03]          QQQ │    245 │    48 │   19.6% │   4.2x
+[01:11:03]          SPY │    313 │    49 │   15.7% │   5.4x
+[01:11:03]          WMT │    156 │    27 │   17.3% │   4.9x
+[01:11:03]          XOM │    184 │    39 │   21.2% │   4.3x
+[01:11:03]     EXCL SPY: mean PREC=18.0%, median=17.5%
+[01:11:03] 
+  vol_return_interaction:
+[01:11:03]       Ticker │  Fires │  Hits │    PREC │   LIFT
+[01:11:03]     ────────────────────────────────────────
+[01:11:03]         AAPL │    219 │    56 │   25.6% │   3.1x
+[01:11:03]         AMZN │    143 │    32 │   22.4% │   3.3x
+[01:11:03]         COST │    139 │    17 │   12.2% │   3.2x
+[01:11:03]           HD │    199 │    38 │   19.1% │   3.9x
+[01:11:03]          HON │    206 │    34 │   16.5% │   3.8x
+[01:11:03]          IBM │    142 │    25 │   17.6% │   3.9x
+[01:11:03]          JNJ │    175 │    25 │   14.3% │   5.1x
+[01:11:03]          JPM │    182 │    47 │   25.8% │   3.8x
+[01:11:03]          MCD │    162 │    22 │   13.6% │   4.6x
+[01:11:03]          MRK │    155 │    33 │   21.3% │   4.7x
+[01:11:03]         MSFT │    170 │    36 │   21.2% │   4.1x
+[01:11:03]          PEP │    198 │    30 │   15.2% │   5.6x
+[01:11:03]           PG │    184 │    20 │   10.9% │   3.8x
+[01:11:03]          QQQ │    285 │    54 │   18.9% │   4.0x
+[01:11:03]          SPY │    346 │    46 │   13.3% │   4.6x
+[01:11:03]          WMT │    139 │    21 │   15.1% │   4.3x
+[01:11:03]          XOM │    198 │    43 │   21.7% │   4.4x
+[01:11:03]     EXCL SPY: mean PREC=18.2%, median=18.3%
+
+==============================================================================================================
+  FASE B — STEP 6: Self-Audit
+==============================================================================================================
+[01:11:03]   ✅ No PREC > 100% violations across 154 features
+[01:11:03]   ✅ Global/per-ticker consistency verified for wave_accel
+[01:11:03]   wave_accel persistence: 0.74x → NEUTRAL
+[01:11:03]   d_wave_accel persistence: 2.37x → CONFIRMADOR
+[01:11:03] 
+  Phase B execution time: 4910s (81.8 min)
+
+==============================================================================================================
+  FASE B — STEP 7: Persist Report
+==============================================================================================================
+[01:11:03]   Saved: /root/botero-trade/backend/scratch/sprint2_redo_features_report.pkl
+[01:11:03]   Size: 1245 KB
+
+==============================================================================================================
+  FASE B COMPLETE
+==============================================================================================================
+[01:11:03]   Next: Run sprint2_redo_conjugations.py (Fase C)

@@ -1,0 +1,77 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  FASE G: MODELO TEMPORAL — CRESCENDO COMO INPUT
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+=== 1. CARGA ===
+  Lake: 91,252 × 137
+
+=== 2. CONSTRUCCIÓN DE FEATURES TEMPORALES ===
+  rolling_density_3bar                μ=1.2514  σ=2.2881  range=[0.000, 20.000]
+  rolling_density_5bar                μ=1.2509  σ=2.2455  range=[0.000, 19.200]
+  density_delta_3bar                  μ=0.0013  σ=1.4165  range=[-11.000, 15.000]
+  kf_price_pred_trend_5bar            μ=0.0001  σ=0.6163  range=[-12.134, 10.863]
+  rsi_z_trend_5bar                    μ=0.0001  σ=0.1882  range=[-1.006, 0.886]
+  wave_slope_delta_3bar               μ=0.0001  σ=0.1658  range=[-2.407, 4.346]
+
+=== 3. MODELO A: BASELINE (30 features, PurgedKFold) ===
+  Fold 1: AUC=0.7517
+  Fold 2: AUC=0.7505
+  Fold 3: AUC=0.7255
+  Fold 4: AUC=0.7223
+  Fold 5: AUC=0.6725
+  Modelo A (baseline): AUC = 0.7245 ± 0.0287
+
+=== 4. MODELO B: BASELINE + TEMPORAL (36 features, PurgedKFold) ===
+  Fold 1: AUC=0.7549
+  Fold 2: AUC=0.7622
+  Fold 3: AUC=0.7337
+  Fold 4: AUC=0.7362
+  Fold 5: AUC=0.6872
+  Modelo B (temporal): AUC = 0.7348 ± 0.0262
+  Delta B-A: +0.0103 (✅ MEJORA)
+
+=== 5. MODELO C: VENTANA 5 BARRAS (150 features, PurgedKFold) ===
+  Fold 1: AUC=0.7755
+  Fold 2: AUC=0.7755
+  Fold 3: AUC=0.7526
+  Fold 4: AUC=0.7513
+  Fold 5: AUC=0.7102
+  Modelo C (ventana): AUC = 0.7530 ± 0.0239
+  Delta C-A: +0.0285 (✅ MEJORA)
+
+=== 6. SHAP SOBRE MODELO B (¿features temporales dominan?) ===
+
+  Rank Feature                              |SHAP| mean       Type
+  ──── ─────────────────────────────────── ──────────── ──────────
+     1 kf_price_pred_trend_5bar                  0.1453   TEMPORAL
+     2 kf_price_pred_val                         0.1413   ORIGINAL
+     3 rolling_density_3bar                      0.1344   TEMPORAL
+     4 kf_rsi_pred_val                           0.1306   ORIGINAL
+     5 kf_price_filt_vel                         0.1133   ORIGINAL
+     6 vwap_sigma_current                        0.1019   ORIGINAL
+     7 rolling_density_5bar                      0.0977   TEMPORAL
+     8 reg_value_tide                            0.0960   ORIGINAL
+     9 tide_slope                                0.0815   ORIGINAL
+    10 sigma_tide                                0.0767   ORIGINAL
+    11 vwap_spread_tide_wave                     0.0601   ORIGINAL
+    12 rsi_value                                 0.0572   ORIGINAL
+    13 vwap_spread_tide_current                  0.0526   ORIGINAL
+    14 conj_current_tide                         0.0510   ORIGINAL
+    15 vwap_wave                                 0.0459   ORIGINAL
+    16 wave_slope                                0.0455   ORIGINAL
+    17 current_slope                             0.0427   ORIGINAL
+    18 conj_wave_tide                            0.0401   ORIGINAL
+    19 vwap_sigma_wave                           0.0391   ORIGINAL
+    20 vwap_tide                                 0.0386   ORIGINAL
+
+  Temporal features in top 10 SHAP: 3/10
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  RESUMEN FASE G
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  Modelo A (30 features baseline):    AUC = 0.7245 ± 0.0287
+  Modelo B (36 features + temporal):  AUC = 0.7348 ± 0.0262  Δ=+0.0103
+  Modelo C (150 features ventana):    AUC = 0.7530 ± 0.0239  Δ=+0.0285
+  Temporal features in top 10 SHAP: 3/10
+  Tiempo: 127.7s

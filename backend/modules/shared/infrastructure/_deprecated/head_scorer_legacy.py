@@ -1,12 +1,4 @@
 """
-DEPRECATED — Replaced by SentinelModelLoader (sentinel_model_loader.py)
-=========================================================================
-This file is preserved for reference. The 10-head HeadScorer system was
-deprecated per Committee Dictamen (dictamen_comite_headscorer_legacy.md).
-Replaced by 2 Sentinel models (PISO/TECHO) with 4 archetypes.
-Backup: _deprecated/head_scorer_legacy.py
-
-Original docstring:
 HeadScorer — Infrastructure Implementation for Multi-Head ML Predictions
 ============================================================================
 Loads trained XGBoost models from backend/models/ and emits P(positive)

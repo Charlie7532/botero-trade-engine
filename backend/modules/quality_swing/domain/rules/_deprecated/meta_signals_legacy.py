@@ -1,11 +1,4 @@
 """
-DEPRECATED — Replaced by TurnSignal archetype system (turn_detector.py)
-=========================================================================
-The 10-head constellation patterns were deprecated per Committee Dictamen.
-4 archetypes (HL/LL/HH/LH) replace the 7 meta-signals with higher precision.
-Backup: _deprecated/meta_signals_legacy.py
-
-Original docstring:
 Meta-Signal Engine — Second-Order Constellation Patterns
 ============================================================
 Detects emergent patterns from combinations of 8 head probabilities

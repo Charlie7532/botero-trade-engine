@@ -30,8 +30,10 @@ from backend.modules.quality_swing.domain.rules.swing_entry_rules import (
     is_accumulate_signal,
     is_trim_signal,
 )
-from backend.modules.shared.domain.ports.head_scorer_port import HeadScorerPort
-from backend.modules.quality_swing.domain.rules.meta_signals import detect_meta_signals
+from backend.modules.shared.domain.entities.turn_signal import (
+    TurnSignal, ACTION_ACCUMULATE, ACTION_TRIM, ACTION_HOLD,
+    DENSITY_EXPLOSION, DENSITY_PRESSURIZE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,11 +52,9 @@ class SwingGate:
         self,
         data_port: SwingDataPort,
         passport_store=None,  # PassportStorePort | None
-        head_scorer: Optional[HeadScorerPort] = None,
     ):
         self._port = data_port
         self._passports = passport_store  # Optional — degrades gracefully
-        self._head_scorer = head_scorer   # Optional — ML conviction modulation
 
     def evaluate(
         self,
@@ -262,41 +262,28 @@ class SwingGate:
 
             logger.debug(f"SwingGate {ticker}: {passport_context} | {rc_context}")
 
-        # ── ML Head Scores (optional, modulates conviction) ──
-        _ml_scores = {}
-        if self._head_scorer is not None:
-            try:
-                _ml_scores = self._head_scorer.score_all(ticker, channel)
-                for hn, hs in _ml_scores.items():
-                    marker = "★" if hs.triggered else ""
-                    decision.alerts.append(
-                        f"ML[{hn}]: P={hs.probability:.3f} "
-                        f"(thr={hs.threshold:.2f}){marker}"
-                    )
-            except Exception as e:
-                logger.debug(f"SwingGate {ticker}: HeadScorer unavailable: {e}")
-
-        # ── Meta-Signal Detection (second-order constellations) ──
-        _meta_signals = []
-        if _ml_scores and channel:
-            _meta_signals = detect_meta_signals(_ml_scores, channel)
-            for ms in _meta_signals:
+        # ── Sentinel Turn Signal (reads persisted archetype from Vault) ──
+        _turn: Optional[TurnSignal] = None
+        try:
+            _turn = self._load_turn_signal(ticker, channel)
+            if _turn and _turn.is_active:
                 decision.alerts.append(
-                    f"META[{ms.name}]: {ms.level} → {ms.action} | {ms.description}"
+                    f"SENTINEL[{_turn.archetype}]: "
+                    f"P_PISO={_turn.prob_piso:.3f} P_TECHO={_turn.prob_techo:.3f} "
+                    f"DENSITY={_turn.density_level} CONV={_turn.conviction:.2f}"
                 )
+        except Exception as e:
+            logger.debug(f"SwingGate {ticker}: TurnSignal unavailable: {e}")
 
-        # ── DANGER CONSTELLATION: Hard block (43.9% crash, 2.8x lift) ──
-        _danger_block = any(ms.level == "DANGER" for ms in _meta_signals)
-        if _danger_block:
-            decision.action = "HOLD"
-            danger_ms = next(ms for ms in _meta_signals if ms.level == "DANGER")
+        # ── EXPLOSIÓN TECHO: Hard block on accumulation ──
+        if (_turn and _turn.is_techo
+                and _turn.density_level == DENSITY_EXPLOSION):
+            decision.action = "TRIM"
+            decision.conviction = _turn.conviction
             decision.reasoning = (
-                f"DANGER_BLOCK: {danger_ms.description} | "
-                f"Evidence: {danger_ms.evidence}"
+                f"SENTINEL_EXPLOSION: {_turn.archetype} at EXPLOSIÓN "
+                f"(prob_techo={_turn.prob_techo:.3f}) | {_turn.diagnosis}"
             )
-            decision.ml_scores = {
-                hn: hs.probability for hn, hs in _ml_scores.items()
-            }
             return decision
 
         # ── Evaluate accumulate ──
@@ -345,29 +332,25 @@ class SwingGate:
                 conviction *= 0.70
                 reason_accum += f" | RC_WARNS({rc_result.conviction:+.2f})"
 
-            # ── ML conviction modulation (Druckenmiller: model MODULATES, not DECIDES) ──
-            if 'pullback_depth' in _ml_scores:
-                pd_score = _ml_scores['pullback_depth']
-                if pd_score.triggered:
-                    # Model says pullback will deepen → reduce conviction
-                    pre_ml = conviction
-                    conviction = round(conviction * 0.5, 2)
+            # ── Sentinel: TurnSignal modulates accumulate conviction ──
+            if _turn and _turn.is_active:
+                if _turn.quality_swing_action == ACTION_ACCUMULATE:
+                    # Sentinel confirms bottom → boost conviction
+                    pre_turn = conviction
+                    conviction = min(round(conviction * (1.0 + _turn.conviction * 0.3), 2), 1.0)
                     reason_accum += (
-                        f" | ML_PULLBACK_WARN: P(deeper)={pd_score.probability:.2f}≥{pd_score.threshold:.2f} "
-                        f"→ conviction {pre_ml:.2f}→{conviction:.2f}"
+                        f" | SENTINEL_{_turn.archetype}: "
+                        f"conv {pre_turn:.2f}→{conviction:.2f} "
+                        f"({_turn.density_level})"
                     )
-
-            # ── ML: zz_bottom_detector boosts accumulate (Phase 2 forensic) ──
-            # DSR=13.89, edge=+41.3%, fires 3d BEFORE bottom in 89% of cases.
-            if 'zz_bottom_detector' in _ml_scores:
-                zz_bot = _ml_scores['zz_bottom_detector']
-                if zz_bot.probability >= 0.65:
-                    pre_zz = conviction
-                    conviction = min(round(conviction * 1.25, 2), 1.0)
+                elif _turn.is_techo and _turn.density_level in (DENSITY_PRESSURIZE, DENSITY_EXPLOSION):
+                    # Sentinel warns ceiling → reduce conviction
+                    pre_turn = conviction
+                    conviction = round(conviction * 0.4, 2)
                     reason_accum += (
-                        f" | ZZ_BOTTOM: P={zz_bot.probability:.2f}≥0.65 "
-                        f"→ conviction {pre_zz:.2f}→{conviction:.2f} "
-                        f"(turning point ~3d ahead, DSR=13.89)"
+                        f" | SENTINEL_WARN_{_turn.archetype}: "
+                        f"conv {pre_turn:.2f}→{conviction:.2f} "
+                        f"(techo {_turn.density_level})"
                     )
 
             # ── MH sizing modifier (cascade + F&G) ──
@@ -391,45 +374,25 @@ class SwingGate:
         )
 
         if should_trim:
-            # ── ML: short_entry as exit proxy (r=-0.14, 2.3x stronger than swing_exit) ──
-            if 'short_entry' in _ml_scores:
-                se_prob = _ml_scores['short_entry'].probability
-                if se_prob > 0.65:
-                    # Strong short signal confirms exit → boost trim
-                    pre_ml = trim_pct
-                    trim_pct = min(trim_pct * 1.5, 0.5)
+            # ── Sentinel: TurnSignal modulates trim ──
+            if _turn and _turn.is_active:
+                if _turn.quality_swing_action == ACTION_TRIM:
+                    # Sentinel confirms ceiling → boost trim
+                    pre_turn = trim_pct
+                    trim_pct = min(trim_pct * (1.0 + _turn.conviction * 0.5), 0.5)
                     reason_trim += (
-                        f" | SHORT_EXIT_PROXY: P(short)={se_prob:.2f}>0.65 "
-                        f"→ trim {pre_ml:.0%}→{trim_pct:.0%} (r=-0.14, forensic-validated)"
+                        f" | SENTINEL_{_turn.archetype}: "
+                        f"trim {pre_turn:.0%}→{trim_pct:.0%} "
+                        f"({_turn.density_level})"
                     )
-                elif se_prob < 0.35:
-                    # No short pressure → reduce trim urgency
-                    pre_ml = trim_pct
-                    trim_pct = round(trim_pct * 0.6, 2)
+                elif _turn.is_piso and _turn.density_level in (DENSITY_PRESSURIZE, DENSITY_EXPLOSION):
+                    # Sentinel says bottom forming → reduce trim urgency
+                    pre_turn = trim_pct
+                    trim_pct = round(trim_pct * 0.5, 2)
                     reason_trim += (
-                        f" | SHORT_EXIT_CONTRA: P(short)={se_prob:.2f}<0.35 "
-                        f"→ trim {pre_ml:.0%}→{trim_pct:.0%}"
-                    )
-
-            # ── LONG_SQUEEZE alert modulation ──
-            if any(ms.name == "LONG_SQUEEZE" for ms in _meta_signals):
-                pre_sq = trim_pct
-                trim_pct = min(trim_pct * 1.3, 0.5)
-                reason_trim += (
-                    f" | LONG_SQUEEZE: trim {pre_sq:.0%}→{trim_pct:.0%}"
-                )
-
-            # ── ML: zz_top_detector confirms trim (Phase 2 forensic) ──
-            # DSR=30.06, 69% fires before top. Confirms ceiling → boost trim.
-            if 'zz_top_detector' in _ml_scores:
-                zz_top = _ml_scores['zz_top_detector']
-                if zz_top.probability >= 0.65:
-                    pre_zz = trim_pct
-                    trim_pct = min(round(trim_pct * 1.3, 2), 0.5)
-                    reason_trim += (
-                        f" | ZZ_TOP: P={zz_top.probability:.2f}≥0.65 "
-                        f"→ trim {pre_zz:.0%}→{trim_pct:.0%} "
-                        f"(ceiling ~3d ahead, DSR=30.06)"
+                        f" | SENTINEL_CONTRA_{_turn.archetype}: "
+                        f"trim {pre_turn:.0%}→{trim_pct:.0%} "
+                        f"(piso {_turn.density_level})"
                     )
 
             decision.action = "TRIM"
@@ -440,24 +403,18 @@ class SwingGate:
             )
             return decision
 
-        # ── Short_entry exit proxy: may override HOLD → TRIM ──
-        # Forensic: P(short_entry) r=-0.14 with fwd_10d (2.3x stronger than swing_exit)
-        if 'short_entry' in _ml_scores:
-            p_short = _ml_scores['short_entry'].probability
-            if p_short > 0.55 and rc_result.sigma_position > 0:
-                # In profit + short signal rising → TRIM suggestion
-                trim_conv = round(min(p_short * 0.4, 0.3), 2)
-                decision.action = "TRIM"
-                decision.conviction = trim_conv
-                decision.reasoning = (
-                    f"SHORT_EXIT_PROXY: P(short)={p_short:.2f}>0.55 AND σ={rc_result.sigma_position:.1f}>0 "
-                    f"→ TRIM {trim_conv:.0%} (forensic: r=-0.14, stronger than swing_exit)"
-                )
-                decision.ml_scores = {
-                    hn: hs.probability for hn, hs in _ml_scores.items()
-                }
-                logger.info(f"SwingGate {ticker}: {decision.reasoning}")
-                return decision
+        # ── Sentinel override: PRESURIZACIÓN techo may promote HOLD → TRIM ──
+        if (_turn and _turn.quality_swing_action == ACTION_TRIM
+                and _turn.density_level in (DENSITY_PRESSURIZE, DENSITY_EXPLOSION)
+                and rc_result.sigma_position > 0):
+            decision.action = "TRIM"
+            decision.conviction = round(_turn.conviction * 0.4, 2)
+            decision.reasoning = (
+                f"SENTINEL_OVERRIDE: {_turn.archetype} at {_turn.density_level} "
+                f"AND σ={rc_result.sigma_position:.1f}>0 → TRIM | {_turn.diagnosis}"
+            )
+            logger.info(f"SwingGate {ticker}: {decision.reasoning}")
+            return decision
 
         # ── Default: HOLD ──
         decision.action = "HOLD"
@@ -466,9 +423,6 @@ class SwingGate:
             f"fear={rc_result.fear_label}, tide={rc_result.tide_slope:.3f}, "
             f"zone={rc_result.zone}"
         )
-        decision.ml_scores = {
-            hn: hs.probability for hn, hs in _ml_scores.items()
-        } if _ml_scores else {}
         return decision
 
     # ── Internal: RC Intelligence (lazy) ──────────────────────────
@@ -490,7 +444,61 @@ class SwingGate:
             logger.error(f"SwingGate: RCIntelligence failed: {e}")
             return None
 
-    # ── Internal: Multi-passport lookup ───────────────────────────
+    # ── Internal: Sentinel Turn Signal ─────────────────────────────
+
+    def _load_turn_signal(self, ticker: str, channel=None) -> Optional[TurnSignal]:
+        """Load the most recent TurnSignal for this ticker from Vault.
+
+        Reads turn_archetype, turn_prob_piso, turn_prob_techo, turn_density
+        from engine.channel_snapshots (populated by the Sentinel daemon step).
+
+        Returns None if columns are not yet populated (backfill pending).
+        """
+        try:
+            latest = self._port.load_latest_snapshot(ticker)
+            if latest is None:
+                return None
+
+            # Check if Sentinel columns exist and are populated
+            archetype = getattr(latest, 'turn_archetype', None)
+            if not archetype or archetype == "NONE":
+                return None
+
+            prob_piso = getattr(latest, 'turn_prob_piso', 0.0) or 0.0
+            prob_techo = getattr(latest, 'turn_prob_techo', 0.0) or 0.0
+            density = getattr(latest, 'turn_density', 'SILENCIO') or 'SILENCIO'
+
+            from backend.modules.shared.domain.entities.turn_signal import (
+                TurnSignal, ARCHETYPE_NONE,
+                DENSITY_SILENCE, DENSITY_ALARM, DENSITY_PRESSURIZE, DENSITY_EXPLOSION,
+            )
+
+            # Map density level to conviction
+            conviction = {
+                DENSITY_SILENCE: 0.0, DENSITY_ALARM: 0.3,
+                DENSITY_PRESSURIZE: 0.6, DENSITY_EXPLOSION: 0.9,
+            }.get(density, 0.0)
+
+            # Determine actions from archetype
+            from backend.modules.shared.domain.rules.turn_detector import _map_actions
+            qc, qs, spec = _map_actions(archetype, density)
+
+            return TurnSignal(
+                archetype=archetype,
+                prob_piso=prob_piso,
+                prob_techo=prob_techo,
+                density_level=density,
+                quality_core_action=qc,
+                quality_swing_action=qs,
+                speculative_action=spec,
+                conviction=conviction,
+                kf_rsi_pred=getattr(latest, 'kf_rsi_pred_val', 0.0) or 0.0,
+                kf_price_vel=getattr(latest, 'kf_price_filt_vel', 0.0) or 0.0,
+                diagnosis=f"FROM_VAULT: {archetype} density={density}",
+            )
+        except Exception as e:
+            logger.debug(f"SwingGate {ticker}: TurnSignal load failed: {e}")
+            return None
 
     def _load_best_passport(self, ticker: str, fear, vol_label: str):
         """Load the best passport for current conditions.

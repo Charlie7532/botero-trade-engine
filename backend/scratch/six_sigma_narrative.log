@@ -1,0 +1,62 @@
+<string>:9: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:20: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:27: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:140: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+========================================================================================================================
+  THE 6-SIGMA NARRATIVE: Understanding Extreme States
+========================================================================================================================
+
+  FREQUENCY OF EXTREME STATES:
+  Condition                                                 N  % of bars  Tickers
+  All 6 sigmas < -1 (TOTAL COLLAPSE)                    1,196      1.31%       17
+  Price σ_T,C,W all < -2 (EXTREME OVERSOLD)               632      0.69%       17
+  All 6 sigmas > +1 (EUPHORIA)                          3,104      3.40%       17
+  σ_C,W < -1.5 AND σV_C,W < -1 (CAPITULATION)           2,324      2.55%       17
+  σ_C,W < -1 AND σV_C,W > 0 (STEALTH ACCUM)             1,801      1.97%       17
+  σ_C,W < -1 AND σV_W > +1 (FLOW DIVERGENCE)              156      0.17%       15
+
+========================================================================================================================
+  FORWARD RETURNS BY EXTREME STATE (what happens NEXT)
+========================================================================================================================
+
+  Condition                                N    fwd5d   fwd10d   fwd20d  maxDD5d  P(+5d) P(+20d)
+  BASELINE (all bars)                 90,912   +0.33%   +0.63%   +1.18%   -0.85%  55.3%  59.1%
+  ALL 6σ < -1 (collapse)               1,189   +1.02%   +1.36%   +2.29%   -1.21%  60.9%  63.4%
+  σ_T,C,W < -2 (extreme)                 631   +1.16%   +1.40%   +1.87%   -1.35%  59.1%  62.8%
+  ALL 6σ > +1 (euphoria)               3,093   +0.16%   +0.32%   +0.74%   -0.85%  52.7%  55.9%
+  CAPITULATION                         2,316   +0.69%   +0.98%   +1.87%   -1.15%  57.3%  62.1%
+  STEALTH ACCUM                        1,800   +0.39%   +0.48%   +1.16%   -0.85%  55.3%  59.3%
+  FLOW DIVERGENCE (σVw>+1)               156   +0.23%   +0.67%   +0.51%   -0.82%  55.8%  55.1%
+
+========================================================================================================================
+  THE REVERSAL EVENT: When Wave σVw flips while at extreme lows
+========================================================================================================================
+
+  Event                                                   N    fwd5d   fwd10d   fwd20d  P(+5d) P(+20d)
+  σVw flip (neg→pos) anywhere                         5,199   +0.29%   +0.55%   +0.98%  54.1%  58.1%
+  σVw flip at extreme lows (σ_C,W < -1)                 117   +0.11%   +0.32%   +0.72%  52.1%  57.3%
+  Wave accel flip (neg→pos) at extreme                   75   +0.79%   +0.63%   +1.84%  60.0%  68.0%
+  All accels converge (+) at extreme                      8 (insufficient, need >=10)
+  SUPREME: σVw flip + accel converge @ extreme            0 (insufficient, need >=10)
+
+========================================================================================================================
+  EVENT PROXIMITY TO ZIGZAG TROUGHS
+========================================================================================================================
+  σVw flip (neg→pos) anywhere                        %AFTER=64.1% med_dist=14d  %<10d=42.2%
+  σVw flip at extreme lows (σ_C,W < -1)              %AFTER=41.9% med_dist=7d  %<10d=54.7%
+  Wave accel flip (neg→pos) at extreme               %AFTER=32.0% med_dist=9d  %<10d=52.0%
+
+========================================================================================================================
+  σ CORRELATION WHEN ALL EXTREME (<-1): How coupled is the system?
+========================================================================================================================
+
+  Correlation matrix at ALL σ < -1 (N=1,196):
+               sigma_   sigma_   sigma_   vwap_s   vwap_s   vwap_s
+  sigma_tide     1.00     0.49     0.24     0.47     0.31     0.04
+  sigma_curr     0.49     1.00     0.59     0.27     0.59     0.20
+  sigma_wave     0.24     0.59     1.00     0.11     0.38     0.54
+  vwap_sigma     0.47     0.27     0.11     1.00     0.28     0.05
+  vwap_sigma     0.31     0.59     0.38     0.28     1.00     0.53
+  vwap_sigma     0.04     0.20     0.54     0.05     0.53     1.00
+
+DONE

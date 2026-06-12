@@ -1,0 +1,58 @@
+/root/botero-trade/backend/scripts/filter_impact_quantifier.py:50: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  cs = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/filter_impact_quantifier.py:61: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/filter_impact_quantifier.py:68: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  bars = pd.read_sql("""
+Prepared: 26,932 bars, 17 tickers
+ACCUMULATE candidates (P≥75%): 11,176
+
+============================================================================================================================================
+  FILTER IMPACT QUANTIFIER — Testing 17 filters on 10,995 ACCUMULATE signals (P≥75%)
+============================================================================================================================================
+
+  Filter                                          N   %kept      HR  %AFTER  capture   dd_med   profit    SCORE
+  ────────────────────────────────────────── ────── ─────── ─────── ─────── ──────── ──────── ──────── ────────
+  BASELINE (P≥75%, no filter)                10,995 100.0%  79.7%  52.5%     0.46    -5.1%    +5.9%     9.4
+  A: wave_accel > 0                           6,882  62.6%  81.2%  56.5%     0.43    -5.3%    +5.7%     9.3
+  B: current_accel > 0                        7,354  66.9%  83.1%  54.2%     0.43    -5.2%    +5.6%     9.3
+  C: σVw transition ≥ +1                      1,904  17.3%  70.9%  60.3%     0.47    -5.1%    +5.5%     9.9
+  D: kf_innovation > 0                        5,429  49.4%  79.3%  52.5%     0.45    -5.2%    +5.8%     9.1
+  E: hookup                                   6,944  63.2%  81.6%  56.1%     0.44    -5.1%    +5.7%     9.7
+  F: wave_flip +1                               398   3.6%  71.1%  68.6%     0.45    -5.1%    +5.4%    10.8 ★★
+  G: days_in_state ≤ 3                       10,011  91.1%  79.0%  52.4%     0.46    -5.1%    +5.9%     9.4
+  H: wave_accel>0 + σVw≥+1                    1,182  10.8%  68.3%  64.7%     0.45    -5.5%    +4.9%     9.1 ★★
+  I: wave_accel>0 + hookup                    4,791  43.6%  82.3%  58.6%     0.42    -5.4%    +5.5%     9.3 ★
+  J: σVw≥+1 + hookup                          1,897  17.3%  70.9%  60.5%     0.47    -5.1%    +5.5%     9.9
+  K: σVw≥+1 + wave_accel>0 + hookup           1,175  10.7%  68.3%  64.9%     0.45    -5.5%    +4.9%     9.1 ★★
+  L: σVw≥+1 OR wave_accel>0                   7,604  69.2%  80.6%  56.2%     0.44    -5.2%    +5.8%     9.5
+  M: (σVw≥+1 OR wave_accel>0) + hookup        5,513  50.1%  81.4%  57.9%     0.43    -5.3%    +5.5%     9.5 ★
+  N: current_accel>0 + wave_accel>0           4,907  44.6%  84.0%  56.7%     0.42    -5.4%    +5.6%     9.1
+  O: days≤3 + wave_accel>0                    6,048  55.0%  80.0%  56.6%     0.44    -5.4%    +5.7%     9.2
+  P: days≤3 + σVw≥+1                          1,904  17.3%  70.9%  60.3%     0.47    -5.1%    +5.5%     9.9
+
+  BEST FILTER: F: wave_flip +1
+    N=398 (3.6%) HR=71.1% %AFTER=68.6% dd=-5.1% profit=+5.4%
+
+  TOP 5 by HR:
+    N: current_accel>0 + wave_accel>0          HR=84.0% N=4907
+    B: current_accel > 0                       HR=83.1% N=7354
+    I: wave_accel>0 + hookup                   HR=82.3% N=4791
+    E: hookup                                  HR=81.6% N=6944
+    M: (σVw≥+1 OR wave_accel>0) + hookup       HR=81.4% N=5513
+
+  TOP 5 by %AFTER (timing quality):
+    F: wave_flip +1                            %AFTER=68.6% N=398
+    K: σVw≥+1 + wave_accel>0 + hookup          %AFTER=64.9% N=1175
+    H: wave_accel>0 + σVw≥+1                   %AFTER=64.7% N=1182
+    J: σVw≥+1 + hookup                         %AFTER=60.5% N=1897
+    C: σVw transition ≥ +1                     %AFTER=60.3% N=1904
+
+  TOP 5 by drawdown (least pain):
+    BASELINE (P≥75%, no filter)                dd=-5.1% N=10995
+    G: days_in_state ≤ 3                       dd=-5.1% N=10011
+    F: wave_flip +1                            dd=-5.1% N=398
+    E: hookup                                  dd=-5.1% N=6944
+    C: σVw transition ≥ +1                     dd=-5.1% N=1904
+
+DONE

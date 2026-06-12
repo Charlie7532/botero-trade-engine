@@ -1,0 +1,150 @@
+<string>:8: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:15: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:15: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:15: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║  ¿CUÁNDO CRUZA CERO CURRENT RESPECTO A LOS ZIGZAG POINTS?                                                ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+  Total cruces de cero de Current: 1,489
+    pos→neg: 747
+    neg→pos: 742
+
+========================================================================================================================
+  ZIGZAG 2.5%
+========================================================================================================================
+
+  ── C cruza a NEGATIVO (tendencia baja) ──
+    vs MAX más cercano (N=747):
+      Distancia: MED=+0d, MEAN=-1.2d, P25=-6d, P75=+5d
+      |Distancia|: MED=6d, P25=2d, P75=12d
+      Coincide (±2d): 30%  |  ±5d: 50%  |  ±10d: 72%
+      C cruzó ANTES del MAX: 48%  |  C cruzó DESPUÉS: 44%
+      σ_current en el cruce: MED=-1.210  (P25=-1.864, P75=-0.534)
+      σ_wave en el cruce:    MED=-0.417
+      W_slope en el cruce:   MED=-0.1653
+    vs MIN más cercano (N=747):
+      Distancia: MED=+0d, MEAN=+0.0d, P25=-4d, P75=+3d
+      |Distancia|: MED=4d, P25=1d, P75=8d
+      Coincide (±2d): 41%  |  ±5d: 63%  |  ±10d: 83%
+      C cruzó ANTES del MIN: 44%  |  C cruzó DESPUÉS: 42%
+      σ_current en el cruce: MED=-1.210  (P25=-1.864, P75=-0.534)
+      σ_wave en el cruce:    MED=-0.417
+      W_slope en el cruce:   MED=-0.1653
+
+  ── C cruza a POSITIVO (tendencia sube) ──
+    vs MAX más cercano (N=742):
+      Distancia: MED=+0d, MEAN=-0.2d, P25=-5d, P75=+7d
+      |Distancia|: MED=6d, P25=2d, P75=13d
+      Coincide (±2d): 27%  |  ±5d: 48%  |  ±10d: 68%
+      C cruzó ANTES del MAX: 43%  |  C cruzó DESPUÉS: 47%
+      σ_current en el cruce: MED=+1.291  (P25=+0.758, P75=+1.801)
+      σ_wave en el cruce:    MED=+0.389
+      W_slope en el cruce:   MED=+0.2014
+    vs MIN más cercano (N=742):
+      Distancia: MED=-1d, MEAN=-2.4d, P25=-10d, P75=+7d
+      |Distancia|: MED=8d, P25=3d, P75=16d
+      Coincide (±2d): 19%  |  ±5d: 34%  |  ±10d: 60%
+      C cruzó ANTES del MIN: 52%  |  C cruzó DESPUÉS: 43%
+      σ_current en el cruce: MED=+1.291  (P25=+0.758, P75=+1.801)
+      σ_wave en el cruce:    MED=+0.389
+      W_slope en el cruce:   MED=+0.2014
+
+========================================================================================================================
+  ZIGZAG 5.0%
+========================================================================================================================
+
+  ── C cruza a NEGATIVO (tendencia baja) ──
+    vs MAX más cercano (N=747):
+      Distancia: MED=-7d, MEAN=-9.7d, P25=-29d, P75=+8d
+      |Distancia|: MED=18d, P25=8d, P75=32d
+      Coincide (±2d): 8%  |  ±5d: 15%  |  ±10d: 32%
+      C cruzó ANTES del MAX: 60%  |  C cruzó DESPUÉS: 38%
+      σ_current en el cruce: MED=-1.210  (P25=-1.864, P75=-0.534)
+      σ_wave en el cruce:    MED=-0.417
+      W_slope en el cruce:   MED=-0.1653
+    vs MIN más cercano (N=747):
+      Distancia: MED=+1d, MEAN=+3.7d, P25=-6d, P75=+11d
+      |Distancia|: MED=8d, P25=3d, P75=19d
+      Coincide (±2d): 21%  |  ±5d: 37%  |  ±10d: 57%
+      C cruzó ANTES del MIN: 40%  |  C cruzó DESPUÉS: 52%
+      σ_current en el cruce: MED=-1.210  (P25=-1.864, P75=-0.534)
+      σ_wave en el cruce:    MED=-0.417
+      W_slope en el cruce:   MED=-0.1653
+
+  ── C cruza a POSITIVO (tendencia sube) ──
+    vs MAX más cercano (N=742):
+      Distancia: MED=+3d, MEAN=+0.4d, P25=-13d, P75=+20d
+      |Distancia|: MED=16d, P25=6d, P75=36d
+      Coincide (±2d): 12%  |  ±5d: 23%  |  ±10d: 38%
+      C cruzó ANTES del MAX: 42%  |  C cruzó DESPUÉS: 55%
+      σ_current en el cruce: MED=+1.291  (P25=+0.758, P75=+1.801)
+      σ_wave en el cruce:    MED=+0.389
+      W_slope en el cruce:   MED=+0.2014
+    vs MIN más cercano (N=742):
+      Distancia: MED=-14d, MEAN=-11.8d, P25=-33d, P75=+9d
+      |Distancia|: MED=23d, P25=12d, P75=37d
+      Coincide (±2d): 5%  |  ±5d: 10%  |  ±10d: 21%
+      C cruzó ANTES del MIN: 65%  |  C cruzó DESPUÉS: 34%
+      σ_current en el cruce: MED=+1.291  (P25=+0.758, P75=+1.801)
+      σ_wave en el cruce:    MED=+0.389
+      W_slope en el cruce:   MED=+0.2014
+
+========================================================================================================================
+  ZIGZAG 7.5%
+========================================================================================================================
+
+  ── C cruza a NEGATIVO (tendencia baja) ──
+    vs MAX más cercano (N=747):
+      Distancia: MED=-20d, MEAN=-12.2d, P25=-41d, P75=+10d
+      |Distancia|: MED=31d, P25=16d, P75=48d
+      Coincide (±2d): 4%  |  ±5d: 7%  |  ±10d: 17%
+      C cruzó ANTES del MAX: 65%  |  C cruzó DESPUÉS: 34%
+      σ_current en el cruce: MED=-1.210  (P25=-1.864, P75=-0.534)
+      σ_wave en el cruce:    MED=-0.417
+      W_slope en el cruce:   MED=-0.1653
+    vs MIN más cercano (N=747):
+      Distancia: MED=+4d, MEAN=+6.3d, P25=-7d, P75=+26d
+      |Distancia|: MED=17d, P25=6d, P75=40d
+      Coincide (±2d): 14%  |  ±5d: 23%  |  ±10d: 39%
+      C cruzó ANTES del MIN: 38%  |  C cruzó DESPUÉS: 58%
+      σ_current en el cruce: MED=-1.210  (P25=-1.864, P75=-0.534)
+      σ_wave en el cruce:    MED=-0.417
+      W_slope en el cruce:   MED=-0.1653
+
+  ── C cruza a POSITIVO (tendencia sube) ──
+    vs MAX más cercano (N=742):
+      Distancia: MED=+4d, MEAN=-2.0d, P25=-39d, P75=+33d
+      |Distancia|: MED=35d, P25=13d, P75=77d
+      Coincide (±2d): 6%  |  ±5d: 13%  |  ±10d: 22%
+      C cruzó ANTES del MAX: 43%  |  C cruzó DESPUÉS: 55%
+      σ_current en el cruce: MED=+1.291  (P25=+0.758, P75=+1.801)
+      σ_wave en el cruce:    MED=+0.389
+      W_slope en el cruce:   MED=+0.2014
+    vs MIN más cercano (N=742):
+      Distancia: MED=-28d, MEAN=-18.7d, P25=-47d, P75=+10d
+      |Distancia|: MED=36d, P25=22d, P75=53d
+      Coincide (±2d): 1%  |  ±5d: 4%  |  ±10d: 10%
+      C cruzó ANTES del MIN: 71%  |  C cruzó DESPUÉS: 28%
+      σ_current en el cruce: MED=+1.291  (P25=+0.758, P75=+1.801)
+      σ_wave en el cruce:    MED=+0.389
+      W_slope en el cruce:   MED=+0.2014
+
+========================================================================================================================
+  COMPARACIÓN: ¿Y WAVE cruzando cero? ¿Coincide mejor?
+========================================================================================================================
+
+  Total cruces de cero de Wave: 4,299 (vs Current: 1,489)
+  Ratio W/C: 2.9x más cruces de Wave
+
+  WAVE vs zigzag 5% más cercano (N=4,299):
+    |Distancia|: MED=10d, MEAN=16.3d
+    Coincide ±2d: 18%
+    Coincide ±5d: 31%
+    Coincide ±10d: 52%
+
+  CURRENT vs zigzag 5% más cercano (N=1,489):
+    |Distancia|: MED=9d, MEAN=14.0d
+    Coincide ±2d: 21%
+    Coincide ±5d: 35%
+    Coincide ±10d: 54%

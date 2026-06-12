@@ -1,0 +1,196 @@
+/root/botero-trade/backend/scripts/deep_feature_mining.py:35: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  cs = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/deep_feature_mining.py:63: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz25 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type, price FROM engine.zigzag_points WHERE min_swing_pct=0.025 ORDER BY ticker, timestamp", conn)
+/root/botero-trade/backend/scripts/deep_feature_mining.py:64: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz50 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type, price FROM engine.zigzag_points WHERE min_swing_pct=0.05 ORDER BY ticker, timestamp", conn)
+/root/botero-trade/backend/scripts/deep_feature_mining.py:65: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz75 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type, price FROM engine.zigzag_points WHERE min_swing_pct=0.075 ORDER BY ticker, timestamp", conn)
+/root/botero-trade/backend/scripts/deep_feature_mining.py:67: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  bars = pd.read_sql("SELECT ticker, time::date as date, close, volume FROM market.ohlcv_bars WHERE timeframe='1d' ORDER BY ticker, time", conn)
+Loading ALL data...
+  83,472 snapshots
+Building confluence maps...
+  AAPL: L1=488 L2=273 L3=501
+Labeling bars with confluence proximity...
+  83,472 labeled bars
+Mining features against BOS ground truth...
+
+==================================================================================================================================
+  CONSTRUCTIVE FEATURE MINING — Zigzag Confluence as Ground Truth
+  ACCUMULATE bars within 15d of a trough: 39,854
+  BOS (L3): 4,960 (12.4%)
+  AFTER trough: 22,642 (56.8%)
+  GOLDEN (BOS+AFTER): 3,311 (8.3%)
+==================================================================================================================================
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TARGET: AFTER_TROUGH (timing) — which features predict this?
+  Base rate: 56.8%
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    # Feature                                AUC Dir         rate_hi  rate_lo  spread rate_Q10 rate_Q90  Xspread
+    1 kf_price_pred_val                   0.658 HIGH→yes     68.7%   45.0%  23.7%    37.2%    76.7%   39.5% ★★
+    2 sigma_c_vel                         0.644 HIGH→yes     67.3%   46.3%  21.0%    36.5%    76.5%   40.0% ★★
+    3 svc_vel                             0.642 HIGH→yes     67.3%   46.4%  20.9%    38.6%    77.8%   39.2% ★★
+    4 kf_price_filt_vel                   0.641 HIGH→yes     66.6%   47.1%  19.5%    39.0%    82.9%   43.9% ★★
+    5 rsi_vel                             0.639 HIGH→yes     66.3%   47.3%  19.1%    33.8%    77.9%   44.0% ★★
+    6 svw_vel                             0.638 HIGH→yes     67.2%   46.4%  20.8%    40.8%    77.2%   36.4% ★★
+    7 kf_rsi_filt_vel                     0.638 HIGH→yes     66.8%   46.9%  19.9%    38.8%    75.7%   36.9% ★★
+    8 kf_consensus                        0.620 HIGH→yes     63.7%   41.8%  21.9%    35.2%    68.1%   32.9% ★★
+    9 sigma_w_vel                         0.615 HIGH→yes     65.0%   48.6%  16.4%    39.0%    71.4%   32.3% ★★
+   10 kf_tension_filt_vel                 0.615 HIGH→yes     65.3%   48.4%  16.9%    40.3%    71.0%   30.7% ★★
+   11 tension_c_vel                       0.609 HIGH→yes     64.6%   49.0%  15.6%    38.1%    70.6%   32.5% ★★
+   12 div_current_delta                   0.609 HIGH→yes     64.6%   49.0%  15.6%    38.1%    70.6%   32.5% ★★
+   13 div_wave                            0.605 HIGH→yes     63.9%   49.8%  14.1%    38.7%    71.1%   32.4% ★★
+   14 tension_wave                        0.605 HIGH→yes     63.9%   49.8%  14.1%    38.7%    71.1%   32.4% ★★
+   15 spread_tide_wave                    0.604 LOW→yes      49.4%   64.2%  14.8%    72.1%    42.2%   29.9% ★★
+   16 stress_cw                           0.593 LOW→yes      50.8%   62.8%  12.1%    72.9%    41.5%   31.4% ★★
+   17 spread_current_wave                 0.593 LOW→yes      50.8%   62.8%  12.1%    72.9%    41.5%   31.4% ★★
+   18 tension_norm_wave                   0.592 HIGH→yes     63.4%   50.2%  13.1%    44.9%    70.7%   25.8% ★★
+   19 sigma_wave                          0.587 HIGH→yes     62.8%   50.8%  12.0%    39.4%    64.6%   25.2% ★★
+   20 wave_slope                          0.586 LOW→yes      50.5%   63.2%  12.7%    72.1%    51.9%   20.2% ★★
+   21 geo_exit_align                      0.586 LOW→yes      50.1%   63.6%  13.5%    69.2%    49.6%   19.6% ★★
+   22 geo_velocity_align                  0.586 HIGH→yes     63.6%   50.1%  13.5%    49.6%    69.2%   19.6% ★★
+   23 fear_level                          0.585 HIGH→yes     60.4%   48.6%  11.9%    48.6%    70.9%   22.4% ★★
+   24 conj_wave_tide                      0.574 LOW→yes      51.2%   62.4%  11.2%    71.3%    54.2%   17.2% ★★
+   25 slope_alignment                     0.574 LOW→yes      54.4%   67.6%  13.1%    67.6%    50.2%   17.4% ★★
+   26 kf_conj_pred_val                    0.573 LOW→yes      51.2%   62.4%  11.2%    72.5%    55.7%   16.8% ★★
+   27 rsi_conviction                      0.571 LOW→yes      53.6%   62.4%   8.7%    66.9%    49.5%   17.5% ★★
+   28 rsi_value                           0.570 LOW→yes      52.3%   61.4%   9.1%    59.5%    34.9%   24.6% ★★
+   29 kf_rsi_pred_val                     0.570 LOW→yes      52.2%   61.5%   9.3%    60.6%    37.0%   23.6% ★★
+   30 vwap_sigma_current                  0.570 LOW→yes      51.8%   61.8%  10.0%    68.0%    47.1%   20.9% ★★
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TARGET: BOS_PROXIMITY (structural) — which features predict this?
+  Base rate: 12.4%
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    # Feature                                AUC Dir         rate_hi  rate_lo  spread rate_Q10 rate_Q90  Xspread
+    1 vwap_sigma_current                  0.711 LOW→yes       5.8%   19.1%  13.2%    31.3%     4.3%   27.0% ★★
+    2 rsi_value                           0.681 LOW→yes       6.9%   18.0%  11.1%    29.0%     4.0%   25.0% ★★
+    3 rsi_conviction                      0.658 LOW→yes       7.9%   20.4%  12.6%    24.3%     6.3%   18.1% ★★
+    4 sigma_tide                          0.656 LOW→yes       7.9%   17.0%   9.1%    29.3%     6.2%   23.1% ★★
+    5 geo_velocity_align                  0.655 HIGH→yes     17.2%    7.7%   9.5%     9.6%    31.1%   21.5% ★★
+    6 geo_exit_align                      0.655 LOW→yes       7.7%   17.2%   9.5%    31.1%     9.6%   21.5% ★★
+    7 vwap_alignment                      0.652 LOW→yes       8.0%   21.4%  13.4%    28.7%     8.0%   20.7% ★★
+    8 kf_rsi_pred_val                     0.649 LOW→yes       8.1%   16.8%   8.7%    26.3%     4.4%   21.9% ★★
+    9 tension_wave                        0.646 HIGH→yes     16.6%    8.3%   8.3%     8.7%    30.5%   21.8% ★★
+   10 div_wave                            0.646 HIGH→yes     16.6%    8.3%   8.3%     8.7%    30.5%   21.8% ★★
+   11 vwap_sigma_tide                     0.643 LOW→yes       7.9%   17.0%   9.2%    22.6%     4.8%   17.8% ★★
+   12 spread_tide_wave                    0.642 LOW→yes       8.3%   16.6%   8.2%    30.9%     9.1%   21.8% ★★
+   13 slope_alignment                     0.639 LOW→yes       9.9%   24.0%  14.1%    24.0%     7.6%   16.4% ★★
+   14 wave_slope                          0.638 LOW→yes       8.8%   16.1%   7.4%    34.9%    10.3%   24.7% ★★
+   15 conj_wave_tide                      0.637 LOW→yes       8.7%   16.2%   7.5%    34.9%    10.3%   24.7% ★★
+   16 fear_level                          0.637 HIGH→yes     14.7%    7.2%   7.6%     7.2%    25.7%   18.6% ★★
+   17 tension_norm_wave                   0.634 HIGH→yes     16.5%    8.4%   8.1%     9.8%    24.5%   14.6% ★
+   18 vwap_sigma_wave                     0.634 LOW→yes       8.3%   16.6%   8.3%    24.3%     7.7%   16.6% ★★
+   19 geo_phase_angle                     0.630 LOW→yes       8.6%   16.3%   7.7%    28.3%    12.7%   15.6% ★★
+   20 vwap_spread_current_wave            0.627 HIGH→yes     15.8%    9.1%   6.8%     8.8%    28.3%   19.5% ★★
+   21 kf_conj_pred_val                    0.626 LOW→yes       8.8%   16.0%   7.2%    33.5%    11.5%   22.0% ★★
+   22 spread_current_wave                 0.613 LOW→yes       8.7%   16.2%   7.4%    22.2%     7.9%   14.3% ★
+   23 stress_cw                           0.613 LOW→yes       8.7%   16.2%   7.4%    22.2%     7.9%   14.3% ★
+   24 conj_current_tide                   0.609 LOW→yes       9.1%   15.7%   6.6%    25.1%    12.1%   13.0% ★
+   25 tide_accel                          0.605 LOW→yes       9.1%   15.8%   6.7%    23.9%    12.4%   11.5% ★
+   26 current_accel                       0.604 LOW→yes       9.4%   15.5%   6.1%    24.4%    10.4%   14.0% ★
+   27 tension_norm_current                0.604 HIGH→yes     15.8%    9.0%   6.8%    11.5%    24.3%   12.8% ★
+   28 kf_rsi_filt_vel                     0.603 HIGH→yes     15.6%    9.3%   6.3%    11.5%    26.5%   15.0% ★★
+   29 current_slope                       0.598 LOW→yes       9.5%   15.4%   5.8%    24.6%    12.9%   11.7% ★
+   30 accel_alignment                     0.596 LOW→yes       9.9%   16.6%   6.8%    16.6%     7.2%    9.4% ★
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TARGET: GOLDEN (BOS+AFTER) — which features predict this?
+  Base rate: 8.3%
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    # Feature                                AUC Dir         rate_hi  rate_lo  spread rate_Q10 rate_Q90  Xspread
+    1 vwap_sigma_current                  0.747 LOW→yes       3.0%   13.6%  10.7%    24.6%     1.8%   22.8% ★★
+    2 geo_exit_align                      0.731 LOW→yes       3.3%   13.3%  10.0%    26.8%     4.5%   22.3% ★★
+    3 geo_velocity_align                  0.731 HIGH→yes     13.3%    3.3%  10.0%     4.5%    26.8%   22.3% ★★
+    4 rsi_conviction                      0.726 LOW→yes       3.8%   16.2%  12.4%    21.3%     2.7%   18.6% ★★
+    5 spread_tide_wave                    0.722 LOW→yes       3.8%   12.8%   9.0%    26.9%     3.2%   23.7% ★★
+    6 kf_rsi_filt_vel                     0.717 HIGH→yes     12.9%    3.7%   9.3%     3.6%    25.0%   21.5% ★★
+    7 tension_wave                        0.717 HIGH→yes     12.6%    4.0%   8.6%     3.0%    26.4%   23.4% ★★
+    8 div_wave                            0.717 HIGH→yes     12.6%    4.0%   8.6%     3.0%    26.4%   23.4% ★★
+    9 slope_alignment                     0.704 LOW→yes       5.7%   20.1%  14.4%    20.1%     3.3%   16.8% ★★
+   10 fear_level                          0.697 HIGH→yes     10.5%    3.4%   7.1%     3.4%    21.6%   18.2% ★★
+   11 tension_norm_wave                   0.696 HIGH→yes     12.4%    4.2%   8.2%     5.1%    20.3%   15.1% ★★
+   12 wave_slope                          0.695 LOW→yes       4.7%   11.9%   7.2%    30.3%     6.3%   23.9% ★★
+   13 vwap_spread_current_wave            0.693 HIGH→yes     12.2%    4.4%   7.7%     4.2%    22.8%   18.6% ★★
+   14 rsi_value                           0.690 LOW→yes       4.2%   12.4%   8.2%    18.6%     0.6%   17.9% ★★
+   15 sigma_tide                          0.687 LOW→yes       4.5%   12.1%   7.5%    22.6%     2.5%   20.1% ★★
+   16 conj_wave_tide                      0.686 LOW→yes       4.8%   11.8%   7.1%    29.4%     6.3%   23.1% ★★
+   17 vwap_sigma_tide                     0.684 LOW→yes       4.2%   12.4%   8.2%    17.5%     1.1%   16.5% ★★
+   18 kf_tension_filt_vel                 0.682 HIGH→yes     12.4%    4.2%   8.1%     4.2%    20.6%   16.4% ★★
+   19 geo_phase_angle                     0.677 LOW→yes       4.7%   11.9%   7.2%    24.7%     8.2%   16.5% ★★
+   20 kf_price_pred_val                   0.674 HIGH→yes     11.7%    4.9%   6.8%     4.6%    23.7%   19.0% ★★
+   21 kf_conj_pred_val                    0.670 LOW→yes       5.0%   11.7%   6.7%    28.2%     7.6%   20.6% ★★
+   22 vwap_alignment                      0.668 LOW→yes       4.9%   15.2%  10.3%    21.4%     4.9%   16.5% ★★
+   23 tension_norm_current                0.662 HIGH→yes     12.1%    4.5%   7.5%     5.8%    20.0%   14.1% ★
+   24 current_slope                       0.661 LOW→yes       4.9%   11.8%   6.9%    20.0%     6.8%   13.1% ★
+   25 conj_current_tide                   0.660 LOW→yes       5.0%   11.6%   6.6%    19.7%     6.5%   13.2% ★
+   26 tension_current                     0.660 HIGH→yes     11.7%    5.0%   6.7%     4.4%    21.2%   16.8% ★★
+   27 div_current                         0.660 HIGH→yes     11.7%    5.0%   6.7%     4.4%    21.2%   16.8% ★★
+   28 spread_current_wave                 0.654 LOW→yes       4.9%   11.7%   6.8%    18.4%     3.6%   14.7% ★
+   29 stress_cw                           0.654 LOW→yes       4.9%   11.7%   6.8%    18.4%     3.6%   14.7% ★
+   30 sigma_c_vel                         0.647 HIGH→yes     11.5%    5.1%   6.4%     3.2%    16.3%   13.1% ★
+
+==================================================================================================================================
+  INTERACTION EFFECTS — Feature pairs that predict AFTER trough
+==================================================================================================================================
+
+  Pair                                                               %AFT_good   %AFT_bad  spread  pft_good   pft_bad
+  kf_consensus × sigma_w_vel                                            68.0%     35.8%  32.3%     +2.8%     +3.4% ★★
+  kf_price_filt_vel × kf_rsi_filt_vel                                   70.6%     38.4%  32.3%     +2.7%     +3.3% ★★
+  sigma_c_vel × kf_consensus                                            68.8%     36.7%  32.1%     +2.8%     +3.4% ★★
+  svw_vel × kf_consensus                                                68.8%     36.7%  32.1%     +2.8%     +3.4% ★★
+  svw_vel × kf_rsi_filt_vel                                             71.2%     39.3%  31.9%     +2.7%     +3.4% ★★
+  sigma_c_vel × kf_rsi_filt_vel                                         71.0%     39.3%  31.7%     +2.7%     +3.4% ★★
+  kf_rsi_filt_vel × sigma_w_vel                                         70.2%     38.8%  31.4%     +2.8%     +3.3% ★★
+  svc_vel × kf_consensus                                                68.5%     37.1%  31.4%     +2.8%     +3.4% ★★
+  kf_price_filt_vel × kf_consensus                                      68.1%     36.8%  31.3%     +2.8%     +3.3% ★★
+  kf_consensus × tension_c_vel                                          68.0%     36.7%  31.3%     +2.8%     +3.4% ★★
+  kf_consensus × div_current_delta                                      68.0%     36.7%  31.3%     +2.8%     +3.4% ★★
+  svc_vel × kf_rsi_filt_vel                                             70.5%     39.4%  31.1%     +2.7%     +3.3% ★★
+  rsi_vel × kf_consensus                                                67.6%     37.0%  30.6%     +2.8%     +3.4% ★★
+  kf_price_pred_val × kf_consensus                                      68.9%     38.4%  30.6%     +2.8%     +3.4% ★★
+  svw_vel × kf_tension_filt_vel                                         70.9%     40.6%  30.3%     +2.8%     +3.3% ★★
+  sigma_c_vel × kf_tension_filt_vel                                     70.9%     40.7%  30.2%     +2.8%     +3.2% ★★
+  kf_price_filt_vel × kf_tension_filt_vel                               70.7%     40.6%  30.0%     +2.8%     +3.2% ★★
+  rsi_vel × kf_rsi_filt_vel                                             69.6%     39.7%  29.9%     +2.7%     +3.4% ★★
+  kf_rsi_filt_vel × tension_c_vel                                       70.4%     40.6%  29.8%     +2.7%     +3.3% ★★
+  kf_rsi_filt_vel × div_current_delta                                   70.4%     40.6%  29.8%     +2.7%     +3.3% ★★
+
+==================================================================================================================================
+  TRANSITION DETECTION — Features that CHANGE near BOS troughs
+==================================================================================================================================
+
+  Velocity/Acceleration features (25):
+  Feature                               %AFT_pos   %AFT_neg  spread   pft_pos   pft_neg
+  tide_accel                              54.2%     60.4%  -6.3%     +2.9%     +3.2% ★
+  current_accel                           54.8%     59.7%  -5.0%     +3.0%     +3.1%
+  wave_accel                              59.0%     53.6%  +5.4%     +2.9%     +3.2% ★
+  kalman_velocity                         52.9%     60.0%  -7.1%     +3.0%     +3.1% ★
+  vol_adj_delta                           52.9%     60.0%  -7.1%     +3.0%     +3.1% ★
+  geo_velocity_align                      69.1%     54.1% +15.0%     +3.3%     +3.0% ★★
+  geo_accel_align                         55.9%     57.6%  -1.7%     +2.8%     +3.2%
+  kf_price_filt_vel                       66.4%     46.9% +19.4%     +2.9%     +3.2% ★★
+  kf_rvol_filt_vel                        52.9%     60.0%  -7.1%     +3.0%     +3.1% ★
+  kf_tension_filt_vel                     64.6%     47.3% +17.3%     +2.9%     +3.1% ★★
+  kf_rsi_filt_vel                         64.4%     44.4% +20.0%     +2.8%     +3.3% ★★
+  kf_conj_filt_vel                        56.4%     57.4%  -1.0%     +3.0%     +3.1%
+  sigma_c_vel                             66.6%     45.9% +20.7%     +2.9%     +3.2% ★★
+  sigma_w_vel                             65.2%     48.8% +16.4%     +2.9%     +3.2% ★★
+  svw_vel                                 66.6%     46.1% +20.5%     +2.9%     +3.2% ★★
+  svc_vel                                 66.0%     45.5% +20.5%     +2.9%     +3.2% ★★
+  div_wave_delta                          59.4%     55.0%  +4.4%     +3.1%     +3.0%
+  div_current_delta                       65.3%     49.9% +15.4%     +2.9%     +3.2% ★★
+  accel_alignment                         56.1%     57.9%  -1.8%     +2.9%     +3.3%
+  vol_vel                                 54.3%     58.3%  -3.9%     +3.0%     +3.1%
+  rsi_vel                                 64.6%     45.5% +19.1%     +2.8%     +3.3% ★★
+  compression_vel                         57.6%     56.0%  +1.5%     +3.0%     +3.0%
+  conj_wc_vel                             59.9%     52.9%  +6.9%     +2.9%     +3.2% ★
+  tension_w_vel                           59.4%     55.0%  +4.4%     +3.1%     +3.0%
+  tension_c_vel                           65.3%     49.9% +15.4%     +2.9%     +3.2% ★★
+
+DONE

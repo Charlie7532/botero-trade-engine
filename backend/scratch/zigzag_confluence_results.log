@@ -1,0 +1,65 @@
+/root/botero-trade/backend/scripts/zigzag_confluence_analysis.py:38: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  cs = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/zigzag_confluence_analysis.py:47: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz25 = pd.read_sql("""
+/root/botero-trade/backend/scripts/zigzag_confluence_analysis.py:52: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz50 = pd.read_sql("""
+/root/botero-trade/backend/scripts/zigzag_confluence_analysis.py:57: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz75 = pd.read_sql("""
+/root/botero-trade/backend/scripts/zigzag_confluence_analysis.py:63: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  bars = pd.read_sql("""
+Loading data...
+Finding trough confluences...
+  L1_NOISE: 4,015
+  L2_CONF:  1,559
+  L3_BOS:   2,352
+Finding peak confluences...
+Analyzing signals vs confluences...
+ACCUMULATE signals (P≥75%): 11,176
+
+==================================================================================================================================
+  ZIGZAG CONFLUENCE & BREAK OF STRUCTURE — SIGNAL QUALITY ANALYSIS
+  11,117 ACCUMULATE signals analyzed
+==================================================================================================================================
+
+  1. NEAREST TROUGH CONFLUENCE LEVEL FOR OUR SIGNALS:
+  Level                     N       %  %AFTER  capture       dd   profit  P(bull)
+  L1_NOISE              7,947  71.5%  53.1%     0.50    +0.0%    +3.0%   82.3%
+  L2_CONF               1,951  17.5%  52.3%     0.41    +0.0%    +3.4%   82.3%
+  L3_BOS                1,219  11.0%  63.5%     0.37    +0.0%    +4.2%   81.7%
+
+  2. SIGNALS WITHIN 10 DAYS OF A CONFLUENCE TROUGH:
+  Level                     N  %AFTER  capture       dd   profit   dist_med
+  L1_NOISE              5,360  54.4%     0.52    +0.0%    +2.8%         5d
+  L2_CONF               1,277  55.5%     0.43    +0.0%    +3.3%         5d
+  L3_BOS                  581  56.6%     0.33    +0.0%    +2.9%         6d
+
+  3. BREAK OF STRUCTURE + CONFIRMATION FILTERS (within 10d of L3_BOS trough):
+  Filter                                   N  %AFTER  capture       dd   profit
+  BOS baseline                           581  56.6%     0.33    +0.0%    +2.9%
+  BOS + hookup                           369  69.6%     0.34    +0.0%    +3.0%
+  BOS + accel_dual                       186  57.0%     0.22    +0.0%    +2.0%
+  BOS + hookup + accel                   130  69.2%     0.28    +0.0%    +2.9%
+  BOS + AFTER trough                     329 100.0%     0.46    +0.0%    +4.5%
+  BOS + AFTER + hookup                   257 100.0%     0.43    +0.0%    +4.3%
+  BOS + AFTER + accel                    106 100.0%     0.34    +0.0%    +4.1%
+
+  4. HEAD-TO-HEAD: BOS vs NON-BOS signals (all, within 10d):
+  Group                     N  %AFTER  capture       dd   profit  fwd quality
+  L1 NOISE              5,360  54.4%     0.52    +0.0%    +2.8%        28.1
+  L2 CONFLUENCE         1,277  55.5%     0.43    +0.0%    +3.3%        23.8
+  L3 BOS                  581  56.6%     0.33    +0.0%    +2.9%        18.9
+
+  5. FULL MODEL COMPARISON — v2 (baseline) vs v3 (confirmation) vs v3+BOS:
+  Model                               N  %AFTER  capture       dd   profit
+  v2 BASELINE                    11,117  54.1%     0.46    +0.0%    +3.1%
+  v3 CONFIRMED                    8,453  57.2%     0.44    +0.0%    +3.1%
+  v3 + CONFLUENCE                 1,757  61.9%     0.37    +0.0%    +3.1%
+
+  6. ZIGZAG CONFLUENCE STATISTICS:
+  Level             Total troughs    Near signals   Coverage
+  L1_NOISE                  7,947           3,036     38.2%
+  L2_CONF                   1,951             723     37.1%
+  L3_BOS                    1,219             277     22.7%
+
+DONE

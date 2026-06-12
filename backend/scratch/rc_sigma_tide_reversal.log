@@ -1,0 +1,94 @@
+<string>:8: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:18: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:26: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+Traceback (most recent call last):
+  File "<string>", line 138, in <module>
+  File "/root/botero-trade/backend/.venv/lib/python3.12/site-packages/pandas/core/frame.py", line 4113, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/botero-trade/backend/.venv/lib/python3.12/site-packages/pandas/core/indexes/range.py", line 417, in get_loc
+    raise KeyError(key)
+KeyError: 'st'
+====================================================================================================
+  SIGMA_TIDE EXTREMO: ¿Qué pasa después?
+  Forward returns desde σ_tide extremo
+====================================================================================================
+
+      Zone      N |    Fwd5d   Fwd10d   Fwd20d   Fwd40d   Fwd60d | Interpretation
+     st<<<   1551 |   +1.45%   +2.08%   +3.00%   +4.83%   +7.44% | REVERSAL BULL?
+      st<<   5743 |   +0.68%   +1.30%   +2.20%   +3.95%   +5.00% | REVERSAL BULL?
+       st<  14750 |   +0.21%   +0.44%   +1.28%   +2.77%   +3.67% | 
+      st~-  14557 |   +0.26%   +0.52%   +1.10%   +2.15%   +3.04% | 
+      st~0  13997 |   +0.27%   +0.57%   +1.11%   +1.97%   +3.07% | 
+      st~+  16371 |   +0.22%   +0.37%   +0.70%   +1.57%   +2.70% | 
+       st>  18154 |   +0.22%   +0.49%   +0.89%   +1.71%   +2.86% | 
+      st>>   5441 |   +0.12%   +0.31%   +0.44%   +1.28%   +2.00% | SIGUE SUBIENDO
+     st>>>    688 |   -0.35%   -0.30%   +0.24%   +2.38%   +4.20% | SIGUE SUBIENDO
+
+====================================================================================================
+  ¿La VIOLENCIA (volatilidad) del movimiento siguiente depende de σ_tide?
+====================================================================================================
+
+      Zone      N |   Std_5d  Std_20d  Std_60d |  Skew_5d Skew_20d Skew_60d
+     st<<<   1551 |    6.14%    8.60%   13.35% |   -0.15    +0.11    +0.68
+      st<<   5743 |    4.56%    7.78%   12.40% |   +0.73    +0.78    +1.66
+       st<  14750 |    3.85%    7.06%   11.79% |   -0.26    -0.22    +0.06
+      st~-  14557 |    3.66%    7.10%   11.38% |   -0.95    +0.28    +0.09
+      st~0  13997 |    3.28%    6.84%   12.45% |   +0.03    -0.11    +0.65
+      st~+  16371 |    3.31%    6.91%   11.69% |   +0.19    -0.05    +0.18
+       st>  18154 |    3.28%    6.40%   11.54% |   +1.07    +0.08    +0.53
+      st>>   5441 |    3.22%    6.28%   11.22% |   +0.32    -0.14    +0.25
+     st>>>    688 |    3.83%    8.24%   14.24% |   -1.41    -0.02    +0.84
+
+====================================================================================================
+  TIEMPO HASTA PIVOT (zigzag 10%): desde σ_tide extremo
+  ¿Cuántos días hasta la siguiente reversión significativa?
+====================================================================================================
+
+    σ_tide        N | Med_days Mean_pct  Med_pct  P(>10%) | Profile
+<string>:8: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:14: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:19: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+====================================================================================================
+  TIEMPO HASTA PIVOT (zigzag 10%): desde sigma_tide extremo
+====================================================================================================
+
+  sig_tide        N | Med_days Mean_pct  Med_pct  P(>10%) | Next pivot
+
+====================================================================================================
+  σVWAP_tide CONFIRMA o CONTRADICE la reversion de σ_tide?
+  Forward 20d return condicionado a ambos
+====================================================================================================
+
+     sig_t   Vsig_t |   Fwd20d   Std20d   Skew20      N
+      st<<     Vt<< |   +2.88%    9.62%  +0.86   2472
+      st<<     Vt~0 |   +2.33%    7.20%  +0.41   3035
+      st<<     Vt>> |   +1.73%    6.51%  -0.58   1787
+       st<     Vt<< |   +1.34%    9.38%  +0.54   5938
+       st<     Vt~0 |   +1.37%    6.48%  -0.51   8176
+       st<     Vt>> |   +1.00%    6.06%  -0.28  10782
+      st~0     Vt<< |   +1.95%    9.73%  +0.50   2112
+      st~0     Vt~0 |   +1.14%    7.36%  -0.31   5770
+      st~0     Vt>> |   +0.87%    6.25%  -0.51  15316
+       st>     Vt<< |   +0.42%    9.45%  -0.25    662
+       st>     Vt~0 |   +0.80%    8.06%  +0.04   5946
+       st>     Vt>> |   +0.83%    5.99%  +0.06  23127
+      st>>     Vt~0 |   +1.00%    6.54%  -0.33    845
+      st>>     Vt>> |   +0.33%    6.51%  -0.08   5276
+
+====================================================================================================
+  ASIMETRIA: Percentiles del forward 20d return
+====================================================================================================
+
+      Zone      N |      p10      p25      p50      p75      p90 | Cola
+     st<<<   1532 |    -7.0%    -1.4%    +2.7%    +7.2%   +12.9% | SIMETRICO
+      st<<   5720 |    -6.0%    -1.8%    +1.9%    +6.0%   +10.6% | SIMETRICO
+       st<  14677 |    -6.6%    -2.4%    +1.4%    +5.1%    +9.0% | SIMETRICO
+      st~-  14497 |    -6.7%    -2.5%    +1.3%    +4.8%    +8.4% | SIMETRICO
+      st~0  13948 |    -6.3%    -2.3%    +1.3%    +4.6%    +8.1% | SIMETRICO
+      st~+  16324 |    -6.7%    -2.8%    +0.8%    +4.1%    +7.9% | SIMETRICO
+       st>  18117 |    -6.5%    -2.4%    +1.1%    +4.2%    +7.8% | SIMETRICO
+      st>>   5412 |    -6.6%    -2.7%    +0.6%    +3.9%    +7.2% | SIMETRICO
+     st>>>    685 |    -9.8%    -3.5%    +0.4%    +4.3%    +9.4% | SIMETRICO
+
+DONE

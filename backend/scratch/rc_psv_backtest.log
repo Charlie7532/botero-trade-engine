@@ -1,0 +1,217 @@
+<string>:9: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:17: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:17: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:17: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║  BACKTEST OUT-OF-SAMPLE: TRAIN 2006-2019 vs TEST 2020-2026                                                            ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+  ZIGZAG 2.5% — Train: 10,402 pivotes (1993-2019) | Test: 4,751 pivotes (2020-2026)
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  L3: W×C: 36 celdas comunes
+    Pearson r  = 0.892 (p=3.0e-13)
+    Spearman ρ = 0.898 (p=1.1e-13)
+    MAE        = 7%
+    Dir. Acc.  = 97% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [25%-45%): N= 11, train_μ=38%, test_μ=35%, Δ=-4% ███████
+      Train [45%-55%): N=  7, train_μ=49%, test_μ=40%, Δ=-9% █████████████████
+      Train [55%-75%): N= 14, train_μ=64%, test_μ=67%, Δ=+3% ██████
+      Train [75%-101%): N=  3, train_μ=78%, test_μ=74%, Δ=-3% ██████
+
+  L2: W×C×σ: 136 celdas comunes
+    Pearson r  = 0.896 (p=3.3e-49)
+    Spearman ρ = 0.902 (p=1.2e-50)
+    MAE        = 10%
+    Dir. Acc.  = 84% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [0%-25%): N= 16, train_μ=16%, test_μ=17%, Δ=+1% ██
+      Train [25%-45%): N= 32, train_μ=36%, test_μ=32%, Δ=-4% ████████
+      Train [45%-55%): N= 23, train_μ=49%, test_μ=48%, Δ=-1% ██
+      Train [55%-75%): N= 37, train_μ=63%, test_μ=66%, Δ=+2% ████
+      Train [75%-101%): N= 28, train_μ=88%, test_μ=87%, Δ=-0% 
+
+  L1: W×C×σ×T: 295 celdas comunes
+    Pearson r  = 0.717 (p=9.6e-48)
+    Spearman ρ = 0.718 (p=5.5e-48)
+    MAE        = 16%
+    Dir. Acc.  = 76% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [0%-25%): N= 35, train_μ=13%, test_μ=17%, Δ=+4% ████████
+      Train [25%-45%): N= 72, train_μ=34%, test_μ=36%, Δ=+2% ████
+      Train [45%-55%): N= 50, train_μ=50%, test_μ=46%, Δ=-4% ███████
+      Train [55%-75%): N= 75, train_μ=64%, test_μ=61%, Δ=-2% ████
+      Train [75%-101%): N= 63, train_μ=87%, test_μ=81%, Δ=-6% ████████████
+
+  TOP 15 CELDAS MÁS EXTREMAS (W×C×σ, train → test):
+                      Celda  Train_N  Train_P  Test_N  Test_P      Δ  Stable?
+               W+++/C++/ext       38     100%      23     91%   +9%        ✅
+              W++/C+++/high       44     100%      15    100%   +0%        ✅
+                W++/C++/ext       27     100%      17    100%   +0%        ✅
+                 W++/C+/ext       19     100%       8    100%   +0%        ✅
+                W+++/C+/ext       43      98%      26     92%   +5%        ✅
+                  W+/C+/ext       15      93%       5    100%   +7%        ✅
+             W---/C---/deep      104       7%      74     15%   +8%        ✅
+               W---/C-/deep       73       7%      35      6%   +1%        ✅
+                W+/C+++/pos       27      93%      15     80%  +13%        ✅
+              W+++/C+++/ext       74      92%      38     92%   +0%        ✅
+               W++/C+++/pos       85      92%      46     93%   +2%        ✅
+               W--/C--/deep       36       8%      10     10%   +2%        ✅
+                W+/C++/high       24      92%      14     93%   +1%        ✅
+                W+++/C-/ext       23      91%       8    100%   +9%        ✅
+               W++/C++/high       68      91%      34     97%   +6%        ✅
+
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+  ZIGZAG 5.0% — Train: 4,055 pivotes (1993-2019) | Test: 1,756 pivotes (2020-2026)
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  L3: W×C: 35 celdas comunes
+    Pearson r  = 0.809 (p=4.0e-09)
+    Spearman ρ = 0.789 (p=1.8e-08)
+    MAE        = 9%
+    Dir. Acc.  = 80% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [25%-45%): N= 11, train_μ=36%, test_μ=34%, Δ=-1% ██
+      Train [45%-55%): N=  7, train_μ=51%, test_μ=52%, Δ=+1% ██
+      Train [55%-75%): N= 12, train_μ=63%, test_μ=61%, Δ=-1% ██
+      Train [75%-101%): N=  5, train_μ=79%, test_μ=81%, Δ=+2% ███
+
+  L2: W×C×σ: 79 celdas comunes
+    Pearson r  = 0.804 (p=4.8e-19)
+    Spearman ρ = 0.788 (p=6.9e-18)
+    MAE        = 12%
+    Dir. Acc.  = 80% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [0%-25%): N=  7, train_μ=17%, test_μ=18%, Δ=+0% 
+      Train [25%-45%): N= 20, train_μ=37%, test_μ=35%, Δ=-2% ███
+      Train [45%-55%): N= 12, train_μ=51%, test_μ=50%, Δ=-1% █
+      Train [55%-75%): N= 26, train_μ=65%, test_μ=61%, Δ=-4% ███████
+      Train [75%-101%): N= 14, train_μ=89%, test_μ=84%, Δ=-5% █████████
+
+  L1: W×C×σ×T: 63 celdas comunes
+    Pearson r  = 0.756 (p=8.1e-13)
+    Spearman ρ = 0.730 (p=1.1e-11)
+    MAE        = 16%
+    Dir. Acc.  = 81% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [0%-25%): N= 12, train_μ=11%, test_μ=22%, Δ=+11% █████████████████████
+      Train [25%-45%): N= 17, train_μ=35%, test_μ=34%, Δ=-1% ██
+      Train [45%-55%): N=  8, train_μ=51%, test_μ=52%, Δ=+1% █
+      Train [55%-75%): N= 12, train_μ=63%, test_μ=56%, Δ=-7% █████████████
+      Train [75%-101%): N= 14, train_μ=91%, test_μ=88%, Δ=-3% ██████
+
+  TOP 15 CELDAS MÁS EXTREMAS (W×C×σ, train → test):
+                      Celda  Train_N  Train_P  Test_N  Test_P      Δ  Stable?
+              W++/C+++/high       19     100%       7    100%   +0%        ✅
+              W+++/C+++/ext       35      97%      21    100%   +3%        ✅
+                W+++/C+/ext       23      96%      11     82%  +14%        ✅
+               W+++/C++/ext       21      95%       6    100%   +5%        ✅
+              W+++/C++/high       45      93%      28     86%   +8%        ✅
+               W++/C++/high       37      92%      21     81%  +11%        ✅
+               W++/C+++/pos       37      92%      26     88%   +3%        ✅
+             W---/C---/deep       66       9%      57      7%   +2%        ✅
+             W+++/C+++/high      111      88%      41    100%  +12%        ✅
+                W++/C++/ext       16      88%       9    100%  +12%        ✅
+                W--/C++/low       15      87%       8     62%  +24%       ⚠️
+              W---/C--/deep       59      14%      34      3%  +11%        ✅
+              W+++/C+++/pos      140      86%      63     83%   +4%        ✅
+               W--/C---/low       21      14%       7      0%  +14%        ✅
+                W-/C--/high       19      16%       9     22%   +6%        ✅
+
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+  ZIGZAG 7.5% — Train: 2,072 pivotes (1993-2019) | Test: 938 pivotes (2020-2026)
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  L3: W×C: 27 celdas comunes
+    Pearson r  = 0.835 (p=6.1e-08)
+    Spearman ρ = 0.819 (p=1.8e-07)
+    MAE        = 8%
+    Dir. Acc.  = 85% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [25%-45%): N=  4, train_μ=34%, test_μ=34%, Δ=+1% █
+      Train [45%-55%): N= 10, train_μ=48%, test_μ=46%, Δ=-2% ███
+      Train [55%-75%): N=  7, train_μ=69%, test_μ=70%, Δ=+2% ███
+      Train [75%-101%): N=  6, train_μ=80%, test_μ=76%, Δ=-4% ████████
+
+  L2: W×C×σ: 32 celdas comunes
+    Pearson r  = 0.814 (p=1.5e-08)
+    Spearman ρ = 0.774 (p=2.0e-07)
+    MAE        = 12%
+    Dir. Acc.  = 91% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [0%-25%): N=  3, train_μ=16%, test_μ=24%, Δ=+8% ████████████████
+      Train [25%-45%): N=  8, train_μ=36%, test_μ=40%, Δ=+4% ███████
+      Train [55%-75%): N=  4, train_μ=62%, test_μ=77%, Δ=+15% █████████████████████████████
+      Train [75%-101%): N= 15, train_μ=86%, test_μ=78%, Δ=-8% ████████████████
+
+  L1: W×C×σ×T: 23 celdas comunes
+    Pearson r  = 0.816 (p=2.1e-06)
+    Spearman ρ = 0.818 (p=1.9e-06)
+    MAE        = 14%
+    Dir. Acc.  = 83% (train >50% → test >50%?)
+    Calibración (train_P → test_P real):
+      Train [0%-25%): N=  5, train_μ=16%, test_μ=12%, Δ=-4% ███████
+      Train [25%-45%): N=  6, train_μ=35%, test_μ=52%, Δ=+17% █████████████████████████████████
+      Train [55%-75%): N=  4, train_μ=64%, test_μ=52%, Δ=-12% ████████████████████████
+      Train [75%-101%): N=  8, train_μ=91%, test_μ=89%, Δ=-2% ███
+
+  TOP 15 CELDAS MÁS EXTREMAS (W×C×σ, train → test):
+                      Celda  Train_N  Train_P  Test_N  Test_P      Δ  Stable?
+              W+++/C+++/ext       20     100%      14    100%   +0%        ✅
+              W+++/C++/high       28      96%      19     68%  +28%        ❌
+             W+++/C+++/high       61      93%      28     96%   +3%        ✅
+             W---/C---/deep       46       9%      45      9%   +0%        ✅
+               W++/C+++/pos       23      91%      20     85%   +6%        ✅
+             W+++/C+++/deep       19      89%       9     78%  +12%        ✅
+               W--/C++/deep       19      89%      13     62%  +28%        ❌
+                W--/C+/deep       15      87%      12     58%  +28%        ❌
+              W+++/C+++/pos       61      85%      38     92%   +7%        ✅
+              W+++/C+++/neg       33      85%      14     86%   +1%        ✅
+              W---/C---/low      112      15%      35     17%   +2%        ✅
+               W++/C++/high       25      80%      14     79%   +1%        ✅
+               W+++/C+/high       20      80%       7     71%   +9%        ✅
+              W++/C+++/deep       24      79%       8     88%   +8%        ✅
+                W++/C++/pos       27      78%      12     58%  +19%       ⚠️
+
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+  ¿TIDE SIGUE MODULANDO EN 2020-2026? (zigzag 5%)
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+           W×C  Train T↑ Train T↓  Δ_train   Test T↑  Test T↓   Δ_test   Stable?
+     W+++/C+++       80%      74%     +6%       88%      80%     +9%         ✅
+     W---/C---       31%      34%     -3%       32%      30%     +2%         ❌
+       W++/C++       86%      74%    +13%       75%      63%    +11%         ✅
+       W--/C--       35%      32%     +3%       21%      22%     -1%         ❌
+         W+/C+       64%      35%    +29%       71%      50%    +21%         ✅
+      W+++/C++       88%      71%    +16%       85%      85%     -0%         ❌
+      W---/C--       32%      24%     +8%       12%       8%     +4%         ✅
+      W++/C+++       75%      66%     +9%       84%      83%     +0%         ✅
+      W--/C---       35%      38%     -3%       33%      30%     +3%         ❌
+
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+  ¿TRANSICIONES ESTABLES? P(self) y Bull% train vs test (zigzag 5%)
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+          FROM    Tr_N  Tr_self  Tr_bull    Te_N  Te_self  Te_bull   Δ_self  Δ_bull
+     W+++/C+++     472      59%      65%     203      49%      70%    -10%    +5%
+     W---/C---     771      76%      44%     240      64%      50%    -12%    +7%
+       W++/C++     136      15%      63%      69      19%      59%     +4%    -4%
+       W--/C--     120      20%      50%      39      13%      41%     -7%    -9%
+         W+/C+     111      13%      55%      56      12%      48%     -0%    -7%
+         W-/C-      50      20%      60%      29      21%      34%     +1%   -26%
+      W+++/C++     114      16%      62%      51      10%      67%     -6%    +4%
+      W---/C--     187      27%      45%      81      23%      31%     -4%   -15%
+      W++/C+++     198      24%      68%      91      21%      67%     -3%    -1%
+      W--/C---     147      26%      42%      53      30%      45%     +4%    +3%
+
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+  K-FOLD TEMPORAL: ¿La tabla es estable en distintas épocas? (zigzag 5%, L2: W×C×σ)
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+  2006-2012 → 2013-2016: N= 34 celdas | r=0.667 | ρ=0.636 | MAE=18% | Dir.Acc=76%
+  2010-2016 → 2017-2019: N= 30 celdas | r=0.831 | ρ=0.839 | MAE=13% | Dir.Acc=83%
+  2013-2019 → 2020-2022: N= 34 celdas | r=0.716 | ρ=0.731 | MAE=21% | Dir.Acc=76%
+  2016-2022 → 2023-2026: N= 38 celdas | r=0.812 | ρ=0.817 | MAE=14% | Dir.Acc=82%
+
+  DONE.

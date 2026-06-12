@@ -1,0 +1,87 @@
+/root/botero-trade/backend/scripts/model_deviation_detectors.py:42: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  cs = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/model_deviation_detectors.py:53: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/model_deviation_detectors.py:60: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  bars = pd.read_sql("""
+
+==================================================================================================================================
+  MODEL DEVIATION DETECTOR COMPARISON
+  ACCUMULATE signals (P≥65%): 16,174 | Wrong (said bull, was bear): 4,525 (28.0%)
+==================================================================================================================================
+
+  Detector                                           N   %flag  err_flag err_¬flag   LIFT P(flag|err)    verdict
+  ───────────────────────────────────────────── ────── ─────── ───────── ───────── ────── ─────────── ──────────
+  hookup=NO (no reversal)                        6,309  39.0%    39.1%    20.9%  1.87x      54.5%     ★ GOOD
+  hookup=YES (confirming)                        9,865  61.0%    20.9%    39.1%  0.53x      45.5%     ✓ SAFE
+  wave_accel < 0 (still falling)                 6,471  40.0%    36.2%    22.5%  1.61x      51.8%     ★ GOOD
+  wave_accel > 0 (decelerating)                  9,703  60.0%    22.5%    36.2%  0.62x      48.2%     ✓ SAFE
+  current_accel < 0                              6,122  37.9%    37.7%    22.1%  1.70x      50.9%     ★ GOOD
+  current_accel > 0                             10,052  62.1%    22.1%    37.7%  0.59x      49.1%     ✓ SAFE
+  BOTH accels < 0 (all falling)                  2,946  18.2%    47.0%    23.7%  1.98x      30.6%     ★ GOOD
+  BOTH accels > 0 (all rising)                   6,527  40.4%    19.4%    33.8%  0.57x      27.9%     ✓ SAFE
+  kf_innovation < 0 (price below pred)           8,229  50.9%    29.0%    27.0%  1.07x      52.7%     — WEAK
+  kf_innovation > 0 (price above pred)           7,945  49.1%    27.0%    29.0%  0.93x      47.3%     — WEAK
+  kf_innovation < -1σ (big miss down)            2,588  16.0%    36.2%    26.4%  1.37x      20.7%   ○ DECENT
+  kf_innovation > +1σ (big miss up)              2,588  16.0%    28.9%    27.8%  1.04x      16.5%     — WEAK
+  kf_velocity < 0 (Kalman says down)             7,965  49.2%    32.8%    23.3%  1.41x      57.8%     ★ GOOD
+  kf_velocity > 0 (Kalman says up)               8,209  50.8%    23.3%    32.8%  0.71x      42.2%     ✓ SAFE
+  σVw improving (Δ≥+1)                           3,313  20.5%    25.6%    28.6%  0.90x      18.7%     — WEAK
+  σVw worsening (Δ≤-1)                           2,061  12.7%    50.0%    24.8%  2.02x      22.8%   ○ DECENT
+  σVw stable (Δ=0)                              10,800  66.8%    24.5%    34.9%  0.70x      58.5%     ✓ SAFE
+  hookup=NO + both_accel<0                       1,560   9.6%    54.2%    25.2%  2.15x      18.7%   ○ DECENT
+  hookup=NO + kf_vel<0                           5,653  35.0%    38.4%    22.4%  1.72x      48.0%     ★ GOOD
+  both_accel<0 + kf_vel<0                        1,523   9.4%    51.6%    25.5%  2.02x      17.4%   ○ DECENT
+  ALL 3 negative: !hookup + accel<0 + kf<0       1,300   8.0%    54.3%    25.7%  2.12x      15.6%   ○ DECENT
+  hookup=YES + both_accel>0                      4,543  28.1%    14.7%    33.2%  0.44x      14.7%     ✓ SAFE
+  hookup=YES + both_accel>0 + kf_vel>0           3,293  20.4%    14.6%    31.4%  0.47x      10.7%     ✓ SAFE
+
+  TOP 5 DANGER DETECTORS (flag = higher error rate):
+    hookup=NO + both_accel<0                      lift=2.15x err=54.2%
+    ALL 3 negative: !hookup + accel<0 + kf<0      lift=2.12x err=54.3%
+    both_accel<0 + kf_vel<0                       lift=2.02x err=51.6%
+    σVw worsening (Δ≤-1)                          lift=2.02x err=50.0%
+    BOTH accels < 0 (all falling)                 lift=1.98x err=47.0%
+
+  TOP 5 SAFETY DETECTORS (flag = lower error rate):
+    hookup=YES + both_accel>0 + kf_vel>0          lift=0.47x err=14.6%
+    hookup=YES + both_accel>0                     lift=0.44x err=14.7%
+    BOTH accels > 0 (all rising)                  lift=0.57x err=19.4%
+    hookup=YES (confirming)                       lift=0.53x err=20.9%
+    current_accel > 0                             lift=0.59x err=22.1%
+
+==================================================================================================================================
+  DETECTOR PERFORMANCE BY P(bull) LEVEL
+==================================================================================================================================
+
+  Detector: hookup=NO (no reversal)
+  P(bull)        N_flag  err_flag err_¬flag   lift
+  65-75%          2,258    46.4%    27.1%  1.71x
+  75-85%          3,008    33.6%    17.1%  1.96x
+  85-100%         1,043    38.8%    24.1%  1.61x
+
+  Detector: BOTH accels < 0
+  P(bull)        N_flag  err_flag err_¬flag   lift
+  65-75%          1,280    51.4%    30.3%  1.70x
+  75-85%          1,121    41.0%    20.1%  2.04x
+  85-100%           545    49.0%    25.2%  1.94x
+
+  Detector: kf_velocity < 0
+  P(bull)        N_flag  err_flag err_¬flag   lift
+  65-75%          2,542    41.3%    30.0%  1.38x
+  75-85%          4,176    26.7%    19.2%  1.40x
+  85-100%         1,247    35.8%    24.9%  1.44x
+
+  Detector: ALL 3 negative
+  P(bull)        N_flag  err_flag err_¬flag   lift
+  65-75%            542    59.4%    32.7%  1.81x
+  75-85%            481    47.4%    21.3%  2.22x
+  85-100%           277    56.3%    27.5%  2.05x
+
+  Detector: hookup=YES + accel>0 + kf>0
+  P(bull)        N_flag  err_flag err_¬flag   lift
+  65-75%            778    18.1%    38.6%  0.47x
+  75-85%          2,294    13.3%    26.1%  0.51x
+  85-100%           221    15.8%    32.8%  0.48x
+
+DONE

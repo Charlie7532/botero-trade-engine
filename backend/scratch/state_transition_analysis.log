@@ -1,0 +1,91 @@
+<string>:11: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:21: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:28: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+==============================================================================================================
+  STATE TRANSITION ANALYSIS (L2: σ_c|σ_w|σVw)
+==============================================================================================================
+
+  STATE PERSISTENCE:
+  State               Freq   Med.days     Mean    Max  P(stay)
+  >>|>>|>>           8,564          2      2.6     19   61.0%
+  <<|<<|<<           7,286          2      2.4     18   57.7%
+  >>|>|>>            4,921          1      1.5      8   35.2%
+  <<|<|<<            3,402          1      1.4     10   29.6%
+  >>|~|>>            2,677          1      1.4      7   27.3%
+  >|>|>>             2,156          1      1.4      7   26.4%
+  >|>>|>>            2,104          1      1.5      6   32.3%
+  >|~|>>             2,002          1      1.3      8   24.9%
+  <<|~|<<            1,588          1      1.3      5   21.5%
+  <<|<<|<            1,563          1      1.5      7   32.2%
+  >|<|>>             1,560          1      1.4      8   29.0%
+  >>|<|>>            1,529          1      1.4      7   26.2%
+  <<|<<|~            1,317          1      1.5      7   34.5%
+  ~|>|>>             1,092          1      1.3      5   23.3%
+  <|<<|<<            1,063          1      1.4     10   30.3%
+  >|<<|>             1,061          1      1.4      5   30.6%
+  >>|>>|>            1,036          1      1.6      7   38.2%
+  ~|<<|>             1,032          1      1.4      5   28.0%
+  ~|>>|>>            1,031          1      1.4      8   27.6%
+  <|<<|>             1,021          1      1.4      8   30.8%
+
+  TRANSITIONS FROM BULL ZONE <<|<<|>> (N=156):
+    → <<|<<|>>       : 32.7% PERSIST
+    → <<|<<|>        : 24.4% 
+    → <<|<|>>        : 8.3% 
+    → <|<|>>         : 7.7% 
+    → <|<<|>>        : 5.8% 
+    → <<|<<|~        : 4.5% 
+
+  TRANSITIONS FROM BEAR ZONE >>|>>|<< (N=6):
+    → >>|>>|<        : 83.3% 
+    → >>|>>|<<       : 16.7% PERSIST
+
+  TRANSITIONS FROM NEUTRAL ~|~|~ (N=356):
+    → ~|~|~          : 18.5% PERSIST
+    → >|>|>          : 8.1% 
+    → <|<|<          : 6.5% 
+    → ~|~|>          : 5.6% 
+    → ~|>|>          : 5.1% 
+    → ~|>|~          : 4.8% 
+
+  TRANSITIONS FROM KNIFE <<|<<|<< (N=7,286):
+    → <<|<<|<<       : 57.7% PERSIST
+    → <<|<|<<        : 17.7% 
+    → <<|~|<<        : 3.3% 
+    → <<|<|<         : 2.8% 
+    → <<|<<|<        : 2.3% 
+    → <|<|<<         : 1.7% 
+
+==============================================================================================================
+  STATE CHANGES vs ZIGZAG TROUGHS — Does a transition predict the trough?
+==============================================================================================================
+
+  TRANSITION TYPE vs TROUGH PROXIMITY (days to nearest zigzag MIN):
+     σVw Δ Label                     N   Med.days   % <10d % BEFORE
+        -4 CRASH flow              214         22   30.4%   62.6%
+        -3 Big drop                773         20   28.6%   65.6%
+        -2 Moderate drop         2,628         15   37.4%   62.9%
+        -1 Small drop           12,890         15   38.8%   55.8%
+        +0 Same                 29,136         20   32.6%   48.6%
+        +1 Small improve        13,232         13   43.7%   37.4%
+        +2 Moderate improve      2,647         15   39.9%   38.0%
+        +3 Big improve             688         19   36.5%   37.6%
+        +4 SURGE flow              180         24   31.7%   38.9%
+
+==============================================================================================================
+  ACCELERATION & KALMAN INNOVATION AS TIMING FILTERS
+==============================================================================================================
+
+  ACCUMULATE (P≥75%) — BEFORE vs AFTER trough filter candidates:
+                                  BEFORE        AFTER          Δ  Can filter?
+  Current accel                +0.003063    +0.004620  +0.001557        ✅ YES
+  Wave accel                   +0.004093    +0.014063  +0.009970        ✅ YES
+  Tide accel                   +0.000551    +0.000321  -0.000230        ✅ YES
+  Kalman innovation            -0.027738    -0.020058  +0.007680      ⚠️ WEAK
+
+  % with POSITIVE acceleration:
+  Current                   BEFORE=64.5%  AFTER=69.2%  Δ=+4.7%
+  Wave                      BEFORE=57.3%  AFTER=67.5%  Δ=+10.2%
+  Kalman innov.             BEFORE=49.3%  AFTER=49.4%  Δ=+0.0%
+
+DONE

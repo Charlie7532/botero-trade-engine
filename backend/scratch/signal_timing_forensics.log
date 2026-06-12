@@ -1,0 +1,86 @@
+/root/botero-trade/backend/scripts/signal_timing_forensics.py:56: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  cs = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/signal_timing_forensics.py:64: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/signal_timing_forensics.py:71: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  bars = pd.read_sql("""
+Signals: 26,932 total
+  ACCUMULATE: 16,412
+  TRIM: 1,355
+  HOLD: 9,165
+
+========================================================================================================================
+  SIGNAL TIMING FORENSICS
+  ACCUMULATE signals: 16,174 | TRIM signals: 1,355
+========================================================================================================================
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ACCUMULATE — Timing vs Zigzag Troughs (5% swing)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Buying BEFORE trough (cuchillo cayendo):   7,347 (45.4%)
+  Buying AFTER trough (confirmación):        8,827 (54.6%)
+
+  Metric                                     All     BEFORE      AFTER
+  Days to nearest trough                    -4.0      +20.0      -19.0
+  Price from trough (%)                     +7.1       +6.1       +8.2
+  Capture ratio (0=top, 1=bottom)           +0.5       +0.4       +0.5
+  Max drawdown to trough (%)                -5.0       -5.7       -4.1
+  Profit to next peak (%)                   +6.0       +4.3       +7.7
+
+  ACCUMULATE TIMING BY P(bull) QUINTILE:
+  P(bull)           N  %BEFORE  capture   dd_med   profit  dist_trough
+  65%-70%        2,729   43.5%     0.53    -4.9%    +6.1%        +5.7%
+  70%-75%        2,450   38.1%     0.50    -5.0%    +6.4%        +6.8%
+  75%-80%        2,880   43.1%     0.46    -5.1%    +5.9%        +7.3%
+  80%-85%        5,927   46.0%     0.44    -5.1%    +5.7%        +7.9%
+  85%-90%        1,579   56.2%     0.48    -4.8%    +6.7%        +7.3%
+  90%-101%          609   61.6%     0.47    -4.7%    +6.5%        +7.3%
+
+  ACCUMULATE TIMING BY TICKER:
+  Ticker        N  %BEFORE  capture   dd_med   profit  dist_days
+  AAPL        992   47.4%     0.48    -5.7%    +6.9%        14d
+  AMZN        993   51.7%     0.53    -4.7%    +7.1%        12d
+  COST      1,044   46.1%     0.49    -4.1%    +6.3%        20d
+  HD          930   41.6%     0.42    -6.6%    +5.9%        19d
+  HON         823   45.8%     0.39    -6.4%    +5.2%        22d
+  IBM         889   49.5%     0.48    -5.6%    +6.3%        15d
+  JNJ         861   38.3%     0.42    -6.4%    +5.1%        28d
+  JPM       1,011   49.4%     0.48    -4.3%    +6.6%        17d
+  MCD         880   42.4%     0.43    -4.7%    +4.7%        21d
+  MRK         796   43.6%     0.37    -6.6%    +4.0%        17d
+  MSFT        989   50.4%     0.51    -4.8%    +7.1%        17d
+  PEP         839   39.6%     0.44    -5.3%    +4.7%        20d
+  PG          872   37.3%     0.43    -5.0%    +4.8%        23d
+  QQQ       1,112   46.0%     0.50    -4.2%    +7.5%        25d
+  SPY       1,099   45.8%     0.50    -4.1%    +7.1%        40d
+  WMT       1,121   48.3%     0.54    -4.1%    +6.3%        21d
+  XOM         923   45.3%     0.50    -5.1%    +6.3%        10d
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TRIM — Timing vs Zigzag Peaks (5% swing)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Signals with complete data: 1,338
+  Median avoided loss:     +3.8%
+  Median upside left:      +8.6%
+  Median days to next peak:27
+
+  Good trims (avoided >5% loss): 483 (36.1%)
+  Bad trims (price went up):     190 (14.2%)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  SIGNAL CLUSTERING — Are signals isolated or clustered?
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Total ACCUMULATE clusters: 1,792
+  Median cluster length:     5 days
+  Mean cluster length:       9 days
+  Isolated signals (1 day):  333 (18.6%)
+
+  Capture by cluster position (first/last/middle):
+    First day:  capture=0.53  dd=-4.5%  profit=+6.5%  N=1238
+    Last day:   capture=0.43  dd=-5.9%  profit=+5.0%  N=1238
+    Middle:     capture=0.47  dd=-4.9%  profit=+6.1%  N=12923
+
+DONE

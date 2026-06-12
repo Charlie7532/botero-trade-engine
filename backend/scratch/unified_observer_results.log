@@ -1,0 +1,55 @@
+/root/botero-trade/backend/scripts/unified_observer_backtest.py:252: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  cs = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/unified_observer_backtest.py:264: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz25 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type FROM engine.zigzag_points WHERE min_swing_pct=0.025 ORDER BY ticker, timestamp", conn)
+/root/botero-trade/backend/scripts/unified_observer_backtest.py:265: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz50 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type FROM engine.zigzag_points WHERE min_swing_pct=0.05 ORDER BY ticker, timestamp", conn)
+/root/botero-trade/backend/scripts/unified_observer_backtest.py:266: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz75 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type FROM engine.zigzag_points WHERE min_swing_pct=0.075 ORDER BY ticker, timestamp", conn)
+Loading data...
+  83,472 snapshots, 17 tickers
+Running unified observer on all tickers...
+  83,472 bars with observer output
+Labeling and comparing...
+
+==================================================================================================================================
+  HEAD-TO-HEAD: Unified Observer vs kf_consensus vs Velocity Pair
+  ACCUMULATE bars within 15d of trough: 39,854
+  Base rate AFTER: 56.8%
+==================================================================================================================================
+
+  Detector                                                N   %flag  %AFT_flag %AFT_¬flag   spread    AUC
+  ────────────────────────────────────────────────── ────── ─────── ────────── ────────── ──────── ──────
+  hookup (close > prev_close)                        19,353  48.6%     65.9%     48.2%  +17.7% 0.590 ★★
+  kf_consensus ≥ 2 (4 Kalman agree)                  19,664  49.3%     65.9%     47.9%  +18.0% 0.592 ★★
+  kf_consensus ≥ 3 (3+ agree)                         7,505  18.8%     68.1%     54.2%  +13.9% 0.543 ★
+  sigma_c_vel > 0 AND svw_vel > 0                    17,273  43.3%     66.6%     49.3%  +17.4% 0.587 ★★
+  Observer: recovery > 0                             20,364  51.1%     67.1%     46.1%  +21.0% 0.607 ★★
+  Observer: recovery > 0.3                           16,207  40.7%     68.4%     48.8%  +19.6% 0.596 ★★
+  Observer: recovery > 0.5                           13,067  32.8%     69.0%     50.9%  +18.1% 0.581 ★★
+  Observer: state=RECOVERING                          5,437  13.6%     77.2%     53.6%  +23.6% 0.557 ★★
+  Observer: transition > median                      19,927  50.0%     58.5%     55.1%   +3.4% 0.517
+  Observer: vel_norm > median AND recovery > 0       10,744  27.0%     73.1%     50.8%  +22.3% 0.589 ★★
+  Observer recovery>0 + hookup                       13,158  33.0%     69.9%     50.4%  +19.5% 0.588 ★★
+  Observer recovery>0.3 + vel>0                       9,751  24.5%     71.1%     52.2%  +19.0% 0.571 ★★
+
+==================================================================================================================================
+  CONTINUOUS FEATURES — AUC for predicting AFTER trough
+==================================================================================================================================
+  Observer recovery_score                  AUC=0.638 HIGH→AFTER   med_split=67.3%/46.3% Q10=38.8% Q90=74.7% Xspread=35.9% ★★
+  Observer velocity_norm                   AUC=0.558 HIGH→AFTER   med_split=61.0%/52.6% Q10=54.6% Q90=69.2% Xspread=14.6%
+  Observer transition_score                AUC=0.524 HIGH→AFTER   med_split=58.5%/55.1% Q10=54.7% Q90=62.5% Xspread=7.8%
+  Observer innovation_norm                 AUC=0.545 HIGH→AFTER   med_split=60.1%/53.6% Q10=51.5% Q90=64.3% Xspread=12.7%
+  kf_consensus (sum of signs)              AUC=0.620 HIGH→AFTER   med_split=63.7%/41.8% Q10=35.2% Q90=68.1% Xspread=32.9% ★★
+  sigma_c_vel (σ_C velocity)               AUC=0.622 HIGH→AFTER   med_split=65.6%/48.0% Q10=40.4% Q90=71.9% Xspread=31.5% ★★
+  svw_vel (σV_W velocity)                  AUC=0.614 HIGH→AFTER   med_split=65.5%/48.2% Q10=44.9% Q90=73.4% Xspread=28.5% ★★
+
+==================================================================================================================================
+  OBSERVER STATE DISTRIBUTION
+==================================================================================================================================
+  RECOVERING           N=5,437 (13.6%)  %AFTER=77.2%
+  DETERIORATING        N=4,055 (10.2%)  %AFTER=43.4%
+  TRANSITIONING        N=  524 ( 1.3%)  %AFTER=78.2%
+  STABLE               N=29,838 (74.9%)  %AFTER=54.6%
+
+DONE

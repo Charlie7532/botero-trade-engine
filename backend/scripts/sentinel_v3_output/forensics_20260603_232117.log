@@ -1,0 +1,1236 @@
+[23:13:18] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:13:18] [INFO]   SENTINEL V3 FORENSICS — TURN LIFECYCLE ANALYSIS
+[23:13:18] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:13:18] [INFO]   Zigzag scale: 5%
+[23:13:18] [INFO]   Alert window: FULL INCOMING SWING (no fixed window)
+[23:13:18] [INFO]   z-threshold: ±2.0σ
+[23:13:18] [INFO]   Confirmation window: t+1..t+3
+[23:13:18] [INFO]   Acc/Dist features: 14 (volume, tension, conjugation)
+[23:13:18] [INFO]   Feature groups: Kalman=11, Raw=27, Total=38
+[23:13:20] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:13:20] [INFO]   STEP 1: LOAD DATA + BUILD TURN PAIRS
+[23:13:20] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:13:23] [INFO]   Loading channel_snapshots...
+[23:13:30] [INFO]   Snapshots: 91,252 rows × 38 features
+[23:13:30] [INFO]   Loading OHLCV close prices...
+[23:13:53] [INFO]   Close prices matched: 91,252/91,252
+[23:13:53] [INFO]   Loading zigzag points...
+[23:13:53] [INFO]   Zigzag: 4,313 turns (2156 MIN, 2157 MAX)
+[23:13:53] [INFO]   Swing duration: mean=22, median=13, p25=6, p75=27
+[23:13:54] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:13:54] [INFO]   STEP 1B: BUILD TURN PAIRS + ARCHETYPES
+[23:13:54] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:13:55] [INFO]   Archetypes: HL=1155  LL=924  HH=1151  LH=925  FIRST=34
+[23:13:55] [INFO]   ZIG/ZAG pairs: 4172 matched, 10 orphan zigs, 7 orphan zags
+[23:13:55] [INFO]   Swing durations: mean=22, median=13, p25=6, p75=26
+[23:13:55] [INFO]   Classified turns for analysis: 4155
+[23:13:55] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:13:55] [INFO]   ANALYSIS 1: ALL FEATURES (Kalman + Raw)
+[23:13:55] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:13:55] [INFO]   Computing z-scores for 38 features...
+[23:16:33] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:16:33] [INFO]   RESULTS: ALL FEATURES (Kalman + Raw)
+[23:16:33] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:16:33] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:16:33] [INFO]   ║  LL (MIN) — 924 turns                                  
+[23:16:33] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:16:33] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:16:33] [INFO]     Swing scanned:     mean=17 bars, median=12 bars
+[23:16:33] [INFO]     Any feature fired:  94.2% (870/924)
+[23:16:33] [INFO]     Complete silence:   5.8% (54/924) — NO features fired in entire swing
+[23:16:33] [INFO]     Last alert before turn:  mean=1.8 bars, median=1, p25=1, p75=1
+[23:16:33] [INFO]     First alert in swing:    mean=15.5 bars before turn
+[23:16:33] [INFO]     Silence ratio:     mean=36% of swing bars had ZERO features active
+[23:16:33] [INFO]     Lead time distribution (bars before turn):
+[23:16:33] [INFO]       ≤ 1 bars:  730/870 = 84%
+[23:16:33] [INFO]       ≤ 2 bars:  762/870 = 88%
+[23:16:33] [INFO]       ≤ 3 bars:  780/870 = 90%
+[23:16:33] [INFO]       ≤ 5 bars:  812/870 = 93%
+[23:16:33] [INFO]       ≤ 7 bars:  831/870 = 96%
+[23:16:33] [INFO]       ≤10 bars:  842/870 = 97%
+[23:16:33] [INFO]       ≤15 bars:  864/870 = 99%
+[23:16:33] [INFO]       ≤20 bars:  870/870 = 100%
+[23:16:33] [INFO]     Top features near turn (last 5 bars of swing):
+[23:16:33] [INFO]       kf_price_pred_val                   fires in 41% of turns
+[23:16:33] [INFO]       kf_price_innovation                 fires in 38% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   fires in 36% of turns
+[23:16:33] [INFO]       vwap_sigma_current                  fires in 28% of turns
+[23:16:33] [INFO]       vwap_sigma_tide                     fires in 27% of turns
+[23:16:33] [INFO]     Top features anywhere in swing:
+[23:16:33] [INFO]       kf_price_pred_val                   fires in 58% of turns
+[23:16:33] [INFO]       kf_price_innovation                 fires in 57% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   fires in 55% of turns
+[23:16:33] [INFO]       kf_rvol_filt_vel                    fires in 41% of turns
+[23:16:33] [INFO]       kf_rvol_pred_val                    fires in 41% of turns
+[23:16:33] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:16:33] [INFO]     Detection Rate (≥2 features): 78.9% (729/924)
+[23:16:33] [INFO]     Silent at t=0 (density=0):    11.5% (106/924)
+[23:16:33] [INFO]     Density at t=0:  mean=6.3, median=5, p75=10
+[23:16:33] [INFO]     Top Detection Features:
+[23:16:33] [INFO]       vwap_sigma_current                  active in 37% of turns
+[23:16:33] [INFO]       vwap_sigma_tide                     active in 35% of turns
+[23:16:33] [INFO]       sigma_tide                          active in 33% of turns
+[23:16:33] [INFO]       rsi_value                           active in 32% of turns
+[23:16:33] [INFO]       kf_price_pred_val                   active in 32% of turns
+[23:16:33] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:16:33] [INFO]     Persistence Rate: 88.6% (819/924)
+[23:16:33] [INFO]     Density mean:     4.5
+[23:16:33] [INFO]     Trend:            INCREASING=20%, DECREASING=53%
+[23:16:33] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:16:33] [INFO]     Healthy Moves (>5%): 73.2% (676/924)
+[23:16:33] [INFO]     Max Favorable Excursion:  mean=12.2%, median=10.0%
+[23:16:33] [INFO]     Final Return:            mean=12.2%, median=10.0%
+[23:16:33] [INFO]     Move Duration:           mean=21 bars, median=7 bars
+[23:16:33] [INFO]     Signal Exhaustion:       mean=9 bars, median=5 bars
+[23:16:33] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:16:33] [INFO]     ACCUMULATION:   311/924 = 34%
+[23:16:33] [INFO]     DISTRIBUTION:    75/924 = 8%
+[23:16:33] [INFO]     NEUTRAL:        240/924 = 26%
+[23:16:33] [INFO]     ACC → healthy:   311/311 = 100%
+[23:16:33] [INFO]     DIST → healthy:  75/75 = 100%
+[23:16:33] [INFO]     ACC avg MFE:     17.7%
+[23:16:33] [INFO]     DIST avg MFE:    14.4%
+[23:16:33] [INFO] 
+  ── FUNNEL ──
+[23:16:33] [INFO]     ALERTA                             870/924 = 94%
+[23:16:33] [INFO]     + DETECCIÓN (≥2)                   695/924 = 75%
+[23:16:33] [INFO]     + CONFIRMACIÓN                     668/924 = 72%
+[23:16:33] [INFO]     + CONTINUACIÓN saludable (>5%)     462/924 = 50%
+[23:16:33] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:16:33] [INFO]   ║  HL (MIN) — 1155 turns                                  
+[23:16:33] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:16:33] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:16:33] [INFO]     Swing scanned:     mean=14 bars, median=10 bars
+[23:16:33] [INFO]     Any feature fired:  90.6% (1046/1155)
+[23:16:33] [INFO]     Complete silence:   9.4% (109/1155) — NO features fired in entire swing
+[23:16:33] [INFO]     Last alert before turn:  mean=2.5 bars, median=1, p25=1, p75=2
+[23:16:33] [INFO]     First alert in swing:    mean=13.1 bars before turn
+[23:16:33] [INFO]     Silence ratio:     mean=41% of swing bars had ZERO features active
+[23:16:33] [INFO]     Lead time distribution (bars before turn):
+[23:16:33] [INFO]       ≤ 1 bars:  750/1046 = 72%
+[23:16:33] [INFO]       ≤ 2 bars:  818/1046 = 78%
+[23:16:33] [INFO]       ≤ 3 bars:  857/1046 = 82%
+[23:16:33] [INFO]       ≤ 5 bars:  928/1046 = 89%
+[23:16:33] [INFO]       ≤ 7 bars:  961/1046 = 92%
+[23:16:33] [INFO]       ≤10 bars:  993/1046 = 95%
+[23:16:33] [INFO]       ≤15 bars: 1029/1046 = 98%
+[23:16:33] [INFO]       ≤20 bars: 1037/1046 = 99%
+[23:16:33] [INFO]     Top features near turn (last 5 bars of swing):
+[23:16:33] [INFO]       kf_price_innovation                 fires in 24% of turns
+[23:16:33] [INFO]       kf_price_pred_val                   fires in 21% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   fires in 21% of turns
+[23:16:33] [INFO]       kf_rsi_filt_vel                     fires in 20% of turns
+[23:16:33] [INFO]       kf_rvol_filt_vel                    fires in 20% of turns
+[23:16:33] [INFO]     Top features anywhere in swing:
+[23:16:33] [INFO]       kf_rsi_filt_vel                     fires in 44% of turns
+[23:16:33] [INFO]       kf_price_innovation                 fires in 40% of turns
+[23:16:33] [INFO]       kf_rvol_filt_vel                    fires in 38% of turns
+[23:16:33] [INFO]       kf_rvol_pred_val                    fires in 37% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   fires in 37% of turns
+[23:16:33] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:16:33] [INFO]     Detection Rate (≥2 features): 65.2% (753/1155)
+[23:16:33] [INFO]     Silent at t=0 (density=0):    20.3% (234/1155)
+[23:16:33] [INFO]     Density at t=0:  mean=3.9, median=3, p75=6
+[23:16:33] [INFO]     Top Detection Features:
+[23:16:33] [INFO]       kf_price_pred_val                   active in 21% of turns
+[23:16:33] [INFO]       sigma_current                       active in 18% of turns
+[23:16:33] [INFO]       kf_tension_filt_vel                 active in 17% of turns
+[23:16:33] [INFO]       kf_rsi_filt_vel                     active in 16% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   active in 15% of turns
+[23:16:33] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:16:33] [INFO]     Persistence Rate: 77.7% (897/1155)
+[23:16:33] [INFO]     Density mean:     2.6
+[23:16:33] [INFO]     Trend:            INCREASING=17%, DECREASING=41%
+[23:16:33] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:16:33] [INFO]     Healthy Moves (>5%): 84.8% (979/1155)
+[23:16:33] [INFO]     Max Favorable Excursion:  mean=13.1%, median=10.9%
+[23:16:33] [INFO]     Final Return:            mean=13.0%, median=10.9%
+[23:16:33] [INFO]     Move Duration:           mean=27 bars, median=14 bars
+[23:16:33] [INFO]     Signal Exhaustion:       mean=10 bars, median=5 bars
+[23:16:33] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:16:33] [INFO]     ACCUMULATION:   393/1155 = 34%
+[23:16:33] [INFO]     DISTRIBUTION:   191/1155 = 17%
+[23:16:33] [INFO]     NEUTRAL:        335/1155 = 29%
+[23:16:33] [INFO]     ACC → healthy:   393/393 = 100%
+[23:16:33] [INFO]     DIST → healthy:  191/191 = 100%
+[23:16:33] [INFO]     ACC avg MFE:     16.0%
+[23:16:33] [INFO]     DIST avg MFE:    15.3%
+[23:16:33] [INFO] 
+  ── FUNNEL ──
+[23:16:33] [INFO]     ALERTA                            1046/1155 = 91%
+[23:16:33] [INFO]     + DETECCIÓN (≥2)                   697/1155 = 60%
+[23:16:33] [INFO]     + CONFIRMACIÓN                     657/1155 = 57%
+[23:16:33] [INFO]     + CONTINUACIÓN saludable (>5%)     539/1155 = 47%
+[23:16:33] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:16:33] [INFO]   ║  HH (MAX) — 1151 turns                                  
+[23:16:33] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:16:33] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:16:33] [INFO]     Swing scanned:     mean=39 bars, median=27 bars
+[23:16:33] [INFO]     Any feature fired:  96.6% (1112/1151)
+[23:16:33] [INFO]     Complete silence:   3.4% (39/1151) — NO features fired in entire swing
+[23:16:33] [INFO]     Last alert before turn:  mean=4.8 bars, median=1, p25=1, p75=6
+[23:16:33] [INFO]     First alert in swing:    mean=37.8 bars before turn
+[23:16:33] [INFO]     Silence ratio:     mean=46% of swing bars had ZERO features active
+[23:16:33] [INFO]     Lead time distribution (bars before turn):
+[23:16:33] [INFO]       ≤ 1 bars:  660/1112 = 59%
+[23:16:33] [INFO]       ≤ 2 bars:  719/1112 = 65%
+[23:16:33] [INFO]       ≤ 3 bars:  768/1112 = 69%
+[23:16:33] [INFO]       ≤ 5 bars:  831/1112 = 75%
+[23:16:33] [INFO]       ≤ 7 bars:  883/1112 = 79%
+[23:16:33] [INFO]       ≤10 bars:  945/1112 = 85%
+[23:16:33] [INFO]       ≤15 bars: 1022/1112 = 92%
+[23:16:33] [INFO]       ≤20 bars: 1057/1112 = 95%
+[23:16:33] [INFO]     Top features near turn (last 5 bars of swing):
+[23:16:33] [INFO]       kf_price_pred_val                   fires in 21% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   fires in 20% of turns
+[23:16:33] [INFO]       kf_price_innovation                 fires in 19% of turns
+[23:16:33] [INFO]       kf_rvol_filt_vel                    fires in 16% of turns
+[23:16:33] [INFO]       current_accel                       fires in 15% of turns
+[23:16:33] [INFO]     Top features anywhere in swing:
+[23:16:33] [INFO]       kf_price_filt_vel                   fires in 56% of turns
+[23:16:33] [INFO]       kf_price_innovation                 fires in 54% of turns
+[23:16:33] [INFO]       kf_price_pred_val                   fires in 54% of turns
+[23:16:33] [INFO]       kf_rvol_filt_vel                    fires in 52% of turns
+[23:16:33] [INFO]       kf_rvol_pred_val                    fires in 49% of turns
+[23:16:33] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:16:33] [INFO]     Detection Rate (≥2 features): 53.4% (615/1151)
+[23:16:33] [INFO]     Silent at t=0 (density=0):    34.7% (399/1151)
+[23:16:33] [INFO]     Density at t=0:  mean=3.1, median=2, p75=5
+[23:16:33] [INFO]     Top Detection Features:
+[23:16:33] [INFO]       kf_price_pred_val                   active in 15% of turns
+[23:16:33] [INFO]       wave_accel                          active in 13% of turns
+[23:16:33] [INFO]       current_accel                       active in 13% of turns
+[23:16:33] [INFO]       vwap_spread_tide_wave               active in 11% of turns
+[23:16:33] [INFO]       conj_wave_tide                      active in 11% of turns
+[23:16:33] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:16:33] [INFO]     Persistence Rate: 76.5% (880/1151)
+[23:16:33] [INFO]     Density mean:     2.8
+[23:16:33] [INFO]     Trend:            INCREASING=27%, DECREASING=31%
+[23:16:33] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:16:33] [INFO]     Healthy Moves (>5%): 86.0% (990/1151)
+[23:16:33] [INFO]     Max Favorable Excursion:  mean=9.3%, median=8.8%
+[23:16:33] [INFO]     Final Return:            mean=9.3%, median=8.8%
+[23:16:33] [INFO]     Move Duration:           mean=15 bars, median=11 bars
+[23:16:33] [INFO]     Signal Exhaustion:       mean=7 bars, median=4 bars
+[23:16:33] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:16:33] [INFO]     ACCUMULATION:   104/1151 = 9%
+[23:16:33] [INFO]     DISTRIBUTION:   490/1151 = 43%
+[23:16:33] [INFO]     NEUTRAL:        346/1151 = 30%
+[23:16:33] [INFO]     ACC → healthy:   104/104 = 100%
+[23:16:33] [INFO]     DIST → healthy:  490/490 = 100%
+[23:16:33] [INFO]     ACC avg MFE:     11.7%
+[23:16:33] [INFO]     DIST avg MFE:    10.9%
+[23:16:33] [INFO] 
+  ── FUNNEL ──
+[23:16:33] [INFO]     ALERTA                            1112/1151 = 97%
+[23:16:33] [INFO]     + DETECCIÓN (≥2)                   598/1151 = 52%
+[23:16:33] [INFO]     + CONFIRMACIÓN                     565/1151 = 49%
+[23:16:33] [INFO]     + CONTINUACIÓN saludable (>5%)     452/1151 = 39%
+[23:16:33] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:16:33] [INFO]   ║  LH (MAX) — 925 turns                                  
+[23:16:33] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:16:33] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:16:33] [INFO]     Swing scanned:     mean=10 bars, median=5 bars
+[23:16:33] [INFO]     Any feature fired:  82.3% (761/925)
+[23:16:33] [INFO]     Complete silence:   17.7% (164/925) — NO features fired in entire swing
+[23:16:33] [INFO]     Last alert before turn:  mean=3.2 bars, median=1, p25=1, p75=3
+[23:16:33] [INFO]     First alert in swing:    mean=11.2 bars before turn
+[23:16:33] [INFO]     Silence ratio:     mean=40% of swing bars had ZERO features active
+[23:16:33] [INFO]     Lead time distribution (bars before turn):
+[23:16:33] [INFO]       ≤ 1 bars:  493/761 = 65%
+[23:16:33] [INFO]       ≤ 2 bars:  544/761 = 71%
+[23:16:33] [INFO]       ≤ 3 bars:  586/761 = 77%
+[23:16:33] [INFO]       ≤ 5 bars:  638/761 = 84%
+[23:16:33] [INFO]       ≤ 7 bars:  667/761 = 88%
+[23:16:33] [INFO]       ≤10 bars:  701/761 = 92%
+[23:16:33] [INFO]       ≤15 bars:  734/761 = 96%
+[23:16:33] [INFO]       ≤20 bars:  749/761 = 98%
+[23:16:33] [INFO]     Top features near turn (last 5 bars of swing):
+[23:16:33] [INFO]       kf_price_innovation                 fires in 28% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   fires in 27% of turns
+[23:16:33] [INFO]       kf_price_pred_val                   fires in 22% of turns
+[23:16:33] [INFO]       wave_accel                          fires in 18% of turns
+[23:16:33] [INFO]       kf_conj_filt_vel                    fires in 17% of turns
+[23:16:33] [INFO]     Top features anywhere in swing:
+[23:16:33] [INFO]       kf_price_innovation                 fires in 43% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   fires in 43% of turns
+[23:16:33] [INFO]       kf_price_pred_val                   fires in 34% of turns
+[23:16:33] [INFO]       wave_accel                          fires in 26% of turns
+[23:16:33] [INFO]       kf_conj_filt_vel                    fires in 24% of turns
+[23:16:33] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:16:33] [INFO]     Detection Rate (≥2 features): 56.2% (520/925)
+[23:16:33] [INFO]     Silent at t=0 (density=0):    29.9% (277/925)
+[23:16:33] [INFO]     Density at t=0:  mean=3.5, median=2, p75=6
+[23:16:33] [INFO]     Top Detection Features:
+[23:16:33] [INFO]       kf_price_pred_val                   active in 24% of turns
+[23:16:33] [INFO]       kf_price_filt_vel                   active in 24% of turns
+[23:16:33] [INFO]       kf_price_innovation                 active in 17% of turns
+[23:16:33] [INFO]       kf_conj_filt_vel                    active in 15% of turns
+[23:16:33] [INFO]       wave_accel                          active in 14% of turns
+[23:16:33] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:16:33] [INFO]     Persistence Rate: 75.6% (699/925)
+[23:16:33] [INFO]     Density mean:     3.4
+[23:16:33] [INFO]     Trend:            INCREASING=25%, DECREASING=35%
+[23:16:33] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:16:33] [INFO]     Healthy Moves (>5%): 76.0% (703/925)
+[23:16:33] [INFO]     Max Favorable Excursion:  mean=8.8%, median=8.0%
+[23:16:33] [INFO]     Final Return:            mean=8.8%, median=8.0%
+[23:16:33] [INFO]     Move Duration:           mean=10 bars, median=6 bars
+[23:16:33] [INFO]     Signal Exhaustion:       mean=6 bars, median=4 bars
+[23:16:33] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:16:33] [INFO]     ACCUMULATION:   109/925 = 12%
+[23:16:33] [INFO]     DISTRIBUTION:   299/925 = 32%
+[23:16:33] [INFO]     NEUTRAL:        219/925 = 24%
+[23:16:33] [INFO]     ACC → healthy:   109/109 = 100%
+[23:16:33] [INFO]     DIST → healthy:  299/299 = 100%
+[23:16:33] [INFO]     ACC avg MFE:     10.5%
+[23:16:33] [INFO]     DIST avg MFE:    12.7%
+[23:16:33] [INFO] 
+  ── FUNNEL ──
+[23:16:33] [INFO]     ALERTA                             761/925 = 82%
+[23:16:33] [INFO]     + DETECCIÓN (≥2)                   407/925 = 44%
+[23:16:33] [INFO]     + CONFIRMACIÓN                     396/925 = 43%
+[23:16:33] [INFO]     + CONTINUACIÓN saludable (>5%)     287/925 = 31%
+[23:16:33] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:16:33] [INFO]   ANALYSIS 2: KALMAN FEATURES ONLY
+[23:16:33] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:16:33] [INFO]   Computing z-scores for 11 features...
+[23:18:27] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:18:27] [INFO]   RESULTS: KALMAN FEATURES ONLY
+[23:18:27] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:18:27] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:18:27] [INFO]   ║  LL (MIN) — 924 turns                                  
+[23:18:27] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:18:27] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:18:27] [INFO]     Swing scanned:     mean=17 bars, median=12 bars
+[23:18:27] [INFO]     Any feature fired:  88.4% (817/924)
+[23:18:27] [INFO]     Complete silence:   11.6% (107/924) — NO features fired in entire swing
+[23:18:27] [INFO]     Last alert before turn:  mean=3.5 bars, median=1, p25=1, p75=4
+[23:18:27] [INFO]     First alert in swing:    mean=14.8 bars before turn
+[23:18:27] [INFO]     Silence ratio:     mean=55% of swing bars had ZERO features active
+[23:18:27] [INFO]     Lead time distribution (bars before turn):
+[23:18:27] [INFO]       ≤ 1 bars:  506/817 = 62%
+[23:18:27] [INFO]       ≤ 2 bars:  566/817 = 69%
+[23:18:27] [INFO]       ≤ 3 bars:  612/817 = 75%
+[23:18:27] [INFO]       ≤ 5 bars:  670/817 = 82%
+[23:18:27] [INFO]       ≤ 7 bars:  712/817 = 87%
+[23:18:27] [INFO]       ≤10 bars:  746/817 = 91%
+[23:18:27] [INFO]       ≤15 bars:  785/817 = 96%
+[23:18:27] [INFO]       ≤20 bars:  799/817 = 98%
+[23:18:27] [INFO]     Top features near turn (last 5 bars of swing):
+[23:18:27] [INFO]       kf_price_pred_val                   fires in 41% of turns
+[23:18:27] [INFO]       kf_price_innovation                 fires in 38% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   fires in 36% of turns
+[23:18:27] [INFO]       kf_rsi_pred_val                     fires in 24% of turns
+[23:18:27] [INFO]       kf_rvol_filt_vel                    fires in 22% of turns
+[23:18:27] [INFO]     Top features anywhere in swing:
+[23:18:27] [INFO]       kf_price_pred_val                   fires in 58% of turns
+[23:18:27] [INFO]       kf_price_innovation                 fires in 57% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   fires in 55% of turns
+[23:18:27] [INFO]       kf_rvol_filt_vel                    fires in 41% of turns
+[23:18:27] [INFO]       kf_rvol_pred_val                    fires in 41% of turns
+[23:18:27] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:18:27] [INFO]     Detection Rate (≥2 features): 46.2% (427/924)
+[23:18:27] [INFO]     Silent at t=0 (density=0):    35.4% (327/924)
+[23:18:27] [INFO]     Density at t=0:  mean=1.9, median=1, p75=3
+[23:18:27] [INFO]     Top Detection Features:
+[23:18:27] [INFO]       kf_price_pred_val                   active in 32% of turns
+[23:18:27] [INFO]       kf_rsi_pred_val                     active in 29% of turns
+[23:18:27] [INFO]       kf_conj_pred_val                    active in 19% of turns
+[23:18:27] [INFO]       kf_conj_filt_vel                    active in 18% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   active in 18% of turns
+[23:18:27] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:18:27] [INFO]     Persistence Rate: 78.8% (728/924)
+[23:18:27] [INFO]     Density mean:     1.6
+[23:18:27] [INFO]     Trend:            INCREASING=18%, DECREASING=45%
+[23:18:27] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:18:27] [INFO]     Healthy Moves (>5%): 73.2% (676/924)
+[23:18:27] [INFO]     Max Favorable Excursion:  mean=12.2%, median=10.0%
+[23:18:27] [INFO]     Final Return:            mean=12.2%, median=10.0%
+[23:18:27] [INFO]     Move Duration:           mean=21 bars, median=7 bars
+[23:18:27] [INFO]     Signal Exhaustion:       mean=5 bars, median=3 bars
+[23:18:27] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:18:27] [INFO]     ACCUMULATION:   322/924 = 35%
+[23:18:27] [INFO]     DISTRIBUTION:    64/924 = 7%
+[23:18:27] [INFO]     NEUTRAL:        240/924 = 26%
+[23:18:27] [INFO]     ACC → healthy:   322/322 = 100%
+[23:18:27] [INFO]     DIST → healthy:  64/64 = 100%
+[23:18:27] [INFO]     ACC avg MFE:     17.6%
+[23:18:27] [INFO]     DIST avg MFE:    14.6%
+[23:18:27] [INFO] 
+  ── FUNNEL ──
+[23:18:27] [INFO]     ALERTA                             817/924 = 88%
+[23:18:27] [INFO]     + DETECCIÓN (≥2)                   389/924 = 42%
+[23:18:27] [INFO]     + CONFIRMACIÓN                     380/924 = 41%
+[23:18:27] [INFO]     + CONTINUACIÓN saludable (>5%)     238/924 = 26%
+[23:18:27] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:18:27] [INFO]   ║  HL (MIN) — 1155 turns                                  
+[23:18:27] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:18:27] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:18:27] [INFO]     Swing scanned:     mean=14 bars, median=10 bars
+[23:18:27] [INFO]     Any feature fired:  84.4% (975/1155)
+[23:18:27] [INFO]     Complete silence:   15.6% (180/1155) — NO features fired in entire swing
+[23:18:27] [INFO]     Last alert before turn:  mean=4.1 bars, median=1, p25=1, p75=5
+[23:18:27] [INFO]     First alert in swing:    mean=12.4 bars before turn
+[23:18:27] [INFO]     Silence ratio:     mean=60% of swing bars had ZERO features active
+[23:18:27] [INFO]     Lead time distribution (bars before turn):
+[23:18:27] [INFO]       ≤ 1 bars:  504/975 = 52%
+[23:18:27] [INFO]       ≤ 2 bars:  594/975 = 61%
+[23:18:27] [INFO]       ≤ 3 bars:  658/975 = 67%
+[23:18:27] [INFO]       ≤ 5 bars:  764/975 = 78%
+[23:18:27] [INFO]       ≤ 7 bars:  815/975 = 84%
+[23:18:27] [INFO]       ≤10 bars:  861/975 = 88%
+[23:18:27] [INFO]       ≤15 bars:  925/975 = 95%
+[23:18:27] [INFO]       ≤20 bars:  948/975 = 97%
+[23:18:27] [INFO]     Top features near turn (last 5 bars of swing):
+[23:18:27] [INFO]       kf_price_innovation                 fires in 24% of turns
+[23:18:27] [INFO]       kf_price_pred_val                   fires in 21% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   fires in 21% of turns
+[23:18:27] [INFO]       kf_rsi_filt_vel                     fires in 20% of turns
+[23:18:27] [INFO]       kf_rvol_filt_vel                    fires in 20% of turns
+[23:18:27] [INFO]     Top features anywhere in swing:
+[23:18:27] [INFO]       kf_rsi_filt_vel                     fires in 44% of turns
+[23:18:27] [INFO]       kf_price_innovation                 fires in 40% of turns
+[23:18:27] [INFO]       kf_rvol_filt_vel                    fires in 38% of turns
+[23:18:27] [INFO]       kf_rvol_pred_val                    fires in 37% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   fires in 37% of turns
+[23:18:27] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:18:27] [INFO]     Detection Rate (≥2 features): 37.9% (438/1155)
+[23:18:27] [INFO]     Silent at t=0 (density=0):    40.7% (470/1155)
+[23:18:27] [INFO]     Density at t=0:  mean=1.4, median=1, p75=2
+[23:18:27] [INFO]     Top Detection Features:
+[23:18:27] [INFO]       kf_price_pred_val                   active in 21% of turns
+[23:18:27] [INFO]       kf_tension_filt_vel                 active in 17% of turns
+[23:18:27] [INFO]       kf_rsi_filt_vel                     active in 16% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   active in 15% of turns
+[23:18:27] [INFO]       kf_tension_pred_val                 active in 12% of turns
+[23:18:27] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:18:27] [INFO]     Persistence Rate: 65.0% (751/1155)
+[23:18:27] [INFO]     Density mean:     0.9
+[23:18:27] [INFO]     Trend:            INCREASING=17%, DECREASING=34%
+[23:18:27] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:18:27] [INFO]     Healthy Moves (>5%): 84.8% (979/1155)
+[23:18:27] [INFO]     Max Favorable Excursion:  mean=13.1%, median=10.9%
+[23:18:27] [INFO]     Final Return:            mean=13.0%, median=10.9%
+[23:18:27] [INFO]     Move Duration:           mean=27 bars, median=14 bars
+[23:18:27] [INFO]     Signal Exhaustion:       mean=4 bars, median=2 bars
+[23:18:27] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:18:27] [INFO]     ACCUMULATION:   402/1155 = 35%
+[23:18:27] [INFO]     DISTRIBUTION:   182/1155 = 16%
+[23:18:27] [INFO]     NEUTRAL:        335/1155 = 29%
+[23:18:27] [INFO]     ACC → healthy:   402/402 = 100%
+[23:18:27] [INFO]     DIST → healthy:  182/182 = 100%
+[23:18:27] [INFO]     ACC avg MFE:     16.3%
+[23:18:27] [INFO]     DIST avg MFE:    14.7%
+[23:18:27] [INFO] 
+  ── FUNNEL ──
+[23:18:27] [INFO]     ALERTA                             975/1155 = 84%
+[23:18:27] [INFO]     + DETECCIÓN (≥2)                   375/1155 = 32%
+[23:18:27] [INFO]     + CONFIRMACIÓN                     353/1155 = 31%
+[23:18:27] [INFO]     + CONTINUACIÓN saludable (>5%)     277/1155 = 24%
+[23:18:27] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:18:27] [INFO]   ║  HH (MAX) — 1151 turns                                  
+[23:18:27] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:18:27] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:18:27] [INFO]     Swing scanned:     mean=39 bars, median=27 bars
+[23:18:27] [INFO]     Any feature fired:  92.6% (1066/1151)
+[23:18:27] [INFO]     Complete silence:   7.4% (85/1151) — NO features fired in entire swing
+[23:18:27] [INFO]     Last alert before turn:  mean=8.0 bars, median=3, p25=1, p75=11
+[23:18:27] [INFO]     First alert in swing:    mean=36.9 bars before turn
+[23:18:27] [INFO]     Silence ratio:     mean=66% of swing bars had ZERO features active
+[23:18:27] [INFO]     Lead time distribution (bars before turn):
+[23:18:27] [INFO]       ≤ 1 bars:  417/1066 = 39%
+[23:18:27] [INFO]       ≤ 2 bars:  478/1066 = 45%
+[23:18:27] [INFO]       ≤ 3 bars:  545/1066 = 51%
+[23:18:27] [INFO]       ≤ 5 bars:  634/1066 = 59%
+[23:18:27] [INFO]       ≤ 7 bars:  688/1066 = 65%
+[23:18:27] [INFO]       ≤10 bars:  780/1066 = 73%
+[23:18:27] [INFO]       ≤15 bars:  885/1066 = 83%
+[23:18:27] [INFO]       ≤20 bars:  948/1066 = 89%
+[23:18:27] [INFO]     Top features near turn (last 5 bars of swing):
+[23:18:27] [INFO]       kf_price_pred_val                   fires in 21% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   fires in 20% of turns
+[23:18:27] [INFO]       kf_price_innovation                 fires in 19% of turns
+[23:18:27] [INFO]       kf_rvol_filt_vel                    fires in 16% of turns
+[23:18:27] [INFO]       kf_rvol_pred_val                    fires in 14% of turns
+[23:18:27] [INFO]     Top features anywhere in swing:
+[23:18:27] [INFO]       kf_price_filt_vel                   fires in 56% of turns
+[23:18:27] [INFO]       kf_price_innovation                 fires in 54% of turns
+[23:18:27] [INFO]       kf_price_pred_val                   fires in 54% of turns
+[23:18:27] [INFO]       kf_rvol_filt_vel                    fires in 52% of turns
+[23:18:27] [INFO]       kf_rvol_pred_val                    fires in 49% of turns
+[23:18:27] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:18:27] [INFO]     Detection Rate (≥2 features): 25.8% (297/1151)
+[23:18:27] [INFO]     Silent at t=0 (density=0):    54.3% (625/1151)
+[23:18:27] [INFO]     Density at t=0:  mean=1.0, median=0, p75=2
+[23:18:27] [INFO]     Top Detection Features:
+[23:18:27] [INFO]       kf_price_pred_val                   active in 15% of turns
+[23:18:27] [INFO]       kf_conj_pred_val                    active in 11% of turns
+[23:18:27] [INFO]       kf_tension_filt_vel                 active in 10% of turns
+[23:18:27] [INFO]       kf_conj_filt_vel                    active in 10% of turns
+[23:18:27] [INFO]       kf_rsi_pred_val                     active in 9% of turns
+[23:18:27] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:18:27] [INFO]     Persistence Rate: 64.6% (743/1151)
+[23:18:27] [INFO]     Density mean:     1.0
+[23:18:27] [INFO]     Trend:            INCREASING=25%, DECREASING=26%
+[23:18:27] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:18:27] [INFO]     Healthy Moves (>5%): 86.0% (990/1151)
+[23:18:27] [INFO]     Max Favorable Excursion:  mean=9.3%, median=8.8%
+[23:18:27] [INFO]     Final Return:            mean=9.3%, median=8.8%
+[23:18:27] [INFO]     Move Duration:           mean=15 bars, median=11 bars
+[23:18:27] [INFO]     Signal Exhaustion:       mean=4 bars, median=2 bars
+[23:18:27] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:18:27] [INFO]     ACCUMULATION:    94/1151 = 8%
+[23:18:27] [INFO]     DISTRIBUTION:   500/1151 = 43%
+[23:18:27] [INFO]     NEUTRAL:        346/1151 = 30%
+[23:18:27] [INFO]     ACC → healthy:   94/94 = 100%
+[23:18:27] [INFO]     DIST → healthy:  500/500 = 100%
+[23:18:27] [INFO]     ACC avg MFE:     11.6%
+[23:18:27] [INFO]     DIST avg MFE:    10.9%
+[23:18:27] [INFO] 
+  ── FUNNEL ──
+[23:18:27] [INFO]     ALERTA                            1066/1151 = 93%
+[23:18:27] [INFO]     + DETECCIÓN (≥2)                   269/1151 = 23%
+[23:18:27] [INFO]     + CONFIRMACIÓN                     248/1151 = 22%
+[23:18:27] [INFO]     + CONTINUACIÓN saludable (>5%)     175/1151 = 15%
+[23:18:27] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:18:27] [INFO]   ║  LH (MAX) — 925 turns                                  
+[23:18:27] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:18:27] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:18:27] [INFO]     Swing scanned:     mean=10 bars, median=5 bars
+[23:18:27] [INFO]     Any feature fired:  74.4% (688/925)
+[23:18:27] [INFO]     Complete silence:   25.6% (237/925) — NO features fired in entire swing
+[23:18:27] [INFO]     Last alert before turn:  mean=5.0 bars, median=2, p25=1, p75=6
+[23:18:27] [INFO]     First alert in swing:    mean=11.1 bars before turn
+[23:18:27] [INFO]     Silence ratio:     mean=58% of swing bars had ZERO features active
+[23:18:27] [INFO]     Lead time distribution (bars before turn):
+[23:18:27] [INFO]       ≤ 1 bars:  330/688 = 48%
+[23:18:27] [INFO]       ≤ 2 bars:  388/688 = 56%
+[23:18:27] [INFO]       ≤ 3 bars:  439/688 = 64%
+[23:18:27] [INFO]       ≤ 5 bars:  515/688 = 75%
+[23:18:27] [INFO]       ≤ 7 bars:  555/688 = 81%
+[23:18:27] [INFO]       ≤10 bars:  588/688 = 85%
+[23:18:27] [INFO]       ≤15 bars:  629/688 = 91%
+[23:18:27] [INFO]       ≤20 bars:  656/688 = 95%
+[23:18:27] [INFO]     Top features near turn (last 5 bars of swing):
+[23:18:27] [INFO]       kf_price_innovation                 fires in 28% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   fires in 27% of turns
+[23:18:27] [INFO]       kf_price_pred_val                   fires in 22% of turns
+[23:18:27] [INFO]       kf_conj_filt_vel                    fires in 17% of turns
+[23:18:27] [INFO]       kf_conj_pred_val                    fires in 14% of turns
+[23:18:27] [INFO]     Top features anywhere in swing:
+[23:18:27] [INFO]       kf_price_innovation                 fires in 43% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   fires in 43% of turns
+[23:18:27] [INFO]       kf_price_pred_val                   fires in 34% of turns
+[23:18:27] [INFO]       kf_conj_filt_vel                    fires in 24% of turns
+[23:18:27] [INFO]       kf_rsi_filt_vel                     fires in 22% of turns
+[23:18:27] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:18:27] [INFO]     Detection Rate (≥2 features): 35.5% (328/925)
+[23:18:27] [INFO]     Silent at t=0 (density=0):    47.0% (435/925)
+[23:18:27] [INFO]     Density at t=0:  mean=1.4, median=1, p75=2
+[23:18:27] [INFO]     Top Detection Features:
+[23:18:27] [INFO]       kf_price_pred_val                   active in 24% of turns
+[23:18:27] [INFO]       kf_price_filt_vel                   active in 24% of turns
+[23:18:27] [INFO]       kf_price_innovation                 active in 17% of turns
+[23:18:27] [INFO]       kf_conj_filt_vel                    active in 15% of turns
+[23:18:27] [INFO]       kf_conj_pred_val                    active in 14% of turns
+[23:18:27] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:18:27] [INFO]     Persistence Rate: 65.8% (609/925)
+[23:18:27] [INFO]     Density mean:     1.1
+[23:18:27] [INFO]     Trend:            INCREASING=20%, DECREASING=34%
+[23:18:27] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:18:27] [INFO]     Healthy Moves (>5%): 76.0% (703/925)
+[23:18:27] [INFO]     Max Favorable Excursion:  mean=8.8%, median=8.0%
+[23:18:27] [INFO]     Final Return:            mean=8.8%, median=8.0%
+[23:18:27] [INFO]     Move Duration:           mean=10 bars, median=6 bars
+[23:18:27] [INFO]     Signal Exhaustion:       mean=4 bars, median=2 bars
+[23:18:27] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:18:27] [INFO]     ACCUMULATION:   109/925 = 12%
+[23:18:27] [INFO]     DISTRIBUTION:   299/925 = 32%
+[23:18:27] [INFO]     NEUTRAL:        219/925 = 24%
+[23:18:27] [INFO]     ACC → healthy:   109/109 = 100%
+[23:18:27] [INFO]     DIST → healthy:  299/299 = 100%
+[23:18:27] [INFO]     ACC avg MFE:     10.7%
+[23:18:27] [INFO]     DIST avg MFE:    12.6%
+[23:18:27] [INFO] 
+  ── FUNNEL ──
+[23:18:27] [INFO]     ALERTA                             688/925 = 74%
+[23:18:27] [INFO]     + DETECCIÓN (≥2)                   211/925 = 23%
+[23:18:27] [INFO]     + CONFIRMACIÓN                     202/925 = 22%
+[23:18:27] [INFO]     + CONTINUACIÓN saludable (>5%)     129/925 = 14%
+[23:18:27] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:18:27] [INFO]   ANALYSIS 3: RAW FEATURES ONLY
+[23:18:27] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:18:27] [INFO]   Computing z-scores for 27 features...
+[23:20:47] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:47] [INFO]   RESULTS: RAW FEATURES ONLY
+[23:20:47] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:47] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:20:47] [INFO]   ║  LL (MIN) — 924 turns                                  
+[23:20:47] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:20:47] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:20:47] [INFO]     Swing scanned:     mean=17 bars, median=12 bars
+[23:20:47] [INFO]     Any feature fired:  86.5% (799/924)
+[23:20:47] [INFO]     Complete silence:   13.5% (125/924) — NO features fired in entire swing
+[23:20:47] [INFO]     Last alert before turn:  mean=1.8 bars, median=1, p25=1, p75=1
+[23:20:47] [INFO]     First alert in swing:    mean=14.5 bars before turn
+[23:20:47] [INFO]     Silence ratio:     mean=43% of swing bars had ZERO features active
+[23:20:47] [INFO]     Lead time distribution (bars before turn):
+[23:20:47] [INFO]       ≤ 1 bars:  680/799 = 85%
+[23:20:47] [INFO]       ≤ 2 bars:  714/799 = 89%
+[23:20:47] [INFO]       ≤ 3 bars:  723/799 = 90%
+[23:20:47] [INFO]       ≤ 5 bars:  755/799 = 94%
+[23:20:47] [INFO]       ≤ 7 bars:  765/799 = 96%
+[23:20:47] [INFO]       ≤10 bars:  779/799 = 97%
+[23:20:47] [INFO]       ≤15 bars:  789/799 = 99%
+[23:20:47] [INFO]       ≤20 bars:  797/799 = 100%
+[23:20:47] [INFO]     Top features near turn (last 5 bars of swing):
+[23:20:47] [INFO]       vwap_sigma_current                  fires in 28% of turns
+[23:20:47] [INFO]       vwap_sigma_tide                     fires in 27% of turns
+[23:20:47] [INFO]       wave_accel                          fires in 25% of turns
+[23:20:47] [INFO]       rsi_value                           fires in 25% of turns
+[23:20:47] [INFO]       sigma_tide                          fires in 24% of turns
+[23:20:47] [INFO]     Top features anywhere in swing:
+[23:20:47] [INFO]       vwap_sigma_wave                     fires in 37% of turns
+[23:20:47] [INFO]       wave_accel                          fires in 36% of turns
+[23:20:47] [INFO]       vwap_sigma_current                  fires in 35% of turns
+[23:20:47] [INFO]       rsi_value                           fires in 31% of turns
+[23:20:47] [INFO]       current_accel                       fires in 29% of turns
+[23:20:47] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:20:47] [INFO]     Detection Rate (≥2 features): 73.4% (678/924)
+[23:20:47] [INFO]     Silent at t=0 (density=0):    13.7% (127/924)
+[23:20:47] [INFO]     Density at t=0:  mean=4.4, median=3, p75=7
+[23:20:47] [INFO]     Top Detection Features:
+[23:20:47] [INFO]       vwap_sigma_current                  active in 37% of turns
+[23:20:47] [INFO]       vwap_sigma_tide                     active in 35% of turns
+[23:20:47] [INFO]       sigma_tide                          active in 33% of turns
+[23:20:47] [INFO]       rsi_value                           active in 32% of turns
+[23:20:47] [INFO]       wave_accel                          active in 26% of turns
+[23:20:47] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:20:47] [INFO]     Persistence Rate: 76.5% (707/924)
+[23:20:47] [INFO]     Density mean:     2.9
+[23:20:47] [INFO]     Trend:            INCREASING=19%, DECREASING=31%
+[23:20:47] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:20:47] [INFO]     Healthy Moves (>5%): 73.2% (676/924)
+[23:20:47] [INFO]     Max Favorable Excursion:  mean=12.2%, median=10.0%
+[23:20:47] [INFO]     Final Return:            mean=12.2%, median=10.0%
+[23:20:47] [INFO]     Move Duration:           mean=21 bars, median=7 bars
+[23:20:47] [INFO]     Signal Exhaustion:       mean=10 bars, median=5 bars
+[23:20:47] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:20:47] [INFO]     ACCUMULATION:     0/924 = 0%
+[23:20:47] [INFO]     DISTRIBUTION:     0/924 = 0%
+[23:20:47] [INFO]     NEUTRAL:        626/924 = 68%
+[23:20:47] [INFO] 
+  ── FUNNEL ──
+[23:20:47] [INFO]     ALERTA                             799/924 = 86%
+[23:20:47] [INFO]     + DETECCIÓN (≥2)                   632/924 = 68%
+[23:20:47] [INFO]     + CONFIRMACIÓN                     572/924 = 62%
+[23:20:47] [INFO]     + CONTINUACIÓN saludable (>5%)     386/924 = 42%
+[23:20:47] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:20:47] [INFO]   ║  HL (MIN) — 1155 turns                                  
+[23:20:47] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:20:47] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:20:47] [INFO]     Swing scanned:     mean=14 bars, median=10 bars
+[23:20:47] [INFO]     Any feature fired:  81.0% (935/1155)
+[23:20:47] [INFO]     Complete silence:   19.0% (220/1155) — NO features fired in entire swing
+[23:20:47] [INFO]     Last alert before turn:  mean=2.9 bars, median=1, p25=1, p75=2
+[23:20:47] [INFO]     First alert in swing:    mean=12.7 bars before turn
+[23:20:47] [INFO]     Silence ratio:     mean=50% of swing bars had ZERO features active
+[23:20:47] [INFO]     Lead time distribution (bars before turn):
+[23:20:47] [INFO]       ≤ 1 bars:  664/935 = 71%
+[23:20:47] [INFO]       ≤ 2 bars:  723/935 = 77%
+[23:20:47] [INFO]       ≤ 3 bars:  757/935 = 81%
+[23:20:47] [INFO]       ≤ 5 bars:  808/935 = 86%
+[23:20:47] [INFO]       ≤ 7 bars:  838/935 = 90%
+[23:20:47] [INFO]       ≤10 bars:  872/935 = 93%
+[23:20:47] [INFO]       ≤15 bars:  907/935 = 97%
+[23:20:47] [INFO]       ≤20 bars:  918/935 = 98%
+[23:20:47] [INFO]     Top features near turn (last 5 bars of swing):
+[23:20:47] [INFO]       sigma_current                       fires in 17% of turns
+[23:20:47] [INFO]       wave_accel                          fires in 16% of turns
+[23:20:47] [INFO]       sigma_wave                          fires in 14% of turns
+[23:20:47] [INFO]       vwap_sigma_wave                     fires in 13% of turns
+[23:20:47] [INFO]       conj_wave_current                   fires in 11% of turns
+[23:20:47] [INFO]     Top features anywhere in swing:
+[23:20:47] [INFO]       sigma_wave                          fires in 30% of turns
+[23:20:47] [INFO]       sigma_current                       fires in 28% of turns
+[23:20:47] [INFO]       wave_accel                          fires in 25% of turns
+[23:20:47] [INFO]       tension_current                     fires in 23% of turns
+[23:20:47] [INFO]       vwap_sigma_wave                     fires in 21% of turns
+[23:20:47] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:20:47] [INFO]     Detection Rate (≥2 features): 52.9% (611/1155)
+[23:20:47] [INFO]     Silent at t=0 (density=0):    28.6% (330/1155)
+[23:20:47] [INFO]     Density at t=0:  mean=2.5, median=2, p75=4
+[23:20:47] [INFO]     Top Detection Features:
+[23:20:47] [INFO]       sigma_current                       active in 18% of turns
+[23:20:47] [INFO]       wave_accel                          active in 14% of turns
+[23:20:47] [INFO]       vwap_sigma_wave                     active in 12% of turns
+[23:20:47] [INFO]       tension_tide                        active in 11% of turns
+[23:20:47] [INFO]       tide_slope                          active in 11% of turns
+[23:20:47] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:20:47] [INFO]     Persistence Rate: 59.6% (688/1155)
+[23:20:47] [INFO]     Density mean:     1.7
+[23:20:47] [INFO]     Trend:            INCREASING=11%, DECREASING=23%
+[23:20:47] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:20:47] [INFO]     Healthy Moves (>5%): 84.8% (979/1155)
+[23:20:47] [INFO]     Max Favorable Excursion:  mean=13.1%, median=10.9%
+[23:20:47] [INFO]     Final Return:            mean=13.0%, median=10.9%
+[23:20:47] [INFO]     Move Duration:           mean=27 bars, median=14 bars
+[23:20:47] [INFO]     Signal Exhaustion:       mean=12 bars, median=6 bars
+[23:20:47] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:20:47] [INFO]     ACCUMULATION:     0/1155 = 0%
+[23:20:47] [INFO]     DISTRIBUTION:     0/1155 = 0%
+[23:20:47] [INFO]     NEUTRAL:        919/1155 = 80%
+[23:20:47] [INFO] 
+  ── FUNNEL ──
+[23:20:47] [INFO]     ALERTA                             935/1155 = 81%
+[23:20:47] [INFO]     + DETECCIÓN (≥2)                   565/1155 = 49%
+[23:20:47] [INFO]     + CONFIRMACIÓN                     492/1155 = 43%
+[23:20:47] [INFO]     + CONTINUACIÓN saludable (>5%)     395/1155 = 34%
+[23:20:47] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:20:47] [INFO]   ║  HH (MAX) — 1151 turns                                  
+[23:20:47] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:20:47] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:20:47] [INFO]     Swing scanned:     mean=39 bars, median=27 bars
+[23:20:47] [INFO]     Any feature fired:  87.5% (1007/1151)
+[23:20:47] [INFO]     Complete silence:   12.5% (144/1151) — NO features fired in entire swing
+[23:20:47] [INFO]     Last alert before turn:  mean=6.7 bars, median=1, p25=1, p75=8
+[23:20:47] [INFO]     First alert in swing:    mean=36.9 bars before turn
+[23:20:47] [INFO]     Silence ratio:     mean=53% of swing bars had ZERO features active
+[23:20:47] [INFO]     Lead time distribution (bars before turn):
+[23:20:47] [INFO]       ≤ 1 bars:  584/1007 = 58%
+[23:20:47] [INFO]       ≤ 2 bars:  628/1007 = 62%
+[23:20:47] [INFO]       ≤ 3 bars:  665/1007 = 66%
+[23:20:47] [INFO]       ≤ 5 bars:  706/1007 = 70%
+[23:20:47] [INFO]       ≤ 7 bars:  747/1007 = 74%
+[23:20:47] [INFO]       ≤10 bars:  789/1007 = 78%
+[23:20:47] [INFO]       ≤15 bars:  853/1007 = 85%
+[23:20:47] [INFO]       ≤20 bars:  906/1007 = 90%
+[23:20:47] [INFO]     Top features near turn (last 5 bars of swing):
+[23:20:47] [INFO]       current_accel                       fires in 15% of turns
+[23:20:47] [INFO]       wave_accel                          fires in 14% of turns
+[23:20:47] [INFO]       conj_wave_tide                      fires in 12% of turns
+[23:20:47] [INFO]       vwap_spread_tide_wave               fires in 12% of turns
+[23:20:47] [INFO]       vwap_spread_tide_current            fires in 11% of turns
+[23:20:47] [INFO]     Top features anywhere in swing:
+[23:20:47] [INFO]       sigma_wave                          fires in 40% of turns
+[23:20:47] [INFO]       wave_accel                          fires in 37% of turns
+[23:20:47] [INFO]       tension_wave                        fires in 29% of turns
+[23:20:47] [INFO]       sigma_current                       fires in 29% of turns
+[23:20:47] [INFO]       current_accel                       fires in 28% of turns
+[23:20:47] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:20:47] [INFO]     Detection Rate (≥2 features): 43.4% (499/1151)
+[23:20:47] [INFO]     Silent at t=0 (density=0):    41.7% (480/1151)
+[23:20:47] [INFO]     Density at t=0:  mean=2.1, median=1, p75=3
+[23:20:47] [INFO]     Top Detection Features:
+[23:20:47] [INFO]       wave_accel                          active in 13% of turns
+[23:20:47] [INFO]       current_accel                       active in 13% of turns
+[23:20:47] [INFO]       vwap_spread_tide_wave               active in 11% of turns
+[23:20:47] [INFO]       conj_wave_tide                      active in 11% of turns
+[23:20:47] [INFO]       vwap_spread_tide_current            active in 11% of turns
+[23:20:47] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:20:47] [INFO]     Persistence Rate: 61.4% (707/1151)
+[23:20:47] [INFO]     Density mean:     1.7
+[23:20:47] [INFO]     Trend:            INCREASING=18%, DECREASING=20%
+[23:20:47] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:20:47] [INFO]     Healthy Moves (>5%): 86.0% (990/1151)
+[23:20:47] [INFO]     Max Favorable Excursion:  mean=9.3%, median=8.8%
+[23:20:47] [INFO]     Final Return:            mean=9.3%, median=8.8%
+[23:20:47] [INFO]     Move Duration:           mean=15 bars, median=11 bars
+[23:20:47] [INFO]     Signal Exhaustion:       mean=8 bars, median=6 bars
+[23:20:47] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:20:47] [INFO]     ACCUMULATION:     0/1151 = 0%
+[23:20:47] [INFO]     DISTRIBUTION:     0/1151 = 0%
+[23:20:47] [INFO]     NEUTRAL:        940/1151 = 82%
+[23:20:47] [INFO] 
+  ── FUNNEL ──
+[23:20:47] [INFO]     ALERTA                            1007/1151 = 87%
+[23:20:47] [INFO]     + DETECCIÓN (≥2)                   482/1151 = 42%
+[23:20:47] [INFO]     + CONFIRMACIÓN                     444/1151 = 39%
+[23:20:47] [INFO]     + CONTINUACIÓN saludable (>5%)     348/1151 = 30%
+[23:20:47] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:20:47] [INFO]   ║  LH (MAX) — 925 turns                                  
+[23:20:47] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:20:47] [INFO] 
+  ── ALERTA (full incoming swing, no fixed window) ──
+[23:20:47] [INFO]     Swing scanned:     mean=10 bars, median=5 bars
+[23:20:47] [INFO]     Any feature fired:  71.4% (660/925)
+[23:20:47] [INFO]     Complete silence:   28.6% (265/925) — NO features fired in entire swing
+[23:20:47] [INFO]     Last alert before turn:  mean=4.1 bars, median=1, p25=1, p75=4
+[23:20:47] [INFO]     First alert in swing:    mean=11.5 bars before turn
+[23:20:47] [INFO]     Silence ratio:     mean=48% of swing bars had ZERO features active
+[23:20:47] [INFO]     Lead time distribution (bars before turn):
+[23:20:47] [INFO]       ≤ 1 bars:  432/660 = 65%
+[23:20:47] [INFO]       ≤ 2 bars:  463/660 = 70%
+[23:20:47] [INFO]       ≤ 3 bars:  494/660 = 75%
+[23:20:47] [INFO]       ≤ 5 bars:  528/660 = 80%
+[23:20:47] [INFO]       ≤ 7 bars:  547/660 = 83%
+[23:20:47] [INFO]       ≤10 bars:  580/660 = 88%
+[23:20:47] [INFO]       ≤15 bars:  623/660 = 94%
+[23:20:47] [INFO]       ≤20 bars:  636/660 = 96%
+[23:20:47] [INFO]     Top features near turn (last 5 bars of swing):
+[23:20:47] [INFO]       wave_accel                          fires in 18% of turns
+[23:20:47] [INFO]       wave_slope                          fires in 14% of turns
+[23:20:47] [INFO]       conj_wave_tide                      fires in 14% of turns
+[23:20:47] [INFO]       conj_wave_current                   fires in 12% of turns
+[23:20:47] [INFO]       vwap_spread_current_wave            fires in 11% of turns
+[23:20:47] [INFO]     Top features anywhere in swing:
+[23:20:47] [INFO]       wave_accel                          fires in 26% of turns
+[23:20:47] [INFO]       tension_wave                        fires in 21% of turns
+[23:20:47] [INFO]       wave_slope                          fires in 20% of turns
+[23:20:47] [INFO]       conj_wave_tide                      fires in 19% of turns
+[23:20:47] [INFO]       conj_wave_current                   fires in 18% of turns
+[23:20:47] [INFO] 
+  ── DETECCIÓN (t=0) ──
+[23:20:47] [INFO]     Detection Rate (≥2 features): 41.4% (383/925)
+[23:20:47] [INFO]     Silent at t=0 (density=0):    40.8% (377/925)
+[23:20:47] [INFO]     Density at t=0:  mean=2.2, median=1, p75=3
+[23:20:47] [INFO]     Top Detection Features:
+[23:20:47] [INFO]       wave_accel                          active in 14% of turns
+[23:20:47] [INFO]       wave_slope                          active in 14% of turns
+[23:20:47] [INFO]       conj_wave_tide                      active in 13% of turns
+[23:20:47] [INFO]       compression_ratio                   active in 13% of turns
+[23:20:47] [INFO]       current_slope                       active in 13% of turns
+[23:20:47] [INFO] 
+  ── CONFIRMACIÓN (t+1..t+3) ──
+[23:20:47] [INFO]     Persistence Rate: 61.8% (572/925)
+[23:20:47] [INFO]     Density mean:     2.2
+[23:20:47] [INFO]     Trend:            INCREASING=20%, DECREASING=18%
+[23:20:47] [INFO] 
+  ── CONTINUACIÓN (t+4..next turn) ──
+[23:20:47] [INFO]     Healthy Moves (>5%): 76.0% (703/925)
+[23:20:47] [INFO]     Max Favorable Excursion:  mean=8.8%, median=8.0%
+[23:20:47] [INFO]     Final Return:            mean=8.8%, median=8.0%
+[23:20:47] [INFO]     Move Duration:           mean=10 bars, median=6 bars
+[23:20:47] [INFO]     Signal Exhaustion:       mean=7 bars, median=4 bars
+[23:20:47] [INFO] 
+  ── ACUMULACIÓN / DISTRIBUCIÓN (first 10 bars of continuation) ──
+[23:20:47] [INFO]     ACCUMULATION:     0/925 = 0%
+[23:20:47] [INFO]     DISTRIBUTION:     0/925 = 0%
+[23:20:47] [INFO]     NEUTRAL:        627/925 = 68%
+[23:20:47] [INFO] 
+  ── FUNNEL ──
+[23:20:47] [INFO]     ALERTA                             660/925 = 71%
+[23:20:47] [INFO]     + DETECCIÓN (≥2)                   305/925 = 33%
+[23:20:47] [INFO]     + CONFIRMACIÓN                     290/925 = 31%
+[23:20:47] [INFO]     + CONTINUACIÓN saludable (>5%)     200/925 = 22%
+[23:20:47] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:47] [INFO]   BASELINE — CONTROL vs TURNS (¿son exclusivas estas señales?)
+[23:20:47] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:47] [INFO] 
+  Sampling random NON-TURN bars to compare...
+[23:20:48] [INFO]   Baseline bars: 3,400 (far from any turn)
+[23:20:53] [INFO] 
+  BASELINE (random non-turn bars):
+[23:20:53] [INFO]     n=3,400
+[23:20:53] [INFO]     Density mean: 1.2
+[23:20:53] [INFO]     Silent (density=0): 60.2%
+[23:20:53] [INFO]     Detection rate (≥2): 26.4%
+[23:20:53] [INFO]     Top feature activation rates:
+[23:20:53] [INFO]       tide_accel                          4.5%
+[23:20:53] [INFO]       reg_value_current                   4.4%
+[23:20:53] [INFO]       reg_value_wave                      4.4%
+[23:20:53] [INFO]       kf_rvol_filt_vel                    4.3%
+[23:20:53] [INFO]       reg_value_tide                      4.2%
+[23:20:53] [INFO]       kf_tension_pred_val                 4.1%
+[23:20:53] [INFO]       tension_tide                        4.1%
+[23:20:53] [INFO]       tide_slope                          3.9%
+[23:20:53] [INFO]       current_accel                       3.8%
+[23:20:53] [INFO]       kf_tension_filt_vel                 3.8%
+[23:20:53] [INFO] 
+  ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+[23:20:53] [INFO]   Archetype Metric                       Turn         Baseline     LIFT       Signal?     
+[23:20:53] [INFO]   ──────── ──────────────────────────── ──────────── ──────────── ────────── ────────────
+[23:20:53] [INFO]   LL       Density mean                 6.3          1.2          5.27      x ✅ STRONG
+[23:20:53] [INFO]   LL       Detection ≥2 features %      78.9         26.4         2.99      x ✅ GOOD
+[23:20:53] [INFO]   LL       Silent %                     11.5         60.2         0.19      x (inverted)
+[23:20:53] [INFO] 
+  LL — Top features by LIFT (turn vs random):
+[23:20:53] [INFO]   Feature                             Turn%      Base%      LIFT       Signal?
+[23:20:53] [INFO]   ─────────────────────────────────── ────────── ────────── ────────── ──────────
+[23:20:53] [INFO]   vwap_sigma_current                  36.8       1.5        25.0      x ✅ STRONG
+[23:20:53] [INFO]   sigma_tide                          32.7       2.0        16.6      x ✅ STRONG
+[23:20:53] [INFO]   kf_price_pred_val                   31.8       1.9        16.4      x ✅ STRONG
+[23:20:53] [INFO]   vwap_sigma_tide                     34.5       2.1        16.1      x ✅ STRONG
+[23:20:53] [INFO]   vwap_sigma_wave                     21.3       1.9        11.2      x ✅ STRONG
+[23:20:53] [INFO]   rsi_value                           32.5       3.3        9.9       x ✅ STRONG
+[23:20:53] [INFO]   kf_price_filt_vel                   17.5       1.9        9.0       x ✅ STRONG
+[23:20:53] [INFO]   kf_rsi_pred_val                     29.2       3.7        7.8       x ✅ STRONG
+[23:20:53] [INFO]   wave_slope                          22.0       2.9        7.6       x ✅ STRONG
+[23:20:53] [INFO]   fear_level                          15.9       2.1        7.4       x ✅ STRONG
+[23:20:53] [INFO] 
+[23:20:53] [INFO]   HL       Density mean                 3.9          1.2          3.27      x ✅ STRONG
+[23:20:53] [INFO]   HL       Detection ≥2 features %      65.2         26.4         2.47      x ✅ GOOD
+[23:20:53] [INFO]   HL       Silent %                     20.3         60.2         0.34      x (inverted)
+[23:20:53] [INFO] 
+  HL — Top features by LIFT (turn vs random):
+[23:20:53] [INFO]   Feature                             Turn%      Base%      LIFT       Signal?
+[23:20:53] [INFO]   ─────────────────────────────────── ────────── ────────── ────────── ──────────
+[23:20:53] [INFO]   kf_price_pred_val                   21.4       1.9        11.0      x ✅ STRONG
+[23:20:53] [INFO]   kf_price_filt_vel                   15.3       1.9        7.9       x ✅ STRONG
+[23:20:53] [INFO]   vwap_sigma_current                  10.1       1.5        6.9       x ✅ STRONG
+[23:20:53] [INFO]   vwap_sigma_wave                     11.7       1.9        6.1       x ✅ STRONG
+[23:20:53] [INFO]   sigma_current                       17.9       2.9        6.1       x ✅ STRONG
+[23:20:53] [INFO]   sigma_wave                          11.2       2.1        5.2       x ✅ STRONG
+[23:20:53] [INFO]   sigma_tide                          9.5        2.0        4.8       x ✅ STRONG
+[23:20:53] [INFO]   kf_rsi_filt_vel                     16.1       3.4        4.8       x ✅ STRONG
+[23:20:53] [INFO]   kf_tension_filt_vel                 17.4       3.8        4.6       x ✅ STRONG
+[23:20:53] [INFO]   kf_price_innovation                 8.4        2.1        4.1       x ✅ STRONG
+[23:20:53] [INFO] 
+[23:20:53] [INFO]   HH       Density mean                 3.1          1.2          2.61      x ✅ GOOD
+[23:20:53] [INFO]   HH       Detection ≥2 features %      53.4         26.4         2.03      x ✅ GOOD
+[23:20:53] [INFO]   HH       Silent %                     34.7         60.2         0.58      x ✅ SILENCE=SIGNAL
+[23:20:53] [INFO] 
+  HH — Top features by LIFT (turn vs random):
+[23:20:53] [INFO]   Feature                             Turn%      Base%      LIFT       Signal?
+[23:20:53] [INFO]   ─────────────────────────────────── ────────── ────────── ────────── ──────────
+[23:20:53] [INFO]   kf_price_pred_val                   15.2       1.9        7.8       x ✅ STRONG
+[23:20:53] [INFO]   kf_price_filt_vel                   8.9        1.9        4.6       x ✅ STRONG
+[23:20:53] [INFO]   vwap_spread_current_wave            9.9        2.7        3.7       x ✅ STRONG
+[23:20:53] [INFO]   sigma_tide                          7.2        2.0        3.7       x ✅ STRONG
+[23:20:53] [INFO]   wave_accel                          12.9       3.6        3.6       x ✅ STRONG
+[23:20:53] [INFO]   sigma_wave                          7.6        2.1        3.6       x ✅ STRONG
+[23:20:53] [INFO]   wave_slope                          10.3       2.9        3.6       x ✅ STRONG
+[23:20:53] [INFO]   kf_conj_pred_val                    11.0       3.1        3.5       x ✅ STRONG
+[23:20:53] [INFO]   conj_wave_tide                      11.2       3.2        3.5       x ✅ STRONG
+[23:20:53] [INFO]   vwap_spread_tide_wave               11.4       3.3        3.5       x ✅ STRONG
+[23:20:53] [INFO] 
+[23:20:53] [INFO]   LH       Density mean                 3.5          1.2          2.94      x ✅ GOOD
+[23:20:53] [INFO]   LH       Detection ≥2 features %      56.2         26.4         2.13      x ✅ GOOD
+[23:20:53] [INFO]   LH       Silent %                     29.9         60.2         0.50      x (inverted)
+[23:20:53] [INFO] 
+  LH — Top features by LIFT (turn vs random):
+[23:20:53] [INFO]   Feature                             Turn%      Base%      LIFT       Signal?
+[23:20:53] [INFO]   ─────────────────────────────────── ────────── ────────── ────────── ──────────
+[23:20:53] [INFO]   kf_price_pred_val                   23.9       1.9        12.3      x ✅ STRONG
+[23:20:53] [INFO]   kf_price_filt_vel                   23.9       1.9        12.3      x ✅ STRONG
+[23:20:53] [INFO]   kf_price_innovation                 17.2       2.1        8.3       x ✅ STRONG
+[23:20:53] [INFO]   wave_slope                          14.1       2.9        4.9       x ✅ STRONG
+[23:20:53] [INFO]   kf_conj_filt_vel                    15.1       3.3        4.6       x ✅ STRONG
+[23:20:53] [INFO]   vwap_spread_current_wave            12.5       2.7        4.6       x ✅ STRONG
+[23:20:53] [INFO]   compression_ratio                   13.1       2.9        4.4       x ✅ STRONG
+[23:20:53] [INFO]   kf_conj_pred_val                    13.5       3.1        4.3       x ✅ STRONG
+[23:20:53] [INFO]   conj_wave_current                   12.8       3.0        4.2       x ✅ STRONG
+[23:20:53] [INFO]   current_slope                       13.0       3.2        4.1       x ✅ STRONG
+[23:20:53] [INFO] 
+[23:20:53] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:53] [INFO]   COMPARISON: KALMAN vs RAW per Archetype
+[23:20:53] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:53] [INFO] 
+  Archetype Metric                        Kalman        Raw        All     Winner
+[23:20:53] [INFO]   ──────── ───────────────────────── ────────── ────────── ────────── ──────────
+[23:20:53] [INFO]   LL       Alert Rate %                    88.4       86.5       94.2     KALMAN
+[23:20:53] [INFO]   LL       Detection Rate %                46.2       73.4       78.9        RAW
+[23:20:53] [INFO]   LL       Silent at t=0 %                 35.4       13.7       11.5        RAW
+[23:20:53] [INFO]   LL       Confirm Persist %               78.8       76.5       88.6     KALMAN
+[23:20:53] [INFO]   LL       Det Density mean                 1.9        4.4        6.3        RAW
+[23:20:53] [INFO] 
+[23:20:53] [INFO]   HL       Alert Rate %                    84.4       81.0       90.6     KALMAN
+[23:20:53] [INFO]   HL       Detection Rate %                37.9       52.9       65.2        RAW
+[23:20:53] [INFO]   HL       Silent at t=0 %                 40.7       28.6       20.3        RAW
+[23:20:53] [INFO]   HL       Confirm Persist %               65.0       59.6       77.7     KALMAN
+[23:20:53] [INFO]   HL       Det Density mean                 1.4        2.5        3.9        RAW
+[23:20:53] [INFO] 
+[23:20:53] [INFO]   HH       Alert Rate %                    92.6       87.5       96.6     KALMAN
+[23:20:53] [INFO]   HH       Detection Rate %                25.8       43.4       53.4        RAW
+[23:20:53] [INFO]   HH       Silent at t=0 %                 54.3       41.7       34.7 RAW (but silence IS the HH signal)
+[23:20:53] [INFO]   HH       Confirm Persist %               64.6       61.4       76.5     KALMAN
+[23:20:53] [INFO]   HH       Det Density mean                 1.0        2.1        3.1        RAW
+[23:20:53] [INFO] 
+[23:20:53] [INFO]   LH       Alert Rate %                    74.4       71.4       82.3     KALMAN
+[23:20:53] [INFO]   LH       Detection Rate %                35.5       41.4       56.2        RAW
+[23:20:53] [INFO]   LH       Silent at t=0 %                 47.0       40.8       29.9        RAW
+[23:20:53] [INFO]   LH       Confirm Persist %               65.8       61.8       75.6     KALMAN
+[23:20:53] [INFO]   LH       Det Density mean                 1.4        2.2        3.5        RAW
+[23:20:53] [INFO] 
+[23:20:53] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:53] [INFO]   ZIG-ZAG INTEGRITY REPORT
+[23:20:53] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:53] [INFO]   ZIG (MIN→MAX, up-moves):   2086
+[23:20:53] [INFO]   ZAG (MAX→MIN, down-moves): 2086
+[23:20:53] [INFO]   Orphan ZIGs (MIN without following MAX): 10
+[23:20:53] [INFO]   Orphan ZAGs (MAX without following MIN): 7
+[23:20:53] [INFO] 
+  Direction checks (by construction, zigzag enforces direction):
+[23:20:53] [INFO]     ZIGs with end < start (impossible by construction): 0
+[23:20:53] [INFO]     ZAGs with end > start (impossible by construction): 0
+[23:20:53] [INFO] 
+  ZIG magnitude: mean=14.6%, median=11.4%, p75=18.3%
+[23:20:53] [INFO]   ZAG magnitude: mean=10.7%, median=9.1%, p75=13.1%
+[23:20:53] [INFO] 
+  Asymmetry (ZIG vs preceding ZAG):
+[23:20:53] [INFO]     ZIG bigger: 1268/2082 (61%)
+[23:20:53] [INFO]     ZAG bigger: 814/2082 (39%)
+[23:20:53] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:53] [INFO]   SIGNAL-FIRST PRECISION (ALL FEATURES)
+[23:20:53] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:20:53] [INFO] 
+  For each feature activation (|z| > 2.0σ):
+[23:20:53] [INFO]   → Find previous and next zigzag turn
+[23:20:53] [INFO]   → Between two turns, the full swing is classified:
+[23:20:53] [INFO]      CONFIRMACIÓN: 1-3 bars after prev turn
+[23:20:53] [INFO]      CONTINUACIÓN: body of move (closer to prev turn)
+[23:20:53] [INFO]      ALERTA: approach zone (closer to next turn)
+[23:20:53] [INFO]   → INDET: only for edge bars before first / after last turn
+[23:20:53] [INFO]   → Distance always measured and reported
+[23:21:17] [INFO] 
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+[23:21:17] [INFO]   Feature                             Total    INDET    IND%     LL_det   HL_det   HH_det   LH_det   LL_prc%  HL_prc%  HH_prc%  LH_prc% 
+[23:21:17] [INFO]   ─────────────────────────────────── ──────── ──────── ──────── ──────── ──────── ──────── ──────── ──────── ──────── ──────── ────────
+[23:21:17] [INFO]   kf_price_pred_val                   4412     0        0        294      247      175      221      29.6     17.7     21.1     14.5    
+[23:21:17] [INFO]   kf_price_filt_vel                   4275     0        0        162      177      102      221      27.4     18.3     22.0     15.6    
+[23:21:17] [INFO]   kf_price_innovation                 4218     0        0        129      97       78       159      27.0     18.5     20.3     16.4    
+[23:21:17] [INFO]   kf_rvol_pred_val                    3822     0        0        127      121      100      62       18.1     17.4     30.4     7.6     
+[23:21:17] [INFO]   kf_rvol_filt_vel                    4445     0        0        85       110      100      77       15.6     17.5     29.5     8.3     
+[23:21:17] [INFO]   kf_tension_pred_val                 4674     0        0        118      141      98       64       16.6     21.0     24.4     9.7     
+[23:21:17] [INFO]   kf_tension_filt_vel                 5058     0        0        129      201      119      96       15.1     20.2     28.4     6.8     
+[23:21:17] [INFO]   kf_rsi_pred_val                     3606     0        0        270      121      108      12       35.3     14.9     30.5     1.6     
+[23:21:17] [INFO]   kf_rsi_filt_vel                     4231     0        0        88       186      65       89       11.3     19.0     25.7     7.8     
+[23:21:17] [INFO]   kf_conj_pred_val                    4489     0        0        175      112      127      125      23.9     14.2     26.1     12.9    
+[23:21:17] [INFO]   kf_conj_filt_vel                    4444     0        0        164      131      110      140      20.4     16.4     20.3     13.8    
+[23:21:17] [INFO]   rsi_value                           3548     0        0        300      114      111      11       36.6     12.3     33.2     2.1     
+[23:21:17] [INFO]   sigma_tide                          3249     0        0        302      110      83       33       39.7     14.4     23.5     7.2     
+[23:21:17] [INFO]   sigma_current                       3143     0        0        177      207      97       29       20.3     24.8     22.3     4.3     
+[23:21:17] [INFO]   sigma_wave                          2631     0        0        87       129      88       42       14.6     17.9     31.9     6.9     
+[23:21:17] [INFO]   vwap_sigma_tide                     3264     0        0        319      65       34       54       55.1     5.8      9.6      11.2    
+[23:21:17] [INFO]   vwap_sigma_current                  2518     0        0        340      117      37       4        57.1     18.6     8.6      2.5     
+[23:21:17] [INFO]   vwap_sigma_wave                     2142     0        0        197      135      28       5        36.5     23.2     14.7     3.1     
+[23:21:17] [INFO]   vwap_spread_tide_current            4751     0        0        99       125      128      99       16.1     16.9     31.3     11.1    
+[23:21:17] [INFO]   vwap_spread_tide_wave               4961     0        0        127      122      131      113      19.0     15.1     31.9     11.5    
+[23:21:17] [INFO]   vwap_spread_current_wave            4383     0        0        139      121      114      116      20.6     15.3     28.8     13.0    
+[23:21:17] [INFO]   tide_slope                          5131     0        0        113      130      119      110      18.0     16.0     28.1     12.2    
+[23:21:17] [INFO]   current_slope                       4419     0        0        130      118      112      120      21.4     15.0     26.3     14.1    
+[23:21:17] [INFO]   wave_slope                          4392     0        0        203      109      118      130      30.2     12.6     22.9     13.3    
+[23:21:17] [INFO]   tide_accel                          4726     0        0        180      87       114      61       20.9     12.3     33.9     8.1     
+[23:21:17] [INFO]   current_accel                       4545     0        0        230      108      147      83       23.4     13.3     28.8     11.8    
+[23:21:17] [INFO]   wave_accel                          4539     0        0        238      162      148      132      22.3     16.1     20.8     12.7    
+[23:21:17] [INFO]   reg_value_tide                      4491     0        0        43       63       58       47       12.7     14.7     28.3     9.1     
+[23:21:17] [INFO]   reg_value_current                   4405     0        0        29       63       70       38       9.6      15.4     34.0     7.2     
+[23:21:17] [INFO]   reg_value_wave                      4371     0        0        28       56       76       34       9.3      13.9     36.7     6.6     
+[23:21:17] [INFO]   conj_wave_tide                      4478     0        0        176      117      129      121      23.6     14.3     26.7     13.1    
+[23:21:17] [INFO]   conj_current_tide                   4493     0        0        112      120      118      107      16.4     16.4     29.4     13.8    
+[23:21:17] [INFO]   conj_wave_current                   4236     0        0        160      116      112      118      22.4     15.0     22.2     14.2    
+[23:21:17] [INFO]   tension_tide                        4574     0        0        108      132      94       55       16.2     20.6     24.9     9.5     
+[23:21:17] [INFO]   tension_current                     3339     0        0        9        84       54       71       7.9      17.0     23.0     13.7    
+[23:21:17] [INFO]   tension_wave                        2444     0        0        4        22       17       73       19.1     15.6     22.2     12.3    
+[23:21:17] [INFO]   compression_ratio                   3990     0        0        114      105      72       121      15.8     18.5     19.0     14.6    
+[23:21:17] [INFO]   fear_level                          2985     0        0        147      60       18       76       43.4     11.8     5.8      14.1    
+[23:21:17] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:21:17] [INFO]   ║  LL (MIN) — Signal-First Breakdown                    ║
+[23:21:17] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:21:17] [INFO] 
+  Feature                             ALERTA     DETEC      CONF       CONT       Turn%      Alert dist     
+[23:21:17] [INFO]   ─────────────────────────────────── ────────── ────────── ────────── ────────── ────────── ───────────────
+[23:21:17] [INFO]   vwap_sigma_current                  1018       340        81         55         57.1       med=5, μ=7     
+[23:21:17] [INFO]   vwap_sigma_tide                     1107       319        373        282        55.1       med=4, μ=7     
+[23:21:17] [INFO]   fear_level                          823        147        324        329        43.4       med=5, μ=7     
+[23:21:17] [INFO]   sigma_tide                          713        302        276        147        39.7       med=3, μ=6     
+[23:21:17] [INFO]   rsi_value                           896        300        102        113        36.6       med=4, μ=7     
+[23:21:17] [INFO]   vwap_sigma_wave                     566        197        18         60         36.5       med=5, μ=7     
+[23:21:17] [INFO]   kf_rsi_pred_val                     872        270        132        106        35.3       med=4, μ=7     
+[23:21:17] [INFO]   wave_slope                          683        203        441        336        30.2       med=4, μ=6     
+[23:21:17] [INFO]   kf_price_pred_val                   593        294        417        235        29.6       med=3, μ=5     
+[23:21:17] [INFO]   kf_price_filt_vel                   426        162        585        239        27.4       med=4, μ=6     
+[23:21:17] [INFO]   kf_price_innovation                 463        129        545        245        27.0       med=4, μ=6     
+[23:21:17] [INFO]   kf_conj_pred_val                    486        175        414        350        23.9       med=4, μ=5     
+[23:21:17] [INFO]   conj_wave_tide                      485        176        395        329        23.6       med=4, μ=6     
+[23:21:17] [INFO]   current_accel                       581        230        251        346        23.4       med=4, μ=5     
+[23:21:17] [INFO]   conj_wave_current                   472        160        315        375        22.4       med=4, μ=6     
+[23:21:17] [INFO] 
+  LL ALERTA distance distribution (bars before turn):
+[23:21:17] [INFO]     n=19393, mean=6.6, median=4, p25=2, p75=8
+[23:21:17] [INFO]     ≤ 1 bars:   3464/19393 = 18%
+[23:21:17] [INFO]     ≤ 2 bars:   6225/19393 = 32%
+[23:21:17] [INFO]     ≤ 3 bars:   8330/19393 = 43%
+[23:21:17] [INFO]     ≤ 5 bars:  11585/19393 = 60%
+[23:21:17] [INFO]     ≤ 7 bars:  13772/19393 = 71%
+[23:21:17] [INFO]     ≤10 bars:  15891/19393 = 82%
+[23:21:17] [INFO]     ≤15 bars:  17734/19393 = 91%
+[23:21:17] [INFO]     ≤20 bars:  18509/19393 = 95%
+[23:21:17] [INFO]     ≤30 bars:  19072/19393 = 98%
+[23:21:17] [INFO] 
+  LL CONTINUACIÓN distance distribution (bars after turn):
+[23:21:17] [INFO]     n=11556, mean=16.8, median=10, p25=6, p75=20
+[23:21:17] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:21:17] [INFO]   ║  HL (MIN) — Signal-First Breakdown                    ║
+[23:21:17] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:21:17] [INFO] 
+  Feature                             ALERTA     DETEC      CONF       CONT       Turn%      Alert dist     
+[23:21:17] [INFO]   ─────────────────────────────────── ────────── ────────── ────────── ────────── ────────── ───────────────
+[23:21:17] [INFO]   sigma_current                       528        207        46         208        24.8       med=4, μ=8     
+[23:21:17] [INFO]   vwap_sigma_wave                     344        135        18         113        23.2       med=4, μ=9     
+[23:21:17] [INFO]   kf_tension_pred_val                 574        141        267        459        21.0       med=5, μ=10    
+[23:21:17] [INFO]   tension_tide                        562        132        249        476        20.6       med=5, μ=10    
+[23:21:17] [INFO]   kf_tension_filt_vel                 619        201        200        575        20.2       med=4, μ=9     
+[23:21:17] [INFO]   kf_rsi_filt_vel                     474        186        145        505        19.0       med=4, μ=10    
+[23:21:17] [INFO]   vwap_sigma_current                  318        117        34         70         18.6       med=5, μ=10    
+[23:21:17] [INFO]   kf_price_innovation                 225        97         460        229        18.5       med=4, μ=9     
+[23:21:17] [INFO]   compression_ratio                   367        105        266        536        18.5       med=4, μ=8     
+[23:21:17] [INFO]   kf_price_filt_vel                   193        177        411        243        18.3       med=4, μ=10    
+[23:21:17] [INFO]   sigma_wave                          276        129        66         257        17.9       med=4, μ=9     
+[23:21:17] [INFO]   kf_price_pred_val                   251        247        283        257        17.7       med=3, μ=7     
+[23:21:17] [INFO]   kf_rvol_filt_vel                    464        110        202        456        17.5       med=5, μ=11    
+[23:21:17] [INFO]   kf_rvol_pred_val                    408        121        135        333        17.4       med=4, μ=10    
+[23:21:17] [INFO]   tension_current                     387        84         95         283        17.0       med=5, μ=10    
+[23:21:17] [INFO] 
+  HL ALERTA distance distribution (bars before turn):
+[23:21:17] [INFO]     n=12753, mean=8.6, median=4, p25=2, p75=9
+[23:21:17] [INFO]     ≤ 1 bars:   2204/12753 = 17%
+[23:21:17] [INFO]     ≤ 2 bars:   3994/12753 = 31%
+[23:21:17] [INFO]     ≤ 3 bars:   5520/12753 = 43%
+[23:21:17] [INFO]     ≤ 5 bars:   7714/12753 = 60%
+[23:21:17] [INFO]     ≤ 7 bars:   9054/12753 = 71%
+[23:21:17] [INFO]     ≤10 bars:  10127/12753 = 79%
+[23:21:17] [INFO]     ≤15 bars:  11101/12753 = 87%
+[23:21:17] [INFO]     ≤20 bars:  11488/12753 = 90%
+[23:21:17] [INFO]     ≤30 bars:  11903/12753 = 93%
+[23:21:17] [INFO] 
+  HL CONTINUACIÓN distance distribution (bars after turn):
+[23:21:17] [INFO]     n=13425, mean=17.7, median=11, p25=6, p75=22
+[23:21:17] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:21:17] [INFO]   ║  HH (MAX) — Signal-First Breakdown                    ║
+[23:21:17] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:21:17] [INFO] 
+  Feature                             ALERTA     DETEC      CONF       CONT       Turn%      Alert dist     
+[23:21:17] [INFO]   ─────────────────────────────────── ────────── ────────── ────────── ────────── ────────── ───────────────
+[23:21:17] [INFO]   reg_value_wave                      1311       76         217        398        36.7       med=11, μ=16   
+[23:21:17] [INFO]   reg_value_current                   1222       70         207        425        34.0       med=11, μ=16   
+[23:21:17] [INFO]   tide_accel                          1232       114        258        209        33.9       med=12, μ=18   
+[23:21:17] [INFO]   rsi_value                           1031       111        37         116        33.2       med=16, μ=23   
+[23:21:17] [INFO]   vwap_spread_tide_wave               1117       131        337        241        31.9       med=8, μ=15    
+[23:21:17] [INFO]   sigma_wave                          572        88         179        238        31.9       med=15, μ=23   
+[23:21:17] [INFO]   vwap_spread_tide_current            1015       128        343        275        31.3       med=7, μ=12    
+[23:21:17] [INFO]   kf_rsi_pred_val                     931        108        61         182        30.5       med=15, μ=23   
+[23:21:17] [INFO]   kf_rvol_pred_val                    810        100        253        292        30.4       med=13, μ=22   
+[23:21:17] [INFO]   kf_rvol_filt_vel                    939        100        274        331        29.5       med=15, μ=23   
+[23:21:17] [INFO]   conj_current_tide                   900        118        301        231        29.4       med=8, μ=13    
+[23:21:17] [INFO]   vwap_spread_current_wave            844        114        304        175        28.8       med=9, μ=15    
+[23:21:17] [INFO]   current_accel                       908        147        252        155        28.8       med=6, μ=9     
+[23:21:17] [INFO]   kf_tension_filt_vel                 1031       119        285        511        28.4       med=16, μ=24   
+[23:21:17] [INFO]   reg_value_tide                      1043       58         172        385        28.3       med=11, μ=16   
+[23:21:17] [INFO] 
+  HH ALERTA distance distribution (bars before turn):
+[23:21:17] [INFO]     n=27424, mean=16.8, median=10, p25=4, p75=22
+[23:21:17] [INFO]     ≤ 1 bars:   2411/27424 = 9%
+[23:21:17] [INFO]     ≤ 2 bars:   4382/27424 = 16%
+[23:21:17] [INFO]     ≤ 3 bars:   6186/27424 = 23%
+[23:21:17] [INFO]     ≤ 5 bars:   9233/27424 = 34%
+[23:21:17] [INFO]     ≤ 7 bars:  11585/27424 = 42%
+[23:21:17] [INFO]     ≤10 bars:  14341/27424 = 52%
+[23:21:17] [INFO]     ≤15 bars:  17651/27424 = 64%
+[23:21:17] [INFO]     ≤20 bars:  19929/27424 = 73%
+[23:21:17] [INFO]     ≤30 bars:  22639/27424 = 83%
+[23:21:17] [INFO] 
+  HH CONTINUACIÓN distance distribution (bars after turn):
+[23:21:17] [INFO]     n=9226, mean=10.9, median=8, p25=5, p75=13
+[23:21:17] [INFO] 
+  ╔══════════════════════════════════════════════════════════════╗
+[23:21:17] [INFO]   ║  LH (MAX) — Signal-First Breakdown                    ║
+[23:21:17] [INFO]   ╚══════════════════════════════════════════════════════════════╝
+[23:21:17] [INFO] 
+  Feature                             ALERTA     DETEC      CONF       CONT       Turn%      Alert dist     
+[23:21:17] [INFO]   ─────────────────────────────────── ────────── ────────── ────────── ────────── ────────── ───────────────
+[23:21:17] [INFO]   kf_price_innovation                 110        159        422        114        16.4       med=3, μ=6     
+[23:21:17] [INFO]   kf_price_filt_vel                   107        221        337        100        15.6       med=4, μ=5     
+[23:21:17] [INFO]   compression_ratio                   211        121        249        119        14.6       med=3, μ=5     
+[23:21:17] [INFO]   kf_price_pred_val                   121        221        296        108        14.5       med=3, μ=4     
+[23:21:17] [INFO]   conj_wave_current                   208        118        277        142        14.2       med=4, μ=6     
+[23:21:17] [INFO]   fear_level                          147        76         198        222        14.1       med=4, μ=6     
+[23:21:17] [INFO]   current_slope                       210        120        293        112        14.1       med=3, μ=5     
+[23:21:17] [INFO]   kf_conj_filt_vel                    227        140        248        158        13.8       med=3, μ=4     
+[23:21:17] [INFO]   conj_current_tide                   242        107        272        99         13.8       med=4, μ=10    
+[23:21:17] [INFO]   tension_current                     302        71         83         50         13.7       med=4, μ=5     
+[23:21:17] [INFO]   wave_slope                          176        130        279        156        13.3       med=3, μ=5     
+[23:21:17] [INFO]   conj_wave_tide                      210        121        255        126        13.1       med=3, μ=5     
+[23:21:17] [INFO]   vwap_spread_current_wave            184        116        271        100        13.0       med=3, μ=4     
+[23:21:17] [INFO]   kf_conj_pred_val                    205        125        248        127        12.9       med=3, μ=5     
+[23:21:17] [INFO]   wave_accel                          230        132        216        167        12.7       med=3, μ=4     
+[23:21:17] [INFO] 
+  LH ALERTA distance distribution (bars before turn):
+[23:21:17] [INFO]     n=6005, mean=6.6, median=4, p25=2, p75=8
+[23:21:17] [INFO]     ≤ 1 bars:   1115/6005 = 19%
+[23:21:17] [INFO]     ≤ 2 bars:   2037/6005 = 34%
+[23:21:17] [INFO]     ≤ 3 bars:   2754/6005 = 46%
+[23:21:17] [INFO]     ≤ 5 bars:   3846/6005 = 64%
+[23:21:17] [INFO]     ≤ 7 bars:   4458/6005 = 74%
+[23:21:17] [INFO]     ≤10 bars:   4955/6005 = 83%
+[23:21:17] [INFO]     ≤15 bars:   5460/6005 = 91%
+[23:21:17] [INFO]     ≤20 bars:   5671/6005 = 94%
+[23:21:17] [INFO]     ≤30 bars:   5849/6005 = 97%
+[23:21:17] [INFO] 
+  LH CONTINUACIÓN distance distribution (bars after turn):
+[23:21:17] [INFO]     n=4827, mean=10.5, median=8, p25=5, p75=13
+[23:21:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:21:17] [INFO]   COMPLETE
+[23:21:17] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[23:21:17] [INFO]   Time: 478s (8.0min)

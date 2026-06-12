@@ -1916,6 +1916,7 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         import backend.daemons.vault_providers.breadth_provider  # noqa: F401
         import backend.daemons.vault_providers.sector_breadth_provider  # noqa: F401
         import backend.daemons.vault_providers.remaining_providers  # noqa: F401
+        import backend.daemons.vault_providers.observer_provider  # noqa: F401
 
         adapter = VaultRefreshAdapter(store)
         pending = adapter.pending_requests(limit=20)
@@ -2135,6 +2136,14 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)
+
+    # ── Tier 3d: Unified Observer (MUST run AFTER channel_snapshots exist) ──
+    try:
+        from backend.daemons.vault_providers.observer_provider import ObserverProvider
+        results["observer"] = ObserverProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Observer vault failed (non-critical): {e}")
+        results["observer"] = {"status": "error", "error": str(e)}
 
     # ── Tier 4: Very heavy + rate limited ──
     results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)

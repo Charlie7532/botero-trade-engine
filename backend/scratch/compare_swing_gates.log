@@ -1,0 +1,85 @@
+/root/botero-trade/backend/scripts/compare_swing_gates.py:56: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  cs = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/compare_swing_gates.py:67: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/compare_swing_gates.py:74: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  bars = pd.read_sql(f"""
+Loaded: 26,932 snapshots, 6,043 zigzag, 958,354 bars
+Labeled: 26,505 / 26,932 (98.4%)
+
+====================================================================================================
+  COMPARISON: Legacy (v1) vs Probabilistic (v2)
+  Period: 2020-02-03 → 2026-04-23
+  Bars: 26,359 | Tickers: 17
+====================================================================================================
+
+  ACTION DISTRIBUTION:
+    V1: ACCUMULATE=2,941 (11.2%)  TRIM=3,724 (14.1%)  HOLD=19,694 (74.7%)  
+    V2: ACCUMULATE=16,109 (61.1%)  TRIM=1,474 (5.6%)  HOLD=8,776 (33.3%)  
+
+  AGREEMENT: 27.5% (7,241 / 26,359)
+
+  DISAGREEMENTS (19,118 bars):
+    v1=ACCUMULATE   → v2=HOLD        : 2,313 bars | actual_bull=45.4% | fwd_20d=+1.66%
+    v1=HOLD         → v2=ACCUMULATE  : 11,907 bars | actual_bull=73.8% | fwd_20d=+0.63%
+    v1=HOLD         → v2=TRIM        : 1,324 bars | actual_bull=44.3% | fwd_20d=+2.29%
+    v1=TRIM         → v2=ACCUMULATE  : 3,574 bars | actual_bull=82.0% | fwd_20d=+1.10%
+
+====================================================================================================
+  HIT RATE & FORWARD RETURNS BY ACTION
+====================================================================================================
+
+  V1:
+    ACCUMULATE  : N= 2,941 | HR=50.3% | fwd_20d mean=+1.41% med=+1.39%
+    TRIM        : N= 3,724 | HR=18.3% | fwd_20d mean=+1.20% med=+1.62%
+    HOLD        : N=19,694 | HR=n/a | fwd_20d mean=+1.06% med=+1.08%
+
+  V2:
+    ACCUMULATE  : N=16,109 | HR=75.4% | fwd_20d mean=+0.73% med=+0.97%
+    TRIM        : N= 1,474 | HR=52.7% | fwd_20d mean=+2.41% med=+2.53%
+    HOLD        : N= 8,776 | HR=n/a | fwd_20d mean=+1.61% med=+1.42%
+
+====================================================================================================
+  v2 ACCUMULATE — Breakdown by P(bull)
+====================================================================================================
+
+  P(bull) range             N       HR    fwd_20d    med_20d
+  65%-70%               2,721   64.4%     +1.00%     +1.15%
+  70%-75%               2,442   70.1%     +0.89%     +0.94%
+  75%-80%               2,864   75.8%     +0.77%     +0.98%
+  80%-85%               5,904   79.9%     +0.56%     +0.94%
+  85%-90%               1,572   81.4%     +0.61%     +0.94%
+  90%-95%                 467   87.2%     +1.06%     +1.38%
+  95%-101%                 139   81.3%     -1.07%     -1.03%
+
+  v2 TRIM — Breakdown by P(bull)
+  P(bull) range             N HR(bear)    fwd_20d
+  15%-20%                  61   45.9%     +3.94%
+  20%-25%                 676   57.1%     +2.51%
+  25%-30%                 258   58.1%     +1.96%
+  30%-35%                 331   52.9%     +1.58%
+
+====================================================================================================
+  PER-TICKER: v1 vs v2 ACCUMULATE hit rate
+====================================================================================================
+
+  Ticker     v1_N    v1_HR   v1_fwd    v2_N    v2_HR   v2_fwd      Δ_HR
+  AAPL        184   30.4%   +1.06%     992   70.3%   +1.34%   +39.8% ✓
+  AMZN        154   39.6%   +2.59%     976   83.9%   +0.98%   +44.3% ✓
+  COST        222   57.2%   +1.68%   1,044   81.2%   +1.63%   +24.0% ✓
+  HD          204   46.6%   -0.04%     930   71.0%   +0.27%   +24.4% ✓
+  HON         166   59.6%   +0.04%     823   82.0%   +0.00%   +22.4% ✓
+  IBM         136   39.7%   +0.57%     888   68.4%   +0.11%   +28.6% ✓
+  JNJ         188   55.9%   +0.62%     855   64.7%   +0.53%    +8.8% ✓
+  JPM         121   40.5%   +0.50%   1,011   77.8%   +1.23%   +37.3% ✓
+  MCD         218   53.2%   +0.72%     880   71.5%   +0.25%   +18.3% ✓
+  MRK         134   48.5%   +1.15%     794   70.5%   -0.22%   +22.0% ✓
+  MSFT        177   38.4%   +1.93%     984   78.5%   +0.72%   +40.0% ✓
+  PEP         186   52.7%   +1.16%     839   64.6%   -0.32%   +11.9% ✓
+  PG          180   59.4%   +1.28%     869   69.6%   +0.31%   +10.2% ✓
+  QQQ         194   63.4%   +2.41%   1,112   85.4%   +1.16%   +22.0% ✓
+  SPY         184   61.4%   +1.72%   1,099   76.2%   +0.80%   +14.7% ✓
+  WMT         136   63.2%   +3.31%   1,104   83.5%   +0.99%   +20.3% ✓
+  XOM         157   36.9%   +3.72%     909   76.0%   +1.85%   +39.1% ✓
+
+DONE

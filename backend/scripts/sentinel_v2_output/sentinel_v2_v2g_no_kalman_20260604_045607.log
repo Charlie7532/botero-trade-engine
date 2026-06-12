@@ -1,0 +1,276 @@
+[04:56:07] [INFO]   ⚠️  LABEL_PROXIMITY overridden to 0
+[04:56:07] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:07] [INFO]   TRAIN SENTINEL V2 — v2g_no_kalman
+[04:56:07] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:07] [INFO]   Config: NO Kalman — raw channel features only (use --proximity 0)
+[04:56:07] [INFO]   Timestamp: 20260604_045607
+[04:56:07] [INFO]   Output: /root/botero-trade/backend/scripts/sentinel_v2_output
+[04:56:07] [INFO]   PurgedKFold: 5 folds, embargo=10 bars
+[04:56:07] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:07] [INFO]   STEP 1: LOAD DATA FROM VAULT
+[04:56:07] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:07] [INFO]   Loading channel_snapshots...
+[04:56:11] [INFO]   Snapshots: 91,252 rows × 40 columns
+[04:56:11] [INFO]   Loading OHLCV close prices...
+[04:56:21] [INFO]   OHLCV: 954,470 bars loaded
+[04:56:22] [INFO]   Close prices matched: 91,252/91,252 (100.0%)
+[04:56:22] [INFO]   Tickers: ['AAPL', 'AMZN', 'COST', 'HD', 'HON', 'IBM', 'JNJ', 'JPM', 'MCD', 'MRK', 'MSFT', 'PEP', 'PG', 'QQQ', 'SPY', 'WMT', 'XOM']
+[04:56:22] [INFO]   Date range: 1993-07-23 → 2026-05-26
+[04:56:22] [INFO]   Building labels from zigzag points...
+[04:56:25] [INFO]     3%: PISO=3,972 (4.4%)  TECHO=3,967 (4.3%)
+[04:56:27] [INFO]     5%: PISO=2,113 (2.3%)  TECHO=2,108 (2.3%)
+[04:56:28] [INFO]     7%: PISO=1,307 (1.4%)  TECHO=1,305 (1.4%)
+[04:56:28] [INFO]   Composite OR: PISO=3,972 (4.4%)  TECHO=3,967 (4.3%)
+[04:56:28] [INFO]   Computing forward returns...
+[04:56:29] [INFO]   ✅ Data loaded: 91,252 rows
+[04:56:29] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:29] [INFO]   STEP 2: TEMPORAL FEATURES — SKIPPED (not in this config)
+[04:56:29] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:29] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:29] [INFO]   STEP 3: LABEL STRATEGY
+[04:56:29] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:29] [INFO]   Strategy: OR multi-scale (3% OR 5% OR 7%)
+[04:56:29] [INFO]   PISO positive rate: 4.4%
+[04:56:29] [INFO]   TECHO positive rate: 4.3%
+[04:56:29] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:29] [INFO]   STEP 4A: TRAIN PISO MODEL
+[04:56:29] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:29] [INFO] 
+  ── PISO (11 features, label=is_piso) ──
+[04:56:29] [INFO]   X: (91252, 11), positive rate: 4.4%
+[04:56:29] [INFO]     Feature 1: vwap_sigma_tide
+[04:56:29] [INFO]     Feature 2: vwap_sigma_current
+[04:56:29] [INFO]     Feature 3: sigma_tide
+[04:56:29] [INFO]     Feature 4: fear_level
+[04:56:29] [INFO]     Feature 5: rsi_value
+[04:56:29] [INFO]     Feature 6: vwap_sigma_wave
+[04:56:29] [INFO]     Feature 7: wave_slope
+[04:56:29] [INFO]     Feature 8: current_accel
+[04:56:29] [INFO]     Feature 9: conj_wave_tide
+[04:56:29] [INFO]     Feature 10: tension_tide
+[04:56:29] [INFO]     Feature 11: compression_ratio
+[04:56:29] [INFO] 
+  --- HP-1: depth=4, lr=0.05, mcw=20, gamma=0.1 ---
+[04:56:31] [INFO]     Fold 1: AUC=0.8517 (train=0.9077 gap=0.056) P=0.164 R=0.838 F1=0.274 thr=0.851
+[04:56:33] [INFO]     Fold 2: AUC=0.8921 (train=0.8986 gap=0.007) P=0.139 R=0.853 F1=0.238 thr=0.842
+[04:56:35] [INFO]     Fold 3: AUC=0.9120 (train=0.8946 gap=-0.017) P=0.139 R=0.881 F1=0.240 thr=0.834
+[04:56:37] [INFO]     Fold 4: AUC=0.8922 (train=0.8992 gap=0.007) P=0.149 R=0.844 F1=0.253 thr=0.852
+[04:56:38] [INFO]     Fold 5: AUC=0.8843 (train=0.9014 gap=0.017) P=0.139 R=0.876 F1=0.239 thr=0.850
+[04:56:38] [INFO]   HP-1 SUMMARY: AUC=0.8865±0.0196  gap=0.014  threshold=0.850
+[04:56:38] [INFO] 
+  --- HP-2: depth=4, lr=0.08, mcw=10, gamma=0.05 ---
+[04:56:41] [INFO]     Fold 1: AUC=0.8513 (train=0.9212 gap=0.070) P=0.167 R=0.834 F1=0.279 thr=0.868
+[04:56:42] [INFO]     Fold 2: AUC=0.8933 (train=0.9102 gap=0.017) P=0.142 R=0.847 F1=0.244 thr=0.852
+[04:56:44] [INFO]     Fold 3: AUC=0.9135 (train=0.9067 gap=-0.007) P=0.144 R=0.881 F1=0.247 thr=0.842
+[04:56:46] [INFO]     Fold 4: AUC=0.8939 (train=0.9117 gap=0.018) P=0.152 R=0.842 F1=0.258 thr=0.863
+[04:56:49] [INFO]     Fold 5: AUC=0.8851 (train=0.9138 gap=0.029) P=0.141 R=0.859 F1=0.242 thr=0.864
+[04:56:49] [INFO]   HP-2 SUMMARY: AUC=0.8874±0.0203  gap=0.025  threshold=0.863
+[04:56:49] [INFO] 
+  ★ BEST: HP-2  AUC=0.8874±0.0203  gap=0.025  threshold=0.863
+[04:56:49] [INFO]   Training final model on all 91,252 samples...
+[04:56:50] [INFO]   Feature importance (gain):
+[04:56:50] [INFO]      1. rsi_value                           0.3458
+[04:56:50] [INFO]      2. vwap_sigma_wave                     0.1647
+[04:56:50] [INFO]      3. wave_slope                          0.1186
+[04:56:50] [INFO]      4. current_accel                       0.0699
+[04:56:50] [INFO]      5. fear_level                          0.0636
+[04:56:50] [INFO]      6. conj_wave_tide                      0.0539
+[04:56:50] [INFO]      7. vwap_sigma_tide                     0.0512
+[04:56:50] [INFO]      8. compression_ratio                   0.0441
+[04:56:50] [INFO]      9. sigma_tide                          0.0342
+[04:56:50] [INFO]     10. vwap_sigma_current                  0.0309
+[04:56:50] [INFO]     11. tension_tide                        0.0231
+[04:56:50] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:50] [INFO]   STEP 4B: TRAIN TECHO MODEL
+[04:56:50] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:56:50] [INFO] 
+  ── TECHO (11 features, label=is_techo) ──
+[04:56:50] [INFO]   X: (91252, 11), positive rate: 4.3%
+[04:56:50] [INFO]     Feature 1: vwap_spread_tide_current
+[04:56:50] [INFO]     Feature 2: current_accel
+[04:56:50] [INFO]     Feature 3: vwap_spread_tide_wave
+[04:56:50] [INFO]     Feature 4: conj_wave_tide
+[04:56:50] [INFO]     Feature 5: conj_current_tide
+[04:56:50] [INFO]     Feature 6: vwap_spread_current_wave
+[04:56:50] [INFO]     Feature 7: tide_slope
+[04:56:50] [INFO]     Feature 8: current_slope
+[04:56:50] [INFO]     Feature 9: wave_slope
+[04:56:50] [INFO]     Feature 10: wave_accel
+[04:56:50] [INFO]     Feature 11: compression_ratio
+[04:56:50] [INFO] 
+  --- HP-1: depth=4, lr=0.05, mcw=20, gamma=0.1 ---
+[04:56:52] [INFO]     Fold 1: AUC=0.7206 (train=0.7753 gap=0.055) P=0.105 R=0.714 F1=0.183 thr=0.757
+[04:56:54] [INFO]     Fold 2: AUC=0.7472 (train=0.7723 gap=0.025) P=0.082 R=0.642 F1=0.146 thr=0.716
+[04:56:56] [INFO]     Fold 3: AUC=0.7310 (train=0.7718 gap=0.041) P=0.070 R=0.621 F1=0.126 thr=0.721
+[04:56:58] [INFO]     Fold 4: AUC=0.7198 (train=0.7778 gap=0.058) P=0.083 R=0.646 F1=0.147 thr=0.733
+[04:56:59] [INFO]     Fold 5: AUC=0.7341 (train=0.7742 gap=0.040) P=0.078 R=0.693 F1=0.140 thr=0.729
+[04:56:59] [INFO]   HP-1 SUMMARY: AUC=0.7305±0.0100  gap=0.044  threshold=0.729
+[04:56:59] [INFO] 
+  --- HP-2: depth=4, lr=0.08, mcw=10, gamma=0.05 ---
+[04:57:02] [INFO]     Fold 1: AUC=0.7238 (train=0.8102 gap=0.086) P=0.108 R=0.690 F1=0.186 thr=0.772
+[04:57:04] [INFO]     Fold 2: AUC=0.7390 (train=0.8048 gap=0.066) P=0.085 R=0.614 F1=0.149 thr=0.725
+[04:57:07] [INFO]     Fold 3: AUC=0.7326 (train=0.8054 gap=0.073) P=0.070 R=0.596 F1=0.126 thr=0.737
+[04:57:09] [INFO]     Fold 4: AUC=0.7215 (train=0.8096 gap=0.088) P=0.084 R=0.625 F1=0.149 thr=0.754
+[04:57:11] [INFO]     Fold 5: AUC=0.7362 (train=0.8060 gap=0.070) P=0.078 R=0.666 F1=0.139 thr=0.743
+[04:57:11] [INFO]   HP-2 SUMMARY: AUC=0.7306±0.0069  gap=0.077  threshold=0.743
+[04:57:11] [INFO] 
+  ★ BEST: HP-2  AUC=0.7306±0.0069  gap=0.077  threshold=0.743
+[04:57:11] [INFO]   Training final model on all 91,252 samples...
+[04:57:13] [INFO]   Feature importance (gain):
+[04:57:13] [INFO]      1. wave_accel                          0.2197
+[04:57:13] [INFO]      2. current_accel                       0.1248
+[04:57:13] [INFO]      3. compression_ratio                   0.0938
+[04:57:13] [INFO]      4. wave_slope                          0.0827
+[04:57:13] [INFO]      5. conj_current_tide                   0.0763
+[04:57:13] [INFO]      6. current_slope                       0.0756
+[04:57:13] [INFO]      7. conj_wave_tide                      0.0747
+[04:57:13] [INFO]      8. vwap_spread_tide_wave               0.0728
+[04:57:13] [INFO]      9. tide_slope                          0.0693
+[04:57:13] [INFO]     10. vwap_spread_tide_current            0.0555
+[04:57:13] [INFO]     11. vwap_spread_current_wave            0.0547
+[04:57:13] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:57:13] [INFO]   STEP 5: SIGNAL REPLAY (OOS Threshold)
+[04:57:13] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:57:13] [INFO] 
+  ── SIGNAL REPLAY: PISO (threshold=0.863) ──
+[04:57:13] [INFO] 
+  Horizon    Signals    Hit Rate     Mean Ret     Verdict
+[04:57:13] [INFO]   ────────── ────────── ──────────── ──────────── ──────────
+[04:57:13] [INFO]   5d        679        63.5%        +1.22%       ✅
+[04:57:13] [INFO]   10d        676        62.2%        +1.47%       ✅
+[04:57:13] [INFO]   20d        666        65.5%        +2.85%       ✅
+[04:57:13] [INFO] 
+  Signal Replay: ✅ PASS (3/3 horizons > 50% HR)
+[04:57:13] [INFO] 
+  Per-ticker (10d horizon):
+[04:57:13] [INFO]     MSFT   n=32   HR=81.2%  ret=+3.50% ✅
+[04:57:13] [INFO]     XOM    n=37   HR=70.3%  ret=+3.06% ✅
+[04:57:13] [INFO]     JNJ    n=20   HR=70.0%  ret=+0.65% ✅
+[04:57:13] [INFO]     WMT    n=16   HR=68.8%  ret=+1.21% ✅
+[04:57:13] [INFO]     MRK    n=40   HR=67.5%  ret=+2.62% ✅
+[04:57:13] [INFO]     COST   n=21   HR=66.7%  ret=+1.26% ✅
+[04:57:13] [INFO]     PEP    n=38   HR=65.8%  ret=+1.18% ✅
+[04:57:13] [INFO]     PG     n=32   HR=65.6%  ret=+0.65% ✅
+[04:57:13] [INFO]     QQQ    n=55   HR=63.6%  ret=+2.40% ✅
+[04:57:13] [INFO]     AAPL   n=93   HR=63.4%  ret=+2.58% ✅
+[04:57:13] [INFO]     IBM    n=44   HR=61.4%  ret=+0.63% ✅
+[04:57:13] [INFO]     JPM    n=25   HR=60.0%  ret=+3.55% ✅
+[04:57:13] [INFO]     SPY    n=43   HR=58.1%  ret=+1.14% ✅
+[04:57:13] [INFO]     AMZN   n=65   HR=56.9%  ret=+1.39% ✅
+[04:57:13] [INFO]     MCD    n=22   HR=50.0%  ret=-0.63% ❌
+[04:57:13] [INFO]     HON    n=39   HR=48.7%  ret=+0.26% ❌
+[04:57:13] [INFO]     HD     n=54   HR=38.9%  ret=-0.46% ❌
+[04:57:13] [INFO] 
+  ── SIGNAL REPLAY: TECHO (threshold=0.743) ──
+[04:57:14] [INFO] 
+  Horizon    Signals    Hit Rate     Mean Ret     Verdict
+[04:57:14] [INFO]   ────────── ────────── ──────────── ──────────── ──────────
+[04:57:14] [INFO]   5d        630        54.0%        +0.18%       ✅
+[04:57:14] [INFO]   10d        630        46.1%        -0.20%       ❌
+[04:57:14] [INFO]   20d        622        44.2%        -1.01%       ❌
+[04:57:14] [INFO] 
+  Signal Replay: ❌ FAIL (1/3 horizons > 50% HR)
+[04:57:14] [INFO] 
+  Per-ticker (10d horizon):
+[04:57:14] [INFO]     HD     n=10   HR=80.0%  ret=+3.07% ✅
+[04:57:14] [INFO]     PEP    n=40   HR=75.0%  ret=+1.86% ✅
+[04:57:14] [INFO]     JPM    n=14   HR=64.3%  ret=+1.72% ✅
+[04:57:14] [INFO]     XOM    n=43   HR=62.8%  ret=+0.98% ✅
+[04:57:14] [INFO]     MRK    n=50   HR=60.0%  ret=+1.30% ✅
+[04:57:14] [INFO]     MSFT   n=20   HR=55.0%  ret=+0.97% ✅
+[04:57:14] [INFO]     AMZN   n=95   HR=53.7%  ret=-0.31% ✅
+[04:57:14] [INFO]     MCD    n=33   HR=51.5%  ret=-0.41% ✅
+[04:57:14] [INFO]     COST   n=24   HR=50.0%  ret=+0.85% ❌
+[04:57:14] [INFO]     PG     n=34   HR=47.1%  ret=-0.06% ❌
+[04:57:14] [INFO]     AAPL   n=106  HR=37.7%  ret=-1.10% ❌
+[04:57:14] [INFO]     WMT    n=24   HR=37.5%  ret=-0.70% ❌
+[04:57:14] [INFO]     QQQ    n=43   HR=37.2%  ret=-1.02% ❌
+[04:57:14] [INFO]     SPY    n=41   HR=24.4%  ret=-2.13% ❌
+[04:57:14] [INFO]     IBM    n=19   HR=21.1%  ret=-1.35% ❌
+[04:57:14] [INFO]     JNJ    n=22   HR=18.2%  ret=-2.25% ❌
+[04:57:14] [INFO]     HON    n=12   HR=8.3%  ret=-4.83% ❌
+[04:57:14] [INFO] 
+  ── COMPARISON: Signal Replay with threshold=0.5 ──
+[04:57:14] [INFO] 
+  ── SIGNAL REPLAY: PISO (threshold=0.500) ──
+[04:57:14] [INFO] 
+  Horizon    Signals    Hit Rate     Mean Ret     Verdict
+[04:57:14] [INFO]   ────────── ────────── ──────────── ──────────── ──────────
+[04:57:14] [INFO]   5d        4470       57.1%        +0.58%       ✅
+[04:57:14] [INFO]   10d        4432       59.0%        +1.01%       ✅
+[04:57:14] [INFO]   20d        4376       60.8%        +1.98%       ✅
+[04:57:14] [INFO] 
+  Signal Replay: ✅ PASS (3/3 horizons > 50% HR)
+[04:57:14] [INFO] 
+  Per-ticker (10d horizon):
+[04:57:14] [INFO]     WMT    n=190  HR=70.5%  ret=+1.76% ✅
+[04:57:14] [INFO]     XOM    n=239  HR=68.2%  ret=+1.87% ✅
+[04:57:14] [INFO]     COST   n=202  HR=65.3%  ret=+1.41% ✅
+[04:57:14] [INFO]     JPM    n=219  HR=62.6%  ret=+1.81% ✅
+[04:57:14] [INFO]     MRK    n=282  HR=59.9%  ret=+1.12% ✅
+[04:57:14] [INFO]     PG     n=208  HR=59.6%  ret=+0.46% ✅
+[04:57:14] [INFO]     SPY    n=291  HR=59.5%  ret=+0.89% ✅
+[04:57:14] [INFO]     QQQ    n=276  HR=59.4%  ret=+0.96% ✅
+[04:57:14] [INFO]     AMZN   n=284  HR=59.2%  ret=+1.71% ✅
+[04:57:14] [INFO]     HON    n=267  HR=58.4%  ret=+0.92% ✅
+[04:57:14] [INFO]     MCD    n=192  HR=57.8%  ret=+0.21% ✅
+[04:57:14] [INFO]     AAPL   n=453  HR=57.4%  ret=+1.34% ✅
+[04:57:14] [INFO]     IBM    n=283  HR=55.5%  ret=+0.49% ✅
+[04:57:14] [INFO]     PEP    n=236  HR=55.1%  ret=+0.65% ✅
+[04:57:14] [INFO]     MSFT   n=299  HR=54.8%  ret=+1.10% ✅
+[04:57:14] [INFO]     JNJ    n=233  HR=52.4%  ret=+0.47% ✅
+[04:57:14] [INFO]     HD     n=278  HR=48.2%  ret=+0.00% ❌
+[04:57:14] [INFO] 
+  ── SIGNAL REPLAY: TECHO (threshold=0.500) ──
+[04:57:15] [INFO] 
+  Horizon    Signals    Hit Rate     Mean Ret     Verdict
+[04:57:15] [INFO]   ────────── ────────── ──────────── ──────────── ──────────
+[04:57:15] [INFO]   5d        6296       44.9%        -0.22%       ❌
+[04:57:15] [INFO]   10d        6270       42.7%        -0.59%       ❌
+[04:57:15] [INFO]   20d        6211       42.6%        -1.21%       ❌
+[04:57:15] [INFO] 
+  Signal Replay: ❌ FAIL (0/3 horizons > 50% HR)
+[04:57:15] [INFO] 
+  Per-ticker (10d horizon):
+[04:57:15] [INFO]     PEP    n=298  HR=55.7%  ret=+0.40% ✅
+[04:57:15] [INFO]     PG     n=264  HR=48.9%  ret=+0.02% ❌
+[04:57:15] [INFO]     AMZN   n=480  HR=48.8%  ret=-0.21% ❌
+[04:57:15] [INFO]     XOM    n=341  HR=47.5%  ret=-0.67% ❌
+[04:57:15] [INFO]     MSFT   n=396  HR=46.0%  ret=-0.47% ❌
+[04:57:15] [INFO]     MRK    n=351  HR=45.9%  ret=-0.28% ❌
+[04:57:15] [INFO]     HD     n=310  HR=44.2%  ret=-0.55% ❌
+[04:57:15] [INFO]     MCD    n=232  HR=43.5%  ret=-0.30% ❌
+[04:57:15] [INFO]     JPM    n=405  HR=43.0%  ret=-0.50% ❌
+[04:57:15] [INFO]     HON    n=250  HR=40.4%  ret=-1.30% ❌
+[04:57:15] [INFO]     QQQ    n=500  HR=40.4%  ret=-0.69% ❌
+[04:57:15] [INFO]     COST   n=282  HR=39.0%  ret=-0.86% ❌
+[04:57:15] [INFO]     IBM    n=401  HR=37.9%  ret=-1.12% ❌
+[04:57:15] [INFO]     JNJ    n=229  HR=37.1%  ret=-1.05% ❌
+[04:57:15] [INFO]     WMT    n=299  HR=36.8%  ret=-0.79% ❌
+[04:57:15] [INFO]     AAPL   n=764  HR=36.4%  ret=-1.21% ❌
+[04:57:15] [INFO]     SPY    n=468  HR=34.4%  ret=-0.48% ❌
+[04:57:15] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:57:15] [INFO]   STEP 6: DEFLATED SHARPE RATIO + AUDIT
+[04:57:15] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:57:15] [INFO]   PISO DSR: 0.959 (n_trials=4) → ✅ Significant
+[04:57:15] [INFO]   TECHO DSR: nan (n_trials=4) → ⚠️ Not significant
+[04:57:15] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:57:15] [INFO]   FINAL SUMMARY
+[04:57:15] [INFO] ════════════════════════════════════════════════════════════════════════════════════════════════════
+[04:57:15] [INFO]   Config: v2g_no_kalman — NO Kalman — raw channel features only (use --proximity 0)
+[04:57:15] [INFO]   Data: 91,252 snapshots × 17 tickers
+[04:57:15] [INFO] 
+[04:57:15] [INFO]   ┌─────────────────────────────────────────────────────────────────┐
+[04:57:15] [INFO]   │ Model    AUC±σ          Gap    Threshold  DSR    Replay        │
+[04:57:15] [INFO]   ├─────────────────────────────────────────────────────────────────┤
+[04:57:15] [INFO]   │ PISO  0.8874±0.020   0.025    0.863    0.959  ✅ PASS        │
+[04:57:15] [INFO]   │ TECHO 0.7306±0.007   0.077    0.743    nan  ❌ FAIL        │
+[04:57:15] [INFO]   └─────────────────────────────────────────────────────────────────┘
+[04:57:15] [INFO] 
+[04:57:15] [INFO]   PISO best HP: HP-2 ({'n_estimators': 150, 'max_depth': 4, 'learning_rate': 0.08, 'min_child_weight': 10, 'gamma': 0.05, 'subsample': 0.8, 'colsample_bytree': 0.8})
+[04:57:15] [INFO]   TECHO best HP: HP-2 ({'n_estimators': 150, 'max_depth': 4, 'learning_rate': 0.08, 'min_child_weight': 10, 'gamma': 0.05, 'subsample': 0.8, 'colsample_bytree': 0.8})
+[04:57:15] [INFO]   PISO features (11): ['vwap_sigma_tide', 'vwap_sigma_current', 'sigma_tide', 'fear_level', 'rsi_value', 'vwap_sigma_wave', 'wave_slope', 'current_accel', 'conj_wave_tide', 'tension_tide', 'compression_ratio']
+[04:57:15] [INFO]   TECHO features (11): ['vwap_spread_tide_current', 'current_accel', 'vwap_spread_tide_wave', 'conj_wave_tide', 'conj_current_tide', 'vwap_spread_current_wave', 'tide_slope', 'current_slope', 'wave_slope', 'wave_accel', 'compression_ratio']
+[04:57:15] [INFO]   Time: 68s (1.1min)
+[04:57:15] [INFO] 
+  ✅ PKL saved: sentinel_v2_v2g_no_kalman_20260604_045607.pkl (0.5 MB)

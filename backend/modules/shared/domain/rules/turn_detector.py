@@ -32,8 +32,9 @@ from backend.modules.shared.domain.entities.turn_signal import (
 from backend.modules.shared.domain.rules.kalman_5channel import KalmanSnapshot
 
 
-# ── Thresholds (calibrated from Sprint 2 Phase J) ──
-PROB_THRESHOLD = 0.5           # Minimum to activate ALARMA
+# ── Thresholds (calibrated from Sentinel training v1) ──
+PROB_PISO_THRESHOLD = 0.73     # From train_sentinel_models.py optimal threshold
+PROB_TECHO_THRESHOLD = 0.61    # (precision-recall balance point)
 DENSITY_PRESSURIZE_MIN = 5     # 3-bar rolling density for PRESURIZACIÓN
 DENSITY_EXPLOSION_MIN = 8      # 3-bar rolling density for EXPLOSIÓN
 
@@ -59,7 +60,7 @@ def classify_archetype(
       LH: techo detected + tide bearish + crescendo → failed rally
     """
     # ── PISO archetypes ──
-    if prob_piso > prob_techo and prob_piso > PROB_THRESHOLD:
+    if prob_piso > prob_techo and prob_piso > PROB_PISO_THRESHOLD:
         if kf_rsi_pred < RSI_OVERSOLD_THRESHOLD and crescendo:
             return ARCHETYPE_LL  # Capitulation: RSI collapsing + crescendo
         if kf_rsi_pred >= RSI_NEUTRAL_LOW:
@@ -70,7 +71,7 @@ def classify_archetype(
         return ARCHETYPE_LL      # In downtrend → likely capitulation
 
     # ── TECHO archetypes ──
-    if prob_techo > prob_piso and prob_techo > PROB_THRESHOLD:
+    if prob_techo > prob_piso and prob_techo > PROB_TECHO_THRESHOLD:
         if tide_slope < 0 and crescendo:
             return ARCHETYPE_LH  # Failed rally: bear trend + crescendo
         if kf_rsi_pred > RSI_OVERBOUGHT_THRESHOLD:
@@ -97,8 +98,10 @@ def assess_density(
         (density_level, density_count, crescendo)
     """
     # Count bars with prob > threshold in last 3 bars (including current)
+    # Use min threshold (TECHO=0.61) as activation floor for density
+    _density_threshold = min(PROB_PISO_THRESHOLD, PROB_TECHO_THRESHOLD)
     recent = density_history[-2:] + [prob] if len(density_history) >= 2 else [prob]
-    density_count = sum(1 for p in recent if p > PROB_THRESHOLD)
+    density_count = sum(1 for p in recent if p > _density_threshold)
 
     # Crescendo: density increasing over last 5 bars
     all_probs = density_history + [prob]
@@ -109,7 +112,7 @@ def assess_density(
         crescendo = tail[-1] > tail[-2] > tail[-3]
 
     # Classify density level
-    if prob <= PROB_THRESHOLD:
+    if prob <= _density_threshold:
         return DENSITY_SILENCE, 0, crescendo
     if density_count >= DENSITY_EXPLOSION_MIN:
         return DENSITY_EXPLOSION, density_count, crescendo

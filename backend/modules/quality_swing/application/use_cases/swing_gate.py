@@ -107,6 +107,29 @@ class SwingGate:
         decision.wave_slope = rc_result.wave_slope
 
         below_vwap = rc_result.below_vwap
+
+        # ── RC Probabilistic State (from empirical sigma tables) ──
+        _rc_prob = None
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_state_probability import (
+                lookup_probability,
+            )
+            _rc_prob = lookup_probability(
+                tide_slope=channel.tide_slope,
+                sigma_current=channel.sigma_current,
+                sigma_wave=channel.sigma_wave,
+                vwap_sigma_wave=channel.vwap_sigma_wave,
+            )
+            if _rc_prob:
+                decision.alerts.append(
+                    f"RC_STATE[{_rc_prob.state_key}]: "
+                    f"P(bull)={_rc_prob.prob_bull:.1%} "
+                    f"N={_rc_prob.n_samples} level={_rc_prob.level} "
+                    f"conf={_rc_prob.confidence:.2f} "
+                    f"action={_rc_prob.action}"
+                )
+        except Exception as e:
+            logger.debug(f"SwingGate {ticker}: RC probability lookup failed: {e}")
         hookup = ohlc["close"].iloc[idx] > ohlc["close"].iloc[idx - 1] if idx > 0 else False
 
         # ── Load vol regime (Stateful-First: StateSnapshot preferred) ──
@@ -287,12 +310,17 @@ class SwingGate:
             return decision
 
         # ── Evaluate accumulate ──
+        # Load Observer recovery_score from Vault
+        _observer_recovery = self._load_observer_recovery(ticker)
+
         should_accum, conviction, reason_accum = is_accumulate_signal(
             sigma_pos=rc_result.sigma_position,
             fear=fear,
             below_vwap=below_vwap,
             hookup=hookup,
             vol_regime_label=vol_label,
+            rc_prob=_rc_prob,
+            observer_recovery=_observer_recovery,
         )
 
         if should_accum:
@@ -371,6 +399,7 @@ class SwingGate:
         should_trim, trim_pct, reason_trim = is_trim_signal(
             sigma_pos=rc_result.sigma_position,
             fear=fear,
+            rc_prob=_rc_prob,
         )
 
         if should_trim:
@@ -418,10 +447,11 @@ class SwingGate:
 
         # ── Default: HOLD ──
         decision.action = "HOLD"
+        _prob_ctx = f" P(bull)={_rc_prob.prob_bull:.1%}" if _rc_prob else ""
         decision.reasoning = (
             f"HOLD: σ={rc_result.sigma_position:.1f}, "
             f"fear={rc_result.fear_label}, tide={rc_result.tide_slope:.3f}, "
-            f"zone={rc_result.zone}"
+            f"zone={rc_result.zone}{_prob_ctx}"
         )
         return decision
 
@@ -499,6 +529,23 @@ class SwingGate:
         except Exception as e:
             logger.debug(f"SwingGate {ticker}: TurnSignal load failed: {e}")
             return None
+
+    def _load_observer_recovery(self, ticker: str) -> float:
+        """Load the Unified Observer recovery_score from Vault.
+
+        Reads obs_recovery_score from engine.channel_snapshots
+        (populated by backfill_unified_observer or daily daemon).
+
+        Returns 0.0 if column not yet populated.
+        """
+        try:
+            latest = self._port.load_latest_snapshot(ticker)
+            if latest is None:
+                return 0.0
+            return float(getattr(latest, 'obs_recovery_score', 0.0) or 0.0)
+        except Exception as e:
+            logger.debug(f"SwingGate {ticker}: Observer recovery load failed: {e}")
+            return 0.0
 
     def _load_best_passport(self, ticker: str, fear, vol_label: str):
         """Load the best passport for current conditions.

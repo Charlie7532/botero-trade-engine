@@ -1,0 +1,56 @@
+<string>:8: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:17: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:17: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<string>:17: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+╔════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║  TABLA LOOKUP RC-PSV COMPLETA — Estadísticas de validación                               ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════╝
+  L1: 876 celdas
+  L2: 336 celdas
+  L3: 104 celdas
+  L4: 0 celdas
+
+  Total celdas en lookup: 1,316
+
+  Level 1 (W×C×σ×T) summary:
+    Celdas: 876
+    N por celda: MED=15, MEAN=21.2, P25=10, P75=25
+    P_bull rango: 0% → 100%
+    Celdas con N>=15: 469 (54%)
+    Celdas con N>=30: 157 (18%)
+
+    ZZ 2.5%: 577 celdas L1, MED_N=17, N>=15: 352
+
+    ZZ 5.0%: 209 celdas L1, MED_N=12, N>=15: 83
+
+    ZZ 7.5%: 90 celdas L1, MED_N=13, N>=15: 34
+
+  Lookup guardado en: /root/botero-trade/backend/scratch/rc_psv_lookup.json
+
+====================================================================================================
+  VALIDACIÓN: ¿La tabla discrimina? Distribución de P_bull
+====================================================================================================
+
+  L1 (W×C×σ×T) (ZZ 5%, N_cells=209):
+    P_bull: MIN=0%, P25=36%, MED=56%, P75=75%, MAX=100%
+        ≤20%:   21 (  10%) ████
+      20-40%:   43 (  21%) ████████
+      40-60%:   46 (  22%) ████████
+      60-80%:   53 (  25%) ██████████
+        ≥80%:   46 (  22%) ████████
+
+  L2 (W×C×σ) (ZZ 5%, N_cells=117):
+    P_bull: MIN=8%, P25=38%, MED=56%, P75=68%, MAX=100%
+        ≤20%:    5 (   4%) █
+      20-40%:   29 (  25%) █████████
+      40-60%:   35 (  30%) ███████████
+      60-80%:   32 (  27%) ██████████
+        ≥80%:   16 (  14%) █████
+
+  L3 (W×C) (ZZ 5%, N_cells=36):
+    P_bull: MIN=23%, P25=43%, MED=55%, P75=63%, MAX=83%
+        ≤20%:    0 (   0%) 
+      20-40%:    9 (  25%) ██████████
+      40-60%:   14 (  39%) ███████████████
+      60-80%:   10 (  28%) ███████████
+        ≥80%:    3 (   8%) ███

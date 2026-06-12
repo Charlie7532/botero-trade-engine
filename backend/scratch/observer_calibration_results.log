@@ -1,0 +1,128 @@
+/root/botero-trade/backend/scripts/observer_calibration_and_eval.py:119: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  cs = pd.read_sql(f"""
+/root/botero-trade/backend/scripts/observer_calibration_and_eval.py:134: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz25 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type, price FROM engine.zigzag_points WHERE min_swing_pct=0.025 ORDER BY ticker, timestamp", conn)
+/root/botero-trade/backend/scripts/observer_calibration_and_eval.py:135: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz50 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type, price FROM engine.zigzag_points WHERE min_swing_pct=0.05 ORDER BY ticker, timestamp", conn)
+/root/botero-trade/backend/scripts/observer_calibration_and_eval.py:136: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  zz75 = pd.read_sql("SELECT ticker, timestamp::date as date, tp_type, price FROM engine.zigzag_points WHERE min_swing_pct=0.075 ORDER BY ticker, timestamp", conn)
+/root/botero-trade/backend/scripts/observer_calibration_and_eval.py:137: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  bars = pd.read_sql("SELECT ticker, time::date as date, close FROM market.ohlcv_bars WHERE timeframe='1d' ORDER BY ticker, time", conn)
+Loading data...
+  83,472 snapshots
+Building base dataframe with labels...
+  83,472 labeled bars
+  ACCUMULATE near trough: 39,854
+
+==================================================================================================================================
+  PHASE I: CALIBRATION SWEEP
+==================================================================================================================================
+
+==================================================================================================================================
+  I. CALIBRATION SWEEP — q_scale × r_scale × recovery_direction
+==================================================================================================================================
+
+  Phase 1: q × r sweep (default recovery direction)
+   q_scale  r_scale    AUC  %AFT_rec  %AFT_det   spread  N_rec  pct_rec
+     0.010    0.050 0.638    68.4%    48.8%  +19.6% 16,207   40.7% ★
+     0.010    0.100 0.630    67.7%    49.4%  +18.2% 16,100   40.4%
+     0.010    0.150 0.623    67.1%    49.9%  +17.3% 16,043   40.3%
+     0.010    0.250 0.612    66.3%    50.5%  +15.8% 15,978   40.1%
+     0.030    0.050 0.642    68.9%    48.5%  +20.4% 16,263   40.8% ★
+     0.030    0.100 0.640    68.6%    48.7%  +19.9% 16,245   40.8%
+     0.030    0.150 0.638    68.4%    48.8%  +19.6% 16,207   40.7%
+     0.030    0.250 0.632    68.0%    49.2%  +18.8% 16,144   40.5%
+     0.050    0.050 0.640    68.6%    48.6%  +20.0% 16,374   41.1%
+     0.050    0.100 0.642    68.8%    48.6%  +20.2% 16,247   40.8%
+     0.050    0.150 0.641    68.7%    48.6%  +20.1% 16,254   40.8%
+     0.050    0.250 0.638    68.4%    48.8%  +19.6% 16,207   40.7%
+     0.100    0.050 0.637    68.4%    48.6%  +19.8% 16,519   41.4%
+     0.100    0.100 0.640    68.6%    48.6%  +20.0% 16,374   41.1%
+     0.100    0.150 0.641    68.8%    48.5%  +20.3% 16,277   40.8%
+     0.100    0.250 0.641    68.7%    48.6%  +20.0% 16,249   40.8%
+
+  BEST q_scale=0.03, r_scale=0.05, AUC=0.642
+
+  Phase 2: Recovery direction sweep (q=0.03, r=0.05)
+  Direction                         AUC  %AFT_rec   spread  N_rec
+  default [1,1,1,1,-1]           0.642    68.9%  +20.4% 16,263 ★
+  σC-heavy [2,1,1,1,-1]          0.648    69.1%  +21.1% 16,665 ★
+  flow-heavy [1,2,1,1,-1]        0.651    69.3%  +21.9% 17,104 ★
+  RSI-heavy [1,1,1,2,-1]         0.645    68.6%  +20.5% 17,037
+  no-conj [1,1,1,1,0]            0.651    68.9%  +22.1% 18,045
+  equal [1,1,1,1,1]              0.645    68.7%  +23.3% 19,567
+
+  BEST direction: flow-heavy [1,2,1,1,-1], AUC=0.651
+  FINAL CALIBRATION: q=0.03, r=0.05, dir=flow-heavy [1,2,1,1,-1]
+
+Running final observer with calibrated params...
+
+==================================================================================================================================
+  PHASE II + III: FULL MODEL COMPARISON
+==================================================================================================================================
+
+==================================================================================================================================
+  II + III. FULL MODEL COMPARISON — Is Each Change a Net Gain?
+  ACCUMULATE bars within 15d of trough: 39,854
+==================================================================================================================================
+
+  Model                      N_signal  %select   %AFTER profit_med  Q25_pft  Q75_pft    AUC   vs_v2
+  v2_BASELINE                  39,854  100.0%   56.8%      +5.9%    +2.7%   +11.0% 0.500  +0.0% ~ FLAT
+  v3_accel                     28,647   71.9%   61.4%      +5.8%    +2.6%   +10.9% 0.567  +4.6% ★ WIN
+  v4_velocity                  23,968   60.1%   64.4%      +5.7%    +2.6%   +10.7% 0.593  +7.6% ★★ WIN
+  v4_vel+kfcon                 15,688   39.4%   67.8%      +5.6%    +2.4%   +10.6% 0.588 +11.0% ★★ WIN
+  v4+Observer_r>0              20,809   52.2%   67.8%      +5.7%    +2.6%   +10.6% 0.617 +11.0% ★★ WIN
+  v4+Observer_r>0.3            17,104   42.9%   69.3%      +5.7%    +2.6%   +10.7% 0.609 +12.5% ★★ WIN
+  v4+Observer+hookup           16,929   42.5%   68.9%      +5.7%    +2.5%   +10.6% 0.604 +12.1% ★★ WIN
+  FINAL_full                   20,809   52.2%   67.8%      +5.7%    +2.6%   +10.6% 0.617 +11.0% ★★ WIN
+  FINAL_high                   17,104   42.9%   69.3%      +5.7%    +2.6%   +10.7% 0.609 +12.5% ★★ WIN
+
+  ==========================================================================================
+  FALSE ALARM ANALYSIS — When signals fire BEFORE trough
+  ==========================================================================================
+  Model                      N_before   %before  avg_dist   max_dd
+  v2_BASELINE                  17,212    43.2%      6.7d    +0.3%
+  v3_accel                     11,054    38.6%      7.1d    +0.4%
+  v4_velocity                   8,528    35.6%      7.3d    +0.4%
+  v4_vel+kfcon                  5,046    32.2%      7.3d    +0.5%
+  v4+Observer_r>0               6,702    32.2%      7.2d    +0.5%
+  v4+Observer_r>0.3             5,252    30.7%      7.2d    +0.5%
+  v4+Observer+hookup            5,269    31.1%      7.4d    +0.5%
+  FINAL_full                    6,702    32.2%      7.2d    +0.5%
+  FINAL_high                    5,252    30.7%      7.2d    +0.5%
+
+  ==========================================================================================
+  PER P(BULL) LEVEL — Does the filter improve equally at all conviction levels?
+  ==========================================================================================
+
+  P(bull) = 65-75%:
+  Model                          N   %AFTER   profit
+  v2_BASELINE               14,307   60.4%    +6.2%
+  v3_accel                   9,594   67.1%    +6.1%
+  v4_velocity                8,127   70.0%    +6.0%
+  v4+Observer_r>0            7,487   72.5%    +6.1%
+  FINAL_high                 6,201   74.8%    +6.0%
+
+  P(bull) = 75-85%:
+  Model                          N   %AFTER   profit
+  v2_BASELINE               20,706   56.0%    +5.7%
+  v3_accel                  16,094   59.0%    +5.6%
+  v4_velocity               13,367   62.0%    +5.4%
+  v4+Observer_r>0           11,415   65.3%    +5.5%
+  FINAL_high                 9,354   66.2%    +5.5%
+
+  P(bull) = 85-100%:
+  Model                          N   %AFTER   profit
+  v2_BASELINE                4,841   49.6%    +6.1%
+  v3_accel                   2,959   56.1%    +6.1%
+  v4_velocity                2,474   58.9%    +6.0%
+  v4+Observer_r>0            1,907   64.3%    +5.9%
+  FINAL_high                 1,549   65.7%    +5.9%
+
+  ==========================================================================================
+  PER TICKER CONSISTENCY — How many tickers improve?
+  ==========================================================================================
+  v4+Observer_r>0: 17/17 better, 0/17 worse, 0/17 flat
+  FINAL_high: 17/17 better, 0/17 worse, 0/17 flat
+
+DONE

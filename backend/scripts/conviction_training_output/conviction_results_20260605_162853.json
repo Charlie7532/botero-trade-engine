@@ -1,0 +1,2318 @@
+{
+  "piso": [
+    {
+      "ticker": "AAPL",
+      "turn_type": "PISO",
+      "n_total": 8264,
+      "n_turns": 1009,
+      "base_rate": 0.1221,
+      "auc_train": 0.7739,
+      "auc_test": 0.9016,
+      "separation": 0.4331,
+      "median_prob_turns_oos": 0.7456,
+      "median_prob_noise_oos": 0.3124,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.075,
+          "recall": 1.0,
+          "n_fired": 2360
+        },
+        "P>0.20": {
+          "precision": 0.096,
+          "recall": 1.0,
+          "n_fired": 1840
+        },
+        "P>0.30": {
+          "precision": 0.127,
+          "recall": 0.983,
+          "n_fired": 1373
+        },
+        "P>0.40": {
+          "precision": 0.163,
+          "recall": 0.944,
+          "n_fired": 1024
+        },
+        "P>0.50": {
+          "precision": 0.225,
+          "recall": 0.893,
+          "n_fired": 701
+        },
+        "P>0.60": {
+          "precision": 0.284,
+          "recall": 0.791,
+          "n_fired": 493
+        },
+        "P>0.70": {
+          "precision": 0.39,
+          "recall": 0.65,
+          "n_fired": 295
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.1574,
+        "sigma_current": -0.479,
+        "sigma_wave": -0.7341,
+        "conj_wave_tide": -0.123,
+        "conj_current_tide": 0.0097,
+        "tension_tide": 0.2703,
+        "tension_current": 0.489,
+        "compression_ratio": 0.3345,
+        "geo_state_norm": 0.2117,
+        "geo_velocity_align": -0.0912,
+        "geo_accel_align": -0.0616,
+        "phase_sin": -0.0643,
+        "phase_cos": -0.1187
+      },
+      "n_train": 5784,
+      "n_test": 2480,
+      "n_turns_train": 832,
+      "n_turns_test": 177
+    },
+    {
+      "ticker": "AMZN",
+      "turn_type": "PISO",
+      "n_total": 4839,
+      "n_turns": 478,
+      "base_rate": 0.0988,
+      "auc_train": 0.8536,
+      "auc_test": 0.8257,
+      "separation": 0.4898,
+      "median_prob_turns_oos": 0.7646,
+      "median_prob_noise_oos": 0.2748,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.114,
+          "recall": 0.993,
+          "n_fired": 1202
+        },
+        "P>0.20": {
+          "precision": 0.143,
+          "recall": 0.971,
+          "n_fired": 938
+        },
+        "P>0.30": {
+          "precision": 0.17,
+          "recall": 0.92,
+          "n_fired": 746
+        },
+        "P>0.40": {
+          "precision": 0.202,
+          "recall": 0.877,
+          "n_fired": 599
+        },
+        "P>0.50": {
+          "precision": 0.244,
+          "recall": 0.841,
+          "n_fired": 476
+        },
+        "P>0.60": {
+          "precision": 0.255,
+          "recall": 0.696,
+          "n_fired": 377
+        },
+        "P>0.70": {
+          "precision": 0.263,
+          "recall": 0.543,
+          "n_fired": 285
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.4313,
+        "sigma_current": -1.2046,
+        "sigma_wave": -0.7413,
+        "conj_wave_tide": 0.472,
+        "conj_current_tide": -0.3463,
+        "tension_tide": 0.6347,
+        "tension_current": 0.6799,
+        "compression_ratio": 0.1913,
+        "geo_state_norm": 0.2908,
+        "geo_velocity_align": -0.0935,
+        "geo_accel_align": 0.1966,
+        "phase_sin": -0.0429,
+        "phase_cos": 0.0524
+      },
+      "n_train": 3387,
+      "n_test": 1452,
+      "n_turns_train": 340,
+      "n_turns_test": 138
+    },
+    {
+      "ticker": "COST",
+      "turn_type": "PISO",
+      "n_total": 4846,
+      "n_turns": 270,
+      "base_rate": 0.0557,
+      "auc_train": 0.9058,
+      "auc_test": 0.8241,
+      "separation": 0.5536,
+      "median_prob_turns_oos": 0.6631,
+      "median_prob_noise_oos": 0.1095,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.094,
+          "recall": 0.925,
+          "n_fired": 786
+        },
+        "P>0.20": {
+          "precision": 0.121,
+          "recall": 0.9,
+          "n_fired": 597
+        },
+        "P>0.30": {
+          "precision": 0.141,
+          "recall": 0.85,
+          "n_fired": 481
+        },
+        "P>0.40": {
+          "precision": 0.166,
+          "recall": 0.788,
+          "n_fired": 380
+        },
+        "P>0.50": {
+          "precision": 0.182,
+          "recall": 0.675,
+          "n_fired": 297
+        },
+        "P>0.60": {
+          "precision": 0.199,
+          "recall": 0.6,
+          "n_fired": 241
+        },
+        "P>0.70": {
+          "precision": 0.197,
+          "recall": 0.438,
+          "n_fired": 178
+        }
+      },
+      "coefficients": {
+        "sigma_tide": 0.0668,
+        "sigma_current": -1.2397,
+        "sigma_wave": -1.2047,
+        "conj_wave_tide": -0.3445,
+        "conj_current_tide": 0.2548,
+        "tension_tide": 0.1261,
+        "tension_current": 0.8148,
+        "compression_ratio": 0.4655,
+        "geo_state_norm": -0.174,
+        "geo_velocity_align": 0.7826,
+        "geo_accel_align": 0.0328,
+        "phase_sin": 0.0861,
+        "phase_cos": 0.1163
+      },
+      "n_train": 3392,
+      "n_test": 1454,
+      "n_turns_train": 190,
+      "n_turns_test": 80
+    },
+    {
+      "ticker": "HD",
+      "turn_type": "PISO",
+      "n_total": 4847,
+      "n_turns": 344,
+      "base_rate": 0.071,
+      "auc_train": 0.8897,
+      "auc_test": 0.8127,
+      "separation": 0.4576,
+      "median_prob_turns_oos": 0.6853,
+      "median_prob_noise_oos": 0.2277,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.091,
+          "recall": 0.969,
+          "n_fired": 1040
+        },
+        "P>0.20": {
+          "precision": 0.114,
+          "recall": 0.949,
+          "n_fired": 815
+        },
+        "P>0.30": {
+          "precision": 0.137,
+          "recall": 0.908,
+          "n_fired": 651
+        },
+        "P>0.40": {
+          "precision": 0.158,
+          "recall": 0.816,
+          "n_fired": 506
+        },
+        "P>0.50": {
+          "precision": 0.175,
+          "recall": 0.755,
+          "n_fired": 422
+        },
+        "P>0.60": {
+          "precision": 0.184,
+          "recall": 0.612,
+          "n_fired": 326
+        },
+        "P>0.70": {
+          "precision": 0.21,
+          "recall": 0.5,
+          "n_fired": 233
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.678,
+        "sigma_current": -0.9225,
+        "sigma_wave": -0.6916,
+        "conj_wave_tide": 0.1998,
+        "conj_current_tide": -0.0875,
+        "tension_tide": 0.7214,
+        "tension_current": -0.0275,
+        "compression_ratio": 0.2224,
+        "geo_state_norm": 0.2593,
+        "geo_velocity_align": 0.8853,
+        "geo_accel_align": -0.0298,
+        "phase_sin": 0.2689,
+        "phase_cos": 0.0014
+      },
+      "n_train": 3392,
+      "n_test": 1455,
+      "n_turns_train": 246,
+      "n_turns_test": 98
+    },
+    {
+      "ticker": "HON",
+      "turn_type": "PISO",
+      "n_total": 4848,
+      "n_turns": 303,
+      "base_rate": 0.0625,
+      "auc_train": 0.8931,
+      "auc_test": 0.8437,
+      "separation": 0.5611,
+      "median_prob_turns_oos": 0.8032,
+      "median_prob_noise_oos": 0.2421,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.062,
+          "recall": 0.973,
+          "n_fired": 1160
+        },
+        "P>0.20": {
+          "precision": 0.083,
+          "recall": 0.959,
+          "n_fired": 857
+        },
+        "P>0.30": {
+          "precision": 0.101,
+          "recall": 0.919,
+          "n_fired": 673
+        },
+        "P>0.40": {
+          "precision": 0.126,
+          "recall": 0.892,
+          "n_fired": 523
+        },
+        "P>0.50": {
+          "precision": 0.15,
+          "recall": 0.865,
+          "n_fired": 426
+        },
+        "P>0.60": {
+          "precision": 0.168,
+          "recall": 0.757,
+          "n_fired": 334
+        },
+        "P>0.70": {
+          "precision": 0.195,
+          "recall": 0.689,
+          "n_fired": 261
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.8589,
+        "sigma_current": -1.0725,
+        "sigma_wave": -0.5805,
+        "conj_wave_tide": 0.3516,
+        "conj_current_tide": -0.4705,
+        "tension_tide": 1.0123,
+        "tension_current": 0.544,
+        "compression_ratio": 0.0918,
+        "geo_state_norm": 0.2992,
+        "geo_velocity_align": -0.5991,
+        "geo_accel_align": 0.045,
+        "phase_sin": -0.3385,
+        "phase_cos": -0.0828
+      },
+      "n_train": 3393,
+      "n_test": 1455,
+      "n_turns_train": 229,
+      "n_turns_test": 74
+    },
+    {
+      "ticker": "IBM",
+      "turn_type": "PISO",
+      "n_total": 4847,
+      "n_turns": 319,
+      "base_rate": 0.0658,
+      "auc_train": 0.8826,
+      "auc_test": 0.8096,
+      "separation": 0.4978,
+      "median_prob_turns_oos": 0.6664,
+      "median_prob_noise_oos": 0.1686,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.103,
+          "recall": 0.913,
+          "n_fired": 917
+        },
+        "P>0.20": {
+          "precision": 0.124,
+          "recall": 0.864,
+          "n_fired": 716
+        },
+        "P>0.30": {
+          "precision": 0.151,
+          "recall": 0.825,
+          "n_fired": 563
+        },
+        "P>0.40": {
+          "precision": 0.182,
+          "recall": 0.767,
+          "n_fired": 435
+        },
+        "P>0.50": {
+          "precision": 0.232,
+          "recall": 0.738,
+          "n_fired": 328
+        },
+        "P>0.60": {
+          "precision": 0.259,
+          "recall": 0.602,
+          "n_fired": 239
+        },
+        "P>0.70": {
+          "precision": 0.277,
+          "recall": 0.417,
+          "n_fired": 155
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.7735,
+        "sigma_current": -1.1708,
+        "sigma_wave": -0.7679,
+        "conj_wave_tide": 0.1535,
+        "conj_current_tide": -0.5176,
+        "tension_tide": 0.7237,
+        "tension_current": 0.4462,
+        "compression_ratio": 0.2762,
+        "geo_state_norm": -0.1342,
+        "geo_velocity_align": -0.6352,
+        "geo_accel_align": -0.1932,
+        "phase_sin": -0.536,
+        "phase_cos": -0.1779
+      },
+      "n_train": 3392,
+      "n_test": 1455,
+      "n_turns_train": 216,
+      "n_turns_test": 103
+    },
+    {
+      "ticker": "JNJ",
+      "turn_type": "PISO",
+      "n_total": 4838,
+      "n_turns": 194,
+      "base_rate": 0.0401,
+      "auc_train": 0.9232,
+      "auc_test": 0.8542,
+      "separation": 0.6621,
+      "median_prob_turns_oos": 0.7464,
+      "median_prob_noise_oos": 0.0842,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.074,
+          "recall": 0.964,
+          "n_fired": 730
+        },
+        "P>0.20": {
+          "precision": 0.085,
+          "recall": 0.911,
+          "n_fired": 603
+        },
+        "P>0.30": {
+          "precision": 0.101,
+          "recall": 0.911,
+          "n_fired": 507
+        },
+        "P>0.40": {
+          "precision": 0.114,
+          "recall": 0.839,
+          "n_fired": 414
+        },
+        "P>0.50": {
+          "precision": 0.129,
+          "recall": 0.804,
+          "n_fired": 348
+        },
+        "P>0.60": {
+          "precision": 0.138,
+          "recall": 0.732,
+          "n_fired": 298
+        },
+        "P>0.70": {
+          "precision": 0.136,
+          "recall": 0.554,
+          "n_fired": 228
+        }
+      },
+      "coefficients": {
+        "sigma_tide": 0.191,
+        "sigma_current": -1.6464,
+        "sigma_wave": -0.6841,
+        "conj_wave_tide": -0.2903,
+        "conj_current_tide": -1.1515,
+        "tension_tide": -0.0439,
+        "tension_current": 0.4634,
+        "compression_ratio": -0.1017,
+        "geo_state_norm": -0.1288,
+        "geo_velocity_align": 0.1731,
+        "geo_accel_align": -0.004,
+        "phase_sin": -0.4213,
+        "phase_cos": -0.453
+      },
+      "n_train": 3386,
+      "n_test": 1452,
+      "n_turns_train": 138,
+      "n_turns_test": 56
+    },
+    {
+      "ticker": "JPM",
+      "turn_type": "PISO",
+      "n_total": 4844,
+      "n_turns": 483,
+      "base_rate": 0.0997,
+      "auc_train": 0.8411,
+      "auc_test": 0.8076,
+      "separation": 0.4334,
+      "median_prob_turns_oos": 0.6119,
+      "median_prob_noise_oos": 0.1786,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.106,
+          "recall": 0.962,
+          "n_fired": 954
+        },
+        "P>0.20": {
+          "precision": 0.13,
+          "recall": 0.895,
+          "n_fired": 725
+        },
+        "P>0.30": {
+          "precision": 0.149,
+          "recall": 0.81,
+          "n_fired": 571
+        },
+        "P>0.40": {
+          "precision": 0.156,
+          "recall": 0.686,
+          "n_fired": 461
+        },
+        "P>0.50": {
+          "precision": 0.201,
+          "recall": 0.648,
+          "n_fired": 339
+        },
+        "P>0.60": {
+          "precision": 0.215,
+          "recall": 0.505,
+          "n_fired": 247
+        },
+        "P>0.70": {
+          "precision": 0.283,
+          "recall": 0.448,
+          "n_fired": 166
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.9233,
+        "sigma_current": -0.9163,
+        "sigma_wave": -0.0994,
+        "conj_wave_tide": 0.3962,
+        "conj_current_tide": -0.1028,
+        "tension_tide": 0.7146,
+        "tension_current": 0.8133,
+        "compression_ratio": 0.0725,
+        "geo_state_norm": 0.466,
+        "geo_velocity_align": -0.6225,
+        "geo_accel_align": -0.174,
+        "phase_sin": -0.2815,
+        "phase_cos": -0.527
+      },
+      "n_train": 3390,
+      "n_test": 1454,
+      "n_turns_train": 378,
+      "n_turns_test": 105
+    },
+    {
+      "ticker": "MCD",
+      "turn_type": "PISO",
+      "n_total": 4846,
+      "n_turns": 210,
+      "base_rate": 0.0433,
+      "auc_train": 0.9072,
+      "auc_test": 0.8793,
+      "separation": 0.7152,
+      "median_prob_turns_oos": 0.842,
+      "median_prob_noise_oos": 0.1268,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.068,
+          "recall": 0.982,
+          "n_fired": 799
+        },
+        "P>0.20": {
+          "precision": 0.083,
+          "recall": 0.964,
+          "n_fired": 641
+        },
+        "P>0.30": {
+          "precision": 0.094,
+          "recall": 0.945,
+          "n_fired": 551
+        },
+        "P>0.40": {
+          "precision": 0.112,
+          "recall": 0.945,
+          "n_fired": 463
+        },
+        "P>0.50": {
+          "precision": 0.124,
+          "recall": 0.909,
+          "n_fired": 402
+        },
+        "P>0.60": {
+          "precision": 0.139,
+          "recall": 0.836,
+          "n_fired": 331
+        },
+        "P>0.70": {
+          "precision": 0.157,
+          "recall": 0.745,
+          "n_fired": 261
+        }
+      },
+      "coefficients": {
+        "sigma_tide": 0.2646,
+        "sigma_current": -1.7997,
+        "sigma_wave": -0.521,
+        "conj_wave_tide": -0.2304,
+        "conj_current_tide": -1.1572,
+        "tension_tide": 0.5951,
+        "tension_current": 0.1343,
+        "compression_ratio": -0.1155,
+        "geo_state_norm": -0.1004,
+        "geo_velocity_align": 0.3397,
+        "geo_accel_align": -0.0254,
+        "phase_sin": -0.4017,
+        "phase_cos": 0.0731
+      },
+      "n_train": 3392,
+      "n_test": 1454,
+      "n_turns_train": 155,
+      "n_turns_test": 55
+    },
+    {
+      "ticker": "MRK",
+      "turn_type": "PISO",
+      "n_total": 4846,
+      "n_turns": 326,
+      "base_rate": 0.0673,
+      "auc_train": 0.8717,
+      "auc_test": 0.818,
+      "separation": 0.4376,
+      "median_prob_turns_oos": 0.7111,
+      "median_prob_noise_oos": 0.2735,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.087,
+          "recall": 1.0,
+          "n_fired": 1124
+        },
+        "P>0.20": {
+          "precision": 0.109,
+          "recall": 0.99,
+          "n_fired": 887
+        },
+        "P>0.30": {
+          "precision": 0.125,
+          "recall": 0.939,
+          "n_fired": 736
+        },
+        "P>0.40": {
+          "precision": 0.138,
+          "recall": 0.827,
+          "n_fired": 589
+        },
+        "P>0.50": {
+          "precision": 0.156,
+          "recall": 0.714,
+          "n_fired": 449
+        },
+        "P>0.60": {
+          "precision": 0.189,
+          "recall": 0.633,
+          "n_fired": 328
+        },
+        "P>0.70": {
+          "precision": 0.221,
+          "recall": 0.531,
+          "n_fired": 235
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.1148,
+        "sigma_current": -1.5965,
+        "sigma_wave": -0.6718,
+        "conj_wave_tide": -0.0229,
+        "conj_current_tide": -0.1709,
+        "tension_tide": 0.4848,
+        "tension_current": 0.678,
+        "compression_ratio": -0.0587,
+        "geo_state_norm": 0.0096,
+        "geo_velocity_align": 0.4109,
+        "geo_accel_align": 0.075,
+        "phase_sin": 0.4911,
+        "phase_cos": 0.1109
+      },
+      "n_train": 3392,
+      "n_test": 1454,
+      "n_turns_train": 228,
+      "n_turns_test": 98
+    },
+    {
+      "ticker": "MSFT",
+      "turn_type": "PISO",
+      "n_total": 4831,
+      "n_turns": 365,
+      "base_rate": 0.0756,
+      "auc_train": 0.8754,
+      "auc_test": 0.8475,
+      "separation": 0.5601,
+      "median_prob_turns_oos": 0.7651,
+      "median_prob_noise_oos": 0.205,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.101,
+          "recall": 0.973,
+          "n_fired": 1079
+        },
+        "P>0.20": {
+          "precision": 0.137,
+          "recall": 0.955,
+          "n_fired": 782
+        },
+        "P>0.30": {
+          "precision": 0.166,
+          "recall": 0.893,
+          "n_fired": 602
+        },
+        "P>0.40": {
+          "precision": 0.193,
+          "recall": 0.839,
+          "n_fired": 488
+        },
+        "P>0.50": {
+          "precision": 0.216,
+          "recall": 0.768,
+          "n_fired": 399
+        },
+        "P>0.60": {
+          "precision": 0.257,
+          "recall": 0.732,
+          "n_fired": 319
+        },
+        "P>0.70": {
+          "precision": 0.276,
+          "recall": 0.571,
+          "n_fired": 232
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.3498,
+        "sigma_current": -1.2437,
+        "sigma_wave": -0.5211,
+        "conj_wave_tide": -0.1386,
+        "conj_current_tide": -0.1054,
+        "tension_tide": 1.1143,
+        "tension_current": 0.554,
+        "compression_ratio": 0.3945,
+        "geo_state_norm": 0.357,
+        "geo_velocity_align": 0.5775,
+        "geo_accel_align": 0.0235,
+        "phase_sin": 0.5005,
+        "phase_cos": 0.5314
+      },
+      "n_train": 3381,
+      "n_test": 1450,
+      "n_turns_train": 253,
+      "n_turns_test": 112
+    },
+    {
+      "ticker": "PEP",
+      "turn_type": "PISO",
+      "n_total": 5325,
+      "n_turns": 210,
+      "base_rate": 0.0394,
+      "auc_train": 0.9266,
+      "auc_test": 0.8561,
+      "separation": 0.7188,
+      "median_prob_turns_oos": 0.8402,
+      "median_prob_noise_oos": 0.1214,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.087,
+          "recall": 0.928,
+          "n_fired": 886
+        },
+        "P>0.20": {
+          "precision": 0.104,
+          "recall": 0.892,
+          "n_fired": 712
+        },
+        "P>0.30": {
+          "precision": 0.121,
+          "recall": 0.88,
+          "n_fired": 603
+        },
+        "P>0.40": {
+          "precision": 0.149,
+          "recall": 0.867,
+          "n_fired": 484
+        },
+        "P>0.50": {
+          "precision": 0.173,
+          "recall": 0.843,
+          "n_fired": 405
+        },
+        "P>0.60": {
+          "precision": 0.192,
+          "recall": 0.795,
+          "n_fired": 343
+        },
+        "P>0.70": {
+          "precision": 0.221,
+          "recall": 0.723,
+          "n_fired": 271
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.4196,
+        "sigma_current": -1.4599,
+        "sigma_wave": -0.5778,
+        "conj_wave_tide": -0.3191,
+        "conj_current_tide": 0.0737,
+        "tension_tide": 0.3734,
+        "tension_current": 1.4086,
+        "compression_ratio": -0.1725,
+        "geo_state_norm": 0.2213,
+        "geo_velocity_align": -0.0577,
+        "geo_accel_align": 0.106,
+        "phase_sin": -0.5005,
+        "phase_cos": -0.155
+      },
+      "n_train": 3727,
+      "n_test": 1598,
+      "n_turns_train": 127,
+      "n_turns_test": 83
+    },
+    {
+      "ticker": "PG",
+      "turn_type": "PISO",
+      "n_total": 4839,
+      "n_turns": 203,
+      "base_rate": 0.042,
+      "auc_train": 0.8958,
+      "auc_test": 0.8635,
+      "separation": 0.5748,
+      "median_prob_turns_oos": 0.7746,
+      "median_prob_noise_oos": 0.1998,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.057,
+          "recall": 0.951,
+          "n_fired": 1017
+        },
+        "P>0.20": {
+          "precision": 0.077,
+          "recall": 0.951,
+          "n_fired": 753
+        },
+        "P>0.30": {
+          "precision": 0.093,
+          "recall": 0.951,
+          "n_fired": 624
+        },
+        "P>0.40": {
+          "precision": 0.105,
+          "recall": 0.869,
+          "n_fired": 505
+        },
+        "P>0.50": {
+          "precision": 0.131,
+          "recall": 0.836,
+          "n_fired": 388
+        },
+        "P>0.60": {
+          "precision": 0.167,
+          "recall": 0.77,
+          "n_fired": 282
+        },
+        "P>0.70": {
+          "precision": 0.212,
+          "recall": 0.705,
+          "n_fired": 203
+        }
+      },
+      "coefficients": {
+        "sigma_tide": 0.5942,
+        "sigma_current": -2.0369,
+        "sigma_wave": -0.3164,
+        "conj_wave_tide": -0.1036,
+        "conj_current_tide": -0.6037,
+        "tension_tide": 0.3304,
+        "tension_current": 1.1334,
+        "compression_ratio": 0.2504,
+        "geo_state_norm": 0.1564,
+        "geo_velocity_align": -0.052,
+        "geo_accel_align": 0.2209,
+        "phase_sin": -0.1609,
+        "phase_cos": -0.0911
+      },
+      "n_train": 3387,
+      "n_test": 1452,
+      "n_turns_train": 142,
+      "n_turns_test": 61
+    },
+    {
+      "ticker": "QQQ",
+      "turn_type": "PISO",
+      "n_total": 6595,
+      "n_turns": 443,
+      "base_rate": 0.0672,
+      "auc_train": 0.9094,
+      "auc_test": 0.9298,
+      "separation": 0.7985,
+      "median_prob_turns_oos": 0.8625,
+      "median_prob_noise_oos": 0.064,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.13,
+          "recall": 1.0,
+          "n_fired": 887
+        },
+        "P>0.20": {
+          "precision": 0.174,
+          "recall": 0.991,
+          "n_fired": 657
+        },
+        "P>0.30": {
+          "precision": 0.2,
+          "recall": 0.965,
+          "n_fired": 554
+        },
+        "P>0.40": {
+          "precision": 0.236,
+          "recall": 0.913,
+          "n_fired": 444
+        },
+        "P>0.50": {
+          "precision": 0.259,
+          "recall": 0.835,
+          "n_fired": 371
+        },
+        "P>0.60": {
+          "precision": 0.287,
+          "recall": 0.748,
+          "n_fired": 300
+        },
+        "P>0.70": {
+          "precision": 0.328,
+          "recall": 0.661,
+          "n_fired": 232
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.8028,
+        "sigma_current": -1.4182,
+        "sigma_wave": -0.6977,
+        "conj_wave_tide": 0.1342,
+        "conj_current_tide": -0.3289,
+        "tension_tide": 1.2466,
+        "tension_current": 0.8017,
+        "compression_ratio": 0.1827,
+        "geo_state_norm": 0.2142,
+        "geo_velocity_align": -0.4316,
+        "geo_accel_align": 0.0067,
+        "phase_sin": -0.5312,
+        "phase_cos": -0.0123
+      },
+      "n_train": 4616,
+      "n_test": 1979,
+      "n_turns_train": 328,
+      "n_turns_test": 115
+    },
+    {
+      "ticker": "SPY",
+      "turn_type": "PISO",
+      "n_total": 8112,
+      "n_turns": 343,
+      "base_rate": 0.0423,
+      "auc_train": 0.9174,
+      "auc_test": 0.9474,
+      "separation": 0.7963,
+      "median_prob_turns_oos": 0.8555,
+      "median_prob_noise_oos": 0.0593,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.087,
+          "recall": 1.0,
+          "n_fired": 1046
+        },
+        "P>0.20": {
+          "precision": 0.119,
+          "recall": 0.989,
+          "n_fired": 756
+        },
+        "P>0.30": {
+          "precision": 0.149,
+          "recall": 0.978,
+          "n_fired": 596
+        },
+        "P>0.40": {
+          "precision": 0.174,
+          "recall": 0.956,
+          "n_fired": 500
+        },
+        "P>0.50": {
+          "precision": 0.204,
+          "recall": 0.901,
+          "n_fired": 401
+        },
+        "P>0.60": {
+          "precision": 0.243,
+          "recall": 0.835,
+          "n_fired": 313
+        },
+        "P>0.70": {
+          "precision": 0.311,
+          "recall": 0.802,
+          "n_fired": 235
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.3001,
+        "sigma_current": -1.5892,
+        "sigma_wave": -0.6371,
+        "conj_wave_tide": 0.2051,
+        "conj_current_tide": -0.2725,
+        "tension_tide": 0.5906,
+        "tension_current": 1.249,
+        "compression_ratio": -0.0123,
+        "geo_state_norm": 0.348,
+        "geo_velocity_align": -0.8919,
+        "geo_accel_align": -0.1916,
+        "phase_sin": -1.0696,
+        "phase_cos": -0.2694
+      },
+      "n_train": 5678,
+      "n_test": 2434,
+      "n_turns_train": 252,
+      "n_turns_test": 91
+    },
+    {
+      "ticker": "WMT",
+      "turn_type": "PISO",
+      "n_total": 4838,
+      "n_turns": 251,
+      "base_rate": 0.0519,
+      "auc_train": 0.8753,
+      "auc_test": 0.8472,
+      "separation": 0.5841,
+      "median_prob_turns_oos": 0.7898,
+      "median_prob_noise_oos": 0.2057,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.073,
+          "recall": 0.963,
+          "n_fired": 1068
+        },
+        "P>0.20": {
+          "precision": 0.096,
+          "recall": 0.914,
+          "n_fired": 772
+        },
+        "P>0.30": {
+          "precision": 0.127,
+          "recall": 0.889,
+          "n_fired": 569
+        },
+        "P>0.40": {
+          "precision": 0.163,
+          "recall": 0.864,
+          "n_fired": 430
+        },
+        "P>0.50": {
+          "precision": 0.187,
+          "recall": 0.753,
+          "n_fired": 327
+        },
+        "P>0.60": {
+          "precision": 0.201,
+          "recall": 0.642,
+          "n_fired": 259
+        },
+        "P>0.70": {
+          "precision": 0.228,
+          "recall": 0.531,
+          "n_fired": 189
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.2006,
+        "sigma_current": -1.1604,
+        "sigma_wave": -0.5627,
+        "conj_wave_tide": -0.1716,
+        "conj_current_tide": -0.1603,
+        "tension_tide": 1.1367,
+        "tension_current": 0.5919,
+        "compression_ratio": 0.6706,
+        "geo_state_norm": 0.2505,
+        "geo_velocity_align": -0.2119,
+        "geo_accel_align": 0.1818,
+        "phase_sin": -0.2313,
+        "phase_cos": 0.6559
+      },
+      "n_train": 3386,
+      "n_test": 1452,
+      "n_turns_train": 170,
+      "n_turns_test": 81
+    },
+    {
+      "ticker": "XOM",
+      "turn_type": "PISO",
+      "n_total": 4847,
+      "n_turns": 352,
+      "base_rate": 0.0726,
+      "auc_train": 0.8634,
+      "auc_test": 0.7902,
+      "separation": 0.3552,
+      "median_prob_turns_oos": 0.483,
+      "median_prob_noise_oos": 0.1277,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.133,
+          "recall": 0.899,
+          "n_fired": 874
+        },
+        "P>0.20": {
+          "precision": 0.177,
+          "recall": 0.806,
+          "n_fired": 586
+        },
+        "P>0.30": {
+          "precision": 0.219,
+          "recall": 0.713,
+          "n_fired": 421
+        },
+        "P>0.40": {
+          "precision": 0.26,
+          "recall": 0.597,
+          "n_fired": 296
+        },
+        "P>0.50": {
+          "precision": 0.303,
+          "recall": 0.473,
+          "n_fired": 201
+        },
+        "P>0.60": {
+          "precision": 0.338,
+          "recall": 0.364,
+          "n_fired": 139
+        },
+        "P>0.70": {
+          "precision": 0.409,
+          "recall": 0.279,
+          "n_fired": 88
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -1.0789,
+        "sigma_current": -0.2147,
+        "sigma_wave": -0.6258,
+        "conj_wave_tide": 0.3235,
+        "conj_current_tide": -0.2989,
+        "tension_tide": 0.5469,
+        "tension_current": -0.4387,
+        "compression_ratio": 0.3385,
+        "geo_state_norm": 0.0377,
+        "geo_velocity_align": 0.5683,
+        "geo_accel_align": 0.1369,
+        "phase_sin": -0.251,
+        "phase_cos": 0.0283
+      },
+      "n_train": 3392,
+      "n_test": 1455,
+      "n_turns_train": 223,
+      "n_turns_test": 129
+    }
+  ],
+  "techo": [
+    {
+      "ticker": "AAPL",
+      "turn_type": "TECHO",
+      "n_total": 8264,
+      "n_turns": 1000,
+      "base_rate": 0.121,
+      "auc_train": 0.7038,
+      "auc_test": 0.6993,
+      "separation": 0.1246,
+      "median_prob_turns_oos": 0.5193,
+      "median_prob_noise_oos": 0.3947,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.072,
+          "recall": 1.0,
+          "n_fired": 2479
+        },
+        "P>0.20": {
+          "precision": 0.074,
+          "recall": 1.0,
+          "n_fired": 2390
+        },
+        "P>0.30": {
+          "precision": 0.09,
+          "recall": 0.955,
+          "n_fired": 1885
+        },
+        "P>0.40": {
+          "precision": 0.113,
+          "recall": 0.803,
+          "n_fired": 1264
+        },
+        "P>0.50": {
+          "precision": 0.12,
+          "recall": 0.539,
+          "n_fired": 797
+        },
+        "P>0.60": {
+          "precision": 0.131,
+          "recall": 0.331,
+          "n_fired": 450
+        },
+        "P>0.70": {
+          "precision": 0.152,
+          "recall": 0.14,
+          "n_fired": 165
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.2277,
+        "sigma_current": 0.0751,
+        "sigma_wave": 0.6954,
+        "conj_wave_tide": -0.0909,
+        "conj_current_tide": -0.0591,
+        "tension_tide": 0.3633,
+        "tension_current": -0.1832,
+        "compression_ratio": 0.261,
+        "geo_state_norm": 0.143,
+        "geo_velocity_align": -0.1832,
+        "geo_accel_align": -0.0859,
+        "phase_sin": 0.0171,
+        "phase_cos": -0.1529
+      },
+      "n_train": 5784,
+      "n_test": 2480,
+      "n_turns_train": 822,
+      "n_turns_test": 178
+    },
+    {
+      "ticker": "AMZN",
+      "turn_type": "TECHO",
+      "n_total": 4839,
+      "n_turns": 475,
+      "base_rate": 0.0982,
+      "auc_train": 0.692,
+      "auc_test": 0.7319,
+      "separation": 0.1865,
+      "median_prob_turns_oos": 0.6252,
+      "median_prob_noise_oos": 0.4387,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.098,
+          "recall": 1.0,
+          "n_fired": 1452
+        },
+        "P>0.20": {
+          "precision": 0.098,
+          "recall": 1.0,
+          "n_fired": 1444
+        },
+        "P>0.30": {
+          "precision": 0.109,
+          "recall": 0.965,
+          "n_fired": 1257
+        },
+        "P>0.40": {
+          "precision": 0.139,
+          "recall": 0.873,
+          "n_fired": 894
+        },
+        "P>0.50": {
+          "precision": 0.163,
+          "recall": 0.69,
+          "n_fired": 603
+        },
+        "P>0.60": {
+          "precision": 0.211,
+          "recall": 0.549,
+          "n_fired": 370
+        },
+        "P>0.70": {
+          "precision": 0.274,
+          "recall": 0.345,
+          "n_fired": 179
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.4682,
+        "sigma_current": 0.4241,
+        "sigma_wave": 0.4474,
+        "conj_wave_tide": -0.1021,
+        "conj_current_tide": 0.1075,
+        "tension_tide": 0.2843,
+        "tension_current": -0.489,
+        "compression_ratio": 0.1621,
+        "geo_state_norm": 0.2642,
+        "geo_velocity_align": -0.0712,
+        "geo_accel_align": -0.0414,
+        "phase_sin": -0.1893,
+        "phase_cos": -0.224
+      },
+      "n_train": 3387,
+      "n_test": 1452,
+      "n_turns_train": 333,
+      "n_turns_test": 142
+    },
+    {
+      "ticker": "COST",
+      "turn_type": "TECHO",
+      "n_total": 4846,
+      "n_turns": 269,
+      "base_rate": 0.0555,
+      "auc_train": 0.7796,
+      "auc_test": 0.7512,
+      "separation": 0.2293,
+      "median_prob_turns_oos": 0.5863,
+      "median_prob_noise_oos": 0.357,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.056,
+          "recall": 1.0,
+          "n_fired": 1440
+        },
+        "P>0.20": {
+          "precision": 0.065,
+          "recall": 0.988,
+          "n_fired": 1232
+        },
+        "P>0.30": {
+          "precision": 0.079,
+          "recall": 0.889,
+          "n_fired": 912
+        },
+        "P>0.40": {
+          "precision": 0.108,
+          "recall": 0.852,
+          "n_fired": 641
+        },
+        "P>0.50": {
+          "precision": 0.132,
+          "recall": 0.716,
+          "n_fired": 441
+        },
+        "P>0.60": {
+          "precision": 0.128,
+          "recall": 0.457,
+          "n_fired": 290
+        },
+        "P>0.70": {
+          "precision": 0.127,
+          "recall": 0.296,
+          "n_fired": 189
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.1988,
+        "sigma_current": 0.5289,
+        "sigma_wave": 0.544,
+        "conj_wave_tide": -0.3521,
+        "conj_current_tide": 0.1513,
+        "tension_tide": 0.3387,
+        "tension_current": -0.2721,
+        "compression_ratio": 0.4734,
+        "geo_state_norm": 0.3867,
+        "geo_velocity_align": 0.0441,
+        "geo_accel_align": 0.0225,
+        "phase_sin": 0.5143,
+        "phase_cos": -0.0505
+      },
+      "n_train": 3392,
+      "n_test": 1454,
+      "n_turns_train": 188,
+      "n_turns_test": 81
+    },
+    {
+      "ticker": "HD",
+      "turn_type": "TECHO",
+      "n_total": 4847,
+      "n_turns": 350,
+      "base_rate": 0.0722,
+      "auc_train": 0.7729,
+      "auc_test": 0.666,
+      "separation": 0.1556,
+      "median_prob_turns_oos": 0.5055,
+      "median_prob_noise_oos": 0.3499,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.075,
+          "recall": 1.0,
+          "n_fired": 1393
+        },
+        "P>0.20": {
+          "precision": 0.086,
+          "recall": 0.943,
+          "n_fired": 1145
+        },
+        "P>0.30": {
+          "precision": 0.099,
+          "recall": 0.819,
+          "n_fired": 868
+        },
+        "P>0.40": {
+          "precision": 0.114,
+          "recall": 0.714,
+          "n_fired": 657
+        },
+        "P>0.50": {
+          "precision": 0.117,
+          "recall": 0.505,
+          "n_fired": 452
+        },
+        "P>0.60": {
+          "precision": 0.123,
+          "recall": 0.324,
+          "n_fired": 277
+        },
+        "P>0.70": {
+          "precision": 0.119,
+          "recall": 0.162,
+          "n_fired": 143
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.6174,
+        "sigma_current": 0.3906,
+        "sigma_wave": 0.7385,
+        "conj_wave_tide": -0.1157,
+        "conj_current_tide": 0.3009,
+        "tension_tide": 0.8228,
+        "tension_current": -0.2207,
+        "compression_ratio": 0.3666,
+        "geo_state_norm": 0.1312,
+        "geo_velocity_align": -0.7296,
+        "geo_accel_align": -0.0884,
+        "phase_sin": -0.4269,
+        "phase_cos": -0.2529
+      },
+      "n_train": 3392,
+      "n_test": 1455,
+      "n_turns_train": 245,
+      "n_turns_test": 105
+    },
+    {
+      "ticker": "HON",
+      "turn_type": "TECHO",
+      "n_total": 4848,
+      "n_turns": 307,
+      "base_rate": 0.0633,
+      "auc_train": 0.7621,
+      "auc_test": 0.6706,
+      "separation": 0.2171,
+      "median_prob_turns_oos": 0.5831,
+      "median_prob_noise_oos": 0.3659,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.054,
+          "recall": 1.0,
+          "n_fired": 1439
+        },
+        "P>0.20": {
+          "precision": 0.061,
+          "recall": 0.974,
+          "n_fired": 1238
+        },
+        "P>0.30": {
+          "precision": 0.067,
+          "recall": 0.805,
+          "n_fired": 924
+        },
+        "P>0.40": {
+          "precision": 0.077,
+          "recall": 0.662,
+          "n_fired": 664
+        },
+        "P>0.50": {
+          "precision": 0.09,
+          "recall": 0.584,
+          "n_fired": 500
+        },
+        "P>0.60": {
+          "precision": 0.103,
+          "recall": 0.468,
+          "n_fired": 349
+        },
+        "P>0.70": {
+          "precision": 0.119,
+          "recall": 0.351,
+          "n_fired": 226
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.6825,
+        "sigma_current": 1.1552,
+        "sigma_wave": 0.3835,
+        "conj_wave_tide": -0.0986,
+        "conj_current_tide": -0.1318,
+        "tension_tide": 0.6441,
+        "tension_current": -1.3279,
+        "compression_ratio": 0.0721,
+        "geo_state_norm": 0.2517,
+        "geo_velocity_align": 0.8172,
+        "geo_accel_align": 0.281,
+        "phase_sin": 0.2149,
+        "phase_cos": 0.1446
+      },
+      "n_train": 3393,
+      "n_test": 1455,
+      "n_turns_train": 230,
+      "n_turns_test": 77
+    },
+    {
+      "ticker": "IBM",
+      "turn_type": "TECHO",
+      "n_total": 4847,
+      "n_turns": 321,
+      "base_rate": 0.0662,
+      "auc_train": 0.7874,
+      "auc_test": 0.7417,
+      "separation": 0.2318,
+      "median_prob_turns_oos": 0.5394,
+      "median_prob_noise_oos": 0.3076,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.078,
+          "recall": 1.0,
+          "n_fired": 1351
+        },
+        "P>0.20": {
+          "precision": 0.095,
+          "recall": 0.962,
+          "n_fired": 1061
+        },
+        "P>0.30": {
+          "precision": 0.119,
+          "recall": 0.886,
+          "n_fired": 783
+        },
+        "P>0.40": {
+          "precision": 0.136,
+          "recall": 0.714,
+          "n_fired": 553
+        },
+        "P>0.50": {
+          "precision": 0.144,
+          "recall": 0.533,
+          "n_fired": 389
+        },
+        "P>0.60": {
+          "precision": 0.15,
+          "recall": 0.39,
+          "n_fired": 274
+        },
+        "P>0.70": {
+          "precision": 0.146,
+          "recall": 0.21,
+          "n_fired": 151
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.5885,
+        "sigma_current": 0.9641,
+        "sigma_wave": 0.8054,
+        "conj_wave_tide": -0.0163,
+        "conj_current_tide": -0.3239,
+        "tension_tide": 0.2623,
+        "tension_current": -1.3609,
+        "compression_ratio": 0.3093,
+        "geo_state_norm": 0.308,
+        "geo_velocity_align": -0.0865,
+        "geo_accel_align": -0.0714,
+        "phase_sin": -0.108,
+        "phase_cos": -0.2443
+      },
+      "n_train": 3392,
+      "n_test": 1455,
+      "n_turns_train": 216,
+      "n_turns_test": 105
+    },
+    {
+      "ticker": "JNJ",
+      "turn_type": "TECHO",
+      "n_total": 4838,
+      "n_turns": 198,
+      "base_rate": 0.0409,
+      "auc_train": 0.7932,
+      "auc_test": 0.6886,
+      "separation": 0.1508,
+      "median_prob_turns_oos": 0.4551,
+      "median_prob_noise_oos": 0.3043,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.042,
+          "recall": 0.983,
+          "n_fired": 1371
+        },
+        "P>0.20": {
+          "precision": 0.05,
+          "recall": 0.915,
+          "n_fired": 1083
+        },
+        "P>0.30": {
+          "precision": 0.06,
+          "recall": 0.763,
+          "n_fired": 754
+        },
+        "P>0.40": {
+          "precision": 0.066,
+          "recall": 0.576,
+          "n_fired": 513
+        },
+        "P>0.50": {
+          "precision": 0.079,
+          "recall": 0.458,
+          "n_fired": 342
+        },
+        "P>0.60": {
+          "precision": 0.098,
+          "recall": 0.39,
+          "n_fired": 235
+        },
+        "P>0.70": {
+          "precision": 0.107,
+          "recall": 0.271,
+          "n_fired": 149
+        }
+      },
+      "coefficients": {
+        "sigma_tide": 0.1335,
+        "sigma_current": 0.7323,
+        "sigma_wave": 0.526,
+        "conj_wave_tide": -0.1522,
+        "conj_current_tide": -1.1916,
+        "tension_tide": 0.501,
+        "tension_current": -1.6803,
+        "compression_ratio": 0.1252,
+        "geo_state_norm": 0.426,
+        "geo_velocity_align": 0.6402,
+        "geo_accel_align": 0.3365,
+        "phase_sin": 0.6573,
+        "phase_cos": 0.3021
+      },
+      "n_train": 3386,
+      "n_test": 1452,
+      "n_turns_train": 139,
+      "n_turns_test": 59
+    },
+    {
+      "ticker": "JPM",
+      "turn_type": "TECHO",
+      "n_total": 4844,
+      "n_turns": 483,
+      "base_rate": 0.0997,
+      "auc_train": 0.7333,
+      "auc_test": 0.7427,
+      "separation": 0.2137,
+      "median_prob_turns_oos": 0.5684,
+      "median_prob_noise_oos": 0.3548,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.072,
+          "recall": 1.0,
+          "n_fired": 1439
+        },
+        "P>0.20": {
+          "precision": 0.082,
+          "recall": 1.0,
+          "n_fired": 1254
+        },
+        "P>0.30": {
+          "precision": 0.102,
+          "recall": 0.893,
+          "n_fired": 898
+        },
+        "P>0.40": {
+          "precision": 0.129,
+          "recall": 0.806,
+          "n_fired": 644
+        },
+        "P>0.50": {
+          "precision": 0.148,
+          "recall": 0.631,
+          "n_fired": 438
+        },
+        "P>0.60": {
+          "precision": 0.168,
+          "recall": 0.456,
+          "n_fired": 280
+        },
+        "P>0.70": {
+          "precision": 0.159,
+          "recall": 0.214,
+          "n_fired": 138
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.7727,
+        "sigma_current": -0.1122,
+        "sigma_wave": 1.0416,
+        "conj_wave_tide": 0.0775,
+        "conj_current_tide": 0.0272,
+        "tension_tide": 0.8004,
+        "tension_current": -0.338,
+        "compression_ratio": 0.0845,
+        "geo_state_norm": 0.2643,
+        "geo_velocity_align": -0.0917,
+        "geo_accel_align": 0.095,
+        "phase_sin": -0.0183,
+        "phase_cos": 0.073
+      },
+      "n_train": 3390,
+      "n_test": 1454,
+      "n_turns_train": 380,
+      "n_turns_test": 103
+    },
+    {
+      "ticker": "MCD",
+      "turn_type": "TECHO",
+      "n_total": 4846,
+      "n_turns": 211,
+      "base_rate": 0.0435,
+      "auc_train": 0.7741,
+      "auc_test": 0.7771,
+      "separation": 0.2512,
+      "median_prob_turns_oos": 0.5525,
+      "median_prob_noise_oos": 0.3012,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.044,
+          "recall": 1.0,
+          "n_fired": 1263
+        },
+        "P>0.20": {
+          "precision": 0.054,
+          "recall": 0.964,
+          "n_fired": 1002
+        },
+        "P>0.30": {
+          "precision": 0.067,
+          "recall": 0.893,
+          "n_fired": 751
+        },
+        "P>0.40": {
+          "precision": 0.081,
+          "recall": 0.786,
+          "n_fired": 546
+        },
+        "P>0.50": {
+          "precision": 0.086,
+          "recall": 0.589,
+          "n_fired": 384
+        },
+        "P>0.60": {
+          "precision": 0.098,
+          "recall": 0.429,
+          "n_fired": 246
+        },
+        "P>0.70": {
+          "precision": 0.129,
+          "recall": 0.339,
+          "n_fired": 147
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.6361,
+        "sigma_current": 0.8475,
+        "sigma_wave": 0.5851,
+        "conj_wave_tide": -0.0881,
+        "conj_current_tide": 0.0833,
+        "tension_tide": 0.2843,
+        "tension_current": -0.683,
+        "compression_ratio": 0.4755,
+        "geo_state_norm": 0.0949,
+        "geo_velocity_align": -0.1744,
+        "geo_accel_align": 0.1465,
+        "phase_sin": 0.4732,
+        "phase_cos": -0.0671
+      },
+      "n_train": 3392,
+      "n_test": 1454,
+      "n_turns_train": 155,
+      "n_turns_test": 56
+    },
+    {
+      "ticker": "MRK",
+      "turn_type": "TECHO",
+      "n_total": 4846,
+      "n_turns": 326,
+      "base_rate": 0.0673,
+      "auc_train": 0.7613,
+      "auc_test": 0.7593,
+      "separation": 0.2569,
+      "median_prob_turns_oos": 0.6623,
+      "median_prob_noise_oos": 0.4053,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.071,
+          "recall": 1.0,
+          "n_fired": 1435
+        },
+        "P>0.20": {
+          "precision": 0.081,
+          "recall": 1.0,
+          "n_fired": 1262
+        },
+        "P>0.30": {
+          "precision": 0.097,
+          "recall": 0.961,
+          "n_fired": 1012
+        },
+        "P>0.40": {
+          "precision": 0.11,
+          "recall": 0.833,
+          "n_fired": 772
+        },
+        "P>0.50": {
+          "precision": 0.13,
+          "recall": 0.696,
+          "n_fired": 547
+        },
+        "P>0.60": {
+          "precision": 0.156,
+          "recall": 0.598,
+          "n_fired": 392
+        },
+        "P>0.70": {
+          "precision": 0.203,
+          "recall": 0.451,
+          "n_fired": 227
+        }
+      },
+      "coefficients": {
+        "sigma_tide": 0.4993,
+        "sigma_current": -0.1963,
+        "sigma_wave": 0.7358,
+        "conj_wave_tide": -0.174,
+        "conj_current_tide": -0.6027,
+        "tension_tide": 0.4712,
+        "tension_current": -0.1056,
+        "compression_ratio": -0.0141,
+        "geo_state_norm": 0.1471,
+        "geo_velocity_align": 0.1831,
+        "geo_accel_align": 0.0795,
+        "phase_sin": 0.772,
+        "phase_cos": 0.0818
+      },
+      "n_train": 3392,
+      "n_test": 1454,
+      "n_turns_train": 224,
+      "n_turns_test": 102
+    },
+    {
+      "ticker": "MSFT",
+      "turn_type": "TECHO",
+      "n_total": 4831,
+      "n_turns": 361,
+      "base_rate": 0.0747,
+      "auc_train": 0.7582,
+      "auc_test": 0.7038,
+      "separation": 0.1996,
+      "median_prob_turns_oos": 0.5575,
+      "median_prob_noise_oos": 0.358,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.082,
+          "recall": 1.0,
+          "n_fired": 1403
+        },
+        "P>0.20": {
+          "precision": 0.094,
+          "recall": 0.965,
+          "n_fired": 1187
+        },
+        "P>0.30": {
+          "precision": 0.114,
+          "recall": 0.896,
+          "n_fired": 907
+        },
+        "P>0.40": {
+          "precision": 0.129,
+          "recall": 0.722,
+          "n_fired": 645
+        },
+        "P>0.50": {
+          "precision": 0.152,
+          "recall": 0.565,
+          "n_fired": 428
+        },
+        "P>0.60": {
+          "precision": 0.17,
+          "recall": 0.417,
+          "n_fired": 282
+        },
+        "P>0.70": {
+          "precision": 0.158,
+          "recall": 0.226,
+          "n_fired": 165
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.4254,
+        "sigma_current": -0.1134,
+        "sigma_wave": 1.0352,
+        "conj_wave_tide": -0.2403,
+        "conj_current_tide": 0.384,
+        "tension_tide": 0.3586,
+        "tension_current": -0.2885,
+        "compression_ratio": 0.3401,
+        "geo_state_norm": 0.2797,
+        "geo_velocity_align": 0.6241,
+        "geo_accel_align": -0.042,
+        "phase_sin": 0.6412,
+        "phase_cos": -0.0359
+      },
+      "n_train": 3381,
+      "n_test": 1450,
+      "n_turns_train": 246,
+      "n_turns_test": 115
+    },
+    {
+      "ticker": "PEP",
+      "turn_type": "TECHO",
+      "n_total": 5325,
+      "n_turns": 210,
+      "base_rate": 0.0394,
+      "auc_train": 0.8192,
+      "auc_test": 0.8069,
+      "separation": 0.3916,
+      "median_prob_turns_oos": 0.6966,
+      "median_prob_noise_oos": 0.3049,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.062,
+          "recall": 0.988,
+          "n_fired": 1309
+        },
+        "P>0.20": {
+          "precision": 0.077,
+          "recall": 0.988,
+          "n_fired": 1053
+        },
+        "P>0.30": {
+          "precision": 0.092,
+          "recall": 0.951,
+          "n_fired": 844
+        },
+        "P>0.40": {
+          "precision": 0.107,
+          "recall": 0.854,
+          "n_fired": 654
+        },
+        "P>0.50": {
+          "precision": 0.119,
+          "recall": 0.744,
+          "n_fired": 512
+        },
+        "P>0.60": {
+          "precision": 0.148,
+          "recall": 0.646,
+          "n_fired": 358
+        },
+        "P>0.70": {
+          "precision": 0.163,
+          "recall": 0.5,
+          "n_fired": 251
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.005,
+        "sigma_current": -0.0507,
+        "sigma_wave": 0.7375,
+        "conj_wave_tide": -0.169,
+        "conj_current_tide": -0.6442,
+        "tension_tide": 0.6169,
+        "tension_current": -0.3197,
+        "compression_ratio": 0.364,
+        "geo_state_norm": 0.2248,
+        "geo_velocity_align": -1.0842,
+        "geo_accel_align": 0.0143,
+        "phase_sin": 0.4424,
+        "phase_cos": -0.4262
+      },
+      "n_train": 3727,
+      "n_test": 1598,
+      "n_turns_train": 128,
+      "n_turns_test": 82
+    },
+    {
+      "ticker": "PG",
+      "turn_type": "TECHO",
+      "n_total": 4839,
+      "n_turns": 199,
+      "base_rate": 0.0411,
+      "auc_train": 0.7949,
+      "auc_test": 0.7803,
+      "separation": 0.2605,
+      "median_prob_turns_oos": 0.5494,
+      "median_prob_noise_oos": 0.2889,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.049,
+          "recall": 1.0,
+          "n_fired": 1257
+        },
+        "P>0.20": {
+          "precision": 0.06,
+          "recall": 0.984,
+          "n_fired": 997
+        },
+        "P>0.30": {
+          "precision": 0.078,
+          "recall": 0.918,
+          "n_fired": 719
+        },
+        "P>0.40": {
+          "precision": 0.092,
+          "recall": 0.787,
+          "n_fired": 521
+        },
+        "P>0.50": {
+          "precision": 0.102,
+          "recall": 0.607,
+          "n_fired": 364
+        },
+        "P>0.60": {
+          "precision": 0.113,
+          "recall": 0.443,
+          "n_fired": 239
+        },
+        "P>0.70": {
+          "precision": 0.119,
+          "recall": 0.311,
+          "n_fired": 159
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.1269,
+        "sigma_current": 1.2915,
+        "sigma_wave": 0.3816,
+        "conj_wave_tide": -0.5909,
+        "conj_current_tide": -0.5692,
+        "tension_tide": 0.6564,
+        "tension_current": -1.3013,
+        "compression_ratio": 0.4013,
+        "geo_state_norm": 0.0768,
+        "geo_velocity_align": -0.0142,
+        "geo_accel_align": 0.2585,
+        "phase_sin": 0.5852,
+        "phase_cos": 0.2397
+      },
+      "n_train": 3387,
+      "n_test": 1452,
+      "n_turns_train": 138,
+      "n_turns_test": 61
+    },
+    {
+      "ticker": "QQQ",
+      "turn_type": "TECHO",
+      "n_total": 6595,
+      "n_turns": 450,
+      "base_rate": 0.0682,
+      "auc_train": 0.7722,
+      "auc_test": 0.7571,
+      "separation": 0.1998,
+      "median_prob_turns_oos": 0.5292,
+      "median_prob_noise_oos": 0.3294,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.062,
+          "recall": 1.0,
+          "n_fired": 1872
+        },
+        "P>0.20": {
+          "precision": 0.076,
+          "recall": 0.983,
+          "n_fired": 1522
+        },
+        "P>0.30": {
+          "precision": 0.093,
+          "recall": 0.889,
+          "n_fired": 1124
+        },
+        "P>0.40": {
+          "precision": 0.117,
+          "recall": 0.803,
+          "n_fired": 801
+        },
+        "P>0.50": {
+          "precision": 0.137,
+          "recall": 0.607,
+          "n_fired": 520
+        },
+        "P>0.60": {
+          "precision": 0.137,
+          "recall": 0.342,
+          "n_fired": 293
+        },
+        "P>0.70": {
+          "precision": 0.207,
+          "recall": 0.265,
+          "n_fired": 150
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.0136,
+        "sigma_current": 0.5028,
+        "sigma_wave": 0.5056,
+        "conj_wave_tide": -0.3618,
+        "conj_current_tide": -0.5605,
+        "tension_tide": 0.8589,
+        "tension_current": -0.7286,
+        "compression_ratio": 0.1041,
+        "geo_state_norm": 0.1341,
+        "geo_velocity_align": 0.5103,
+        "geo_accel_align": 0.1628,
+        "phase_sin": 0.5008,
+        "phase_cos": -0.0098
+      },
+      "n_train": 4616,
+      "n_test": 1979,
+      "n_turns_train": 333,
+      "n_turns_test": 117
+    },
+    {
+      "ticker": "SPY",
+      "turn_type": "TECHO",
+      "n_total": 8112,
+      "n_turns": 345,
+      "base_rate": 0.0425,
+      "auc_train": 0.7801,
+      "auc_test": 0.7108,
+      "separation": 0.1992,
+      "median_prob_turns_oos": 0.5609,
+      "median_prob_noise_oos": 0.3618,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.043,
+          "recall": 1.0,
+          "n_fired": 2226
+        },
+        "P>0.20": {
+          "precision": 0.05,
+          "recall": 0.958,
+          "n_fired": 1855
+        },
+        "P>0.30": {
+          "precision": 0.057,
+          "recall": 0.875,
+          "n_fired": 1470
+        },
+        "P>0.40": {
+          "precision": 0.066,
+          "recall": 0.76,
+          "n_fired": 1110
+        },
+        "P>0.50": {
+          "precision": 0.076,
+          "recall": 0.656,
+          "n_fired": 824
+        },
+        "P>0.60": {
+          "precision": 0.072,
+          "recall": 0.396,
+          "n_fired": 525
+        },
+        "P>0.70": {
+          "precision": 0.099,
+          "recall": 0.281,
+          "n_fired": 272
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.5505,
+        "sigma_current": 1.0513,
+        "sigma_wave": 0.6578,
+        "conj_wave_tide": -0.1462,
+        "conj_current_tide": -0.2755,
+        "tension_tide": 0.6269,
+        "tension_current": -1.0529,
+        "compression_ratio": 0.2301,
+        "geo_state_norm": 0.0862,
+        "geo_velocity_align": 0.2515,
+        "geo_accel_align": 0.1389,
+        "phase_sin": 0.4541,
+        "phase_cos": -0.1752
+      },
+      "n_train": 5678,
+      "n_test": 2434,
+      "n_turns_train": 249,
+      "n_turns_test": 96
+    },
+    {
+      "ticker": "WMT",
+      "turn_type": "TECHO",
+      "n_total": 4838,
+      "n_turns": 244,
+      "base_rate": 0.0504,
+      "auc_train": 0.8024,
+      "auc_test": 0.7783,
+      "separation": 0.2751,
+      "median_prob_turns_oos": 0.6767,
+      "median_prob_noise_oos": 0.4016,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.056,
+          "recall": 1.0,
+          "n_fired": 1365
+        },
+        "P>0.20": {
+          "precision": 0.063,
+          "recall": 1.0,
+          "n_fired": 1203
+        },
+        "P>0.30": {
+          "precision": 0.076,
+          "recall": 0.987,
+          "n_fired": 984
+        },
+        "P>0.40": {
+          "precision": 0.093,
+          "recall": 0.934,
+          "n_fired": 762
+        },
+        "P>0.50": {
+          "precision": 0.106,
+          "recall": 0.789,
+          "n_fired": 565
+        },
+        "P>0.60": {
+          "precision": 0.115,
+          "recall": 0.618,
+          "n_fired": 409
+        },
+        "P>0.70": {
+          "precision": 0.142,
+          "recall": 0.474,
+          "n_fired": 253
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.783,
+        "sigma_current": 1.0217,
+        "sigma_wave": 1.024,
+        "conj_wave_tide": 0.1963,
+        "conj_current_tide": -0.3185,
+        "tension_tide": -0.0123,
+        "tension_current": -2.2391,
+        "compression_ratio": 0.1726,
+        "geo_state_norm": 0.3706,
+        "geo_velocity_align": 1.4403,
+        "geo_accel_align": 0.1183,
+        "phase_sin": 0.7834,
+        "phase_cos": 0.2793
+      },
+      "n_train": 3386,
+      "n_test": 1452,
+      "n_turns_train": 168,
+      "n_turns_test": 76
+    },
+    {
+      "ticker": "XOM",
+      "turn_type": "TECHO",
+      "n_total": 4847,
+      "n_turns": 350,
+      "base_rate": 0.0722,
+      "auc_train": 0.8177,
+      "auc_test": 0.6869,
+      "separation": 0.2624,
+      "median_prob_turns_oos": 0.5364,
+      "median_prob_noise_oos": 0.274,
+      "thresholds_oos": {
+        "P>0.10": {
+          "precision": 0.103,
+          "recall": 0.969,
+          "n_fired": 1239
+        },
+        "P>0.20": {
+          "precision": 0.12,
+          "recall": 0.855,
+          "n_fired": 934
+        },
+        "P>0.30": {
+          "precision": 0.131,
+          "recall": 0.702,
+          "n_fired": 704
+        },
+        "P>0.40": {
+          "precision": 0.155,
+          "recall": 0.641,
+          "n_fired": 541
+        },
+        "P>0.50": {
+          "precision": 0.162,
+          "recall": 0.527,
+          "n_fired": 426
+        },
+        "P>0.60": {
+          "precision": 0.175,
+          "recall": 0.42,
+          "n_fired": 315
+        },
+        "P>0.70": {
+          "precision": 0.164,
+          "recall": 0.275,
+          "n_fired": 220
+        }
+      },
+      "coefficients": {
+        "sigma_tide": -0.2632,
+        "sigma_current": 0.8912,
+        "sigma_wave": 0.6334,
+        "conj_wave_tide": 0.1128,
+        "conj_current_tide": -0.3999,
+        "tension_tide": 0.0871,
+        "tension_current": -0.7117,
+        "compression_ratio": 0.5726,
+        "geo_state_norm": 0.2706,
+        "geo_velocity_align": 0.0419,
+        "geo_accel_align": 0.1823,
+        "phase_sin": 0.4028,
+        "phase_cos": -0.3613
+      },
+      "n_train": 3392,
+      "n_test": 1455,
+      "n_turns_train": 219,
+      "n_turns_test": 131
+    }
+  ]
+}

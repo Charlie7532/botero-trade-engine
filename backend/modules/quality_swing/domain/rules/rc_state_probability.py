@@ -33,18 +33,33 @@ _TABLE_PATH = Path(__file__).parent / "rc_probability_table.json"
 
 @dataclass(frozen=True)
 class RCStateProbability:
-    """Result of the P(bull|state) lookup."""
+    """Result of the P(bull|state) lookup.
+
+    Bidirectional: the same state simultaneously informs long and short
+    strategies. prob_bull drives accumulation; prob_bear drives trimming
+    or short entries. Consumers decide based on their department rules.
+    """
     prob_bull: float        # P(HH + HL) — probability of bullish outcome
-    prob_hh: float          # P(Higher High)
-    prob_hl: float          # P(Higher Low)
-    prob_lh: float          # P(Lower High)
-    prob_ll: float          # P(Lower Low)
+    prob_hh: float          # P(Higher High) — breakout
+    prob_hl: float          # P(Higher Low)  — healthy pullback
+    prob_lh: float          # P(Lower High)  — distribution / ceiling
+    prob_ll: float          # P(Lower Low)   — breakdown
     confidence: float       # Wilson interval lower bound
     n_samples: int          # Number of observations backing this cell
     state_key: str          # Full state key for logging
     level: str              # L1_full / L2_no_tide / L3_sc_svw / L4_svw
     action: str             # ACCUMULATE / TRIM / HOLD
     conviction: float       # 0.0-1.0 based on distance from 50%
+
+    @property
+    def prob_bear(self) -> float:
+        """P(LH) + P(LL) — probability of bearish outcome.
+
+        Same event, opposite perspective:
+          prob_bull high → ACCUMULATE long / EXIT short
+          prob_bear high → TRIM long / ENTRY short
+        """
+        return round(self.prob_lh + self.prob_ll, 4)
 
 
 # ── Bin configuration (must match training script) ──

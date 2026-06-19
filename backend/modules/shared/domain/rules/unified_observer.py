@@ -65,6 +65,8 @@ class ObserverOutput:
     recovery_score: float = 0.0      # cos(vel, recovery dir): +1=recovering, -1=deteriorating
     velocity_norm: float = 0.0       # ‖velocity vector‖: how fast the system moves
     state: str = "STABLE"            # RECOVERING / DETERIORATING / TRANSITIONING / STABLE
+    kf_consensus: int = 0            # sum(sign(vel_i)): +5=all recovering, -5=all deteriorating
+                                     # Spread: 22pp when |consensus| >= 2 (T7)
 
     # ── Individual velocities (for logging/forensics) ──
     vel_sigma_c: float = 0.0
@@ -203,10 +205,14 @@ class UnifiedKalmanObserver:
         else:
             state = "STABLE"
 
+        # Consensus: how many channels agree on direction (T7: 22pp spread)
+        kf_consensus = int(np.sum(np.sign(velocities)))
+
         return ObserverOutput(
             recovery_score=recovery_score,
             velocity_norm=vel_norm,
             state=state,
+            kf_consensus=kf_consensus,
             vel_sigma_c=float(velocities[0]),
             vel_svw=float(velocities[1]),
             vel_tension_w=float(velocities[2]),

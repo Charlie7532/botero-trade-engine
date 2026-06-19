@@ -130,6 +130,59 @@ class SwingGate:
                 )
         except Exception as e:
             logger.debug(f"SwingGate {ticker}: RC probability lookup failed: {e}")
+
+        # ── Unified Tree: Slopes × Sigmas × Stereotypes (interconected) ──
+        _unified = None
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_unified_lookup import (
+                lookup_unified,
+            )
+            _unified = lookup_unified(
+                tide_slope=channel.tide_slope,
+                current_slope=channel.current_slope,
+                wave_slope=channel.wave_slope,
+                sigma_current=channel.sigma_current,
+                sigma_wave=channel.sigma_wave,
+                vwap_sigma_wave=channel.vwap_sigma_wave,
+            )
+            if _unified:
+                decision.alerts.append(
+                    f"UNIFIED[{_unified.lookup_key}]: "
+                    f"P(bull)={_unified.prob_bull:.1%} "
+                    f"stereo={_unified.dominant_stereotype} "
+                    f"HH={_unified.prob_hh:.1%} HL={_unified.prob_hl:.1%} "
+                    f"LH={_unified.prob_lh:.1%} LL={_unified.prob_ll:.1%} "
+                    f"N={_unified.n_samples} level={_unified.level} "
+                    f"slope={_unified.slope_state.tripleta}"
+                )
+        except Exception as e:
+            logger.debug(f"SwingGate {ticker}: Unified lookup failed: {e}")
+
+        # ── T9: Slope Transition Detector (Canary/Confirmador) ──
+        _transition = None
+        if _unified and idx >= 2:
+            try:
+                from backend.modules.quality_swing.domain.rules.rc_slope_classifier import classify_slopes
+                from backend.modules.quality_swing.domain.rules.slope_transition_detector import detect_transition
+                # Get previous bar's slopes from OHLCV data
+                prev_channel = compute_channel_snapshot(close, high, low, volume, idx - 1)
+                if prev_channel:
+                    prev_slopes = classify_slopes(
+                        prev_channel.tide_slope, prev_channel.current_slope, prev_channel.wave_slope
+                    )
+                    _transition = detect_transition(
+                        prev_tripleta=prev_slopes.tripleta,
+                        curr_tripleta=_unified.slope_state.tripleta,
+                    )
+                    if _transition.cascade_type != "NONE":
+                        decision.alerts.append(
+                            f"T9[{_transition.cascade_type}]: "
+                            f"{_transition.prev_tripleta} → {_transition.curr_tripleta} "
+                            f"wave_flip={'↑' if _transition.wave_flip_direction == 1 else '↓' if _transition.wave_flip_direction == -1 else '='}"
+                        )
+            except Exception as e:
+                logger.debug(f"SwingGate {ticker}: Transition detection failed: {e}")
+
         hookup = ohlc["close"].iloc[idx] > ohlc["close"].iloc[idx - 1] if idx > 0 else False
 
         # ── Load vol regime (Stateful-First: StateSnapshot preferred) ──
@@ -310,8 +363,9 @@ class SwingGate:
             return decision
 
         # ── Evaluate accumulate ──
-        # Load Observer recovery_score from Vault
+        # Load Observer recovery_score and velocities from Vault
         _observer_recovery = self._load_observer_recovery(ticker)
+        _vel_sigma_c, _vel_svw = self._load_observer_velocities(ticker)
 
         should_accum, conviction, reason_accum = is_accumulate_signal(
             sigma_pos=rc_result.sigma_position,
@@ -321,6 +375,10 @@ class SwingGate:
             vol_regime_label=vol_label,
             rc_prob=_rc_prob,
             observer_recovery=_observer_recovery,
+            unified_prob=_unified,
+            vel_sigma_c=_vel_sigma_c,
+            vel_svw=_vel_svw,
+            transition=_transition,
         )
 
         if should_accum:
@@ -400,6 +458,11 @@ class SwingGate:
             sigma_pos=rc_result.sigma_position,
             fear=fear,
             rc_prob=_rc_prob,
+            observer_recovery=_observer_recovery,
+            unified_prob=_unified,
+            vel_sigma_c=_vel_sigma_c,
+            vel_svw=_vel_svw,
+            transition=_transition,
         )
 
         if should_trim:
@@ -546,6 +609,26 @@ class SwingGate:
         except Exception as e:
             logger.debug(f"SwingGate {ticker}: Observer recovery load failed: {e}")
             return 0.0
+
+    def _load_observer_velocities(self, ticker: str) -> tuple[float, float]:
+        """Load vel_sigma_c and vel_svw from Observer output in Vault.
+
+        These velocities (T7) have 21pp spread for timing — 4× better than
+        the raw channel accelerations (5pp) they replace.
+
+        Returns (vel_sigma_c, vel_svw). Defaults to (0.0, 0.0) if unavailable.
+        """
+        try:
+            latest = self._port.load_latest_snapshot(ticker)
+            if latest is None:
+                return 0.0, 0.0
+            return (
+                float(getattr(latest, 'obs_vel_sigma_c', 0.0) or 0.0),
+                float(getattr(latest, 'obs_vel_svw', 0.0) or 0.0),
+            )
+        except Exception as e:
+            logger.debug(f"SwingGate {ticker}: Observer velocities load failed: {e}")
+            return 0.0, 0.0
 
     def _load_best_passport(self, ticker: str, fear, vol_label: str):
         """Load the best passport for current conditions.

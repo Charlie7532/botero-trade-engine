@@ -33,11 +33,13 @@ def main():
             ("obs_recovery_score", "REAL"),
             ("obs_velocity_norm", "REAL"),
             ("obs_state", "TEXT"),
+            ("obs_kf_consensus", "INTEGER"),
             ("obs_vel_sigma_c", "REAL"),
             ("obs_vel_svw", "REAL"),
             ("obs_vel_tension_w", "REAL"),
             ("obs_vel_rsi", "REAL"),
             ("obs_vel_conj_wt", "REAL"),
+            ("slope_tripleta", "TEXT"),
         ]:
             cur.execute(f"""
                 ALTER TABLE engine.channel_snapshots
@@ -81,6 +83,7 @@ def main():
             py_ts = pd.Timestamp(ts).to_pydatetime()
             updates.append((
                 out.recovery_score, out.velocity_norm, out.state,
+                out.kf_consensus,
                 out.vel_sigma_c, out.vel_svw, out.vel_tension_w,
                 out.vel_rsi, out.vel_conj_wt,
                 ticker, py_ts,
@@ -93,6 +96,7 @@ def main():
                 SET obs_recovery_score = %s,
                     obs_velocity_norm = %s,
                     obs_state = %s,
+                    obs_kf_consensus = %s,
                     obs_vel_sigma_c = %s,
                     obs_vel_svw = %s,
                     obs_vel_tension_w = %s,

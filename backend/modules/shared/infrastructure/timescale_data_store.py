@@ -33,6 +33,19 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
 
     def __init__(self, dsn: str | None = None, min_conn: int = 1, max_conn: int = 5):
         self._dsn = dsn or os.environ.get("POSTGRES_URL", "")
+        if not self._dsn:
+            # Auto-load .env if POSTGRES_URL is missing from environment.
+            # Prevents socket errors when callers forget load_dotenv().
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+                self._dsn = os.environ.get("POSTGRES_URL", "")
+            except ImportError:
+                pass
+        if not self._dsn:
+            raise RuntimeError(
+                "POSTGRES_URL not set. Ensure .env is loaded or pass dsn= explicitly."
+            )
         self._pool = psycopg2.pool.ThreadedConnectionPool(
             minconn=min_conn,
             maxconn=max_conn,

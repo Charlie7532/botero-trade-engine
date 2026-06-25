@@ -11,13 +11,8 @@ Produces COMPLETE snapshots with ALL indicators:
   - Kalman velocity + vol_adj_delta (stateful, full-series)
   - Geometric features, Tensions, Compression
 
-RSI and Kalman are stateful indicators that require full price history
-for correct computation. They are pre-computed for the entire series
-before the per-bar loop, then injected into each ChannelSnapshot.
-This matches the oracle_trainer pattern.
-
-Estimated: 17 tickers × ~5,000 bars = ~85,000 snapshots
-Time: ~10-15 minutes (includes RSI + Kalman computation)
+Universal: processes ALL stocks in the Vault with >= 250 bars.
+Skips tickers already backfilled. Idempotent (ON CONFLICT DO UPDATE).
 
 Usage:
     PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scripts/backfill_channel_snapshots.py
@@ -41,17 +36,47 @@ from backend.modules.volume_intelligence.application.use_cases.track_volume_dyna
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
 
-# All tickers in the Vault (from AGENTS.md registry)
-TICKERS = [
-    "SPY", "QQQ", "AAPL", "MSFT", "AMZN", "COST", "HD", "HON",
-    "IBM", "JNJ", "JPM", "MCD", "MRK", "PEP", "PG", "WMT", "XOM",
-]
-
 BATCH_SIZE = 500  # Rows per DB upsert
 MIN_BARS = 250    # Minimum bars needed for compute_channel_snapshot
 RSI_PERIOD = 14   # Wilder standard
 RSI_MIN_BARS = RSI_PERIOD + 30  # Minimum for divergence detection
 RSI_WINDOW = 60   # Window for divergence/conviction analysis
+
+
+def get_stock_universe(store: TimescaleDataStore) -> list[str]:
+    """Get all stocks with >= MIN_BARS from Vault."""
+    conn = store._conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT tm.ticker
+                FROM market.ticker_metadata tm
+                JOIN market.ohlcv_bars b ON b.ticker = tm.ticker AND b.timeframe = '1d'
+                WHERE tm.asset_type IN ('STOCK', 'ETF')
+                  AND tm.sector NOT IN ('Breadth','Options Flow','Sentiment','Commodities',
+                                        'Fixed Income','Currency','Yields','International',
+                                        'Volatility')
+                  AND tm.ticker NOT LIKE 'UW_%%'
+                  AND tm.industry NOT IN ('INDICATOR','Breadth Index')
+                  AND LENGTH(tm.ticker) <= 5
+                GROUP BY tm.ticker
+                HAVING COUNT(b.time) >= %s
+                ORDER BY tm.ticker
+            """, (MIN_BARS,))
+            return [r[0] for r in cur.fetchall()]
+    finally:
+        store._put(conn)
+
+
+def get_existing_tickers(store: TimescaleDataStore) -> set[str]:
+    """Get tickers already in engine.channel_snapshots."""
+    conn = store._conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT DISTINCT ticker FROM engine.channel_snapshots")
+            return {r[0] for r in cur.fetchall()}
+    finally:
+        store._put(conn)
 
 
 def _precompute_rsi(close: np.ndarray) -> tuple[np.ndarray, list]:
@@ -165,10 +190,25 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str) -> int:
     snap_timestamps = []
     total_persisted = 0
 
+    # Sequential w_duration computation
+    from backend.modules.quality_swing.domain.rules.rc_slope_classifier import classify_slopes
+    prev_w_level = None
+    w_dur = 1
+
     for idx in range(MIN_BARS, len(ohlc)):
         snap = compute_channel_snapshot(close, high, low, volume, idx)
         if snap is None:
             continue
+
+        # Sequential w_duration computation
+        sl = classify_slopes(snap.tide_slope, snap.current_slope, snap.wave_slope)
+        curr_w_level = sl.wave_level
+        if prev_w_level is not None and curr_w_level == prev_w_level:
+            w_dur += 1
+        else:
+            w_dur = 1
+        prev_w_level = curr_w_level
+        snap.w_duration = w_dur
 
         # ── Inject RSI (full-series Wilder + windowed divergence/conviction) ──
         snap.rsi_value = round(float(rsi_series[idx]), 1)
@@ -208,10 +248,8 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str) -> int:
 
 def main():
     print("=" * 80)
-    print("  BACKFILL CHANNEL SNAPSHOTS — Complete Feature Lake")
-    print("  48 fields (RC + VWAP + RSI + Kalman + Geo) × every bar × every ticker")
-    print("  RSI: full-series Wilder(14) + windowed divergence/conviction")
-    print("  Kalman: sequential KalmanVolumeTracker velocity + vol_adj_delta")
+    print("  BACKFILL CHANNEL SNAPSHOTS — Full Universe Feature Lake")
+    print("  91 fields (RC + VWAP + RSI + Kalman + Geo) × every bar × every ticker")
     print("=" * 80)
 
     store = TimescaleDataStore()
@@ -221,25 +259,47 @@ def main():
     store.ensure_channel_snapshots_table()
     print("  ✅ Table ready.")
 
+    # Universe
+    universe = get_stock_universe(store)
+    existing = get_existing_tickers(store)
+    new_tickers = [t for t in universe if t not in existing]
+
+    print(f"\n  Universe: {len(universe)} tickers")
+    print(f"  Already backfilled: {len(existing)}")
+    print(f"  New to process: {len(new_tickers)}")
+
+    if not new_tickers:
+        print("\n  Nothing to do — all tickers already backfilled.")
+        store.close()
+        return
+
     t0 = time.time()
     grand_total = 0
 
-    print(f"\n  Processing {len(TICKERS)} tickers...\n")
-    for ticker in TICKERS:
+    print(f"\n  Processing {len(new_tickers)} new tickers...\n")
+    for i, ticker in enumerate(new_tickers):
         t1 = time.time()
-        n = backfill_ticker(store, ticker)
-        elapsed = time.time() - t1
-        grand_total += n
-        print(f"  ✅ {ticker:>5s}: {n:>6,d} snapshots in {elapsed:.1f}s")
+        try:
+            n = backfill_ticker(store, ticker)
+            elapsed = time.time() - t1
+            grand_total += n
+            total_elapsed = time.time() - t0
+            rate = (i + 1) / total_elapsed
+            eta = (len(new_tickers) - i - 1) / rate / 60
+            print(
+                f"  ✅ [{i+1}/{len(new_tickers)}] {ticker:>5s}: {n:>6,d} snapshots "
+                f"in {elapsed:.1f}s | total: {grand_total:,d} | ETA: {eta:.0f}min"
+            )
+        except Exception as e:
+            logger.error(f"  ❌ {ticker}: {e}")
 
     total_elapsed = time.time() - t0
     store.close()
 
     print(f"\n{'=' * 80}")
     print(f"  BACKFILL COMPLETE")
-    print(f"  Total snapshots: {grand_total:,d}")
+    print(f"  New snapshots: {grand_total:,d}")
     print(f"  Total time: {total_elapsed:.1f}s ({total_elapsed/60:.1f} min)")
-    print(f"  Schema version: 1")
     print(f"  Table: engine.channel_snapshots")
     print(f"{'=' * 80}")
 

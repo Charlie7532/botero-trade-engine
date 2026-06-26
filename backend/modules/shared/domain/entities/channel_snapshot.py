@@ -131,6 +131,13 @@ class ChannelSnapshot:
     # residual_std_wave / residual_std_tide (v15 Part 8)
     compression_ratio: float = 0.0
 
+    # ── Dual Probability Features (Fase 0 validated) ──────────
+    vol_surge: float = 1.0              # Volume / SMA(volume, 20)
+                                        # Captures capitulation intensity (+9.8pp lift)
+                                        # Orthogonal to vol_up_down_ratio (r=-0.12)
+    w_duration: int = 1                 # Consecutive bars at same W_level
+                                        # Techos AUC: +0.0207 when combined with W_ord
+
     # ── RSI Intelligence (from price_analysis module) ─────────
     # Persisted by backfill pipeline. RSI(14) Wilder standard.
     rsi_value: float = 0.0              # Current RSI(14) value 0-100

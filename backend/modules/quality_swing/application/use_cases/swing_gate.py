@@ -108,29 +108,6 @@ class SwingGate:
 
         below_vwap = rc_result.below_vwap
 
-        # ── RC Probabilistic State (from empirical sigma tables) ──
-        _rc_prob = None
-        try:
-            from backend.modules.quality_swing.domain.rules.rc_state_probability import (
-                lookup_probability,
-            )
-            _rc_prob = lookup_probability(
-                tide_slope=channel.tide_slope,
-                sigma_current=channel.sigma_current,
-                sigma_wave=channel.sigma_wave,
-                vwap_sigma_wave=channel.vwap_sigma_wave,
-            )
-            if _rc_prob:
-                decision.alerts.append(
-                    f"RC_STATE[{_rc_prob.state_key}]: "
-                    f"P(bull)={_rc_prob.prob_bull:.1%} "
-                    f"N={_rc_prob.n_samples} level={_rc_prob.level} "
-                    f"conf={_rc_prob.confidence:.2f} "
-                    f"action={_rc_prob.action}"
-                )
-        except Exception as e:
-            logger.debug(f"SwingGate {ticker}: RC probability lookup failed: {e}")
-
         # ── Unified Tree: Slopes × Sigmas × Stereotypes (interconected) ──
         _unified = None
         try:
@@ -156,7 +133,76 @@ class SwingGate:
                     f"slope={_unified.slope_state.tripleta}"
                 )
         except Exception as e:
-            logger.debug(f"SwingGate {ticker}: Unified lookup failed: {e}")
+            logger.warning(f"SwingGate {ticker}: Unified lookup failed: {e}")
+
+        # Load Observer recovery_score and velocities from Vault
+        _observer_recovery = self._load_observer_recovery(ticker)
+        _vel_sigma_c, _vel_svw = self._load_observer_velocities(ticker)
+
+        # ── Dual Probability: Asymmetric P(piso) / P(techo) ──
+        _dual_prob = None
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_state_probability import (
+                lookup_dual_probability,
+            )
+            # vol_surge: now computed in ChannelSnapshot
+            _vol_surge = channel.vol_surge
+
+            # w_duration: compute live from Vault previous + current wave level
+            _w_duration = 1
+            try:
+                from backend.modules.quality_swing.domain.rules.rc_slope_classifier import (
+                    classify_slopes,
+                )
+                curr_slope = classify_slopes(
+                    channel.tide_slope, channel.current_slope, channel.wave_slope
+                )
+                prev_snap = self._port.load_latest_snapshot(ticker)
+                if prev_snap is not None:
+                    prev_slope = classify_slopes(
+                        prev_snap.tide_slope, prev_snap.current_slope, prev_snap.wave_slope
+                    )
+                    if prev_slope.wave_level == curr_slope.wave_level:
+                        _w_duration = max(prev_snap.w_duration or 1, 1) + 1
+            except Exception:
+                pass  # Fallback to w_duration=1 if Vault unavailable
+
+            # Velocities: use Observer values when available,
+            # fall back to simple diff from channel
+            _vel_svw_ema = _vel_svw  # From Observer Kalman (already loaded)
+            _vel_sc_diff = _vel_sigma_c  # From Observer Kalman
+
+            # If Observer not available, compute simple diff
+            if _vel_svw_ema == 0.0 and idx >= 1:
+                prev_ch = compute_channel_snapshot(close, high, low, volume, idx - 1)
+                if prev_ch:
+                    _vel_svw_ema = channel.vwap_sigma_wave - prev_ch.vwap_sigma_wave
+                    _vel_sc_diff = channel.sigma_current - prev_ch.sigma_current
+
+            _dual_prob = lookup_dual_probability(
+                tide_slope=channel.tide_slope,
+                current_slope=channel.current_slope,
+                wave_slope=channel.wave_slope,
+                vwap_sigma_current=channel.vwap_sigma_current,
+                sigma_current=channel.sigma_current,
+                vel_sigma_vw_ema=_vel_svw_ema,
+                vel_sigma_c_diff=_vel_sc_diff,
+                vol_surge=_vol_surge,
+                w_duration=_w_duration,
+                sigma_wave=channel.sigma_wave,
+            )
+            if _dual_prob:
+                decision.alerts.append(
+                    f"DUAL[{_dual_prob.family}]: "
+                    f"P(piso)={_dual_prob.prob_piso:.1%} "
+                    f"P(techo)={_dual_prob.prob_techo:.1%} "
+                    f"mag={_dual_prob.expected_magnitude:.1%} "
+                    f"piso_key={_dual_prob.state_key_piso}({_dual_prob.level_piso}) "
+                    f"techo_key={_dual_prob.state_key_techo}({_dual_prob.level_techo}) "
+                    f"N_p={_dual_prob.n_piso} N_t={_dual_prob.n_techo}"
+                )
+        except Exception as e:
+            logger.warning(f"SwingGate {ticker}: Dual probability lookup failed: {e}")
 
         # ── T9: Slope Transition Detector (Canary/Confirmador) ──
         _transition = None
@@ -184,6 +230,38 @@ class SwingGate:
                 logger.debug(f"SwingGate {ticker}: Transition detection failed: {e}")
 
         hookup = ohlc["close"].iloc[idx] > ohlc["close"].iloc[idx - 1] if idx > 0 else False
+
+        # ── Combined T×C×σVw Signal (committee-approved, 180 states) ──
+        _combined = None
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_combined_lookup import (
+                lookup_combined_signal,
+            )
+            # Use classified slopes from unified tree (already computed)
+            if _unified:
+                _slope_state = _unified.slope_state
+            else:
+                from backend.modules.quality_swing.domain.rules.rc_slope_classifier import classify_slopes
+                _slope_state = classify_slopes(
+                    channel.tide_slope, channel.current_slope, channel.wave_slope
+                )
+            _combined = lookup_combined_signal(
+                tide_level=_slope_state.tide_level,
+                current_level=_slope_state.current_level,
+                vwap_sigma_wave=channel.vwap_sigma_wave,
+            )
+            if _combined:
+                decision.alerts.append(
+                    f"COMBINED[{_combined.state_key}]: "
+                    f"signal={_combined.signal} "
+                    f"P_bull={_combined.p_bull:.1f}% "
+                    f"zone={_combined.zone} regime={_combined.regime} "
+                    f"conv={_combined.conviction}/{_combined.conviction_score} "
+                    f"asym={_combined.asymmetry_pp:+.1f}pp "
+                    f"N={_combined.n_samples:,}"
+                )
+        except Exception as e:
+            logger.warning(f"SwingGate {ticker}: Combined signal lookup failed: {e}")
 
         # ── Load vol regime (Stateful-First: StateSnapshot preferred) ──
         vol_snap = None
@@ -363,9 +441,7 @@ class SwingGate:
             return decision
 
         # ── Evaluate accumulate ──
-        # Load Observer recovery_score and velocities from Vault
-        _observer_recovery = self._load_observer_recovery(ticker)
-        _vel_sigma_c, _vel_svw = self._load_observer_velocities(ticker)
+        # (Observer recovery and velocities pre-loaded early in evaluate)
 
         should_accum, conviction, reason_accum = is_accumulate_signal(
             sigma_pos=rc_result.sigma_position,
@@ -373,12 +449,13 @@ class SwingGate:
             below_vwap=below_vwap,
             hookup=hookup,
             vol_regime_label=vol_label,
-            rc_prob=_rc_prob,
             observer_recovery=_observer_recovery,
             unified_prob=_unified,
             vel_sigma_c=_vel_sigma_c,
             vel_svw=_vel_svw,
             transition=_transition,
+            dual_prob=_dual_prob,
+            combined_signal=_combined,
         )
 
         if should_accum:
@@ -457,12 +534,13 @@ class SwingGate:
         should_trim, trim_pct, reason_trim = is_trim_signal(
             sigma_pos=rc_result.sigma_position,
             fear=fear,
-            rc_prob=_rc_prob,
             observer_recovery=_observer_recovery,
             unified_prob=_unified,
             vel_sigma_c=_vel_sigma_c,
             vel_svw=_vel_svw,
             transition=_transition,
+            dual_prob=_dual_prob,
+            combined_signal=_combined,
         )
 
         if should_trim:

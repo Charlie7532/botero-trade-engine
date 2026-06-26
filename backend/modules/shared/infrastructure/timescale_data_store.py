@@ -792,6 +792,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         "kalman_velocity", "vol_adj_delta",
         "geo_state_norm", "geo_velocity_align", "geo_exit_align",
         "geo_accel_align", "geo_phase_angle",
+        "vol_surge", "w_duration",
     )
 
     def ensure_channel_snapshots_table(self) -> None:
@@ -886,11 +887,17 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                     "kalman_velocity", "vol_adj_delta",
                     "geo_state_norm", "geo_velocity_align", "geo_exit_align",
                     "geo_accel_align", "geo_phase_angle",
+                    "vol_surge",
                 ):
                     cur.execute(f"""
                         ALTER TABLE engine.channel_snapshots
                         ADD COLUMN IF NOT EXISTS {col} DOUBLE PRECISION;
                     """)
+                # w_duration is INTEGER, handle separately
+                cur.execute("""
+                    ALTER TABLE engine.channel_snapshots
+                    ADD COLUMN IF NOT EXISTS w_duration INTEGER;
+                """)
             conn.commit()
             logger.info("engine.channel_snapshots table ensured.")
         except Exception as e:
@@ -946,6 +953,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                     d.get("geo_state_norm"), d.get("geo_velocity_align"),
                     d.get("geo_exit_align"),
                     d.get("geo_accel_align"), d.get("geo_phase_angle"),
+                    d.get("vol_surge"), d.get("w_duration"),
                 ))
 
             cols = ", ".join(self._CS_COLUMNS)

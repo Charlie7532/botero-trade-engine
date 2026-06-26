@@ -2123,6 +2123,17 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["estimates"] = vault_earnings_estimates(store, neon_tickers)
     results["credibility"] = vault_analyst_credibility(store, neon_tickers)
 
+    # ── Tier 3a: Channel Snapshots (ONLY when new OHLCV bars inserted) ──
+    ohlcv_updated = results.get("ohlcv", {}).get("updated", 0)
+    try:
+        from backend.daemons.vault_providers.channel_snapshot_provider import (
+            vault_channel_snapshots,
+        )
+        results["channel_snapshots"] = vault_channel_snapshots(store, ohlcv_updated)
+    except Exception as e:
+        logger.warning(f"Channel snapshot vault failed (non-critical): {e}")
+        results["channel_snapshots"] = {"status": "error", "error": str(e)}
+
     # ── Tier 3b: Breadth (MUST run AFTER ohlcv to use fresh closes) ──
     results["breadth"] = vault_breadth_indicators(store)
 

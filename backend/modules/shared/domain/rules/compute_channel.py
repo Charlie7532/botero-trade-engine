@@ -307,6 +307,20 @@ def compute_channel_snapshot(
     )
 
     # ══════════════════════════════════════════════════════════
+    # DUAL PROB FEATURES: vol_surge
+    # ══════════════════════════════════════════════════════════
+    # vol_surge: volume / SMA(volume, 20) — capitulation intensity
+    if idx >= 19 and len(volume) >= 20:
+        sma20 = float(volume[max(0, idx - 19):idx + 1].mean())
+        snap.vol_surge = round(volume[idx] / sma20, 4) if sma20 > 0 else 1.0
+    else:
+        snap.vol_surge = 1.0
+
+    # w_duration: computed during sequential backfill/daemon processing.
+    # Not computed here (would require O(60) regressions per bar).
+    # Default = 1, updated externally when processing bars sequentially.
+
+    # ══════════════════════════════════════════════════════════
     # GEOMETRIC FEATURES (3D vector projections)
     # slope_stds not available in single-bar computation — uses raw slopes.
     # Backfill and daemon supply slope_stds for proper normalization.

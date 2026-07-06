@@ -32,8 +32,8 @@ if TYPE_CHECKING:
     from backend.modules.quality_swing.domain.rules.rc_state_probability import (
         DualProbability,
     )
-    from backend.modules.quality_swing.domain.rules.rc_unified_lookup import UnifiedProbability
     from backend.modules.quality_swing.domain.rules.rc_combined_lookup import CombinedSignal
+    from backend.modules.quality_swing.domain.rules.rc_wave_lookup import WaveSignal
     from backend.modules.quality_swing.domain.rules.slope_transition_detector import SlopeTransition
 
 
@@ -44,20 +44,27 @@ def is_accumulate_signal(
     hookup: bool,
     vol_regime_label: str = "NORMAL",
     observer_recovery: float = 0.0,
-    unified_prob: UnifiedProbability | None = None,
     vel_sigma_c: float = 0.0,
     vel_svw: float = 0.0,
     transition: SlopeTransition | None = None,
     dual_prob: DualProbability | None = None,
     combined_signal: CombinedSignal | None = None,
+    wave_signal: WaveSignal | None = None,
 ) -> tuple[bool, float, str]:
     """Evaluate whether current conditions favor accumulation.
 
-    Decision cascade (highest priority first):
-      1. COMBINED: T×C×σVw committee signal (538 tickers, 628K bars)
-      2. DUAL: Asymmetric P(piso) from sign families (AUC=0.8672)
-      3. UNIFIED: Slope×sigma×stereotype interactions
-      4. LEGACY: Heuristic σ + fear rules
+    Decision cascade (committee-approved, 4 paths):
+      1. COMBINED + WAVE: T×C×σVw macro context + W×σVc×σc×vel micro timing
+         - Combined ACCUM + Wave BOTTOM → HIGH conviction (confluence)
+         - Combined ACCUM + Wave NO_EDGE → REDUCED conviction (×0.5) [QS-1]
+         - Combined ACCUM + Wave TOP → BLOCK (conflict) [Issue 5]
+      2. WAVE STANDALONE: micro dip buying when Combined is passive
+         - Combined P_bull < 40% → BLOCK (Weinstein Stage 4 veto) [ROT-1]
+         - LATE_CYCLE_WARNING → conviction ×0.3 [ROT-2]
+         - wave_flip_imminent → +15% bonus [QS-2]
+      3. DUAL vol_surge: bonus to existing conviction (+10-15%) [QS-5]
+         Never primary, never blocks.
+      4. LEGACY: heuristic σ + fear rules (unchanged)
 
     Args:
         sigma_pos: Price position in σ units within regression channel.
@@ -66,10 +73,10 @@ def is_accumulate_signal(
         hookup: True if close > prev_close (momentum confirmation).
         vol_regime_label: Volatility regime from Vol Intelligence.
         observer_recovery: Unified Observer recovery_score ∈ [-1, +1].
-        unified_prob: Interconected slope×sigma×stereotype probabilities.
         vel_sigma_c: Velocity of σ_Current (from Observer Kalman).
         vel_svw: Velocity of σV_Wave (from Observer Kalman).
         combined_signal: Pre-computed committee signal from T×C×σVw table.
+        wave_signal: Pre-computed Wave signal from W×σVc×σc×vel table.
 
     Returns:
         (should_accumulate, conviction, reasoning)
@@ -80,22 +87,16 @@ def is_accumulate_signal(
         return False, 0.0, "VOL_CRISIS: No accumulation in crisis regime"
 
     # ════════════════════════════════════════════════════════════
-    # COMBINED TABLE PATH (v2): Committee-approved T×C×σVw signal
+    # PATH 1: COMBINED + WAVE (macro context + micro timing)
     #
-    # 180 pre-computed states with 8 signals. This is the PRIMARY
-    # accumulation path when available. Falls through to legacy
-    # paths when combined_signal is None.
+    # Combined provides the macro direction (180 states, 628K bars).
+    # Wave modulates timing based on pivot proximity (443 states).
     #
-    # Source: rc_combined_derived.json (538 tickers, 628K bars)
-    # Approved by: Dalio, Druckenmiller, PTJ/Eifert, Weinstein/Pring
+    # QS-1: "The value of Wave is in SUPPRESSING false positives
+    #        of Combined when micro doesn't confirm."
     # ════════════════════════════════════════════════════════════
     if combined_signal is not None and combined_signal.is_accumulate:
         sig = combined_signal
-        # Use confidence_factor (empirical edge × stability × repetition penalty)
-        # rather than conviction_factor (statistical z-score only).
-        # Note: In FLOOR state runs of length ≥5, 52% of bottoms occur in the FINAL
-        # 20% of the run and 76% in the final 40%. Buying day 1 of a FLOOR entry is
-        # statistically premature — the confidence_factor encodes this via w_stability.
         base_conviction = sig.confidence_factor
 
         # Observer timing modulation
@@ -111,21 +112,42 @@ def is_accumulate_signal(
                 f"— wait for Current to confirm"
             )
 
+        # ── Wave modulation (QS-1 + Issue 5) ──
+        wave_tag = ""
+        if wave_signal is not None:
+            if wave_signal.is_top_signal:
+                # Issue 5: CONFLICT — macro ACCUM + micro TOP → BLOCK
+                return False, 0.0, (
+                    f"COMBINED_WAVE_CONFLICT: [{sig.state_key}] {sig.signal} "
+                    f"P_bull={sig.p_bull:.1f}% but Wave [{wave_signal.state_key}] "
+                    f"says {wave_signal.signal} (lift_top={wave_signal.lift_best_top:.2f}×)"
+                )
+            elif wave_signal.is_bottom_signal:
+                # Confluence: macro + micro align → BOOST
+                base_conviction *= 1.15
+                wave_tag = (
+                    f" [WAVE_CONFIRMS: {wave_signal.signal} "
+                    f"lift={wave_signal.lift_best_bottom:.2f}× "
+                    f"clean={wave_signal.bot_pct_clean:.0f}%]"
+                )
+            else:
+                # QS-1: Wave NO_EDGE — macro wants to buy, micro doesn't confirm
+                # This is THE key value of Wave: filtering premature entries
+                base_conviction *= 0.5
+                wave_tag = " [WAVE_NO_EDGE: timing premature]"
+
         # Signal-specific conviction scaling
         if sig.signal == "ACCUMULATE":
-            # Extreme capitulation — go for the jugular (Druckenmiller)
             conviction = min(base_conviction * 1.3, 1.0)
             if recovering:
                 conviction = min(conviction * 1.15, 1.0)
             elif deteriorating:
-                # Still falling but capitulation so extreme it's worth partial entry
                 conviction = round(conviction * 0.5, 2)
             elif not confirmed:
                 conviction = round(conviction * 0.6, 2)
         else:  # BUY_DIP
             conviction = min(base_conviction * 1.0, 0.8)
             if not confirmed:
-                # BUY_DIP requires at least neutral recovery
                 return False, 0.0, (
                     f"COMBINED_BUY_DIP_UNCONF: [{sig.state_key}] "
                     f"P_bull={sig.p_bull:.1f}% asym={sig.asymmetry_pp:+.1f}pp "
@@ -144,9 +166,23 @@ def is_accumulate_signal(
 
         # Predictive edge bonus
         pred_tag = ""
-        if sig.predictive_edge == "LEADING_BOTTOM":
+        if sig.predictive_edge == "LEADING_TOP":
             conviction = min(conviction * 1.1, 1.0)
-            pred_tag = " [LEADING_BOTTOM]"
+            pred_tag = " [LEADING_TOP]"
+
+        # ── QS-5: Dual as BONUS (never primary, never blocks) ──
+        dual_tag = ""
+        if dual_prob is not None and dual_prob.prob_piso > 0.10:
+            conviction = min(conviction * 1.10, 1.0)
+            if dual_prob.expected_magnitude >= 0.075:
+                conviction = min(conviction * 1.05, 1.0)
+            dual_tag = f" [DUAL_BONUS: P_piso={dual_prob.prob_piso:.1%}]"
+
+        # ── Extreme velocity modifier (P10/P90 tails) ──
+        vel_ext_tag = ""
+        if wave_signal is not None and wave_signal.extreme_vel_tag:
+            conviction = min(conviction * wave_signal.extreme_vel_modifier, 1.0)
+            vel_ext_tag = f" [{wave_signal.extreme_vel_tag}]"
 
         conviction = round(conviction, 2)
         return True, conviction, (
@@ -157,151 +193,101 @@ def is_accumulate_signal(
             f"zone={sig.zone} regime={sig.regime} "
             f"conv={sig.conviction}/{sig.conviction_score} "
             f"sig_conf={sig.signal_confidence} "
-            f"obs={observer_recovery:+.3f}{pred_tag}"
+            f"obs={observer_recovery:+.3f}{pred_tag}{wave_tag}{dual_tag}{vel_ext_tag}"
         )
 
-    # ================================================================
-    # DUAL PATH: Asymmetric P(piso) tables (sign families)
+    # ════════════════════════════════════════════════════════════
+    # PATH 2: WAVE STANDALONE (micro timing without macro ACCUM)
     #
-    # Evidence (Fase 0 walk-forward):
-    #   Pisos AUC: 0.8672 (sigma_Vc primary), L1 coverage: 98.6%
-    #   Highest P(piso): 42.5% (ALL_NEG sigma_Vc=<< vel+ vol_high)
-    # ================================================================
-    if dual_prob is not None and dual_prob.prob_piso > 0.0:
-        pp = dual_prob.prob_piso
-
-        # Observer timing assessment
-        recovering = observer_recovery > 0.3
-        confirmed = observer_recovery > 0
-        deteriorating = observer_recovery < -0.3
-
-        # T9 structural filter
-        if transition and transition.cascade_type == "REBOTE_PREMATURO":
+    # Wave APPROACHING_BOTTOM can detect dips in uptrends that
+    # Combined NEVER sees (P_bull 50-83% range).
+    #
+    # ROT-1: "Wave standalone in Stage 4 = value trap"
+    #   → Combined P_bull < 40% → BLOCK
+    # ROT-2: LATE_CYCLE_WARNING → conviction ×0.3
+    # QS-2: wave_flip_imminent preserved as inflection bonus
+    # QS-3: conviction 0.3-0.5 scaled by cell metrics
+    # ════════════════════════════════════════════════════════════
+    if wave_signal is not None and wave_signal.is_bottom_signal:
+        # ROT-1: Weinstein Stage 4 Veto
+        combined_p = (combined_signal.p_bull / 100.0) if combined_signal else 0.5
+        if combined_p < 0.40:
             return False, 0.0, (
-                f"DUAL_PISO_BLOCKED: P(piso)={pp:.1%} "
-                f"but T9=REBOTE_PREMATURO -- wait for Current to confirm"
+                f"WAVE_TRAP: [{wave_signal.state_key}] {wave_signal.signal} "
+                f"lift={wave_signal.lift_best_bottom:.2f}× "
+                f"but Combined P_bull={combined_p:.1%} < 40% "
+                f"— micro bottom in macro downtrend (Weinstein veto)"
             )
 
-        # High conviction piso zone (>= 2.5x base rate of 6.9%)
-        if pp >= 0.15:
-            conviction = min(pp * 1.5, 1.0)
-
-            # Magnitude modulates sizing
-            if dual_prob.expected_magnitude >= 0.075:
-                conviction = min(conviction * 1.2, 1.0)
-
-            # Observer modulates timing
-            if recovering:
-                conviction = min(conviction * 1.15, 1.0)
-            elif deteriorating:
-                conviction = round(conviction * 0.4, 2)
-            elif not confirmed:
-                conviction = round(conviction * 0.6, 2)
-
-            # T9 PULLBACK_SANO boosts
-            if transition and transition.cascade_type in ("PULLBACK_SANO", "RALLY_VALIDADO"):
-                conviction = min(conviction * 1.2, 1.0)
-
-            if vol_regime_label == "ELEVATED":
-                conviction = round(conviction * 0.5, 2)
-
-            return True, round(conviction, 2), (
-                f"DUAL_PISO: P(piso)={pp:.1%} "
-                f"[{dual_prob.state_key_piso}] "
-                f"mag={dual_prob.expected_magnitude:.1%} "
-                f"fam={dual_prob.family} "
-                f"N={dual_prob.n_piso} level={dual_prob.level_piso} "
-                f"obs=[recovery={observer_recovery:+.3f}]"
-            )
-
-        elif pp >= 0.10:  # ~1.5x base rate -- moderate signal
-            if confirmed:
-                conviction = round(pp * 1.0, 2)
-                if vol_regime_label in ("ELEVATED", "CRISIS"):
-                    conviction = round(conviction * 0.4, 2)
-                return True, conviction, (
-                    f"DUAL_PISO_MOD: P(piso)={pp:.1%} "
-                    f"[{dual_prob.state_key_piso}] "
-                    f"fam={dual_prob.family} "
-                    f"obs=[recovery={observer_recovery:+.3f}]"
-                )
-
-    # ════════════════════════════════════════════════════════════
-    # SECONDARY PATH: Unified Tree (Slopes × Stereotypes)
-    # Fires when combined/dual didn't trigger, but the
-    # interconected slope+sigma state has high P(HL) at a bottom
-    # or the acceleration signals imminent wave flip.
-    # ════════════════════════════════════════════════════════════
-    if unified_prob is not None:
-        p_hl = unified_prob.prob_hl
-        p_bull_unified = unified_prob.prob_bull
-        slope = unified_prob.slope_state
-
-        # Observer timing
-        recovering = observer_recovery > 0.3
+        # Observer confirmation required
         confirmed = observer_recovery > 0
-        conf_tag = f"obs=[recovery={observer_recovery:+.3f}]"
-
-        # T7: sigma velocities (21pp spread) replace accels (5pp spread)
-        wave_flip_imminent = vel_sigma_c > 0 and slope.wave_sign < 0
-
-        # Combined P_bull as co-gate (replaces old rc_prob.prob_bull)
-        combined_p_bull = (combined_signal.p_bull / 100.0) if combined_signal else 0.5
-
-        # Case 1: Combined near neutral but unified says P(HL) > 50%
-        #   + wave deceleration → imminent flip → accumulate
-        if (combined_p_bull >= 0.40
-                and p_hl >= 0.50
-                and unified_prob.n_samples >= 20
-                and wave_flip_imminent
-                and confirmed):
-            conviction = round(min(p_hl * 0.7, 0.8), 2)
-            if vol_regime_label == "ELEVATED":
-                conviction = round(conviction * 0.5, 2)
-            trans_tag = ""
-            if transition and transition.cascade_type == "REBOTE_PREMATURO":
-                return False, 0.0, (
-                    f"UNIFIED_FLIP_BLOCKED: P(HL)={p_hl:.1%} but T9=REBOTE_PREMATURO "
-                    f"(W flipped but C={slope.current_level} still negative) "
-                    f"— wait for Current to confirm"
-                )
-            if transition and transition.cascade_type in ("PULLBACK_SANO", "RALLY_VALIDADO"):
-                conviction = min(round(conviction * 1.3, 2), 1.0)
-                trans_tag = f" T9={transition.cascade_type}"
-            return True, conviction, (
-                f"UNIFIED_FLIP_ACCUM: P(HL)={p_hl:.1%} [{unified_prob.lookup_key}] "
-                f"vel_σc={vel_sigma_c:+.4f} (flip imminent) "
-                f"stereo={unified_prob.dominant_stereotype} "
-                f"{conf_tag}{trans_tag}"
+        recovering = observer_recovery > 0.3
+        if not confirmed:
+            return False, 0.0, (
+                f"WAVE_STANDALONE_UNCONF: [{wave_signal.state_key}] "
+                f"{wave_signal.signal} but obs={observer_recovery:+.3f} not confirmed"
             )
 
-        # Case 2: Unified tree says strong P(bull) > 70%
-        if (p_bull_unified >= 0.70
-                and unified_prob.is_high_conviction
-                and confirmed):
-            conviction = round(unified_prob.conviction * 0.6, 2)
-            if recovering:
-                conviction = min(round(conviction * 1.15, 2), 1.0)
-            if vol_regime_label == "ELEVATED":
-                conviction = round(conviction * 0.5, 2)
-            return True, conviction, (
-                f"UNIFIED_STEREO_ACCUM: P(bull)={p_bull_unified:.1%} "
-                f"[{unified_prob.lookup_key}] "
-                f"HH={unified_prob.prob_hh:.1%} HL={unified_prob.prob_hl:.1%} "
-                f"N={unified_prob.n_samples} slope={slope.tripleta} "
-                f"{conf_tag}"
+        # Cell-level conviction (replaces fixed 0.3-0.5 cap — QS-3/Issue 2)
+        conviction = wave_signal.bottom_conviction  # 0.2-0.6 range
+
+        # ROT-2: LATE_CYCLE_WARNING reduces conviction dramatically
+        rot_tag = ""
+        if combined_signal and combined_signal.rotation_flag == "LATE_CYCLE_WARNING":
+            conviction *= 0.3
+            rot_tag = " [LATE_CYCLE_WARNING: cycle turning]"
+
+        # QS-2: wave_flip_imminent — σc rising within falling wave = inflection
+        flip_tag = ""
+        wave_flip_imminent = vel_sigma_c > 0 and wave_signal.momentum_state == "FALLING"
+        if wave_flip_imminent:
+            conviction = min(conviction * 1.15, 0.6)
+            flip_tag = " [WAVE_FLIP_IMMINENT]"
+
+        if recovering:
+            conviction = min(conviction * 1.15, 0.6)
+
+        # T9 boost for pullback sano
+        trans_tag = ""
+        if transition and transition.cascade_type in ("PULLBACK_SANO", "RALLY_VALIDADO"):
+            conviction = min(conviction * 1.2, 0.7)
+            trans_tag = f" T9={transition.cascade_type}"
+        elif transition and transition.cascade_type == "REBOTE_PREMATURO":
+            return False, 0.0, (
+                f"WAVE_STANDALONE_BLOCKED: [{wave_signal.state_key}] "
+                f"{wave_signal.signal} but T9=REBOTE_PREMATURO"
             )
 
-        # Below unified threshold → no signal from any probability model
-        return False, 0.0, (
-            f"PROB_HOLD: UNIFIED P(bull)={p_bull_unified:.1%} "
-            f"stereo={unified_prob.dominant_stereotype} "
-            f"slope={slope.tripleta}"
+        if vol_regime_label == "ELEVATED":
+            conviction = round(conviction * 0.5, 2)
+
+        # QS-5: Dual bonus
+        dual_tag = ""
+        if dual_prob is not None and dual_prob.prob_piso > 0.10:
+            conviction = min(conviction * 1.10, 0.7)
+            dual_tag = f" [DUAL_BONUS: P_piso={dual_prob.prob_piso:.1%}]"
+
+        # Extreme velocity modifier (P10/P90 tails)
+        vel_ext_tag = ""
+        if wave_signal.extreme_vel_tag:
+            conviction = min(conviction * wave_signal.extreme_vel_modifier, 0.7)
+            vel_ext_tag = f" [{wave_signal.extreme_vel_tag}]"
+
+        conviction = round(conviction, 2)
+        return True, conviction, (
+            f"WAVE_STANDALONE_{wave_signal.signal}: [{wave_signal.state_key}] "
+            f"lift_bot={wave_signal.lift_best_bottom:.2f}× "
+            f"clean={wave_signal.bot_pct_clean:.0f}% "
+            f"P_bull_wave={wave_signal.p_bull:.1f}% "
+            f"P_bull_combined={combined_p:.1%} "
+            f"micro={wave_signal.microstructure_type} "
+            f"obs={observer_recovery:+.3f}"
+            f"{flip_tag}{rot_tag}{trans_tag}{dual_tag}{vel_ext_tag}"
         )
 
     # ════════════════════════════════════════════════════════════
     # LEGACY FALLBACK: Heuristic rules (v1)
-    # Used when probability table is not available
+    # Used when neither Combined nor Wave produce a signal.
     # ════════════════════════════════════════════════════════════
     if fear is None:
         return False, 0.0, "INSUFFICIENT_DATA: Need 200+ bars for fear_level"
@@ -360,42 +346,45 @@ def is_trim_signal(
     sigma_pos: float,
     fear: TickerSentimentBias | None,
     observer_recovery: float = 0.0,
-    unified_prob: UnifiedProbability | None = None,
     vel_sigma_c: float = 0.0,
     vel_svw: float = 0.0,
     transition: SlopeTransition | None = None,
     dual_prob: DualProbability | None = None,
     combined_signal: CombinedSignal | None = None,
+    wave_signal: WaveSignal | None = None,
 ) -> tuple[bool, float, str]:
     """Evaluate whether current conditions favor trimming.
 
     Trimming ≠ selling. Trimming = reducing position size at statistical
     extremes to lock in gains and free capital for future accumulation.
 
-    Decision cascade (highest priority first):
-      1. COMBINED: T×C×σVw committee signal (TAKE_PROFIT / REDUCE)
+    Decision cascade (committee-approved):
+      1. COMBINED + WAVE: T×C×σVw trim signal + W micro modulation
+         - Combined TRIM + Wave TOP → HARD TRIM (boost ×1.3) [Issue 3]
+         - Combined TRIM + Wave NO_EDGE → MODERATE TRIM (×0.7) [Issue 3]
+         - Combined TRIM + Wave BOTTOM → DELAY TRIM (×0.5) [Issue 3]
       2. DUAL: Asymmetric P(techo)
-      3. UNIFIED: Slope×stereotype structural ceiling
-      4. LEGACY: Heuristic σ + fear rules
+      3. LEGACY: Heuristic σ + fear rules
 
     Args:
         sigma_pos: Price position in σ units within regression channel.
         fear: TickerSentimentBias (or None).
         observer_recovery: Unified Observer recovery_score ∈ [-1, +1].
-        unified_prob: Interconected slope×sigma×stereotype probabilities.
         vel_sigma_c: Velocity of σ_Current (from Observer Kalman).
         vel_svw: Velocity of σV_Wave (from Observer Kalman).
         combined_signal: Pre-computed committee signal from T×C×σVw table.
+        wave_signal: Pre-computed Wave signal from W×σVc×σc×vel table.
 
     Returns:
         (should_trim, trim_pct, reasoning)
         - trim_pct: 0.0-0.5 (max trim = 50% of swing allocation, never 100%)
     """
     # ════════════════════════════════════════════════════════════
-    # COMBINED TABLE PATH (v2): Committee-approved T×C×σVw trim
+    # PATH 1: COMBINED + WAVE TRIM
     #
     # TAKE_PROFIT: Blow-off top imminent (top_25 > 15%)
     # REDUCE: Preventive distribution (all Ceiling states)
+    # Wave modulates trim conviction symmetrically to ACCUM [Issue 3]
     # ════════════════════════════════════════════════════════════
     if combined_signal is not None and combined_signal.is_trim:
         sig = combined_signal
@@ -403,34 +392,63 @@ def is_trim_signal(
         confirmed_down = observer_recovery < 0
 
         if sig.signal == "TAKE_PROFIT":
-            # Aggressive profit-taking — blow-off top risk (PTJ)
-            trim_pct = round(min(0.5, sig.conviction_factor * 0.6), 2)
+            trim_pct = round(min(0.5, sig.confidence_factor * 0.6), 2)
             if deteriorating:
                 trim_pct = min(round(trim_pct * 1.3, 2), 0.5)
             if transition and transition.cascade_type == "CORRECCION_REAL":
                 trim_pct = min(round(trim_pct * 1.4, 2), 0.5)
 
             pred_tag = ""
-            if sig.predictive_edge == "LEADING_TOP":
+            if sig.predictive_edge == "LEADING_BOTTOM":
                 trim_pct = min(round(trim_pct * 1.2, 2), 0.5)
-                pred_tag = " [LEADING_TOP]"
+                pred_tag = " [LEADING_BOTTOM]"
+
+            # ── Issue 3: Wave modulates trim symmetrically ──
+            wave_tag = ""
+            if wave_signal is not None:
+                if wave_signal.is_top_signal:
+                    # Wave confirms top → HARD TRIM
+                    trim_pct = min(round(trim_pct * 1.3, 2), 0.5)
+                    wave_tag = (
+                        f" [WAVE_CONFIRMS_TOP: {wave_signal.signal} "
+                        f"lift_top={wave_signal.lift_best_top:.2f}×]"
+                    )
+                elif wave_signal.is_bottom_signal:
+                    # CONFLICT: macro TRIM + micro BOTTOM → delay trim
+                    trim_pct = round(trim_pct * 0.5, 2)
+                    wave_tag = (
+                        f" [WAVE_BOTTOM: delaying trim, "
+                        f"lift_bot={wave_signal.lift_best_bottom:.2f}×]"
+                    )
+                else:  # NO_EDGE
+                    trim_pct = round(trim_pct * 0.7, 2)
+                    wave_tag = " [WAVE_NO_EDGE: moderate trim]"
 
             return True, trim_pct, (
                 f"COMBINED_TAKE_PROFIT: [{sig.state_key}] "
                 f"P_bull={sig.p_bull:.1f}% top25={sig.top_25_pct:.1f}% "
                 f"asym={sig.asymmetry_pp:+.1f}pp "
                 f"zone={sig.zone} regime={sig.regime} "
-                f"N={sig.n_samples:,} obs={observer_recovery:+.3f}{pred_tag}"
+                f"N={sig.n_samples:,} obs={observer_recovery:+.3f}"
+                f"{pred_tag}{wave_tag}"
             )
 
         else:  # REDUCE
-            # Preventive distribution — Ceiling zone structural risk
-            trim_pct = round(min(0.3, sig.conviction_factor * 0.35), 2)
+            trim_pct = round(min(0.3, sig.confidence_factor * 0.35), 2)
             if deteriorating:
                 trim_pct = min(round(trim_pct * 1.2, 2), 0.4)
             if not confirmed_down:
-                # REDUCE without observer confirmation → small trim only
                 trim_pct = min(trim_pct, 0.15)
+
+            # ── Issue 3: Wave modulates REDUCE symmetrically ──
+            wave_tag = ""
+            if wave_signal is not None:
+                if wave_signal.is_top_signal:
+                    trim_pct = min(round(trim_pct * 1.2, 2), 0.4)
+                    wave_tag = f" [WAVE_CONFIRMS_TOP: {wave_signal.signal}]"
+                elif wave_signal.is_bottom_signal:
+                    trim_pct = round(trim_pct * 0.5, 2)
+                    wave_tag = f" [WAVE_BOTTOM: reducing trim urgency]"
 
             return True, trim_pct, (
                 f"COMBINED_REDUCE: [{sig.state_key}] "
@@ -438,7 +456,9 @@ def is_trim_signal(
                 f"asym={sig.asymmetry_pp:+.1f}pp "
                 f"zone={sig.zone} regime={sig.regime} "
                 f"N={sig.n_samples:,} obs={observer_recovery:+.3f}"
+                f"{wave_tag}"
             )
+
     # ================================================================
     # DUAL PATH: Asymmetric P(techo) trim
     # When dual_prob.prob_techo exceeds threshold, trigger trim.
@@ -464,72 +484,6 @@ def is_trim_signal(
                 f"fam={dual_prob.family} "
                 f"N={dual_prob.n_techo} level={dual_prob.level_techo} "
                 f"obs=[recovery={observer_recovery:+.3f}]"
-            )
-
-    # ════════════════════════════════════════════════════════════
-    # SECONDARY PATH: Unified Tree → Structural TRIM
-    # Fires when combined/dual didn't trigger, but unified detects
-    # structural ceiling from slope×stereotype interactions.
-    # ════════════════════════════════════════════════════════════
-    if unified_prob is not None:
-        p_lh = unified_prob.prob_lh
-        p_bull_unified = unified_prob.prob_bull
-        slope = unified_prob.slope_state
-        deteriorating = observer_recovery < -0.3
-
-        # T7: velocity negative + wave still positive → ceiling forming
-        ceiling_forming = vel_sigma_c < 0 and slope.wave_sign > 0
-
-        # Case 1: Unified says P(LH) > 50% + ceiling forming + deteriorating
-        if (p_lh >= 0.50
-                and unified_prob.n_samples >= 20
-                and ceiling_forming
-                and deteriorating):
-            trim_pct = round(min(0.4, p_lh * 0.5), 2)
-            trans_tag = ""
-            if transition and transition.cascade_type == "CORRECCION_REAL":
-                trim_pct = min(round(trim_pct * 1.5, 2), 0.5)
-                trans_tag = f" T9=CORRECCION_REAL(boost)"
-            return True, trim_pct, (
-                f"UNIFIED_CEILING_TRIM: P(LH)={p_lh:.1%} [{unified_prob.lookup_key}] "
-                f"vel_σc={vel_sigma_c:+.4f} (ceiling) "
-                f"obs_recovery={observer_recovery:+.3f} (deteriorating) "
-                f"slope={slope.tripleta}{trans_tag}"
-            )
-
-        # Case 1b: T9 EARLY_WARNING — W flipped down, C still positive
-        if (transition and transition.cascade_type == "EARLY_WARNING"
-                and p_bull_unified < 0.55
-                and vel_sigma_c < 0):
-            trim_pct = 0.15
-            return True, trim_pct, (
-                f"T9_EARLY_WARNING_TRIM: W flipped bearish but C+ "
-                f"P(bull)={p_bull_unified:.1%} vel_σc={vel_sigma_c:+.4f} "
-                f"slope={slope.tripleta} — anticipatory trim"
-            )
-
-        # Case 2: Unified says P(bull) < 30%
-        if (p_bull_unified <= 0.30
-                and unified_prob.is_high_conviction):
-            trim_pct = round(min(0.4, (0.5 - p_bull_unified)), 2)
-            return True, trim_pct, (
-                f"UNIFIED_STEREO_TRIM: P(bull)={p_bull_unified:.1%} "
-                f"[{unified_prob.lookup_key}] "
-                f"LH={p_lh:.1%} LL={unified_prob.prob_ll:.1%} "
-                f"N={unified_prob.n_samples} slope={slope.tripleta}"
-            )
-
-        # Case 3: Observer deteriorating + both models pessimistic
-        combined_p_bull = (combined_signal.p_bull / 100.0) if combined_signal else 0.5
-        if (deteriorating
-                and combined_p_bull < 0.50
-                and p_bull_unified < 0.45):
-            trim_pct = round(min(0.25, abs(observer_recovery) * 0.3), 2)
-            return True, trim_pct, (
-                f"UNIFIED_OBS_TRIM: obs={observer_recovery:+.3f} (deteriorating) "
-                f"combined_P_bull={combined_p_bull:.1%} "
-                f"unified_P(bull)={p_bull_unified:.1%} "
-                f"slope={slope.tripleta}"
             )
 
     # ════════════════════════════════════════════════════════════

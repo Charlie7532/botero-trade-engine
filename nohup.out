@@ -1,0 +1,22 @@
+tee: backend/scripts/wave_dominance_output/run.log: No such file or directory
+2026-06-29 21:22:04,453 INFO     Loading channel_snapshots...
+2026-06-29 21:23:11,053 INFO       Loaded 640,035 bars from 547 tickers
+2026-06-29 21:23:11,066 INFO     Computing vel_svw (EMA5.diff of vwap_sigma_wave)...
+Traceback (most recent call last):
+  File "/root/botero-trade/backend/scripts/wave_feature_dominance.py", line 657, in <module>
+    main()
+  File "/root/botero-trade/backend/scripts/wave_feature_dominance.py", line 644, in main
+    df = load_data(store)
+         ^^^^^^^^^^^^^^^^
+  File "/root/botero-trade/backend/scripts/wave_feature_dominance.py", line 180, in load_data
+    df.loc[mask, 'vel_svw'] = ema5.diff().fillna(0.0)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/root/botero-trade/backend/.venv/lib/python3.12/site-packages/pandas/core/indexing.py", line 912, in __setitem__
+    iloc._setitem_with_indexer(indexer, value, self.name)
+  File "/root/botero-trade/backend/.venv/lib/python3.12/site-packages/pandas/core/indexing.py", line 1943, in _setitem_with_indexer
+    self._setitem_with_indexer_split_path(indexer, value, name)
+  File "/root/botero-trade/backend/.venv/lib/python3.12/site-packages/pandas/core/indexing.py", line 1978, in _setitem_with_indexer_split_path
+    self._setitem_with_indexer_frame_value(indexer, value, name)
+  File "/root/botero-trade/backend/.venv/lib/python3.12/site-packages/pandas/core/indexing.py", line 2094, in _setitem_with_indexer_frame_value
+    raise ValueError("Setting with non-unique columns is not allowed.")
+ValueError: Setting with non-unique columns is not allowed.

@@ -108,32 +108,14 @@ class SwingGate:
 
         below_vwap = rc_result.below_vwap
 
-        # ── Unified Tree: Slopes × Sigmas × Stereotypes (interconected) ──
-        _unified = None
-        try:
-            from backend.modules.quality_swing.domain.rules.rc_unified_lookup import (
-                lookup_unified,
-            )
-            _unified = lookup_unified(
-                tide_slope=channel.tide_slope,
-                current_slope=channel.current_slope,
-                wave_slope=channel.wave_slope,
-                sigma_current=channel.sigma_current,
-                sigma_wave=channel.sigma_wave,
-                vwap_sigma_wave=channel.vwap_sigma_wave,
-            )
-            if _unified:
-                decision.alerts.append(
-                    f"UNIFIED[{_unified.lookup_key}]: "
-                    f"P(bull)={_unified.prob_bull:.1%} "
-                    f"stereo={_unified.dominant_stereotype} "
-                    f"HH={_unified.prob_hh:.1%} HL={_unified.prob_hl:.1%} "
-                    f"LH={_unified.prob_lh:.1%} LL={_unified.prob_ll:.1%} "
-                    f"N={_unified.n_samples} level={_unified.level} "
-                    f"slope={_unified.slope_state.tripleta}"
-                )
-        except Exception as e:
-            logger.warning(f"SwingGate {ticker}: Unified lookup failed: {e}")
+        # ── Slope State: classify_slopes() replaces Unified Tree ──
+        # (Committee QS-4: Unified Tree eliminated — 82% of nodes had N<50)
+        from backend.modules.quality_swing.domain.rules.rc_slope_classifier import (
+            classify_slopes,
+        )
+        _slope_state = classify_slopes(
+            channel.tide_slope, channel.current_slope, channel.wave_slope
+        )
 
         # Load Observer recovery_score and velocities from Vault
         _observer_recovery = self._load_observer_recovery(ticker)
@@ -151,12 +133,7 @@ class SwingGate:
             # w_duration: compute live from Vault previous + current wave level
             _w_duration = 1
             try:
-                from backend.modules.quality_swing.domain.rules.rc_slope_classifier import (
-                    classify_slopes,
-                )
-                curr_slope = classify_slopes(
-                    channel.tide_slope, channel.current_slope, channel.wave_slope
-                )
+                curr_slope = _slope_state  # Already computed above
                 prev_snap = self._port.load_latest_snapshot(ticker)
                 if prev_snap is not None:
                     prev_slope = classify_slopes(
@@ -205,10 +182,10 @@ class SwingGate:
             logger.warning(f"SwingGate {ticker}: Dual probability lookup failed: {e}")
 
         # ── T9: Slope Transition Detector (Canary/Confirmador) ──
+        # (QS-4: decoupled from Unified — uses _slope_state directly)
         _transition = None
-        if _unified and idx >= 2:
+        if idx >= 2:
             try:
-                from backend.modules.quality_swing.domain.rules.rc_slope_classifier import classify_slopes
                 from backend.modules.quality_swing.domain.rules.slope_transition_detector import detect_transition
                 # Get previous bar's slopes from OHLCV data
                 prev_channel = compute_channel_snapshot(close, high, low, volume, idx - 1)
@@ -218,7 +195,7 @@ class SwingGate:
                     )
                     _transition = detect_transition(
                         prev_tripleta=prev_slopes.tripleta,
-                        curr_tripleta=_unified.slope_state.tripleta,
+                        curr_tripleta=_slope_state.tripleta,
                     )
                     if _transition.cascade_type != "NONE":
                         decision.alerts.append(
@@ -237,14 +214,6 @@ class SwingGate:
             from backend.modules.quality_swing.domain.rules.rc_combined_lookup import (
                 lookup_combined_signal,
             )
-            # Use classified slopes from unified tree (already computed)
-            if _unified:
-                _slope_state = _unified.slope_state
-            else:
-                from backend.modules.quality_swing.domain.rules.rc_slope_classifier import classify_slopes
-                _slope_state = classify_slopes(
-                    channel.tide_slope, channel.current_slope, channel.wave_slope
-                )
             _combined = lookup_combined_signal(
                 tide_level=_slope_state.tide_level,
                 current_level=_slope_state.current_level,
@@ -262,6 +231,32 @@ class SwingGate:
                 )
         except Exception as e:
             logger.warning(f"SwingGate {ticker}: Combined signal lookup failed: {e}")
+
+        # ── Wave W×σVc×σc×vel Signal (micro timing, 443 L1 states) ──
+        # Wave = microscopio del canal: timing de pivots + reversal quality
+        _wave = None
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_wave_lookup import (
+                lookup_wave_signal,
+            )
+            _wave = lookup_wave_signal(
+                wave_slope=channel.wave_slope,
+                vwap_sigma_current=channel.vwap_sigma_current,
+                sigma_current=channel.sigma_current,
+                vel_svw=_vel_svw,
+            )
+            if _wave:
+                decision.alerts.append(
+                    f"WAVE[{_wave.state_key}]: "
+                    f"signal={_wave.signal} "
+                    f"P_bot={_wave.p_any_bottom:.1f}% "
+                    f"lift_bot={_wave.lift_best_bottom:.2f}× "
+                    f"clean={_wave.bot_pct_clean:.0f}% "
+                    f"micro={_wave.microstructure_type} "
+                    f"N={_wave.n_samples}"
+                )
+        except Exception as e:
+            logger.warning(f"SwingGate {ticker}: Wave lookup failed: {e}")
 
         # ── Load vol regime (Stateful-First: StateSnapshot preferred) ──
         vol_snap = None
@@ -450,12 +445,12 @@ class SwingGate:
             hookup=hookup,
             vol_regime_label=vol_label,
             observer_recovery=_observer_recovery,
-            unified_prob=_unified,
             vel_sigma_c=_vel_sigma_c,
             vel_svw=_vel_svw,
             transition=_transition,
             dual_prob=_dual_prob,
             combined_signal=_combined,
+            wave_signal=_wave,
         )
 
         if should_accum:
@@ -535,12 +530,12 @@ class SwingGate:
             sigma_pos=rc_result.sigma_position,
             fear=fear,
             observer_recovery=_observer_recovery,
-            unified_prob=_unified,
             vel_sigma_c=_vel_sigma_c,
             vel_svw=_vel_svw,
             transition=_transition,
             dual_prob=_dual_prob,
             combined_signal=_combined,
+            wave_signal=_wave,
         )
 
         if should_trim:
@@ -588,7 +583,7 @@ class SwingGate:
 
         # ── Default: HOLD ──
         decision.action = "HOLD"
-        _prob_ctx = f" P(bull)={_rc_prob.prob_bull:.1%}" if _rc_prob else ""
+        _prob_ctx = f" P(bull)={_combined.p_bull:.1f}%" if _combined else ""
         decision.reasoning = (
             f"HOLD: σ={rc_result.sigma_position:.1f}, "
             f"fear={rc_result.fear_label}, tide={rc_result.tide_slope:.3f}, "

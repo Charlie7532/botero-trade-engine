@@ -14,7 +14,7 @@ from pathlib import Path
 from collections import Counter
 from datetime import datetime, timezone
 
-ROOT = Path("/root/botero-trade")
+ROOT = Path(__file__).resolve().parent.parent.parent
 RAW_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_combined_probability_table.json"
 OUT_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_combined_derived.json"
 
@@ -51,6 +51,10 @@ def classify_regime(t: str, c: str) -> str:
     return "DIV_DOWN"
 
 
+# CEILING zone zz50_max baseline — states must exceed this for TAKE_PROFIT via zz50
+_CEILING_ZZ50_MAX_BASELINE = 7.15
+
+
 def classify_signal(
     zone: str,
     p_bull: float,
@@ -62,38 +66,49 @@ def classify_signal(
     zz75_min_pct: float = 0.0,
     zz50_max_pct: float = 0.0,
 ) -> str:
-    """Assign one of 8 signals. Priority order — first match wins.
+    """Assign one of 9 signals. Priority order — first match wins.
 
-    Refined v3 rules (committee-approved 2026-06-26):
-      ACCUMULATE   — Extreme capitulation: deep 5%/7.5% bottom density required.
-      BUY_DIP      — Statistical dip: 2.5% asymmetry OR bottom density, p_bull<46.
-      TAKE_PROFIT  — Blow-off top: multi-level zigzag top density elevated.
-      MOMENTUM     — Runaway bull in CEILING: p_bull>78% and low top risk (new);
-                     or clean uptrend in ABOVE zone.
-      REDUCE       — CEILING with structural risk but NOT a runaway or blow-off.
-      BULL_TREND   — Stable ABOVE uptrend, lower momentum purity requirement.
-      WATCH        — FLOOR/BELOW with no actionable edge yet.
-      NO_EDGE      — Neutral zone with no discriminating feature.
+    Remediated v4 rules (meta-audit 2026-06-29):
+      ACCUMULATE    — Extreme capitulation: deep 5%/7.5% bottom density.
+      BUY_DIP       — Statistical dip: asymmetry OR bottom density, p_bull<46.
+      TAKE_PROFIT   — Blow-off top: zz25_max > 15% OR zz50_max above CEILING
+                      zone baseline (zone-relative guard).
+      STRONG_TREND  — CEILING but low structural top risk and strong p_bull.
+                      (Renamed from MOMENTUM(CEILING) to avoid semantic
+                      conflict with the committee's 'distribute preventively'
+                      principle for CEILING.)
+      REDUCE        — Remaining CEILING: structural risk, preventive trim.
+      MOMENTUM      — Clean ABOVE uptrend with high purity.
+      BULL_TREND    — Stable ABOVE uptrend, lower purity requirement.
+      WATCH         — FLOOR/BELOW with no actionable edge yet.
+      NO_EDGE       — Neutral zone with no discriminating feature.
     """
-    # 1. ACCUMULATE — requires deep capitulation signal (5% or 7.5% zigzag bottoms)
+    # 1. ACCUMULATE — deep capitulation (5% or 7.5% zigzag bottoms)
     if zone == "FLOOR" and p_bull < 38.0 and (zz75_min_pct > 8.0 or zz50_min_pct > 12.0):
         return "ACCUMULATE"
-    # 2. BUY_DIP — good dip setup: asymmetry edge or elevated minor bottom density
+    # 2. BUY_DIP — asymmetry edge or elevated minor bottom density
     if zone in ["FLOOR", "BELOW"] and p_bull < 46.0 and (asym_pp > 15.0 or zz25_min_pct > 18.0):
         return "BUY_DIP"
-    # 3. TAKE_PROFIT — blow-off top: multi-level top density clearly elevated
-    if zone == "CEILING" and (zz25_max_pct > 15.0 or zz50_max_pct > 6.0):
+    # 3. TAKE_PROFIT — blow-off top: zz25 absolute OR zz50 zone-relative
+    #    Zone-relative guard: zz50 must exceed CEILING baseline (7.15%)
+    #    to prevent false positives on states with below-average top density.
+    if zone == "CEILING" and (
+        zz25_max_pct > 15.0
+        or zz50_max_pct > _CEILING_ZZ50_MAX_BASELINE
+    ):
         return "TAKE_PROFIT"
-    # 4. MOMENTUM (CEILING) — runaway bull: strong p_bull, low structural top risk
+    # 4. STRONG_TREND (CEILING) — strong bull with low top risk
+    #    Distinct from MOMENTUM (ABOVE) to signal that this is still
+    #    CEILING zone: remain cautious but don't aggressively trim.
     if zone == "CEILING" and p_bull > 78.0 and zz25_max_pct < 12.0:
-        return "MOMENTUM"
-    # 5. REDUCE — remaining CEILING: structural risk but not momentum or blow-off
+        return "STRONG_TREND"
+    # 5. REDUCE — remaining CEILING: preventive distribution
     if zone == "CEILING":
         return "REDUCE"
     # 6. MOMENTUM (ABOVE) — clean uptrend with high purity and low turn risk
     if zone == "ABOVE" and p_bull > 70.0 and momentum_purity > 70.0 and zz25_max_pct < 10.0:
         return "MOMENTUM"
-    # 7. BULL_TREND — stable uptrend above VWAP, lower purity requirement
+    # 7. BULL_TREND — stable uptrend above VWAP
     if zone == "ABOVE" and p_bull > 65.0 and zz25_max_pct < 10.0:
         return "BULL_TREND"
     # 8. WATCH — FLOOR/BELOW but no actionable pivot signal
@@ -123,6 +138,7 @@ def compute_signal_confidence(
     zz25_min_pct: float,
     zz25_max_pct: float,
     zz50_min_pct: float,
+    zz50_max_pct: float,
     zz75_min_pct: float,
     asym_pp: float,
     avg_hh_run: float,
@@ -158,10 +174,13 @@ def compute_signal_confidence(
         edge_raw = max(0.0, asym_pp) / 30.0  # 30pp = large asymmetry
         w_edge = min(1.0, edge_raw)
     elif signal == "TAKE_PROFIT":
-        # Top density elevation above 2.5% baseline (~10%)
-        edge_raw = max(0.0, zz25_max_pct - 10.0) / 10.0
+        # Top density edge — use the BETTER of zz25 and zz50 lift
+        # so that zz50-triggered TPs don't get artificially penalized
+        edge_25 = max(0.0, zz25_max_pct - 10.0) / 10.0
+        edge_50 = max(0.0, zz50_max_pct - 5.0) / 5.0  # 5% baseline for zz50
+        edge_raw = max(edge_25, edge_50)
         w_edge = min(1.0, edge_raw)
-    elif signal == "MOMENTUM":
+    elif signal in ("MOMENTUM", "STRONG_TREND"):
         # Distance of p_bull above the 60.78% market baseline
         edge_raw = max(0.0, p_bull - 60.78) / 30.0  # 30pp above → full confidence
         w_edge = min(1.0, edge_raw)
@@ -236,6 +255,7 @@ SIGNAL_DESCRIPTIONS = {
     "ACCUMULATE": "Extreme capitulation zone. Statistically validated accumulation opportunity.",
     "BUY_DIP": "Statistical dip with strong bottom asymmetry. Accumulate on confirmed support.",
     "TAKE_PROFIT": "Blow-off top risk imminent. Aggressive profit-taking recommended.",
+    "STRONG_TREND": "Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively.",
     "REDUCE": "Preventive distribution. Ceiling zone carries structural top risk.",
     "MOMENTUM": "Genuine trend with clean momentum and low turn risk. Maintain exposure.",
     "BULL_TREND": "Stable uptrend above VWAP. Hold positions, do not add aggressively.",
@@ -456,7 +476,8 @@ def main():
         sig_confidence = compute_signal_confidence(
             signal=signal, n=n, p_bull=p_bull,
             zz25_min_pct=zz25_min_pct, zz25_max_pct=zz25_max_pct,
-            zz50_min_pct=zz50_min_pct, zz75_min_pct=zz75_min_pct,
+            zz50_min_pct=zz50_min_pct, zz50_max_pct=zz50_max_pct,
+            zz75_min_pct=zz75_min_pct,
             asym_pp=asym_pp, avg_hh_run=hh_avg, turn_density=turn_dens,
         )
 

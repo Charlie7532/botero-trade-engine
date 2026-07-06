@@ -1,0 +1,311 @@
+{
+  "version": "v1_2026-06-29",
+  "n_bars": 640035,
+  "n_tickers": 547,
+  "n_features_tested": 93,
+  "n_derived_features": 28,
+  "derived_features": [
+    "vel_svw",
+    "vel_svc",
+    "vel_sc",
+    "accel_svw",
+    "accel_svc",
+    "cumvel_svw_3",
+    "cumvel_svc_3",
+    "svc_sc_divergence",
+    "wave_slope_x_svc",
+    "wave_slope_x_vel_svw",
+    "compr_x_sc",
+    "tension_w_directed",
+    "rsi_x_svc",
+    "kf_vel_x_wave",
+    "vol_surge_x_svc",
+    "obs_consensus_x_svc",
+    "triple_vel_align",
+    "d_wave_slope",
+    "d_current_slope",
+    "kf_innovation_abs",
+    "obs_recov_x_vel_svw",
+    "svc_ema10",
+    "svc_vs_ema10",
+    "vol_ratio_x_wave",
+    "conj_wc_x_svc",
+    "spread_cw_x_vel",
+    "w_duration_log",
+    "resid_std_ratio_wc"
+  ],
+  "baseline": [
+    {
+      "feature": "wave_slope",
+      "desc": "W direction",
+      "target": "zz25_min",
+      "spread_pp": 8.66,
+      "best_bin": "W---",
+      "best_rate": 16.81,
+      "worst_bin": "W++",
+      "worst_rate": 8.15,
+      "rates": {
+        "W+": 8.54,
+        "W++": 8.15,
+        "W+++": 9.78,
+        "W-": 9.55,
+        "W--": 11.44,
+        "W---": 16.81
+      }
+    },
+    {
+      "feature": "wave_slope",
+      "desc": "W direction",
+      "target": "zz25_max",
+      "spread_pp": 4.48,
+      "best_bin": "W+++",
+      "best_rate": 13.31,
+      "worst_bin": "W-",
+      "worst_rate": 8.83,
+      "rates": {
+        "W+": 8.84,
+        "W++": 9.66,
+        "W+++": 13.31,
+        "W-": 8.83,
+        "W--": 9.21,
+        "W---": 12.75
+      }
+    },
+    {
+      "feature": "wave_slope",
+      "desc": "W direction",
+      "target": "zz50_min",
+      "spread_pp": 6.37,
+      "best_bin": "W---",
+      "best_rate": 8.72,
+      "worst_bin": "W++",
+      "worst_rate": 2.35,
+      "rates": {
+        "W+": 2.75,
+        "W++": 2.35,
+        "W+++": 2.95,
+        "W-": 3.46,
+        "W--": 4.91,
+        "W---": 8.72
+      }
+    },
+    {
+      "feature": "wave_slope",
+      "desc": "W direction",
+      "target": "zz50_max",
+      "spread_pp": 3.52,
+      "best_bin": "W+++",
+      "best_rate": 6.33,
+      "worst_bin": "W--",
+      "worst_rate": 2.8,
+      "rates": {
+        "W+": 3.24,
+        "W++": 3.92,
+        "W+++": 6.33,
+        "W-": 2.8,
+        "W--": 2.8,
+        "W---": 4.55
+      }
+    },
+    {
+      "feature": "vwap_sigma_current",
+      "desc": "σVc position",
+      "target": "zz25_min",
+      "spread_pp": 12.96,
+      "best_bin": "<<",
+      "best_rate": 18.79,
+      "worst_bin": ">>",
+      "worst_rate": 5.83,
+      "rates": {
+        "<": 12.15,
+        "<<": 18.79,
+        ">": 10.67,
+        ">>": 5.83,
+        "~": 11.24
+      }
+    },
+    {
+      "feature": "vwap_sigma_current",
+      "desc": "σVc position",
+      "target": "zz25_max",
+      "spread_pp": 3.57,
+      "best_bin": ">>",
+      "best_rate": 12.4,
+      "worst_bin": "<<",
+      "worst_rate": 8.83,
+      "rates": {
+        "<": 11.49,
+        "<<": 8.83,
+        ">": 9.86,
+        ">>": 12.4,
+        "~": 10.93
+      }
+    },
+    {
+      "feature": "vwap_sigma_current",
+      "desc": "σVc position",
+      "target": "zz50_min",
+      "spread_pp": 8.91,
+      "best_bin": "<<",
+      "best_rate": 10.05,
+      "worst_bin": ">>",
+      "worst_rate": 1.14,
+      "rates": {
+        "<": 4.67,
+        "<<": 10.05,
+        ">": 3.59,
+        ">>": 1.14,
+        "~": 4.16
+      }
+    },
+    {
+      "feature": "vwap_sigma_current",
+      "desc": "σVc position",
+      "target": "zz50_max",
+      "spread_pp": 3.57,
+      "best_bin": ">>",
+      "best_rate": 5.92,
+      "worst_bin": "<<",
+      "worst_rate": 2.34,
+      "rates": {
+        "<": 4.1,
+        "<<": 2.34,
+        ">": 3.56,
+        ">>": 5.92,
+        "~": 4.0
+      }
+    },
+    {
+      "feature": "sigma_current",
+      "desc": "σc position",
+      "target": "zz25_min",
+      "spread_pp": 12.55,
+      "best_bin": "<<",
+      "best_rate": 18.06,
+      "worst_bin": ">>",
+      "worst_rate": 5.51,
+      "rates": {
+        "<": 11.8,
+        "<<": 18.06,
+        ">": 8.66,
+        ">>": 5.51,
+        "~": 10.16
+      }
+    },
+    {
+      "feature": "sigma_current",
+      "desc": "σc position",
+      "target": "zz25_max",
+      "spread_pp": 8.3,
+      "best_bin": ">>",
+      "best_rate": 15.31,
+      "worst_bin": "<<",
+      "worst_rate": 7.02,
+      "rates": {
+        "<": 9.59,
+        "<<": 7.02,
+        ">": 11.57,
+        ">>": 15.31,
+        "~": 10.63
+      }
+    },
+    {
+      "feature": "sigma_current",
+      "desc": "σc position",
+      "target": "zz50_min",
+      "spread_pp": 8.3,
+      "best_bin": "<<",
+      "best_rate": 9.37,
+      "worst_bin": ">>",
+      "worst_rate": 1.07,
+      "rates": {
+        "<": 4.54,
+        "<<": 9.37,
+        ">": 2.35,
+        ">>": 1.07,
+        "~": 3.44
+      }
+    },
+    {
+      "feature": "sigma_current",
+      "desc": "σc position",
+      "target": "zz50_max",
+      "spread_pp": 5.93,
+      "best_bin": ">>",
+      "best_rate": 7.58,
+      "worst_bin": "<<",
+      "worst_rate": 1.65,
+      "rates": {
+        "<": 2.98,
+        "<<": 1.65,
+        ">": 4.72,
+        ">>": 7.58,
+        "~": 3.92
+      }
+    },
+    {
+      "feature": "vel_svw",
+      "desc": "vel_σVw momentum",
+      "target": "zz25_min",
+      "spread_pp": 13.87,
+      "best_bin": "▼",
+      "best_rate": 18.35,
+      "worst_bin": "▲",
+      "worst_rate": 4.48,
+      "rates": {
+        "~": 10.2,
+        "▲": 4.48,
+        "▼": 18.35
+      }
+    },
+    {
+      "feature": "vel_svw",
+      "desc": "vel_σVw momentum",
+      "target": "zz25_max",
+      "spread_pp": 10.56,
+      "best_bin": "▲",
+      "best_rate": 16.15,
+      "worst_bin": "▼",
+      "worst_rate": 5.59,
+      "rates": {
+        "~": 10.84,
+        "▲": 16.15,
+        "▼": 5.59
+      }
+    },
+    {
+      "feature": "vel_svw",
+      "desc": "vel_σVw momentum",
+      "target": "zz50_min",
+      "spread_pp": 6.13,
+      "best_bin": "▼",
+      "best_rate": 7.69,
+      "worst_bin": "▲",
+      "worst_rate": 1.56,
+      "rates": {
+        "~": 3.74,
+        "▲": 1.56,
+        "▼": 7.69
+      }
+    },
+    {
+      "feature": "vel_svw",
+      "desc": "vel_σVw momentum",
+      "target": "zz50_max",
+      "spread_pp": 5.25,
+      "best_bin": "▲",
+      "best_rate": 7.04,
+      "worst_bin": "▼",
+      "worst_rate": 1.79,
+      "rates": {
+        "~": 3.9,
+        "▲": 7.04,
+        "▼": 1.79
+      }
+    }
+  ],
+  "scan_top100": [],
+  "velocity_top50": [],
+  "interactions_top20": [],
+  "final_ranking_top50": []
+}

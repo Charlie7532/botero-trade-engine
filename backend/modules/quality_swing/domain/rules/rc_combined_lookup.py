@@ -82,7 +82,7 @@ class CombinedSignal:
     @property
     def is_hold(self) -> bool:
         """Signal recommends holding or no action."""
-        return self.signal in ("MOMENTUM", "BULL_TREND", "WATCH", "NO_EDGE")
+        return self.signal in ("MOMENTUM", "STRONG_TREND", "BULL_TREND", "WATCH", "NO_EDGE")
 
     @property
     def is_bullish_zone(self) -> bool:

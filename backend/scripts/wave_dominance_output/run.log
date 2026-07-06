@@ -1,0 +1,87 @@
+nohup: ignoring input
+2026-06-29 21:50:17,062 INFO     ===============================================================================================
+2026-06-29 21:50:17,063 INFO       WAVE MICROSTRUCTURE — Feature Lake Dominance Study
+2026-06-29 21:50:17,063 INFO       W(6) × σVc(5) × σc(5) × vel_σVw(3) = 450 cells
+2026-06-29 21:50:17,063 INFO       Goal: Discover INVISIBLE signals that should join the schema
+2026-06-29 21:50:17,063 INFO     ===============================================================================================
+2026-06-29 21:50:17,144 INFO     Loading channel_snapshots...
+2026-06-29 21:51:03,121 INFO       Loaded 640,035 bars from 547 tickers
+2026-06-29 21:51:03,152 INFO     Loading zigzag points...
+2026-06-29 21:51:06,492 INFO       Loaded 273,383 zigzag points
+2026-06-29 21:51:07,243 INFO     Computing derived features...
+2026-06-29 22:00:51,447 INFO       Derived features computed: 28 features
+2026-06-29 22:00:51,496 INFO     Labeling zigzag coincidences...
+2026-06-29 22:01:23,737 INFO       Building T-1 lookback index...
+2026-06-29 22:02:44,318 INFO       Assigning labels...
+2026-06-29 22:05:01,962 INFO       zz25_min: T=0=70,039  T-1=69,885
+2026-06-29 22:05:02,038 INFO       zz25_max: T=0=69,875  T-1=69,849
+2026-06-29 22:05:02,043 INFO       zz50_min: T=0=27,517  T-1=27,452
+2026-06-29 22:05:02,061 INFO       zz50_max: T=0=27,355  T-1=27,346
+2026-06-29 22:05:34,779 INFO     
+===============================================================================================
+2026-06-29 22:05:34,779 INFO       ANALYSIS 1: BASELINE — Proposed 4D dimensions vs zigzag
+2026-06-29 22:05:34,780 INFO     ===============================================================================================
+2026-06-29 22:05:34,782 INFO     
+  Feature: wave_slope (W direction)
+2026-06-29 22:05:36,383 INFO         zz25_min: spread=8.7pp  best=W---(16.8%) worst=W++(8.1%)
+2026-06-29 22:05:36,997 INFO         zz25_max: spread=4.5pp  best=W+++(13.3%) worst=W-(8.8%)
+2026-06-29 22:05:37,541 INFO         zz50_min: spread=6.4pp  best=W---(8.7%) worst=W++(2.4%)
+2026-06-29 22:05:38,067 INFO         zz50_max: spread=3.5pp  best=W+++(6.3%) worst=W--(2.8%)
+2026-06-29 22:05:38,069 INFO     
+  Feature: vwap_sigma_current (σVc position)
+2026-06-29 22:05:39,659 INFO         zz25_min: spread=13.0pp  best=<<(18.8%) worst=>>(5.8%)
+2026-06-29 22:05:40,149 INFO         zz25_max: spread=3.6pp  best=>>(12.4%) worst=<<(8.8%)
+2026-06-29 22:05:40,646 INFO         zz50_min: spread=8.9pp  best=<<(10.1%) worst=>>(1.1%)
+2026-06-29 22:05:41,112 INFO         zz50_max: spread=3.6pp  best=>>(5.9%) worst=<<(2.3%)
+2026-06-29 22:05:41,112 INFO     
+  Feature: sigma_current (σc position)
+2026-06-29 22:05:42,515 INFO         zz25_min: spread=12.5pp  best=<<(18.1%) worst=>>(5.5%)
+2026-06-29 22:05:43,010 INFO         zz25_max: spread=8.3pp  best=>>(15.3%) worst=<<(7.0%)
+2026-06-29 22:05:43,518 INFO         zz50_min: spread=8.3pp  best=<<(9.4%) worst=>>(1.1%)
+2026-06-29 22:05:44,026 INFO         zz50_max: spread=5.9pp  best=>>(7.6%) worst=<<(1.7%)
+2026-06-29 22:05:44,027 INFO     
+  Feature: vel_svw (vel_σVw momentum)
+2026-06-29 22:05:44,767 INFO         zz25_min: spread=13.9pp  best=▼(18.4%) worst=▲(4.5%)
+2026-06-29 22:05:44,982 INFO         zz25_max: spread=10.6pp  best=▲(16.2%) worst=▼(5.6%)
+2026-06-29 22:05:45,180 INFO         zz50_min: spread=6.1pp  best=▼(7.7%) worst=▲(1.6%)
+2026-06-29 22:05:45,376 INFO         zz50_max: spread=5.3pp  best=▲(7.0%) worst=▼(1.8%)
+2026-06-29 22:05:45,382 INFO     
+===============================================================================================
+2026-06-29 22:05:45,383 INFO       ANALYSIS 2: SIMONS SCAN — Exhaustive feature AUC vs zigzag turns
+2026-06-29 22:05:45,383 INFO     ===============================================================================================
+2026-06-29 22:05:45,392 INFO       Testing 95 features × 8 targets
+2026-06-29 22:05:56,764 INFO     
+  TOP 40 features by AUC (across all targets):
+2026-06-29 22:05:56,765 INFO       Rank Feature                                  Target             AUC Dir   t-stat  Lift Proposed
+2026-06-29 22:05:56,765 INFO       -----------------------------------------------------------------------------------------------
+2026-06-29 22:05:56,767 INFO     
+===============================================================================================
+2026-06-29 22:05:56,767 INFO       ANALYSIS 3: VELOCITY LAYER — Temporal derivatives at T-1
+2026-06-29 22:05:56,767 INFO       Which d/dt features anticipate turns BEFORE they happen?
+2026-06-29 22:05:56,767 INFO     ===============================================================================================
+2026-06-29 22:05:57,349 INFO     
+  VELOCITY FEATURES — T-1 Anticipation Power:
+2026-06-29 22:05:57,349 INFO       Feature                             Target             AUC   t-stat
+2026-06-29 22:05:57,351 INFO       ----------------------------------------------------------------------
+2026-06-29 22:05:57,355 INFO     
+===============================================================================================
+2026-06-29 22:05:57,356 INFO       ANALYSIS 4: INTERACTION HUNT — Does A×B beat A and B alone?
+2026-06-29 22:05:57,356 INFO     ===============================================================================================
+2026-06-29 22:05:57,359 INFO     
+  SYNERGISTIC INTERACTIONS (AUC gain > 0.5pp) vs zz25_min:
+2026-06-29 22:05:57,360 INFO       F1                             × F2                              AUC_int  AUC_F1  AUC_F2   Gain
+2026-06-29 22:05:57,360 INFO       -----------------------------------------------------------------------------------------------
+2026-06-29 22:05:57,361 INFO     
+===============================================================================================
+2026-06-29 22:05:57,361 INFO       ANALYSIS 5: FINAL RANKING — What should we add to the Wave schema?
+2026-06-29 22:05:57,361 INFO     ===============================================================================================
+2026-06-29 22:05:57,362 INFO     
+  Rank Feature                             Category         AUC_T0  AUC_T1  t-stat  Lift Syn     Status
+2026-06-29 22:05:57,362 INFO       --------------------------------------------------------------------------------------------------------------
+2026-06-29 22:05:57,565 INFO     
+===============================================================================================
+2026-06-29 22:05:57,566 INFO       COMPLETE — 941s (15.7 min)
+2026-06-29 22:05:57,566 INFO       Results: /root/botero-trade/backend/scripts/wave_dominance_output/wave_dominance_results.json
+2026-06-29 22:05:57,566 INFO       Features tested: 93
+2026-06-29 22:05:57,566 INFO       Derived features: 28
+2026-06-29 22:05:57,566 INFO     ===============================================================================================

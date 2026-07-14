@@ -23,6 +23,7 @@ from typing import Optional
 from backend.modules.entry_decision.domain.entities.entry_report import EntryIntelligenceReport
 from backend.modules.entry_decision.domain.ports.market_data_port import EntryMarketDataPort
 from backend.modules.entry_decision.domain.ports.flow_data_port import FlowDataPort
+from backend.modules.entry_decision.domain.ports.sector_breadth_port import SectorBreadthDataPort
 from backend.modules.options_gamma.domain.ports.options_data_port import OptionsDataPort
 from backend.modules.shared.domain.entities.indicator_trend import IndicatorTrend
 
@@ -49,6 +50,7 @@ class QualityEntryGate:
         fundamental_data=None,
         health_provider=None,
         signal_viability_port=None,
+        sector_breadth: SectorBreadthDataPort | None = None,
     ):
         self._market_data = market_data
         self._flow_data = flow_data
@@ -57,6 +59,7 @@ class QualityEntryGate:
         self._fundamental_data = fundamental_data
         self._health_provider = health_provider
         self._signal_viability_port = signal_viability_port
+        self._sector_breadth = sector_breadth
 
         # Lazy-init modules
         from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
@@ -346,6 +349,77 @@ class QualityEntryGate:
         except Exception as e:
             logger.debug(f"QualityGate: Vol regime gate skipped: {e}")
 
+        # ── Gate 1.5: Sector Breadth Intelligence (S5 empirical) ──
+        # Evidence: engine.s5_backtest_signals, 765 signals, 3 audit rounds.
+        # Rule 1: COLD → sizing 1.15x (N=155, WR=80.0%, 10/11 sectors)
+        # Rule 2: COLD+IMPROVING → sizing 1.25x (N=29, WR=75.9%)
+        # Rule 3: NEUTRAL+ETF_BEAR → sizing 1.15x (N=55, WR=87.3%, 6/6 sectors)
+        _s5_sizing = 1.0
+        if self._sector_breadth:
+            try:
+                from backend.modules.entry_decision.domain.rules.sector_breadth_gate import (
+                    compute_sector_breadth_snapshot,
+                )
+                from backend.modules.shared.domain.constants.sectors import (
+                    SECTOR_BREADTH_TICKERS,
+                )
+
+                sector_etf = self._sector_breadth.get_sector_for_ticker(ticker)
+                if sector_etf:
+                    s5_fi = self._sector_breadth.get_s5_fi_value(sector_etf)
+                    mkt_fi = self._sector_breadth.get_market_s5_fi()
+                    etf_bull = self._sector_breadth.is_etf_above_ma200(sector_etf)
+                    tier = self._sector_breadth.get_sector_tier(sector_etf)
+
+                    # Load history for relative RoC
+                    fi_ticker = SECTOR_BREADTH_TICKERS.get(sector_etf, {}).get(
+                        "intermediate", ""
+                    )
+                    s5_hist = (
+                        self._sector_breadth.get_s5_fi_history(fi_ticker, 10)
+                        if fi_ticker
+                        else []
+                    )
+                    mkt_hist = self._sector_breadth.get_s5_fi_history("S5FI", 10)
+
+                    if s5_fi is not None and mkt_fi is not None:
+                        s5_snap = compute_sector_breadth_snapshot(
+                            s5_fi_sector=s5_fi,
+                            s5_fi_market=mkt_fi,
+                            etf_above_ma200=etf_bull,
+                            tier=tier,
+                            s5_fi_history=s5_hist,
+                            mkt_fi_history=mkt_hist,
+                            sector_etf=sector_etf,
+                        )
+                        _s5_sizing = s5_snap.sizing_modifier
+
+                        # Populate report fields
+                        report.sector_etf = sector_etf
+                        report.sector_s5_fi = s5_fi
+                        report.sector_s5_zone = s5_snap.s5_fi_zone
+                        report.sector_relative_direction = s5_snap.relative_direction
+                        report.sector_is_golden = s5_snap.is_golden_signal
+                        report.sector_breadth_sizing = _s5_sizing
+
+                        report.alerts = report.alerts or []
+                        report.alerts.append(
+                            f"S5_BREADTH: {s5_snap.context_label}"
+                        )
+
+                        if s5_snap.is_golden_signal:
+                            logger.info(
+                                f"QualityGate {ticker}: 🏆 GOLDEN SIGNAL "
+                                f"— {s5_snap.context_label}"
+                            )
+                        elif s5_snap.s5_fi_zone == "COLD":
+                            logger.info(
+                                f"QualityGate {ticker}: S5 COLD "
+                                f"— sizing {_s5_sizing:.0%}"
+                            )
+            except Exception as e:
+                logger.debug(f"QualityGate: Sector breadth skipped: {e}")
+
         # ── Step 2: Options — Gamma Regime ──
         opts = self._fetch_options_data(ticker, vix_trend=vix_trend)
         report.put_wall = opts.get("put_wall", 0.0)
@@ -577,10 +651,11 @@ class QualityEntryGate:
             if report.pattern_on_support and report.pattern_score >= 0.5:
                 base_scale = min(1.0, base_scale * 1.25)
             # Apply health-based sizing (ALERT = 0.5x, HEALTHY = 1.0x)
-            report.final_scale = base_scale * _health_sizing
+            report.final_scale = base_scale * _health_sizing * _s5_sizing
             report.final_reason = (
                 f"FIRE: {phase_verdict.phase}, R:R={report.risk_reward}:1, "
                 f"Dims={report.dimensions_confirming}, VP={report.vp_institutional_bias}"
+                f", S5={report.sector_s5_zone}"
             )
 
         elif phase_verdict.verdict == "STALK":

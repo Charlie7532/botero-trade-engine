@@ -101,6 +101,16 @@ class EntryIntelligenceReport:
     rsi_conviction: float = 0.0          # -1.0 → +1.0 composite
     rsi_diagnosis: str = ""
 
+    # ── Sector Breadth Intelligence (S5 empirical) ──────────────
+    # Evidence: engine.s5_backtest_signals, 765 signals, 3 audit rounds.
+    # Sizing modifier from sector S5_FI zone + ETF trend.
+    sector_etf: str = ""                      # Sector ETF symbol (XLK, XLE, etc.)
+    sector_s5_fi: float = 0.0                 # S5_FI value at signal time (0-100)
+    sector_s5_zone: str = "UNKNOWN"           # COLD, NEUTRAL, HOT
+    sector_relative_direction: str = "STABLE" # IMPROVING, STABLE, LOSING
+    sector_is_golden: bool = False            # COLD + IMPROVING (golden signal)
+    sector_breadth_sizing: float = 1.0        # Sizing modifier (1.0, 1.15, 1.25)
+
     # ── Helmer Protocol: Expectations Engine (Reverse DCF) ─────
     market_implied_growth_rate: float = 0.0
     historical_growth_rate: float = 0.0

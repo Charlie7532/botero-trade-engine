@@ -111,6 +111,19 @@ class EntryIntelligenceReport:
     sector_is_golden: bool = False            # COLD + IMPROVING (golden signal)
     sector_breadth_sizing: float = 1.0        # Sizing modifier (1.0, 1.15, 1.25)
 
+    # ── S5 Triad Intelligence (TH × FI × TW, 125 states) ────────
+    # Evidence: s5_triad_table.json, 16705 obs, ZZ coincidence.
+    sector_s5_th: float = 0.0                 # S5_TH (% above 200-DMA)
+    sector_s5_tw: float = 0.0                 # S5_TW (% above 20-DMA)
+    sector_triad_key: str = ""                # "<<|<<|<<" (5-bin state)
+    sector_triad_p_bot: float = 0.0           # P(near ZZ 5% bottom | state)
+    sector_triad_p_top: float = 0.0           # P(near ZZ 5% top | state)
+    sector_triad_net_bias: float = 0.0        # P_bot - P_top
+    sector_triad_lift: float = 0.0            # Lift vs baseline
+    sector_triad_level: str = ""              # L1_Defensive, L2_global, etc.
+    sector_triad_adj_p_bot: float = 0.0       # After relative modifier
+    sector_triad_adj_p_top: float = 0.0       # After relative modifier
+
     # ── Helmer Protocol: Expectations Engine (Reverse DCF) ─────
     market_implied_growth_rate: float = 0.0
     historical_growth_rate: float = 0.0

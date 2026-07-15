@@ -80,6 +80,12 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         if df.empty:
             return
 
+        # VAULT STANDARD: daily bars always use midnight UTC timestamps
+        if tf == "1d":
+            df = df.copy()
+            df.index = pd.to_datetime(df.index).normalize()
+            df = df[~df.index.duplicated(keep="last")]
+
         conn = self._conn()
         try:
             rows = []
@@ -416,6 +422,9 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         open: float, high: float, low: float, close: float, volume: int = 0,
     ) -> None:
         """Insert a single OHLCV bar, skip if already exists."""
+        # VAULT STANDARD: daily bars always use midnight UTC timestamps
+        if timeframe == "1d":
+            time = pd.Timestamp(time).normalize()
         conn = self._conn()
         try:
             with conn.cursor() as cur:
@@ -444,6 +453,9 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         close=latest score. Open is preserved (first reading of the day).
         Volume increments as a read counter (proxy for candle confidence).
         """
+        # VAULT STANDARD: daily bars always use midnight UTC timestamps
+        if timeframe == "1d":
+            time = pd.Timestamp(time).normalize()
         conn = self._conn()
         try:
             with conn.cursor() as cur:

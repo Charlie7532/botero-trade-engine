@@ -417,6 +417,50 @@ class QualityEntryGate:
                                 f"QualityGate {ticker}: S5 COLD "
                                 f"— sizing {_s5_sizing:.0%}"
                             )
+
+                    # ── Gate 1.5b: S5 Triad (TH × FI × TW, 125 states) ──
+                    # Reads all 3 families, classifies into 5-bin triad,
+                    # lookups ZZ coincidence probability with Tier Pooling.
+                    s5_th = self._sector_breadth.get_s5_th_value(sector_etf)
+                    s5_tw = self._sector_breadth.get_s5_tw_value(sector_etf)
+                    if s5_th is not None and s5_fi is not None and s5_tw is not None:
+                        from backend.modules.entry_decision.domain.rules.triad_lookup import (
+                            lookup_triad_signal,
+                        )
+                        triad = lookup_triad_signal(
+                            th_val=s5_th,
+                            fi_val=s5_fi,
+                            tw_val=s5_tw,
+                            sector_etf=sector_etf,
+                            spy_fi_val=mkt_fi or 50.0,
+                        )
+                        report.sector_s5_th = s5_th
+                        report.sector_s5_tw = s5_tw
+                        report.sector_triad_key = triad.triad_key
+                        report.sector_triad_p_bot = triad.p_bot_50
+                        report.sector_triad_p_top = triad.p_top_50
+                        report.sector_triad_net_bias = triad.net_bias
+                        report.sector_triad_lift = triad.lift_bot_50
+                        report.sector_triad_level = triad.level
+                        report.sector_triad_adj_p_bot = triad.adj_p_bot_50
+                        report.sector_triad_adj_p_top = triad.adj_p_top_50
+
+                        # Triad sizing: scale from adjusted P_bot
+                        # High P_bot = accumulation zone → boost sizing
+                        if triad.adj_p_bot_50 > 0.30:
+                            _s5_sizing = max(_s5_sizing, 1.25)
+                        elif triad.adj_p_bot_50 > 0.20:
+                            _s5_sizing = max(_s5_sizing, 1.15)
+
+                        report.sector_breadth_sizing = _s5_sizing
+                        report.alerts = report.alerts or []
+                        report.alerts.append(
+                            f"S5_TRIAD: {triad.context_label}"
+                        )
+                        logger.info(
+                            f"QualityGate {ticker}: TRIAD {triad.triad_key} "
+                            f"P_bot={triad.adj_p_bot_50:.0%} [{triad.level}]"
+                        )
             except Exception as e:
                 logger.debug(f"QualityGate: Sector breadth skipped: {e}")
 

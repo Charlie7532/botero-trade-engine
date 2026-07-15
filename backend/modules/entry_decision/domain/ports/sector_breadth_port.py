@@ -25,6 +25,17 @@ class SectorBreadthDataPort(ABC):
         ...
 
     @abstractmethod
+    def get_s5_th_value(self, sector_etf: str) -> Optional[float]:
+        """Returns latest S5_TH (% above 200-DMA) for a sector ETF."""
+        ...
+
+    @abstractmethod
+    def get_s5_tw_value(self, sector_etf: str) -> Optional[float]:
+        """Returns latest S5_TW (% above 20-DMA) for a sector ETF."""
+        ...
+
+
+    @abstractmethod
     def get_market_s5_fi(self) -> Optional[float]:
         """Returns latest S5FI for the overall market (SPY)."""
         ...

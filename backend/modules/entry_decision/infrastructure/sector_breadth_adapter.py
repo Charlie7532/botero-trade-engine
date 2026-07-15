@@ -102,6 +102,20 @@ class VaultSectorBreadthAdapter(SectorBreadthDataPort):
             return None
         return self._latest_close(fi_ticker)
 
+    def get_s5_th_value(self, sector_etf: str) -> Optional[float]:
+        """Returns latest S5_TH close value for a sector."""
+        th_ticker = SECTOR_BREADTH_TICKERS.get(sector_etf, {}).get("structural")
+        if not th_ticker:
+            return None
+        return self._latest_close(th_ticker)
+
+    def get_s5_tw_value(self, sector_etf: str) -> Optional[float]:
+        """Returns latest S5_TW close value for a sector."""
+        tw_ticker = SECTOR_BREADTH_TICKERS.get(sector_etf, {}).get("tactical")
+        if not tw_ticker:
+            return None
+        return self._latest_close(tw_ticker)
+
     def get_market_s5_fi(self) -> Optional[float]:
         """Returns latest S5FI (market-wide breadth)."""
         return self._latest_close("S5FI")

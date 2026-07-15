@@ -58,6 +58,9 @@ graphify-out/
 # Docker volumes
 docker-data/
 
+# MCP servers (third-party / forked, not part of project graph)
+mcp-servers/
+
 # Logs
 *.log
 logs/

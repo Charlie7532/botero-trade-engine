@@ -35,8 +35,11 @@ data/forensic_ml_dataset.csv
 data/forensic_signals.csv
 logs/*.log
 
-# MCP
-mcp_servers/**/.cache/
+# MCP servers (local installs & cache)
+mcp-servers/**/.cache/
+mcp-servers/**/.venv/
+mcp-servers/**/venv/
+mcp-servers/finviz/.git/
 
 # Payload media
 public/media/
@@ -48,6 +51,3 @@ graphify-out/
 
 # TradingView historical data exports (imported to vault, then deleted)
 DataTradingView/
-
-# MCP Server repos (cloned locally)
-.mcp-servers/

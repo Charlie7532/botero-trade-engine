@@ -1,5 +1,8 @@
 /**
- * Payload MCP plugin barrel.
+ * Payload MCP Gateway — delivery mechanism adapter.
+ *
+ * Exposes PayloadCMS collections as MCP-protocol tools so AI agents
+ * (Claude, ChatGPT, internal bots) can read/write CMS data.
  *
  *  - `mcp` → private endpoint at `POST /api/mcp` (Bearer-key auth).
  *

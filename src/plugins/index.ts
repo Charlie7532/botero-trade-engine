@@ -4,7 +4,7 @@ import { Plugin } from 'payload'
 import { OAuth2Plugin } from 'payload-oauth2'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 
-import { mcp } from './mcp'
+import { mcp } from './payload-mcp-gateway'
 
 export const plugins: Plugin[] = [
   OAuth2Plugin({

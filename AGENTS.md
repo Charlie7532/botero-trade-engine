@@ -39,6 +39,8 @@ botero-trade/
 │   ├── shared/                  # Cross-cutting Clean Architecture (TS)
 │   ├── modules/                 # Feature modules
 │   ├── collections/             # PayloadCMS collections (infrastructure)
+│   ├── plugins/                 # PayloadCMS plugins
+│   │   └── payload-mcp-gateway/ # MCP protocol adapter — exposes CMS to AI agents
 │   └── components/              # Shared React components (UI layer)
 │
 ├── backend/                     # Python trading engine
@@ -60,14 +62,18 @@ botero-trade/
 │       ├── main.py              # FastAPI app + CORS
 │       └── routers/
 │
-
+├── mcp-servers/                  # Local MCP server installs (consolidated)
+│   ├── finviz/                  # Finviz Elite (cloned fork, local venv)
+│   ├── gurufocus/               # GuruFocus Premium (custom wrapper)
+│   └── .cache/                  # Storage dirs for FRED & Finnhub MCP servers
+│
 ├── tests/                       # Pytest suite (20 tests)
 │   ├── conftest.py              # Shared fixtures (MongoDB test DB)
 │   ├── test_risk_guardian.py     # 7 tests: DD, VIX, anti-martingale
 │   ├── test_trailing_stop.py     # 5 tests: regime adaptation, floor/ceiling
 │   └── test_trade_journal.py     # 6 tests: MongoDB persistence, patterns
 │
-├── .mcp.json                    # 7 MCP server configs (secrets via env vars)
+├── .mcp.json                    # 10 MCP server configs (secrets via env vars)
 ├── pytest.ini
 └── package.json
 ```

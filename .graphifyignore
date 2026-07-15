@@ -3,6 +3,10 @@ node_modules/
 backend/.venv/
 .venv/
 
+# Cache & MCP server internals (no code structure)
+.cache/
+mcp-servers/
+
 # Build outputs
 .next/
 dist/

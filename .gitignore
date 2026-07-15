@@ -35,6 +35,9 @@ data/forensic_ml_dataset.csv
 data/forensic_signals.csv
 logs/*.log
 
+# Cache (prevent orphan MCP cache at root)
+.cache/
+
 # MCP servers (local installs & cache)
 mcp-servers/**/.cache/
 mcp-servers/**/.venv/

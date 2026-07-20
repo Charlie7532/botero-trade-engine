@@ -1,6 +1,25 @@
 {
   "version": "1.0",
-  "generated_at": "2026-07-17T21:21:38.907481+00:00",
+  "generated_at": "2026-07-20T18:32:19.265415+00:00",
+  "generated_by": "backend/scripts/train_s5_triad.py",
+  "_metadata": {
+    "purpose": "Modificador relativo para S5 Price Breadth. Mide la diferencia simple FI_sector - FI_spy (en puntos porcentuales). Si un sector tiene m\u00e1s stocks arriba de su MA50 que el SPY, se le da un boost al P_bot.",
+    "formula": "rel_fi = S5_{ETF}_FI - S5FI (diferencia en pp)",
+    "bins": {
+      "<<": "rel_fi < -30pp \u2192 sector muy por debajo del mercado",
+      "<": "-30 \u2264 rel_fi < -10pp \u2192 sector ligeramente bajo",
+      "~": "-10 \u2264 rel_fi < +10pp \u2192 alineado con mercado",
+      ">": "+10 \u2264 rel_fi < +30pp \u2192 sector ligeramente arriba",
+      ">>": "rel_fi \u2265 +30pp \u2192 sector muy por encima del mercado"
+    },
+    "bin_fields": {
+      "n": "Observaciones en este bin",
+      "P_bot_5_0 / P_top_5_0": "Probabilidades ZZ 5.0% en este bin",
+      "bot_factor": "Multiplicador sobre P_bot. >1 = amplifica se\u00f1al de suelo",
+      "top_factor": "Multiplicador sobre P_top. >1 = amplifica se\u00f1al de techo"
+    },
+    "application": "adj_P_bot = P_bot_triad \u00d7 rel_bot_factor"
+  },
   "description": "FI_sector - FI_spy relative breadth modifier",
   "bin_edges": [
     -30,

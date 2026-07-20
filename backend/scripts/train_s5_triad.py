@@ -536,6 +536,65 @@ print("\nStep 6: Writing output files...")
 triad_table = {
     "version": "1.0",
     "generated_at": datetime.now(timezone.utc).isoformat(),
+    "generated_by": "backend/scripts/train_s5_triad.py",
+    "_metadata": {
+        "purpose": (
+            "Tabla de probabilidad condicional de giros ZigZag basada en 3 ejes de "
+            "amplitud de PRECIO sectorial (S5). Cada celda responde: dado que el sector "
+            "tiene este estado combinatorio de stocks por encima de sus medias móviles, "
+            "¿cuál es la probabilidad de estar cerca de un suelo (bottom) o techo (top) "
+            "del precio del ETF?"
+        ),
+        "data_source": (
+            "Vault (Neon PostgreSQL). Tickers: S5_{ETF}_TH, S5_{ETF}_FI, S5_{ETF}_TW "
+            "para cada sector. S5TH, S5FI, S5TW para SPY. Precio del ETF para ZigZag."
+        ),
+        "axes": {
+            "TH (Structural)": "% de constituyentes del sector con PRECIO > media móvil 200 días. Indica tendencia de largo plazo.",
+            "FI (Intermediate)": "% de constituyentes del sector con PRECIO > media móvil 50 días. Señal principal de salud intermedia.",
+            "TW (Tactical)": "% de constituyentes del sector con PRECIO > media móvil 20 días. Momentum de corto plazo.",
+            "Direction (+/-)": "+ si TW subió vs día anterior, - si bajó o igual.",
+        },
+        "key_difference_vs_s5v": (
+            "S5 mide PRECIO (cuántos stocks suben). S5V mide VOLUMEN (cuántos stocks "
+            "tienen actividad de trading elevada). Son ortogonales (r ≈ -0.26). Juntos "
+            "capturan 2x más información que cualquiera solo."
+        ),
+        "bin_classification": {
+            "method": "Percentiles globales sobre todas las observaciones",
+            "bin_percentiles": BIN_PERCENTILES,
+            "bin_labels_meaning": {
+                "<<": f"Extremo frío: < percentil {BIN_PERCENTILES[0]*100:.0f}% (pocos stocks en uptrend)",
+                "<": f"Frío: percentil {BIN_PERCENTILES[0]*100:.0f}%-{BIN_PERCENTILES[1]*100:.0f}%",
+                "~": f"Neutral: percentil {BIN_PERCENTILES[1]*100:.0f}%-{BIN_PERCENTILES[2]*100:.0f}%",
+                ">": f"Caliente: percentil {BIN_PERCENTILES[2]*100:.0f}%-{BIN_PERCENTILES[3]*100:.0f}%",
+                ">>": f"Extremo caliente: > percentil {BIN_PERCENTILES[3]*100:.0f}% (mayoría en uptrend)",
+            },
+        },
+        "cell_key_format": "TH_bin|FI_bin|TW_bin|Direction → ejemplo: '<<|<<|>>|+' = TH frío, FI frío, TW caliente, subiendo",
+        "cell_fields": {
+            "n": "Número de observaciones (días) en este estado",
+            "P_bot_2_5": "P(cerca de suelo ZZ 2.5%)",
+            "P_bot_5_0": "P(cerca de suelo ZZ 5.0%) — PRINCIPAL",
+            "P_bot_7_5": "P(cerca de suelo ZZ 7.5%) — estructural",
+            "P_top_2_5": "P(cerca de techo ZZ 2.5%)",
+            "P_top_5_0": "P(cerca de techo ZZ 5.0%) — PRINCIPAL",
+            "P_top_7_5": "P(cerca de techo ZZ 7.5%) — estructural",
+            "lift_bot_5_0": "P_bot celda / P_bot global. >1 = más suelos que promedio",
+            "lift_top_5_0": "P_top celda / P_top global. >1 = más techos que promedio",
+            "net_bias": "P_bot - P_top. Positivo = sesgo a suelo (acumulación). Negativo = distribución",
+        },
+        "tier_pooling": {
+            "purpose": "Sectores agrupados por comportamiento. L1 si N≥MIN_N, fallback a L2 global.",
+            "L1_tiers": TIERS,
+            "min_n_l1": MIN_N_L1,
+        },
+        "operational_interpretation": {
+            "ACCUMULATION": "net_bias > +0.10 → favorece entrada",
+            "DISTRIBUTION": "net_bias < -0.10 → reduce sizing o espera",
+            "NEUTRAL": "entre -0.10 y +0.10 → sin sesgo claro",
+        },
+    },
     "training": {
         "n_entities": len(entities),
         "entities": sorted(entities.keys()),
@@ -561,6 +620,29 @@ rel_path = "backend/modules/entry_decision/domain/rules/s5_relative_modifier.jso
 rel_output = {
     "version": "1.0",
     "generated_at": datetime.now(timezone.utc).isoformat(),
+    "generated_by": "backend/scripts/train_s5_triad.py",
+    "_metadata": {
+        "purpose": (
+            "Modificador relativo para S5 Price Breadth. Mide la diferencia simple "
+            "FI_sector - FI_spy (en puntos porcentuales). Si un sector tiene más stocks "
+            "arriba de su MA50 que el SPY, se le da un boost al P_bot."
+        ),
+        "formula": "rel_fi = S5_{ETF}_FI - S5FI (diferencia en pp)",
+        "bins": {
+            "<<": "rel_fi < -30pp → sector muy por debajo del mercado",
+            "<": "-30 ≤ rel_fi < -10pp → sector ligeramente bajo",
+            "~": "-10 ≤ rel_fi < +10pp → alineado con mercado",
+            ">": "+10 ≤ rel_fi < +30pp → sector ligeramente arriba",
+            ">>": "rel_fi ≥ +30pp → sector muy por encima del mercado",
+        },
+        "bin_fields": {
+            "n": "Observaciones en este bin",
+            "P_bot_5_0 / P_top_5_0": "Probabilidades ZZ 5.0% en este bin",
+            "bot_factor": "Multiplicador sobre P_bot. >1 = amplifica señal de suelo",
+            "top_factor": "Multiplicador sobre P_top. >1 = amplifica señal de techo",
+        },
+        "application": "adj_P_bot = P_bot_triad × rel_bot_factor",
+    },
     "description": "FI_sector - FI_spy relative breadth modifier",
     "bin_edges": REL_EDGES,
     "bin_labels": BIN_LABELS,

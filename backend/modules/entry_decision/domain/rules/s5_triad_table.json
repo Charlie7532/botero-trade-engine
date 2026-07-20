@@ -1,6 +1,75 @@
 {
   "version": "1.0",
-  "generated_at": "2026-07-17T21:21:38.879260+00:00",
+  "generated_at": "2026-07-20T18:32:19.237791+00:00",
+  "generated_by": "backend/scripts/train_s5_triad.py",
+  "_metadata": {
+    "purpose": "Tabla de probabilidad condicional de giros ZigZag basada en 3 ejes de amplitud de PRECIO sectorial (S5). Cada celda responde: dado que el sector tiene este estado combinatorio de stocks por encima de sus medias m\u00f3viles, \u00bfcu\u00e1l es la probabilidad de estar cerca de un suelo (bottom) o techo (top) del precio del ETF?",
+    "data_source": "Vault (Neon PostgreSQL). Tickers: S5_{ETF}_TH, S5_{ETF}_FI, S5_{ETF}_TW para cada sector. S5TH, S5FI, S5TW para SPY. Precio del ETF para ZigZag.",
+    "axes": {
+      "TH (Structural)": "% de constituyentes del sector con PRECIO > media m\u00f3vil 200 d\u00edas. Indica tendencia de largo plazo.",
+      "FI (Intermediate)": "% de constituyentes del sector con PRECIO > media m\u00f3vil 50 d\u00edas. Se\u00f1al principal de salud intermedia.",
+      "TW (Tactical)": "% de constituyentes del sector con PRECIO > media m\u00f3vil 20 d\u00edas. Momentum de corto plazo.",
+      "Direction (+/-)": "+ si TW subi\u00f3 vs d\u00eda anterior, - si baj\u00f3 o igual."
+    },
+    "key_difference_vs_s5v": "S5 mide PRECIO (cu\u00e1ntos stocks suben). S5V mide VOLUMEN (cu\u00e1ntos stocks tienen actividad de trading elevada). Son ortogonales (r \u2248 -0.26). Juntos capturan 2x m\u00e1s informaci\u00f3n que cualquiera solo.",
+    "bin_classification": {
+      "method": "Percentiles globales sobre todas las observaciones",
+      "bin_percentiles": [
+        0.1,
+        0.3,
+        0.7,
+        0.9
+      ],
+      "bin_labels_meaning": {
+        "<<": "Extremo fr\u00edo: < percentil 10% (pocos stocks en uptrend)",
+        "<": "Fr\u00edo: percentil 10%-30%",
+        "~": "Neutral: percentil 30%-70%",
+        ">": "Caliente: percentil 70%-90%",
+        ">>": "Extremo caliente: > percentil 90% (mayor\u00eda en uptrend)"
+      }
+    },
+    "cell_key_format": "TH_bin|FI_bin|TW_bin|Direction \u2192 ejemplo: '<<|<<|>>|+' = TH fr\u00edo, FI fr\u00edo, TW caliente, subiendo",
+    "cell_fields": {
+      "n": "N\u00famero de observaciones (d\u00edas) en este estado",
+      "P_bot_2_5": "P(cerca de suelo ZZ 2.5%)",
+      "P_bot_5_0": "P(cerca de suelo ZZ 5.0%) \u2014 PRINCIPAL",
+      "P_bot_7_5": "P(cerca de suelo ZZ 7.5%) \u2014 estructural",
+      "P_top_2_5": "P(cerca de techo ZZ 2.5%)",
+      "P_top_5_0": "P(cerca de techo ZZ 5.0%) \u2014 PRINCIPAL",
+      "P_top_7_5": "P(cerca de techo ZZ 7.5%) \u2014 estructural",
+      "lift_bot_5_0": "P_bot celda / P_bot global. >1 = m\u00e1s suelos que promedio",
+      "lift_top_5_0": "P_top celda / P_top global. >1 = m\u00e1s techos que promedio",
+      "net_bias": "P_bot - P_top. Positivo = sesgo a suelo (acumulaci\u00f3n). Negativo = distribuci\u00f3n"
+    },
+    "tier_pooling": {
+      "purpose": "Sectores agrupados por comportamiento. L1 si N\u2265MIN_N, fallback a L2 global.",
+      "L1_tiers": {
+        "Defensive": [
+          "XLP",
+          "XLV",
+          "XLU",
+          "XLRE",
+          "XLB"
+        ],
+        "Mixed": [
+          "XLE",
+          "XLF",
+          "XLC"
+        ],
+        "Cyclical": [
+          "XLK",
+          "XLY",
+          "XLI"
+        ]
+      },
+      "min_n_l1": 20
+    },
+    "operational_interpretation": {
+      "ACCUMULATION": "net_bias > +0.10 \u2192 favorece entrada",
+      "DISTRIBUTION": "net_bias < -0.10 \u2192 reduce sizing o espera",
+      "NEUTRAL": "entre -0.10 y +0.10 \u2192 sin sesgo claro"
+    }
+  },
   "training": {
     "n_entities": 12,
     "entities": [

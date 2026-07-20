@@ -13,6 +13,7 @@ FINVIZ_TO_CANONICAL = {
     "Consumer Cyclical": "Consumer Discretionary",
     "Consumer Defensive": "Consumer Staples",
     "Financial": "Financials",
+    "Financial Services": "Financials",
     "Basic Materials": "Materials",
 }
 
@@ -127,3 +128,34 @@ SECTOR_CAP_WEIGHTS: dict[str, float] = {
     "XLRE": 0.023,  # Real Estate
     "XLB":  0.022,  # Materials
 }
+
+
+# ── Volume Breadth Indicator Tickers ────────────────────────
+# Naming: SV5_{ETF}_{TH|FI|TW}
+# SV5 = S&P 500 component volume breadth (nested MA design)
+# TH = % with SMA(50,vol) > SMA(200,vol) (structural volume trend)
+# FI = % with SMA(20,vol) > SMA(50,vol)  (intermediate volume trend)
+# TW = % with EMA(5,vol)  > SMA(20,vol)  (tactical volume spike)
+
+SECTOR_VOLUME_BREADTH_TICKERS: dict[str, dict[str, str]] = {}
+for _etf in SECTOR_ETFS:
+    SECTOR_VOLUME_BREADTH_TICKERS[_etf] = {
+        "structural": f"SV5_{_etf}_TH",
+        "intermediate": f"SV5_{_etf}_FI",
+        "tactical": f"SV5_{_etf}_TW",
+    }
+
+ALL_SECTOR_VOLUME_BREADTH_TICKERS: list[str] = [
+    t for d in SECTOR_VOLUME_BREADTH_TICKERS.values() for t in d.values()
+]
+
+# Volume breadth MA lengths — nested design:
+#   tactical:     EMA(5)   vs SMA(20)
+#   intermediate: SMA(20)  vs SMA(50)
+#   structural:   SMA(50)  vs SMA(200)
+VOLUME_BREADTH_MA_CONFIG = {
+    "tactical":     {"fast": 5,  "slow": 20,  "fast_type": "ema"},
+    "intermediate": {"fast": 20, "slow": 50,  "fast_type": "sma"},
+    "structural":   {"fast": 50, "slow": 200, "fast_type": "sma"},
+}
+

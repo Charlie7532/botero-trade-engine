@@ -116,6 +116,20 @@ class VaultSectorBreadthAdapter(SectorBreadthDataPort):
             return None
         return self._latest_close(tw_ticker)
 
+    def get_s5_tw_prev_value(self, sector_etf: str) -> Optional[float]:
+        """Returns previous day's S5_TW close value for a sector."""
+        tw_ticker = SECTOR_BREADTH_TICKERS.get(sector_etf, {}).get("tactical")
+        if not tw_ticker:
+            return None
+        try:
+            df = self._load_bars_cached(tw_ticker)
+            if df is None or len(df) < 2:
+                return None
+            return float(df["close"].iloc[-2])
+        except Exception as e:
+            logger.debug(f"SectorBreadth: Previous close failed for {tw_ticker}: {e}")
+            return None
+
     def get_market_s5_fi(self) -> Optional[float]:
         """Returns latest S5FI (market-wide breadth)."""
         return self._latest_close("S5FI")

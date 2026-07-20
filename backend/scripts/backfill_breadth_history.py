@@ -1,11 +1,10 @@
 """
-Backfill Breadth History — One-shot script
+Backfill Breadth History — Vectorized version
 =============================================
-Computes S5TH/S5FI/S5TW (global) and 33 sector breadth indicators
-from the existing 5-year OHLCV history in the vault.
+Computes S5TH/S5FI/S5TW (global), S5VTH/S5VFI/S5VTW (volume),
+and 66 sector breadth indicators from OHLCV history in the vault.
 
-Persists with ON CONFLICT DO NOTHING so TradingView ground-truth
-bars are never overwritten.
+Uses pandas rolling windows for ~100x speedup vs the loop-based version.
 
 Usage:
     python -m backend.scripts.backfill_breadth_history
@@ -15,10 +14,10 @@ import argparse
 import logging
 import os
 import sys
-from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date
 
 import numpy as np
+import pandas as pd
 import psycopg2
 import psycopg2.extras
 
@@ -33,9 +32,10 @@ logger = logging.getLogger(__name__)
 
 # ── Constants ──────────────────────────────────────────────
 MA_LENGTHS = {"TH": 200, "FI": 50, "TW": 20}
+VOL_MA_LENGTHS = {"VTH": 200, "VFI": 50, "VTW": 20}
 TIMEFRAME = "1d"
 
-# Finviz sector names → canonical GICS names (matches sector_breadth_provider)
+# Finviz sector names → canonical GICS names
 FINVIZ_TO_CANONICAL = {
     "Consumer Cyclical": "Consumer Discretionary",
     "Consumer Defensive": "Consumer Staples",
@@ -44,7 +44,7 @@ FINVIZ_TO_CANONICAL = {
     "Basic Materials": "Materials",
 }
 
-# Canonical sector → ETF (for breadth ticker naming)
+# Canonical sector → ETF
 CANONICAL_TO_ETF = {
     "Technology": "XLK",
     "Healthcare": "XLV",
@@ -64,31 +64,25 @@ def _canonicalize(sector: str) -> str:
     return FINVIZ_TO_CANONICAL.get(sector, sector)
 
 
-def _calc_breadth(closes_dict: dict[str, list[float]], ma_length: int) -> float | None:
-    """Pure calculation — % of tickers above their MA. Same logic as production."""
-    above = 0
-    total = 0
-    for closes in closes_dict.values():
-        if len(closes) < ma_length:
-            continue
-        ma = float(np.mean(closes[-ma_length:]))
-        current = closes[-1]
-        if ma > 0:
-            total += 1
-            if current > ma:
-                above += 1
-    if total == 0:
-        return None
-    return round(above / total * 100, 1)
+def _vectorized_breadth(close_df: pd.DataFrame, ma_length: int) -> pd.Series:
+    """Vectorized: % of columns (tickers) above their rolling MA, per row (date)."""
+    ma = close_df.rolling(window=ma_length, min_periods=ma_length).mean()
+    above = (close_df > ma) & ma.notna() & (ma > 0)
+    eligible = ma.notna() & (ma > 0)
+    n_above = above.sum(axis=1)
+    n_total = eligible.sum(axis=1)
+    pct = (n_above / n_total * 100).round(1)
+    pct[n_total < 10] = np.nan  # Need at least 10 tickers
+    return pct, n_total
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Backfill breadth history from OHLCV vault data"
+        description="Backfill breadth history from OHLCV vault data (vectorized)"
     )
     parser.add_argument(
         "--start", type=str, default=None,
-        help="Start date (YYYY-MM-DD). Default: 250 trading days before earliest full window.",
+        help="Start date (YYYY-MM-DD). Default: after 200 trading days.",
     )
     parser.add_argument(
         "--dry-run", action="store_true",
@@ -107,165 +101,181 @@ def main():
     logger.info("Loading SP500 OHLCV history from vault...")
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT b.ticker, m.sector, b.time::date, b.close
+            SELECT b.ticker, m.sector, b.time::date, b.close, b.volume
             FROM market.ohlcv_bars b
             JOIN market.ticker_metadata m ON b.ticker = m.ticker
             WHERE b.timeframe = '1d'
               AND m.asset_type = 'STOCK'
               AND 'SP500' = ANY(m.index_membership)
               AND m.sector IS NOT NULL
-            ORDER BY b.ticker, b.time
+            ORDER BY b.time
         """)
         raw_rows = cur.fetchall()
+    conn.close()
 
     if not raw_rows:
         logger.error("No SP500 OHLCV data found in vault")
-        conn.close()
         sys.exit(1)
 
-    # ── Step 2: Build per-ticker time series ──────────────
-    # {ticker: [(date, close), ...]}  and {ticker: sector}
-    ticker_series: dict[str, list[tuple[date, float]]] = defaultdict(list)
-    sector_map: dict[str, str] = {}
+    # ── Step 2: Build DataFrame ──────────────
+    logger.info(f"Building DataFrame from {len(raw_rows):,} rows...")
+    df = pd.DataFrame(raw_rows, columns=["ticker", "sector", "date", "close", "volume"])
+    df["sector"] = df["sector"].map(_canonicalize)
+    df["date"] = pd.to_datetime(df["date"])
 
-    for ticker, sector, dt, close in raw_rows:
-        if close is not None:
-            ticker_series[ticker].append((dt, float(close)))
-            sector_map[ticker] = _canonicalize(sector)
+    # Build sector map (ticker -> sector)
+    sector_map = df.drop_duplicates("ticker").set_index("ticker")["sector"].to_dict()
 
-    # Get sorted unique trading dates across all tickers
-    all_dates: set[date] = set()
-    for series in ticker_series.values():
-        for dt, _ in series:
-            all_dates.add(dt)
-    trading_dates = sorted(all_dates)
+    # Pivot to wide: dates × tickers
+    close_wide = df.pivot_table(index="date", columns="ticker", values="close")
+    vol_wide = df.pivot_table(index="date", columns="ticker", values="volume")
 
-    n_tickers = len(ticker_series)
+    n_dates = len(close_wide)
+    n_tickers = len(close_wide.columns)
     logger.info(
-        f"Loaded {len(raw_rows):,} rows: {n_tickers} tickers, "
-        f"{len(trading_dates)} trading dates "
-        f"({trading_dates[0]} → {trading_dates[-1]})"
+        f"Matrix: {n_dates:,} dates × {n_tickers} tickers "
+        f"({close_wide.index[0].date()} → {close_wide.index[-1].date()})"
     )
 
-    # ── Step 3: Determine backfill date range ─────────────
-    # Need at least 200 days of history for S5TH to be meaningful
+    # ── Step 3: Determine start date ─────────────
     min_history = 200
     if args.start:
-        start_date = date.fromisoformat(args.start)
+        start_date = pd.Timestamp(args.start)
     else:
-        # Start from the first date where we have 200+ days of history
-        start_date = trading_dates[min_history] if len(trading_dates) > min_history else trading_dates[-1]
+        start_date = close_wide.index[min_history] if n_dates > min_history else close_wide.index[-1]
 
-    target_dates = [d for d in trading_dates if d >= start_date]
-    logger.info(
-        f"Backfill range: {target_dates[0]} → {target_dates[-1]} "
-        f"({len(target_dates)} dates)"
-    )
+    logger.info(f"Backfill from: {start_date.date()}")
 
-    # ── Step 4: Build date-indexed close lookup ───────────
-    # For each ticker, build {date: close} for O(1) lookup
-    ticker_date_close: dict[str, dict[date, float]] = {}
-    for ticker, series in ticker_series.items():
-        ticker_date_close[ticker] = {dt: close for dt, close in series}
+    # ── Step 4: Compute global breadth (vectorized) ─────────────
+    all_rows: list[tuple] = []
 
-    # ── Step 5: Compute breadth for each date ─────────────
-    global_rows: list[tuple] = []
-    sector_rows: list[tuple] = []
-
-    for i, target_date in enumerate(target_dates):
-        # Build rolling close windows: for each ticker, collect closes up to target_date
-        # We need up to 200 days of history before target_date
-        window_start_idx = max(0, trading_dates.index(target_date) - min_history - 50)
-        window_dates = [d for d in trading_dates[window_start_idx:] if d <= target_date]
-
-        # Build {ticker: [close_day1, ..., close_target_date]}
-        all_closes: dict[str, list[float]] = {}
-        for ticker, date_close in ticker_date_close.items():
-            closes = [date_close[d] for d in window_dates if d in date_close]
-            if closes:
-                all_closes[ticker] = closes
-
-        n_constituents = len(all_closes)
-        if n_constituents < 100:
-            continue
-
-        # Global breadth (S5TH, S5FI, S5TW)
-        for suffix, ma_len in MA_LENGTHS.items():
-            pct = _calc_breadth(all_closes, ma_len)
-            if pct is not None:
-                global_rows.append((
-                    target_date, f"S5{suffix}", TIMEFRAME,
-                    pct, pct, pct, pct, n_constituents,
-                    None, None,
+    # Count non-null tickers per date (for constituent count)
+    logger.info("Computing global price breadth...")
+    for suffix, ma_len in MA_LENGTHS.items():
+        pct_series, n_total = _vectorized_breadth(close_wide, ma_len)
+        mask = pct_series.index >= start_date
+        for dt, pct, n in zip(pct_series.index[mask], pct_series[mask], n_total[mask]):
+            if pd.notna(pct) and n >= 100:
+                p = float(pct)
+                all_rows.append((
+                    dt.date(), f"S5{suffix}", TIMEFRAME,
+                    p, p, p, p, int(n), None, None,
                 ))
 
-        # Sector breadth (S5_XLK_TH, S5_XLK_FI, etc.)
-        by_sector: dict[str, dict[str, list[float]]] = defaultdict(dict)
-        for ticker, closes in all_closes.items():
-            sector = sector_map.get(ticker)
-            if sector:
-                by_sector[sector][ticker] = closes
+    logger.info(f"  → {len(all_rows):,} global price breadth bars")
 
-        for sector, sector_closes in by_sector.items():
-            etf = CANONICAL_TO_ETF.get(sector)
-            if not etf:
-                continue
+    logger.info("Computing global volume breadth...")
+    vol_count_before = len(all_rows)
+    for suffix, ma_len in VOL_MA_LENGTHS.items():
+        pct_series, n_total = _vectorized_breadth(vol_wide, ma_len)
+        mask = pct_series.index >= start_date
+        for dt, pct, n in zip(pct_series.index[mask], pct_series[mask], n_total[mask]):
+            if pd.notna(pct) and n >= 100:
+                p = float(pct)
+                all_rows.append((
+                    dt.date(), f"S5{suffix}", TIMEFRAME,
+                    p, p, p, p, int(n), None, None,
+                ))
+    logger.info(f"  → {len(all_rows) - vol_count_before:,} global volume breadth bars")
 
-            n_sector = len(sector_closes)
-            if n_sector < 10:
-                continue
+    # ── Step 5: Compute sector breadth (vectorized per sector) ─────────────
+    logger.info("Computing sector breadth...")
+    sector_count = 0
+    for sector, etf in CANONICAL_TO_ETF.items():
+        sector_tickers = [t for t, s in sector_map.items() if s == sector]
+        if len(sector_tickers) < 10:
+            continue
 
-            for suffix, ma_len in MA_LENGTHS.items():
-                pct = _calc_breadth(sector_closes, ma_len)
-                if pct is not None:
-                    indicator = f"S5_{etf}_{suffix}"
-                    sector_rows.append((
-                        target_date, indicator, TIMEFRAME,
-                        pct, pct, pct, pct, n_sector,
-                        None, None,
+        sector_close = close_wide[
+            [t for t in sector_tickers if t in close_wide.columns]
+        ]
+        sector_vol = vol_wide[
+            [t for t in sector_tickers if t in vol_wide.columns]
+        ]
+
+        # Price breadth
+        for suffix, ma_len in MA_LENGTHS.items():
+            pct_series, n_total = _vectorized_breadth(sector_close, ma_len)
+            mask = pct_series.index >= start_date
+            for dt, pct, n in zip(pct_series.index[mask], pct_series[mask], n_total[mask]):
+                if pd.notna(pct):
+                    p = float(pct)
+                    all_rows.append((
+                        dt.date(), f"S5_{etf}_{suffix}", TIMEFRAME,
+                        p, p, p, p, int(n), None, None,
                     ))
+                    sector_count += 1
 
-        if (i + 1) % 100 == 0:
-            logger.info(
-                f"  Progress: {i + 1}/{len(target_dates)} dates "
-                f"({len(global_rows)} global + {len(sector_rows)} sector bars)"
-            )
+        # Volume breadth
+        for suffix, ma_len in VOL_MA_LENGTHS.items():
+            pct_series, n_total = _vectorized_breadth(sector_vol, ma_len)
+            mask = pct_series.index >= start_date
+            for dt, pct, n in zip(pct_series.index[mask], pct_series[mask], n_total[mask]):
+                if pd.notna(pct):
+                    p = float(pct)
+                    all_rows.append((
+                        dt.date(), f"S5_{etf}_{suffix}", TIMEFRAME,
+                        p, p, p, p, int(n), None, None,
+                    ))
+                    sector_count += 1
 
-    logger.info(
-        f"Computed: {len(global_rows)} global bars + "
-        f"{len(sector_rows)} sector bars"
-    )
+        logger.info(f"  {etf}: {len(sector_tickers)} tickers, {sector_count:,} total sector bars so far")
+
+    logger.info(f"Total computed: {len(all_rows):,} breadth bars")
 
     if args.dry_run:
         logger.info("DRY RUN — skipping DB write")
-        conn.close()
         return
 
-    # ── Step 6: Write to vault ────────────────────────────
-    all_rows = global_rows + sector_rows
-    logger.info(f"Writing {len(all_rows)} breadth bars to vault (ON CONFLICT DO NOTHING)...")
+    # ── Step 6: Write to vault (chunked) ──────────────
+    BATCH_SIZE = 10_000
+    total_batches = (len(all_rows) + BATCH_SIZE - 1) // BATCH_SIZE
+    logger.info(
+        f"Writing {len(all_rows):,} bars in {total_batches} batches "
+        f"(ON CONFLICT DO NOTHING)..."
+    )
 
+    written_total = 0
+    for batch_idx in range(total_batches):
+        start = batch_idx * BATCH_SIZE
+        end = min(start + BATCH_SIZE, len(all_rows))
+        batch = all_rows[start:end]
+
+        batch_conn = psycopg2.connect(dsn)
+        try:
+            with batch_conn.cursor() as cur:
+                psycopg2.extras.execute_values(
+                    cur,
+                    """INSERT INTO market.ohlcv_bars
+                       (time, ticker, timeframe, open, high, low, close, volume, vwap, trade_count)
+                       VALUES %s
+                       ON CONFLICT (ticker, timeframe, time) DO NOTHING""",
+                    batch,
+                    page_size=2000,
+                )
+            batch_conn.commit()
+            written_total += len(batch)
+            if (batch_idx + 1) % 10 == 0 or batch_idx == total_batches - 1:
+                logger.info(
+                    f"  Batch {batch_idx + 1}/{total_batches}: "
+                    f"{written_total:,}/{len(all_rows):,} rows written"
+                )
+        except Exception as e:
+            batch_conn.rollback()
+            logger.error(f"Batch {batch_idx + 1} failed: {e}")
+            raise
+        finally:
+            batch_conn.close()
+
+    # ── Step 7: Verify ────────────────────────────────
+    verify_conn = psycopg2.connect(dsn)
     try:
-        with conn.cursor() as cur:
-            psycopg2.extras.execute_values(
-                cur,
-                """INSERT INTO market.ohlcv_bars
-                   (time, ticker, timeframe, open, high, low, close, volume, vwap, trade_count)
-                   VALUES %s
-                   ON CONFLICT (ticker, timeframe, time) DO NOTHING""",
-                all_rows,
-                page_size=2000,
-            )
-        conn.commit()
-
-        # ── Step 7: Verify ────────────────────────────────
-        with conn.cursor() as cur:
-            # Global breadth stats
+        with verify_conn.cursor() as cur:
             cur.execute("""
                 SELECT ticker, COUNT(*), MIN(time)::date, MAX(time)::date,
                        MIN(close), MAX(close), ROUND(AVG(close)::numeric, 1)
                 FROM market.ohlcv_bars
-                WHERE ticker IN ('S5TH', 'S5FI', 'S5TW')
+                WHERE ticker IN ('S5TH', 'S5FI', 'S5TW', 'S5VTH', 'S5VFI', 'S5VTW')
                   AND timeframe = '1d'
                 GROUP BY ticker
                 ORDER BY ticker
@@ -277,7 +287,6 @@ def main():
                     f"range {min_v:.1f}–{max_v:.1f}, avg {avg_v}"
                 )
 
-            # Sector breadth stats
             cur.execute("""
                 SELECT ticker, COUNT(*), MIN(time)::date, MAX(time)::date
                 FROM market.ohlcv_bars
@@ -291,12 +300,24 @@ def main():
             for ticker, count, min_dt, max_dt in sector_results:
                 logger.info(f"   {ticker}: {count} bars ({min_dt} → {max_dt})")
 
-    except Exception as e:
-        conn.rollback()
-        logger.error(f"Insert failed: {e}")
-        raise
+            # Duplicate check
+            cur.execute("""
+                SELECT COUNT(*) FROM (
+                    SELECT ticker, time FROM market.ohlcv_bars
+                    WHERE ticker LIKE 'S5%%' AND timeframe = '1d'
+                    GROUP BY ticker, time HAVING COUNT(*) > 1
+                ) d
+            """)
+            dup_count = cur.fetchone()[0]
+            if dup_count == 0:
+                logger.info("\n✅ Zero duplicates confirmed")
+            else:
+                logger.warning(f"\n⚠️  {dup_count} duplicates found!")
+
     finally:
-        conn.close()
+        verify_conn.close()
+
+    logger.info(f"\n🎉 DONE: {written_total:,} breadth bars written to vault")
 
 
 if __name__ == "__main__":

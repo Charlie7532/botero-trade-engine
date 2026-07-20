@@ -417,6 +417,90 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         finally:
             self._put(conn)
 
+    def load_all_latest_volumes(self, days: int = 300, sp500_only: bool = True) -> dict[str, list[float]]:
+        """
+        Load last N days of volume for tickers in OHLCV.
+        Used for SV5TH/SV5TW/SV5FI volume breadth calculation.
+
+        Args:
+            days: Number of calendar days of history to load.
+            sp500_only: If True, only include SP500 STOCKs.
+
+        Returns:
+            {ticker: [vol_day1, vol_day2, ...]} chronologically ordered.
+        """
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                if sp500_only:
+                    cur.execute(
+                        """SELECT b.ticker, b.time::date, b.volume
+                           FROM market.ohlcv_bars b
+                           JOIN market.ticker_metadata m ON b.ticker = m.ticker
+                           WHERE b.timeframe = '1d'
+                           AND b.time >= NOW() - INTERVAL '%s days'
+                           AND m.asset_type = 'STOCK'
+                           AND 'SP500' = ANY(m.index_membership)
+                           AND b.volume > 0
+                           ORDER BY b.ticker, b.time""",
+                        (days,),
+                    )
+                else:
+                    cur.execute(
+                        """SELECT ticker, time::date, volume
+                           FROM market.ohlcv_bars
+                           WHERE timeframe = '1d'
+                           AND time >= NOW() - INTERVAL '%s days'
+                           AND volume > 0
+                           ORDER BY ticker, time""",
+                        (days,),
+                    )
+                result: dict[str, list[float]] = {}
+                for ticker, dt, volume in cur.fetchall():
+                    if volume is not None:
+                        result.setdefault(ticker, []).append(float(volume))
+                return result
+        finally:
+            self._put(conn)
+
+    def load_sp500_volumes_by_sector(
+        self, days: int = 300,
+    ) -> tuple[dict[str, dict[str, list[float]]], dict[str, str]]:
+        """
+        Load SP500 volumes grouped by sector for sector volume breadth.
+
+        Returns:
+            Tuple of:
+              - {sector: {ticker: [vol_day1, ...]}} grouped by sector
+              - {ticker: sector} flat sector map
+        """
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """SELECT b.ticker, m.sector, b.time::date, b.volume
+                       FROM market.ohlcv_bars b
+                       JOIN market.ticker_metadata m ON b.ticker = m.ticker
+                       WHERE b.timeframe = '1d'
+                         AND b.time >= NOW() - INTERVAL '%s days'
+                         AND m.asset_type = 'STOCK'
+                         AND 'SP500' = ANY(m.index_membership)
+                         AND m.sector IS NOT NULL
+                         AND b.volume > 0
+                       ORDER BY b.ticker, b.time""",
+                    (days,),
+                )
+                by_sector: dict[str, dict[str, list[float]]] = {}
+                sector_map: dict[str, str] = {}
+                for ticker, sector, dt, volume in cur.fetchall():
+                    if volume is not None:
+                        sector_map[ticker] = sector
+                        by_sector.setdefault(sector, {}).setdefault(ticker, []).append(float(volume))
+                return by_sector, sector_map
+        finally:
+            self._put(conn)
+
+
     def upsert_ohlcv_bar(
         self, ticker: str, timeframe: str, time,
         open: float, high: float, low: float, close: float, volume: int = 0,

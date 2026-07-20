@@ -1915,6 +1915,8 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         import backend.daemons.vault_providers.ohlcv_provider  # noqa: F401
         import backend.daemons.vault_providers.breadth_provider  # noqa: F401
         import backend.daemons.vault_providers.sector_breadth_provider  # noqa: F401
+        import backend.daemons.vault_providers.volume_breadth_provider  # noqa: F401
+        import backend.daemons.vault_providers.sector_volume_breadth_provider  # noqa: F401
         import backend.daemons.vault_providers.remaining_providers  # noqa: F401
         import backend.daemons.vault_providers.observer_provider  # noqa: F401
 
@@ -2144,6 +2146,22 @@ def run_cycle(store: TimescaleDataStore) -> None:
     except Exception as e:
         logger.warning(f"Sector breadth vault failed (non-critical): {e}")
         results["sector_breadth"] = {"status": "error", "error": str(e)}
+
+    # ── Tier 3b-ter: Volume Breadth — SV5TH/SV5FI/SV5TW (AFTER ohlcv) ──
+    try:
+        from backend.daemons.vault_providers.volume_breadth_provider import VolumeBreadthProvider
+        results["volume_breadth"] = VolumeBreadthProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Volume breadth vault failed (non-critical): {e}")
+        results["volume_breadth"] = {"status": "error", "error": str(e)}
+
+    # ── Tier 3b-quat: Sector Volume Breadth — SV5_{ETF}_{TH|FI|TW} (AFTER ohlcv) ──
+    try:
+        from backend.daemons.vault_providers.sector_volume_breadth_provider import SectorVolumeBreadthProvider
+        results["sector_volume_breadth"] = SectorVolumeBreadthProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Sector volume breadth vault failed (non-critical): {e}")
+        results["sector_volume_breadth"] = {"status": "error", "error": str(e)}
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)

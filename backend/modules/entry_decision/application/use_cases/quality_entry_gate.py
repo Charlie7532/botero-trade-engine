@@ -423,6 +423,7 @@ class QualityEntryGate:
                     # lookups ZZ coincidence probability with Tier Pooling.
                     s5_th = self._sector_breadth.get_s5_th_value(sector_etf)
                     s5_tw = self._sector_breadth.get_s5_tw_value(sector_etf)
+                    s5_tw_prev = self._sector_breadth.get_s5_tw_prev_value(sector_etf)
                     if s5_th is not None and s5_fi is not None and s5_tw is not None:
                         from backend.modules.entry_decision.domain.rules.triad_lookup import (
                             lookup_triad_signal,
@@ -433,6 +434,7 @@ class QualityEntryGate:
                             tw_val=s5_tw,
                             sector_etf=sector_etf,
                             spy_fi_val=mkt_fi or 50.0,
+                            tw_prev_val=s5_tw_prev,
                         )
                         report.sector_s5_th = s5_th
                         report.sector_s5_tw = s5_tw

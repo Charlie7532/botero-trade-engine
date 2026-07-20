@@ -23,6 +23,7 @@ from backend.modules.shared.domain.constants.sectors import (
     SECTOR_ETFS,
     SECTOR_BREADTH_TICKERS,
     BREADTH_MA_LENGTHS,
+    canonicalize,
 )
 
 logging.basicConfig(
@@ -33,18 +34,6 @@ logger = logging.getLogger(__name__)
 
 # Reverse map: sector_name -> etf
 _SECTOR_TO_ETF = {v: k for k, v in SECTOR_ETFS.items()}
-
-# Finviz → canonical
-_FINVIZ_TO_CANONICAL = {
-    "Consumer Cyclical": "Consumer Discretionary",
-    "Consumer Defensive": "Consumer Staples",
-    "Financial Services": "Financials",
-    "Basic Materials": "Materials",
-}
-
-
-def _canonicalize(s: str) -> str:
-    return _FINVIZ_TO_CANONICAL.get(s, s)
 
 
 def main():
@@ -76,7 +65,7 @@ def main():
     for ticker, sector, dt, close in cur.fetchall():
         if close is not None:
             ticker_history.setdefault(ticker, []).append((dt, float(close)))
-            ticker_sector[ticker] = _canonicalize(sector)
+            ticker_sector[ticker] = canonicalize(sector)
             row_count += 1
 
     logger.info(f"Loaded {row_count:,} rows for {len(ticker_history)} SP500 tickers")

@@ -120,7 +120,9 @@ class RSIIntelligence:
             avg_gain[i] = (avg_gain[i - 1] * (period - 1) + gains[i]) / period
             avg_loss[i] = (avg_loss[i - 1] * (period - 1) + losses[i]) / period
 
-        rs = np.where(avg_loss > 0, avg_gain / avg_loss, 100.0)
+        rs = np.full_like(avg_gain, 100.0)
+        mask = avg_loss > 0
+        np.divide(avg_gain, avg_loss, out=rs, where=mask)
         rsi = 100.0 - (100.0 / (1.0 + rs))
 
         # First `period` values are unreliable

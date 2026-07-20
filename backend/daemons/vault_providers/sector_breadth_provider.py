@@ -20,25 +20,13 @@ from backend.modules.shared.domain.constants.sectors import (
     SECTOR_ETFS,
     SECTOR_BREADTH_TICKERS,
     BREADTH_MA_LENGTHS,
+    canonicalize,
 )
 
 logger = logging.getLogger(__name__)
 
 # Reverse map: sector_name -> etf
 _SECTOR_TO_ETF = {v: k for k, v in SECTOR_ETFS.items()}
-
-# Map ticker_metadata.sector values to canonical SECTOR_ETFS names.
-# ticker_metadata uses Finviz naming; SECTOR_ETFS uses canonical GICS.
-_FINVIZ_TO_CANONICAL = {
-    "Consumer Cyclical": "Consumer Discretionary",
-    "Consumer Defensive": "Consumer Staples",
-    "Financial Services": "Financials",
-    "Basic Materials": "Materials",
-}
-
-
-def _canonicalize(sector_name: str) -> str:
-    return _FINVIZ_TO_CANONICAL.get(sector_name, sector_name)
 
 
 class SectorBreadthProvider:
@@ -72,7 +60,7 @@ def _compute_and_store(store) -> dict:
     skipped = 0
 
     for sector_raw, closes_dict in by_sector.items():
-        sector = _canonicalize(sector_raw)
+        sector = canonicalize(sector_raw)
         etf = _SECTOR_TO_ETF.get(sector)
         if not etf or etf not in SECTOR_BREADTH_TICKERS:
             continue

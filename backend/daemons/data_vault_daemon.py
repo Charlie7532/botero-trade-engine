@@ -2174,6 +2174,14 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"Observer vault failed (non-critical): {e}")
         results["observer"] = {"status": "error", "error": str(e)}
 
+    # ── Tier 3e: Weekly Retraining of Triad Matrices (Runs Sundays or if >7d old) ──
+    try:
+        from backend.daemons.vault_providers.triad_retrainer_provider import TriadRetrainerProvider
+        results["triad_retraining"] = TriadRetrainerProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Triad retrainer vault failed (non-critical): {e}")
+        results["triad_retraining"] = {"status": "error", "error": str(e)}
+
     # ── Tier 4: Very heavy + rate limited ──
     results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)
     results["uw"] = vault_uw_data(interceptor)

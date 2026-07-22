@@ -129,6 +129,25 @@ SECTOR_CAP_WEIGHTS: dict[str, float] = {
     "XLB":  0.022,  # Materials
 }
 
+# Approximate number of S&P 500 constituent stocks per sector.
+# Used to convert S5 percentages to real stock counts for
+# cross-sector marginal attribution (SectorRotationMemory).
+# Source: S&P Dow Jones Indices constituent list.
+SECTOR_CONSTITUENT_COUNTS: dict[str, int] = {
+    "XLK":  67,   # Technology
+    "XLF":  72,   # Financials
+    "XLV":  64,   # Healthcare
+    "XLI":  78,   # Industrials
+    "XLY":  52,   # Consumer Discretionary
+    "XLP":  38,   # Consumer Staples
+    "XLE":  23,   # Energy
+    "XLU":  30,   # Utilities
+    "XLRE": 31,   # Real Estate
+    "XLB":  28,   # Materials
+    "XLC":  22,   # Communication Services
+}
+TOTAL_SP500_CONSTITUENTS: int = sum(SECTOR_CONSTITUENT_COUNTS.values())  # 505
+
 
 # ── Volume Breadth Indicator Tickers ────────────────────────
 # Naming: SV5_{ETF}_{TH|FI|TW}

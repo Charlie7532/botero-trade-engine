@@ -68,3 +68,44 @@ class SectorBreadthDataPort(ABC):
         3 = Cyclical (XLK, XLY, XLI) — wider thresholds
         """
         ...
+
+    # ── S5V (Volume Breadth) ────────────────────────────────
+
+    @abstractmethod
+    def get_sv5_fi_value(self, sector_etf: str) -> Optional[float]:
+        """Returns latest SV5_FI (% with vol above 50-DMA) for a sector ETF."""
+        ...
+
+    @abstractmethod
+    def get_sv5_th_value(self, sector_etf: str) -> Optional[float]:
+        """Returns latest SV5_TH (% with vol above 200-DMA) for a sector ETF."""
+        ...
+
+    @abstractmethod
+    def get_sv5_tw_value(self, sector_etf: str) -> Optional[float]:
+        """Returns latest SV5_TW (% with vol above 20-DMA) for a sector ETF."""
+        ...
+
+    @abstractmethod
+    def get_sv5_tw_prev_value(self, sector_etf: str) -> Optional[float]:
+        """Returns previous day's SV5_TW for direction detection."""
+        ...
+
+    @abstractmethod
+    def get_market_sv5_fi(self) -> Optional[float]:
+        """Returns latest SV5_FI for the overall market (SPY)."""
+        ...
+
+    # ── Multi-scale history (for velocity / acceleration) ───
+
+    @abstractmethod
+    def get_s5_history_by_scale(
+        self, sector_etf: str, scale: str, lookback: int = 25,
+    ) -> list[float]:
+        """
+        Returns last N daily close values of S5 for a given scale.
+        scale: 'structural' | 'intermediate' | 'tactical'.
+        Returns empty list if data unavailable.
+        """
+        ...
+

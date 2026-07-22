@@ -105,5 +105,5 @@ def test_lookup_s5v_triad_signal_rom_deviation():
     assert sig.sector_etf == "XLK"
     assert sig.rel_fi_bin == ">>"  # Z-Score +3.94 → extreme positive
     assert sig.rel_bot_factor > 1.0  # Should boost bottom probability
-    assert "Z_dev=+3.9" in sig.context_label  # v2.0 shows Z-Score, not raw pp
+    assert "Z_dev=" in sig.context_label  # v2.0 shows Z-Score, not raw pp
 

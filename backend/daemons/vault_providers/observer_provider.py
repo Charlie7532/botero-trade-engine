@@ -34,6 +34,29 @@ class ObserverProvider:
     # Warmup: use 100 bars of history for filter initialization
     WARMUP_BARS = 100
 
+    def _ensure_columns(self, conn) -> None:
+        """Ensure required observer columns exist on engine.channel_snapshots."""
+        try:
+            with conn.cursor() as cur:
+                cols = [
+                    ("obs_recovery_score", "REAL"),
+                    ("obs_velocity_norm", "REAL"),
+                    ("obs_state", "TEXT"),
+                    ("obs_kf_consensus", "INTEGER"),
+                    ("obs_vel_sigma_c", "REAL"),
+                    ("obs_vel_svw", "REAL"),
+                    ("obs_vel_tension_w", "REAL"),
+                    ("obs_vel_rsi", "REAL"),
+                    ("obs_vel_conj_wt", "REAL"),
+                    ("slope_tripleta", "TEXT"),
+                ]
+                for col, dtype in cols:
+                    cur.execute(f"ALTER TABLE engine.channel_snapshots ADD COLUMN IF NOT EXISTS {col} {dtype}")
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.warning(f"Observer: column migration failed: {e}")
+
     def run_full(self, store: TimescaleDataStore, **kwargs) -> dict:
         """Compute Observer for all tickers using latest snapshots."""
         from backend.modules.shared.domain.rules.unified_observer import (
@@ -46,6 +69,7 @@ class ObserverProvider:
         conn = store._conn()
 
         try:
+            self._ensure_columns(conn)
             for ticker in self.TICKERS:
                 try:
                     result = self._update_ticker(conn, ticker)
@@ -54,6 +78,7 @@ class ObserverProvider:
                     else:
                         skipped += 1
                 except Exception as e:
+                    conn.rollback()
                     logger.warning(f"Observer {ticker}: failed: {e}")
                     skipped += 1
 
@@ -72,6 +97,7 @@ class ObserverProvider:
         """Update Observer for a single ticker on-demand."""
         conn = store._conn()
         try:
+            self._ensure_columns(conn)
             result = self._update_ticker(conn, ticker)
             conn.commit()
             return {"status": "ok" if result else "skipped"}

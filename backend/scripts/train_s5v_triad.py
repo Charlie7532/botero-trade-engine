@@ -48,18 +48,18 @@ for tier_name, etfs in TIERS.items():
         ETF_TO_TIER[etf] = tier_name
 
 # Mapping for sector volume breadth tickers in Vault
-# format: S5_{ETF}_VTH, S5_{ETF}_VFI, S5_{ETF}_VTW
+# format: SV5_{ETF}_TH, SV5_{ETF}_FI, SV5_{ETF}_TW (Canonical Convención B)
 def get_s5v_tickers(etf: str) -> dict:
     if etf == "SPY":
         return {
-            "structural": "S5VTH",
-            "intermediate": "S5VFI",
-            "tactical": "S5VTW"
+            "structural": "SV5TH",
+            "intermediate": "SV5FI",
+            "tactical": "SV5TW"
         }
     return {
-        "structural": f"S5_{etf}_VTH",
-        "intermediate": f"S5_{etf}_VFI",
-        "tactical": f"S5_{etf}_VTW"
+        "structural": f"SV5_{etf}_TH",
+        "intermediate": f"SV5_{etf}_FI",
+        "tactical": f"SV5_{etf}_TW"
     }
 
 

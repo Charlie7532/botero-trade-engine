@@ -20,7 +20,7 @@ When any agent works on a backend module, activate the skills listed for that mo
 
 | Module | Department | Always | Domain-Specific Skills | Why |
 |---|---|---|---|---|
-| `entry_decision` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `fundamental-analyst`, `risk-quality`. SPECULATIVE: `tactical-entries`, `risk-speculative` | Separate pipelines — `QualityEntryGate` vs `SpeculativeEntryHub` |
+| `entry_decision` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `fundamental-analyst`, `risk-quality`, `sector-rotation-gate`. SPECULATIVE: `tactical-entries`, `risk-speculative` | Separate pipelines — `QualityEntryGate` (V26 rotation) vs `SpeculativeEntryHub` |
 | `execution` | BOTH | `clean-architecture`, `operational-purpose` | QUALITY: `risk-quality`, `cio-allocator`. SPECULATIVE: `risk-speculative` | Order lifecycle, broker adapters — department-scoped risk |
 | `flow_intelligence` | SPECULATIVE | `clean-architecture`, `operational-purpose` | `tactical-entries` | Whale flows, sweeps, institutional positioning — pure microstructure |
 | `options_gamma` | SPECULATIVE | `clean-architecture`, `operational-purpose` | `tactical-entries`, `risk-speculative` | GEX, Max Pain, gamma regime — Speculative entry timing + risk |

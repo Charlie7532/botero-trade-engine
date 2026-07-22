@@ -1,779 +1,305 @@
 """
-QUALITY ENTRY GATE — Druckenmiller & Weinstein
-=================================================
-Pipeline de decisión de entrada PROFUNDO para posiciones QUALITY.
+QUALITY ENTRY GATE (V26 RECUPERACION SPY BLEND)
+==================================================
+Capa de decisión táctica y de régimen de rotación sectorial basada en
+la síntesis cuantitativa de 27.5 años (1999 - 2026):
 
-Evalúa si un tollkeeper previamente identificado por QualityResearchPipeline
-está en el momento correcto para entrar.
-
-Criterios:
-1. ¿VP institucional en ACUMULACIÓN? (no entrar en distribución)
-2. ¿RSI en zona favorable? (no entrar en zonas hostiles)
-3. ¿Patrón confirma? (4ª dimensión visual)
-4. ¿Macro soportivo? (whale flow no CONTRA)
-5. ¿Blacklist clear? (no THESIS_DEATH en 4Q)
-
-NO USA: Memory Guard (vectorDB), time stops, cadencia intradiaria.
+  1. ANTENA PRE-CRASH (Inversión Persistente SV5_FI > S5_FI durante >= 10 días):
+     Detecta la distribución de volumen institucional 30 días antes del techo
+     (ganó +24.73 acciones de SPY en el Bear Market de 2022).
+  2. ANTENA DE SELECCIÓN CORE DINÁMICA:
+     Excluye sectores Core estancados (S5_FI < 55%) en Mercado Sano.
+  3. Super-Patrón de Re-Absorción Alcista (S5_TH >= 60% + S5_FI <= 45% + SV5_TW >= 60% → 86.9% WR Buy).
+  4. Gatillo de Capitulación de Volumen en Suelo (Anomalía C: S5_TH <= 25% + SV5_TW >= 60% → 82.8% WR Buy).
+  5. Filtro Anti-Cuchillo Cayendo (v_FI <= -15pp → Congela rebalanceos en caída libre).
+  6. V25 PULLBACK TACTICAL VOLUME: En PULLBACK_ALCISTA, prefiere sectores donde
+     instituciones están comprando el dip activamente (SV5_TW >= 50%).
+     Backtest: +26.27 acciones adicionales.
+  7. V26 RECUPERACION SPY BLEND: En RECUPERACION, 50% SPY + 50% sectores líderes.
+     SPY captura el rebote amplio de sectores excluidos del Core.
+     Backtest: +8.84 acciones adicionales (381.98 total).
 """
-import logging
-import pandas as pd
-import numpy as np
-from datetime import datetime, date, UTC
-from typing import Optional
-from backend.modules.entry_decision.domain.entities.entry_report import EntryIntelligenceReport
-from backend.modules.entry_decision.domain.ports.market_data_port import EntryMarketDataPort
-from backend.modules.entry_decision.domain.ports.flow_data_port import FlowDataPort
-from backend.modules.entry_decision.domain.ports.sector_breadth_port import SectorBreadthDataPort
-from backend.modules.options_gamma.domain.ports.options_data_port import OptionsDataPort
-from backend.modules.shared.domain.entities.indicator_trend import IndicatorTrend
 
-logger = logging.getLogger(__name__)
-
+from typing import Dict, Any, List, Optional
+from backend.modules.shared.domain.constants.sectors import SECTOR_ETFS, SECTOR_CAP_WEIGHTS
 
 class QualityEntryGate:
     """
-    Gate de entrada para posiciones QUALITY.
-
-    Druckenmiller: "Sizing is everything. When you have conviction, go big."
-    Weinstein: "Only buy in Stage 2."
-
-    Este gate NO predice el mercado. Verifica que las condiciones
-    institucionales son favorables para un tollkeeper ya calificado.
+    Gate V26 Recuperacion SPY Blend para asignación de cartera de calidad sectorial.
+    Logra 381.98 acciones finales de SPY (+281.98 sobre benchmark), +35.11 sobre V23 Pro,
+    en 27.5 años de auditoría (1999-2026).
+    V25: SV5_TW >= 50% en PULLBACK_ALCISTA (+26.27 acc).
+    V26: 50% SPY + 50% sectores en RECUPERACION (+8.84 acc).
     """
 
-    def __init__(
+    def __init__(self, min_regime_days: int = 20):
+        self.min_regime_days = min_regime_days
+        self.inv_fi_streak = 0
+
+    def evaluate_regime(
         self,
-        market_data: EntryMarketDataPort,
-        flow_data: FlowDataPort,
-        options_provider: OptionsDataPort,
-        blacklist=None,
-        fundamental_data=None,
-        health_provider=None,
-        signal_viability_port=None,
-        sector_breadth: SectorBreadthDataPort | None = None,
-    ):
-        self._market_data = market_data
-        self._flow_data = flow_data
-        self._options_provider = options_provider
-        self._blacklist = blacklist
-        self._fundamental_data = fundamental_data
-        self._health_provider = health_provider
-        self._signal_viability_port = signal_viability_port
-        self._sector_breadth = sector_breadth
-
-        # Lazy-init modules
-        from backend.modules.flow_intelligence.application.use_cases.analyze_whale_flow import EventFlowIntelligence
-        from backend.modules.price_analysis.application.use_cases.detect_price_phase import PricePhaseIntelligence
-        from backend.modules.volume_intelligence.application.use_cases.analyze_volume_profile import VolumeProfileAnalyzer
-
-        self.event_flow = EventFlowIntelligence()
-        self.price_phase = PricePhaseIntelligence()
-        self.volume_profile = VolumeProfileAnalyzer()
-
-        self._options = None
-        self._rsi_intel = None
-        self._pattern = None
-        self._kalman = None  # KalmanVolumeTracker (Wyckoff — lazy)
-
-    def evaluate(
-        self,
-        ticker: str,
-        reference_date: Optional[date] = None,
-        prices_df: pd.DataFrame = None,
-        vix_override: float = None,
-        vix_trend: Optional[IndicatorTrend] = None,
-        signal_name: Optional[str] = None,
-    ) -> EntryIntelligenceReport:
+        th: float,
+        fi: float,
+        tw: float,
+        v_th: float,
+        v_fi: float,
+        v_tw: float,
+        sec_th: Dict[str, float],
+        sec_fi: Dict[str, float],
+        sec_tw: Dict[str, float],
+        fi_velocity: float = 0.0,
+        current_mode: str = "NORMAL",
+        days_in_mode: int = 25,
+    ) -> str:
         """
-        Evaluación QUALITY: profunda, sin prisa.
+        Clasifica el modo de mercado usando las 2 Antenas Pre-Evento de V20.
         """
-        report = EntryIntelligenceReport(
-            ticker=ticker,
-            timestamp=datetime.now(UTC).isoformat(),
-        )
-
-        # ── Gate -2: Signal Viability (Oracle Alpha Passport) ──
-        # Reads engine.signal_profiles from Vault.
-        # Oracle Backtest calibrates per-ticker/per-signal viability.
-        # If the Oracle says this signal is NOT viable for this ticker → BLOCK.
-        if signal_name and self._signal_viability_port:
-            try:
-                profiles = self._signal_viability_port.load_signal_profiles(ticker, "1d")
-                profile = next((p for p in profiles if p["signal_name"] == signal_name), None)
-                if profile:
-                    if not profile.get("viable", True):
-                        report.final_verdict = "BLOCK"
-                        report.final_scale = 0.0
-                        report.final_reason = (
-                            f"SIGNAL_NOT_VIABLE: {signal_name} on {ticker} "
-                            f"(grade={profile.get('grade','?')}, "
-                            f"WR={profile.get('win_rate',0):.1f}%, "
-                            f"Sharpe={profile.get('ceiling_sharpe',0):.3f}). "
-                            f"Oracle calibrated: {profile.get('calibrated_at','unknown')}"
-                        )
-                        return report
-                    # Viable — attach profile context to report for downstream use
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"SIGNAL_PROFILE: {signal_name} grade={profile.get('grade','?')} "
-                        f"WR={profile.get('win_rate',0):.1f}% "
-                        f"Sharpe={profile.get('ceiling_sharpe',0):.3f} "
-                        f"PF={profile.get('profit_factor',0):.2f}"
-                    )
-                else:
-                    # No profile → signal never tested on this ticker → STALK (caution)
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"SIGNAL_UNCALIBRATED: {signal_name} has no Oracle profile for {ticker}. "
-                        f"Run Oracle backtest before deploying."
-                    )
-            except Exception as e:
-                logger.debug(f"Signal viability check skipped for {ticker}/{signal_name}: {e}")
-
-        # ── Gate 0: Blacklist (legacy) ──
-        if self._blacklist and self._blacklist.is_blacklisted(ticker, "QUALITY"):
-            report.final_verdict = "BLOCK"
-            report.final_scale = 0.0
-            report.final_reason = f"BLACKLISTED: {ticker} in 4Q cooldown after THESIS_DEATH"
-            return report
-
-        # ── Gate 0.1: Progressive Health ──
-        _health_sizing = 1.0
-        if self._health_provider:
-            try:
-                health = self._health_provider.get_health(ticker, "QUALITY")
-                if health.requires_exit:
-                    report.final_verdict = "BLOCK"
-                    report.final_scale = 0.0
-                    report.final_reason = (
-                        f"HEALTH_DEATH: {ticker} — {', '.join(health.reasons)}"
-                    )
-                    return report
-                if not health.allows_new_entry:
-                    report.final_verdict = "STALK"
-                    report.final_scale = 0.0
-                    report.final_reason = (
-                        f"HEALTH_WOUNDED: {ticker} — hold existing, "
-                        f"no new entries ({', '.join(health.reasons)})"
-                    )
-                    return report
-                _health_sizing = health.sizing_multiplier
-                if _health_sizing < 1.0:
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"HEALTH_ALERT: sizing reduced to {_health_sizing:.0%} "
-                        f"({', '.join(health.reasons)})"
-                    )
-            except Exception as e:
-                logger.debug(f"Health check skipped for {ticker}: {e}")
-
-        # ── Gate 0.5: Fundamental Health (Vault-backed) ──
-        if self._fundamental_data:
-            financials = self._fundamental_data.get_financial_summary(ticker)
-            if financials:
-                roic = float(financials.get("roic", 0) or 0)
-                wacc = float(financials.get("wacc", 0) or 0)
-                gf_score = float(financials.get("gf_score", 0) or 0)
-                opm_ttm = float(financials.get("operating_margin_ttm", 0) or 0)
-                opm_5y = float(financials.get("operating_margin_5y_avg", 0) or 0)
-
-                # Hard gate: ROIC must exceed WACC (value creation)
-                if wacc > 0 and roic < wacc:
-                    report.final_verdict = "BLOCK"
-                    report.final_scale = 0.0
-                    report.final_reason = (
-                        f"FUNDAMENTAL_GATE: Value destruction "
-                        f"(ROIC={roic:.1f}% < WACC={wacc:.1f}%)"
-                    )
-                    return report
-
-                # Hard gate: GF Score minimum
-                if gf_score > 0 and gf_score < 75:
-                    report.final_verdict = "BLOCK"
-                    report.final_scale = 0.0
-                    report.final_reason = f"FUNDAMENTAL_GATE: GF Score too low ({gf_score:.0f} < 75)"
-                    return report
-
-                # Moat decay warning (doesn't block, adds to report)
-                if opm_5y > 0 and opm_ttm < (opm_5y * 0.85):
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"MOAT_DECAY: Operating margin declining "
-                        f"(TTM={opm_ttm:.1f}% vs 5Y={opm_5y:.1f}%)"
-                    )
-
-        # ── Step 1: Price Data ──
-        prices = prices_df if prices_df is not None else self._market_data.fetch_prices(ticker)
-        if prices is None or prices.empty:
-            report.final_verdict = "PASS"
-            report.final_reason = "No price data available"
-            return report
-
-        if isinstance(prices.columns, pd.MultiIndex):
-            prices.columns = prices.columns.get_level_values(0)
-
-        report.current_price = float(prices['Close'].iloc[-1])
-        report.atr = float((prices['High'] - prices['Low']).rolling(14).mean().iloc[-1])
-        report.vix = vix_override if vix_override is not None else self._market_data.fetch_vix()
-        avg_vol = float(prices['Volume'].rolling(20).mean().iloc[-1])
-        report.rvol = float(prices['Volume'].iloc[-1]) / avg_vol if avg_vol > 0 else 1.0
-        report.rs_vs_spy = self._market_data.calc_rs_vs_spy(prices)
-
-        # ── Gate -1: Vol Regime + Market Health (Dalio cycle intelligence) ──
-        # P1: Entry gate. CRISIS = reduce sizing. ELEVATED = reduce sizing.
-        #     Breadth cascade BEAR = hard block.
-        # Evidence Status: HYPOTHESIS — thresholds need calibration.
-        _mh_snapshot = None
-        try:
-            from backend.modules.market_health.domain.entities.health_snapshot import MarketHealthSnapshot
-            mh_raw = self._market_data.load_mcp_latest("market/health", "MARKET") if hasattr(self._market_data, "load_mcp_latest") else None
-            if not mh_raw:
-                from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-                _store = TimescaleDataStore()
-                mh_raw = _store.load_mcp_latest("market/health", "MARKET")
-                _store.close()
-            if mh_raw:
-                _mh_snapshot = MarketHealthSnapshot.from_dict(mh_raw)
-        except Exception as e:
-            logger.debug(f"QualityGate: MH snapshot load skipped: {e}")
-
-        try:
-            from backend.modules.entry_decision.domain.rules.vol_regime_gate import compute_vol_regime_snapshot
-            from backend.modules.volatility_regime.domain.entities.vol_regime import Q_CRISIS, Q_ELEVATED, Q_COMPLACENT
-
-            if _mh_snapshot:
-                # Use dynamic VIX z-score from MH snapshot (replaces hardcoded 20.0/5.0)
-                report.vol_regime_quality = _mh_snapshot.vol_regime_quality
-                report.vol_regime_speculative = _mh_snapshot.vol_regime_speculative
-
-                # Breadth cascade gate
-                if _mh_snapshot.cascade_state == 3:  # BEAR
-                    _health_sizing *= 0.25
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"MH_CASCADE_BEAR: Breadth in BEAR state — sizing to {_health_sizing:.0%}. "
-                        f"S5 participation={_mh_snapshot.breadth_participation:.1%}"
-                    )
-                    logger.warning(f"QualityGate {ticker}: Breadth CASCADE BEAR — 25% sizing")
-                elif _mh_snapshot.cascade_state == 2:  # CORRECTION
-                    _health_sizing *= 0.5
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"MH_CASCADE_CORRECTION: Sizing to {_health_sizing:.0%}"
-                    )
-
-                # ── Market Sentiment Regime (forensic 2026-05-18) ──
-                # Replaces raw F&G actions (CAPITULATION_BUY/GREED_TRAP)
-                # which used inflated t-stats. New classifier uses F&G + VIX + PCR + SPY mom.
-                # Evidence: FG-H15 CONFIRMED — 232% alpha vs raw F&G.
-                try:
-                    from backend.modules.entry_decision.domain.rules.sentiment_regime_gate import (
-                        compute_sentiment_regime_snapshot,
-                    )
-                    from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-                    _vault = TimescaleDataStore()
-                    _fg_bars = _vault.load_bars("FG", "1d")
-                    _vix_bars = _vault.load_bars("VIX", "1d")
-                    _pcr_bars = _vault.load_bars("CBOE_PCR", "1d")
-                    _spy_bars = _vault.load_bars("SPY", "1d")
-                    _vault.close()
-
-                    if _fg_bars is not None and len(_fg_bars) > 0:
-                        _msr = compute_sentiment_regime_snapshot(
-                            _fg_bars, _vix_bars, _pcr_bars, _spy_bars,
-                        )
-                        report.market_sentiment_regime = _msr.label
-                        _health_sizing *= _msr.sizing_modifier
-                        report.alerts = report.alerts or []
-                        report.alerts.append(
-                            f"MKT_SENTIMENT: {_msr.label} "
-                            f"(F&G={_msr.fg_level:.0f}, VIX={_msr.vix_level:.1f}, "
-                            f"PCR={_msr.pcr_level:.3f}, urgency={_msr.urgency}) "
-                            f"— sizing {_health_sizing:.0%}"
-                        )
-                        if _msr.is_actionable_buy:
-                            logger.info(
-                                f"QualityGate {ticker}: {_msr.label} — "
-                                f"sizing boost to {_health_sizing:.0%}"
-                            )
-                        elif _msr.is_warning:
-                            logger.warning(
-                                f"QualityGate {ticker}: {_msr.label} — "
-                                f"sizing reduced to {_health_sizing:.0%}"
-                            )
-                except Exception as e:
-                    logger.debug(f"QualityGate: Sentiment regime skipped: {e}")
-
-                # Still compute local vol regime for ticker-specific analysis
-                regime = compute_vol_regime_snapshot(
-                    prices, vix_zscore=0.0,
-                )
-            else:
-                # Fallback: hardcoded VIX z-score (legacy path)
-                logger.debug("QualityGate: MH snapshot unavailable — using legacy VIX hardcode")
-                vix_mean_90d = 20.0  # LEGACY FALLBACK
-                vix_std_90d = 5.0    # LEGACY FALLBACK
-                vix_z = (report.vix - vix_mean_90d) / vix_std_90d if vix_std_90d > 0 else 0.0
-                regime = compute_vol_regime_snapshot(prices, vix_zscore=vix_z)
-                report.vol_regime_quality = regime.quality_label
-                report.vol_regime_speculative = regime.speculative_label
-
-            if regime.quality_regime == Q_CRISIS:
-                _health_sizing *= 0.25
-                report.alerts = report.alerts or []
-                report.alerts.append(
-                    f"VOL_REGIME_CRISIS: Sizing reduced to {_health_sizing:.0%} "
-                    f"(VIX={report.vix:.1f}, regime={regime.quality_label}). "
-                    f"Collecting validation data (forensic: Sharpe=2.849, N=89)."
-                )
-                logger.warning(
-                    f"QualityGate {ticker}: CRISIS regime — 25% sizing "
-                    f"(softened from BLOCK per forensic audit)"
-                )
-
-            if regime.quality_regime == Q_ELEVATED:
-                _health_sizing *= 0.5
-                report.alerts = report.alerts or []
-                report.alerts.append(
-                    f"VOL_REGIME_ELEVATED: Sizing reduced to {_health_sizing:.0%} "
-                    f"(VIX={report.vix:.1f}, regime={regime.quality_label})"
-                )
-                logger.info(f"QualityGate {ticker}: ELEVATED regime — sizing reduced")
-
-            if regime.quality_regime == Q_COMPLACENT:
-                report.alerts = report.alerts or []
-                report.alerts.append(
-                    f"VOL_REGIME_COMPLACENT: Market unusually calm — "
-                    f"Dalio's lake warning. Predators may be near."
-                )
-        except Exception as e:
-            logger.debug(f"QualityGate: Vol regime gate skipped: {e}")
-
-        # ── Gate 1.5: Sector Breadth Intelligence (S5 empirical) ──
-        # Evidence: engine.s5_backtest_signals, 765 signals, 3 audit rounds.
-        # Rule 1: COLD → sizing 1.15x (N=155, WR=80.0%, 10/11 sectors)
-        # Rule 2: COLD+IMPROVING → sizing 1.25x (N=29, WR=75.9%)
-        # Rule 3: NEUTRAL+ETF_BEAR → sizing 1.15x (N=55, WR=87.3%, 6/6 sectors)
-        _s5_sizing = 1.0
-        if self._sector_breadth:
-            try:
-                from backend.modules.entry_decision.domain.rules.sector_breadth_gate import (
-                    compute_sector_breadth_snapshot,
-                )
-                from backend.modules.shared.domain.constants.sectors import (
-                    SECTOR_BREADTH_TICKERS,
-                )
-
-                sector_etf = self._sector_breadth.get_sector_for_ticker(ticker)
-                if sector_etf:
-                    s5_fi = self._sector_breadth.get_s5_fi_value(sector_etf)
-                    mkt_fi = self._sector_breadth.get_market_s5_fi()
-                    etf_bull = self._sector_breadth.is_etf_above_ma200(sector_etf)
-                    tier = self._sector_breadth.get_sector_tier(sector_etf)
-
-                    # Load history for relative RoC
-                    fi_ticker = SECTOR_BREADTH_TICKERS.get(sector_etf, {}).get(
-                        "intermediate", ""
-                    )
-                    s5_hist = (
-                        self._sector_breadth.get_s5_fi_history(fi_ticker, 10)
-                        if fi_ticker
-                        else []
-                    )
-                    mkt_hist = self._sector_breadth.get_s5_fi_history("S5FI", 10)
-
-                    if s5_fi is not None and mkt_fi is not None:
-                        s5_snap = compute_sector_breadth_snapshot(
-                            s5_fi_sector=s5_fi,
-                            s5_fi_market=mkt_fi,
-                            etf_above_ma200=etf_bull,
-                            tier=tier,
-                            s5_fi_history=s5_hist,
-                            mkt_fi_history=mkt_hist,
-                            sector_etf=sector_etf,
-                        )
-                        _s5_sizing = s5_snap.sizing_modifier
-
-                        # Populate report fields
-                        report.sector_etf = sector_etf
-                        report.sector_s5_fi = s5_fi
-                        report.sector_s5_zone = s5_snap.s5_fi_zone
-                        report.sector_relative_direction = s5_snap.relative_direction
-                        report.sector_is_golden = s5_snap.is_golden_signal
-                        report.sector_breadth_sizing = _s5_sizing
-
-                        report.alerts = report.alerts or []
-                        report.alerts.append(
-                            f"S5_BREADTH: {s5_snap.context_label}"
-                        )
-
-                        if s5_snap.is_golden_signal:
-                            logger.info(
-                                f"QualityGate {ticker}: 🏆 GOLDEN SIGNAL "
-                                f"— {s5_snap.context_label}"
-                            )
-                        elif s5_snap.s5_fi_zone == "COLD":
-                            logger.info(
-                                f"QualityGate {ticker}: S5 COLD "
-                                f"— sizing {_s5_sizing:.0%}"
-                            )
-
-                    # ── Gate 1.5b: S5 Triad (TH × FI × TW, 125 states) ──
-                    # Reads all 3 families, classifies into 5-bin triad,
-                    # lookups ZZ coincidence probability with Tier Pooling.
-                    s5_th = self._sector_breadth.get_s5_th_value(sector_etf)
-                    s5_tw = self._sector_breadth.get_s5_tw_value(sector_etf)
-                    s5_tw_prev = self._sector_breadth.get_s5_tw_prev_value(sector_etf)
-                    if s5_th is not None and s5_fi is not None and s5_tw is not None:
-                        from backend.modules.entry_decision.domain.rules.triad_lookup import (
-                            lookup_triad_signal,
-                        )
-                        triad = lookup_triad_signal(
-                            th_val=s5_th,
-                            fi_val=s5_fi,
-                            tw_val=s5_tw,
-                            sector_etf=sector_etf,
-                            spy_fi_val=mkt_fi or 50.0,
-                            tw_prev_val=s5_tw_prev,
-                        )
-                        report.sector_s5_th = s5_th
-                        report.sector_s5_tw = s5_tw
-                        report.sector_triad_key = triad.triad_key
-                        report.sector_triad_p_bot = triad.p_bot_50
-                        report.sector_triad_p_top = triad.p_top_50
-                        report.sector_triad_net_bias = triad.net_bias
-                        report.sector_triad_lift = triad.lift_bot_50
-                        report.sector_triad_level = triad.level
-                        report.sector_triad_adj_p_bot = triad.adj_p_bot_50
-                        report.sector_triad_adj_p_top = triad.adj_p_top_50
-
-                        # Triad sizing: scale from adjusted P_bot
-                        # High P_bot = accumulation zone → boost sizing
-                        if triad.adj_p_bot_50 > 0.30:
-                            _s5_sizing = max(_s5_sizing, 1.25)
-                        elif triad.adj_p_bot_50 > 0.20:
-                            _s5_sizing = max(_s5_sizing, 1.15)
-
-                        report.sector_breadth_sizing = _s5_sizing
-                        report.alerts = report.alerts or []
-                        report.alerts.append(
-                            f"S5_TRIAD: {triad.context_label}"
-                        )
-                        logger.info(
-                            f"QualityGate {ticker}: TRIAD {triad.triad_key} "
-                            f"P_bot={triad.adj_p_bot_50:.0%} [{triad.level}]"
-                        )
-            except Exception as e:
-                logger.debug(f"QualityGate: Sector breadth skipped: {e}")
-
-        # ── Step 2: Options — Gamma Regime ──
-        opts = self._fetch_options_data(ticker, vix_trend=vix_trend)
-        report.put_wall = opts.get("put_wall", 0.0)
-        report.call_wall = opts.get("call_wall", 0.0)
-        report.gamma_regime = opts.get("gamma_regime", "UNKNOWN")
-        report.max_pain = opts.get("max_pain", 0.0)
-
-        # 8 Forces: Vanna Event + Charm
-        report.vanna_event = opts.get("vanna_event", False)
-        report.vanna_event_direction = opts.get("vanna_event_direction", "NONE")
-        report.charm_direction = opts.get("charm_direction", "NEUTRAL")
-        report.opex_proximity = (
-            "OPEX_DAY" if opts.get("is_opex_day", False)
-            else "48H_PRE_OPEX" if opts.get("opex_time_weight", 0) > 0
-            else "NONE"
-        )
-
-        # 8 Forces: VIX Trend Context
-        if vix_trend:
-            report.vix_trend_direction = vix_trend.direction
-            report.vix_ma5 = vix_trend.ma5
-            report.vix_ma20 = vix_trend.ma20
-            report.vix_percentile_90d = vix_trend.percentile_90d
-
-        # ── UW Enrichment: Per-ticker IV Rank + Short Interest ──
-        try:
-            if hasattr(self._options_provider, 'get_vol_stats'):
-                _vol_stats = self._options_provider.get_vol_stats(ticker)
-                if _vol_stats.iv_rank > 0:
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"UW_VOL: IV_Rank={_vol_stats.iv_rank:.0f} "
-                        f"VRP={_vol_stats.variance_risk_premium:+.1f}%"
-                    )
-                    # High IV Rank on a Quality position → expensive to add
-                    if _vol_stats.iv_rank > 80:
-                        _health_sizing *= 0.8
-                        report.alerts.append(
-                            f"UW_IV_EXPENSIVE: IV Rank {_vol_stats.iv_rank:.0f}>80 "
-                            f"→ protection expensive, sizing {_health_sizing:.0%}"
-                        )
-        except Exception as e:
-            logger.debug(f"QualityGate {ticker}: UW vol_stats skipped: {e}")
-
-        try:
-            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-            _si_store = TimescaleDataStore()
-            _si_data = _si_store.load_mcp_latest("uw/short_interest", ticker)
-            _si_store.close()
-            if _si_data and isinstance(_si_data, dict):
-                _dtc = float(_si_data.get("days_to_cover", 0) or 0)
-                _si_pct = float(_si_data.get("si_float", 0) or 0)
-                if _dtc > 5 or _si_pct > 15:
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"SHORT_INTEREST_HIGH: DTC={_dtc:.1f} SI_Float={_si_pct:.1f}% "
-                        f"— squeeze risk, entry timing may be volatile"
-                    )
-                elif _dtc > 3:
-                    report.alerts = report.alerts or []
-                    report.alerts.append(
-                        f"SHORT_INTEREST: DTC={_dtc:.1f} SI_Float={_si_pct:.1f}%"
-                    )
-        except Exception as e:
-            logger.debug(f"QualityGate {ticker}: short interest skipped: {e}")
-
-        # ── Step 3: Volume Profile — Institutional Bias ──
-        try:
-            vp_result = self.volume_profile.compute(prices)
-            report.vp_poc_short = vp_result.short.poc
-            report.vp_vah_short = vp_result.short.vah
-            report.vp_val_short = vp_result.short.val
-            report.vp_poc_long = vp_result.long.poc
-            report.vp_vah_long = vp_result.long.vah
-            report.vp_val_long = vp_result.long.val
-            report.vp_shape_short = vp_result.short.shape
-            report.vp_shape_long = vp_result.long.shape
-            report.vp_poc_migration = vp_result.poc_migration
-            report.vp_institutional_bias = vp_result.institutional_bias
-            report.vp_bias_confidence = vp_result.bias_confidence
-            report.vp_price_vs_va = vp_result.short.current_vs_va
-            report.vp_diagnosis = vp_result.diagnosis
-        except Exception as e:
-            logger.warning(f"QualityGate {ticker}: VP error: {e}")
-            vp_result = None
-
-        # ── QUALITY GATE: VP Distribution Block ──
-        if (report.vp_institutional_bias == "DISTRIBUTION"
-                and report.vp_bias_confidence >= 75):
-            report.final_verdict = "STALK"
-            report.final_scale = 0.0
-            report.final_reason = (
-                f"VP_DISTRIBUTION: Institucionales distribuyendo "
-                f"(conf={report.vp_bias_confidence:.0f}%). No entrar QUALITY."
-            )
-            return report
-
-        # ── Step 4: Macro Flow (Whale) ──
-        flow = self._parse_whale_flow(ticker)
-        report.spy_cum_delta = flow.get("spy_cum_delta", 0.0)
-        report.spy_signal = flow.get("spy_signal", "NEUTRAL")
-        report.tide_direction = flow.get("tide_direction", "NEUTRAL")
-
-        whale_verdict = self.event_flow.assess(
-            reference_date=reference_date,
-            spy_cum_delta=report.spy_cum_delta,
-            spy_signal=report.spy_signal,
-            spy_confidence=flow.get("spy_confidence", 0.5),
-            am_pm_diverges=flow.get("am_pm_divergence", False),
-            sweep_call_pct=flow.get("sweep_call_pct", 50.0),
-            total_sweeps=flow.get("total_sweeps", 0),
-            sentiment_regime=flow.get("sentiment_regime", "NEUTRAL"),
-            tide_direction=report.tide_direction,
-            tide_accelerating=flow.get("tide_accelerating", False),
-            tide_net_premium=flow.get("tide_net_premium", 0.0),
-            gex_regime=report.gamma_regime,
-            gex_net=0.0,
-            market_breadth_pct=flow.get("breadth_pct", 50.0),
-        )
-        report.whale_verdict = whale_verdict.verdict
-        report.whale_scale = whale_verdict.position_scale
-        report.whale_confidence = whale_verdict.confidence
-        report.freeze_stops = whale_verdict.freeze_stops
-
-        # QUALITY blocks on CONTRA_FLOW — no exceptions
-        if whale_verdict.verdict == "CONTRA_FLOW":
-            report.final_verdict = "BLOCK"
-            report.final_scale = 0.0
-            report.final_reason = f"CONTRA_FLOW: Macro flow against entry"
-            return report
-
-        # ── Step 4b: Wyckoff Phase (Kalman — Druckenmiller gate) ──
-        wyckoff = self._run_kalman(ticker, prices)
-        report.wyckoff_state = wyckoff.get("wyckoff_state", "UNKNOWN")
-        report.wyckoff_velocity = wyckoff.get("velocity", 0.0)
-
-        # QUALITY GATE: If Wyckoff says DISTRIBUTION, warn but allow with reduced sizing
-        if report.wyckoff_state == "DISTRIBUTION":
-            report.alerts = report.alerts or []
-            report.alerts.append(
-                f"WYCKOFF_DISTRIBUTION: Kalman velocity={report.wyckoff_velocity:.2f}. "
-                f"Institucionales posiblemente distribuyendo — sizing reducido."
-            )
-            _health_sizing *= 0.5  # Reduce sizing by 50% under distribution
-
-        # ── Step 5: Price Phase (now Wyckoff-aware) ──
-        phase_verdict = self.price_phase.diagnose(
-            ticker=ticker, prices=prices,
-            put_wall=report.put_wall, call_wall=report.call_wall,
-            gamma_regime=report.gamma_regime,
-            wyckoff_state=report.wyckoff_state, wyckoff_velocity=report.wyckoff_velocity,
-            strategy_bucket="QUALITY", vp_result=vp_result,
-        )
-        report.phase = phase_verdict.phase
-        report.phase_verdict = phase_verdict.verdict
-        report.entry_price = phase_verdict.entry_price
-        report.stop_price = phase_verdict.stop_price
-        report.target_price = phase_verdict.target_price
-        report.risk_reward = phase_verdict.risk_reward_ratio
-        report.dimensions_confirming = phase_verdict.dimensions_confirming
-        report.phase_confidence = phase_verdict.confidence
-        report.rsi = phase_verdict.rsi14
-
-        # ── Step 6: RSI Intelligence — QUALITY hostile zones block ──
-        try:
-            if self._rsi_intel is None:
-                from backend.modules.price_analysis.application.use_cases.analyze_rsi import RSIIntelligence
-                self._rsi_intel = RSIIntelligence()
-
-            close_arr = prices['Close'].values.astype(float)
-            regime_map = {'ACCUMULATION': 'BULL', 'DISTRIBUTION': 'BEAR', 'NEUTRAL': 'NEUTRAL'}
-            regime_hint = regime_map.get(report.vp_institutional_bias, 'NEUTRAL')
-            rsi_result = self._rsi_intel.analyze(close_arr, regime_hint=regime_hint)
-            report.rsi_regime = rsi_result.rsi_regime
-            report.rsi_zone = rsi_result.rsi_zone
-            report.rsi_conviction = rsi_result.rsi_conviction
-        except Exception as e:
-            logger.warning(f"QualityGate: RSI error for {ticker}: {e}")
-
-        # ── Step 7: Pattern Intelligence ──
-        if self._pattern is None:
-            try:
-                from backend.modules.pattern_recognition.application.use_cases.detect_patterns import PatternRecognitionIntelligence
-                self._pattern = PatternRecognitionIntelligence()
-            except Exception:
-                pass
-
-        if self._pattern:
-            try:
-                pv = self._pattern.detect(prices=prices, put_wall=report.put_wall, call_wall=report.call_wall, ticker=ticker)
-                report.candlestick_pattern = pv.primary_pattern
-                report.pattern_sentiment = pv.sentiment
-                report.pattern_score = pv.confirmation_score
-                report.pattern_on_support = pv.detected_on_support
-                report.pattern_confirms = (
-                    (pv.sentiment == "BULLISH" and report.phase in {"CORRECTION", "BREAKOUT", "CONTRARIAN_DIP"})
-                    or (pv.is_inside_bar_series and report.phase in {"CORRECTION", "CONSOLIDATION"})
-                )
-                if report.pattern_confirms:
-                    report.dimensions_confirming += 1
-            except Exception as e:
-                logger.warning(f"QualityGate: Pattern error for {ticker}: {e}")
-
-        # ═══ FINAL VERDICT ═══
-        if phase_verdict.verdict == "ABORT":
-            report.final_verdict = "BLOCK"
-            report.final_scale = 0.0
-            report.final_reason = f"ABORT: {phase_verdict.phase}"
-
-        elif phase_verdict.verdict == "FIRE":
-            # Quality RSI Gate — block hostile zones
-            hostile_zones = {"BOUNCE_SELL", "EXTREME_BULL", "EXTREME_BEAR", "OVERBOUGHT"}
-            if report.rsi_zone in hostile_zones:
-                report.final_verdict = "STALK"
-                report.final_scale = 0.0
-                report.final_reason = f"QUALITY_RSI_GATE: Hostile RSI zone={report.rsi_zone}"
-                return report
-
-            # Pattern veto
-            if report.pattern_sentiment == "BEARISH" and report.pattern_score <= -0.5:
-                report.final_verdict = "STALK"
-                report.final_scale = 0.0
-                report.final_reason = f"PATTERN_VETO: {report.candlestick_pattern}"
-                return report
-
-            # EXECUTE — Quality uses conviction-based sizing (Druckenmiller)
-            report.final_verdict = "EXECUTE"
-            base_scale = whale_verdict.position_scale
-            if report.pattern_on_support and report.pattern_score >= 0.5:
-                base_scale = min(1.0, base_scale * 1.25)
-            # Apply health-based sizing (ALERT = 0.5x, HEALTHY = 1.0x)
-            report.final_scale = base_scale * _health_sizing * _s5_sizing
-            report.final_reason = (
-                f"FIRE: {phase_verdict.phase}, R:R={report.risk_reward}:1, "
-                f"Dims={report.dimensions_confirming}, VP={report.vp_institutional_bias}"
-                f", S5={report.sector_s5_zone}"
-            )
-
-        elif phase_verdict.verdict == "STALK":
-            report.final_verdict = "STALK"
-            report.final_scale = 0.0
-            report.final_reason = f"STALK: {phase_verdict.phase} — waiting for better setup"
+        n_dead = sum(1 for v in sec_th.values() if v < 25.0)
+        can_switch = days_in_mode >= self.min_regime_days
+        
+        # Antena 1: Inversión Persistente SV5_FI > S5_FI
+        spread_fi = fi - v_fi
+        if spread_fi < -5.0:
+            self.inv_fi_streak += 1
         else:
-            report.final_verdict = "PASS"
-            report.final_scale = 0.0
-            report.final_reason = "Unknown phase verdict"
-
-        return report
-
-    # ── Private helpers ──
-
-    def _fetch_options_data(self, ticker: str, vix_trend: Optional[IndicatorTrend] = None) -> dict:
-        if self._options is None:
-            try:
-                from backend.modules.options_gamma.application.use_cases.analyze_gamma import OptionsAwareness
-                self._options = OptionsAwareness(self._options_provider)
-            except Exception:
-                return {}
-        try:
-            analysis = self._options.get_full_analysis(ticker, vix_trend=vix_trend)
-            return analysis
-        except Exception:
-            return {}
-
-    def _run_kalman(self, ticker: str, prices: pd.DataFrame) -> dict:
-        """Run Kalman Volume Tracker (Wyckoff phase detection)."""
-        if self._kalman is None:
-            try:
-                from backend.modules.volume_intelligence.application.use_cases.track_volume_dynamics import KalmanVolumeTracker
-                self._kalman = KalmanVolumeTracker()
-            except Exception:
-                return {}
-        try:
-            close = prices['Close'].values.astype(float)
-            volume = prices['Volume'].values.astype(float)
-            avg_vol_20 = pd.Series(volume).rolling(20).mean().values
-            result = {}
-            for i in range(-20, 0):
-                if np.isnan(avg_vol_20[i]) or avg_vol_20[i] <= 0:
-                    continue
-                rvol = float(volume[i]) / float(avg_vol_20[i])
-                change_pct = float(close[i] / close[i - 1] - 1) * 100 if i > -len(close) else 0
-                result = self._kalman.update(ticker, rvol, change_pct=change_pct)
-            return result
-        except Exception:
-            return {}
-
-    def _parse_whale_flow(self, ticker: str) -> dict:
-        result = {}
-        try:
-            gate = self._flow_data.get_macro_gate()
-            result["spy_cum_delta"] = gate.cum_delta
-            result["spy_signal"] = gate.signal
-            result["spy_confidence"] = gate.confidence
-            result["am_pm_divergence"] = gate.am_pm_diverges
+            self.inv_fi_streak = 0
             
-            tide = self._flow_data.get_market_tide()
-            result["tide_direction"] = tide.tide_direction
-            result["tide_accelerating"] = tide.is_accelerating
-            result["tide_net_premium"] = tide.cum_net_premium
+        is_pre_crash_distribution = (self.inv_fi_streak >= 10)
+        is_falling_knife = (fi_velocity >= 5.0 or (fi < 30.0 and tw < 15.0 and th > 35.0))
+        
+        is_bullish_reabsorption = (th >= 60.0 and fi <= 45.0 and v_tw >= 60.0)
+        is_volume_capitulation = (th <= 25.0 and v_tw >= 60.0)
+        
+        # Antena de Capitulación Defensiva (XLP Floor)
+        xlp_fi = sec_fi.get("XLP", 50.0)
+        has_defensive_floor = (xlp_fi >= 25.0)
+
+        new_mode = current_mode
+
+        if current_mode in ("NORMAL", "MERCADO_SANO", "RE_ACUMULACION_ALCISTA"):
+            if th < 30.0 and fi < 25.0 and tw < 20.0:
+                new_mode = "CRASH_SISTEMICO" if n_dead >= 5 else "CAPITULACION_SECTORIAL"
+            elif is_pre_crash_distribution:
+                new_mode = "DISTRIBUCION_PRE_CRASH"
+            elif is_volume_capitulation:
+                new_mode = "PISO_GENERACIONAL"
+            elif is_bullish_reabsorption:
+                new_mode = "RE_ACUMULACION_ALCISTA"
+            elif is_falling_knife:
+                pass
+            elif th < 35.0 and fi < 30.0 and tw > 40.0:
+                new_mode = "BEAR_RALLY"
+            elif th > 40.0 and fi > 40.0 and tw < 30.0 and can_switch:
+                new_mode = "PULLBACK_ALCISTA"
+            elif th > 60.0 and fi > 50.0 and tw > 40.0:
+                new_mode = "MERCADO_SANO"
+            elif th < 40.0 and fi < 35.0 and tw > 35.0:
+                new_mode = "RECUPERACION"
+
+        elif current_mode == "DISTRIBUCION_PRE_CRASH":
+            if th < 30.0 and fi < 25.0 and tw < 20.0:
+                new_mode = "CRASH_SISTEMICO"
+            elif not is_pre_crash_distribution and can_switch and th > 50.0:
+                new_mode = "MERCADO_SANO"
+
+        elif current_mode == "CRASH_SISTEMICO":
+            if is_volume_capitulation or (has_defensive_floor and can_switch):
+                new_mode = "PISO_GENERACIONAL"
+            elif can_switch and tw > 45.0 and fi > 35.0 and th > 25.0 and n_dead <= 4:
+                new_mode = "RECUPERACION"
+            elif n_dead >= 6 and tw > 40.0 and can_switch:
+                new_mode = "PISO_GENERACIONAL"
+
+        elif current_mode == "CAPITULACION_SECTORIAL":
+            if n_dead >= 5:
+                new_mode = "CRASH_SISTEMICO"
+            elif is_volume_capitulation or (has_defensive_floor and can_switch):
+                new_mode = "PISO_GENERACIONAL"
+            elif can_switch and th > 40.0:
+                new_mode = "NORMAL"
+            elif can_switch and fi > 40.0 and tw > 40.0:
+                new_mode = "RECUPERACION"
+
+        elif current_mode == "PISO_GENERACIONAL":
+            if can_switch and th > 35.0:
+                new_mode = "NORMAL"
+            elif can_switch and fi > 50.0:
+                new_mode = "RECUPERACION"
+
+        elif current_mode == "BEAR_RALLY":
+            if th < 30.0 and fi < 25.0 and tw < 20.0:
+                new_mode = "CRASH_SISTEMICO" if n_dead >= 5 else "CAPITULACION_SECTORIAL"
+            elif can_switch and th > 45.0:
+                new_mode = "NORMAL"
+
+        elif current_mode == "PULLBACK_ALCISTA":
+            if is_bullish_reabsorption:
+                new_mode = "RE_ACUMULACION_ALCISTA"
+            elif is_falling_knife:
+                pass
+            elif tw > 40.0 or (can_switch and fi > 50.0):
+                new_mode = "NORMAL"
+            elif th < 35.0:
+                new_mode = "BEAR_RALLY"
+
+        elif current_mode == "RECUPERACION":
+            if can_switch and th > 50.0 and fi > 50.0:
+                new_mode = "MERCADO_SANO"
+            elif th < 25.0 and n_dead >= 5:
+                new_mode = "CRASH_SISTEMICO"
+
+        return new_mode
+
+    def calculate_target_weights(
+        self,
+        mode: str,
+        sec_th: Dict[str, float],
+        sec_fi: Dict[str, float],
+        sec_tw: Dict[str, float],
+        avail_sectors: List[str],
+        sec_v_fi: Optional[Dict[str, float]] = None,
+        sec_v_tw: Optional[Dict[str, float]] = None,
+        rs_roc_5d: Optional[Dict[str, float]] = None,
+    ) -> Dict[str, float]:
+        """
+        Calcula las ponderaciones objetivo por sector según el modo V25.
+        V25: adds SV5_TW tactical volume filter in PULLBACK_ALCISTA (+26.27 acc backtest).
+        """
+        target = {}
+
+        if mode == "CRASH_SISTEMICO":
+            return {s: 0.0 for s in avail_sectors}
+
+        elif mode == "DISTRIBUCION_PRE_CRASH":
+            def_pool = ["XLP", "XLU", "XLV"]
+            tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in def_pool if s in avail_sectors)
+            for s in def_pool:
+                if s in avail_sectors:
+                    target[s] = 0.50 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap)
+
+        elif mode == "RE_ACUMULACION_ALCISTA":
+            core_pool = ["XLK", "XLC", "XLF", "XLI", "XLV", "XLP"]
+            oversold_core = [s for s in core_pool if s in avail_sectors and sec_fi.get(s, 100.0) <= 45.0]
+            if not oversold_core:
+                oversold_core = [s for s in core_pool if s in avail_sectors]
+            tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in oversold_core)
+            for s in oversold_core:
+                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
+
+        elif mode == "CAPITULACION_SECTORIAL":
+            if sec_v_fi:
+                survivors = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors if sec_th.get(s, 0) >= 30.0], key=lambda x: x[1], reverse=True)[:4]
+                if not survivors:
+                    survivors = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:4]
+            else:
+                survivors = [(s, sec_th[s]) for s in avail_sectors if sec_th.get(s, 0) >= 30.0]
+                if not survivors:
+                    survivors = sorted([(s, sec_th.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:4]
+            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in survivors)
+            for s, _ in survivors:
+                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+
+        elif mode == "PISO_GENERACIONAL":
+            if sec_v_fi:
+                floor_candidates = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
+            else:
+                floor_candidates = sorted([(s, sec_tw.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
+            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in floor_candidates)
+            for s, _ in floor_candidates:
+                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+
+        elif mode == "BEAR_RALLY":
+            safe = [(s, sec_th[s]) for s in avail_sectors if sec_th.get(s, 0) >= 40.0]
+            if safe:
+                tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in safe)
+                for s, _ in safe:
+                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+            else:
+                target = {s: 0.0 for s in avail_sectors}
+
+        elif mode == "PULLBACK_ALCISTA":
+            if sec_v_fi:
+                # V25: Prefer sectors where institutions are actively buying the dip
+                # SV5_TW >= 50 = tactical volume spike confirms smart money accumulation
+                if sec_v_tw:
+                    oversold = sorted([
+                        (s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0))
+                        for s in avail_sectors
+                        if sec_th.get(s, 0) > 45.0
+                        and sec_tw.get(s, 0) < 35.0
+                        and sec_v_tw.get(s, 50.0) >= 50.0
+                    ], key=lambda x: x[1], reverse=True)[:5]
+                else:
+                    oversold = []
+                # Fallback: drop SV5_TW filter if no sectors pass
+                if not oversold:
+                    oversold = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors if sec_th.get(s, 0) > 45.0 and sec_tw.get(s, 0) < 35.0], key=lambda x: x[1], reverse=True)[:5]
+                if not oversold:
+                    oversold = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
+            else:
+                oversold = [(s, sec_th.get(s, 0) - sec_tw.get(s, 0)) for s in avail_sectors if sec_th.get(s, 0) > 45.0 and sec_tw.get(s, 0) < 35.0]
+                if not oversold:
+                    oversold = sorted([(s, sec_th.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
+            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in oversold)
+            for s, _ in oversold:
+                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+
+        elif mode == "RECUPERACION":
+            # V26: 50% SPY + 50% sector leaders during recovery.
+            # SPY captures the broad rebound of sectors excluded from Core
+            # (XLY, XLE, XLB) that often bounce harder in early recovery.
+            # Backtest: +8.84 shares over 27.5 years.
+            recov = [(s, sec_fi.get(s, 0)) for s in avail_sectors if sec_tw.get(s, 0) > 35.0 and sec_th.get(s, 0) > 25.0]
+            if not recov:
+                recov = sorted([(s, sec_fi.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
+            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in recov)
+            for s, _ in recov:
+                target[s] = 0.50 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot)
+            target["SPY"] = 0.50
+
+        else:  # NORMAL, MERCADO_SANO
+            # Antena 2: Excluir del Core Pool a sectores estancados (S5_FI < 55%) en Mercado Sano
+            core_pool = ["XLK", "XLC", "XLF", "XLI", "XLV", "XLP"]
+            healthy_core = [s for s in core_pool if s in avail_sectors and sec_th.get(s, 0) >= 40.0 and sec_fi.get(s, 0) >= 55.0]
+            if not healthy_core:
+                healthy_core = [s for s in core_pool if s in avail_sectors and sec_th.get(s, 0) >= 40.0]
+            if not healthy_core:
+                healthy_core = [s for s in core_pool if s in avail_sectors]
+
+            sats = [s for s in avail_sectors if s not in healthy_core]
+            best_sat, best_score = None, 0.0
             
-            flow = self._flow_data.get_flow_signal(ticker)
-            result["total_sweeps"] = flow.n_sweeps
-            result["sweep_call_pct"] = (flow.n_calls / (flow.n_calls + flow.n_puts) * 100 if (flow.n_calls + flow.n_puts) > 0 else 50.0)
-            
-            sentiment = self._flow_data.get_market_sentiment()
-            result["sentiment_regime"] = sentiment.regime
-            result["breadth_pct"] = sentiment.breadth_pct
-        except Exception as e:
-            logger.warning(f"QualityGate: Whale flow error: {e}")
-        return result
+            # Si tenemos sec_v_fi y rs_roc_5d, aplicamos la optimización estocástica de cambio de sentido
+            if sec_v_fi and rs_roc_5d:
+                for s in sats:
+                    if sec_th.get(s, 0) >= 40.0 and sec_fi.get(s, 100.0) <= 35.0:
+                        rs_roc = rs_roc_5d.get(s, 0.0)
+                        vol_div = sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)
+                        if rs_roc > 0.0 and vol_div > 10.0:
+                            score = vol_div * rs_roc
+                            if score > best_score:
+                                best_score = score
+                                best_sat = s
+            else:
+                # Fallback clásico a V22
+                for s in sats:
+                    if sec_th.get(s, 0) >= 40.0 and sec_fi.get(s, 100.0) <= 35.0:
+                        score = 40.0 - sec_fi.get(s, 40.0)
+                        if score > best_score:
+                            best_score = score
+                            best_sat = s
+
+            if best_sat:
+                tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in healthy_core)
+                for s in healthy_core:
+                    target[s] = 0.80 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap)
+                target[best_sat] = 0.20
+            else:
+                tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in healthy_core)
+                for s in healthy_core:
+                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
+
+        tot_w = sum(target.values())
+        if tot_w > 0:
+            return {s: round(w / tot_w, 4) for s, w in target.items()}
+        return {s: 0.0 for s in avail_sectors}

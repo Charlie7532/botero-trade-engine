@@ -20,6 +20,7 @@ from backend.modules.shared.infrastructure.timescale_data_store import (
 from backend.modules.shared.domain.constants.sectors import (
     SECTOR_ETFS,
     SECTOR_BREADTH_TICKERS,
+    SECTOR_VOLUME_BREADTH_TICKERS as _SV5_TICKERS,
 )
 
 logger = logging.getLogger(__name__)
@@ -191,3 +192,58 @@ class VaultSectorBreadthAdapter(SectorBreadthDataPort):
         except Exception as e:
             logger.debug(f"SectorBreadth: Latest close failed for {ticker}: {e}")
             return None
+
+    # ── S5V (Volume Breadth) ────────────────────────────────
+
+    def get_sv5_fi_value(self, sector_etf: str) -> Optional[float]:
+        fi_ticker = _SV5_TICKERS.get(sector_etf, {}).get("intermediate")
+        if not fi_ticker:
+            return None
+        return self._latest_close(fi_ticker)
+
+    def get_sv5_th_value(self, sector_etf: str) -> Optional[float]:
+        th_ticker = _SV5_TICKERS.get(sector_etf, {}).get("structural")
+        if not th_ticker:
+            return None
+        return self._latest_close(th_ticker)
+
+    def get_sv5_tw_value(self, sector_etf: str) -> Optional[float]:
+        tw_ticker = _SV5_TICKERS.get(sector_etf, {}).get("tactical")
+        if not tw_ticker:
+            return None
+        return self._latest_close(tw_ticker)
+
+    def get_sv5_tw_prev_value(self, sector_etf: str) -> Optional[float]:
+        tw_ticker = _SV5_TICKERS.get(sector_etf, {}).get("tactical")
+        if not tw_ticker:
+            return None
+        try:
+            df = self._load_bars_cached(tw_ticker)
+            if df is None or len(df) < 2:
+                return None
+            return float(df["close"].iloc[-2])
+        except Exception as e:
+            logger.debug(f"SectorBreadth: SV5 prev close failed for {tw_ticker}: {e}")
+            return None
+
+    def get_market_sv5_fi(self) -> Optional[float]:
+        return self._latest_close("SV5FI")
+
+    # ── Multi-scale history ─────────────────────────────────
+
+    def get_s5_history_by_scale(
+        self, sector_etf: str, scale: str, lookback: int = 25,
+    ) -> list[float]:
+        ticker = SECTOR_BREADTH_TICKERS.get(sector_etf, {}).get(scale, "")
+        if not ticker:
+            return []
+        try:
+            df = self._load_bars_cached(ticker)
+            if df is None or df.empty:
+                return []
+            closes = df["close"].astype(float).tail(lookback + 5)
+            return closes.tolist()[-lookback:]
+        except Exception as e:
+            logger.debug(f"SectorBreadth: History by scale failed for {ticker}: {e}")
+            return []
+

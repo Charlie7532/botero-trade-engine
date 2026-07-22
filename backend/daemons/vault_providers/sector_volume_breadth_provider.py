@@ -91,7 +91,7 @@ def _compute_and_store(store) -> dict:
             if breadth_pct is None:
                 continue
 
-            # Write as OHLCV bar (close = volume breadth %, OHLCV all same)
+            # Write canonical SV5 ticker (Convención B)
             store.upsert_ohlcv_bar(
                 ticker=indicator_ticker,
                 timeframe="1d",
@@ -100,7 +100,7 @@ def _compute_and_store(store) -> dict:
                 high=breadth_pct,
                 low=breadth_pct,
                 close=breadth_pct,
-                volume=n_constituents,  # Store constituent count as volume
+                volume=n_constituents,
             )
             written += 1
 

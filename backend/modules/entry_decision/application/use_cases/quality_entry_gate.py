@@ -1,6 +1,6 @@
 """
-QUALITY ENTRY GATE (V26 RECUPERACION SPY BLEND)
-==================================================
+QUALITY ENTRY GATE (V28 DIVERGENT LEADERSHIP + WEINSTEIN SMART VETO)
+=====================================================================
 Capa de decisión táctica y de régimen de rotación sectorial basada en
 la síntesis cuantitativa de 27.5 años (1999 - 2026):
 
@@ -17,7 +17,15 @@ la síntesis cuantitativa de 27.5 años (1999 - 2026):
      Backtest: +26.27 acciones adicionales.
   7. V26 RECUPERACION SPY BLEND: En RECUPERACION, 50% SPY + 50% sectores líderes.
      SPY captura el rebote amplio de sectores excluidos del Core.
-     Backtest: +8.84 acciones adicionales (381.98 total).
+     Backtest: +8.84 acciones adicionales.
+  8. V28 DIVERGENT LEADERSHIP (hot_tw <= 1 AND cold_tw >= 7):
+     3er disparador de DISTRIBUCION_PRE_CRASH. Detecta mercados estrechos
+     donde solo 1 sector lidera mientras 7+ colapsan en amplitud táctica.
+     Backtest: +77.60 acciones sobre V27.
+  9. V28 WEINSTEIN SMART VETO: Veta sectores en Stage 4 (precio < MA150,
+     pendiente negativa) del pool de satélites, EXCEPTO cuando instituciones
+     acumulan masivamente (vol_div > 15). Override por oportunidad clara.
+     Backtest: +6.60 acciones solo, +84.79 combinado con H1a.
 """
 
 from typing import Dict, Any, List, Optional
@@ -25,11 +33,12 @@ from backend.modules.shared.domain.constants.sectors import SECTOR_ETFS, SECTOR_
 
 class QualityEntryGate:
     """
-    Gate V26 Recuperacion SPY Blend para asignación de cartera de calidad sectorial.
-    Logra 381.98 acciones finales de SPY (+281.98 sobre benchmark), +35.11 sobre V23 Pro,
+    Gate V28 Divergent Leadership + Weinstein Smart Veto.
+    Logra 468.20 acciones finales de SPY (+368.20 sobre benchmark)
     en 27.5 años de auditoría (1999-2026).
     V25: SV5_TW >= 50% en PULLBACK_ALCISTA (+26.27 acc).
     V26: 50% SPY + 50% sectores en RECUPERACION (+8.84 acc).
+    V28: Divergent Leadership + Weinstein Smart Veto (+84.79 acc).
     """
 
     # Constantes de clasificación para el anidamiento conjunto S5xSV5
@@ -93,8 +102,8 @@ class QualityEntryGate:
         tw_prev: Optional[float] = None,
     ) -> str:
         """
-        Clasifica el modo de mercado usando las 2 Antenas Pre-Evento de V20
-        y disparadores híbridos de tríadas S5xSV5 de V27.
+        Clasifica el modo de mercado usando las 3 Antenas Pre-Evento de V28
+        y disparadores híbridos de tríadas S5xSV5.
         """
         n_dead = sum(1 for v in sec_th.values() if v < 25.0)
         can_switch = days_in_mode >= self.min_regime_days
@@ -114,6 +123,15 @@ class QualityEntryGate:
         # Disparador híbrido basado en estados conjuntos de SPY
         spy_joint = self._get_spy_joint_state(th, fi, tw, tw_prev, v_th, v_fi, v_tw)
         is_pre_crash_distribution = (self.inv_fi_streak >= 10) or (spy_joint in self.TOP_DISTRIBUTION_STATES)
+
+        # Antena 3 (V28): Divergent Leadership — mercado estrecho
+        # Solo 1 sector caliente (TW > 50%) mientras 7+ colapsan (TW < 20%)
+        # detecta distribución silenciosa invisible a las antenas agregadas.
+        # Backtest: +77.60 acc, ganancias distribuidas en 16/20 años.
+        hot_tw = sum(1 for v in sec_tw.values() if v > 50.0)
+        cold_tw = sum(1 for v in sec_tw.values() if v < 20.0)
+        is_divergent_leadership = (hot_tw <= 1 and cold_tw >= 7)
+        is_pre_crash_distribution = is_pre_crash_distribution or is_divergent_leadership
         
         is_falling_knife = (fi_velocity >= 5.0 or (fi < 30.0 and tw < 15.0 and th > 35.0))
         
@@ -163,6 +181,9 @@ class QualityEntryGate:
             elif n_dead >= 6 and tw > 40.0 and can_switch:
                 new_mode = "PISO_GENERACIONAL"
 
+        # CAPITULACION_SECTORIAL: actualmente interceptado por H1a (Divergent Leadership)
+        # antes de alcanzar estos umbrales. Contribución V28 = 0.00 acc en 27.5 años.
+        # Se mantiene como red de seguridad si H1a se modifica en el futuro.
         elif current_mode == "CAPITULACION_SECTORIAL":
             if n_dead >= 5:
                 new_mode = "CRASH_SISTEMICO"
@@ -213,10 +234,14 @@ class QualityEntryGate:
         sec_v_fi: Optional[Dict[str, float]] = None,
         sec_v_tw: Optional[Dict[str, float]] = None,
         rs_roc_5d: Optional[Dict[str, float]] = None,
+        sec_stage4: Optional[Dict[str, bool]] = None,
     ) -> Dict[str, float]:
         """
-        Calcula las ponderaciones objetivo por sector según el modo V25.
-        V25: adds SV5_TW tactical volume filter in PULLBACK_ALCISTA (+26.27 acc backtest).
+        Calcula las ponderaciones objetivo por sector según el modo V28.
+        V28: adds Weinstein Stage 4 Smart Veto for satellite selection.
+        sec_stage4: Dict mapping sector ETF -> True if in Weinstein Stage 4
+                    (price < MA150, negative slope). Computed by RotationScanner
+                    or caller. None = no veto applied (backward compatible).
         """
         target = {}
 
@@ -330,6 +355,18 @@ class QualityEntryGate:
                         vol_div = sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)
                         if rs_roc > 0.0 and vol_div > 10.0:
                             score = vol_div * rs_roc
+
+                            # V28: Weinstein Stage 4 Smart Veto
+                            # Veta sectores en declive estructural (precio < MA150,
+                            # pendiente negativa) del pool de satélites.
+                            # Override: si vol_div > 15, instituciones están acumulando
+                            # masivamente pese al Stage 4 → oportunidad clara, dejar pasar.
+                            # Backtest: +6.60 acc solo, +84.79 combinado con H1a.
+                            if sec_stage4 and sec_stage4.get(s, False):
+                                if vol_div <= 15.0:
+                                    continue  # Veto holds — no institutional interest
+                                # else: override — clear opportunity
+
                             if score > best_score:
                                 best_score = score
                                 best_sat = s

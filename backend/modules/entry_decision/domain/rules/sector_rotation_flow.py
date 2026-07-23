@@ -7,7 +7,7 @@ Risk-Off (defensive) sectors using multi-scale breadth.
 This is a domain rule — pure Python, no infra dependencies.
 """
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 import numpy as np
 
 
@@ -27,15 +27,19 @@ class SectorRotationFlow:
     is_divergent_leadership: bool    # True if hot <= 2 and cold >= 5 (Veto flag)
 
     # Rotation Regime
-    rotation_regime: str             # "RISK_ON_EXPANSION" | "RISK_OFF_FLIGHT" | "DIVERGENT_TRAMP" | "NEUTRAL"
-    sizing_modifier: float           # Multiplier for entry sizing (0.70 - 1.30)
+    rotation_regime: str             # "RISK_ON_EXPANSION" | "RISK_OFF_FLIGHT" | "DIVERGENT_TRAMP" | "DIVERGENT_MEGA_CAP_TRAP" | "NEUTRAL"
+    sizing_modifier: float           # Multiplier for entry sizing (0.65 - 1.35)
 
 
 def evaluate_rotation_flow(
-    sec_tw: Dict[str, float]
+    sec_tw: Dict[str, float],
+    sec_cap_tw: Optional[Dict[str, float]] = None,
+    sec_vbi: Optional[Dict[str, float]] = None,
+    fgbi: Optional[float] = None,
 ) -> SectorRotationFlow:
     """
     Evaluates the inter-sector capital flow from the tactical breadth of 11 sectors.
+    Supports Next-Gen S5cap divergence veto and VBI volume conviction scaling.
     """
     cyclical_sectors = ["XLK", "XLF", "XLY", "XLI"]
     defensive_sectors = ["XLP", "XLV", "XLU", "XLRE"]
@@ -58,13 +62,34 @@ def evaluate_rotation_flow(
     # Divergent Leadership Veto (bear trap indicator)
     is_divergent_leadership = (hot_sectors_count <= 2 and cold_sectors_count >= 5)
 
+    # Next-Gen S5cap Mega-Cap Divergence Veto
+    is_divergent_mega_cap = False
+    if sec_cap_tw:
+        cap_hot = sum(1 for s in all_sectors if sec_cap_tw.get(s, 50.0) > 50.0)
+        cap_cold = sum(1 for s in all_sectors if sec_cap_tw.get(s, 50.0) < 20.0)
+        if cap_hot <= 1 and cap_cold >= 5:
+            is_divergent_mega_cap = True
+
     # Classify Regime
-    if is_divergent_leadership:
+    if is_divergent_mega_cap:
+        rotation_regime = "DIVERGENT_MEGA_CAP_TRAP"
+        sizing_modifier = 0.65
+    elif is_divergent_leadership:
         rotation_regime = "DIVERGENT_TRAMP"
         sizing_modifier = 0.70
     elif risk_spread > 5.0:
         rotation_regime = "RISK_ON_EXPANSION"
-        sizing_modifier = 1.30
+        # VBI Volume Conviction Scaling
+        if sec_vbi:
+            avg_vbi = float(np.mean([sec_vbi.get(s, 0.0) for s in all_sectors if s in sec_vbi])) if sec_vbi else 0.0
+            if avg_vbi > 1.0:
+                sizing_modifier = 1.35
+            elif avg_vbi < -0.5:
+                sizing_modifier = 1.05
+            else:
+                sizing_modifier = 1.30
+        else:
+            sizing_modifier = 1.30
     elif risk_spread < -5.0:
         rotation_regime = "RISK_OFF_FLIGHT"
         sizing_modifier = 0.85
@@ -79,7 +104,7 @@ def evaluate_rotation_flow(
         sector_dispersion=sector_dispersion,
         hot_sectors_count=hot_sectors_count,
         cold_sectors_count=cold_sectors_count,
-        is_divergent_leadership=is_divergent_leadership,
+        is_divergent_leadership=is_divergent_leadership or is_divergent_mega_cap,
         rotation_regime=rotation_regime,
         sizing_modifier=sizing_modifier
     )

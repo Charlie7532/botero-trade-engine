@@ -1917,6 +1917,8 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         import backend.daemons.vault_providers.sector_breadth_provider  # noqa: F401
         import backend.daemons.vault_providers.volume_breadth_provider  # noqa: F401
         import backend.daemons.vault_providers.sector_volume_breadth_provider  # noqa: F401
+        import backend.daemons.vault_providers.sector_cap_breadth_provider  # noqa: F401
+        import backend.daemons.vault_providers.sector_volume_intensity_provider  # noqa: F401
         import backend.daemons.vault_providers.remaining_providers  # noqa: F401
         import backend.daemons.vault_providers.observer_provider  # noqa: F401
 
@@ -2162,6 +2164,22 @@ def run_cycle(store: TimescaleDataStore) -> None:
     except Exception as e:
         logger.warning(f"Sector volume breadth vault failed (non-critical): {e}")
         results["sector_volume_breadth"] = {"status": "error", "error": str(e)}
+
+    # ── Tier 3b-quin: Sector Cap Breadth — S5CAP_{ETF}_{TH|FI|TW} (AFTER sector_breadth) ──
+    try:
+        from backend.daemons.vault_providers.sector_cap_breadth_provider import SectorCapBreadthProvider
+        results["sector_cap_breadth"] = SectorCapBreadthProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Sector cap breadth vault failed (non-critical): {e}")
+        results["sector_cap_breadth"] = {"status": "error", "error": str(e)}
+
+    # ── Tier 3b-sex: Sector Volume Intensity — VBI_{ETF} (AFTER sector_volume_breadth) ──
+    try:
+        from backend.daemons.vault_providers.sector_volume_intensity_provider import SectorVolumeIntensityProvider
+        results["sector_volume_intensity"] = SectorVolumeIntensityProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Sector volume intensity vault failed (non-critical): {e}")
+        results["sector_volume_intensity"] = {"status": "error", "error": str(e)}
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)

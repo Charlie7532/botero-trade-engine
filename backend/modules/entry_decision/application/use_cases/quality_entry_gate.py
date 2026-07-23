@@ -69,6 +69,7 @@ class QualityEntryGate:
         self.min_regime_days = min_regime_days
         self.inv_fi_streak = 0
         self.prev_tw = None
+        self.fgbi_window = []
 
     def _classify_bin(self, v: float, edges: list[float]) -> str:
         for idx, e in enumerate(edges):
@@ -100,11 +101,19 @@ class QualityEntryGate:
         current_mode: str = "NORMAL",
         days_in_mode: int = 25,
         tw_prev: Optional[float] = None,
+        fgbi: Optional[float] = None,
+        vbi: Optional[float] = None,
+        fgbi_peak_15d: Optional[float] = None,
     ) -> str:
         """
         Clasifica el modo de mercado usando las 3 Antenas Pre-Evento de V28
         y disparadores híbridos de tríadas S5xSV5.
         """
+        if fgbi is not None:
+            self.fgbi_window.append(fgbi)
+            if len(self.fgbi_window) > 15:
+                self.fgbi_window.pop(0)
+
         n_dead = sum(1 for v in sec_th.values() if v < 25.0)
         can_switch = days_in_mode >= self.min_regime_days
         
@@ -174,11 +183,22 @@ class QualityEntryGate:
                 new_mode = "MERCADO_SANO"
 
         elif current_mode == "CRASH_SISTEMICO":
-            if is_volume_capitulation or (has_defensive_floor and can_switch):
+            # V32a: Candado táctico de 3 días para salir de cash en lugar del candado global de 20d
+            can_switch_crash = (days_in_mode >= 3)
+            
+            # V34: FGBI Reversal + VBI Panic Capitulation filter
+            is_fgbi_reversal = False
+            effective_peak = fgbi_peak_15d if fgbi_peak_15d is not None else (max(self.fgbi_window) if self.fgbi_window else None)
+            if fgbi is not None and effective_peak is not None:
+                if effective_peak > 20.0 and (fgbi < 15.0 or fgbi <= (effective_peak - 5.0)):
+                    if th >= 40.0 or (vbi is not None and vbi > 1.5):
+                        is_fgbi_reversal = True
+
+            if is_volume_capitulation or (has_defensive_floor and can_switch_crash) or (is_fgbi_reversal and can_switch_crash):
                 new_mode = "PISO_GENERACIONAL"
-            elif can_switch and tw > 45.0 and fi > 35.0 and th > 25.0 and n_dead <= 4:
+            elif can_switch_crash and tw > 45.0 and fi > 35.0 and th > 25.0 and n_dead <= 4:
                 new_mode = "RECUPERACION"
-            elif n_dead >= 6 and tw > 40.0 and can_switch:
+            elif n_dead >= 6 and tw > 40.0 and can_switch_crash:
                 new_mode = "PISO_GENERACIONAL"
 
         # CAPITULACION_SECTORIAL: actualmente interceptado por H1a (Divergent Leadership)
@@ -235,13 +255,15 @@ class QualityEntryGate:
         sec_v_tw: Optional[Dict[str, float]] = None,
         rs_roc_5d: Optional[Dict[str, float]] = None,
         sec_stage4: Optional[Dict[str, bool]] = None,
+        rs_roc_50d: Optional[Dict[str, float]] = None,
+        rs_roc_20d: Optional[Dict[str, float]] = None,
+        s5cap_fi: Optional[Dict[str, float]] = None,
+        sec_vbi: Optional[Dict[str, float]] = None,
     ) -> Dict[str, float]:
         """
-        Calcula las ponderaciones objetivo por sector según el modo V28.
-        V28: adds Weinstein Stage 4 Smart Veto for satellite selection.
-        sec_stage4: Dict mapping sector ETF -> True if in Weinstein Stage 4
-                    (price < MA150, negative slope). Computed by RotationScanner
-                    or caller. None = no veto applied (backward compatible).
+        Calcula las ponderaciones objetivo por sector según el modo V35.
+        V35: adds S5cap/VBI institutional filtering in MERCADO_SANO
+             and VBI volume conviction boost in RE_ACUMULACION_ALCISTA.
         """
         target = {}
 
@@ -256,13 +278,39 @@ class QualityEntryGate:
                     target[s] = 0.50 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap)
 
         elif mode == "RE_ACUMULACION_ALCISTA":
-            core_pool = ["XLK", "XLC", "XLF", "XLI", "XLV", "XLP"]
-            oversold_core = [s for s in core_pool if s in avail_sectors and sec_fi.get(s, 100.0) <= 45.0]
-            if not oversold_core:
-                oversold_core = [s for s in core_pool if s in avail_sectors]
-            tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in oversold_core)
-            for s in oversold_core:
-                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
+            # Regla 19: Core pool canónico CapWeight >= 8% (XLK, XLF, XLV, XLY, XLC, XLI)
+            core_pool = [s for s, w in SECTOR_CAP_WEIGHTS.items() if w >= 0.08 and s in avail_sectors]
+            if rs_roc_50d:
+                rs_scores = {s: rs_roc_50d.get(s, -999.0) for s in core_pool if not (sec_stage4 and sec_stage4.get(s, False))}
+                top_leaders = sorted(rs_scores.keys(), key=lambda x: rs_scores[x], reverse=True)[:2]
+            else:
+                top_leaders = []
+
+            active_core = [s for s in core_pool if s in top_leaders or sec_fi.get(s, 100.0) <= 45.0]
+            if not active_core:
+                active_core = core_pool
+
+            # V34: Cap-Weight Divergence extreme penalty (div > 25% gets 0.5x weight)
+            # V35: VBI Volume Conviction Boost (> 0.8 gets 1.4x, < -0.2 gets 0.6x)
+            tot_cap = 0.0
+            weights_temp = {}
+            for s in active_core:
+                base_w = SECTOR_CAP_WEIGHTS.get(s, 0.05)
+                if s5cap_fi is not None and s in s5cap_fi and s5cap_fi[s] is not None:
+                    div = sec_fi.get(s, 50.0) - s5cap_fi[s]
+                    if div > 25.0:
+                        base_w *= 0.5
+                if sec_vbi is not None and s in sec_vbi and sec_vbi[s] is not None:
+                    vbi_val = sec_vbi[s]
+                    if vbi_val > 0.8:
+                        base_w *= 1.4
+                    elif vbi_val < -0.2:
+                        base_w *= 0.6
+                weights_temp[s] = base_w
+                tot_cap += base_w
+
+            for s in active_core:
+                target[s] = weights_temp[s] / tot_cap
 
         elif mode == "CAPITULACION_SECTORIAL":
             if sec_v_fi:
@@ -323,22 +371,33 @@ class QualityEntryGate:
                 target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
 
         elif mode == "RECUPERACION":
-            # V26: 50% SPY + 50% sector leaders during recovery.
-            # SPY captures the broad rebound of sectors excluded from Core
-            # (XLY, XLE, XLB) that often bounce harder in early recovery.
-            # Backtest: +8.84 shares over 27.5 years.
-            recov = [(s, sec_fi.get(s, 0)) for s in avail_sectors if sec_tw.get(s, 0) > 35.0 and sec_th.get(s, 0) > 25.0]
-            if not recov:
-                recov = sorted([(s, sec_fi.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
-            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in recov)
-            for s, _ in recov:
-                target[s] = 0.50 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot)
-            target["SPY"] = 0.50
+            # V33c: Resiliencia Híbrida (RS 20d a la baja x Absorción de Volumen SV5_TW)
+            hybrid_scores = {}
+            for s in avail_sectors:
+                rs_val = rs_roc_20d.get(s, 0.0) if rs_roc_20d else 0.0
+                v_tw_val = sec_v_tw.get(s, 50.0) if sec_v_tw else 50.0
+                hybrid_scores[s] = (rs_val + 1.0) * v_tw_val
+            top_hyb = sorted(hybrid_scores.keys(), key=lambda x: hybrid_scores[x], reverse=True)[:3]
+            tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in top_hyb)
+            for s in top_hyb:
+                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
 
         else:  # NORMAL, MERCADO_SANO
             # Antena 2: Excluir del Core Pool a sectores estancados (S5_FI < 55%) en Mercado Sano
+            # V35: Excluir sectores con S5CAP_FI < 40.0 o VBI < -0.5 (distribución silenciosa)
             core_pool = ["XLK", "XLC", "XLF", "XLI", "XLV", "XLP"]
             healthy_core = [s for s in core_pool if s in avail_sectors and sec_th.get(s, 0) >= 40.0 and sec_fi.get(s, 0) >= 55.0]
+            if s5cap_fi or sec_vbi:
+                filtered_nextgen = []
+                for s in healthy_core:
+                    cap_val = s5cap_fi.get(s) if s5cap_fi else None
+                    vbi_val = sec_vbi.get(s) if sec_vbi else None
+                    if (cap_val is not None and cap_val < 40.0) or (vbi_val is not None and vbi_val < -0.5):
+                        continue
+                    filtered_nextgen.append(s)
+                if filtered_nextgen:
+                    healthy_core = filtered_nextgen
+
             if not healthy_core:
                 healthy_core = [s for s in core_pool if s in avail_sectors and sec_th.get(s, 0) >= 40.0]
             if not healthy_core:

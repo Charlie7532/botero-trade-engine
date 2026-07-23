@@ -185,6 +185,39 @@ class MarketHealthProvider:
             except Exception as e:
                 logger.debug(f"MH Provider: Regime state persistence skipped: {e}")
 
+            # ── Calculate and persist Fear & Greed Breadth Index (FGBI) ──
+            try:
+                def_sectors = ["XLP", "XLU", "XLV"]
+                gro_sectors = ["XLK", "XLY", "XLC"]
+                
+                def_vals = []
+                for sec in def_sectors:
+                    # Prefer Cap-Weighted (S5CAP), fallback to Equal-Weighted (S5)
+                    bar = store.load_bars(f"S5CAP_{sec}_FI", "1d", limit=1)
+                    if bar is None or bar.empty:
+                        bar = store.load_bars(f"S5_{sec}_FI", "1d", limit=1)
+                    if bar is not None and not bar.empty:
+                        def_vals.append(float(bar["close"].iloc[-1]))
+                
+                gro_vals = []
+                for sec in gro_sectors:
+                    bar = store.load_bars(f"S5CAP_{sec}_FI", "1d", limit=1)
+                    if bar is None or bar.empty:
+                        bar = store.load_bars(f"S5_{sec}_FI", "1d", limit=1)
+                    if bar is not None and not bar.empty:
+                        gro_vals.append(float(bar["close"].iloc[-1]))
+                
+                if len(def_vals) == 3 and len(gro_vals) == 3:
+                    fgbi_val = round((sum(def_vals)/3.0) - (sum(gro_vals)/3.0), 2)
+                    store.upsert_ohlcv_bar(
+                        ticker="FGBI", timeframe="1d", time=datetime.now(UTC),
+                        open=fgbi_val, high=fgbi_val, low=fgbi_val, close=fgbi_val,
+                        volume=0
+                    )
+                    logger.info(f"🏥 FGBI calculated and saved: {fgbi_val:+.2f}")
+            except Exception as e:
+                logger.warning(f"FGBI computation failed (non-critical): {e}")
+
             # ── Persist ──
             store.save_mcp_snapshot("market/health", "MARKET", snapshot.to_dict())
 

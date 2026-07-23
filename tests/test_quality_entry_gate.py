@@ -188,3 +188,142 @@ class TestH4bWeinsteinSmartVeto:
         sec_stage4["XLE"] = True
         target = self._make_satellite_scenario(sec_stage4, vol_div_value=15.01)
         assert target.get("XLE", 0.0) > 0.0
+
+
+# ── V32a & V33c Unit Tests ──────────────────────────────────
+
+
+class TestV32aCrashExitLock:
+    """Tests for V32a 3-day tactical exit lock in CRASH_SISTEMICO."""
+
+    def test_crash_exit_blocked_on_day_2(self):
+        """CRASH_SISTEMICO cannot exit on day 2 even if breadth is strong."""
+        gate = QualityEntryGate()
+        result = gate.evaluate_regime(
+            th=30.0, fi=40.0, tw=50.0,
+            v_th=50.0, v_fi=50.0, v_tw=50.0,
+            sec_th=make_sec(30.0), sec_fi=make_sec(40.0), sec_tw=make_sec(50.0),
+            fi_velocity=0.0, current_mode="CRASH_SISTEMICO", days_in_mode=2,
+        )
+        assert result == "CRASH_SISTEMICO"
+
+    def test_crash_exit_allowed_on_day_3(self):
+        """CRASH_SISTEMICO exits to RECUPERACION on day 3 when breadth confirms (and no defensive floor)."""
+        gate = QualityEntryGate()
+        sec_fi = make_sec(40.0)
+        sec_fi["XLP"] = 20.0  # < 25 to prevent defensive floor trigger
+        result = gate.evaluate_regime(
+            th=30.0, fi=40.0, tw=50.0,
+            v_th=50.0, v_fi=50.0, v_tw=50.0,
+            sec_th=make_sec(30.0), sec_fi=sec_fi, sec_tw=make_sec(50.0),
+            fi_velocity=0.0, current_mode="CRASH_SISTEMICO", days_in_mode=3,
+        )
+        assert result == "RECUPERACION"
+
+
+class TestV33cHybridResilience:
+    """Tests for V33c Hybrid Resilience weighting in RECUPERACION."""
+
+    def test_recuperacion_hybrid_selection(self):
+        """RECUPERACION selects Top 3 sectors by (rs_20d + 1) * sec_v_tw score."""
+        gate = QualityEntryGate()
+        rs_20d = {s: 0.0 for s in SECTORS_11}
+        sec_v_tw = {s: 50.0 for s in SECTORS_11}
+
+        # Give XLK, XLC, XLY high hybrid resilience
+        rs_20d["XLK"] = 0.10; sec_v_tw["XLK"] = 80.0
+        rs_20d["XLC"] = 0.08; sec_v_tw["XLC"] = 75.0
+        rs_20d["XLY"] = 0.05; sec_v_tw["XLY"] = 70.0
+
+        target = gate.calculate_target_weights(
+            "RECUPERACION", make_sec(30.0), make_sec(30.0), make_sec(30.0), SECTORS_11,
+            sec_v_tw=sec_v_tw, rs_roc_20d=rs_20d,
+        )
+        assert "XLK" in target
+        assert "XLC" in target
+        assert "XLY" in target
+        assert sum(target.values()) == pytest.approx(1.0, abs=1e-3)
+
+
+class TestV34NextGenIndicators:
+    """Tests for V34 Next-Gen indicators integration."""
+
+    def test_fgbi_reversal_exit_triggers_in_bull(self):
+        """In structural bull market, FGBI reversal exits crash state on day 3."""
+        gate = QualityEntryGate()
+        # Mock historical FGBI window (peak > 20)
+        gate.fgbi_window = [22.0, 22.0, 22.0]
+
+        sec_fi = make_sec(30.0)
+        sec_fi["XLP"] = 20.0  # prevent defensive floor trigger
+
+        result = gate.evaluate_regime(
+            th=50.0, fi=30.0, tw=20.0,
+            v_th=50.0, v_fi=50.0, v_tw=40.0,
+            sec_th=make_sec(30.0), sec_fi=sec_fi, sec_tw=make_sec(20.0),
+            fi_velocity=0.0, current_mode="CRASH_SISTEMICO", days_in_mode=3,
+            fgbi=14.0, vbi=1.0
+        )
+        assert result == "PISO_GENERACIONAL"
+
+    def test_fgbi_reversal_exit_blocked_in_bear_without_vbi(self):
+        """In structural bear market, FGBI reversal is blocked if VBI has no capitulation."""
+        gate = QualityEntryGate()
+        gate.fgbi_window = [22.0, 22.0, 22.0]
+
+        sec_fi = make_sec(30.0)
+        sec_fi["XLP"] = 20.0  # prevent defensive floor trigger
+
+        result = gate.evaluate_regime(
+            th=30.0, fi=30.0, tw=20.0,
+            v_th=50.0, v_fi=50.0, v_tw=40.0,
+            sec_th=make_sec(30.0), sec_fi=sec_fi, sec_tw=make_sec(20.0),
+            fi_velocity=0.0, current_mode="CRASH_SISTEMICO", days_in_mode=3,
+            fgbi=14.0, vbi=1.0
+        )
+        # Blocked: returns current mode
+        assert result == "CRASH_SISTEMICO"
+
+    def test_fgbi_reversal_exit_allowed_in_bear_with_vbi(self):
+        """In structural bear market, FGBI reversal exits if VBI confirms panic (>1.5)."""
+        gate = QualityEntryGate()
+        gate.fgbi_window = [22.0, 22.0, 22.0]
+
+        sec_fi = make_sec(30.0)
+        sec_fi["XLP"] = 20.0  # prevent defensive floor trigger
+
+        result = gate.evaluate_regime(
+            th=30.0, fi=30.0, tw=20.0,
+            v_th=50.0, v_fi=50.0, v_tw=40.0,
+            sec_th=make_sec(30.0), sec_fi=sec_fi, sec_tw=make_sec(20.0),
+            fi_velocity=0.0, current_mode="CRASH_SISTEMICO", days_in_mode=3,
+            fgbi=14.0, vbi=1.8
+        )
+        assert result == "PISO_GENERACIONAL"
+
+    def test_s5cap_extreme_divergence_penalty(self):
+        """In RE_ACUMULACION_ALCISTA, a sector with extreme divergence (div > 25) gets a 0.5x weight penalty."""
+        gate = QualityEntryGate()
+        # All sectors have normal equal-weighted breadth (50) and cap-weighted breadth (50)
+        sec_fi = make_sec(50.0)
+        s5cap_fi = make_sec(50.0)
+
+        # XLK has extreme divergence: equal-weighted = 50%, cap-weighted = 20% (div = 30)
+        s5cap_fi["XLK"] = 20.0
+
+        # Normal weights (baseline)
+        target_normal = gate.calculate_target_weights(
+            "RE_ACUMULACION_ALCISTA", make_sec(60.0), sec_fi, make_sec(50.0), SECTORS_11,
+            s5cap_fi=None
+        )
+
+        # With V34 divergence penalty active
+        target_v34 = gate.calculate_target_weights(
+            "RE_ACUMULACION_ALCISTA", make_sec(60.0), sec_fi, make_sec(50.0), SECTORS_11,
+            s5cap_fi=s5cap_fi
+        )
+
+        # XLK weight should be significantly lower in V34
+        assert target_v34["XLK"] < target_normal["XLK"]
+
+

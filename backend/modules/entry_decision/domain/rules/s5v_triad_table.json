@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "generated_at": "2026-07-22T18:01:01.012760+00:00",
+  "generated_at": "2026-07-23T09:07:14.859614+00:00",
   "generated_by": "backend/scripts/train_s5v_triad.py",
   "_metadata": {
     "shannon_mutual_info": {

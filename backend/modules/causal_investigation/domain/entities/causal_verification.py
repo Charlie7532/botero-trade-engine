@@ -1,9 +1,9 @@
 """
-Causal Verification Snapshot Entity — NOTAM Aviation & Completeness Protocol
-================================================================================
+Causal Verification Snapshot Entity — NOTAM Aviation & Structured Ticker Payload
+===================================================================================
 Combines Weinstein Veto and Druckenmiller Counter-Veto into a final CausalDecision.
 
-Implements NOTAM (Notice to Airmen) Aviation Timestamp & Completeness Protocol:
+Implements NOTAM (Notice to Airmen) Aviation Timestamp & Structured Ticker Payload:
   - as_of_timestamp: Date & time of underlying data in UTC.
   - valid_until: Expiration date & time of this verification.
   - data_age_hours: Exact age of data in hours.
@@ -11,10 +11,11 @@ Implements NOTAM (Notice to Airmen) Aviation Timestamp & Completeness Protocol:
   - missing_vectors: Explicit list of vectors that failed to fetch data.
   - data_completeness_pct: Percentage of 5 causal vectors successfully loaded (0-100%).
   - notam_header: Structured aviation-style NOTAM alert header.
+  - notam_ticker_payload: Pre-digested, pre-classified numerical data bar for consuming gates.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from datetime import datetime, UTC
-from typing import List
+from typing import List, Dict, Any, Optional
 from enum import Enum
 
 from backend.modules.causal_investigation.domain.entities.weinstein_stage import StructuralVeto
@@ -25,6 +26,45 @@ class CausalDecision(Enum):
     ALLOW_ENTRY = "ALLOW_ENTRY"
     VETO_ESTRUCTURAL = "VETO_ESTRUCTURAL"
     CONTRA_VETO_CAUSAL = "CONTRA_VETO_CAUSAL"
+
+
+@dataclass(frozen=True)
+class NOTAMTickerPayload:
+    """
+    Pre-digested, structured numerical NOTAM ticker payload designed for immediate,
+    zero-parsing consumption by Quality, Speculative, Quality Swing, and CIO gates.
+    """
+    symbol: str
+    as_of_timestamp: str
+    valid_until: str
+    data_age_hours: float
+    notam_status: str
+    data_completeness_pct: float
+    missing_vectors: List[str]
+
+    # Decision & Sizing Multipliers per department mission
+    decision: str
+    weinstein_stage_code: int                # 1 (Basing), 2 (Advancing), 3 (Topping), 4 (Declining)
+    causal_score: float                      # 0.0 to 1.0 composite causal conviction
+    quality_sizing_mult: float               # Calibrated for Quality Gate (0.0 to 1.25x)
+    speculative_sizing_mult: float           # Calibrated for Speculative Hub (0.0 to 1.50x)
+
+    # Volatility Fragility & Skew Risk Metrics
+    skew_index: float                        # CBOE Skew Index (Tail risk)
+    vvix_vix_ratio: float                    # VVIX / VIX ratio (Vol of vol fragility)
+    vix_zscore: float                        # Rolling VIX Z-Score
+    cboe_pcr: float                          # CBOE Put/Call Ratio
+    fg_score: float                          # CNN Fear & Greed Index (0-100)
+
+    # 5-Vector Scores
+    options_flow_score: float
+    macro_liquidity_score: float
+    insider_score: float
+    volume_reabsorption_score: float
+    news_sentiment_score: float
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass(frozen=True)
@@ -47,9 +87,11 @@ class CausalVerificationSnapshot:
     missing_vectors: List[str] = field(default_factory=list)
     data_completeness_pct: float = 100.0
     notam_header: str = ""
+    notam_ticker_payload: Optional[NOTAMTickerPayload] = None
     decision_log: str = ""
 
     def to_dict(self) -> dict:
+        payload_dict = self.notam_ticker_payload.to_dict() if self.notam_ticker_payload else {}
         return {
             "symbol": self.symbol,
             "decision": self.decision.value,
@@ -67,5 +109,6 @@ class CausalVerificationSnapshot:
             "missing_vectors": self.missing_vectors,
             "data_completeness_pct": self.data_completeness_pct,
             "notam_header": self.notam_header,
+            "notam_ticker_payload": payload_dict,
             "decision_log": self.decision_log,
         }

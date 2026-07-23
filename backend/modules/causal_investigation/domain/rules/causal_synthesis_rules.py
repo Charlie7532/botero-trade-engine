@@ -1,8 +1,9 @@
 """
-Causal Synthesis Rules — NOTAM Aviation & Completeness Protocol
-==================================================================
+Causal Synthesis Rules — NOTAM Aviation & Structured Ticker Payload Protocol
+================================================================================
 Synthesizes Weinstein's Structural Veto and Druckenmiller's Causal Counter-Veto
-into a final CausalVerificationSnapshot with NOTAM aviation timestamp and missing vector metadata.
+into a final CausalVerificationSnapshot with NOTAM aviation timestamp, missing vector metadata,
+and a pre-digested numerical NOTAMTickerPayload.
 """
 from datetime import datetime, timedelta, UTC
 from typing import Optional
@@ -17,6 +18,7 @@ from backend.modules.causal_investigation.domain.entities.druckenmiller_causal i
 from backend.modules.causal_investigation.domain.entities.causal_verification import (
     CausalDecision,
     CausalVerificationSnapshot,
+    NOTAMTickerPayload,
 )
 
 
@@ -30,7 +32,7 @@ def synthesize_causal_decision(
     """
     Combines Weinstein Veto and Druckenmiller Counter-Veto into a final CausalDecision.
 
-    Calculates Aviation NOTAM Timestamp & Completeness Metadata:
+    Calculates Aviation NOTAM Timestamp & Structured Ticker Payload:
       - as_of_timestamp: Issuance time of data (UTC).
       - valid_until: Expiration time (as_of + valid_hours).
       - data_age_hours: Age of data in hours relative to execution time.
@@ -38,6 +40,7 @@ def synthesize_causal_decision(
       - missing_vectors: Explicit list of missing data vectors.
       - data_completeness_pct: Percentage of causal vectors loaded (0-100%).
       - notam_header: NOTAM format string.
+      - notam_ticker_payload: Pre-digested numerical bar for immediate gate consumption.
     """
     now = datetime.now(UTC)
     as_of = as_of_dt if as_of_dt is not None else now
@@ -93,6 +96,45 @@ def synthesize_causal_decision(
         f"VALID_UNTIL: {valid_until_str} | DECISION: {decision.value}{missing_str}"
     )
 
+    # Department-Calibrated Sizing Multipliers
+    quality_sizing = sizing_mult if decision != CausalDecision.VETO_ESTRUCTURAL else 0.0
+    # Speculative Hub gets aggressive multiplier up to 1.50x if options flow sweeps >= 10
+    spec_mult = sizing_mult
+    if counter_veto.evidence_matrix.options_darkpool_score >= 0.8:
+        spec_mult = min(1.50, spec_mult * 1.20)
+    speculative_sizing = spec_mult if decision != CausalDecision.VETO_ESTRUCTURAL else 0.0
+
+    details = counter_veto.evidence_matrix.details
+    vix_z = float(details.get("vix_zscore", 0.0))
+    vix_val = float(details.get("vix_val", 18.0))
+    vvix_val = float(details.get("vvix_val", 85.0))
+    vvix_vix_ratio = round(vvix_val / max(1.0, vix_val), 4)
+
+    ticker_payload = NOTAMTickerPayload(
+        symbol=symbol,
+        as_of_timestamp=as_of_str,
+        valid_until=valid_until_str,
+        data_age_hours=data_age_hours,
+        notam_status=notam_status,
+        data_completeness_pct=completeness,
+        missing_vectors=missing,
+        decision=decision.value,
+        weinstein_stage_code=structural_veto.stage.value,
+        causal_score=counter_veto.causal_score,
+        quality_sizing_mult=round(quality_sizing, 4),
+        speculative_sizing_mult=round(speculative_sizing, 4),
+        skew_index=float(details.get("skew_val", 120.0)),
+        vvix_vix_ratio=vvix_vix_ratio,
+        vix_zscore=vix_z,
+        cboe_pcr=float(details.get("cboe_pcr", 1.0)),
+        fg_score=float(details.get("fg_score", 50.0)),
+        options_flow_score=counter_veto.evidence_matrix.options_darkpool_score,
+        macro_liquidity_score=counter_veto.evidence_matrix.macro_liquidity_score,
+        insider_score=counter_veto.evidence_matrix.insider_accumulation_score,
+        volume_reabsorption_score=counter_veto.evidence_matrix.volume_reabsorption_score,
+        news_sentiment_score=counter_veto.evidence_matrix.narrative_momentum_score,
+    )
+
     return CausalVerificationSnapshot(
         symbol=symbol,
         decision=decision,
@@ -107,5 +149,6 @@ def synthesize_causal_decision(
         missing_vectors=missing,
         data_completeness_pct=completeness,
         notam_header=notam_header,
+        notam_ticker_payload=ticker_payload,
         decision_log=f"{notam_header} || {log_msg}",
     )

@@ -181,3 +181,84 @@ def test_missing_vectors_reporting():
     assert "FRED_MACRO_LIQUIDITY" in dict_repr["missing_vectors"]
 
 
+def test_extreme_sentiment_indicators():
+    """Test 9: Fear & Greed, VIX z-score, and CBOE PCR extreme sentiment boost."""
+    downtrend_prices = [200.0 - i * 0.8 for i in range(160)]
+    input_dto = CausalInputDTO(
+        symbol="XLV",
+        price_history=downtrend_prices,
+        rs_score=-0.2,
+        uw_sweep_count=6,
+        fred_macro_snapshot={"macro_regime": "risk_on"},
+        fg_score=15.0,        # Extreme Fear (capitulation floor)
+        vix_zscore=2.3,      # VIX panic spike
+        cboe_pcr=1.35,       # Extreme put buying
+        news_sentiment_score=0.5,
+    )
+
+    snapshot = evaluate_causal_conviction(input_dto)
+    assert snapshot.counter_veto.evidence_matrix.details["fg_score"] == 15.0
+    assert snapshot.counter_veto.evidence_matrix.details["vix_zscore"] == 2.3
+    assert snapshot.counter_veto.evidence_matrix.details["cboe_pcr"] == 1.35
+    assert snapshot.counter_veto.causal_score >= 0.70
+
+
+def test_notam_ticker_payload_structure():
+    """Test 10: Structured numerical NOTAMTickerPayload for immediate consumer gate consumption."""
+    uptrend_prices = [100.0 + i * 0.5 for i in range(160)]
+    input_dto = CausalInputDTO(
+        symbol="XLK",
+        price_history=uptrend_prices,
+        rs_score=0.25,
+        uw_sweep_count=12,
+        uw_net_premium=1_500_000.0,
+        fred_macro_snapshot={"macro_regime": "risk_on"},
+        skew_val=145.0,
+        vvix_val=95.0,
+        vix_zscore=-0.5,
+    )
+
+    snapshot = evaluate_causal_conviction(input_dto)
+    payload = snapshot.notam_ticker_payload
+    assert payload is not None
+    assert payload.symbol == "XLK"
+    assert payload.weinstein_stage_code == 2
+    assert payload.skew_index == 145.0
+    assert payload.vvix_vix_ratio > 0.0
+    assert payload.quality_sizing_mult > 0.0
+    assert payload.speculative_sizing_mult > 0.0
+    dict_payload = snapshot.to_dict()["notam_ticker_payload"]
+    assert dict_payload["skew_index"] == 145.0
+    assert dict_payload["weinstein_stage_code"] == 2
+
+
+def test_notam_vvix_vix_ratio_with_custom_vix():
+    """Test 11: Verify VVIX/VIX ratio calculation uses actual vix_val (e.g. VIX=30.0, VVIX=120.0 -> ratio=4.0)."""
+    uptrend_prices = [100.0 + i * 0.5 for i in range(160)]
+    input_dto = CausalInputDTO(
+        symbol="QQQ",
+        price_history=uptrend_prices,
+        vix_val=30.0,
+        vvix_val=120.0,
+    )
+    snapshot = evaluate_causal_conviction(input_dto)
+    payload = snapshot.notam_ticker_payload
+    assert payload is not None
+    assert payload.vvix_vix_ratio == 4.0  # 120.0 / 30.0
+
+
+def test_extreme_skew_and_vvix_scoring():
+    """Test 12: Verify SKEW > 140 and VVIX > 120 trigger tail risk/fragility score boosts."""
+    res = evaluate_druckenmiller_counter_veto(
+        symbol="SPY",
+        skew_val=145.0,  # SKEW > 140 -> +0.15 score boost
+        vvix_val=125.0,  # VVIX > 120 -> +0.15 score boost
+    )
+    assert res.evidence_matrix.details["skew_val"] == 145.0
+    assert res.evidence_matrix.details["vvix_val"] == 125.0
+    assert res.evidence_matrix.volume_reabsorption_score >= 0.70  # baseline 0.5 + 0.15 + 0.15
+
+
+
+
+

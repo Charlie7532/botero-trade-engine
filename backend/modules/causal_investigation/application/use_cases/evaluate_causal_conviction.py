@@ -79,6 +79,12 @@ def evaluate_causal_conviction(
         s5_tw=input_dto.s5_tw,
         sv5_tw=input_dto.sv5_tw,
         vol_div=input_dto.vol_div,
+        fg_score=input_dto.fg_score,
+        vix_zscore=input_dto.vix_zscore,
+        vix_val=input_dto.vix_val,
+        cboe_pcr=input_dto.cboe_pcr,
+        skew_val=input_dto.skew_val,
+        vvix_val=input_dto.vvix_val,
         news_sentiment_score=input_dto.news_sentiment_score,
         override_threshold=override_threshold,
     )
@@ -88,7 +94,7 @@ def evaluate_causal_conviction(
         symbol=symbol,
         structural_veto=structural_veto,
         counter_veto=counter_veto,
-        as_of_dt=getattr(input_dto, "as_of_dt", None),
+        as_of_dt=input_dto.as_of_dt,
     )
 
     return snapshot

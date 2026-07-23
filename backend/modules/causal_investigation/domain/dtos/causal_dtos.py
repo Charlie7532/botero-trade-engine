@@ -29,12 +29,18 @@ class CausalInputDTO:
     # Vector 3: Insiders
     insider_activity: Optional[dict] = None
 
-    # Vector 4: Volume Capitulation / Re-absorption (S5/SV5)
+    # Vector 4: Volume Capitulation / Re-absorption (S5/SV5) & Extreme Sentiment (FG, VIX, PCR)
     s5_th: float = 50.0
     s5_fi: float = 50.0
     s5_tw: float = 50.0
     sv5_tw: float = 50.0
     vol_div: float = 0.0
+    fg_score: float = 50.0       # CNN Fear & Greed Index (0-100)
+    vix_zscore: float = 0.0      # VIX rolling z-score
+    vix_val: float = 18.0        # Raw VIX close value
+    cboe_pcr: float = 1.0        # CBOE Put/Call Ratio
+    skew_val: float = 120.0      # CBOE Skew Index (Tail Risk)
+    vvix_val: float = 85.0       # VVIX Index (Vol of Vol)
 
     # Vector 5: News Sentiment
     news_sentiment_score: float = 0.0

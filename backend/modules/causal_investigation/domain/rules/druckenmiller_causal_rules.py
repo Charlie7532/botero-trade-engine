@@ -2,13 +2,14 @@
 Druckenmiller Causal Evidence Rules
 ====================================
 Pure mathematical scoring for Stanley Druckenmiller's 5 Causal Vectors.
-Supports Missing Vectors detection and Data Completeness reporting.
+Supports Missing Vectors detection, Data Completeness reporting, Extreme Sentiment (FG, VIX, PCR),
+and Volatility Fragility / Tail Risk (SKEW, VVIX).
 
 Vector Weights:
   1. Options & Darkpool Flow (Unusual Whales): 0.25
   2. Macro & Credit Liquidity (FRED): 0.20
   3. Insiders & Guru Accumulation (Finnhub/GuruFocus): 0.20
-  4. Volume Capitulation & Re-Absorption (S5/SV5): 0.20
+  4. Volume Capitulation & Extreme Sentiment (S5/SV5, FG, VIX, PCR, SKEW, VVIX): 0.20
   5. Narrative & News Sentiment (FinBERT): 0.15
 
 Counter-Veto threshold: composite causal_score >= 0.70.
@@ -32,6 +33,12 @@ def evaluate_druckenmiller_counter_veto(
     s5_tw: float = 50.0,
     sv5_tw: float = 50.0,
     vol_div: float = 0.0,
+    fg_score: float = 50.0,
+    vix_zscore: float = 0.0,
+    vix_val: float = 18.0,
+    cboe_pcr: float = 1.0,
+    skew_val: float = 120.0,
+    vvix_val: float = 85.0,
     news_sentiment_score: float = 0.0,
     override_threshold: float = 0.70,
 ) -> CounterVetoResult:
@@ -56,9 +63,10 @@ def evaluate_druckenmiller_counter_veto(
         missing_vectors.append("CORPORATE_INSIDER_ACTIVITY")
     insider_score = _score_insider_activity(insider_activity)
 
-    # ── Vector 4: Volume Capitulation / Re-Absorption (0.0 to 1.0) ──
-    # S5/SV5 is derived from core OHLCV bars (always available in Vault)
-    volume_score = _score_volume_reabsorption(s5_th, s5_fi, s5_tw, sv5_tw, vol_div)
+    # ── Vector 4: Volume Capitulation / Re-Absorption / Extreme Sentiment & Skew ──
+    volume_score = _score_volume_reabsorption(
+        s5_th, s5_fi, s5_tw, sv5_tw, vol_div, fg_score, vix_zscore, cboe_pcr, skew_val, vvix_val
+    )
 
     # ── Vector 5: Narrative & News Sentiment Velocity (0.0 to 1.0) ──
     if news_sentiment_score == 0.0:
@@ -106,6 +114,12 @@ def evaluate_druckenmiller_counter_veto(
             "uw_sweeps": uw_sweep_count,
             "uw_net_prem": uw_net_premium,
             "vol_div": vol_div,
+            "fg_score": fg_score,
+            "vix_zscore": vix_zscore,
+            "vix_val": vix_val,
+            "cboe_pcr": cboe_pcr,
+            "skew_val": skew_val,
+            "vvix_val": vvix_val,
             "news_sent": news_sentiment_score,
             "missing_count": len(missing_vectors),
         }
@@ -196,22 +210,56 @@ def _score_insider_activity(insider_act: Optional[dict]) -> float:
     return 0.5
 
 
-def _score_volume_reabsorption(th: float, fi: float, tw: float, sv5_tw: float, vol_div: float) -> float:
+def _score_volume_reabsorption(
+    th: float, fi: float, tw: float, sv5_tw: float, vol_div: float,
+    fg_score: float = 50.0, vix_zscore: float = 0.0, cboe_pcr: float = 1.0,
+    skew_val: float = 120.0, vvix_val: float = 85.0
+) -> float:
     score = 0.5
 
     # V28 Weinstein Smart Veto vol_div threshold
     if vol_div > 15.0:
-        score += 0.35
+        score += 0.25
     elif vol_div > 10.0:
-        score += 0.20
+        score += 0.15
 
     # Bullish Volume Re-absorption anomaly (S5_TH >= 60, S5_FI <= 45, SV5_TW >= 60)
     if th >= 60.0 and fi <= 45.0 and sv5_tw >= 60.0:
-        score += 0.30
+        score += 0.20
 
     # Volume Capitulation Floor (S5_TH <= 25, SV5_TW >= 60)
     if th <= 25.0 and sv5_tw >= 60.0:
-        score += 0.35
+        score += 0.25
+
+    # Contrarian Fear & Greed Layer (Extreme Fear <= 20 -> Capitulation Buy)
+    if fg_score <= 20.0:
+        score += 0.25
+    elif fg_score <= 30.0:
+        score += 0.15
+    elif fg_score >= 80.0:
+        score -= 0.20
+
+    # Panic Volatility Spike (VIX Z-Score > 2.0 -> Panic Floor Capitulation)
+    if vix_zscore > 2.0:
+        score += 0.20
+    elif vix_zscore < -1.5:
+        score -= 0.15
+
+    # CBOE Put/Call Ratio Extreme (> 1.25 -> Extreme Put Buying Capitulation)
+    if cboe_pcr > 1.25:
+        score += 0.15
+    elif cboe_pcr < 0.65:
+        score -= 0.10
+
+    # CBOE Skew Index (> 140 -> High Tail Risk / Black Swan hedging)
+    if skew_val > 140.0:
+        score += 0.15
+    elif skew_val < 115.0:
+        score -= 0.10
+
+    # VVIX Volatility of Volatility (VVIX > 120 -> Vol Fragility / Panic inflection)
+    if vvix_val > 120.0:
+        score += 0.15
 
     return max(0.0, min(1.0, score))
 

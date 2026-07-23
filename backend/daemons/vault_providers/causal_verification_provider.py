@@ -85,13 +85,36 @@ class CausalVerificationProvider:
             sv5_tw = self._last_bar_val(sv5tw_bars, 50.0)
             vol_div = sv5_tw - s5_fi
 
-            # ── 6. Load News Sentiment ──
+            # ── 6. Load Extreme Sentiment & Volatility Fragility Indicators (FG, VIX, PCR, SKEW, VVIX) ──
+            fg_bars = store.load_bars("FG", "1d", start=start_date)
+            vix_bars = store.load_bars("VIX", "1d", start=start_date)
+            pcr_bars = store.load_bars("CBOE_PCR", "1d", start=start_date)
+            skew_bars = store.load_bars("SKEW", "1d", start=start_date)
+            vvix_bars = store.load_bars("VVIX", "1d", start=start_date)
+
+            fg_score = self._last_bar_val(fg_bars, 50.0)
+            vix_val = self._last_bar_val(vix_bars, 18.0)
+            cboe_pcr = self._last_bar_val(pcr_bars, 1.0)
+            skew_val = self._last_bar_val(skew_bars, 120.0)
+            vvix_val = self._last_bar_val(vvix_bars, 85.0)
+
+            # Compute simple VIX z-score
+            vix_zscore = 0.0
+            if vix_bars is not None and len(vix_bars) >= 30:
+                v_col = "Close" if "Close" in vix_bars.columns else "close"
+                v_series = vix_bars[v_col].astype(float)
+                v_mean = v_series.mean()
+                v_std = v_series.std()
+                if v_std > 0:
+                    vix_zscore = float((vix_val - v_mean) / v_std)
+
+            # ── 7. Load News Sentiment ──
             news_snap = store.load_mcp_latest("news/sentiment", ticker)
             news_sent = 0.0
             if isinstance(news_snap, dict):
                 news_sent = float(news_snap.get("sentiment_score", 0.0))
 
-            # ── 7. Build DTO & Evaluate Use Case ──
+            # ── 8. Build DTO & Evaluate Use Case ──
             input_dto = CausalInputDTO(
                 symbol=ticker,
                 price_history=price_history,
@@ -106,6 +129,12 @@ class CausalVerificationProvider:
                 s5_tw=s5_tw,
                 sv5_tw=sv5_tw,
                 vol_div=vol_div,
+                fg_score=fg_score,
+                vix_zscore=vix_zscore,
+                vix_val=vix_val,
+                cboe_pcr=cboe_pcr,
+                skew_val=skew_val,
+                vvix_val=vvix_val,
                 news_sentiment_score=news_sent,
             )
 

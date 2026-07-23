@@ -234,25 +234,9 @@ class RotationScanner:
 
     @staticmethod
     def _weinstein_stage(prices: list[float], rs: float) -> int:
-        """
-        Simplified Weinstein Stage Analysis.
-        Uses 150-day (≈30-week) MA and relative strength trend.
-        """
-        if len(prices) < 150:
-            return 0
-
-        ma_150 = sum(prices[-150:]) / 150
-        current = prices[-1]
-        ma_slope = (sum(prices[-20:]) / 20) - (sum(prices[-40:-20]) / 20)
-
-        if current > ma_150 and ma_slope > 0 and rs > 0.1:
-            return 2  # Advancing
-        elif current > ma_150 and ma_slope <= 0:
-            return 3  # Topping
-        elif current < ma_150 and ma_slope < 0:
-            return 4  # Declining
-        else:
-            return 1  # Basing
+        """Simplified Weinstein Stage Analysis using shared rule."""
+        from backend.modules.shared.domain.rules.weinstein_stage_rules import classify_weinstein_stage
+        return classify_weinstein_stage(prices, rs)
 
     # ══════════════════════════════════════════════════════════
     # PRING INTERMARKET CYCLE

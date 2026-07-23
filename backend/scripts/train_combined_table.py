@@ -219,15 +219,14 @@ def load_ticker_full(store, ticker):
 
 
 def get_universe(store):
-    """Get tickers with both snapshots and zigzag data."""
+    """Get tickers with snapshots."""
     conn = store._conn()
     try:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT DISTINCT cs.ticker
-                FROM engine.channel_snapshots cs
-                JOIN engine.zigzag_points zz ON zz.ticker = cs.ticker
-                ORDER BY cs.ticker
+                SELECT DISTINCT ticker
+                FROM engine.channel_snapshots
+                ORDER BY ticker
             """)
             return [r[0] for r in cur.fetchall()]
     finally:

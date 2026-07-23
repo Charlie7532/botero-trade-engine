@@ -111,6 +111,10 @@ def evaluate_druckenmiller_counter_veto(
         missing_vectors=missing_vectors,
         data_completeness_pct=data_completeness_pct,
         details={
+            "s5_th": s5_th,
+            "s5_fi": s5_fi,
+            "s5_tw": s5_tw,
+            "sv5_tw": sv5_tw,
             "uw_sweeps": uw_sweep_count,
             "uw_net_prem": uw_net_premium,
             "vol_div": vol_div,

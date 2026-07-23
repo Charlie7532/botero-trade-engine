@@ -36,6 +36,13 @@ class RotationSignal:
     # ── UW Sector Tide Confirmation ──
     uw_flow_confirmation: str = "UNKNOWN"  # CONFIRMS, CONTRADICTS, UNKNOWN
     uw_net_premium: float = 0.0            # Net premium flow from UW sector_tide
+    # ── Causal NOTAM Forecast & Leader Stock Selection ──
+    causal_decision: str = "UNKNOWN"      # ALLOW_ENTRY, CONTRA_VETO_CAUSAL, VETO_ESTRUCTURAL
+    forecast_trajectory: str = "NEUTRAL_MIXED"
+    forecast_win_rate_120d: float = 0.550
+    forecast_fwd_return_120d: float = 0.035
+    certainty_score: float = 100.0
+    recommended_leader: str = ""           # Constituent Leader stock from ROTATION_SECTOR_LEADERS (e.g. NVDA for XLK)
 
 
 @dataclass

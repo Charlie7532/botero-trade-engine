@@ -1,0 +1,56 @@
+{
+  "BUY_AND_HOLD_SPY": {
+    "version": "Buy & Hold SPY (Benchmark Base)",
+    "initial_spy_shares": 100.0,
+    "final_spy_shares": 100.0,
+    "net_shares_gained": 0.0,
+    "cagr_pct": 6.38,
+    "sharpe_ratio": 0.417,
+    "max_drawdown_pct": -56.47,
+    "trading_days": 6676
+  },
+  "V20": {
+    "version": "V20",
+    "initial_spy_shares": 100.0,
+    "final_spy_shares": 160.94,
+    "net_shares_gained": 60.94,
+    "cagr_pct": 8.31,
+    "sharpe_ratio": 0.579,
+    "sortino_ratio": 0.718,
+    "max_drawdown_pct": -44.9,
+    "trading_days": 6674,
+    "regime_days": {
+      "NORMAL": 229,
+      "DISTRIBUCION_PRE_CRASH": 1262,
+      "MERCADO_SANO": 4080,
+      "PULLBACK_ALCISTA": 162,
+      "CRASH_SISTEMICO": 73,
+      "PISO_GENERACIONAL": 591,
+      "RECUPERACION": 104,
+      "RE_ACUMULACION_ALCISTA": 172,
+      "BEAR_RALLY": 1
+    }
+  },
+  "V35": {
+    "version": "V35",
+    "initial_spy_shares": 100.0,
+    "final_spy_shares": 429.94,
+    "net_shares_gained": 329.94,
+    "cagr_pct": 12.4,
+    "sharpe_ratio": 0.727,
+    "sortino_ratio": 0.942,
+    "max_drawdown_pct": -29.0,
+    "trading_days": 6674,
+    "regime_days": {
+      "NORMAL": 229,
+      "DISTRIBUCION_PRE_CRASH": 1262,
+      "MERCADO_SANO": 4080,
+      "PULLBACK_ALCISTA": 162,
+      "CRASH_SISTEMICO": 73,
+      "PISO_GENERACIONAL": 591,
+      "RECUPERACION": 104,
+      "RE_ACUMULACION_ALCISTA": 172,
+      "BEAR_RALLY": 1
+    }
+  }
+}

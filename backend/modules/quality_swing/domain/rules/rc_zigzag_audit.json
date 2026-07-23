@@ -1,0 +1,1118 @@
+{
+  "version": "v1_audit_2026-07-23",
+  "description": "For every zigzag pivot: what RC state (T\u00d7C\u00d7\u03c3Vw) + stereotype was present?",
+  "n_tickers": 551,
+  "n_total_pivots": 255614,
+  "groups": {
+    "zz25_max": {
+      "total_pivots": 77785,
+      "unique_states": 180,
+      "stereotype_distribution": {
+        "HL": 13003,
+        "HH": 27733,
+        "LH": 13222,
+        "LL": 23827
+      },
+      "stereotype_P": {
+        "HL": 0.1672,
+        "HH": 0.3565,
+        "LH": 0.17,
+        "LL": 0.3063
+      },
+      "top_states": [
+        {
+          "state": "T+++|C+++|>>",
+          "count": 6121,
+          "pct": 7.87
+        },
+        {
+          "state": "T++|C+++|>>",
+          "count": 1957,
+          "pct": 2.52
+        },
+        {
+          "state": "T+++|C+++|>",
+          "count": 1850,
+          "pct": 2.38
+        },
+        {
+          "state": "T---|C---|>>",
+          "count": 1823,
+          "pct": 2.34
+        },
+        {
+          "state": "T+++|C++|>>",
+          "count": 1777,
+          "pct": 2.28
+        },
+        {
+          "state": "T---|C+++|>>",
+          "count": 1658,
+          "pct": 2.13
+        },
+        {
+          "state": "T+|C+++|>>",
+          "count": 1526,
+          "pct": 1.96
+        },
+        {
+          "state": "T+++|C+|>>",
+          "count": 1474,
+          "pct": 1.89
+        },
+        {
+          "state": "T---|C---|<",
+          "count": 1464,
+          "pct": 1.88
+        },
+        {
+          "state": "T---|C---|<<",
+          "count": 1157,
+          "pct": 1.49
+        },
+        {
+          "state": "T++|C++|>>",
+          "count": 1152,
+          "pct": 1.48
+        },
+        {
+          "state": "T---|C---|~",
+          "count": 1014,
+          "pct": 1.3
+        },
+        {
+          "state": "T++|C+|>>",
+          "count": 993,
+          "pct": 1.28
+        },
+        {
+          "state": "T--|C+++|>>",
+          "count": 992,
+          "pct": 1.28
+        },
+        {
+          "state": "T+|C++|>>",
+          "count": 977,
+          "pct": 1.26
+        }
+      ],
+      "top_combos": [
+        {
+          "state": "T+++|C+++|>>",
+          "stereotype": "HH",
+          "count": 3618,
+          "pct": 4.65
+        },
+        {
+          "state": "T+++|C+++|>>",
+          "stereotype": "HL",
+          "count": 1299,
+          "pct": 1.67
+        },
+        {
+          "state": "T++|C+++|>>",
+          "stereotype": "HH",
+          "count": 1182,
+          "pct": 1.52
+        },
+        {
+          "state": "T---|C---|>>",
+          "stereotype": "HH",
+          "count": 1061,
+          "pct": 1.36
+        },
+        {
+          "state": "T+++|C++|>>",
+          "stereotype": "HH",
+          "count": 1028,
+          "pct": 1.32
+        },
+        {
+          "state": "T---|C+++|>>",
+          "stereotype": "HH",
+          "count": 939,
+          "pct": 1.21
+        },
+        {
+          "state": "T+|C+++|>>",
+          "stereotype": "HH",
+          "count": 915,
+          "pct": 1.18
+        },
+        {
+          "state": "T+++|C+|>>",
+          "stereotype": "HH",
+          "count": 834,
+          "pct": 1.07
+        },
+        {
+          "state": "T---|C---|<<",
+          "stereotype": "LL",
+          "count": 798,
+          "pct": 1.03
+        },
+        {
+          "state": "T++|C++|>>",
+          "stereotype": "HH",
+          "count": 704,
+          "pct": 0.91
+        },
+        {
+          "state": "T+++|C+++|>>",
+          "stereotype": "LH",
+          "count": 664,
+          "pct": 0.85
+        },
+        {
+          "state": "T+++|C+++|>",
+          "stereotype": "LL",
+          "count": 598,
+          "pct": 0.77
+        },
+        {
+          "state": "T---|C---|<",
+          "stereotype": "LL",
+          "count": 595,
+          "pct": 0.76
+        },
+        {
+          "state": "T--|C+++|>>",
+          "stereotype": "HH",
+          "count": 587,
+          "pct": 0.75
+        },
+        {
+          "state": "T++|C+|>>",
+          "stereotype": "HH",
+          "count": 565,
+          "pct": 0.73
+        }
+      ]
+    },
+    "zz25_min": {
+      "total_pivots": 79083,
+      "unique_states": 180,
+      "stereotype_distribution": {
+        "HL": 12961,
+        "HH": 27731,
+        "LH": 13729,
+        "LL": 24662
+      },
+      "stereotype_P": {
+        "HL": 0.1639,
+        "HH": 0.3507,
+        "LH": 0.1736,
+        "LL": 0.3118
+      },
+      "top_states": [
+        {
+          "state": "T---|C---|<<",
+          "count": 3009,
+          "pct": 3.8
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "count": 2781,
+          "pct": 3.52
+        },
+        {
+          "state": "T+++|C+++|>",
+          "count": 2261,
+          "pct": 2.86
+        },
+        {
+          "state": "T+++|C+++|>>",
+          "count": 2070,
+          "pct": 2.62
+        },
+        {
+          "state": "T+++|C---|<<",
+          "count": 1985,
+          "pct": 2.51
+        },
+        {
+          "state": "T+++|C+|<<",
+          "count": 1711,
+          "pct": 2.16
+        },
+        {
+          "state": "T+|C---|<<",
+          "count": 1626,
+          "pct": 2.06
+        },
+        {
+          "state": "T+++|C++|<<",
+          "count": 1578,
+          "pct": 2.0
+        },
+        {
+          "state": "T+++|C+++|~",
+          "count": 1532,
+          "pct": 1.94
+        },
+        {
+          "state": "T---|C---|<",
+          "count": 1530,
+          "pct": 1.93
+        },
+        {
+          "state": "T--|C---|<<",
+          "count": 1494,
+          "pct": 1.89
+        },
+        {
+          "state": "T++|C---|<<",
+          "count": 1445,
+          "pct": 1.83
+        },
+        {
+          "state": "T+++|C+++|<",
+          "count": 1444,
+          "pct": 1.83
+        },
+        {
+          "state": "T+++|C--|<<",
+          "count": 1399,
+          "pct": 1.77
+        },
+        {
+          "state": "T+++|C-|<<",
+          "count": 1115,
+          "pct": 1.41
+        }
+      ],
+      "top_combos": [
+        {
+          "state": "T---|C---|<<",
+          "stereotype": "LL",
+          "count": 1580,
+          "pct": 2.0
+        },
+        {
+          "state": "T+++|C+++|>>",
+          "stereotype": "HH",
+          "count": 1474,
+          "pct": 1.86
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "stereotype": "LL",
+          "count": 1393,
+          "pct": 1.76
+        },
+        {
+          "state": "T+++|C+++|>",
+          "stereotype": "HH",
+          "count": 1219,
+          "pct": 1.54
+        },
+        {
+          "state": "T+++|C---|<<",
+          "stereotype": "LL",
+          "count": 1063,
+          "pct": 1.34
+        },
+        {
+          "state": "T+|C---|<<",
+          "stereotype": "LL",
+          "count": 933,
+          "pct": 1.18
+        },
+        {
+          "state": "T+++|C+|<<",
+          "stereotype": "LL",
+          "count": 819,
+          "pct": 1.04
+        },
+        {
+          "state": "T++|C---|<<",
+          "stereotype": "LL",
+          "count": 805,
+          "pct": 1.02
+        },
+        {
+          "state": "T--|C---|<<",
+          "stereotype": "LL",
+          "count": 796,
+          "pct": 1.01
+        },
+        {
+          "state": "T+++|C++|<<",
+          "stereotype": "LL",
+          "count": 789,
+          "pct": 1.0
+        },
+        {
+          "state": "T+++|C--|<<",
+          "stereotype": "LL",
+          "count": 779,
+          "pct": 0.99
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "stereotype": "HL",
+          "count": 673,
+          "pct": 0.85
+        },
+        {
+          "state": "T---|C---|<<",
+          "stereotype": "HL",
+          "count": 660,
+          "pct": 0.83
+        },
+        {
+          "state": "T+++|C-|<<",
+          "stereotype": "LL",
+          "count": 601,
+          "pct": 0.76
+        },
+        {
+          "state": "T+++|C+++|~",
+          "stereotype": "HH",
+          "count": 575,
+          "pct": 0.73
+        }
+      ]
+    },
+    "zz50_max": {
+      "total_pivots": 32148,
+      "unique_states": 180,
+      "stereotype_distribution": {
+        "HH": 14782,
+        "HL": 9103,
+        "LL": 5604,
+        "LH": 2659
+      },
+      "stereotype_P": {
+        "HH": 0.4598,
+        "HL": 0.2832,
+        "LL": 0.1743,
+        "LH": 0.0827
+      },
+      "top_states": [
+        {
+          "state": "T+++|C+++|>>",
+          "count": 3276,
+          "pct": 10.19
+        },
+        {
+          "state": "T---|C---|>>",
+          "count": 1117,
+          "pct": 3.47
+        },
+        {
+          "state": "T++|C+++|>>",
+          "count": 1017,
+          "pct": 3.16
+        },
+        {
+          "state": "T---|C+++|>>",
+          "count": 935,
+          "pct": 2.91
+        },
+        {
+          "state": "T+++|C++|>>",
+          "count": 889,
+          "pct": 2.77
+        },
+        {
+          "state": "T+++|C+|>>",
+          "count": 780,
+          "pct": 2.43
+        },
+        {
+          "state": "T+|C+++|>>",
+          "count": 771,
+          "pct": 2.4
+        },
+        {
+          "state": "T+++|C+++|>",
+          "count": 723,
+          "pct": 2.25
+        },
+        {
+          "state": "T---|C---|<",
+          "count": 618,
+          "pct": 1.92
+        },
+        {
+          "state": "T++|C++|>>",
+          "count": 556,
+          "pct": 1.73
+        },
+        {
+          "state": "T+++|C---|>>",
+          "count": 540,
+          "pct": 1.68
+        },
+        {
+          "state": "T--|C+++|>>",
+          "count": 521,
+          "pct": 1.62
+        },
+        {
+          "state": "T++|C+|>>",
+          "count": 491,
+          "pct": 1.53
+        },
+        {
+          "state": "T---|C---|~",
+          "count": 484,
+          "pct": 1.51
+        },
+        {
+          "state": "T+|C++|>>",
+          "count": 478,
+          "pct": 1.49
+        }
+      ],
+      "top_combos": [
+        {
+          "state": "T+++|C+++|>>",
+          "stereotype": "HH",
+          "count": 2033,
+          "pct": 6.32
+        },
+        {
+          "state": "T+++|C+++|>>",
+          "stereotype": "HL",
+          "count": 968,
+          "pct": 3.01
+        },
+        {
+          "state": "T---|C---|>>",
+          "stereotype": "HH",
+          "count": 662,
+          "pct": 2.06
+        },
+        {
+          "state": "T++|C+++|>>",
+          "stereotype": "HH",
+          "count": 656,
+          "pct": 2.04
+        },
+        {
+          "state": "T---|C+++|>>",
+          "stereotype": "HH",
+          "count": 560,
+          "pct": 1.74
+        },
+        {
+          "state": "T+++|C++|>>",
+          "stereotype": "HH",
+          "count": 524,
+          "pct": 1.63
+        },
+        {
+          "state": "T+|C+++|>>",
+          "stereotype": "HH",
+          "count": 493,
+          "pct": 1.53
+        },
+        {
+          "state": "T+++|C+|>>",
+          "stereotype": "HH",
+          "count": 429,
+          "pct": 1.33
+        },
+        {
+          "state": "T++|C++|>>",
+          "stereotype": "HH",
+          "count": 341,
+          "pct": 1.06
+        },
+        {
+          "state": "T---|C---|>>",
+          "stereotype": "HL",
+          "count": 335,
+          "pct": 1.04
+        },
+        {
+          "state": "T--|C+++|>>",
+          "stereotype": "HH",
+          "count": 328,
+          "pct": 1.02
+        },
+        {
+          "state": "T+++|C---|>>",
+          "stereotype": "HH",
+          "count": 320,
+          "pct": 1.0
+        },
+        {
+          "state": "T++|C+++|>>",
+          "stereotype": "HL",
+          "count": 293,
+          "pct": 0.91
+        },
+        {
+          "state": "T+++|C+++|>",
+          "stereotype": "HH",
+          "count": 288,
+          "pct": 0.9
+        },
+        {
+          "state": "T+++|C++|>>",
+          "stereotype": "HL",
+          "count": 285,
+          "pct": 0.89
+        }
+      ]
+    },
+    "zz50_min": {
+      "total_pivots": 32252,
+      "unique_states": 180,
+      "stereotype_distribution": {
+        "HL": 9246,
+        "LL": 14654,
+        "HH": 5409,
+        "LH": 2943
+      },
+      "stereotype_P": {
+        "HL": 0.2867,
+        "LL": 0.4544,
+        "HH": 0.1677,
+        "LH": 0.0913
+      },
+      "top_states": [
+        {
+          "state": "T---|C---|<<",
+          "count": 1892,
+          "pct": 5.87
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "count": 1696,
+          "pct": 5.26
+        },
+        {
+          "state": "T+++|C---|<<",
+          "count": 1287,
+          "pct": 3.99
+        },
+        {
+          "state": "T+|C---|<<",
+          "count": 959,
+          "pct": 2.97
+        },
+        {
+          "state": "T+++|C+|<<",
+          "count": 932,
+          "pct": 2.89
+        },
+        {
+          "state": "T--|C---|<<",
+          "count": 871,
+          "pct": 2.7
+        },
+        {
+          "state": "T+++|C++|<<",
+          "count": 867,
+          "pct": 2.69
+        },
+        {
+          "state": "T++|C---|<<",
+          "count": 855,
+          "pct": 2.65
+        },
+        {
+          "state": "T+++|C--|<<",
+          "count": 806,
+          "pct": 2.5
+        },
+        {
+          "state": "T---|C---|<",
+          "count": 725,
+          "pct": 2.25
+        },
+        {
+          "state": "T+++|C+++|>",
+          "count": 693,
+          "pct": 2.15
+        },
+        {
+          "state": "T+++|C+++|<",
+          "count": 648,
+          "pct": 2.01
+        },
+        {
+          "state": "T+++|C+++|~",
+          "count": 629,
+          "pct": 1.95
+        },
+        {
+          "state": "T+++|C-|<<",
+          "count": 615,
+          "pct": 1.91
+        },
+        {
+          "state": "T+|C--|<<",
+          "count": 538,
+          "pct": 1.67
+        }
+      ],
+      "top_combos": [
+        {
+          "state": "T---|C---|<<",
+          "stereotype": "LL",
+          "count": 1063,
+          "pct": 3.3
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "stereotype": "LL",
+          "count": 904,
+          "pct": 2.8
+        },
+        {
+          "state": "T+++|C---|<<",
+          "stereotype": "LL",
+          "count": 747,
+          "pct": 2.32
+        },
+        {
+          "state": "T+|C---|<<",
+          "stereotype": "LL",
+          "count": 603,
+          "pct": 1.87
+        },
+        {
+          "state": "T---|C---|<<",
+          "stereotype": "HL",
+          "count": 549,
+          "pct": 1.7
+        },
+        {
+          "state": "T--|C---|<<",
+          "stereotype": "LL",
+          "count": 529,
+          "pct": 1.64
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "stereotype": "HL",
+          "count": 524,
+          "pct": 1.62
+        },
+        {
+          "state": "T++|C---|<<",
+          "stereotype": "LL",
+          "count": 517,
+          "pct": 1.6
+        },
+        {
+          "state": "T+++|C--|<<",
+          "stereotype": "LL",
+          "count": 491,
+          "pct": 1.52
+        },
+        {
+          "state": "T+++|C++|<<",
+          "stereotype": "LL",
+          "count": 479,
+          "pct": 1.49
+        },
+        {
+          "state": "T+++|C+|<<",
+          "stereotype": "LL",
+          "count": 476,
+          "pct": 1.48
+        },
+        {
+          "state": "T+++|C---|<<",
+          "stereotype": "HL",
+          "count": 371,
+          "pct": 1.15
+        },
+        {
+          "state": "T+++|C-|<<",
+          "stereotype": "LL",
+          "count": 363,
+          "pct": 1.13
+        },
+        {
+          "state": "T+++|C+|<<",
+          "stereotype": "HL",
+          "count": 347,
+          "pct": 1.08
+        },
+        {
+          "state": "T-|C---|<<",
+          "stereotype": "LL",
+          "count": 322,
+          "pct": 1.0
+        }
+      ]
+    },
+    "zz75_max": {
+      "total_pivots": 17145,
+      "unique_states": 179,
+      "stereotype_distribution": {
+        "HH": 9092,
+        "HL": 5837,
+        "LL": 1362,
+        "LH": 854
+      },
+      "stereotype_P": {
+        "HH": 0.5303,
+        "HL": 0.3404,
+        "LL": 0.0794,
+        "LH": 0.0498
+      },
+      "top_states": [
+        {
+          "state": "T+++|C+++|>>",
+          "count": 2125,
+          "pct": 12.39
+        },
+        {
+          "state": "T---|C---|>>",
+          "count": 723,
+          "pct": 4.22
+        },
+        {
+          "state": "T++|C+++|>>",
+          "count": 650,
+          "pct": 3.79
+        },
+        {
+          "state": "T---|C+++|>>",
+          "count": 649,
+          "pct": 3.79
+        },
+        {
+          "state": "T+++|C++|>>",
+          "count": 539,
+          "pct": 3.14
+        },
+        {
+          "state": "T+|C+++|>>",
+          "count": 483,
+          "pct": 2.82
+        },
+        {
+          "state": "T+++|C+|>>",
+          "count": 466,
+          "pct": 2.72
+        },
+        {
+          "state": "T+++|C+++|>",
+          "count": 368,
+          "pct": 2.15
+        },
+        {
+          "state": "T+++|C---|>>",
+          "count": 348,
+          "pct": 2.03
+        },
+        {
+          "state": "T--|C+++|>>",
+          "count": 333,
+          "pct": 1.94
+        },
+        {
+          "state": "T++|C++|>>",
+          "count": 314,
+          "pct": 1.83
+        },
+        {
+          "state": "T++|C+|>>",
+          "count": 303,
+          "pct": 1.77
+        },
+        {
+          "state": "T+|C++|>>",
+          "count": 298,
+          "pct": 1.74
+        },
+        {
+          "state": "T---|C++|>>",
+          "count": 267,
+          "pct": 1.56
+        },
+        {
+          "state": "T---|C---|<",
+          "count": 262,
+          "pct": 1.53
+        }
+      ],
+      "top_combos": [
+        {
+          "state": "T+++|C+++|>>",
+          "stereotype": "HH",
+          "count": 1359,
+          "pct": 7.93
+        },
+        {
+          "state": "T+++|C+++|>>",
+          "stereotype": "HL",
+          "count": 698,
+          "pct": 4.07
+        },
+        {
+          "state": "T---|C---|>>",
+          "stereotype": "HH",
+          "count": 426,
+          "pct": 2.48
+        },
+        {
+          "state": "T++|C+++|>>",
+          "stereotype": "HH",
+          "count": 420,
+          "pct": 2.45
+        },
+        {
+          "state": "T---|C+++|>>",
+          "stereotype": "HH",
+          "count": 396,
+          "pct": 2.31
+        },
+        {
+          "state": "T+++|C++|>>",
+          "stereotype": "HH",
+          "count": 321,
+          "pct": 1.87
+        },
+        {
+          "state": "T+|C+++|>>",
+          "stereotype": "HH",
+          "count": 316,
+          "pct": 1.84
+        },
+        {
+          "state": "T+++|C+|>>",
+          "stereotype": "HH",
+          "count": 253,
+          "pct": 1.48
+        },
+        {
+          "state": "T---|C---|>>",
+          "stereotype": "HL",
+          "count": 252,
+          "pct": 1.47
+        },
+        {
+          "state": "T--|C+++|>>",
+          "stereotype": "HH",
+          "count": 221,
+          "pct": 1.29
+        },
+        {
+          "state": "T+++|C---|>>",
+          "stereotype": "HH",
+          "count": 215,
+          "pct": 1.25
+        },
+        {
+          "state": "T++|C+++|>>",
+          "stereotype": "HL",
+          "count": 213,
+          "pct": 1.24
+        },
+        {
+          "state": "T---|C+++|>>",
+          "stereotype": "HL",
+          "count": 208,
+          "pct": 1.21
+        },
+        {
+          "state": "T+++|C++|>>",
+          "stereotype": "HL",
+          "count": 199,
+          "pct": 1.16
+        },
+        {
+          "state": "T++|C++|>>",
+          "stereotype": "HH",
+          "count": 192,
+          "pct": 1.12
+        }
+      ]
+    },
+    "zz75_min": {
+      "total_pivots": 17201,
+      "unique_states": 172,
+      "stereotype_distribution": {
+        "HL": 5797,
+        "LL": 9332,
+        "LH": 966,
+        "HH": 1106
+      },
+      "stereotype_P": {
+        "HL": 0.337,
+        "LL": 0.5425,
+        "LH": 0.0562,
+        "HH": 0.0643
+      },
+      "top_states": [
+        {
+          "state": "T---|C---|<<",
+          "count": 1346,
+          "pct": 7.83
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "count": 1003,
+          "pct": 5.83
+        },
+        {
+          "state": "T+++|C---|<<",
+          "count": 945,
+          "pct": 5.49
+        },
+        {
+          "state": "T+|C---|<<",
+          "count": 623,
+          "pct": 3.62
+        },
+        {
+          "state": "T--|C---|<<",
+          "count": 592,
+          "pct": 3.44
+        },
+        {
+          "state": "T++|C---|<<",
+          "count": 568,
+          "pct": 3.3
+        },
+        {
+          "state": "T+++|C+|<<",
+          "count": 557,
+          "pct": 3.24
+        },
+        {
+          "state": "T+++|C++|<<",
+          "count": 525,
+          "pct": 3.05
+        },
+        {
+          "state": "T+++|C--|<<",
+          "count": 525,
+          "pct": 3.05
+        },
+        {
+          "state": "T---|C---|<",
+          "count": 404,
+          "pct": 2.35
+        },
+        {
+          "state": "T+++|C-|<<",
+          "count": 397,
+          "pct": 2.31
+        },
+        {
+          "state": "T++|C--|<<",
+          "count": 370,
+          "pct": 2.15
+        },
+        {
+          "state": "T-|C---|<<",
+          "count": 367,
+          "pct": 2.13
+        },
+        {
+          "state": "T+|C--|<<",
+          "count": 352,
+          "pct": 2.05
+        },
+        {
+          "state": "T---|C+++|<<",
+          "count": 349,
+          "pct": 2.03
+        }
+      ],
+      "top_combos": [
+        {
+          "state": "T---|C---|<<",
+          "stereotype": "LL",
+          "count": 808,
+          "pct": 4.7
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "stereotype": "LL",
+          "count": 578,
+          "pct": 3.36
+        },
+        {
+          "state": "T+++|C---|<<",
+          "stereotype": "LL",
+          "count": 568,
+          "pct": 3.3
+        },
+        {
+          "state": "T---|C---|<<",
+          "stereotype": "HL",
+          "count": 430,
+          "pct": 2.5
+        },
+        {
+          "state": "T+|C---|<<",
+          "stereotype": "LL",
+          "count": 421,
+          "pct": 2.45
+        },
+        {
+          "state": "T--|C---|<<",
+          "stereotype": "LL",
+          "count": 376,
+          "pct": 2.19
+        },
+        {
+          "state": "T++|C---|<<",
+          "stereotype": "LL",
+          "count": 371,
+          "pct": 2.16
+        },
+        {
+          "state": "T+++|C+++|<<",
+          "stereotype": "HL",
+          "count": 346,
+          "pct": 2.01
+        },
+        {
+          "state": "T+++|C--|<<",
+          "stereotype": "LL",
+          "count": 325,
+          "pct": 1.89
+        },
+        {
+          "state": "T+++|C++|<<",
+          "stereotype": "LL",
+          "count": 312,
+          "pct": 1.81
+        },
+        {
+          "state": "T+++|C---|<<",
+          "stereotype": "HL",
+          "count": 309,
+          "pct": 1.8
+        },
+        {
+          "state": "T+++|C+|<<",
+          "stereotype": "LL",
+          "count": 308,
+          "pct": 1.79
+        },
+        {
+          "state": "T+++|C-|<<",
+          "stereotype": "LL",
+          "count": 242,
+          "pct": 1.41
+        },
+        {
+          "state": "T-|C---|<<",
+          "stereotype": "LL",
+          "count": 231,
+          "pct": 1.34
+        },
+        {
+          "state": "T+++|C+|<<",
+          "stereotype": "HL",
+          "count": 224,
+          "pct": 1.3
+        }
+      ]
+    }
+  }
+}

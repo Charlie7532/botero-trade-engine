@@ -119,19 +119,18 @@ def classify_vel_svw(vel: float) -> str:
 # Data loading
 # ═══════════════════════════════════════════════════════════════
 def get_universe(store):
-    """Get tickers that have both channel_snapshots and zigzag_points."""
+    """Get tickers that have channel_snapshots."""
     conn = store._conn()
     try:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT DISTINCT cs.ticker
-                FROM engine.channel_snapshots cs
-                JOIN engine.zigzag_points zz ON cs.ticker = zz.ticker
-                WHERE cs.wave_slope IS NOT NULL
-                  AND cs.vwap_sigma_current IS NOT NULL
-                  AND cs.sigma_current IS NOT NULL
-                  AND cs.vwap_sigma_wave IS NOT NULL
-                ORDER BY cs.ticker
+                SELECT DISTINCT ticker
+                FROM engine.channel_snapshots
+                WHERE wave_slope IS NOT NULL
+                  AND vwap_sigma_current IS NOT NULL
+                  AND sigma_current IS NOT NULL
+                  AND vwap_sigma_wave IS NOT NULL
+                ORDER BY ticker
             """)
             return [r[0] for r in cur.fetchall()]
     finally:
@@ -159,7 +158,6 @@ def load_ticker_data(store, ticker):
                   AND vwap_sigma_current IS NOT NULL
                   AND sigma_current IS NOT NULL
                   AND vwap_sigma_wave IS NOT NULL
-                  AND obs_vel_svw IS NOT NULL
                 ORDER BY timestamp
             """, (ticker,))
             snapshots = cur.fetchall()
@@ -285,8 +283,10 @@ def process_ticker(store, ticker):
 
     n_bars = len(snapshots)
 
-    # ── Use Kalman obs_vel_svw directly from DB (replaces EMA(5).diff()) ──
-    vel_svw = np.array([float(s[5]) for s in snapshots])
+    # ── Use Kalman obs_vel_svw directly from DB; fallback to EMA(5).diff() if None ──
+    svw_series = pd.Series([float(s[4]) for s in snapshots])
+    ema_diff = svw_series.ewm(span=5).mean().diff().fillna(0.0).values
+    vel_svw = np.array([float(s[5]) if s[5] is not None else float(ema_diff[i]) for i, s in enumerate(snapshots)])
 
     # ── Build causal stereotypes from 2.5% zigzag ──
     bar_stereo, pivot_events = build_causal_stereotypes(n_bars, st_pivots)

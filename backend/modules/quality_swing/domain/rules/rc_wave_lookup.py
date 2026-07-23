@@ -75,6 +75,15 @@ class WaveSignal:
     extreme_vel_modifier: float = 1.0   # 1.0=no modifier, 1.25=extreme down, 1.15=extreme up
     extreme_vel_tag: str = ""           # "VEL_EXTREME_DOWN" or "VEL_EXTREME_UP" or ""
 
+    # Hierarchy & Parent L2 Linkage (Rotation-grade nesting)
+    parent_l2_key: str = ""
+    lift_vs_parent_l2: float = 1.0
+    bayes_lift_bottom: float = 1.0
+
+    # Sector Breadth Context Modifier (S5_TH)
+    s5_th_modifier: float = 1.0         # 1.15=SECTOR_STRONG, 0.75=SECTOR_WEAK, 0.50=SECTOR_CRITICAL
+    s5_th_tag: str = ""                 # "SECTOR_STRONG", "SECTOR_WEAK", "SECTOR_CRITICAL"
+
     @property
     def is_bottom_signal(self) -> bool:
         """Signal indicates pivot bottom proximity."""
@@ -99,10 +108,13 @@ class WaveSignal:
     def bottom_conviction(self) -> float:
         """Cell-level conviction for bottom signals.
 
-        Scales by lift (predictive power) and clean% (reversal quality)
-        rather than a fixed cap.  Range: ~0.2-0.6 for actionable signals.
+        Scales by lift (predictive power), clean% (reversal quality),
+        Bayesian lift, and sector breadth modifier.
+        Range: ~0.2-0.65 for actionable signals.
         """
-        return min(0.6, self.lift_best_bottom * 0.15 + self.bot_pct_clean * 0.003)
+        base_lift = self.bayes_lift_bottom if self.bayes_lift_bottom > 0 else self.lift_best_bottom
+        raw_conv = min(0.6, base_lift * 0.15 + self.bot_pct_clean * 0.003)
+        return min(0.65, raw_conv * self.s5_th_modifier)
 
     @property
     def top_conviction(self) -> float:
@@ -199,14 +211,21 @@ def _load_wave() -> dict:
     return _WAVE
 
 
-def _make_result(state_key: str, state: dict,
-                 vel_modifier: float = 1.0, vel_tag: str = "") -> WaveSignal:
+def _make_result(
+    state_key: str,
+    state: dict,
+    vel_modifier: float = 1.0,
+    vel_tag: str = "",
+    s5_th_mod: float = 1.0,
+    s5_th_tag: str = "",
+) -> WaveSignal:
     """Convert a raw state dict into WaveSignal."""
     identity = state["identity"]
     frequency = state["frequency"]
     pivot = state["pivot_prediction"]
     composite = pivot["composite"]
     rq = state["reversal_quality"]
+    hierarchy = state.get("hierarchy", {})
 
     # Extract reversal quality safely (some cells may not have enough data)
     bot_rq = rq.get("bottom", {})
@@ -237,6 +256,11 @@ def _make_result(state_key: str, state: dict,
         top_avg_bars_to_turn=top_rq.get("avg_bars_to_turn", 0.0),
         extreme_vel_modifier=vel_modifier,
         extreme_vel_tag=vel_tag,
+        parent_l2_key=hierarchy.get("parent_l2_key", ""),
+        lift_vs_parent_l2=hierarchy.get("lift_vs_parent_l2", 1.0),
+        bayes_lift_bottom=hierarchy.get("bayes_lift_bottom", composite["lift_best_bottom"]),
+        s5_th_modifier=s5_th_mod,
+        s5_th_tag=s5_th_tag,
     )
 
 
@@ -249,6 +273,7 @@ def lookup_wave_signal(
     vwap_sigma_current: float,
     sigma_current: float,
     vel_svw: float,
+    s5_th: Optional[float] = None,
 ) -> Optional[WaveSignal]:
     """Look up the wave signal for a W×σVc×σc×vel state.
 
@@ -262,6 +287,7 @@ def lookup_wave_signal(
         vwap_sigma_current: σ position of VWAP in Current channel.
         sigma_current: σ position of price in Current channel.
         vel_svw: Velocity of σV_Wave (from Observer Kalman or EMA diff).
+        s5_th: Optional sector breadth S5_TH value (0-100) for context modulation.
 
     Returns:
         WaveSignal or None if state not found at any level.
@@ -290,23 +316,37 @@ def lookup_wave_signal(
         vel_modifier = 1.15
         vel_tag = "VEL_EXTREME_UP"
 
+    # Compute sector breadth modifier if s5_th is provided
+    s5_th_mod = 1.0
+    s5_th_tag = ""
+    if s5_th is not None:
+        if s5_th >= 60.0:
+            s5_th_mod = 1.15
+            s5_th_tag = "SECTOR_STRONG"
+        elif s5_th < 20.0:
+            s5_th_mod = 0.50
+            s5_th_tag = "SECTOR_CRITICAL"
+        elif s5_th < 40.0:
+            s5_th_mod = 0.75
+            s5_th_tag = "SECTOR_WEAK"
+
     # L1: Full resolution
     l1_key = f"L1:{w_bin}|σVc:{svc_bin}|σc:{sc_bin}|vel:{vel_bin}"
     state = states.get(l1_key)
     if state is not None:
-        return _make_result(l1_key, state, vel_modifier, vel_tag)
+        return _make_result(l1_key, state, vel_modifier, vel_tag, s5_th_mod, s5_th_tag)
 
     # L2: Drop vel dimension (30 states = W×σVc)
     l2_key = f"L2:{w_bin}|σVc:{svc_bin}"
     state = states.get(l2_key)
     if state is not None:
-        return _make_result(l2_key, state, vel_modifier, vel_tag)
+        return _make_result(l2_key, state, vel_modifier, vel_tag, s5_th_mod, s5_th_tag)
 
     # L3: Wave direction only (5 states)
     l3_key = f"L3:{w_bin}"
     state = states.get(l3_key)
     if state is not None:
-        return _make_result(l3_key, state, vel_modifier, vel_tag)
+        return _make_result(l3_key, state, vel_modifier, vel_tag, s5_th_mod, s5_th_tag)
 
     logger.debug(f"Wave state not found at any level: {l1_key}")
     return None

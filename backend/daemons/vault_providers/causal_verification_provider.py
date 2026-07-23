@@ -15,7 +15,7 @@ from typing import Dict, Any
 from backend.daemons.vault_providers import register_provider, VaultProvider
 from backend.daemons.data_vault_daemon import _already_vaulted_today
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-from backend.modules.shared.infrastructure.postgres_regime_state_adapter import PostgresRegimeStateAdapter
+from backend.modules.shared.infrastructure.postgres_regime_state import PostgresRegimeStateAdapter
 from backend.modules.causal_investigation import (
     CausalInputDTO,
     evaluate_causal_conviction,

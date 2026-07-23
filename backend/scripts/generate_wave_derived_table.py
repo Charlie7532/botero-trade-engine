@@ -366,6 +366,72 @@ def main():
     for key, cell in cells.items():
         states[key] = derive_state(key, cell, baselines, n_total_obs)
 
+    # ── Pass 2: Hierarchical L1->L2->L3 linkage & Empirical Bayes Shrinkage ──
+    for key, state in states.items():
+        if key.startswith("L1:"):
+            parsed = parse_key(key)
+            w = parsed.get("W", "")
+            svc = parsed.get("σVc", "")
+            l2_key = f"L2:{w}|σVc:{svc}"
+            l3_key = f"L3:σVc:{svc}"
+
+            l2_state = states.get(l2_key)
+            l3_state = states.get(l3_key) or states.get(f"L3:σVc:{svc}")
+
+            if l2_state:
+                l1_n = state["frequency"]["N"]
+                l1_p_bot = state["pivot_prediction"]["composite"]["p_any_bottom"]
+                l1_p_top = state["pivot_prediction"]["composite"]["p_any_top"]
+                l2_p_bot = l2_state["pivot_prediction"]["composite"]["p_any_bottom"]
+                l2_p_top = l2_state["pivot_prediction"]["composite"]["p_any_top"]
+
+                # Empirical Bayes shrinkage (k=20)
+                k_bayes = 20.0
+                p_bot_bayes = (l1_n * l1_p_bot + k_bayes * l2_p_bot) / (l1_n + k_bayes) if l1_n > 0 else l2_p_bot
+                bl_bot = baselines.get("zz25_min", {}).get("rate_pct", 10.34)
+                lift_bot_bayes = p_bot_bayes / bl_bot if bl_bot > 0 else 1.0
+
+                l2_lift_bot = l2_state["pivot_prediction"]["composite"]["lift_best_bottom"]
+                lift_vs_l2 = l1_p_bot / l2_p_bot if l2_p_bot > 0 else 1.0
+
+                state["hierarchy"] = {
+                    "parent_l2_key": l2_key,
+                    "parent_l3_key": l3_key,
+                    "l2_lift_best_bottom": round(l2_lift_bot, 2),
+                    "lift_vs_parent_l2": round(lift_vs_l2, 2),
+                    "bayes_p_bottom": round(p_bot_bayes, 2),
+                    "bayes_lift_bottom": round(lift_bot_bayes, 2),
+                }
+
+    # Compute Shannon Mutual Information I(State; Turn_zz25_min)
+    import math
+    def compute_mutual_info(level_prefix):
+        sub_states = {k: v for k, v in states.items() if k.startswith(level_prefix)}
+        total_n = sum(s["frequency"]["N"] for s in sub_states.values())
+        if not total_n:
+            return 0.0
+        bl_bot = baselines.get("zz25_min", {}).get("rate_pct", 10.34) / 100.0
+        mi = 0.0
+        for s in sub_states.values():
+            n_s = s["frequency"]["N"]
+            if not n_s:
+                continue
+            p_s = n_s / total_n
+            p_turn_given_s = s["pivot_prediction"]["composite"]["p_any_bottom"] / 100.0
+            p_no_turn_given_s = 1.0 - p_turn_given_s
+
+            # Term for (state, turn)
+            if p_turn_given_s > 0 and bl_bot > 0:
+                mi += p_s * p_turn_given_s * math.log2(p_turn_given_s / bl_bot)
+            # Term for (state, no_turn)
+            if p_no_turn_given_s > 0 and (1.0 - bl_bot) > 0:
+                mi += p_s * p_no_turn_given_s * math.log2(p_no_turn_given_s / (1.0 - bl_bot))
+        return round(mi, 4)
+
+    mi_l1 = compute_mutual_info("L1_full:") or compute_mutual_info("L1:")
+    mi_l2 = compute_mutual_info("L2_w_svc:") or compute_mutual_info("L2:")
+    mi_l3 = compute_mutual_info("L3_w:") or compute_mutual_info("L3:")
+
     # Compute global p_bull
     l1_states = {k: v for k, v in states.items() if cells[k]["level"] == "L1_full"}
     if l1_states:
@@ -392,6 +458,12 @@ def main():
             "what": "Wave pivot-prediction table for Swing Gate — complementary to Combined.",
             "approach": "Each cell answers: how likely is a zigzag pivot given this wave microstructure? And what reversal quality?",
             "dimensions": "W(6) × σVc(5) × σc(5) × vel_σVw(3) = 450 states",
+            "shannon_mutual_info": {
+                "L1_full": mi_l1,
+                "L2_w_svc": mi_l2,
+                "L3_w": mi_l3,
+                "note": "Bits of Mutual Information I(WaveState; NearBottom) per resolution level",
+            },
             "complementarity": "Combined: T×C trend + σVw position → P(bull). Wave: W cycle + σVc/σc position + σVw momentum → P(pivot).",
             "n_states": len(states),
             "n_observations": n_total_obs,

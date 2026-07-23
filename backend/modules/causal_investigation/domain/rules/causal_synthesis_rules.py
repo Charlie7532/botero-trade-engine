@@ -110,6 +110,33 @@ def synthesize_causal_decision(
     vvix_val = float(details.get("vvix_val", 85.0))
     vvix_vix_ratio = round(vvix_val / max(1.0, vix_val), 4)
 
+    # Calculate Certainty & Credibility Index
+    from backend.modules.causal_investigation.domain.rules.certainty_rules import compute_certainty_score
+    vec_scores = [
+        counter_veto.evidence_matrix.options_darkpool_score,
+        counter_veto.evidence_matrix.macro_liquidity_score,
+        counter_veto.evidence_matrix.insider_accumulation_score,
+        counter_veto.evidence_matrix.volume_reabsorption_score,
+        counter_veto.evidence_matrix.narrative_momentum_score,
+    ]
+    cert_score, cert_grade, cert_note, dept_cert = compute_certainty_score(
+        missing_vectors=missing,
+        data_age_hours=data_age_hours,
+        vector_scores=vec_scores,
+        notam_status=notam_status,
+    )
+
+    # Forecast Trajectory Snapshot
+    from backend.modules.causal_investigation.domain.rules.temporal_trajectory_rules import evaluate_temporal_trajectory
+    traj_snap = evaluate_temporal_trajectory(
+        symbol=symbol,
+        weinstein_stage_1m=structural_veto.stage.value,
+        s5_th_1w=float(details.get("s5_th", 50.0)),
+        vol_div_1d=float(details.get("vol_div", 0.0)),
+        sweeps_1h_count=int(details.get("uw_sweeps", 0)),
+        data_age_5m_mins=data_age_hours * 60.0,
+    )
+
     ticker_payload = NOTAMTickerPayload(
         symbol=symbol,
         as_of_timestamp=as_of_str,
@@ -128,6 +155,16 @@ def synthesize_causal_decision(
         vix_zscore=vix_z,
         cboe_pcr=float(details.get("cboe_pcr", 1.0)),
         fg_score=float(details.get("fg_score", 50.0)),
+        certainty_score=cert_score,
+        certainty_grade=cert_grade,
+        quality_certainty_score=dept_cert["quality_certainty_score"],
+        swing_certainty_score=dept_cert["swing_certainty_score"],
+        speculative_certainty_score=dept_cert["speculative_certainty_score"],
+        data_uncertainty_note=cert_note,
+        forecast_trajectory=traj_snap.trajectory_state.value,
+        forecast_win_rate_120d=traj_snap.win_rate_probability,
+        forecast_fwd_return_120d=traj_snap.forecast_fwd_return_120d,
+        forecast_horizon_days=120,
         options_flow_score=counter_veto.evidence_matrix.options_darkpool_score,
         macro_liquidity_score=counter_veto.evidence_matrix.macro_liquidity_score,
         insider_score=counter_veto.evidence_matrix.insider_accumulation_score,

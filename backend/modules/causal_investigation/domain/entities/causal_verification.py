@@ -56,12 +56,26 @@ class NOTAMTickerPayload:
     cboe_pcr: float                          # CBOE Put/Call Ratio
     fg_score: float                          # CNN Fear & Greed Index (0-100)
 
+    # Certainty & Credibility Index (Global + Department-Calibrated)
+    certainty_score: float = 100.0           # Overall calculated certainty (0.0% to 100.0%)
+    certainty_grade: str = "HIGH_CERTAINTY"  # HIGH_CERTAINTY, MODERATE_CERTAINTY, LOW_CERTAINTY, HIGH_UNCERTAINTY
+    quality_certainty_score: float = 100.0   # Calibrated for Quality Gate (Munger/Hohn: Macro, Insiders, Stage, Beneish)
+    swing_certainty_score: float = 100.0     # Calibrated for Quality Swing Gate (Druckenmiller: Vol Div, Breadth, Skew)
+    speculative_certainty_score: float = 100.0 # Calibrated for Speculative Gate (PTJ/Seykota: 5M PCR, Sweeps, Short float)
+    data_uncertainty_note: str = ""          # Explicit penalty & uncertainty notes
+
+    # Probabilistic Forecast Projections
+    forecast_trajectory: str = "NEUTRAL_MIXED"
+    forecast_win_rate_120d: float = 0.550
+    forecast_fwd_return_120d: float = 0.035
+    forecast_horizon_days: int = 120
+
     # 5-Vector Scores
-    options_flow_score: float
-    macro_liquidity_score: float
-    insider_score: float
-    volume_reabsorption_score: float
-    news_sentiment_score: float
+    options_flow_score: float = 0.5
+    macro_liquidity_score: float = 0.5
+    insider_score: float = 0.5
+    volume_reabsorption_score: float = 0.5
+    news_sentiment_score: float = 0.5
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)

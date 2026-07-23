@@ -98,6 +98,9 @@ class RotationScanner:
         # ── UW Sector Tide flow confirmation (Vault-First) ──
         self._enrich_with_sector_tide(signals)
 
+        # ── Causal NOTAM Forecast & Sector Leader Stock Selection (Vault-First) ──
+        self._enrich_with_causal_notam_forecast(signals)
+
         cycle_phase = self._detect_cycle_phase(asset_flows)
         dominant = self._detect_dominant_rotation(sector_flows, intl_flows)
 
@@ -674,6 +677,41 @@ class RotationScanner:
             store.close()
         except Exception as e:
             logger.debug(f"RotationScanner: UW sector_tide enrichment skipped: {e}")
+
+    def _enrich_with_causal_notam_forecast(self, signals: list) -> None:
+        """
+        Reads Causal NOTAM Forecast Snapshots from Vault and enriches RotationSignals with:
+          - causal_decision (ALLOW_ENTRY, CONTRA_VETO_CAUSAL, VETO_ESTRUCTURAL)
+          - forecast_trajectory & forecast_win_rate_120d
+          - forecast_fwd_return_120d & certainty_score
+          - recommended_leader stock selection from ROTATION_SECTOR_LEADERS (wishlists.py)
+        """
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            from backend.modules.shared.domain.constants.wishlists import ROTATION_SECTOR_LEADERS
+
+            store = TimescaleDataStore()
+
+            for signal in signals:
+                snap = store.load_mcp_latest("causal/verdict", signal.etf)
+                if snap and isinstance(snap, dict):
+                    signal.causal_decision = str(snap.get("decision", "UNKNOWN"))
+                    payload = snap.get("notam_ticker_payload", {})
+                    if payload and isinstance(payload, dict):
+                        signal.forecast_trajectory = str(payload.get("forecast_trajectory", "NEUTRAL_MIXED"))
+                        signal.forecast_win_rate_120d = float(payload.get("forecast_win_rate_120d", 0.550))
+                        signal.forecast_fwd_return_120d = float(payload.get("forecast_fwd_return_120d", 0.035))
+                        signal.certainty_score = float(payload.get("certainty_score", 100.0))
+
+                # If Sector ETF is in Stage 1/2 or Recovery with high win-rate, recommend the #1 constituent leader stock!
+                if signal.dimension == "sector" and signal.stage in (1, 2) and signal.forecast_win_rate_120d >= 0.75:
+                    leaders = ROTATION_SECTOR_LEADERS.get(signal.etf, [])
+                    if leaders:
+                        signal.recommended_leader = leaders[0]  # #1 Sector Leader (e.g. NVDA for XLK)
+
+            store.close()
+        except Exception as e:
+            logger.debug(f"RotationScanner: Causal NOTAM forecast enrichment skipped: {e}")
 
 
 def _avg_flow(flows: dict[str, float], names: list[str]) -> float:

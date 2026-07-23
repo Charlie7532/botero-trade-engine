@@ -107,3 +107,24 @@ def test_lookup_s5v_triad_signal_rom_deviation():
     assert sig.rel_bot_factor > 1.0  # Should boost bottom probability
     assert "Z_dev=" in sig.context_label  # v2.0 shows Z-Score, not raw pp
 
+
+def test_lookup_triad_signal_hierarchical_fallback():
+    """Verify that lookup_triad_signal falls back to R3, R2, or R1 prefix when state is sparse."""
+    # State: ">>|<<|>>|+" (unobserved/sparse in database)
+    sig = lookup_triad_signal(
+        th_val=98.0,      # th >>
+        fi_val=5.0,       # fi <<
+        tw_val=98.0,      # tw >>
+        sector_etf="XLK",
+        spy_fi_val=50.0,
+        tw_prev_val=90.0, # +
+    )
+    
+    assert sig.triad_key == ">>|<<|>>|+"
+    assert sig.dir_bin == "+"
+    # It must have resolved to a prefix fallback level (e.g. R3, R2 or R1) instead of baseline,
+    # because R1 (">>") always has plenty of observations.
+    assert any(x in sig.level for x in ["R3_", "R2_", "R1_"])
+    assert "baseline" not in sig.level
+
+

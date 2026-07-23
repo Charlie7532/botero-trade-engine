@@ -156,9 +156,20 @@ def lookup_triad_signal(
 
     triad_key = f"{th_bin}|{fi_bin}|{tw_bin}|{direction}"
 
-    # ── Step 2: Lookup cell with fallback L1 → L2 ──
-    cell = table["cells"].get(triad_key, {})
-    baseline = table["baselines"]["global"]
+    # ── Step 2: Lookup cell with prefix fallback (R4 -> R3 -> R2 -> R1) & tier fallback (L1 -> L2) ──
+    min_n_prefix = table.get("_metadata", {}).get(
+        "hierarchical_fallback", {}
+    ).get("min_n_prefix", 30)
+
+    resolution_options = [
+        (triad_key, "R4"),
+        (f"{th_bin}|{fi_bin}|{tw_bin}", "R3"),
+        (f"{th_bin}|{fi_bin}", "R2"),
+        (th_bin, "R1"),
+    ]
+
+    stats = None
+    level = "L2_baseline"
 
     # Determine L1 key
     if sector_etf == "SPY":
@@ -166,22 +177,33 @@ def lookup_triad_signal(
     else:
         l1_key = _ETF_TO_TIER_LABEL.get(sector_etf)
 
-    # Try L1 (tier/SPY), fallback to L2 (global)
-    stats = None
-    level = "L2_global"
+    baseline = table["baselines"]["global"]
 
-    if l1_key and l1_key in cell:
-        stats = cell[l1_key]
-        level = f"L1_{l1_key}"
+    for res_key, res_level in resolution_options:
+        cell = table["cells"].get(res_key, {})
+        if not cell:
+            continue
 
-    if stats is None and "global" in cell:
-        stats = cell["global"]
-        level = "L2_global"
+        # Try L1 (tier/SPY) first
+        if l1_key and l1_key in cell:
+            candidate = cell[l1_key]
+            if res_level == "R4" or candidate.get("n", 0) >= min_n_prefix:
+                stats = candidate
+                level = f"{res_level}_L1_{l1_key}"
+                break
+
+        # Try L2 (global)
+        if "global" in cell:
+            candidate = cell["global"]
+            if res_level == "R4" or candidate.get("n", 0) >= min_n_prefix:
+                stats = candidate
+                level = f"{res_level}_L2_global"
+                break
 
     if stats is None:
-        # State never observed — use baseline
         stats = baseline
-        level = "L2_baseline"
+        level = "R1_L2_baseline"
+
 
     # ── Step 3: Extract probabilities ──
     p_bot_25 = stats.get("P_bot_2_5", 0.0)
@@ -311,29 +333,54 @@ def lookup_s5v_triad_signal(
 
     triad_key = f"{th_bin}|{fi_bin}|{tw_bin}|{direction}"
 
-    # ── Step 2: Lookup cell with fallback L1 → L2 ──
-    cell = table["cells"].get(triad_key, {})
-    baseline = table["baselines"]["global"]
+    # ── Step 2: Lookup cell with prefix fallback (R4 -> R3 -> R2 -> R1) & tier fallback (L1 -> L2) ──
+    min_n_prefix = table.get("_metadata", {}).get(
+        "hierarchical_fallback", {}
+    ).get("min_n_prefix", 30)
 
+    resolution_options = [
+        (triad_key, "R4"),
+        (f"{th_bin}|{fi_bin}|{tw_bin}", "R3"),
+        (f"{th_bin}|{fi_bin}", "R2"),
+        (th_bin, "R1"),
+    ]
+
+    stats = None
+    level = "L2_baseline"
+
+    # Determine L1 key
     if sector_etf == "SPY":
         l1_key = "SPY"
     else:
         l1_key = _ETF_TO_TIER_LABEL.get(sector_etf)
 
-    stats = None
-    level = "L2_global"
+    baseline = table["baselines"]["global"]
 
-    if l1_key and l1_key in cell:
-        stats = cell[l1_key]
-        level = f"L1_{l1_key}"
+    for res_key, res_level in resolution_options:
+        cell = table["cells"].get(res_key, {})
+        if not cell:
+            continue
 
-    if stats is None and "global" in cell:
-        stats = cell["global"]
-        level = "L2_global"
+        # Try L1 (tier/SPY) first
+        if l1_key and l1_key in cell:
+            candidate = cell[l1_key]
+            if res_level == "R4" or candidate.get("n", 0) >= min_n_prefix:
+                stats = candidate
+                level = f"{res_level}_L1_{l1_key}"
+                break
+
+        # Try L2 (global)
+        if "global" in cell:
+            candidate = cell["global"]
+            if res_level == "R4" or candidate.get("n", 0) >= min_n_prefix:
+                stats = candidate
+                level = f"{res_level}_L2_global"
+                break
 
     if stats is None:
         stats = baseline
-        level = "L2_baseline"
+        level = "R1_L2_baseline"
+
 
     # ── Step 3: Extract probabilities ──
     p_bot_25 = stats.get("P_bot_2_5", 0.0)

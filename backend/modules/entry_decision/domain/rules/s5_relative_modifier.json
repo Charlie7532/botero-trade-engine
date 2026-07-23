@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-07-20T18:32:19.265415+00:00",
+  "generated_at": "2026-07-22T17:59:53.133385+00:00",
   "generated_by": "backend/scripts/train_s5_triad.py",
   "_metadata": {
     "purpose": "Modificador relativo para S5 Price Breadth. Mide la diferencia simple FI_sector - FI_spy (en puntos porcentuales). Si un sector tiene m\u00e1s stocks arriba de su MA50 que el SPY, se le da un boost al P_bot.",
@@ -36,48 +36,48 @@
   ],
   "bins": {
     "<<": {
-      "n": 3317,
-      "P_bot_2_5": 0.2885,
-      "P_top_2_5": 0.1547,
-      "P_bot_5_0": 0.1396,
+      "n": 3319,
+      "P_bot_2_5": 0.2883,
+      "P_top_2_5": 0.1546,
+      "P_bot_5_0": 0.1395,
       "P_top_5_0": 0.044,
-      "P_bot_7_5": 0.0805,
+      "P_bot_7_5": 0.0804,
       "P_top_7_5": 0.0136,
-      "bot_factor": 1.918,
-      "top_factor": 0.602
+      "bot_factor": 1.916,
+      "top_factor": 0.601
     },
     "<": {
-      "n": 13739,
-      "P_bot_2_5": 0.2317,
-      "P_top_2_5": 0.1604,
-      "P_bot_5_0": 0.1088,
-      "P_top_5_0": 0.0477,
+      "n": 13750,
+      "P_bot_2_5": 0.2319,
+      "P_top_2_5": 0.1606,
+      "P_bot_5_0": 0.1087,
+      "P_top_5_0": 0.0478,
       "P_bot_7_5": 0.0592,
       "P_top_7_5": 0.0179,
-      "bot_factor": 1.495,
+      "bot_factor": 1.493,
       "top_factor": 0.653
     },
     "~": {
-      "n": 33120,
-      "P_bot_2_5": 0.1796,
+      "n": 33133,
+      "P_bot_2_5": 0.1795,
       "P_top_2_5": 0.1894,
-      "P_bot_5_0": 0.0731,
+      "P_bot_5_0": 0.073,
       "P_top_5_0": 0.0801,
-      "P_bot_7_5": 0.0396,
-      "P_top_7_5": 0.0424,
-      "bot_factor": 1.004,
-      "top_factor": 1.096
+      "P_bot_7_5": 0.0395,
+      "P_top_7_5": 0.0425,
+      "bot_factor": 1.003,
+      "top_factor": 1.094
     },
     ">": {
-      "n": 14339,
-      "P_bot_2_5": 0.1406,
-      "P_top_2_5": 0.2073,
+      "n": 14346,
+      "P_bot_2_5": 0.1405,
+      "P_top_2_5": 0.2072,
       "P_bot_5_0": 0.0384,
       "P_top_5_0": 0.0921,
       "P_bot_7_5": 0.0135,
-      "P_top_7_5": 0.0538,
+      "P_top_7_5": 0.0537,
       "bot_factor": 0.527,
-      "top_factor": 1.26
+      "top_factor": 1.258
     },
     ">>": {
       "n": 2598,
@@ -88,7 +88,7 @@
       "P_bot_7_5": 0.0131,
       "P_top_7_5": 0.0631,
       "bot_factor": 0.497,
-      "top_factor": 1.438
+      "top_factor": 1.436
     }
   }
 }

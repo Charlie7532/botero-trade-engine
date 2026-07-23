@@ -32,9 +32,49 @@ class QualityEntryGate:
     V26: 50% SPY + 50% sectores en RECUPERACION (+8.84 acc).
     """
 
+    # Constantes de clasificación para el anidamiento conjunto S5xSV5
+    S5_EDGES = {
+        "TH": [27.6, 54.8, 82.8, 93.5],
+        "FI": [20.0, 46.7, 76.9, 90.4],
+        "TW": [16.7, 41.9, 75.0, 90.0]
+    }
+    SV5_EDGES = {
+        "TH": [17.5, 32.5, 60.5, 81.2],
+        "FI": [19.0, 33.3, 59.3, 77.8],
+        "TW": [15.8, 30.2, 55.3, 75.0]
+    }
+    LABELS = ["<<", "<", "~", ">", ">>"]
+
+    # Estados de distribución optimizados (Subset 2: dirección '+')
+    TOP_DISTRIBUTION_STATES = {
+        "<<|<<|~|>>|>>|<|+",
+        "<<|<<|<<|>>|>>|>>|+",
+        "<<|<<|~|>>|>>|<<|+",
+        "<<|<<|<<|>>|>>|>|+",
+        ">>|>|>|<<|~|~|+",
+        "<<|~|~|~|>|~|+",
+        "<<|<<|<<|>|>>|>>|+"
+    }
+
     def __init__(self, min_regime_days: int = 20):
         self.min_regime_days = min_regime_days
         self.inv_fi_streak = 0
+        self.prev_tw = None
+
+    def _classify_bin(self, v: float, edges: list[float]) -> str:
+        for idx, e in enumerate(edges):
+            if v < e: return self.LABELS[idx]
+        return self.LABELS[-1]
+
+    def _get_spy_joint_state(self, th: float, fi: float, tw: float, tw_prev: float, v_th: float, v_fi: float, v_tw: float) -> str:
+        s5_th_b = self._classify_bin(th, self.S5_EDGES["TH"])
+        s5_fi_b = self._classify_bin(fi, self.S5_EDGES["FI"])
+        s5_tw_b = self._classify_bin(tw, self.S5_EDGES["TW"])
+        dir_b = "+" if tw > tw_prev else "-"
+        sv5_th_b = self._classify_bin(v_th, self.SV5_EDGES["TH"])
+        sv5_fi_b = self._classify_bin(v_fi, self.SV5_EDGES["FI"])
+        sv5_tw_b = self._classify_bin(v_tw, self.SV5_EDGES["TW"])
+        return f"{s5_th_b}|{s5_fi_b}|{s5_tw_b}|{sv5_th_b}|{sv5_fi_b}|{sv5_tw_b}|{dir_b}"
 
     def evaluate_regime(
         self,
@@ -50,9 +90,11 @@ class QualityEntryGate:
         fi_velocity: float = 0.0,
         current_mode: str = "NORMAL",
         days_in_mode: int = 25,
+        tw_prev: Optional[float] = None,
     ) -> str:
         """
-        Clasifica el modo de mercado usando las 2 Antenas Pre-Evento de V20.
+        Clasifica el modo de mercado usando las 2 Antenas Pre-Evento de V20
+        y disparadores híbridos de tríadas S5xSV5 de V27.
         """
         n_dead = sum(1 for v in sec_th.values() if v < 25.0)
         can_switch = days_in_mode >= self.min_regime_days
@@ -64,7 +106,15 @@ class QualityEntryGate:
         else:
             self.inv_fi_streak = 0
             
-        is_pre_crash_distribution = (self.inv_fi_streak >= 10)
+        # Calcular dirección del SPY de forma interna y robusta para retrocompatibilidad
+        if tw_prev is None:
+            tw_prev = self.prev_tw if self.prev_tw is not None else tw
+        self.prev_tw = tw
+        
+        # Disparador híbrido basado en estados conjuntos de SPY
+        spy_joint = self._get_spy_joint_state(th, fi, tw, tw_prev, v_th, v_fi, v_tw)
+        is_pre_crash_distribution = (self.inv_fi_streak >= 10) or (spy_joint in self.TOP_DISTRIBUTION_STATES)
+        
         is_falling_knife = (fi_velocity >= 5.0 or (fi < 30.0 and tw < 15.0 and th > 35.0))
         
         is_bullish_reabsorption = (th >= 60.0 and fi <= 45.0 and v_tw >= 60.0)
@@ -99,6 +149,9 @@ class QualityEntryGate:
         elif current_mode == "DISTRIBUCION_PRE_CRASH":
             if th < 30.0 and fi < 25.0 and tw < 20.0:
                 new_mode = "CRASH_SISTEMICO"
+            elif is_bullish_reabsorption:
+                # Desbloqueo inmediato: transición a compra si se detecta re-absorción
+                new_mode = "RE_ACUMULACION_ALCISTA"
             elif not is_pre_crash_distribution and can_switch and th > 50.0:
                 new_mode = "MERCADO_SANO"
 

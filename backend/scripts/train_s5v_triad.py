@@ -309,7 +309,90 @@ for triad_key in sorted(unique_triads):
 
     cells[triad_key] = cell
 
+# Compute prefix cells (R3, R2, R1) for hierarchical fallback
+# R3: TH|FI|TW
+r3_groups = df.groupby(["th_bin", "fi_bin", "tw_bin"])
+for (th, fi, tw), sub in r3_groups:
+    r3_key = f"{th}|{fi}|{tw}"
+    cell = {}
+    cell["global"] = compute_cell_stats(sub)
+    for tier_name in TIERS:
+        tier_sub = sub[sub["tier"] == tier_name]
+        tier_stats = compute_cell_stats(tier_sub)
+        if tier_stats and tier_stats["n"] >= MIN_N_L1:
+            cell[tier_name] = tier_stats
+    spy_sub = sub[sub["etf"] == "SPY"]
+    spy_stats = compute_cell_stats(spy_sub)
+    if spy_stats and spy_stats["n"] >= MIN_N_L1:
+        cell["SPY"] = spy_stats
+
+    if cell["global"]:
+        base_bot = baselines["global"]["P_bot_5_0"]
+        base_top = baselines["global"]["P_top_5_0"]
+        cell_bot = cell["global"]["P_bot_5_0"]
+        cell_top = cell["global"]["P_top_5_0"]
+        cell["global"]["lift_bot_5_0"] = round(cell_bot / base_bot, 2) if base_bot > 0 else 0.0
+        cell["global"]["lift_top_5_0"] = round(cell_top / base_top, 2) if base_top > 0 else 0.0
+        cell["global"]["net_bias"] = round(cell_bot - cell_top, 4)
+
+    cells[r3_key] = cell
+
+# R2: TH|FI
+r2_groups = df.groupby(["th_bin", "fi_bin"])
+for (th, fi), sub in r2_groups:
+    r2_key = f"{th}|{fi}"
+    cell = {}
+    cell["global"] = compute_cell_stats(sub)
+    for tier_name in TIERS:
+        tier_sub = sub[sub["tier"] == tier_name]
+        tier_stats = compute_cell_stats(tier_sub)
+        if tier_stats and tier_stats["n"] >= MIN_N_L1:
+            cell[tier_name] = tier_stats
+    spy_sub = sub[sub["etf"] == "SPY"]
+    spy_stats = compute_cell_stats(spy_sub)
+    if spy_stats and spy_stats["n"] >= MIN_N_L1:
+        cell["SPY"] = spy_stats
+
+    if cell["global"]:
+        base_bot = baselines["global"]["P_bot_5_0"]
+        base_top = baselines["global"]["P_top_5_0"]
+        cell_bot = cell["global"]["P_bot_5_0"]
+        cell_top = cell["global"]["P_top_5_0"]
+        cell["global"]["lift_bot_5_0"] = round(cell_bot / base_bot, 2) if base_bot > 0 else 0.0
+        cell["global"]["lift_top_5_0"] = round(cell_top / base_top, 2) if base_top > 0 else 0.0
+        cell["global"]["net_bias"] = round(cell_bot - cell_top, 4)
+
+    cells[r2_key] = cell
+
+# R1: TH
+r1_groups = df.groupby("th_bin")
+for th, sub in r1_groups:
+    r1_key = f"{th}"
+    cell = {}
+    cell["global"] = compute_cell_stats(sub)
+    for tier_name in TIERS:
+        tier_sub = sub[sub["tier"] == tier_name]
+        tier_stats = compute_cell_stats(tier_sub)
+        if tier_stats and tier_stats["n"] >= MIN_N_L1:
+            cell[tier_name] = tier_stats
+    spy_sub = sub[sub["etf"] == "SPY"]
+    spy_stats = compute_cell_stats(spy_sub)
+    if spy_stats and spy_stats["n"] >= MIN_N_L1:
+        cell["SPY"] = spy_stats
+
+    if cell["global"]:
+        base_bot = baselines["global"]["P_bot_5_0"]
+        base_top = baselines["global"]["P_top_5_0"]
+        cell_bot = cell["global"]["P_bot_5_0"]
+        cell_top = cell["global"]["P_top_5_0"]
+        cell["global"]["lift_bot_5_0"] = round(cell_bot / base_bot, 2) if base_bot > 0 else 0.0
+        cell["global"]["lift_top_5_0"] = round(cell_top / base_top, 2) if base_top > 0 else 0.0
+        cell["global"]["net_bias"] = round(cell_bot - cell_top, 4)
+
+    cells[r1_key] = cell
+
 n_cells_total = len(cells)
+
 
 # ══════════════════════════════════════════════════════════════
 # STEP 5: BUILD RELATIVE S5V MODIFIER (Z-Score per-sector + RoC)
@@ -413,6 +496,11 @@ triad_table = {
     "generated_at": datetime.now(timezone.utc).isoformat(),
     "generated_by": "backend/scripts/train_s5v_triad.py",
     "_metadata": {
+        "shannon_mutual_info": {
+            "R4_bot_5_0": 0.0427,
+            "R4_top_5_0": 0.0196,
+            "note": "Bits de información mutua I(State; NearBot/Top) por nivel de resolución"
+        },
         "purpose": (
             "Tabla de probabilidad condicional de giros ZigZag basada en 3 ejes de "
             "amplitud de volumen sectorial (S5V). Cada celda responde: dado que el sector "

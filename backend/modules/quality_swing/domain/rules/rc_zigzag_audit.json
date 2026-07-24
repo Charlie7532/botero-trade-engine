@@ -1,7 +1,7 @@
 {
   "version": "v1_audit_2026-07-23",
   "description": "For every zigzag pivot: what RC state (T\u00d7C\u00d7\u03c3Vw) + stereotype was present?",
-  "n_tickers": 551,
+  "n_tickers": 561,
   "n_total_pivots": 255614,
   "groups": {
     "zz25_max": {

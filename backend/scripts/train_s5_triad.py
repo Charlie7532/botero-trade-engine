@@ -225,6 +225,7 @@ TIERS = {
     "Defensive": ["XLP", "XLV", "XLU", "XLRE", "XLB"],
     "Mixed": ["XLE", "XLF", "XLC"],
     "Cyclical": ["XLK", "XLY", "XLI"],
+    "High-Beta": ["QQQ"],
 }
 ETF_TO_TIER = {}
 for tier_name, etfs in TIERS.items():
@@ -328,7 +329,10 @@ entities["SPY"] = spy_merged
 print(f"  SPY: {len(spy_merged)} bars")
 
 # Load sectors
-for etf, sector_name in SECTOR_ETFS.items():
+sector_dict = dict(SECTOR_ETFS)
+sector_dict["QQQ"] = "Nasdaq 100"
+
+for etf, sector_name in sector_dict.items():
     tickers = SECTOR_BREADTH_TICKERS.get(etf)
     if not tickers:
         continue
@@ -692,6 +696,16 @@ triad_table = {
         "zigzag_thresholds": ZZ_THRESHOLDS,
         "min_n_l1": MIN_N_L1,
         "bin_percentiles": BIN_PERCENTILES,
+    },
+    "_pipeline_prerequisites": {
+        "step_1_vault_ingestion": "python3 backend/scripts/populate_qqq_constituents.py",
+        "step_2_sector_breadth": "python3 backend/scripts/backfill_sector_breadth.py",
+        "step_3_volume_breadth": "python3 backend/scripts/fast_backfill_sv5.py",
+        "step_4_qqq_indicators": "python3 backend/scripts/generate_s5_qqq_indicators.py",
+        "step_5_feature_lake_snapshots": "python3 backend/scripts/backfill_channel_snapshots_v2.py",
+        "step_6_triad_training": "python3 backend/scripts/train_s5v_triad.py && python3 backend/scripts/train_s5_triad.py",
+        "master_orchestrator": "python3 backend/scripts/master_retrain_pipeline.py",
+        "validation_suite": "PYTHONPATH=. pytest"
     },
     "bin_edges": {k: [round(v, 2) for v in vals] for k, vals in bin_edges.items()},
     "bin_labels": BIN_LABELS,

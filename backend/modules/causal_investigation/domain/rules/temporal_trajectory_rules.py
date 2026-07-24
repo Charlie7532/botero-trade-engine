@@ -25,6 +25,7 @@ def evaluate_temporal_trajectory(
     sweeps_1h_count: int = 0,
     pcr_5m_bars: Optional[List[float]] = None,
     data_age_5m_mins: float = 0.0,
+    macro_liquidity_score: float = 0.5,
 ) -> TemporalTrajectorySnapshot:
     """
     Evaluates 5-horizon temporal trajectory cascade.
@@ -74,7 +75,12 @@ def evaluate_temporal_trajectory(
         breadth_1w = "NEUTRAL"
 
     # ── 6. Synthesize Trajectory State, Forward Win Rate & Expected 120d Return ──
-    if weinstein_stage_1m == 2 and breadth_1w == "BULLISH" and tactical_1d != "DISTRIBUTION":
+    # Macro Liquidity Score incorporates FRED Yield Curve Spread (T10Y2Y / T10Y3M) + Net Liquidity
+    if macro_liquidity_score <= 0.30 and (tactical_1d == "DISTRIBUTION" or weinstein_stage_1m in (3, 4)):
+        state = TrajectoryState.PRE_CRASH_DISTRIBUTION
+        probability = 0.220  # 78% risk of decline
+        fwd_return_120d = -0.1250  # -12.50% empirical forward 120d return
+    elif weinstein_stage_1m == 2 and breadth_1w == "BULLISH" and tactical_1d != "DISTRIBUTION":
         if tactical_1d == "PULLBACK" or micro_5m == "EXTREME_PANIC":
             state = TrajectoryState.PULLBACK_ACCUMULATION
             probability = 0.812

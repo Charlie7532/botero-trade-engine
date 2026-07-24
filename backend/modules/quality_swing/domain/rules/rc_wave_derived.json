@@ -14,7 +14,7 @@
     "complementarity": "Combined: T\u00d7C trend + \u03c3Vw position \u2192 P(bull). Wave: W cycle + \u03c3Vc/\u03c3c position + \u03c3Vw momentum \u2192 P(pivot).",
     "n_states": 479,
     "n_observations": 759095,
-    "n_tickers": 552,
+    "n_tickers": 562,
     "global_p_bull": 53.71
   },
   "baselines": {

@@ -632,7 +632,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                        WHERE b.timeframe = '1d'
                          AND b.time >= NOW() - INTERVAL '%s days'
                          AND m.asset_type = 'STOCK'
-                         AND 'SP500' = ANY(m.index_membership)
+                         AND ('SP500' = ANY(m.index_membership) OR 'QQQ' = ANY(m.index_membership))
                          AND m.sector IS NOT NULL
                        ORDER BY b.ticker, b.time""",
                     (days,),

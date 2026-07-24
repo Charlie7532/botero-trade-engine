@@ -92,7 +92,7 @@ ALL_ETFS = {**SECTOR_ETFS, **INTERNATIONAL_ETFS, **ASSET_CLASS_ETFS}
 
 # ETF prefix extraction: XLK→XLK, XLRE→XLRE (no truncation)
 SECTOR_BREADTH_TICKERS: dict[str, dict[str, str]] = {}
-for _etf in SECTOR_ETFS:
+for _etf in list(SECTOR_ETFS.keys()) + ["QQQ"]:
     SECTOR_BREADTH_TICKERS[_etf] = {
         "structural": f"S5_{_etf}_TH",
         "intermediate": f"S5_{_etf}_FI",

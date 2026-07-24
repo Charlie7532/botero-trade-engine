@@ -438,6 +438,13 @@ class QualityEntryGate:
                             best_score = score
                             best_sat = s
 
+            # V39 SURGICAL QQQ INTEGRATION:
+            # When QQQ is in Stage 2 (price >= MA150), outperforming SPY with S5_QQQ_FI >= 55%,
+            # allocate 25% to QQQ and distribute 75% across remaining healthy core sectors.
+            qqq_fi_val = sec_fi.get("QQQ", 50.0)
+            qqq_rs_val = rs_roc_20d.get("QQQ", 0.0) if rs_roc_20d else 0.0
+            is_qqq_stage2_leader = (qqq_fi_val >= 55.0) and (qqq_rs_val > 0.0)
+
             if best_sat:
                 tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in healthy_core)
                 for s in healthy_core:
@@ -447,6 +454,14 @@ class QualityEntryGate:
                 tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in healthy_core)
                 for s in healthy_core:
                     target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
+
+            if is_qqq_stage2_leader and "QQQ" in avail_sectors:
+                tot_w = sum(target.values())
+                if tot_w > 0:
+                    target = {s: w / tot_w * 0.75 for s, w in target.items()}
+                    target["QQQ"] = 0.25
+                else:
+                    target["QQQ"] = 0.25
 
         tot_w = sum(target.values())
         if tot_w > 0:

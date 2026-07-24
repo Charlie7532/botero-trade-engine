@@ -53,7 +53,7 @@ def main():
         JOIN market.ticker_metadata m ON b.ticker = m.ticker
         WHERE b.timeframe = '1d'
           AND m.asset_type = 'STOCK'
-          AND 'SP500' = ANY(m.index_membership)
+          AND ('SP500' = ANY(m.index_membership) OR 'QQQ' = ANY(m.index_membership))
           AND m.sector IS NOT NULL
         ORDER BY b.ticker, b.time
     """)

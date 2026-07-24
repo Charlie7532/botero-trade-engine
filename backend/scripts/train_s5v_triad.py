@@ -41,6 +41,8 @@ TIERS = {
     "Defensive": ["XLP", "XLV", "XLU", "XLRE", "XLB"],
     "Mixed": ["XLE", "XLF", "XLC"],
     "Cyclical": ["XLK", "XLY", "XLI"],
+    "High-Beta": ["QQQ"],
+    "Broad": ["SPY"],
 }
 ETF_TO_TIER = {}
 for tier_name, etfs in TIERS.items():
@@ -48,13 +50,18 @@ for tier_name, etfs in TIERS.items():
         ETF_TO_TIER[etf] = tier_name
 
 # Mapping for sector volume breadth tickers in Vault
-# format: SV5_{ETF}_TH, SV5_{ETF}_FI, SV5_{ETF}_TW (Canonical Convención B)
 def get_s5v_tickers(etf: str) -> dict:
     if etf == "SPY":
         return {
             "structural": "SV5TH",
             "intermediate": "SV5FI",
             "tactical": "SV5TW"
+        }
+    elif etf == "QQQ":
+        return {
+            "structural": "SV5_QQQ_TH",
+            "intermediate": "SV5_QQQ_FI",
+            "tactical": "SV5_QQQ_TW"
         }
     return {
         "structural": f"SV5_{etf}_TH",
@@ -149,10 +156,9 @@ spy_tw = store.load_bars(spy_tickers["tactical"], "1d")["close"].astype(float).r
 spy_price = store.load_bars("SPY", "1d")["close"].astype(float).rename("etf_close")
 
 spy_merged = pd.concat([spy_th, spy_fi, spy_tw, spy_price], axis=1, join="inner").dropna()
-entities["SPY"] = spy_merged
-print(f"  SPY: {len(spy_merged)} bars")
+spy_fi_series = spy_merged["fi"]
 
-for etf in SECTOR_ETFS.keys():
+for etf in ["SPY", "QQQ"] + list(SECTOR_ETFS.keys()):
     tickers = get_s5v_tickers(etf)
     th = store.load_bars(tickers["structural"], "1d")["close"].astype(float).rename("th")
     fi = store.load_bars(tickers["intermediate"], "1d")["close"].astype(float).rename("fi")
@@ -210,7 +216,6 @@ for etf, merged in entities.items():
         zz_flags[f"near_bot_{pct}"] = near_bot
         zz_flags[f"near_top_{pct}"] = near_top
 
-    # Relative volume breadth modifier: Pure RoM (Rest of Market) Subtraction
     SECTOR_WEIGHTS = {
         "XLK": 65 / 500,
         "XLF": 72 / 500,
@@ -223,14 +228,19 @@ for etf, merged in entities.items():
         "XLB": 28 / 500,
         "XLRE": 31 / 500,
         "XLC": 23 / 500,
+        "QQQ": 98 / 500,
+        "SPY": 500 / 500,
     }
-    if etf != "SPY" and etf in SECTOR_WEIGHTS:
+    if etf in SECTOR_WEIGHTS:
         w = SECTOR_WEIGHTS[etf]
         spy_fi_aligned = spy_fi_series.reindex(merged.index, method="ffill")
-        # Rest of Market breadth = (SPY_breadth - w * Sector_breadth) / (1 - w)
-        rom_fi = (spy_fi_aligned - w * merged["fi"]) / (1.0 - w)
-        # Deviation = Sector_breadth - RoM_breadth
-        rel_fi = merged["fi"] - rom_fi
+        if etf == "SPY":
+            rel_fi = pd.Series(0.0, index=merged.index)
+        elif etf == "QQQ":
+            rel_fi = merged["fi"] - spy_fi_aligned
+        else:
+            rom_fi = (spy_fi_aligned - w * merged["fi"]) / (1.0 - w)
+            rel_fi = merged["fi"] - rom_fi
     else:
         rel_fi = pd.Series(0.0, index=merged.index)
 
@@ -400,7 +410,7 @@ n_cells_total = len(cells)
 print("\nStep 5: Building Z-Score relative S5V modifier...")
 
 # ── 5a: Compute per-sector deviation statistics for Z-Score normalization ──
-sector_df = df[df["etf"] != "SPY"].copy()
+sector_df = df.copy()
 
 sector_params = {}
 for etf in sector_df["etf"].unique():
@@ -571,6 +581,16 @@ triad_table = {
         "zigzag_thresholds": ZZ_THRESHOLDS,
         "min_n_l1": MIN_N_L1,
         "bin_percentiles": BIN_PERCENTILES,
+    },
+    "_pipeline_prerequisites": {
+        "step_1_vault_ingestion": "python3 backend/scripts/populate_qqq_constituents.py",
+        "step_2_sector_breadth": "python3 backend/scripts/backfill_sector_breadth.py",
+        "step_3_volume_breadth": "python3 backend/scripts/fast_backfill_sv5.py",
+        "step_4_qqq_indicators": "python3 backend/scripts/generate_s5_qqq_indicators.py",
+        "step_5_feature_lake_snapshots": "python3 backend/scripts/backfill_channel_snapshots_v2.py",
+        "step_6_triad_training": "python3 backend/scripts/train_s5v_triad.py && python3 backend/scripts/train_s5_triad.py",
+        "master_orchestrator": "python3 backend/scripts/master_retrain_pipeline.py",
+        "validation_suite": "PYTHONPATH=. pytest"
     },
     "bin_edges": {k: [round(v, 2) for v in vals] for k, vals in bin_edges.items()},
     "bin_labels": BIN_LABELS,

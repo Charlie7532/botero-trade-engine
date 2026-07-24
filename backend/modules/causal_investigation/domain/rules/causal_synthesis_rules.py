@@ -135,6 +135,7 @@ def synthesize_causal_decision(
         vol_div_1d=float(details.get("vol_div", 0.0)),
         sweeps_1h_count=int(details.get("uw_sweeps", 0)),
         data_age_5m_mins=data_age_hours * 60.0,
+        macro_liquidity_score=counter_veto.evidence_matrix.macro_liquidity_score,
     )
 
     ticker_payload = NOTAMTickerPayload(

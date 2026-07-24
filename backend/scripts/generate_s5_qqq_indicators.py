@@ -95,7 +95,7 @@ def main():
         'SV5_QQQ_FI': sv5_qqq_fi,
         'SV5_QQQ_TW': sv5_qqq_tw,
         'n_constituents': valid_count
-    }).loc['1999-01-01':]
+    }).loc[datetime.strptime('1999-01-01', '%Y-%m-%d').date():]
     
     logging.info(f"Generated {len(s5_df)} daily indicator rows from {s5_df.index.min()} to {s5_df.index.max()}.")
     

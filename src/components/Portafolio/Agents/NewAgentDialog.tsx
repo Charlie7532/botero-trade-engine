@@ -48,6 +48,8 @@ const EXECUTION_OPTIONS: { value: ExecutionType; label: string; description: str
 ]
 
 const QUALITY_STRATEGIES: { value: StrategyType; label: string }[] = [
+  { value: 'quality_core', label: 'Quality · Core (Tollkeeper)' },
+  { value: 'quality_swing', label: 'Quality · Swing (Druckenmiller)' },
   { value: 'quality_value', label: 'Quality · Value' },
   { value: 'quality_growth', label: 'Quality · Growth' },
   { value: 'quality_dividend', label: 'Quality · Dividend' },

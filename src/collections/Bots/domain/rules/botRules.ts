@@ -15,11 +15,13 @@ export const BOT_STATUSES = [
 export type BotStatus = 'active' | 'paused' | 'stopped' | 'error'
 
 export const STRATEGY_TYPES = [
-  // Quality Department (Hohn & Munger — Dynamic Allocation)
+  // Quality Department (Hohn, Munger & Druckenmiller — Dynamic Allocation)
+  { label: 'Quality: Core (Tollkeeper)', value: 'quality_core' },
+  { label: 'Quality: Swing (Druckenmiller)', value: 'quality_swing' },
   { label: 'Quality: Value', value: 'quality_value' },
   { label: 'Quality: Growth', value: 'quality_growth' },
   { label: 'Quality: Dividend', value: 'quality_dividend' },
-  // Speculative Department (Eifert & PTJ — Dynamic Allocation)
+  // Speculative Department (Eifert, PTJ & Seykota — Dynamic Allocation)
   { label: 'Speculative: Momentum', value: 'speculative_momentum' },
   { label: 'Speculative: Gamma', value: 'speculative_gamma' },
   { label: 'Speculative: Breakout', value: 'speculative_breakout' },
@@ -34,6 +36,8 @@ export const STRATEGY_TYPES = [
 ] as const
 
 export type StrategyType =
+  | 'quality_core'
+  | 'quality_swing'
   | 'quality_value'
   | 'quality_growth'
   | 'quality_dividend'
@@ -46,6 +50,13 @@ export type StrategyType =
   | 'mean_reversion'
   | 'trend_following'
   | 'custom'
+
+// Hierarchical Signal Architecture (HSA) Level Prefixes
+export const HSA_SIGNAL_PREFIXES = {
+  MARKET: 'MKT_',
+  SECTOR: 'SEC_',
+  ASSET: 'AST_',
+} as const
 
 export const CLAUDE_MODELS = [
   { label: 'Claude Opus 4.7', value: 'claude-opus-4-7' },

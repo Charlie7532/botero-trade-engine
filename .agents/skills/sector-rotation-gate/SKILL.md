@@ -54,20 +54,20 @@ V26 Recovery SPY    → 381.98 acciones (+281.98)
 | `n_dead` | Derived | Count of sectors with S5_TH < 25% |
 | `inv_fi_streak` | Derived | Consecutive days where S5_FI - SV5_FI < -5pp |
 
-### Regime Classification Rules
+### Regime Classification Rules (Homologated [SEC_] Identifiers)
 
-| # | Regime | Entry Condition | Priority |
-|:-:|:---|:---|:-:|
-| 1 | CRASH_SISTEMICO | TH<30 AND FI<25 AND TW<20 AND n_dead>=5 | 1 (highest) |
-| 2 | CAPITULACION_SECTORIAL | TH<30 AND FI<25 AND TW<20 AND n_dead<5 | 1 |
-| 3 | DISTRIBUCION_PRE_CRASH | inv_fi_streak >= 10 | 2 |
-| 4 | PISO_GENERACIONAL | TH<=25 AND SV5_TW>=60 (volume capitulation) | 3 |
-| 5 | RE_ACUMULACION_ALCISTA | TH>=60 AND FI<=45 AND SV5_TW>=60 | 4 |
-| 6 | BEAR_RALLY | TH<35 AND FI<30 AND TW>40 | 6 |
-| 7 | PULLBACK_ALCISTA | TH>40 AND FI>40 AND TW<30 (+ can_switch) | 7 |
-| 8 | MERCADO_SANO | TH>60 AND FI>50 AND TW>40 | 8 |
-| 9 | RECUPERACION | TH<40 AND FI<35 AND TW>35 | 9 |
-| 10 | NORMAL | Default state | 10 (lowest) |
+| # | HSA Standard Prefix | Legacy Regime | Entry Condition | Priority |
+|:-:|:---|:---|:---|:-:|
+| 1 | `SEC_SYSTEMIC_CRASH` | `CRASH_SISTEMICO` | TH<30 AND FI<25 AND TW<20 AND n_dead>=5 | 1 (highest) |
+| 2 | `SEC_SECTOR_CAPITULATION` | `CAPITULACION_SECTORIAL` | TH<30 AND FI<25 AND TW<20 AND n_dead<5 | 1 |
+| 3 | `SEC_PRE_CRASH_DISTRIBUTION` | `DISTRIBUCION_PRE_CRASH` | inv_fi_streak >= 10 | 2 |
+| 4 | `SEC_GENERATIONAL_FLOOR` | `PISO_GENERACIONAL` | TH<=25 AND SV5_TW>=60 (volume capitulation) | 3 |
+| 5 | `SEC_BULLISH_REACCUMULATION` | `RE_ACUMULACION_ALCISTA` | TH>=60 AND FI<=45 AND SV5_TW>=60 | 4 |
+| 6 | `SEC_BEAR_RALLY` | `BEAR_RALLY` | TH<35 AND FI<30 AND TW>40 | 6 |
+| 7 | `SEC_BULLISH_PULLBACK` | `PULLBACK_ALCISTA` | TH>40 AND FI>40 AND TW<30 (+ can_switch) | 7 |
+| 8 | `SEC_HEALTHY_BULL` | `MERCADO_SANO` | TH>60 AND FI>50 AND TW>40 | 8 |
+| 9 | `SEC_ROTATIONAL_RECOVERY` | `RECUPERACION` | TH<40 AND FI<35 AND TW>35 | 9 |
+| 10 | `SEC_NORMAL` | `NORMAL` | Default state | 10 (lowest) |
 
 ### Regime Transition Rules
 

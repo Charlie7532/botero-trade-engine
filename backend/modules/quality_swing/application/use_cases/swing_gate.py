@@ -293,16 +293,17 @@ class SwingGate:
             if mh_raw:
                 _mh_snapshot = MarketHealthSnapshot.from_dict(mh_raw)
 
-                # Cascade gate: BEAR blocks accumulation, CORRECTION reduces
-                if _mh_snapshot.cascade_state == 3:  # BEAR
-                    _mh_sizing_mod = 0.0
-                    decision.alerts.append(
-                        f"MH_CASCADE_BEAR: Accumulation BLOCKED "
-                        f"(S5 participation={_mh_snapshot.breadth_participation:.1%})"
-                    )
-                elif _mh_snapshot.cascade_state == 2:  # CORRECTION
-                    _mh_sizing_mod = 0.5
-                    decision.alerts.append("MH_CASCADE_CORRECTION: Sizing 50%")
+                # HSA SystemicGatekeeper Overlay: Evaluates top-down macro vetoes without blocking pullbacks
+                from backend.modules.entry_decision.domain.rules.systemic_gatekeeper import SystemicGatekeeper
+                pulse = SystemicGatekeeper.create_pulse(
+                    market_health_dict=mh_raw,
+                    ast_ticker=ticker,
+                    ast_signal=action,
+                )
+                verdict, _mh_sizing_mod, reason = SystemicGatekeeper.evaluate_overlay_veto(
+                    pulse, department="QUALITY_SWING"
+                )
+                decision.alerts.append(f"HSA_GATEKEEPER: {verdict} ({reason}) | Sizing mod: {_mh_sizing_mod:.1f}")
 
                 # F&G contrarian signals (forensic evidence 2021-2026)
                 if _mh_snapshot.fg_action == "CAPITULATION_BUY":

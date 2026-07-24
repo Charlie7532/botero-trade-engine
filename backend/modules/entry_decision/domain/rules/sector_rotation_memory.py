@@ -172,7 +172,7 @@ def compute_market_rotation_snapshot(
     Returns:
         MarketRotationSnapshot or None if insufficient data.
     """
-    if not s5_histories:
+    if s5_histories is None or (isinstance(s5_histories, (dict, list)) and len(s5_histories) == 0) or (hasattr(s5_histories, "empty") and s5_histories.empty):
         return None
 
     sv5 = sv5_fi_values or {}

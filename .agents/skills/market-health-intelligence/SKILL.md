@@ -32,6 +32,16 @@ dimensions plus a Fear & Greed contrarian validation layer. It is a
 
 ---
 
+## HSA Standard Identifiers (`[MKT_]` Scope)
+
+All Market Health outputs are exported with standardized `[MKT_]` prefixes via `SystemicPulse`:
+
+- **Sentiment States (SES 1-5):** `MKT_SES_1_EUPHORIA`, `MKT_SES_2_GREED`, `MKT_SES_3_NEUTRAL`, `MKT_SES_4_FEAR`, `MKT_SES_5_PANIC`.
+- **Volatility States:** `MKT_VOL_STABLE`, `MKT_VOL_STRIKE`, `MKT_VOL_HARVEST`, `MKT_VOL_RETREAT`.
+- **Convergence Signals:** `MKT_RISK_ON`, `MKT_NEUTRAL`, `MKT_RISK_OFF`.
+
+---
+
 ## The 6 Orthogonal Dimensions
 
 Each dimension answers ONE question and produces ONE directional signal

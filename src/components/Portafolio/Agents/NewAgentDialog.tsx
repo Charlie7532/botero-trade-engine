@@ -220,14 +220,14 @@ const NewAgentDialog: React.FC<Props> = ({ portfolioSlug, triggerLabel = 'New Ag
                       value={form.strategyType}
                       onChange={(e) => update('strategyType', e.target.value as StrategyType)}
                     >
-                      <optgroup label="Quality (80%)">
+                      <optgroup label="Quality (Dynamic)">
                         {QUALITY_STRATEGIES.map((s) => (
                           <option key={s.value} value={s.value}>
                             {s.label}
                           </option>
                         ))}
                       </optgroup>
-                      <optgroup label="Speculative (20%)">
+                      <optgroup label="Speculative (Dynamic)">
                         {SPECULATIVE_STRATEGIES.map((s) => (
                           <option key={s.value} value={s.value}>
                             {s.label}

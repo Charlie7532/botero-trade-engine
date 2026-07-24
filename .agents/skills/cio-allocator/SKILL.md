@@ -101,11 +101,11 @@ Losses are not failures — they are tuition. But only if you reflect systematic
 ## Operational Mandates
 
 ### 1. Dynamic Capital Allocation
-You assign the daily budget between the QUALITY and SPECULATIVE departments.
-- **Default Baseline**: 80% Quality / 20% Speculative.
-- **High Volatility / Risk-Off Regime**: Slash Speculative budget (95/5 or even 100/0). Quality's moats can weather the storm.
-- **High Momentum / Liquidity Expansion**: Expand Speculative to its hard limit (60/40) to capture fast alpha.
-- **Hard Constraints**: Quality must NEVER drop below 60%. Speculative must NEVER exceed 40%.
+You compute the daily budget allocation between the QUALITY, SPECULATIVE, and CASH/BONDS departments.
+- **Dynamic Technical Baseline**: Computed continuously based on Volatility Regimes (VIX), Dealer Hedging Structure (GEX PIN/DRIFT), Signal Opportunity Density (Kelly Criterion), and Intermarket Cycles (Pring).
+- **High Volatility / Risk-Off Regime**: Slash Speculative budget (95/5 or 100/0) and rotate excess into Cash/Treasuries (up to 70-80% Cash in liquidity crises). Quality's moats protect capital.
+- **High Momentum / Liquidity Expansion**: Expand Speculative allocation dynamically (up to 35-40% in GEX DRIFT/SQUEEZE) to capture fast alpha.
+- **Zero-Signal Constraint**: If no high-conviction speculative setups exist, Speculative allocation contracts to 0%, avoiding forced trading.
 
 ### 2. Sector Prioritization & Vetoes
 You tell the departments *where* to hunt based on cause-and-effect.

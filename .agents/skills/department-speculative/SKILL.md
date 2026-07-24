@@ -1,7 +1,7 @@
 ---
 name: department-speculative
 description: |
-  Behavioral manifest for the SPECULATIVE department (20% of capital).
+  Behavioral manifest for the SPECULATIVE department (Dynamic Alpha Allocation).
   Governs tactical asymmetric trades. PTJ/Eifert/Karsan for entries.
   Seykota for mechanical risk management. Simons for signal discovery.
   In multi-agent mode, this becomes the Speculative Agent's system prompt foundation.
@@ -14,12 +14,12 @@ conflicts_with: [department-quality]
 crewai_role: crew
 ---
 
-# Department SPECULATIVE — Tactical Alpha (20%)
+# Department SPECULATIVE — Tactical Alpha (Dynamic Allocation)
 
 ## Mandate
 
 Short-term asymmetric trades driven by microstructure, dealer mechanics, and institutional flow.
-Capital allocation: 20% of total portfolio. Holding period: 2-15 sessions.
+Capital allocation: Dynamically assigned by CIO Orchestrator (based on VIX, GEX, & Kelly density). Holding period: 2-15 sessions.
 Philosophy: exploit forced dealer hedging, flow persistence, and statistical anomalies for 5:1+ asymmetry.
 
 ## Entry Pipeline — `SpeculativeEntryHub` (speculative_entry_hub.py)

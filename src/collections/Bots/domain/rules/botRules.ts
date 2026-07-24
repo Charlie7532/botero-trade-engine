@@ -15,11 +15,11 @@ export const BOT_STATUSES = [
 export type BotStatus = 'active' | 'paused' | 'stopped' | 'error'
 
 export const STRATEGY_TYPES = [
-  // Quality Department (Hohn & Munger — 80%)
+  // Quality Department (Hohn & Munger — Dynamic Allocation)
   { label: 'Quality: Value', value: 'quality_value' },
   { label: 'Quality: Growth', value: 'quality_growth' },
   { label: 'Quality: Dividend', value: 'quality_dividend' },
-  // Speculative Department (Eifert & PTJ — 20%)
+  // Speculative Department (Eifert & PTJ — Dynamic Allocation)
   { label: 'Speculative: Momentum', value: 'speculative_momentum' },
   { label: 'Speculative: Gamma', value: 'speculative_gamma' },
   { label: 'Speculative: Breakout', value: 'speculative_breakout' },

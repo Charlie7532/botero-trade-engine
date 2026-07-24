@@ -166,9 +166,9 @@ def is_accumulate_signal(
 
         # Predictive edge bonus
         pred_tag = ""
-        if sig.predictive_edge == "LEADING_TOP":
+        if sig.predictive_edge == "LEADING_BOTTOM":
             conviction = min(conviction * 1.1, 1.0)
-            pred_tag = " [LEADING_TOP]"
+            pred_tag = " [LEADING_BOTTOM]"
 
         # ── QS-5: Dual as BONUS (never primary, never blocks) ──
         dual_tag = ""
@@ -399,9 +399,9 @@ def is_trim_signal(
                 trim_pct = min(round(trim_pct * 1.4, 2), 0.5)
 
             pred_tag = ""
-            if sig.predictive_edge == "LEADING_BOTTOM":
+            if sig.predictive_edge == "LEADING_TOP":
                 trim_pct = min(round(trim_pct * 1.2, 2), 0.5)
-                pred_tag = " [LEADING_BOTTOM]"
+                pred_tag = " [LEADING_TOP]"
 
             # ── Issue 3: Wave modulates trim symmetrically ──
             wave_tag = ""

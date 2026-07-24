@@ -1,7 +1,7 @@
 ---
 name: department-quality
 description: |
-  Behavioral manifest for the QUALITY department (80% of capital).
+  Behavioral manifest for the QUALITY department (Dynamic Tollkeeper Allocation).
   Governs long-term tollkeeper positions. Munger/Hohn analyze fundamentals.
   Druckenmiller sizes and manages exits. Enforces thesis-based exits only.
   In multi-agent mode, this becomes the Quality Agent's system prompt foundation.
@@ -14,12 +14,12 @@ conflicts_with: [department-speculative]
 crewai_role: crew
 ---
 
-# Department QUALITY — Tollkeeper Capital (80%)
+# Department QUALITY — Tollkeeper Capital (Dynamic Allocation)
 
 ## Mandate
 
 Long-term positions in essential tollkeeper businesses with overlapping structural moats.
-Capital allocation: 80% of total portfolio. Holding period: 8+ years average.
+Capital allocation: Dynamically assigned by CIO Orchestrator (based on VIX, GEX, & Edge). Holding period: 8+ years average.
 Philosophy: concentrated conviction in businesses the economy MUST pass through.
 
 ## Entry Pipeline — `QualityEntryGate` (quality_entry_gate.py)

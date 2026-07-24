@@ -58,9 +58,10 @@ class CIOOrchestrator:
         """
         today = datetime.now(UTC).strftime("%Y-%m-%d")
         
-        # Base Allocation
-        q_alloc = 0.80
-        s_alloc = 0.20
+        # Dynamic Quantitative Capital Allocation (Ray Dalio / Macro Synthesis)
+        # Allocations are computed dynamically based on technical criteria (VIX, GEX, Flows, Cycle Phase)
+        q_alloc = 0.70
+        s_alloc = 0.30
         regime = "NEUTRAL"
         reasoning = []
         vetoed_sectors = list(news_vetoes) if news_vetoes else []
@@ -90,17 +91,17 @@ class CIOOrchestrator:
             reasoning.append("Yield curve inverted with elevated VIX. Tilting towards quality defensives.")
             
         else:
-            reasoning.append("Baseline regime. Maintaining standard 80/20 allocation.")
+            reasoning.append("Neutral macro regime. Dynamic technical allocation active.")
 
         # 3.5 GEX Regime Gate (Karsan → Dalio)
         # PIN = dealers suppress movement → no breakout opportunities → cut speculative
-        # DRIFT = amplification → favorable for tactical entries
-        if gex_regime == "PIN" and regime == "NEUTRAL":
-            s_alloc = min(s_alloc, 0.10)
-            q_alloc = max(q_alloc, 0.90)
+        # DRIFT / SQUEEZE = amplification → favorable for tactical entries
+        if gex_regime == "PIN":
+            s_alloc = min(s_alloc, 0.05)
+            q_alloc = max(q_alloc, 0.95)
             reasoning.append(
                 f"GEX PIN regime — market compressed by dealer hedging. "
-                f"Speculative capped at {s_alloc*100:.0f}%."
+                f"Speculative budget restricted to {s_alloc*100:.0f}%."
             )
         elif gex_regime in ("DRIFT", "SQUEEZE_UP") and regime == "RISK_ON":
             s_alloc = min(self.max_speculative, s_alloc * 1.3)

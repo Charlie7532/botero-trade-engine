@@ -7,8 +7,8 @@
 #
 # Department scopes:
 #   ALL      = active in every context
-#   QUALITY  = tollkeeper long-term positions (80%)
-#   SPECULATIVE = tactical asymmetric trades (20%)
+#   QUALITY  = tollkeeper long-term positions (Dynamic Allocation)
+#   SPECULATIVE = tactical asymmetric trades (Dynamic Allocation)
 #   CROSS    = above departments (CIO level)
 #   SERVICE  = serves both departments neutrally
 #   VALIDATION = post-trade scientific validation
@@ -25,7 +25,7 @@ baselines:
 departments:
   quality:
     skill: department-quality
-    allocation: 80%
+    allocation: dynamic
     entry_class: QualityEntryGate
     orchestrator: QualityOrchestrator
     risk_skill: risk-quality
@@ -33,7 +33,7 @@ departments:
 
   speculative:
     skill: department-speculative
-    allocation: 20%
+    allocation: dynamic
     entry_class: SpeculativeEntryHub
     orchestrator: SpeculativeOrchestrator
     risk_skill: risk-speculative

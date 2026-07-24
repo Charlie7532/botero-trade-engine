@@ -104,6 +104,7 @@ class QualityEntryGate:
         fgbi: Optional[float] = None,
         vbi: Optional[float] = None,
         fgbi_peak_15d: Optional[float] = None,
+        vix: float = 18.0,
     ) -> str:
         """
         Clasifica el modo de mercado usando las 3 Antenas Pre-Evento de V28
@@ -227,7 +228,9 @@ class QualityEntryGate:
                 new_mode = "NORMAL"
 
         elif current_mode == "PULLBACK_ALCISTA":
-            if is_bullish_reabsorption:
+            if is_pre_crash_distribution:
+                new_mode = "DISTRIBUCION_PRE_CRASH"
+            elif is_bullish_reabsorption:
                 new_mode = "RE_ACUMULACION_ALCISTA"
             elif is_falling_knife:
                 pass
@@ -241,6 +244,11 @@ class QualityEntryGate:
                 new_mode = "MERCADO_SANO"
             elif th < 25.0 and n_dead >= 5:
                 new_mode = "CRASH_SISTEMICO"
+
+        # V36 Calibrated Redirection: If transitioning into CRASH_SISTEMICO from non-crash state,
+        # but VIX <= 28.0 and v_th >= 25.0, redirect to PISO_GENERACIONAL
+        if current_mode != "CRASH_SISTEMICO" and new_mode == "CRASH_SISTEMICO" and vix <= 28.0 and v_th >= 25.0:
+            new_mode = "PISO_GENERACIONAL"
 
         return new_mode
 

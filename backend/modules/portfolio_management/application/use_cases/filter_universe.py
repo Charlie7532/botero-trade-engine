@@ -368,7 +368,8 @@ class UniverseFilter:
                         
             # Beneish M-Score (Penalización severa por manipulación contable)
             if c.beneish_m_score > -1.78 and c.beneish_m_score != -3.0:
-                score -= 15.0
+                if c.sector not in ("Financial", "Financials"):
+                    score -= 15.0
                 
             # Altman Z-Score (Penalización por riesgo de quiebra)
             if c.altman_z_score > 0 and c.altman_z_score < 1.8:

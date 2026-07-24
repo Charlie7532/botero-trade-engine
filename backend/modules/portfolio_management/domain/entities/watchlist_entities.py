@@ -93,6 +93,8 @@ class QualityWatchlistCandidate:
         """Beneish M-Score < -1.78 indicates low manipulation probability."""
         if self.beneish_m_score <= -999:
             return True  # No data available — assume safe
+        if self.sector in ("Financial", "Financials"):
+            return True  # Financials are exempt from Beneish M-Score veto
         return self.beneish_m_score < -1.78
 
     @property

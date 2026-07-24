@@ -61,3 +61,48 @@ def test_blind_spot_4_beneish_mscore_financials_exemption():
     bank_beneish = -1.50
     bank_vetoed = (bank_beneish > -1.78 and bank_sector != "Financial")
     assert bank_vetoed is False
+
+
+def test_watchlist_candidate_financials_exemption():
+    """Verify that a QualityWatchlistCandidate with sector='Financial' or 'Financials' is exempt from Beneish manipulation veto."""
+    from backend.modules.portfolio_management.domain.entities.watchlist_entities import QualityWatchlistCandidate
+
+    # Technology candidate - fails quality gate due to Beneish M-score > -1.78
+    tech_cand = QualityWatchlistCandidate(
+        ticker="TECH",
+        sector="Technology",
+        gf_score=85,
+        piotroski_f_score=7,
+        roic=20,
+        beneish_m_score=-1.50  # Manipulator zone
+    )
+    assert tech_cand.beneish_m_safe is False
+    assert tech_cand.passes_quality_gate() is False
+
+    # Financial candidate - passes quality gate because it's exempt from Beneish manipulation veto
+    fin_cand = QualityWatchlistCandidate(
+        ticker="JPM",
+        sector="Financials",
+        gf_score=85,
+        piotroski_f_score=7,
+        roic=20,
+        beneish_m_score=-1.50  # Manipulator zone, but exempt
+    )
+    assert fin_cand.beneish_m_safe is True
+    assert fin_cand.passes_quality_gate() is True
+
+
+def test_calculate_target_weights_empty_sectors():
+    """Verify that QualityEntryGate.calculate_target_weights does not throw ZeroDivisionError if avail_sectors is empty."""
+    from backend.modules.entry_decision.application.use_cases.quality_entry_gate import QualityEntryGate
+
+    gate = QualityEntryGate()
+    target_weights = gate.calculate_target_weights(
+        mode="MERCADO_SANO",
+        sec_th={},
+        sec_fi={},
+        sec_tw={},
+        avail_sectors=[]
+    )
+    assert target_weights == {}
+

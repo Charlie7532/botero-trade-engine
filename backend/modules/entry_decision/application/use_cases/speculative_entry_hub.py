@@ -279,15 +279,35 @@ class SpeculativeEntryHub:
         # Flow data is now read from Vault inside get_flow_signal, but persistence needs history
         # For now, we will assume FlowPersistenceAnalyzer can fetch its own data or we pass empty
         # to rely on its internal mechanisms if any, or we fetch from Vault.
+        recent_flow = []
+        darkpool_prints = []
+        si_data = None
+        is_etf = False
         try:
             from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
             store = TimescaleDataStore()
-            recent_flow = store.load_mcp_latest("flow/alerts", ticker) or []
-            darkpool_prints = store.load_mcp_latest("flow/darkpool", ticker) or []
-            store.close()
-        except Exception:
-            recent_flow = []
-            darkpool_prints = []
+            try:
+                recent_flow = store.load_mcp_latest("flow/alerts", ticker) or []
+                darkpool_prints = store.load_mcp_latest("flow/darkpool", ticker) or []
+                si_data = store.load_mcp_latest("uw/short_interest", ticker)
+                
+                # Check if ETF in metadata
+                conn = store._conn()
+                try:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "SELECT industry FROM market.ticker_metadata WHERE ticker = %s",
+                            (ticker.upper(),)
+                        )
+                        row = cur.fetchone()
+                        if row and row[0] == "ETF":
+                            is_etf = True
+                except Exception as e:
+                    logger.debug(f"SpecHub {ticker}: failed to check if ETF: {e}")
+            finally:
+                store.close()
+        except Exception as e:
+            logger.debug(f"SpecHub {ticker}: database load failed: {e}")
 
         persistence = self.flow_persistence.evaluate_persistence(
             ticker=ticker, recent_flow=recent_flow, darkpool_prints=darkpool_prints,
@@ -302,12 +322,11 @@ class SpeculativeEntryHub:
         report.flow_hours_since_latest = persistence.hours_since_latest
 
         # ── UW Enrichment: Short Interest warning ──
-        try:
-            si_data = store.load_mcp_latest("uw/short_interest", ticker)
-            if si_data and isinstance(si_data, dict):
+        if si_data and isinstance(si_data, dict):
+            try:
                 dtc = float(si_data.get("days_to_cover", 0) or 0)
                 si_pct = float(si_data.get("si_float", 0) or 0)
-                if dtc > 5 or si_pct > 15:
+                if (dtc > 5 or si_pct > 15) and not is_etf:
                     report.alerts = report.alerts or []
                     report.alerts.append(
                         f"SHORT_SQUEEZE_RISK: DTC={dtc:.1f} SI={si_pct:.1f}% "
@@ -318,8 +337,8 @@ class SpeculativeEntryHub:
                     report.alerts.append(
                         f"SHORT_INTEREST: DTC={dtc:.1f} SI={si_pct:.1f}%"
                     )
-        except Exception as e:
-            logger.debug(f"SpecHub {ticker}: short interest skipped: {e}")
+            except Exception as e:
+                logger.debug(f"SpecHub {ticker}: short interest calculation error: {e}")
 
         # DEAD_SIGNAL = stale flow, abort
         if persistence.persistence_grade == "DEAD_SIGNAL":

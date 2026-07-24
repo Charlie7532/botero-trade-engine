@@ -265,6 +265,9 @@ class QualityEntryGate:
         V35: adds S5cap/VBI institutional filtering in MERCADO_SANO
              and VBI volume conviction boost in RE_ACUMULACION_ALCISTA.
         """
+        if not avail_sectors:
+            return {}
+            
         target = {}
 
         if mode == "CRASH_SISTEMICO":
@@ -309,8 +312,12 @@ class QualityEntryGate:
                 weights_temp[s] = base_w
                 tot_cap += base_w
 
-            for s in active_core:
-                target[s] = weights_temp[s] / tot_cap
+            if tot_cap > 0.0:
+                for s in active_core:
+                    target[s] = weights_temp[s] / tot_cap
+            else:
+                for s in active_core:
+                    target[s] = 1.0 / len(active_core)
 
         elif mode == "CAPITULACION_SECTORIAL":
             if sec_v_fi:
@@ -322,8 +329,12 @@ class QualityEntryGate:
                 if not survivors:
                     survivors = sorted([(s, sec_th.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:4]
             tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in survivors)
-            for s, _ in survivors:
-                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+            if tot > 0.0:
+                for s, _ in survivors:
+                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+            else:
+                for s, _ in survivors:
+                    target[s] = 1.0 / len(survivors)
 
         elif mode == "PISO_GENERACIONAL":
             if sec_v_fi:
@@ -331,8 +342,12 @@ class QualityEntryGate:
             else:
                 floor_candidates = sorted([(s, sec_tw.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
             tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in floor_candidates)
-            for s, _ in floor_candidates:
-                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+            if tot > 0.0:
+                for s, _ in floor_candidates:
+                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+            else:
+                for s, _ in floor_candidates:
+                    target[s] = 1.0 / len(floor_candidates)
 
         elif mode == "BEAR_RALLY":
             safe = [(s, sec_th[s]) for s in avail_sectors if sec_th.get(s, 0) >= 40.0]
@@ -367,8 +382,12 @@ class QualityEntryGate:
                 if not oversold:
                     oversold = sorted([(s, sec_th.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
             tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in oversold)
-            for s, _ in oversold:
-                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+            if tot > 0.0:
+                for s, _ in oversold:
+                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+            else:
+                for s, _ in oversold:
+                    target[s] = 1.0 / len(oversold)
 
         elif mode == "RECUPERACION":
             # V33c: Resiliencia Híbrida (RS 20d a la baja x Absorción de Volumen SV5_TW)
@@ -379,8 +398,12 @@ class QualityEntryGate:
                 hybrid_scores[s] = (rs_val + 1.0) * v_tw_val
             top_hyb = sorted(hybrid_scores.keys(), key=lambda x: hybrid_scores[x], reverse=True)[:3]
             tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in top_hyb)
-            for s in top_hyb:
-                target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
+            if tot_cap > 0.0:
+                for s in top_hyb:
+                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
+            else:
+                for s in top_hyb:
+                    target[s] = 1.0 / len(top_hyb)
 
         else:  # NORMAL, MERCADO_SANO
             # Antena 2: Excluir del Core Pool a sectores estancados (S5_FI < 55%) en Mercado Sano
@@ -438,30 +461,23 @@ class QualityEntryGate:
                             best_score = score
                             best_sat = s
 
-            # V39 SURGICAL QQQ INTEGRATION:
-            # When QQQ is in Stage 2 (price >= MA150), outperforming SPY with S5_QQQ_FI >= 55%,
-            # allocate 25% to QQQ and distribute 75% across remaining healthy core sectors.
-            qqq_fi_val = sec_fi.get("QQQ", 50.0)
-            qqq_rs_val = rs_roc_20d.get("QQQ", 0.0) if rs_roc_20d else 0.0
-            is_qqq_stage2_leader = (qqq_fi_val >= 55.0) and (qqq_rs_val > 0.0)
-
             if best_sat:
                 tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in healthy_core)
-                for s in healthy_core:
-                    target[s] = 0.80 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap)
+                if tot_cap > 0.0:
+                    for s in healthy_core:
+                        target[s] = 0.80 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap)
+                else:
+                    for s in healthy_core:
+                        target[s] = 0.80 / len(healthy_core)
                 target[best_sat] = 0.20
             else:
                 tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in healthy_core)
-                for s in healthy_core:
-                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
-
-            if is_qqq_stage2_leader and "QQQ" in avail_sectors:
-                tot_w = sum(target.values())
-                if tot_w > 0:
-                    target = {s: w / tot_w * 0.75 for s, w in target.items()}
-                    target["QQQ"] = 0.25
+                if tot_cap > 0.0:
+                    for s in healthy_core:
+                        target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
                 else:
-                    target["QQQ"] = 0.25
+                    for s in healthy_core:
+                        target[s] = 1.0 / len(healthy_core)
 
         tot_w = sum(target.values())
         if tot_w > 0:

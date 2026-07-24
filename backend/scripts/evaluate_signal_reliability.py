@@ -329,6 +329,25 @@ def threshold_sensitivity_scan(bars_all, zigzags_all, derived_data):
 
     results = {}
 
+    # Pre-classify and pre-build lookup structures to avoid repeating costly calculations
+    print("  Pre-classifying bars for sensitivity scan...")
+    preclassified_data = []
+    for ticker, bars in bars_all.items():
+        nb = len(bars)
+        if nb < 100:
+            continue
+        zz = zigzags_all.get(ticker, {})
+        sk_list = []
+        bar_dates = []
+        for date, t_slope, c_slope, svw in bars:
+            t = classify_slope(t_slope, 'T')
+            c = classify_slope(c_slope, 'C')
+            s = classify_sigma_vw(svw)
+            sk_list.append(f"{t}|{c}|{s}")
+            bar_dates.append(date)
+        preclassified_data.append((sk_list, bar_dates, zz))
+    print(f"  → Pre-classified {len(preclassified_data)} tickers")
+
     for scan_id, label, lo, hi, step, target_signal, pivot_type in scans:
         print(f"  Scanning: {label} [{lo:.1f} → {hi:.1f}]")
         scan_results = []
@@ -355,24 +374,17 @@ def threshold_sensitivity_scan(bars_all, zigzags_all, derived_data):
                 threshold += step
                 continue
 
-            for ticker, bars in bars_all.items():
-                zz = zigzags_all.get(ticker, {})
-                nb = len(bars)
-                if nb < 100:
-                    continue
+            for sk_list, bar_dates, zz in preclassified_data:
+                nb = len(sk_list)
                 for i in range(nb):
-                    date, t_slope, c_slope, svw = bars[i]
-                    t = classify_slope(t_slope, 'T')
-                    c = classify_slope(c_slope, 'C')
-                    s = classify_sigma_vw(svw)
-                    sk = f"{t}|{c}|{s}"
+                    sk = sk_list[i]
                     sig = new_lookup.get(sk, "NO_EDGE")
 
                     if sig == target_signal:
                         sig_fires += 1
                         # Binary hit: at least one pivot of matching type in 10 bars
                         for j in range(i+1, min(i+11, nb)):
-                            dj = bars[j][0]
+                            dj = bar_dates[j]
                             for level, tp in zz.get(dj, []):
                                 if tp == pivot_type:
                                     sig_hits += 1
@@ -495,7 +507,7 @@ def generate_report(merged, total_bars, n_tickers, sensitivity, derived_data):
         dists = merged["distances"].get(sig, [])
         avg_dist = np.mean(dists) if dists else 0
         lift = prec_10 / baseline_min_rate if baseline_min_rate > 0 else 0
-        L(f"| **{sig}** | {fires:,} | {uhits_10:,} | {prec_10:.1%} | {prec_10 * fires / max(uhits_5,1) if uhits_5 else 0:.0%} | {uhits_20 / fires if fires else 0:.1%} | {avg_dist:.1f} bars | {lift:.2f}x |")
+        L(f"| **{sig}** | {fires:,} | {uhits_10:,} | {prec_10:.1%} | {uhits_5 / fires if fires else 0:.1%} | {uhits_20 / fires if fires else 0:.1%} | {avg_dist:.1f} bars | {lift:.2f}x |")
 
     L("")
     L("### Exit Signals (look for tops)")

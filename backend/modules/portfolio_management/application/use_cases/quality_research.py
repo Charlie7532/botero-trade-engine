@@ -186,8 +186,9 @@ class QualityResearchPipeline:
         # ═══ QUALITY GATES — Hard Filters ═══
         # Gate 1: Beneish M-Score (accounting manipulation)
         if candidate.beneish_m_score > self.MAX_BENEISH and candidate.beneish_m_score != -3.0:
-            logger.debug(f"  {ticker}: REJECTED — Beneish {candidate.beneish_m_score:.2f} > {self.MAX_BENEISH}")
-            return None
+            if candidate.sector not in ("Financial", "Financials"):
+                logger.debug(f"  {ticker}: REJECTED — Beneish {candidate.beneish_m_score:.2f} > {self.MAX_BENEISH}")
+                return None
 
         # Gate 2: Altman Z-Score (bankruptcy risk)
         if 0 < candidate.altman_z_score < self.MIN_ALTMAN_Z:

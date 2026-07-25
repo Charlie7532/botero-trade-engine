@@ -208,9 +208,12 @@ class SpeculativeEntryHub:
         # ── Step 2: Gamma Regime (Karsan) ──
         opts = self._fetch_options_data(ticker, vix_trend=vix_trend)
         report.put_wall = opts.get("put_wall", 0.0)
+        report.put_wall_oi = opts.get("put_wall_oi", 0)
         report.call_wall = opts.get("call_wall", 0.0)
+        report.call_wall_oi = opts.get("call_wall_oi", 0)
         report.gamma_regime = opts.get("gamma_regime", "UNKNOWN")
         report.max_pain = opts.get("max_pain", 0.0)
+        report.spot_gex = opts.get("spot_gex_oi", opts.get("net_gex_dollars", 0.0))
 
         # 8 Forces: Vanna Event + Charm
         report.vanna_event = opts.get("vanna_event", False)
@@ -221,6 +224,14 @@ class SpeculativeEntryHub:
             else "48H_PRE_OPEX" if opts.get("opex_time_weight", 0) > 0
             else "NONE"
         )
+
+        # ── Spot GEX Regime Alerts (Positive vs Negative Gamma) ──
+        if report.spot_gex != 0.0:
+            report.alerts = report.alerts or []
+            gex_type = "POSITIVE_GAMMA (Pin/Dampening)" if report.spot_gex > 0 else "NEGATIVE_GAMMA (Volatility Expansion)"
+            report.alerts.append(
+                f"SPOT_GEX: {gex_type} | Net Gamma=${report.spot_gex/1e6:.2f}M/1%"
+            )
 
         # ── UW Enrichment: Max Pain tactical distance ──
         max_pain_dist = opts.get("max_pain_distance_pct", 0.0)

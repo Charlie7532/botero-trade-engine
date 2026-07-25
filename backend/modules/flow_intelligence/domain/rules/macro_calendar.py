@@ -204,6 +204,45 @@ class MacroEventCalendar:
                     description="Consumer Price Index (estimated date)",
                 ))
 
+        # 4. Agregar Monthly OPEX (3er Viernes del mes)
+        events.extend(self._get_opex_events(today, days_ahead))
+
+        return events
+
+    @staticmethod
+    def get_third_friday(year: int, month: int) -> date:
+        """Calcula la fecha del 3er Viernes de cualquier mes (Monthly OPEX)."""
+        first_day = date(year, month, 1)
+        # Friday is weekday 4 in Python (0=Monday, ..., 4=Friday)
+        first_friday_offset = (4 - first_day.weekday()) % 7
+        first_friday = first_day + timedelta(days=first_friday_offset)
+        third_friday = first_friday + timedelta(days=14)
+        return third_friday
+
+    def _get_opex_events(self, today: date, days_ahead: int) -> list[MacroEvent]:
+        """Genera eventos de Monthly OPEX (3er Viernes de cada mes)."""
+        events = []
+        end_date = today + timedelta(days=days_ahead)
+
+        # Check current and next month
+        for m_offset in (0, 1):
+            target_month = today.month + m_offset
+            target_year = today.year
+            if target_month > 12:
+                target_month -= 12
+                target_year += 1
+
+            opex_date = self.get_third_friday(target_year, target_month)
+            if today <= opex_date <= end_date:
+                events.append(MacroEvent(
+                    name="MONTHLY_OPEX",
+                    event_date=datetime(
+                        opex_date.year, opex_date.month, opex_date.day,
+                        21, 0, tzinfo=UTC,  # 4:00 PM ET close
+                    ),
+                    impact_level=2,  # HIGH
+                    description="Monthly Options Expiration (OPEX Pinning / Un-pinning)",
+                ))
         return events
 
     @staticmethod

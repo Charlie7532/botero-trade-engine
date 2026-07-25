@@ -77,6 +77,12 @@ class NOTAMTickerPayload:
     volume_reabsorption_score: float = 0.5
     news_sentiment_score: float = 0.5
 
+    # Explicit Trend & Velocity Vectors (Dynamic Rate of Change Indicators)
+    net_liquidity_trend: str = "stable"       # "easing" | "stable" | "tightening" (Fed + Treasury net liquidity velocity)
+    volume_kalman_velocity: float = 0.0       # Rate of change of institutional volume flow (Kalman Filter)
+    breadth_slope_20d: float = 0.0            # 20-day structural breadth velocity (S5_TH / S5_FI slope)
+    sentiment_velocity: float = 0.0           # News sentiment velocity (delta FinBERT / delta t)
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 

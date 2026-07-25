@@ -171,6 +171,10 @@ def synthesize_causal_decision(
         insider_score=counter_veto.evidence_matrix.insider_accumulation_score,
         volume_reabsorption_score=counter_veto.evidence_matrix.volume_reabsorption_score,
         news_sentiment_score=counter_veto.evidence_matrix.narrative_momentum_score,
+        net_liquidity_trend=str(details.get("net_liquidity_trend", "stable")),
+        volume_kalman_velocity=float(details.get("volume_kalman_velocity", 0.0)),
+        breadth_slope_20d=float(details.get("breadth_slope_20d", 0.0)),
+        sentiment_velocity=float(details.get("sentiment_velocity", 0.0)),
     )
 
     return CausalVerificationSnapshot(

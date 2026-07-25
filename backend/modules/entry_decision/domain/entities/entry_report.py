@@ -40,11 +40,14 @@ class EntryIntelligenceReport:
     rsi: float = 50.0
     rvol: float = 1.0
 
-    # Gamma (from options_awareness)
+    # Gamma (from options_awareness & UW Spot GEX)
     put_wall: float = 0.0
+    put_wall_oi: int = 0
     call_wall: float = 0.0
+    call_wall_oi: int = 0
     gamma_regime: str = "UNKNOWN"
     max_pain: float = 0.0
+    spot_gex: float = 0.0
 
     # Wyckoff (from volume_dynamics)
     wyckoff_state: str = "UNKNOWN"

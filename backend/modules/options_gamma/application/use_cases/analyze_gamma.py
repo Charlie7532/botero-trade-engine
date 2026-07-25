@@ -101,7 +101,21 @@ class OptionsAwareness:
             "opex_time_weight": analysis.opex.time_weight,
         }
 
-        # ── UW Enrichment: IV Structure + Vol Stats (only when UWGammaAdapter) ──
+        # ── UW Enrichment: Spot GEX + IV Structure + Vol Stats ──
+        if hasattr(self._adapter, 'get_spot_gex'):
+            try:
+                spot_gex_snap = self._adapter.get_spot_gex(symbol)
+                if spot_gex_snap and spot_gex_snap.n_strikes > 0:
+                    result["spot_gex_oi"] = spot_gex_snap.gamma_per_pct_oi
+                    result["spot_charm_oi"] = spot_gex_snap.charm_per_pct_oi
+                    result["spot_vanna_oi"] = spot_gex_snap.vanna_per_pct_oi
+                    if spot_gex_snap.gamma_per_pct_oi != 0.0:
+                        result["net_gex_dollars"] = spot_gex_snap.gamma_per_pct_oi
+                        result["gex_positive"] = spot_gex_snap.gamma_per_pct_oi > 0
+                        result["gamma_regime"] = "PIN" if spot_gex_snap.gamma_per_pct_oi > 0 else "DRIFT"
+            except Exception:
+                pass
+
         if hasattr(self._adapter, 'get_iv_term_structure'):
             try:
                 iv_ts = self._adapter.get_iv_term_structure(symbol)

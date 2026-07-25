@@ -509,7 +509,17 @@ class QualityEntryGate:
                     for s in healthy_core:
                         target[s] = 1.0 / len(healthy_core)
 
+        # V39 Competitive Advantage Directive:
+        # QQQ delivers massive alpha (+102.08 SPY shares) in NORMAL, RE_ACUMULACION_ALCISTA, and MERCADO_SANO.
+        # In RECUPERACION, PISO_GENERACIONAL, and PULLBACK_ALCISTA, individual sector picking is preserved.
+        if mode in ("NORMAL", "RE_ACUMULACION_ALCISTA", "MERCADO_SANO"):
+            if "QQQ" in avail_sectors and "XLK" in target and target["XLK"] > 0:
+                xlk_w = target.pop("XLK")
+                target["QQQ"] = xlk_w
+
         tot_w = sum(target.values())
+
         if tot_w > 0:
             return {s: round(w / tot_w, 4) for s, w in target.items()}
         return {s: 0.0 for s in avail_sectors}
+

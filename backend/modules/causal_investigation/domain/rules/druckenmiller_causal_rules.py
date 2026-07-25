@@ -195,6 +195,14 @@ def _score_macro_liquidity(fred_snap: Optional[dict]) -> float:
     elif fed_stance == "hawkish":
         score -= 0.1
 
+    # Blind Spot 1 Fix: Credit Market High Yield Spread (HY_OAS / BAMLH0A0HYM2)
+    hy_oas = fred_snap.get("hy_oas", fred_snap.get("credit_spread", 3.5))
+    if isinstance(hy_oas, (int, float)):
+        if hy_oas >= 5.0:  # >500 bps = Corporate Credit Freeze
+            score -= 0.25
+        elif hy_oas >= 4.0: # >400 bps = Credit Stress
+            score -= 0.10
+
     return max(0.0, min(1.0, score))
 
 

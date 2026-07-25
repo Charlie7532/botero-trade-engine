@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Update RC Combined Table — Full Pipeline
+Update RC Tide Table — Full Pipeline
 ==========================================
 Single script that runs the COMPLETE data refresh and model rebuild:
 
@@ -17,10 +17,10 @@ Single script that runs the COMPLETE data refresh and model rebuild:
           Adds obs_recovery_score, obs_velocity_norm, obs_state
           to channel_snapshots where missing.
 
-  Step 4: Retrain rc_combined_probability_table.json
+  Step 4: Retrain rc_tide_probability_table.json
           T(6)×C(6)×σVw(5) = 180 L1 states from ALL Vault data.
 
-  Step 5: Generate rc_combined_derived.json
+  Step 5: Generate rc_tide_derived.json
           Self-documenting 180-state table with committee signals.
 
 Both table outputs written to:
@@ -29,20 +29,20 @@ Both table outputs written to:
 Usage:
   # Full pipeline (all 5 steps):
   PYTHONPATH=/root/botero-trade backend/.venv/bin/python \
-    backend/scripts/update/update_rc_combined.py
+    backend/scripts/update/update_rc_tide.py
 
   # Tables only (skip feature lake updates):
   PYTHONPATH=/root/botero-trade backend/.venv/bin/python \
-    backend/scripts/update/update_rc_combined.py --skip-lake
+    backend/scripts/update/update_rc_tide.py --skip-lake
 
   # Derive only (regenerate from existing raw table):
   PYTHONPATH=/root/botero-trade backend/.venv/bin/python \
-    backend/scripts/update/update_rc_combined.py --only-derive
+    backend/scripts/update/update_rc_tide.py --only-derive
 
   # Background (nohup):
   nohup bash -c 'PYTHONPATH=/root/botero-trade backend/.venv/bin/python \
-    backend/scripts/update/update_rc_combined.py' \
-    > /tmp/update_rc_combined.log 2>&1 &
+    backend/scripts/update/update_rc_tide.py' \
+    > /tmp/update_rc_tide.log 2>&1 &
 """
 import argparse
 import importlib.util
@@ -64,12 +64,12 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler()],
 )
-logger = logging.getLogger("update_rc_combined")
+logger = logging.getLogger("update_rc_tide")
 
 # ── Paths ──
 RULES_DIR = ROOT / "backend/modules/quality_swing/domain/rules"
-RAW_TABLE = RULES_DIR / "rc_combined_probability_table.json"
-DERIVED_TABLE = RULES_DIR / "rc_combined_derived.json"
+RAW_TABLE = RULES_DIR / "rc_tide_probability_table.json"
+DERIVED_TABLE = RULES_DIR / "rc_tide_derived.json"
 SCRIPTS_DIR = ROOT / "backend/scripts"
 
 
@@ -152,24 +152,24 @@ def step3_backfill_observer():
 
 
 def step4_retrain():
-    """Step 4: Retrain rc_combined_probability_table.json.
+    """Step 4: Retrain rc_tide_probability_table.json.
 
     Reads:  engine.channel_snapshots + engine.zigzag_points (Vault)
-    Writes: rc_combined_probability_table.json (180 L1 cells + L2 + L3)
+    Writes: rc_tide_probability_table.json (180 L1 cells + L2 + L3)
             rc_zigzag_audit.json (pivot-state coincidence audit)
 
     Expected time: ~3-8 min.
     """
     logger.info("\n" + "=" * 90)
-    logger.info("  STEP 4: Retrain rc_combined_probability_table.json")
+    logger.info("  STEP 4: Retrain rc_tide_probability_table.json")
     logger.info("  Source: Vault (engine.channel_snapshots + engine.zigzag_points)")
     logger.info("=" * 90)
 
-    script = SCRIPTS_DIR / "train_combined_table.py"
+    script = SCRIPTS_DIR / "train_tide_table.py"
     if not script.exists():
         raise RuntimeError(f"Step 4: Script not found: {script}")
 
-    _run_script("train_combined_table", script)
+    _run_script("train_tide_table", script)
 
     if not RAW_TABLE.exists():
         raise RuntimeError(f"Step 4 FAILED: {RAW_TABLE} not found after training")
@@ -179,26 +179,26 @@ def step4_retrain():
 
 
 def step5_derive():
-    """Step 5: Generate rc_combined_derived.json.
+    """Step 5: Generate rc_tide_derived.json.
 
-    Reads:  rc_combined_probability_table.json (from Step 4)
-    Writes: rc_combined_derived.json (180 states, committee signals)
+    Reads:  rc_tide_probability_table.json (from Step 4)
+    Writes: rc_tide_derived.json (180 states, committee signals)
 
     Expected time: ~5 seconds.
     """
     logger.info("\n" + "=" * 90)
-    logger.info("  STEP 5: Generate rc_combined_derived.json")
-    logger.info("  Source: rc_combined_probability_table.json")
+    logger.info("  STEP 5: Generate rc_tide_derived.json")
+    logger.info("  Source: rc_tide_probability_table.json")
     logger.info("=" * 90)
 
     if not RAW_TABLE.exists():
         raise RuntimeError(f"Step 5: {RAW_TABLE} not found. Run Step 4 first.")
 
-    script = SCRIPTS_DIR / "generate_derived_table.py"
+    script = SCRIPTS_DIR / "generate_tide_derived_table.py"
     if not script.exists():
         raise RuntimeError(f"Step 5: Script not found: {script}")
 
-    _run_script("generate_derived_table", script)
+    _run_script("generate_tide_derived_table", script)
 
     if not DERIVED_TABLE.exists():
         raise RuntimeError(f"Step 5 FAILED: {DERIVED_TABLE} not found after generation")
@@ -213,7 +213,7 @@ def step5_derive():
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Update RC Combined Table — Full Pipeline",
+        description="Update RC Tide Table — Full Pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Step reference:
@@ -225,16 +225,16 @@ Step reference:
 
 Examples:
   # Full pipeline (all 5 steps):
-  python backend/scripts/update/update_rc_combined.py
+  python backend/scripts/update/update_rc_tide.py
 
   # Tables only (Steps 4+5, skip feature lake updates):
-  python backend/scripts/update/update_rc_combined.py --skip-lake
+  python backend/scripts/update/update_rc_tide.py --skip-lake
 
   # Feature lake only (Steps 1+2+3, no table generation):
-  python backend/scripts/update/update_rc_combined.py --only-lake
+  python backend/scripts/update/update_rc_tide.py --only-lake
 
   # Derive only (Step 5, regenerate from existing raw table):
-  python backend/scripts/update/update_rc_combined.py --only-derive
+  python backend/scripts/update/update_rc_tide.py --only-derive
         """,
     )
     parser.add_argument("--skip-lake", action="store_true",
@@ -254,8 +254,8 @@ Examples:
         ("Step 1", "Backfill Feature Lake (channel_snapshots)", step1_backfill_feature_lake),
         ("Step 2", "Backfill Zigzag Points (3 levels)", step2_backfill_zigzag),
         ("Step 3", "Backfill Unified Observer (velocities)", step3_backfill_observer),
-        ("Step 4", "Retrain rc_combined_probability_table.json", step4_retrain),
-        ("Step 5", "Generate rc_combined_derived.json", step5_derive),
+        ("Step 4", "Retrain rc_tide_probability_table.json", step4_retrain),
+        ("Step 5", "Generate rc_tide_derived.json", step5_derive),
     ]
 
     if args.only_derive:
@@ -269,7 +269,7 @@ Examples:
 
     # ── Print banner ──
     logger.info("╔" + "═" * 88 + "╗")
-    logger.info("║  RC COMBINED TABLE — UPDATE PIPELINE" + " " * 51 + "║")
+    logger.info("║  RC TIDE TABLE — UPDATE PIPELINE" + " " * 55 + "║")
     logger.info("╠" + "═" * 88 + "╣")
 
     for name, desc, _ in ALL_STEPS:

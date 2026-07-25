@@ -17,7 +17,7 @@
     },
     "rare_event_policy": "Cells with N < 30 are flagged for Empirical Bayes parent fallback to prevent overfitting."
   },
-  "source": "rc_combined_probability_table.json v3",
+  "source": "rc_tide_probability_table.json v3",
   "approved_by": "Committee: Dalio (CIO), Druckenmiller (Quality Swing), PTJ/Eifert (Speculative), Weinstein/Pring (Rotation)",
   "context": {
 

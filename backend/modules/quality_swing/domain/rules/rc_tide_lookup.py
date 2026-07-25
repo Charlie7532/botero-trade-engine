@@ -1,7 +1,7 @@
 """
-RC Combined Lookup — Pure Domain Rule
+RC Tide Lookup — Pure Domain Rule
 ==========================================
-Loads the pre-computed rc_combined_derived.json (v2) and provides
+Loads the pre-computed rc_tide_derived.json (v2) and provides
 a single function to query it by T×C×σVw state.
 
 This table provides the committee-approved signal for each of the
@@ -23,8 +23,8 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # ── Singleton table ──
-_COMBINED: Optional[dict] = None
-_COMBINED_PATH = Path(__file__).parent / "rc_combined_derived.json"
+_TIDE: Optional[dict] = None
+_TIDE_PATH = Path(__file__).parent / "rc_tide_derived.json"
 
 
 ACTION_CODE_MAP = {
@@ -54,8 +54,8 @@ ACTION_CODE_MAP = {
 
 
 @dataclass(frozen=True)
-class CombinedSignal:
-    """Result of the combined T×C×σVw lookup.
+class TideSignal:
+    """Result of the tide T×C×σVw lookup.
 
     Provides the full committee-approved signal with all
     supporting metrics for decision making and logging.
@@ -74,7 +74,7 @@ class CombinedSignal:
 
     # Direction
     p_bull: float           # P(bull) as percentage (0-100)
-    odds: float             # bull/bear ratio
+    odds: float             # tide/bear ratio
     lift_vs_band: float     # lift relative to σVw band baseline
     z_score: float          # z-score vs global P_bull
 
@@ -152,37 +152,37 @@ def _classify_sigma(value: float) -> str:
     return _SIGMA_BINS[-1][2]
 
 
-def _load_combined() -> dict:
-    """Load the combined derived table (once)."""
-    global _COMBINED
-    if _COMBINED is not None:
-        return _COMBINED
+def _load_tide() -> dict:
+    """Load the tide derived table (once)."""
+    global _TIDE
+    if _TIDE is not None:
+        return _TIDE
 
-    if not _COMBINED_PATH.exists():
-        logger.warning(f"RC combined derived table not found at {_COMBINED_PATH}")
-        _COMBINED = {"states": {}}
-        return _COMBINED
+    if not _TIDE_PATH.exists():
+        logger.warning(f"RC tide derived table not found at {_TIDE_PATH}")
+        _TIDE = {"states": {}}
+        return _TIDE
 
-    with open(_COMBINED_PATH) as f:
-        _COMBINED = json.load(f)
+    with open(_TIDE_PATH) as f:
+        _TIDE = json.load(f)
 
-    n_states = len(_COMBINED.get("states", {}))
-    version = _COMBINED.get("version", "unknown")
-    logger.info(f"RC combined derived table loaded: {n_states} states, version={version}")
-    return _COMBINED
-
-
-from backend.modules.quality_swing.domain.rules.signal_cataloger import SignalCataloger, FeatureVector
+    n_states = len(_TIDE.get("states", {}))
+    version = _TIDE.get("version", "unknown")
+    logger.info(f"RC tide derived table loaded: {n_states} states, version={version}")
+    return _TIDE
 
 
-def classify_combined_signal_from_features(identity: dict, direction: dict, turn_risk: dict, composition: dict) -> tuple[str, str, str, str]:
-    """Pure Python classifier for Combined Features (Delegates to SignalCataloger)."""
+from backend.modules.quality_swing.domain.rules.signal_cataloger import SignalCataloger, TideFeatureVector
+
+
+def classify_tide_signal_from_features(identity: dict, direction: dict, turn_risk: dict, composition: dict) -> tuple[str, str, str, str]:
+    """Pure Python classifier for Tide Features (Delegates to SignalCataloger)."""
     if "signal" in identity:
         sig = identity["signal"]
         ac, urg, sc = ACTION_CODE_MAP.get(sig, ("STK_HOLD_STABLE", "PASSIVE", "STK"))
         return sig, ac, urg, sc
 
-    features = FeatureVector(
+    features = TideFeatureVector(
         zone=identity["zone"],
         p_bull=direction["p_bull"],
         asymmetry_pp=turn_risk["asymmetry_pp"],
@@ -193,21 +193,21 @@ def classify_combined_signal_from_features(identity: dict, direction: dict, turn
         zz75_min_pct=turn_risk.get("bottom_75", {}).get("pct", 0.0),
         momentum_purity=composition["momentum_purity"],
     )
-    return SignalCataloger.classify_combined(features)
+    return SignalCataloger.classify_tide(features)
 
 
 
-def _make_result(state_key: str, state: dict) -> CombinedSignal:
-    """Convert a raw state dict into CombinedSignal."""
+def _make_result(state_key: str, state: dict) -> TideSignal:
+    """Convert a raw state dict into TideSignal."""
     identity = state["identity"]
     direction = state["direction"]
     turn_risk = state["turn_risk"]
     composition = state["composition"]
     frequency = state["frequency"]
 
-    sig, ac, urg, sc = classify_combined_signal_from_features(identity, direction, turn_risk, composition)
+    sig, ac, urg, sc = classify_tide_signal_from_features(identity, direction, turn_risk, composition)
 
-    return CombinedSignal(
+    return TideSignal(
         state_key=state_key,
         signal=sig,
         action_code=ac,
@@ -241,12 +241,12 @@ def _make_result(state_key: str, state: dict) -> CombinedSignal:
 # PUBLIC API
 # ═══════════════════════════════════════════════════════════════
 
-def lookup_combined_signal(
+def lookup_tide_signal(
     tide_level: str,
     current_level: str,
     vwap_sigma_wave: float,
-) -> Optional[CombinedSignal]:
-    """Look up the combined signal for a T×C×σVw state.
+) -> Optional[TideSignal]:
+    """Look up the tide signal for a T×C×σVw state.
 
     Args:
         tide_level: Tide slope level from SlopeState (e.g. "T+++", "T-")
@@ -254,9 +254,9 @@ def lookup_combined_signal(
         vwap_sigma_wave: σVWAP position in Wave channel (continuous value)
 
     Returns:
-        CombinedSignal or None if state not found in table.
+        TideSignal or None if state not found in table.
     """
-    table = _load_combined()
+    table = _load_tide()
     states = table.get("states", {})
 
     if not states:
@@ -267,13 +267,13 @@ def lookup_combined_signal(
 
     state = states.get(state_key)
     if state is None:
-        logger.debug(f"Combined state not found: {state_key}")
+        logger.debug(f"Tide state not found: {state_key}")
         return None
 
     return _make_result(state_key, state)
 
 
-def get_combined_metadata() -> dict:
+def get_tide_metadata() -> dict:
     """Return metadata about the loaded table (version, context, baselines)."""
-    table = _load_combined()
+    table = _load_tide()
     return {k: v for k, v in table.items() if k != "states"}

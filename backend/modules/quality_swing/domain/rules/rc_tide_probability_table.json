@@ -1,5 +1,5 @@
 {
-  "version": "v3_combined_2026-07-23",
+  "version": "v3_tide_2026-07-23",
   "dimensions": "T_slope|C_slope|sigma_vwap_wave",
   "zigzag_stereotype_level": 0.025,
   "zigzag_coincidence_levels": [

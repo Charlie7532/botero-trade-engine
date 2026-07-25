@@ -6,10 +6,10 @@ DEPRECATION NOTICE (2026-06-25):
   The lookup_probability() function and RCStateProbability dataclass
   below are DEPRECATED. They read from rc_probability_table.json
   (17 tickers, 91K bars, 4D: Tide×σc×σw×σVw) which has been
-  superseded by rc_combined_derived.json (538 tickers, 628K bars,
-  3D: T×C×σVw, 180 committee-approved states).
-
-  Use rc_combined_lookup.lookup_combined_signal() instead.
+#   superseded by rc_tide_derived.json (538 tickers, 628K bars,
+#   3D: T×C×σVw, 180 committee-approved states).
+#
+#   Use rc_tide_lookup.lookup_tide_signal() instead.
 
   The DualProbability model (lookup_dual_probability) below is
   STILL ACTIVE — it uses rc_piso_table.json + rc_techo_table.json

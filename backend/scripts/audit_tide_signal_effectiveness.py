@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-AUDITORÍA FORENSE DE EFECTIVIDAD POR SEÑAL — RC COMBINED (4.5M SNAPSHOTS)
+AUDITORÍA FORENSE DE EFECTIVIDAD POR SEÑAL — RC TIDE (4.5M SNAPSHOTS)
 ========================================================================
 Calcula la efectividad cuantitativa (Win Rate %, Operaciones Acertadas vs Erradas,
 Retorno Promedio, Expectancia Neto, Profit Factor) para cada tipo de señal
-en `rc_combined_derived.json` leyendo directamente del caché Parquet del Vault.
+en `rc_tide_derived.json` leyendo directamente del caché Parquet del Vault.
 
 Clean Architecture: Script (delivery mechanism).
 """
@@ -15,15 +15,15 @@ import pandas as pd
 import numpy as np
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-logger = logging.getLogger("AuditSignalEffectiveness")
+logger = logging.getLogger("AuditTideSignalEffectiveness")
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-DERIVED_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_combined_derived.json"
+DERIVED_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_tide_derived.json"
 CACHE_PATH = ROOT / "backend/scratch/cache/snapshots_ohlcv_cache.parquet"
 
 
 def main():
-    logger.info("=== AUDITORÍA FORENSE DE EFECTIVIDAD POR SEÑAL — RC COMBINED ===")
+    logger.info("=== AUDITORÍA FORENSE DE EFECTIVIDAD POR SEÑAL — RC TIDE ===")
     
     # 1. Cargar el JSON de señales derivadas
     with open(DERIVED_PATH) as f:

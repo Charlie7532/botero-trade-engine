@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Train Combined T×C×σVw Probability Table + Zigzag Coincidence Audit
+Train Tide T×C×σVw Probability Table + Zigzag Coincidence Audit
 ====================================================================
 Two outputs:
-  1. rc_combined_probability_table.json — T(6)×C(6)×σVw(5) = 180 L1 states
+  1. rc_tide_probability_table.json — T(6)×C(6)×σVw(5) = 180 L1 states
      - 16 stereotype fields (count/N_runs/max/min per HH/HL/LH/LL)
      - 6 zigzag T=0 coincidence counts (zz25/50/75 × MIN/MAX)
      - 6 zigzag T-1 predictive counts
@@ -19,8 +19,8 @@ All data from Vault:
 
 Usage:
   nohup bash -c 'PYTHONPATH=/root/botero-trade backend/.venv/bin/python \
-    backend/scripts/train_combined_table.py' \
-    > /tmp/train_combined.log 2>&1 &
+    backend/scripts/train_tide_table.py' \
+    > /tmp/train_tide.log 2>&1 &
 """
 import os, sys, json, time, logging
 from pathlib import Path
@@ -50,7 +50,7 @@ ZIGZAG_LEVELS = [0.025, 0.05, 0.075]
 ZIGZAG_LABEL = {0.025: "zz25", 0.05: "zz50", 0.075: "zz75"}
 STEREOTYPE_PCT = 0.025  # Zigzag level for stereotypes
 MIN_OBS_L1 = 10
-OUTPUT_TABLE = root_dir / "backend/modules/quality_swing/domain/rules/rc_combined_probability_table.json"
+OUTPUT_TABLE = root_dir / "backend/modules/quality_swing/domain/rules/rc_tide_probability_table.json"
 OUTPUT_AUDIT = root_dir / "backend/modules/quality_swing/domain/rules/rc_zigzag_audit.json"
 
 # Slope thresholds — from rc_slope_classifier.py
@@ -482,7 +482,7 @@ def build_audit(all_audit_rows):
         state_counts = Counter(sk for sk, _ in rows)
         st_counts = Counter(st for _, st in rows)
 
-        # Combined: state + stereotype
+        # Tide: state + stereotype
         combo_counts = Counter(rows)
 
         # Top patterns
@@ -513,7 +513,7 @@ def build_audit(all_audit_rows):
 def main():
     t0 = time.time()
     logger.info("=" * 90)
-    logger.info("  TRAIN COMBINED T×C×σVw TABLE + ZIGZAG COINCIDENCE AUDIT")
+    logger.info("  TRAIN TIDE T×C×σVw TABLE + ZIGZAG COINCIDENCE AUDIT")
     logger.info("  T(6) × C(6) × σVw(5) = 180 L1 states")
     logger.info("  + 6 zigzag T=0 + 6 zigzag T-1 (predictive) per cell")
     logger.info("  Source: engine.channel_snapshots + engine.zigzag_points (3 levels)")
@@ -566,8 +566,8 @@ def main():
     logger.info(f"Total zigzag coincidences: {sum(sum(zm.values()) for zm in all_zz.values()):,}")
     logger.info(f"Total audit rows: {len(all_audit):,}")
 
-    # ── Build combined table ──
-    logger.info("\nBuilding combined T×C×σVw table...")
+    # ── Build tide table ──
+    logger.info("\nBuilding tide T×C×σVw table...")
     cells, n_cells = build_table(all_obs, dict(all_runs), dict(all_zz), dict(all_zz_prev))
 
     # Compute global zigzag totals for P(state | zigzag) denominator
@@ -581,7 +581,7 @@ def main():
         global_zz_totals[zz_key] = total
 
     table = {
-        "version": f"v3_combined_{datetime.now().strftime('%Y-%m-%d')}",
+        "version": f"v3_tide_{datetime.now().strftime('%Y-%m-%d')}",
         "dimensions": "T_slope|C_slope|sigma_vwap_wave",
         "zigzag_stereotype_level": STEREOTYPE_PCT,
         "zigzag_coincidence_levels": ZIGZAG_LEVELS,
@@ -620,11 +620,11 @@ def main():
     # ── Summary ──
     logger.info(f"\n{'=' * 90}")
     logger.info(f"  COMPLETE — {elapsed:.1f}s ({elapsed/60:.1f} min)")
-    logger.info(f"  Combined table: {n_cells}")
+    logger.info(f"  Tide table: {n_cells}")
     logger.info(f"  Audit groups: {len(audit)}")
 
     # Quick validation
-    logger.info("\n  Combined table sample:")
+    logger.info("\n  Tide table sample:")
     for key in sorted(cells)[:3]:
         c = cells[key]
         n = sum(c[f"count_{s}"] for s in ["HH","HL","LH","LL"])

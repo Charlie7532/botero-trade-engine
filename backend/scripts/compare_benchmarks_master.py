@@ -16,7 +16,7 @@ import numpy as np
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.entry_decision.application.use_cases.quality_entry_gate import QualityEntryGate
-from backend.modules.quality_swing.domain.rules.rc_combined_lookup import ACTION_CODE_MAP
+from backend.modules.quality_swing.domain.rules.rc_tide_lookup import ACTION_CODE_MAP
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("CompareBenchmarksMaster")
@@ -194,7 +194,7 @@ def main():
     print("="*115)
     
     # ── TABLA 2: BENCHMARK 2 ATRIBUCIÓN POR SEÑAL Y TAXONOMÍA UNIVERSAL ──
-    baseline_sig_file = ROOT / "backend/scratch/rc_combined_signal_effectiveness_baseline.json"
+    baseline_sig_file = ROOT / "backend/scratch/rc_tide_signal_effectiveness_baseline.json"
     with open(baseline_sig_file) as f:
         baseline_sig_data = json.load(f)
         

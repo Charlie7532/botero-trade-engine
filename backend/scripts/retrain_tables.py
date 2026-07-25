@@ -5,8 +5,8 @@ Retrain All RC Tables — Production Pipeline
 Single entry point to regenerate all RC probability tables and their derived
 versions. Runs the full pipeline:
 
-  1. Combined: train_combined_table.py  → rc_combined_probability_table.json
-  2. Combined: generate_derived_table.py → rc_combined_derived.json
+  1. Tide: train_tide_table.py  → rc_tide_probability_table.json
+  2. Tide: generate_tide_derived_table.py → rc_tide_derived.json
   3. Wave:     train_wave_table.py       → rc_wave_probability_table.json
   4. Wave:     generate_wave_derived_table.py → rc_wave_derived.json
 
@@ -14,8 +14,8 @@ Usage:
   # Full retrain (both tables)
   PYTHONPATH=$(pwd) backend/.venv/bin/python backend/scripts/retrain_tables.py
 
-  # Combined only
-  PYTHONPATH=$(pwd) backend/.venv/bin/python backend/scripts/retrain_tables.py --combined
+  # Tide only
+  PYTHONPATH=$(pwd) backend/.venv/bin/python backend/scripts/retrain_tables.py --tide
 
   # Wave only
   PYTHONPATH=$(pwd) backend/.venv/bin/python backend/scripts/retrain_tables.py --wave
@@ -84,11 +84,11 @@ def _run_script(name: str, script_path: Path) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Retrain RC probability tables (Combined and/or Wave)."
+        description="Retrain RC probability tables (Tide and/or Wave)."
     )
     parser.add_argument(
-        "--combined", action="store_true",
-        help="Retrain Combined table only (T×C×σVw)."
+        "--tide", action="store_true",
+        help="Retrain Tide table only (T×C×σVw)."
     )
     parser.add_argument(
         "--wave", action="store_true",
@@ -101,14 +101,14 @@ def main():
     args = parser.parse_args()
 
     # Default: run both if neither flag is set
-    run_combined = args.combined or (not args.combined and not args.wave)
-    run_wave = args.wave or (not args.combined and not args.wave)
+    run_tide = args.tide or (not args.tide and not args.wave)
+    run_wave = args.wave or (not args.tide and not args.wave)
     skip_training = args.derived_only
 
     t0 = time.time()
     logger.info("=" * 70)
     logger.info("  RETRAIN RC TABLES — Production Pipeline")
-    logger.info(f"  Combined: {'YES' if run_combined else 'skip'}")
+    logger.info(f"  Tide:     {'YES' if run_tide else 'skip'}")
     logger.info(f"  Wave:     {'YES' if run_wave else 'skip'}")
     logger.info(f"  Training: {'SKIP (derived-only)' if skip_training else 'YES'}")
     logger.info("=" * 70)
@@ -116,11 +116,11 @@ def main():
     steps = []
     failures = []
 
-    # ── Combined ──
-    if run_combined:
+    # ── Tide ──
+    if run_tide:
         if not skip_training:
-            steps.append(("Combined Train", SCRIPTS_DIR / "train_combined_table.py"))
-        steps.append(("Combined Derived", SCRIPTS_DIR / "generate_derived_table.py"))
+            steps.append(("Tide Train", SCRIPTS_DIR / "train_tide_table.py"))
+        steps.append(("Tide Derived", SCRIPTS_DIR / "generate_tide_derived_table.py"))
 
     # ── Wave ──
     if run_wave:

@@ -208,29 +208,29 @@ class SwingGate:
 
         hookup = ohlc["close"].iloc[idx] > ohlc["close"].iloc[idx - 1] if idx > 0 else False
 
-        # ── Combined T×C×σVw Signal (committee-approved, 180 states) ──
-        _combined = None
+        # ── Tide T×C×σVw Signal (committee-approved, 180 states) ──
+        _tide = None
         try:
-            from backend.modules.quality_swing.domain.rules.rc_combined_lookup import (
-                lookup_combined_signal,
+            from backend.modules.quality_swing.domain.rules.rc_tide_lookup import (
+                lookup_tide_signal,
             )
-            _combined = lookup_combined_signal(
+            _tide = lookup_tide_signal(
                 tide_level=_slope_state.tide_level,
                 current_level=_slope_state.current_level,
                 vwap_sigma_wave=channel.vwap_sigma_wave,
             )
-            if _combined:
+            if _tide:
                 decision.alerts.append(
-                    f"COMBINED[{_combined.state_key}]: "
-                    f"signal={_combined.signal} "
-                    f"P_bull={_combined.p_bull:.1f}% "
-                    f"zone={_combined.zone} regime={_combined.regime} "
-                    f"conv={_combined.conviction}/{_combined.conviction_score} "
-                    f"asym={_combined.asymmetry_pp:+.1f}pp "
-                    f"N={_combined.n_samples:,}"
+                    f"TIDE[{_tide.state_key}]: "
+                    f"signal={_tide.signal} "
+                    f"P_bull={_tide.p_bull:.1f}% "
+                    f"zone={_tide.zone} regime={_tide.regime} "
+                    f"conv={_tide.conviction}/{_tide.conviction_score} "
+                    f"asym={_tide.asymmetry_pp:+.1f}pp "
+                    f"N={_tide.n_samples:,}"
                 )
         except Exception as e:
-            logger.warning(f"SwingGate {ticker}: Combined signal lookup failed: {e}")
+            logger.warning(f"SwingGate {ticker}: Tide signal lookup failed: {e}")
 
         # ── Wave W×σVc×σc×vel Signal (micro timing, 443 L1 states) ──
         # Wave = microscopio del canal: timing de pivots + reversal quality
@@ -496,7 +496,7 @@ class SwingGate:
             vel_svw=_vel_svw,
             transition=_transition,
             dual_prob=_dual_prob,
-            combined_signal=_combined,
+            tide_signal=_tide,
             wave_signal=_wave,
             real_ev_signal=_real_ev,
         )
@@ -566,9 +566,9 @@ class SwingGate:
                 conviction = round(conviction * _mh_sizing_mod, 2)
                 reason_accum += f" | MH_MOD: {pre_mh:.2f}→{conviction:.2f}"
 
-            decision.action_code = _combined.action_code if _combined else "STK_ACCUMULATE_STRUCTURAL"
-            decision.urgency_level = _combined.urgency_level if _combined else "LOW"
-            decision.scope_level = _combined.scope_level if _combined else "STK"
+            decision.action_code = _tide.action_code if _tide else "STK_ACCUMULATE_STRUCTURAL"
+            decision.urgency_level = _tide.urgency_level if _tide else "LOW"
+            decision.scope_level = _tide.scope_level if _tide else "STK"
             decision.conviction = round(conviction, 2)
             decision.reasoning = reason_accum
             logger.info(
@@ -585,7 +585,7 @@ class SwingGate:
             vel_svw=_vel_svw,
             transition=_transition,
             dual_prob=_dual_prob,
-            combined_signal=_combined,
+            tide_signal=_tide,
             wave_signal=_wave,
             real_ev_signal=_real_ev,
         )
@@ -600,7 +600,7 @@ class SwingGate:
                     reason_trim += (
                         f" | SENTINEL_{_turn.archetype}: "
                         f"trim {pre_turn:.0%}→{trim_pct:.0%} "
-                        f"({_turn.density_level})"
+                        f"({_turn.diagnosis})"
                     )
                 elif _turn.is_piso and _turn.density_level in (DENSITY_PRESSURIZE, DENSITY_EXPLOSION):
                     # Sentinel says bottom forming → reduce trim urgency
@@ -612,9 +612,9 @@ class SwingGate:
                         f"(piso {_turn.density_level})"
                     )
 
-            decision.action_code = _combined.action_code if _combined else "STK_TRIM_TACTICAL"
-            decision.urgency_level = _combined.urgency_level if _combined else "LOW"
-            decision.scope_level = _combined.scope_level if _combined else "STK"
+            decision.action_code = _tide.action_code if _tide else "STK_TRIM_TACTICAL"
+            decision.urgency_level = _tide.urgency_level if _tide else "LOW"
+            decision.scope_level = _tide.scope_level if _tide else "STK"
             decision.conviction = trim_pct
             decision.reasoning = reason_trim
             logger.info(
@@ -638,11 +638,11 @@ class SwingGate:
             return decision
 
         # ── Default: HOLD ──
-        decision.action_code = _combined.action_code if _combined else "STK_HOLD_NEUTRAL"
+        decision.action_code = _tide.action_code if _tide else "STK_HOLD_NEUTRAL"
 
-        decision.urgency_level = _combined.urgency_level if _combined else "PASSIVE"
-        decision.scope_level = _combined.scope_level if _combined else "STK"
-        _prob_ctx = f" P(bull)={_combined.p_bull:.1f}%" if _combined else ""
+        decision.urgency_level = _tide.urgency_level if _tide else "PASSIVE"
+        decision.scope_level = _tide.scope_level if _tide else "STK"
+        _prob_ctx = f" P(bull)={_tide.p_bull:.1f}%" if _tide else ""
         decision.reasoning = (
             f"HOLD ({decision.action_code}): σ={rc_result.sigma_position:.1f}, "
             f"fear={rc_result.fear_label}, tide={rc_result.tide_slope:.3f}, "

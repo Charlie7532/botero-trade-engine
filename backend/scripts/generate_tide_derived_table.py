@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Generate rc_combined_derived.json v2 — Self-documenting, committee-approved.
+Generate rc_tide_derived.json v2 — Self-documenting, committee-approved.
 
-Reads: rc_combined_probability_table.json (v3, 180 L1 states)
-Writes: rc_combined_derived.json (v2, nested structure, English docs)
+Reads: rc_tide_probability_table.json (v3, 180 L1 states)
+Writes: rc_tide_derived.json (v2, nested structure, English docs)
 
 Approved by: Dalio (CIO), Druckenmiller (Quality Swing), PTJ/Eifert (Speculative),
              Weinstein/Pring (Rotation) — 2026-06-25
@@ -15,8 +15,8 @@ from collections import Counter
 from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-RAW_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_combined_probability_table.json"
-OUT_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_combined_derived.json"
+RAW_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_tide_probability_table.json"
+OUT_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_tide_derived.json"
 
 GLOBAL_P_BULL = 0.6078
 ZONE_MAP = {"<<": "FLOOR", "<": "BELOW", "~": "NEUTRAL", ">": "ABOVE", ">>": "CEILING"}
@@ -550,7 +550,7 @@ def main():
     # ── Assemble final JSON ──
     output = {
         "version": f"v2_derived_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}",
-        "source": "rc_combined_probability_table.json v3",
+        "source": "rc_tide_probability_table.json v3",
         "approved_by": "Committee: Dalio (CIO), Druckenmiller (Quality Swing), PTJ/Eifert (Speculative), Weinstein/Pring (Rotation)",
 
         "context": {

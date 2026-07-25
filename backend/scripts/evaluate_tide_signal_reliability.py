@@ -2,7 +2,7 @@
 """
 Signal Reliability Evaluation
 ================================
-Evaluates the accuracy of all 9 RC combined signals against actual
+Evaluates the accuracy of all 9 RC tide signals against actual
 zigzag pivots across 640K bars and 547 tickers.
 
 For each signal fire, checks whether a zigzag pivot (2.5%/5%/7.5%)
@@ -18,7 +18,7 @@ READ-ONLY — no tables or files are modified.
 
 Usage:
     PYTHONPATH=/root/botero-trade backend/.venv/bin/python \
-        backend/scripts/evaluate_signal_reliability.py
+        backend/scripts/evaluate_tide_signal_reliability.py
 """
 import os, sys, json, time, math, warnings
 from pathlib import Path
@@ -38,7 +38,7 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 # ═══════════════════════════════════════════════════════════════
 # Config
 # ═══════════════════════════════════════════════════════════════
-DERIVED_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_combined_derived.json"
+DERIVED_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_tide_derived.json"
 FORWARD_WINDOWS = [5, 10, 20]
 ZIGZAG_LEVELS = [0.025, 0.05, 0.075]
 ZZ_LABEL = {0.025: "2.5%", 0.05: "5.0%", 0.075: "7.5%"}

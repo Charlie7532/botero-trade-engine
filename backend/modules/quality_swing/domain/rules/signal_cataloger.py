@@ -13,8 +13,8 @@ from typing import Tuple
 
 
 @dataclass(frozen=True)
-class FeatureVector:
-    """Quantitative features extracted from the Combined Fact Store."""
+class TideFeatureVector:
+    """Quantitative features extracted from the Tide Fact Store."""
     zone: str
     p_bull: float
     asymmetry_pp: float
@@ -51,8 +51,8 @@ class SignalCataloger:
     """
 
     @staticmethod
-    def classify_combined(features: FeatureVector) -> Tuple[str, str, str, str]:
-        """Classify Combined Macro Features into Universal Action Codes.
+    def classify_tide(features: TideFeatureVector) -> Tuple[str, str, str, str]:
+        """Classify Tide Macro Features into Universal Action Codes.
 
         Returns:
             (signal_name, action_code, urgency_level, scope_level)

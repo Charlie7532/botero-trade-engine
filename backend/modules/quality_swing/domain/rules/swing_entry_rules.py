@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from backend.modules.quality_swing.domain.rules.rc_state_probability import (
         DualProbability,
     )
-    from backend.modules.quality_swing.domain.rules.rc_combined_lookup import CombinedSignal
+    from backend.modules.quality_swing.domain.rules.rc_tide_lookup import TideSignal
     from backend.modules.quality_swing.domain.rules.rc_wave_lookup import WaveSignal
     from backend.modules.quality_swing.domain.rules.rc_ev_lookup import RealEVSignal
     from backend.modules.quality_swing.domain.rules.slope_transition_detector import SlopeTransition
@@ -49,7 +49,7 @@ def is_accumulate_signal(
     vel_svw: float = 0.0,
     transition: SlopeTransition | None = None,
     dual_prob: DualProbability | None = None,
-    combined_signal: CombinedSignal | None = None,
+    tide_signal: TideSignal | None = None,
     wave_signal: WaveSignal | None = None,
     real_ev_signal: RealEVSignal | None = None,
 ) -> tuple[bool, float, str]:
@@ -98,8 +98,8 @@ def is_accumulate_signal(
     # QS-1: "The value of Wave is in SUPPRESSING false positives
     #        of Combined when micro doesn't confirm."
     # ════════════════════════════════════════════════════════════
-    if combined_signal is not None and combined_signal.is_accumulate:
-        sig = combined_signal
+    if tide_signal is not None and tide_signal.is_accumulate:
+        sig = tide_signal
         base_conviction = sig.confidence_factor
 
         # Observer timing modulation
@@ -110,7 +110,7 @@ def is_accumulate_signal(
         # T9 structural filter: block premature bounces
         if transition and transition.cascade_type == "REBOTE_PREMATURO":
             return False, 0.0, (
-                f"COMBINED_{sig.signal}_BLOCKED: [{sig.state_key}] "
+                f"TIDE_{sig.signal}_BLOCKED: [{sig.state_key}] "
                 f"P_bull={sig.p_bull:.1f}% but T9=REBOTE_PREMATURO "
                 f"— wait for Current to confirm"
             )
@@ -121,7 +121,7 @@ def is_accumulate_signal(
             if wave_signal.is_top_signal:
                 # Issue 5: CONFLICT — macro ACCUM + micro TOP → BLOCK
                 return False, 0.0, (
-                    f"COMBINED_WAVE_CONFLICT: [{sig.state_key}] {sig.signal} "
+                    f"TIDE_WAVE_CONFLICT: [{sig.state_key}] {sig.signal} "
                     f"P_bull={sig.p_bull:.1f}% but Wave [{wave_signal.state_key}] "
                     f"says {wave_signal.signal} (lift_top={wave_signal.lift_best_top:.2f}×)"
                 )
@@ -152,7 +152,7 @@ def is_accumulate_signal(
             conviction = min(base_conviction * 1.0, 0.8)
             if not confirmed:
                 return False, 0.0, (
-                    f"COMBINED_BUY_DIP_UNCONF: [{sig.state_key}] "
+                    f"TIDE_BUY_DIP_UNCONF: [{sig.state_key}] "
                     f"P_bull={sig.p_bull:.1f}% asym={sig.asymmetry_pp:+.1f}pp "
                     f"but obs={observer_recovery:+.3f} not confirmed"
                 )
@@ -189,7 +189,7 @@ def is_accumulate_signal(
 
         conviction = round(conviction, 2)
         return True, conviction, (
-            f"COMBINED_{sig.signal}: [{sig.state_key}] "
+            f"TIDE_{sig.signal}: [{sig.state_key}] "
             f"P_bull={sig.p_bull:.1f}% odds={sig.odds:.1f}:1 "
             f"bot25={sig.bottom_25_pct:.1f}% asym={sig.asymmetry_pp:+.1f}pp "
             f"lift_band={sig.lift_vs_band:.2f} N={sig.n_samples:,} "
@@ -213,12 +213,12 @@ def is_accumulate_signal(
     # ════════════════════════════════════════════════════════════
     if wave_signal is not None and wave_signal.is_bottom_signal:
         # ROT-1: Weinstein Stage 4 Veto
-        combined_p = (combined_signal.p_bull / 100.0) if combined_signal else 0.5
-        if combined_p < 0.40:
+        tide_p = (tide_signal.p_bull / 100.0) if tide_signal else 0.5
+        if tide_p < 0.40:
             return False, 0.0, (
                 f"WAVE_TRAP: [{wave_signal.state_key}] {wave_signal.signal} "
                 f"lift={wave_signal.lift_best_bottom:.2f}× "
-                f"but Combined P_bull={combined_p:.1%} < 40% "
+                f"but Tide P_bull={tide_p:.1%} < 40% "
                 f"— micro bottom in macro downtrend (Weinstein veto)"
             )
 
@@ -236,7 +236,7 @@ def is_accumulate_signal(
 
         # ROT-2: LATE_CYCLE_WARNING reduces conviction dramatically
         rot_tag = ""
-        if combined_signal and combined_signal.rotation_flag == "LATE_CYCLE_WARNING":
+        if tide_signal and tide_signal.rotation_flag == "LATE_CYCLE_WARNING":
             conviction *= 0.3
             rot_tag = " [LATE_CYCLE_WARNING: cycle turning]"
 
@@ -282,7 +282,7 @@ def is_accumulate_signal(
             f"lift_bot={wave_signal.lift_best_bottom:.2f}× "
             f"clean={wave_signal.bot_pct_clean:.0f}% "
             f"P_bull_wave={wave_signal.p_bull:.1f}% "
-            f"P_bull_combined={combined_p:.1%} "
+            f"P_bull_tide={tide_p:.1%} "
             f"micro={wave_signal.microstructure_type} "
             f"obs={observer_recovery:+.3f}"
             f"{flip_tag}{rot_tag}{trans_tag}{dual_tag}{vel_ext_tag}"
@@ -353,7 +353,7 @@ def is_trim_signal(
     vel_svw: float = 0.0,
     transition: SlopeTransition | None = None,
     dual_prob: DualProbability | None = None,
-    combined_signal: CombinedSignal | None = None,
+    tide_signal: TideSignal | None = None,
     wave_signal: WaveSignal | None = None,
     real_ev_signal: RealEVSignal | None = None,
 ) -> tuple[bool, float, str]:
@@ -364,10 +364,10 @@ def is_trim_signal(
     extremes to lock in gains and free capital for future accumulation.
 
     Decision cascade (committee-approved):
-      1. COMBINED + WAVE: T×C×σVw trim signal + W micro modulation
-         - Combined TRIM + Wave TOP → HARD TRIM (boost ×1.3) [Issue 3]
-         - Combined TRIM + Wave NO_EDGE → MODERATE TRIM (×0.7) [Issue 3]
-         - Combined TRIM + Wave BOTTOM → DELAY TRIM (×0.5) [Issue 3]
+      1. TIDE + WAVE: T×C×σVw trim signal + W micro modulation
+         - Tide TRIM + Wave TOP → HARD TRIM (boost ×1.3) [Issue 3]
+         - Tide TRIM + Wave NO_EDGE → MODERATE TRIM (×0.7) [Issue 3]
+         - Tide TRIM + Wave BOTTOM → DELAY TRIM (×0.5) [Issue 3]
       2. DUAL: Asymmetric P(techo)
       3. LEGACY: Heuristic σ + fear rules
 
@@ -377,7 +377,7 @@ def is_trim_signal(
         observer_recovery: Unified Observer recovery_score ∈ [-1, +1].
         vel_sigma_c: Velocity of σ_Current (from Observer Kalman).
         vel_svw: Velocity of σV_Wave (from Observer Kalman).
-        combined_signal: Pre-computed committee signal from T×C×σVw table.
+        tide_signal: Pre-computed committee signal from T×C×σVw table.
         wave_signal: Pre-computed Wave signal from W×σVc×σc×vel table.
 
     Returns:
@@ -385,14 +385,14 @@ def is_trim_signal(
         - trim_pct: 0.0-0.5 (max trim = 50% of swing allocation, never 100%)
     """
     # ════════════════════════════════════════════════════════════
-    # PATH 1: COMBINED + WAVE TRIM
+    # PATH 1: TIDE + WAVE TRIM
     #
     # TAKE_PROFIT: Blow-off top imminent (top_25 > 15%)
     # REDUCE: Preventive distribution (all Ceiling states)
     # Wave modulates trim conviction symmetrically to ACCUM [Issue 3]
     # ════════════════════════════════════════════════════════════
-    if combined_signal is not None and combined_signal.is_trim:
-        sig = combined_signal
+    if tide_signal is not None and tide_signal.is_trim:
+        sig = tide_signal
         deteriorating = observer_recovery < -0.3
         confirmed_down = observer_recovery < 0
 
@@ -430,7 +430,7 @@ def is_trim_signal(
                     wave_tag = " [WAVE_NO_EDGE: moderate trim]"
 
             return True, trim_pct, (
-                f"COMBINED_TAKE_PROFIT: [{sig.state_key}] "
+                f"TIDE_TAKE_PROFIT: [{sig.state_key}] "
                 f"P_bull={sig.p_bull:.1f}% top25={sig.top_25_pct:.1f}% "
                 f"asym={sig.asymmetry_pp:+.1f}pp "
                 f"zone={sig.zone} regime={sig.regime} "
@@ -456,7 +456,7 @@ def is_trim_signal(
                     wave_tag = f" [WAVE_BOTTOM: reducing trim urgency]"
 
             return True, trim_pct, (
-                f"COMBINED_REDUCE: [{sig.state_key}] "
+                f"TIDE_REDUCE: [{sig.state_key}] "
                 f"P_bull={sig.p_bull:.1f}% top25={sig.top_25_pct:.1f}% "
                 f"asym={sig.asymmetry_pp:+.1f}pp "
                 f"zone={sig.zone} regime={sig.regime} "

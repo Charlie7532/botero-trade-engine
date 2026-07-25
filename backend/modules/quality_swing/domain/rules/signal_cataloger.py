@@ -40,18 +40,17 @@ class WaveFeatureVector:
     bot_clean: float
     top_clean: float
     asymmetry_bias: str
+class TideSignalCataloger:
+    """Cataloger & Processor for Macro Tide Trading Signals.
 
-
-class SignalCataloger:
-    """Cataloger & Processor for Trading Signals.
-    
-    Contains the explicit, versioned conditions to map feature vectors into
-    Universal Signal Taxonomy codes. Designed to be easily tuned, re-trained,
-    or replaced by ML/AI model classifiers.
+    Escala: T (Tide) × C (Current) × σVw (VWAP Wave) — 180 Estados L1.
+    Contains explicit conditions mapping Tide feature vectors into
+    Universal Signal Taxonomy codes (STK_*).
     """
+    scale: str = "MACRO_TIDE"
 
     @staticmethod
-    def classify_tide(features: TideFeatureVector) -> Tuple[str, str, str, str]:
+    def classify(features: TideFeatureVector) -> Tuple[str, str, str, str]:
         """Classify Tide Macro Features into Universal Action Codes.
 
         Returns:
@@ -93,8 +92,17 @@ class SignalCataloger:
         return "NO_EDGE", "STK_HOLD_NEUTRAL", "PASSIVE", "STK"
 
 
+class WaveSignalCataloger:
+    """Cataloger & Processor for Micro Wave Timing Signals.
+
+    Escala: W (Wave) × σVc × σc × vel_σVw — 443 Estados L1.
+    Contains explicit conditions mapping Wave feature vectors into
+    Universal Signal Taxonomy codes (WAVE_*).
+    """
+    scale: str = "MICRO_WAVE"
+
     @staticmethod
-    def classify_wave(features: WaveFeatureVector) -> Tuple[str, str, str, str]:
+    def classify(features: WaveFeatureVector) -> Tuple[str, str, str, str]:
         """Classify Wave Micro-Timing Features into Universal Wave Action Codes.
 
         Returns:
@@ -138,7 +146,6 @@ class SignalCataloger:
         ):
             return "EXHAUSTION_TOP", "WAVE_EXHAUSTION_TOP", "HIGH", "STK"
 
-
         # 6. WAVE_APPROACHING_TOP — Proximidad general a techo
         if features.top_lift >= 1.5 and features.top_clean >= 50.0 and features.asymmetry_bias in ("STRONG_TOP", "MILD_TOP"):
             return "APPROACHING_TOP", "WAVE_APPROACHING_TOP", "HIGH", "STK"
@@ -153,4 +160,10 @@ class SignalCataloger:
 
         # 9. WAVE_NO_EDGE — Rango neutral sin ventaja de temporización
         return "NO_EDGE", "WAVE_NO_EDGE", "PASSIVE", "STK"
+
+
+class SignalCataloger:
+    """Backward-compatible facade delegating to TideSignalCataloger and WaveSignalCataloger."""
+    classify_tide = TideSignalCataloger.classify
+    classify_wave = WaveSignalCataloger.classify
 

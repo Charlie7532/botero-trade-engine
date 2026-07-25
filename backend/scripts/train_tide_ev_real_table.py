@@ -17,7 +17,7 @@ Computes the forward pivot expected value model for quality_swing with:
      Without hardcoded qualitative labels (evaluation done flexibly in domain).
 
 Reads from Vault: engine.channel_snapshots + market.ohlcv_bars + engine.zigzag_points.
-Output: backend/modules/quality_swing/domain/rules/rc_ev_probability_table.json
+Output: backend/modules/quality_swing/domain/rules/rc_tide_ev_probability_table.json
 """
 import os, sys, json, time, math, logging, bisect
 from pathlib import Path
@@ -48,7 +48,7 @@ ZIGZAG_LEVELS = [0.025, 0.05, 0.075]
 ZIGZAG_LABEL = {0.025: "zz25", 0.05: "zz50", 0.075: "zz75"}
 MAX_HORIZON_DAYS = 120  # Maximum days to next pivot for swing validity
 
-OUTPUT_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_ev_probability_table.json"
+OUTPUT_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_tide_ev_probability_table.json"
 
 SLOPE_TH = {
     "T": {"+": (0.0456, 0.0983), "-": (0.0263, 0.0765)},

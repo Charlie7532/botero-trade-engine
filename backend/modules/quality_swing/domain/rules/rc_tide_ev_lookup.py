@@ -1,7 +1,7 @@
 """
 Real EV Lookup Adapter — Pure Domain Rule for Quality Swing
 ============================================================
-Loads rc_ev_derived.json and provides point-in-time Expected Value (EV)
+Loads rc_tide_ev_derived.json and provides point-in-time Expected Value (EV)
 and Dual Confluence Signal (P(bull) x EV) queries with:
   1. Cascading Fallback Hierarchy (L3 -> L2 -> L1 -> L0)
   2. Dynamic Flexible Fatigue Evaluation (based on run_length delta EV)
@@ -18,7 +18,7 @@ from typing import Optional, Tuple
 logger = logging.getLogger(__name__)
 
 _DERIVED_TABLE: Optional[dict] = None
-_DERIVED_PATH = Path(__file__).parent / "rc_ev_derived.json"
+_DERIVED_PATH = Path(__file__).parent / "rc_tide_ev_derived.json"
 
 RUN_BUCKET_KEYS = [
     (1, 1, "1"),

@@ -13,7 +13,7 @@ from pathlib import Path
 root_dir = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(root_dir))
 
-from backend.modules.quality_swing.domain.rules.rc_ev_lookup import lookup_real_ev
+from backend.modules.quality_swing.domain.rules.rc_tide_ev_lookup import lookup_real_ev
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)

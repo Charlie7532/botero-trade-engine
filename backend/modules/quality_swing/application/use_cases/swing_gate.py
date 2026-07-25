@@ -260,7 +260,7 @@ class SwingGate:
         # ── Real Point-in-Time EV Signal (Dual Confluence: P(bull) x EV) ──
         _real_ev = None
         try:
-            from backend.modules.quality_swing.domain.rules.rc_ev_lookup import lookup_real_ev
+            from backend.modules.quality_swing.domain.rules.rc_tide_ev_lookup import lookup_real_ev
             _real_ev = lookup_real_ev(
                 tide_slope=_slope_state.tide_level,
                 current_slope=_slope_state.current_level,

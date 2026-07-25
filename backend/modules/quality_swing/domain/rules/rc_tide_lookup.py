@@ -172,11 +172,11 @@ def _load_tide() -> dict:
     return _TIDE
 
 
-from backend.modules.quality_swing.domain.rules.signal_cataloger import SignalCataloger, TideFeatureVector
+from backend.modules.quality_swing.domain.rules.signal_cataloger import TideSignalCataloger, TideFeatureVector
 
 
 def classify_tide_signal_from_features(identity: dict, direction: dict, turn_risk: dict, composition: dict) -> tuple[str, str, str, str]:
-    """Pure Python classifier for Tide Features (Delegates to SignalCataloger)."""
+    """Pure Python classifier for Tide Features (Delegates to TideSignalCataloger)."""
     if "signal" in identity:
         sig = identity["signal"]
         ac, urg, sc = ACTION_CODE_MAP.get(sig, ("STK_HOLD_STABLE", "PASSIVE", "STK"))
@@ -193,7 +193,7 @@ def classify_tide_signal_from_features(identity: dict, direction: dict, turn_ris
         zz75_min_pct=turn_risk.get("bottom_75", {}).get("pct", 0.0),
         momentum_purity=composition["momentum_purity"],
     )
-    return SignalCataloger.classify_tide(features)
+    return TideSignalCataloger.classify(features)
 
 
 

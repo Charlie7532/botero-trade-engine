@@ -102,7 +102,7 @@ def main():
         
     print("="*115)
     
-    out_json = ROOT / "backend/scratch/rc_combined_signal_effectiveness_baseline.json"
+    out_json = ROOT / "backend/scratch/rc_tide_signal_effectiveness_baseline.json"
     df_stats.to_json(out_json, orient="records", indent=2)
     logger.info(f"Resultados guardados en {out_json}")
 

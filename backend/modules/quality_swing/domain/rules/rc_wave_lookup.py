@@ -239,11 +239,11 @@ def _load_wave() -> dict:
     return _WAVE
 
 
-from backend.modules.quality_swing.domain.rules.signal_cataloger import SignalCataloger, WaveFeatureVector
+from backend.modules.quality_swing.domain.rules.signal_cataloger import WaveSignalCataloger, WaveFeatureVector
 
 
 def classify_wave_signal_from_features(state: dict) -> tuple[str, str, str, str]:
-    """Pure Python classifier for Wave Features (Delegates to SignalCataloger)."""
+    """Pure Python classifier for Wave Features (Delegates to WaveSignalCataloger)."""
     identity = state.get("identity", {})
     if "signal" in identity:
         sig = identity["signal"]
@@ -269,7 +269,7 @@ def classify_wave_signal_from_features(state: dict) -> tuple[str, str, str, str]
         top_clean=top_clean,
         asymmetry_bias=composite.get("asymmetry_bias", "NEUTRAL"),
     )
-    return SignalCataloger.classify_wave(features)
+    return WaveSignalCataloger.classify(features)
 
 
 

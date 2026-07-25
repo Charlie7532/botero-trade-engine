@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     )
     from backend.modules.quality_swing.domain.rules.rc_tide_lookup import TideSignal
     from backend.modules.quality_swing.domain.rules.rc_wave_lookup import WaveSignal
-    from backend.modules.quality_swing.domain.rules.rc_ev_lookup import RealEVSignal
+    from backend.modules.quality_swing.domain.rules.rc_tide_ev_lookup import RealEVSignal
     from backend.modules.quality_swing.domain.rules.slope_transition_detector import SlopeTransition
 
 

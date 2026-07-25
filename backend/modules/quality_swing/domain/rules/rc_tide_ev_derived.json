@@ -1,6 +1,6 @@
 {
   "version": "v2_ev_real_derived_2026-07-25",
-  "source_file": "rc_ev_probability_table.json",
+  "source_file": "rc_tide_ev_probability_table.json",
   "description": "Real Point-in-Time Dual Confluence Matrix (P(bull) x EV) with Multi-Level Fallbacks (L0-L3)",
   "_documentation": {
     "model_purpose": "Point-in-Time Real Expected Value (EV) and Dual Confluence Matrix for quality_swing",

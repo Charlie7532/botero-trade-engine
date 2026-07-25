@@ -2,11 +2,11 @@
 """
 Generate Real EV Derived Matrix & Dual Confluence Rules (P(bull) x EV)
 =======================================================================
-Reads rc_ev_probability_table.json (Real Point-in-Time EV model).
+Reads rc_tide_ev_probability_table.json (Real Point-in-Time EV model).
 Computes derived rules, Dual Confluence Matrix (P_bull x EV), Risk/Reward Asymmetry,
 and multi-level rollups (L0, L1, L2, L3) for quality_swing.
 
-Output: backend/modules/quality_swing/domain/rules/rc_ev_derived.json
+Output: backend/modules/quality_swing/domain/rules/rc_tide_ev_derived.json
 """
 import os, sys, json, logging
 from pathlib import Path
@@ -21,8 +21,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-INPUT_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_ev_probability_table.json"
-OUTPUT_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_ev_derived.json"
+INPUT_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_tide_ev_probability_table.json"
+OUTPUT_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_tide_ev_derived.json"
 
 
 def process_levels_dict(levels_raw: dict) -> dict:

@@ -1,0 +1,327 @@
+{
+  "table_1": {
+    "v36": {
+      "final_shares": 503.63,
+      "net_shares_gained": 403.63,
+      "max_dd": -37.36,
+      "total_return": 2491.22
+    },
+    "v37": {
+      "final_shares": 503.98,
+      "net_shares_gained": 403.98,
+      "max_dd": -37.36,
+      "total_return": 2493.0
+    }
+  },
+  "table_2": [
+    {
+      "regime": "CRASH_SISTEMICO",
+      "days": 49,
+      "pct_time": 0.7,
+      "ret_v36": 1852.51,
+      "ret_v37": 1853.35,
+      "delta": 0.84
+    },
+    {
+      "regime": "DISTRIBUCION_PRE_CRASH",
+      "days": 1460,
+      "pct_time": 21.9,
+      "ret_v36": 2213.14,
+      "ret_v37": 2214.73,
+      "delta": 1.6
+    },
+    {
+      "regime": "MERCADO_SANO",
+      "days": 3973,
+      "pct_time": 59.7,
+      "ret_v36": 2547.08,
+      "ret_v37": 2548.91,
+      "delta": 1.83
+    },
+    {
+      "regime": "NORMAL",
+      "days": 176,
+      "pct_time": 2.6,
+      "ret_v36": 1848.48,
+      "ret_v37": 1849.82,
+      "delta": 1.34
+    },
+    {
+      "regime": "PISO_GENERACIONAL",
+      "days": 600,
+      "pct_time": 9.0,
+      "ret_v36": 2076.25,
+      "ret_v37": 2077.19,
+      "delta": 0.94
+    },
+    {
+      "regime": "PULLBACK_ALCISTA",
+      "days": 108,
+      "pct_time": 1.6,
+      "ret_v36": 1710.12,
+      "ret_v37": 1711.37,
+      "delta": 1.25
+    },
+    {
+      "regime": "RECUPERACION",
+      "days": 126,
+      "pct_time": 1.9,
+      "ret_v36": 1249.46,
+      "ret_v37": 1250.13,
+      "delta": 0.67
+    },
+    {
+      "regime": "RE_ACUMULACION_ALCISTA",
+      "days": 166,
+      "pct_time": 2.5,
+      "ret_v36": 1633.84,
+      "ret_v37": 1634.59,
+      "delta": 0.75
+    }
+  ],
+  "table_3": [
+    {
+      "year": 2000,
+      "spy_ret": -9.8,
+      "sh_v36": 108.62,
+      "ret_v36": -2.03,
+      "sh_v37": 108.62,
+      "ret_v37": -2.03,
+      "delta_shares": 0.0
+    },
+    {
+      "year": 2001,
+      "spy_ret": -11.27,
+      "sh_v36": 132.43,
+      "ret_v36": 9.86,
+      "sh_v37": 132.47,
+      "ret_v37": 9.89,
+      "delta_shares": 0.03
+    },
+    {
+      "year": 2002,
+      "spy_ret": -23.63,
+      "sh_v36": 144.48,
+      "ret_v36": -16.8,
+      "sh_v37": 144.52,
+      "ret_v37": -16.8,
+      "delta_shares": 0.04
+    },
+    {
+      "year": 2003,
+      "spy_ret": 22.19,
+      "sh_v36": 144.53,
+      "ret_v36": 21.78,
+      "sh_v37": 144.54,
+      "ret_v37": 21.76,
+      "delta_shares": 0.01
+    },
+    {
+      "year": 2004,
+      "spy_ret": 8.67,
+      "sh_v36": 146.83,
+      "ret_v36": 10.21,
+      "sh_v37": 146.88,
+      "ret_v37": 10.24,
+      "delta_shares": 0.05
+    },
+    {
+      "year": 2005,
+      "spy_ret": 3.5,
+      "sh_v36": 148.82,
+      "ret_v36": 5.19,
+      "sh_v37": 148.81,
+      "ret_v37": 5.15,
+      "delta_shares": -0.01
+    },
+    {
+      "year": 2006,
+      "spy_ret": 11.78,
+      "sh_v36": 148.91,
+      "ret_v36": 12.49,
+      "sh_v37": 148.9,
+      "ret_v37": 12.49,
+      "delta_shares": -0.01
+    },
+    {
+      "year": 2007,
+      "spy_ret": 3.42,
+      "sh_v36": 156.5,
+      "ret_v36": 8.16,
+      "sh_v37": 156.57,
+      "ret_v37": 8.21,
+      "delta_shares": 0.07
+    },
+    {
+      "year": 2008,
+      "spy_ret": -37.74,
+      "sh_v36": 225.09,
+      "ret_v36": -10.02,
+      "sh_v37": 225.2,
+      "ret_v37": -10.02,
+      "delta_shares": 0.1
+    },
+    {
+      "year": 2009,
+      "spy_ret": 19.88,
+      "sh_v36": 255.2,
+      "ret_v36": 35.95,
+      "sh_v37": 255.32,
+      "ret_v37": 35.95,
+      "delta_shares": 0.12
+    },
+    {
+      "year": 2010,
+      "spy_ret": 10.96,
+      "sh_v36": 241.45,
+      "ret_v36": 5.17,
+      "sh_v37": 241.56,
+      "ret_v37": 5.17,
+      "delta_shares": 0.11
+    },
+    {
+      "year": 2011,
+      "spy_ret": -1.22,
+      "sh_v36": 235.61,
+      "ret_v36": -3.72,
+      "sh_v37": 235.75,
+      "ret_v37": -3.71,
+      "delta_shares": 0.14
+    },
+    {
+      "year": 2012,
+      "spy_ret": 11.7,
+      "sh_v36": 260.73,
+      "ret_v36": 23.25,
+      "sh_v37": 260.88,
+      "ret_v37": 23.24,
+      "delta_shares": 0.14
+    },
+    {
+      "year": 2013,
+      "spy_ret": 26.45,
+      "sh_v36": 260.37,
+      "ret_v36": 25.91,
+      "sh_v37": 260.48,
+      "ret_v37": 25.89,
+      "delta_shares": 0.11
+    },
+    {
+      "year": 2014,
+      "spy_ret": 12.37,
+      "sh_v36": 274.13,
+      "ret_v36": 18.23,
+      "sh_v37": 274.24,
+      "ret_v37": 18.23,
+      "delta_shares": 0.11
+    },
+    {
+      "year": 2015,
+      "spy_ret": -0.76,
+      "sh_v36": 298.66,
+      "ret_v36": 7.86,
+      "sh_v37": 298.79,
+      "ret_v37": 7.86,
+      "delta_shares": 0.12
+    },
+    {
+      "year": 2016,
+      "spy_ret": 11.2,
+      "sh_v36": 276.28,
+      "ret_v36": 2.92,
+      "sh_v37": 276.39,
+      "ret_v37": 2.92,
+      "delta_shares": 0.11
+    },
+    {
+      "year": 2017,
+      "spy_ret": 18.48,
+      "sh_v36": 280.3,
+      "ret_v36": 20.04,
+      "sh_v37": 280.4,
+      "ret_v37": 20.04,
+      "delta_shares": 0.11
+    },
+    {
+      "year": 2018,
+      "spy_ret": -7.01,
+      "sh_v36": 280.37,
+      "ret_v36": -6.44,
+      "sh_v37": 280.53,
+      "ret_v37": -6.42,
+      "delta_shares": 0.16
+    },
+    {
+      "year": 2019,
+      "spy_ret": 28.65,
+      "sh_v36": 279.44,
+      "ret_v36": 28.1,
+      "sh_v37": 279.6,
+      "ret_v37": 28.1,
+      "delta_shares": 0.16
+    },
+    {
+      "year": 2020,
+      "spy_ret": 15.09,
+      "sh_v36": 339.0,
+      "ret_v36": 39.24,
+      "sh_v37": 339.23,
+      "ret_v37": 39.25,
+      "delta_shares": 0.22
+    },
+    {
+      "year": 2021,
+      "spy_ret": 28.79,
+      "sh_v36": 342.32,
+      "ret_v36": 30.13,
+      "sh_v37": 342.57,
+      "ret_v37": 30.15,
+      "delta_shares": 0.26
+    },
+    {
+      "year": 2022,
+      "spy_ret": -19.95,
+      "sh_v36": 420.54,
+      "ret_v36": -0.36,
+      "sh_v37": 420.86,
+      "ret_v37": -0.36,
+      "delta_shares": 0.32
+    },
+    {
+      "year": 2023,
+      "spy_ret": 24.81,
+      "sh_v36": 409.2,
+      "ret_v36": 21.27,
+      "sh_v37": 409.5,
+      "ret_v37": 21.27,
+      "delta_shares": 0.31
+    },
+    {
+      "year": 2024,
+      "spy_ret": 24.0,
+      "sh_v36": 414.76,
+      "ret_v36": 25.98,
+      "sh_v37": 415.05,
+      "ret_v37": 25.98,
+      "delta_shares": 0.29
+    },
+    {
+      "year": 2025,
+      "spy_ret": 16.64,
+      "sh_v36": 493.82,
+      "ret_v36": 38.5,
+      "sh_v37": 494.16,
+      "ret_v37": 38.5,
+      "delta_shares": 0.34
+    },
+    {
+      "year": 2026,
+      "spy_ret": 9.53,
+      "sh_v36": 503.63,
+      "ret_v36": 11.28,
+      "sh_v37": 503.98,
+      "ret_v37": 11.28,
+      "delta_shares": 0.35
+    }
+  ]
+}

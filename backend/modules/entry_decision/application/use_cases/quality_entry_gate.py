@@ -70,6 +70,7 @@ class QualityEntryGate:
         self.inv_fi_streak = 0
         self.prev_tw = None
         self.fgbi_window = []
+        self.ratio_window = []
 
     def _classify_bin(self, v: float, edges: list[float]) -> str:
         for idx, e in enumerate(edges):
@@ -97,6 +98,7 @@ class QualityEntryGate:
         sec_th: Dict[str, float],
         sec_fi: Dict[str, float],
         sec_tw: Dict[str, float],
+        sec_v_tw: Optional[Dict[str, float]] = None,
         fi_velocity: float = 0.0,
         current_mode: str = "NORMAL",
         days_in_mode: int = 25,
@@ -114,6 +116,12 @@ class QualityEntryGate:
             self.fgbi_window.append(fgbi)
             if len(self.fgbi_window) > 15:
                 self.fgbi_window.pop(0)
+
+        # Track ratio history
+        ratio = tw / max(1.0, v_tw)
+        self.ratio_window.append(ratio)
+        if len(self.ratio_window) > 7:
+            self.ratio_window.pop(0)
 
         n_dead = sum(1 for v in sec_th.values() if v < 25.0)
         can_switch = days_in_mode >= self.min_regime_days
@@ -145,7 +153,10 @@ class QualityEntryGate:
         
         is_falling_knife = (fi_velocity >= 5.0 or (fi < 30.0 and tw < 15.0 and th > 35.0))
         
-        is_bullish_reabsorption = (th >= 60.0 and fi <= 45.0 and v_tw >= 60.0)
+        # V37.1 Approved 3D Re-absorption: Require tactical ratio TW/FI <= 1.2 and Div_FI >= 0.0
+        div_fi = v_fi - fi
+        ratio_tw_fi = tw / max(1.0, fi)
+        is_bullish_reabsorption = (th >= 60.0 and fi <= 45.0 and v_tw >= 60.0 and ratio_tw_fi <= 1.2 and div_fi >= 0.0)
         is_volume_capitulation = (th <= 25.0 and v_tw >= 60.0)
         
         # Antena de Capitulación Defensiva (XLP Floor)
@@ -168,7 +179,16 @@ class QualityEntryGate:
             elif th < 35.0 and fi < 30.0 and tw > 40.0:
                 new_mode = "BEAR_RALLY"
             elif th > 40.0 and fi > 40.0 and tw < 30.0 and can_switch:
-                new_mode = "PULLBACK_ALCISTA"
+                # V37 Spectral Check: Ensure volume divergence supports dip-buying (v_tw - tw >= -5.0)
+                # and at least 2 sectors maintain active volume support (sec_v_tw >= 40.0)
+                vol_div = v_tw - tw
+                sec_v_tw_dict = sec_v_tw if sec_v_tw is not None else {}
+                strong_sec_vol = sum(1 for s in sec_v_tw_dict.values() if s >= 40.0)
+                if vol_div >= -5.0 and (not sec_v_tw_dict or strong_sec_vol >= 2):
+                    # V37.2 Ceiling Filter: Block entry if a dilated ceiling (ratio >= 3.50) occurred in last 5 days
+                    had_recent_ceiling = any(r >= 3.50 for r in self.ratio_window[:-1]) if len(self.ratio_window) > 1 else False
+                    if not had_recent_ceiling:
+                        new_mode = "PULLBACK_ALCISTA"
             elif th > 60.0 and fi > 50.0 and tw > 40.0:
                 new_mode = "MERCADO_SANO"
             elif th < 40.0 and fi < 35.0 and tw > 35.0:
@@ -177,8 +197,8 @@ class QualityEntryGate:
         elif current_mode == "DISTRIBUCION_PRE_CRASH":
             if th < 30.0 and fi < 25.0 and tw < 20.0:
                 new_mode = "CRASH_SISTEMICO"
-            elif is_bullish_reabsorption:
-                # Desbloqueo inmediato: transición a compra si se detecta re-absorción
+            elif is_bullish_reabsorption or (n_dead == 0 and th > 50.0):
+                # V38 Directive: Transición inmediata a RE_ACUMULACION_ALCISTA si n_dead == 0 y TH > 50%
                 new_mode = "RE_ACUMULACION_ALCISTA"
             elif not is_pre_crash_distribution and can_switch and th > 50.0:
                 new_mode = "MERCADO_SANO"
@@ -240,7 +260,8 @@ class QualityEntryGate:
                 new_mode = "BEAR_RALLY"
 
         elif current_mode == "RECUPERACION":
-            if can_switch and th > 50.0 and fi > 50.0:
+            # V37.1 Fast V-shaped recovery escape hatch: allow transition if momentum & volume lead (tw > 60, v_fi > 55, th > 40)
+            if can_switch and ((th > 50.0 and fi > 50.0) or (tw > 60.0 and v_fi > 55.0 and th > 40.0)):
                 new_mode = "MERCADO_SANO"
             elif th < 25.0 and n_dead >= 5:
                 new_mode = "CRASH_SISTEMICO"
@@ -345,17 +366,18 @@ class QualityEntryGate:
                     target[s] = 1.0 / len(survivors)
 
         elif mode == "PISO_GENERACIONAL":
-            if sec_v_fi:
-                floor_candidates = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
-            else:
-                floor_candidates = sorted([(s, sec_tw.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
-            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in floor_candidates)
+            # V38 Directive: Acumulación Ofensiva en Sectores Alta Beta Castigados (No Defensivos: XLK, XLF, XLY, XLI, etc.)
+            non_def = [s for s in avail_sectors if s not in ("XLP", "XLU", "XLV")]
+            if not non_def:
+                non_def = avail_sectors
+            beaten_down = sorted(non_def, key=lambda s: sec_tw.get(s, 50.0))[:3]
+            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in beaten_down)
             if tot > 0.0:
-                for s, _ in floor_candidates:
+                for s in beaten_down:
                     target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
             else:
-                for s, _ in floor_candidates:
-                    target[s] = 1.0 / len(floor_candidates)
+                for s in beaten_down:
+                    target[s] = 1.0 / len(beaten_down)
 
         elif mode == "BEAR_RALLY":
             safe = [(s, sec_th[s]) for s in avail_sectors if sec_th.get(s, 0) >= 40.0]

@@ -1,8 +1,26 @@
 {
-  "version": "v2_derived_2026-07-23",
+  "version": "v2_derived_2026-07-25",
+  "_documentation": {
+    "model_purpose": "Pre-computed Probability Lookup Table for Quality Swing Gate (T_slope x C_slope x sigma_vwap_wave)",
+    "return_formula": "P(bull) = (HH + HL) / N. Pure empirical probability based on Zigzag 2.5% stereotypes.",
+    "horizon_gate": "Point-in-time state mapping across 763,118 historical bars across 561 tickers.",
+    "state_hierarchy": {
+      "L1": "Full 3D State: T_slope|C_slope|sigma_vwap_wave (180 granular states)",
+      "L2": "Mid-Macro State: T_slope|C_slope (36 states)",
+      "L3": "Macro Tide State: T_slope (6 states)"
+    },
+    "field_glossary": {
+      "N": "Total sample size of trading days in this cell",
+      "p_bull": "Empirical probability of bullish swing continuation (HH + HL)",
+      "z_score": "Z-score of p_bull relative to global baseline (60.78%)",
+      "bias": "Directional asymmetry bias label (STRONG_BULL, MILD_BULL, NEUTRAL, etc.)"
+    },
+    "rare_event_policy": "Cells with N < 30 are flagged for Empirical Bayes parent fallback to prevent overfitting."
+  },
   "source": "rc_combined_probability_table.json v3",
   "approved_by": "Committee: Dalio (CIO), Druckenmiller (Quality Swing), PTJ/Eifert (Speculative), Weinstein/Pring (Rotation)",
   "context": {
+
     "what": "Pre-computed probability lookup table for the Swing Gate (Quality Swing department).",
     "how": "Each cell describes the historical behavior of 538 tickers when the 3 dimensions (T, C, sigma_vw) align in that configuration.",
     "dimensions": "T_slope (Tide, long-term) x C_slope (Current, medium-term) x sigma_vwap_wave (price position vs VWAP Wave)",
@@ -166,8 +184,7 @@
       "identity": {
         "zone": "BELOW",
         "regime": "ALIGN_BULL",
-        "signal": "WATCH",
-        "signal_confidence": 9,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 24,
         "predictive_edge": null,
@@ -266,13 +283,12 @@
           "delta_pp": 0.9
         }
       },
-      "reading": "BELOW in ALIGN_BULL regime. 46.8% bull (0.9:1 odds), +7% vs band. Composition: 26% HH (purity 54%), 36% LL. State #15/180: 1.1% of universe (N=8,809). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in ALIGN_BULL regime. 46.8% bull (0.9:1 odds), +7% vs band. Composition: 26% HH (purity 54%), 36% LL. State #15/180: 1.1% of universe (N=8,809). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+++|C+++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "ALIGN_BULL",
-        "signal": "BUY_DIP",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 44,
@@ -372,14 +388,13 @@
           "delta_pp": 2.0
         }
       },
-      "reading": "FLOOR in ALIGN_BULL regime. 39.6% bull (0.7:1 odds), +19% vs band. Composition: 20% HH (purity 50%), 47% LL. State #7/180: 1.6% of universe (N=11,893). BOTTOM DENSITY: 2.5% bottom in 1 in 4 bars (lift 2.26x). Asymmetry +37.7pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in ALIGN_BULL regime. 39.6% bull (0.7:1 odds), +19% vs band. Composition: 20% HH (purity 50%), 47% LL. State #7/180: 1.6% of universe (N=11,893). BOTTOM DENSITY: 2.5% bottom in 1 in 4 bars (lift 2.26x). Asymmetry +37.7pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM."
     },
     "T+++|C+++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "ALIGN_BULL",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 12,
         "conviction": "HIGH",
         "conviction_score": 17,
         "predictive_edge": null,
@@ -478,13 +493,12 @@
           "delta_pp": -1.0
         }
       },
-      "reading": "ABOVE in ALIGN_BULL regime. 67.0% bull (2.0:1 odds), +1% vs band. Composition: 48% HH (purity 72%), 16% LL. State #2/180 (most frequent): 2.4% of universe (N=18,265). HH runs avg 1.8 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in ALIGN_BULL regime. 67.0% bull (2.0:1 odds), +1% vs band. Composition: 48% HH (purity 72%), 16% LL. State #2/180 (most frequent): 2.4% of universe (N=18,265). HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T+++|C+++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "ALIGN_BULL",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 46,
         "conviction": "HIGH",
         "conviction_score": 100,
@@ -584,14 +598,13 @@
           "delta_pp": -0.6
         }
       },
-      "reading": "CEILING in ALIGN_BULL regime. 85.1% bull (5.7:1 odds), +5% vs band. Composition: 68% HH (purity 80%), 6% LL. State #1/180 (most frequent): 5.5% of universe (N=42,296). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.42x). 7.5% blow-off top in 1 in 20 bars (lift 2.24x). Asymmetry -21.2pp -> tops dominate. HH runs avg 5.4 bars, fragmentation LOW. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in ALIGN_BULL regime. 85.1% bull (5.7:1 odds), +5% vs band. Composition: 68% HH (purity 80%), 6% LL. State #1/180 (most frequent): 5.5% of universe (N=42,296). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.42x). 7.5% blow-off top in 1 in 20 bars (lift 2.24x). Asymmetry -21.2pp -> tops dominate. HH runs avg 5.4 bars, fragmentation LOW."
     },
     "T+++|C+++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "ALIGN_BULL",
-        "signal": "NO_EDGE",
-        "signal_confidence": 9,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 11,
         "predictive_edge": null,
@@ -690,14 +703,13 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "NEUTRAL in ALIGN_BULL regime. 55.0% bull (1.2:1 odds), +0% vs band. Composition: 34% HH (purity 62%), 27% LL. State #10/180: 1.3% of universe (N=9,725). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in ALIGN_BULL regime. 55.0% bull (1.2:1 odds), +0% vs band. Composition: 34% HH (purity 62%), 27% LL. State #10/180: 1.3% of universe (N=9,725). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+++|C++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "ALIGN_BULL",
-        "signal": "WATCH",
-        "signal_confidence": 9,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 20,
         "predictive_edge": null,
@@ -796,13 +808,12 @@
           "delta_pp": -0.5
         }
       },
-      "reading": "BELOW in ALIGN_BULL regime. 44.2% bull (0.8:1 odds), +1% vs band. Composition: 24% HH (purity 54%), 37% LL. State #48/180: 0.7% of universe (N=4,961). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in ALIGN_BULL regime. 44.2% bull (0.8:1 odds), +1% vs band. Composition: 24% HH (purity 54%), 37% LL. State #48/180: 0.7% of universe (N=4,961). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+++|C++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "ALIGN_BULL",
-        "signal": "BUY_DIP",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 35,
@@ -902,13 +913,12 @@
           "delta_pp": 1.4
         }
       },
-      "reading": "FLOOR in ALIGN_BULL regime. 39.0% bull (0.6:1 odds), +17% vs band. Composition: 17% HH (purity 43%), 48% LL. State #21/180: 1.0% of universe (N=7,665). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.99x). Asymmetry +33.0pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in ALIGN_BULL regime. 39.0% bull (0.6:1 odds), +17% vs band. Composition: 17% HH (purity 43%), 48% LL. State #21/180: 1.0% of universe (N=7,665). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.99x). Asymmetry +33.0pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM."
     },
     "T+++|C++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "ALIGN_BULL",
-        "signal": "BULL_TREND",
         "signal_confidence": 17,
         "conviction": "HIGH",
         "conviction_score": 11,
@@ -1008,13 +1018,12 @@
           "delta_pp": -1.0
         }
       },
-      "reading": "ABOVE in ALIGN_BULL regime. 68.1% bull (2.1:1 odds), +3% vs band. Composition: 48% HH (purity 71%), 16% LL. State #27/180: 0.8% of universe (N=6,457). HH runs avg 1.6 bars, fragmentation HIGH. BULL_TREND. Stable uptrend above VWAP. Hold positions, do not add aggressively."
+      "reading": "ABOVE in ALIGN_BULL regime. 68.1% bull (2.1:1 odds), +3% vs band. Composition: 48% HH (purity 71%), 16% LL. State #27/180: 0.8% of universe (N=6,457). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T+++|C++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "ALIGN_BULL",
-        "signal": "REDUCE",
         "signal_confidence": 63,
         "conviction": "HIGH",
         "conviction_score": 55,
@@ -1114,14 +1123,13 @@
           "delta_pp": 0.0
         }
       },
-      "reading": "CEILING in ALIGN_BULL regime. 83.8% bull (5.2:1 odds), +4% vs band. Composition: 64% HH (purity 76%), 8% LL. State #4/180 (most frequent): 1.9% of universe (N=14,631). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.19x). 7.5% blow-off top in 1 in 27 bars (lift 1.64x). Asymmetry -18.6pp -> tops dominate. HH runs avg 3.8 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in ALIGN_BULL regime. 83.8% bull (5.2:1 odds), +4% vs band. Composition: 64% HH (purity 76%), 8% LL. State #4/180 (most frequent): 1.9% of universe (N=14,631). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.19x). 7.5% blow-off top in 1 in 27 bars (lift 1.64x). Asymmetry -18.6pp -> tops dominate. HH runs avg 3.8 bars, fragmentation MEDIUM."
     },
     "T+++|C++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "ALIGN_BULL",
-        "signal": "NO_EDGE",
-        "signal_confidence": 11,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 6,
         "predictive_edge": null,
@@ -1220,14 +1228,13 @@
           "delta_pp": -0.1
         }
       },
-      "reading": "NEUTRAL in ALIGN_BULL regime. 55.8% bull (1.3:1 odds), +2% vs band. Composition: 35% HH (purity 64%), 24% LL. State #51/180: 0.6% of universe (N=4,639). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in ALIGN_BULL regime. 55.8% bull (1.3:1 odds), +2% vs band. Composition: 35% HH (purity 64%), 24% LL. State #51/180: 0.6% of universe (N=4,639). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+++|C+|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 9,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 18,
         "predictive_edge": null,
@@ -1326,13 +1333,12 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "BELOW in TRANSITION regime. 46.0% bull (0.8:1 odds), +5% vs band. Composition: 24% HH (purity 52%), 36% LL. State #42/180: 0.7% of universe (N=5,116). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 46.0% bull (0.8:1 odds), +5% vs band. Composition: 24% HH (purity 52%), 36% LL. State #42/180: 0.7% of universe (N=5,116). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+++|C+|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 42,
@@ -1432,13 +1438,12 @@
           "delta_pp": 1.6
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 36.2% bull (0.6:1 odds), +9% vs band. Composition: 14% HH (purity 37%), 51% LL. State #18/180: 1.1% of universe (N=8,457). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.95x). Asymmetry +31.5pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 36.2% bull (0.6:1 odds), +9% vs band. Composition: 14% HH (purity 37%), 51% LL. State #18/180: 1.1% of universe (N=8,457). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.95x). Asymmetry +31.5pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T+++|C+|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "BULL_TREND",
         "signal_confidence": 13,
         "conviction": "MEDIUM",
         "conviction_score": 7,
@@ -1538,13 +1543,12 @@
           "delta_pp": -1.8
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 66.5% bull (2.0:1 odds), +0% vs band. Composition: 45% HH (purity 68%), 17% LL. State #37/180: 0.7% of universe (N=5,384). HH runs avg 1.5 bars, fragmentation HIGH. BULL_TREND. Stable uptrend above VWAP. Hold positions, do not add aggressively."
+      "reading": "ABOVE in TRANSITION regime. 66.5% bull (2.0:1 odds), +0% vs band. Composition: 45% HH (purity 68%), 17% LL. State #37/180: 0.7% of universe (N=5,384). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+++|C+|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 69,
         "conviction": "HIGH",
         "conviction_score": 40,
@@ -1644,14 +1648,13 @@
           "delta_pp": -0.3
         }
       },
-      "reading": "CEILING in TRANSITION regime. 80.2% bull (4.0:1 odds), -1% vs band. Composition: 58% HH (purity 72%), 10% LL. State #8/180: 1.5% of universe (N=11,520). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.26x). 7.5% blow-off top in 1 in 25 bars (lift 1.80x). Asymmetry -20.4pp -> tops dominate. HH runs avg 3.4 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 80.2% bull (4.0:1 odds), -1% vs band. Composition: 58% HH (purity 72%), 10% LL. State #8/180: 1.5% of universe (N=11,520). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.26x). 7.5% blow-off top in 1 in 25 bars (lift 1.80x). Asymmetry -20.4pp -> tops dominate. HH runs avg 3.4 bars, fragmentation MEDIUM."
     },
     "T+++|C+|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 10,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 5,
         "predictive_edge": null,
@@ -1750,14 +1753,13 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 56.4% bull (1.3:1 odds), +3% vs band. Composition: 35% HH (purity 61%), 26% LL. State #60/180: 0.6% of universe (N=4,257). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 56.4% bull (1.3:1 odds), +3% vs band. Composition: 35% HH (purity 61%), 26% LL. State #60/180: 0.6% of universe (N=4,257). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+++|C---|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "DIV_DOWN",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 24,
         "predictive_edge": null,
@@ -1856,13 +1858,12 @@
           "delta_pp": -0.8
         }
       },
-      "reading": "BELOW in DIV_DOWN regime. 43.5% bull (0.8:1 odds), -1% vs band. Composition: 24% HH (purity 55%), 36% LL. State #31/180: 0.8% of universe (N=6,022). HH runs avg 1.9 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in DIV_DOWN regime. 43.5% bull (0.8:1 odds), -1% vs band. Composition: 24% HH (purity 55%), 36% LL. State #31/180: 0.8% of universe (N=6,022). HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T+++|C---|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "DIV_DOWN",
-        "signal": "ACCUMULATE",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 58,
@@ -1962,14 +1963,13 @@
           "delta_pp": 2.7
         }
       },
-      "reading": "FLOOR in DIV_DOWN regime. 28.0% bull (0.4:1 odds), -16% vs band. Composition: 9% HH (purity 31%), 59% LL. State #13/180: 1.2% of universe (N=8,955). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.14x). Asymmetry +35.1pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH. ACCUMULATE. Extreme capitulation zone. Statistically validated accumulation opportunity."
+      "reading": "FLOOR in DIV_DOWN regime. 28.0% bull (0.4:1 odds), -16% vs band. Composition: 9% HH (purity 31%), 59% LL. State #13/180: 1.2% of universe (N=8,955). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.14x). Asymmetry +35.1pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T+++|C---|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "DIV_DOWN",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 5,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -2068,13 +2068,12 @@
           "delta_pp": -1.3
         }
       },
-      "reading": "ABOVE in DIV_DOWN regime. 63.6% bull (1.7:1 odds), -4% vs band. Composition: 42% HH (purity 67%), 21% LL. State #90/180: 0.4% of universe (N=3,183). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in DIV_DOWN regime. 63.6% bull (1.7:1 odds), -4% vs band. Composition: 42% HH (purity 67%), 21% LL. State #90/180: 0.4% of universe (N=3,183). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T+++|C---|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "DIV_DOWN",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 22,
@@ -2174,14 +2173,13 @@
           "delta_pp": -1.3
         }
       },
-      "reading": "CEILING in DIV_DOWN regime. 78.3% bull (3.6:1 odds), -3% vs band. Composition: 57% HH (purity 73%), 12% LL. State #44/180: 0.7% of universe (N=5,078). TOP RISK: 2.5% top in 1 in 5 bars (lift 1.86x). 7.5% blow-off top in 1 in 15 bars (lift 3.05x). Asymmetry -28.3pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in DIV_DOWN regime. 78.3% bull (3.6:1 odds), -3% vs band. Composition: 57% HH (purity 73%), 12% LL. State #44/180: 0.7% of universe (N=5,078). TOP RISK: 2.5% top in 1 in 5 bars (lift 1.86x). 7.5% blow-off top in 1 in 15 bars (lift 3.05x). Asymmetry -28.3pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM."
     },
     "T+++|C---|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "DIV_DOWN",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 5,
         "predictive_edge": null,
@@ -2280,14 +2278,13 @@
           "delta_pp": -1.7
         }
       },
-      "reading": "NEUTRAL in DIV_DOWN regime. 56.1% bull (1.3:1 odds), +2% vs band. Composition: 34% HH (purity 61%), 26% LL. State #76/180: 0.5% of universe (N=3,676). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in DIV_DOWN regime. 56.1% bull (1.3:1 odds), +2% vs band. Composition: 34% HH (purity 61%), 26% LL. State #76/180: 0.5% of universe (N=3,676). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T+++|C--|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "DIV_DOWN",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 24,
         "predictive_edge": null,
@@ -2386,13 +2383,12 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "BELOW in DIV_DOWN regime. 39.3% bull (0.7:1 odds), -10% vs band. Composition: 20% HH (purity 52%), 44% LL. State #58/180: 0.6% of universe (N=4,286). HH runs avg 1.7 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in DIV_DOWN regime. 39.3% bull (0.7:1 odds), -10% vs band. Composition: 20% HH (purity 52%), 44% LL. State #58/180: 0.6% of universe (N=4,286). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T+++|C--|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "DIV_DOWN",
-        "signal": "BUY_DIP",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 50,
@@ -2492,14 +2488,13 @@
           "delta_pp": 1.3
         }
       },
-      "reading": "FLOOR in DIV_DOWN regime. 27.0% bull (0.4:1 odds), -19% vs band. Composition: 9% HH (purity 35%), 60% LL. State #26/180: 0.9% of universe (N=6,722). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.01x). Asymmetry +33.5pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in DIV_DOWN regime. 27.0% bull (0.4:1 odds), -19% vs band. Composition: 9% HH (purity 35%), 60% LL. State #26/180: 0.9% of universe (N=6,722). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.01x). Asymmetry +33.5pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T+++|C--|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "DIV_DOWN",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 6,
         "conviction": "MEDIUM",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -2598,13 +2593,12 @@
           "delta_pp": -1.7
         }
       },
-      "reading": "ABOVE in DIV_DOWN regime. 64.4% bull (1.8:1 odds), -3% vs band. Composition: 41% HH (purity 64%), 19% LL. State #97/180: 0.4% of universe (N=3,031). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in DIV_DOWN regime. 64.4% bull (1.8:1 odds), -3% vs band. Composition: 41% HH (purity 64%), 19% LL. State #97/180: 0.4% of universe (N=3,031). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+++|C--|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "DIV_DOWN",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 44,
         "conviction": "HIGH",
         "conviction_score": 22,
@@ -2704,14 +2698,13 @@
           "delta_pp": -0.4
         }
       },
-      "reading": "CEILING in DIV_DOWN regime. 77.6% bull (3.5:1 odds), -4% vs band. Composition: 54% HH (purity 70%), 13% LL. State #40/180: 0.7% of universe (N=5,305). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.49x). 7.5% blow-off top in 1 in 23 bars (lift 1.93x). Asymmetry -22.8pp -> tops dominate. HH runs avg 2.9 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in DIV_DOWN regime. 77.6% bull (3.5:1 odds), -4% vs band. Composition: 54% HH (purity 70%), 13% LL. State #40/180: 0.7% of universe (N=5,305). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.49x). 7.5% blow-off top in 1 in 23 bars (lift 1.93x). Asymmetry -22.8pp -> tops dominate. HH runs avg 2.9 bars, fragmentation MEDIUM."
     },
     "T+++|C--|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "DIV_DOWN",
-        "signal": "NO_EDGE",
-        "signal_confidence": 20,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 6,
         "predictive_edge": null,
@@ -2810,14 +2803,13 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "NEUTRAL in DIV_DOWN regime. 53.8% bull (1.2:1 odds), -2% vs band. Composition: 32% HH (purity 60%), 29% LL. State #100/180: 0.4% of universe (N=2,877). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in DIV_DOWN regime. 53.8% bull (1.2:1 odds), -2% vs band. Composition: 32% HH (purity 60%), 29% LL. State #100/180: 0.4% of universe (N=2,877). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+++|C-|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 21,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 22,
         "predictive_edge": null,
@@ -2916,13 +2908,12 @@
           "delta_pp": -0.5
         }
       },
-      "reading": "BELOW in TRANSITION regime. 39.5% bull (0.7:1 odds), -9% vs band. Composition: 20% HH (purity 51%), 42% LL. State #74/180: 0.5% of universe (N=3,701). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 39.5% bull (0.7:1 odds), -9% vs band. Composition: 20% HH (purity 51%), 42% LL. State #74/180: 0.5% of universe (N=3,701). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+++|C-|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 41,
@@ -3022,14 +3013,13 @@
           "delta_pp": 1.6
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 29.8% bull (0.4:1 odds), -10% vs band. Composition: 10% HH (purity 35%), 57% LL. State #36/180: 0.7% of universe (N=5,562). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.93x). Asymmetry +31.8pp -> bottoms dominate. HH runs avg 1.7 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 29.8% bull (0.4:1 odds), -10% vs band. Composition: 10% HH (purity 35%), 57% LL. State #36/180: 0.7% of universe (N=5,562). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.93x). Asymmetry +31.8pp -> bottoms dominate. HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T+++|C-|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 20,
+        "signal_confidence": 6,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -3128,13 +3118,12 @@
           "delta_pp": -0.6
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 63.7% bull (1.8:1 odds), -4% vs band. Composition: 41% HH (purity 65%), 20% LL. State #95/180: 0.4% of universe (N=3,080). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 63.7% bull (1.8:1 odds), -4% vs band. Composition: 41% HH (purity 65%), 20% LL. State #95/180: 0.4% of universe (N=3,080). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+++|C-|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 72,
         "conviction": "HIGH",
         "conviction_score": 22,
@@ -3234,14 +3223,13 @@
           "delta_pp": -0.2
         }
       },
-      "reading": "CEILING in TRANSITION regime. 77.2% bull (3.4:1 odds), -4% vs band. Composition: 54% HH (purity 70%), 12% LL. State #34/180: 0.8% of universe (N=5,765). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.32x). 7.5% blow-off top in 1 in 23 bars (lift 1.93x). Asymmetry -21.3pp -> tops dominate. HH runs avg 2.6 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 77.2% bull (3.4:1 odds), -4% vs band. Composition: 54% HH (purity 70%), 12% LL. State #34/180: 0.8% of universe (N=5,765). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.32x). 7.5% blow-off top in 1 in 23 bars (lift 1.93x). Asymmetry -21.3pp -> tops dominate. HH runs avg 2.6 bars, fragmentation MEDIUM."
     },
     "T+++|C-|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 8,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 8,
         "predictive_edge": null,
@@ -3340,14 +3328,13 @@
           "delta_pp": -1.2
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 51.9% bull (1.1:1 odds), -6% vs band. Composition: 30% HH (purity 58%), 29% LL. State #108/180: 0.4% of universe (N=2,764). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 51.9% bull (1.1:1 odds), -6% vs band. Composition: 30% HH (purity 58%), 29% LL. State #108/180: 0.4% of universe (N=2,764). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T++|C+++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "ALIGN_BULL",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 9,
         "predictive_edge": null,
@@ -3446,14 +3433,13 @@
           "delta_pp": 0.5
         }
       },
-      "reading": "BELOW in ALIGN_BULL regime. 51.3% bull (1.1:1 odds), +17% vs band. Composition: 32% HH (purity 63%), 30% LL. State #89/180: 0.4% of universe (N=3,219). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in ALIGN_BULL regime. 51.3% bull (1.1:1 odds), +17% vs band. Composition: 32% HH (purity 63%), 30% LL. State #89/180: 0.4% of universe (N=3,219). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T++|C+++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "ALIGN_BULL",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 16,
         "predictive_edge": null,
@@ -3552,13 +3538,12 @@
           "delta_pp": 1.4
         }
       },
-      "reading": "FLOOR in ALIGN_BULL regime. 46.5% bull (0.9:1 odds), +40% vs band. Composition: 26% HH (purity 56%), 39% LL. State #57/180: 0.6% of universe (N=4,308). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.89x). Asymmetry +30.3pp -> bottoms dominate. HH runs avg 2.3 bars, fragmentation MEDIUM. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "FLOOR in ALIGN_BULL regime. 46.5% bull (0.9:1 odds), +40% vs band. Composition: 26% HH (purity 56%), 39% LL. State #57/180: 0.6% of universe (N=4,308). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.89x). Asymmetry +30.3pp -> bottoms dominate. HH runs avg 2.3 bars, fragmentation MEDIUM."
     },
     "T++|C+++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "ALIGN_BULL",
-        "signal": "MOMENTUM",
         "signal_confidence": 28,
         "conviction": "HIGH",
         "conviction_score": 15,
@@ -3658,13 +3643,12 @@
           "delta_pp": -0.6
         }
       },
-      "reading": "ABOVE in ALIGN_BULL regime. 70.5% bull (2.4:1 odds), +6% vs band. Composition: 53% HH (purity 75%), 14% LL. State #22/180: 1.0% of universe (N=7,390). HH runs avg 1.9 bars, fragmentation HIGH. MOMENTUM. Genuine trend with clean momentum and low turn risk. Maintain exposure."
+      "reading": "ABOVE in ALIGN_BULL regime. 70.5% bull (2.4:1 odds), +6% vs band. Composition: 53% HH (purity 75%), 14% LL. State #22/180: 1.0% of universe (N=7,390). HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T++|C+++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "ALIGN_BULL",
-        "signal": "STRONG_TREND",
         "signal_confidence": 82,
         "conviction": "HIGH",
         "conviction_score": 62,
@@ -3764,14 +3748,13 @@
           "delta_pp": -0.5
         }
       },
-      "reading": "CEILING in ALIGN_BULL regime. 85.2% bull (5.8:1 odds), +6% vs band. Composition: 70% HH (purity 82%), 6% LL. State #3/180 (most frequent): 2.2% of universe (N=16,490). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.16x). 7.5% blow-off top in 1 in 25 bars (lift 1.75x). Asymmetry -18.6pp -> tops dominate. HH runs avg 4.9 bars, fragmentation MEDIUM. STRONG_TREND. Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively."
+      "reading": "CEILING in ALIGN_BULL regime. 85.2% bull (5.8:1 odds), +6% vs band. Composition: 70% HH (purity 82%), 6% LL. State #3/180 (most frequent): 2.2% of universe (N=16,490). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.16x). 7.5% blow-off top in 1 in 25 bars (lift 1.75x). Asymmetry -18.6pp -> tops dominate. HH runs avg 4.9 bars, fragmentation MEDIUM."
     },
     "T++|C+++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "ALIGN_BULL",
-        "signal": "NO_EDGE",
-        "signal_confidence": 21,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -3870,14 +3853,13 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "NEUTRAL in ALIGN_BULL regime. 58.1% bull (1.4:1 odds), +6% vs band. Composition: 39% HH (purity 67%), 24% LL. State #73/180: 0.5% of universe (N=3,792). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in ALIGN_BULL regime. 58.1% bull (1.4:1 odds), +6% vs band. Composition: 39% HH (purity 67%), 24% LL. State #73/180: 0.5% of universe (N=3,792). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T++|C++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "ALIGN_BULL",
-        "signal": "WATCH",
-        "signal_confidence": 10,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 6,
         "predictive_edge": null,
@@ -3976,14 +3958,13 @@
           "delta_pp": 0.3
         }
       },
-      "reading": "BELOW in ALIGN_BULL regime. 54.6% bull (1.2:1 odds), +25% vs band. Composition: 33% HH (purity 60%), 29% LL. State #94/180: 0.4% of universe (N=3,082). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in ALIGN_BULL regime. 54.6% bull (1.2:1 odds), +25% vs band. Composition: 33% HH (purity 60%), 29% LL. State #94/180: 0.4% of universe (N=3,082). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T++|C++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "ALIGN_BULL",
-        "signal": "WATCH",
-        "signal_confidence": 21,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 13,
         "predictive_edge": null,
@@ -4082,13 +4063,12 @@
           "delta_pp": 1.3
         }
       },
-      "reading": "FLOOR in ALIGN_BULL regime. 49.6% bull (1.0:1 odds), +49% vs band. Composition: 27% HH (purity 54%), 37% LL. State #53/180: 0.6% of universe (N=4,522). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.66x). Asymmetry +27.7pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "FLOOR in ALIGN_BULL regime. 49.6% bull (1.0:1 odds), +49% vs band. Composition: 27% HH (purity 54%), 37% LL. State #53/180: 0.6% of universe (N=4,522). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.66x). Asymmetry +27.7pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM."
     },
     "T++|C++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "ALIGN_BULL",
-        "signal": "MOMENTUM",
         "signal_confidence": 39,
         "conviction": "HIGH",
         "conviction_score": 14,
@@ -4188,13 +4168,12 @@
           "delta_pp": -0.5
         }
       },
-      "reading": "ABOVE in ALIGN_BULL regime. 72.4% bull (2.6:1 odds), +9% vs band. Composition: 54% HH (purity 75%), 13% LL. State #45/180: 0.7% of universe (N=5,033). HH runs avg 1.7 bars, fragmentation HIGH. MOMENTUM. Genuine trend with clean momentum and low turn risk. Maintain exposure."
+      "reading": "ABOVE in ALIGN_BULL regime. 72.4% bull (2.6:1 odds), +9% vs band. Composition: 54% HH (purity 75%), 13% LL. State #45/180: 0.7% of universe (N=5,033). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T++|C++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "ALIGN_BULL",
-        "signal": "STRONG_TREND",
         "signal_confidence": 80,
         "conviction": "HIGH",
         "conviction_score": 48,
@@ -4294,14 +4273,13 @@
           "delta_pp": -0.5
         }
       },
-      "reading": "CEILING in ALIGN_BULL regime. 84.8% bull (5.6:1 odds), +5% vs band. Composition: 67% HH (purity 79%), 7% LL. State #9/180: 1.5% of universe (N=11,125). TOP RISK: 2.5% top in 1 in 10 bars (lift 1.02x). 7.5% blow-off top in 1 in 35 bars (lift 1.26x). Asymmetry -16.5pp -> tops dominate. HH runs avg 3.8 bars, fragmentation MEDIUM. STRONG_TREND. Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively."
+      "reading": "CEILING in ALIGN_BULL regime. 84.8% bull (5.6:1 odds), +5% vs band. Composition: 67% HH (purity 79%), 7% LL. State #9/180: 1.5% of universe (N=11,125). TOP RISK: 2.5% top in 1 in 10 bars (lift 1.02x). 7.5% blow-off top in 1 in 35 bars (lift 1.26x). Asymmetry -16.5pp -> tops dominate. HH runs avg 3.8 bars, fragmentation MEDIUM."
     },
     "T++|C++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "ALIGN_BULL",
-        "signal": "NO_EDGE",
-        "signal_confidence": 12,
+        "signal_confidence": 1,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -4400,14 +4378,13 @@
           "delta_pp": 0.1
         }
       },
-      "reading": "NEUTRAL in ALIGN_BULL regime. 61.9% bull (1.6:1 odds), +13% vs band. Composition: 42% HH (purity 68%), 21% LL. State #91/180: 0.4% of universe (N=3,133). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in ALIGN_BULL regime. 61.9% bull (1.6:1 odds), +13% vs band. Composition: 42% HH (purity 68%), 21% LL. State #91/180: 0.4% of universe (N=3,133). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T++|C+|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 21,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 15,
         "predictive_edge": null,
@@ -4506,13 +4483,12 @@
           "delta_pp": -0.2
         }
       },
-      "reading": "BELOW in TRANSITION regime. 46.1% bull (0.8:1 odds), +5% vs band. Composition: 24% HH (purity 52%), 36% LL. State #79/180: 0.5% of universe (N=3,535). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 46.1% bull (0.8:1 odds), +5% vs band. Composition: 24% HH (purity 52%), 36% LL. State #79/180: 0.5% of universe (N=3,535). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T++|C+|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 72,
         "conviction": "HIGH",
         "conviction_score": 26,
@@ -4612,13 +4588,12 @@
           "delta_pp": 1.0
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 41.8% bull (0.7:1 odds), +26% vs band. Composition: 17% HH (purity 40%), 45% LL. State #30/180: 0.8% of universe (N=6,054). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.58x). Asymmetry +25.3pp -> bottoms dominate. HH runs avg 2.3 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 41.8% bull (0.7:1 odds), +26% vs band. Composition: 17% HH (purity 40%), 45% LL. State #30/180: 0.8% of universe (N=6,054). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.58x). Asymmetry +25.3pp -> bottoms dominate. HH runs avg 2.3 bars, fragmentation MEDIUM."
     },
     "T++|C+|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "BULL_TREND",
         "signal_confidence": 28,
         "conviction": "HIGH",
         "conviction_score": 12,
@@ -4718,13 +4693,12 @@
           "delta_pp": -1.0
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 71.4% bull (2.5:1 odds), +8% vs band. Composition: 48% HH (purity 68%), 15% LL. State #62/180: 0.6% of universe (N=4,230). HH runs avg 1.7 bars, fragmentation HIGH. BULL_TREND. Stable uptrend above VWAP. Hold positions, do not add aggressively."
+      "reading": "ABOVE in TRANSITION regime. 71.4% bull (2.5:1 odds), +8% vs band. Composition: 48% HH (purity 68%), 15% LL. State #62/180: 0.6% of universe (N=4,230). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T++|C+|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "STRONG_TREND",
         "signal_confidence": 61,
         "conviction": "HIGH",
         "conviction_score": 33,
@@ -4824,14 +4798,13 @@
           "delta_pp": 0.0
         }
       },
-      "reading": "CEILING in TRANSITION regime. 79.0% bull (3.8:1 odds), -2% vs band. Composition: 56% HH (purity 70%), 11% LL. State #11/180: 1.2% of universe (N=9,507). TOP RISK: 2.5% top in 1 in 10 bars (lift 1.02x). 7.5% blow-off top in 1 in 31 bars (lift 1.42x). Asymmetry -16.5pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM. STRONG_TREND. Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively."
+      "reading": "CEILING in TRANSITION regime. 79.0% bull (3.8:1 odds), -2% vs band. Composition: 56% HH (purity 70%), 11% LL. State #11/180: 1.2% of universe (N=9,507). TOP RISK: 2.5% top in 1 in 10 bars (lift 1.02x). 7.5% blow-off top in 1 in 31 bars (lift 1.42x). Asymmetry -16.5pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM."
     },
     "T++|C+|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 24,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 4,
         "predictive_edge": null,
@@ -4930,14 +4903,13 @@
           "delta_pp": 0.0
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 56.4% bull (1.3:1 odds), +3% vs band. Composition: 34% HH (purity 61%), 25% LL. State #93/180: 0.4% of universe (N=3,086). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 56.4% bull (1.3:1 odds), +3% vs band. Composition: 34% HH (purity 61%), 25% LL. State #93/180: 0.4% of universe (N=3,086). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T++|C---|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "DIV_DOWN",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 26,
         "predictive_edge": null,
@@ -5036,13 +5008,12 @@
           "delta_pp": -0.1
         }
       },
-      "reading": "BELOW in DIV_DOWN regime. 38.9% bull (0.6:1 odds), -11% vs band. Composition: 22% HH (purity 57%), 43% LL. State #50/180: 0.6% of universe (N=4,788). HH runs avg 2.0 bars, fragmentation MEDIUM. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in DIV_DOWN regime. 38.9% bull (0.6:1 odds), -11% vs band. Composition: 22% HH (purity 57%), 43% LL. State #50/180: 0.6% of universe (N=4,788). HH runs avg 2.0 bars, fragmentation MEDIUM."
     },
     "T++|C---|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "DIV_DOWN",
-        "signal": "ACCUMULATE",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 56,
@@ -5142,14 +5113,13 @@
           "delta_pp": 2.2
         }
       },
-      "reading": "FLOOR in DIV_DOWN regime. 24.3% bull (0.3:1 odds), -27% vs band. Composition: 8% HH (purity 34%), 64% LL. State #24/180: 0.9% of universe (N=7,053). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.98x). Asymmetry +32.3pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH. ACCUMULATE. Extreme capitulation zone. Statistically validated accumulation opportunity."
+      "reading": "FLOOR in DIV_DOWN regime. 24.3% bull (0.3:1 odds), -27% vs band. Composition: 8% HH (purity 34%), 64% LL. State #24/180: 0.9% of universe (N=7,053). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.98x). Asymmetry +32.3pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T++|C---|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "DIV_DOWN",
-        "signal": "NO_EDGE",
-        "signal_confidence": 16,
+        "signal_confidence": 3,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -5248,13 +5218,12 @@
           "delta_pp": -2.1
         }
       },
-      "reading": "ABOVE in DIV_DOWN regime. 62.5% bull (1.7:1 odds), -6% vs band. Composition: 44% HH (purity 70%), 20% LL. State #129/180: 0.3% of universe (N=2,320). HH runs avg 1.7 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in DIV_DOWN regime. 62.5% bull (1.7:1 odds), -6% vs band. Composition: 44% HH (purity 70%), 20% LL. State #129/180: 0.3% of universe (N=2,320). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T++|C---|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "DIV_DOWN",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 61,
         "conviction": "HIGH",
         "conviction_score": 13,
@@ -5354,14 +5323,13 @@
           "delta_pp": -1.0
         }
       },
-      "reading": "CEILING in DIV_DOWN regime. 73.9% bull (2.8:1 odds), -8% vs band. Composition: 54% HH (purity 73%), 15% LL. State #78/180: 0.5% of universe (N=3,548). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.56x). 7.5% blow-off top in 1 in 19 bars (lift 2.33x). Asymmetry -25.7pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in DIV_DOWN regime. 73.9% bull (2.8:1 odds), -8% vs band. Composition: 54% HH (purity 73%), 15% LL. State #78/180: 0.5% of universe (N=3,548). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.56x). 7.5% blow-off top in 1 in 19 bars (lift 2.33x). Asymmetry -25.7pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM."
     },
     "T++|C---|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "DIV_DOWN",
-        "signal": "NO_EDGE",
-        "signal_confidence": 16,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 6,
         "predictive_edge": null,
@@ -5460,14 +5428,13 @@
           "delta_pp": -2.0
         }
       },
-      "reading": "NEUTRAL in DIV_DOWN regime. 53.6% bull (1.2:1 odds), -2% vs band. Composition: 35% HH (purity 66%), 29% LL. State #104/180: 0.4% of universe (N=2,817). HH runs avg 1.7 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in DIV_DOWN regime. 53.6% bull (1.2:1 odds), -2% vs band. Composition: 35% HH (purity 66%), 29% LL. State #104/180: 0.4% of universe (N=2,817). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T++|C--|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "DIV_DOWN",
-        "signal": "WATCH",
-        "signal_confidence": 20,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 20,
         "predictive_edge": null,
@@ -5566,13 +5533,12 @@
           "delta_pp": 0.6
         }
       },
-      "reading": "BELOW in DIV_DOWN regime. 40.0% bull (0.7:1 odds), -8% vs band. Composition: 17% HH (purity 43%), 42% LL. State #86/180: 0.4% of universe (N=3,322). HH runs avg 1.6 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in DIV_DOWN regime. 40.0% bull (0.7:1 odds), -8% vs band. Composition: 17% HH (purity 43%), 42% LL. State #86/180: 0.4% of universe (N=3,322). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T++|C--|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "DIV_DOWN",
-        "signal": "BUY_DIP",
         "signal_confidence": 64,
         "conviction": "HIGH",
         "conviction_score": 42,
@@ -5672,14 +5638,13 @@
           "delta_pp": 1.3
         }
       },
-      "reading": "FLOOR in DIV_DOWN regime. 29.4% bull (0.4:1 odds), -11% vs band. Composition: 9% HH (purity 31%), 60% LL. State #35/180: 0.8% of universe (N=5,733). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.59x). Asymmetry +27.6pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in DIV_DOWN regime. 29.4% bull (0.4:1 odds), -11% vs band. Composition: 9% HH (purity 31%), 60% LL. State #35/180: 0.8% of universe (N=5,733). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.59x). Asymmetry +27.6pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM."
     },
     "T++|C--|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "DIV_DOWN",
-        "signal": "NO_EDGE",
-        "signal_confidence": 20,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -5778,13 +5743,12 @@
           "delta_pp": -0.9
         }
       },
-      "reading": "ABOVE in DIV_DOWN regime. 59.6% bull (1.5:1 odds), -10% vs band. Composition: 36% HH (purity 60%), 24% LL. State #118/180: 0.3% of universe (N=2,545). HH runs avg 1.7 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in DIV_DOWN regime. 59.6% bull (1.5:1 odds), -10% vs band. Composition: 36% HH (purity 60%), 24% LL. State #118/180: 0.3% of universe (N=2,545). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T++|C--|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "DIV_DOWN",
-        "signal": "REDUCE",
         "signal_confidence": 73,
         "conviction": "MEDIUM",
         "conviction_score": 8,
@@ -5884,14 +5848,13 @@
           "delta_pp": 0.0
         }
       },
-      "reading": "CEILING in DIV_DOWN regime. 68.1% bull (2.1:1 odds), -16% vs band. Composition: 44% HH (purity 64%), 19% LL. State #56/180: 0.6% of universe (N=4,405). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.17x). 7.5% blow-off top in 1 in 32 bars (lift 1.39x). Asymmetry -18.5pp -> tops dominate. HH runs avg 2.9 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in DIV_DOWN regime. 68.1% bull (2.1:1 odds), -16% vs band. Composition: 44% HH (purity 64%), 19% LL. State #56/180: 0.6% of universe (N=4,405). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.17x). 7.5% blow-off top in 1 in 32 bars (lift 1.39x). Asymmetry -18.5pp -> tops dominate. HH runs avg 2.9 bars, fragmentation MEDIUM."
     },
     "T++|C--|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "DIV_DOWN",
-        "signal": "NO_EDGE",
-        "signal_confidence": 19,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 9,
         "predictive_edge": null,
@@ -5990,14 +5953,13 @@
           "delta_pp": -1.0
         }
       },
-      "reading": "NEUTRAL in DIV_DOWN regime. 49.4% bull (1.0:1 odds), -10% vs band. Composition: 26% HH (purity 54%), 32% LL. State #127/180: 0.3% of universe (N=2,344). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in DIV_DOWN regime. 49.4% bull (1.0:1 odds), -10% vs band. Composition: 26% HH (purity 54%), 32% LL. State #127/180: 0.3% of universe (N=2,344). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T++|C-|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 20,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 16,
         "predictive_edge": null,
@@ -6096,13 +6058,12 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "BELOW in TRANSITION regime. 41.8% bull (0.7:1 odds), -4% vs band. Composition: 20% HH (purity 47%), 39% LL. State #110/180: 0.4% of universe (N=2,714). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 41.8% bull (0.7:1 odds), -4% vs band. Composition: 20% HH (purity 47%), 39% LL. State #110/180: 0.4% of universe (N=2,714). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T++|C-|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 62,
         "conviction": "HIGH",
         "conviction_score": 30,
@@ -6202,14 +6163,13 @@
           "delta_pp": 1.1
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 34.9% bull (0.5:1 odds), +5% vs band. Composition: 13% HH (purity 36%), 53% LL. State #55/180: 0.6% of universe (N=4,411). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.66x). Asymmetry +27.0pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 34.9% bull (0.5:1 odds), +5% vs band. Composition: 13% HH (purity 36%), 53% LL. State #55/180: 0.6% of universe (N=4,411). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.66x). Asymmetry +27.0pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM."
     },
     "T++|C-|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 23,
+        "signal_confidence": 2,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -6308,13 +6268,12 @@
           "delta_pp": -1.2
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 61.8% bull (1.6:1 odds), -7% vs band. Composition: 40% HH (purity 65%), 21% LL. State #120/180: 0.3% of universe (N=2,471). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 61.8% bull (1.6:1 odds), -7% vs band. Composition: 40% HH (purity 65%), 21% LL. State #120/180: 0.3% of universe (N=2,471). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T++|C-|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 74,
         "conviction": "HIGH",
         "conviction_score": 12,
@@ -6414,14 +6373,13 @@
           "delta_pp": -1.0
         }
       },
-      "reading": "CEILING in TRANSITION regime. 70.5% bull (2.4:1 odds), -13% vs band. Composition: 46% HH (purity 65%), 16% LL. State #47/180: 0.7% of universe (N=4,976). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.16x). 7.5% blow-off top in 1 in 34 bars (lift 1.30x). Asymmetry -18.6pp -> tops dominate. HH runs avg 2.7 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 70.5% bull (2.4:1 odds), -13% vs band. Composition: 46% HH (purity 65%), 16% LL. State #47/180: 0.7% of universe (N=4,976). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.16x). 7.5% blow-off top in 1 in 34 bars (lift 1.30x). Asymmetry -18.6pp -> tops dominate. HH runs avg 2.7 bars, fragmentation MEDIUM."
     },
     "T++|C-|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 11,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 8,
         "predictive_edge": null,
@@ -6520,14 +6478,13 @@
           "delta_pp": 0.1
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 49.3% bull (1.0:1 odds), -10% vs band. Composition: 27% HH (purity 56%), 29% LL. State #136/180: 0.3% of universe (N=2,027). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 49.3% bull (1.0:1 odds), -10% vs band. Composition: 27% HH (purity 56%), 29% LL. State #136/180: 0.3% of universe (N=2,027). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+|C+++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 20,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 9,
         "predictive_edge": null,
@@ -6626,13 +6583,12 @@
           "delta_pp": 0.1
         }
       },
-      "reading": "BELOW in TRANSITION regime. 49.3% bull (1.0:1 odds), +13% vs band. Composition: 32% HH (purity 65%), 32% LL. State #114/180: 0.3% of universe (N=2,634). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 49.3% bull (1.0:1 odds), +13% vs band. Composition: 32% HH (purity 65%), 32% LL. State #114/180: 0.3% of universe (N=2,634). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+|C+++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 68,
         "conviction": "HIGH",
         "conviction_score": 18,
@@ -6732,13 +6688,12 @@
           "delta_pp": 1.9
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 42.5% bull (0.7:1 odds), +28% vs band. Composition: 23% HH (purity 54%), 42% LL. State #82/180: 0.5% of universe (N=3,467). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.95x). Asymmetry +31.2pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 42.5% bull (0.7:1 odds), +28% vs band. Composition: 23% HH (purity 54%), 42% LL. State #82/180: 0.5% of universe (N=3,467). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.95x). Asymmetry +31.2pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM."
     },
     "T+|C+++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "BULL_TREND",
         "signal_confidence": 20,
         "conviction": "HIGH",
         "conviction_score": 12,
@@ -6838,13 +6793,12 @@
           "delta_pp": -0.8
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 69.6% bull (2.3:1 odds), +5% vs band. Composition: 51% HH (purity 73%), 14% LL. State #28/180: 0.8% of universe (N=6,115). HH runs avg 1.9 bars, fragmentation HIGH. BULL_TREND. Stable uptrend above VWAP. Hold positions, do not add aggressively."
+      "reading": "ABOVE in TRANSITION regime. 69.6% bull (2.3:1 odds), +5% vs band. Composition: 51% HH (purity 73%), 14% LL. State #28/180: 0.8% of universe (N=6,115). HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T+|C+++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 66,
         "conviction": "HIGH",
         "conviction_score": 52,
@@ -6944,14 +6898,13 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "CEILING in TRANSITION regime. 85.3% bull (5.8:1 odds), +6% vs band. Composition: 68% HH (purity 80%), 6% LL. State #6/180: 1.6% of universe (N=12,255). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.22x). 7.5% blow-off top in 1 in 25 bars (lift 1.75x). Asymmetry -19.3pp -> tops dominate. HH runs avg 4.6 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 85.3% bull (5.8:1 odds), +6% vs band. Composition: 68% HH (purity 80%), 6% LL. State #6/180: 1.6% of universe (N=12,255). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.22x). 7.5% blow-off top in 1 in 25 bars (lift 1.75x). Asymmetry -19.3pp -> tops dominate. HH runs avg 4.6 bars, fragmentation MEDIUM."
     },
     "T+|C+++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 20,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -7050,14 +7003,13 @@
           "delta_pp": 0.6
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 57.9% bull (1.4:1 odds), +5% vs band. Composition: 40% HH (purity 69%), 23% LL. State #98/180: 0.4% of universe (N=2,991). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 57.9% bull (1.4:1 odds), +5% vs band. Composition: 40% HH (purity 69%), 23% LL. State #98/180: 0.4% of universe (N=2,991). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+|C++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 10,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 7,
         "predictive_edge": null,
@@ -7156,14 +7108,13 @@
           "delta_pp": 0.5
         }
       },
-      "reading": "BELOW in TRANSITION regime. 51.6% bull (1.1:1 odds), +18% vs band. Composition: 30% HH (purity 57%), 31% LL. State #122/180: 0.3% of universe (N=2,430). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 51.6% bull (1.1:1 odds), +18% vs band. Composition: 30% HH (purity 57%), 31% LL. State #122/180: 0.3% of universe (N=2,430). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+|C++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 21,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 13,
         "predictive_edge": null,
@@ -7262,13 +7213,12 @@
           "delta_pp": 1.0
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 48.7% bull (0.9:1 odds), +47% vs band. Composition: 26% HH (purity 53%), 38% LL. State #72/180: 0.5% of universe (N=3,855). BOTTOM DENSITY: 2.5% bottom in 1 in 7 bars (lift 1.44x). Asymmetry +23.7pp -> bottoms dominate. HH runs avg 2.4 bars, fragmentation MEDIUM. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "FLOOR in TRANSITION regime. 48.7% bull (0.9:1 odds), +47% vs band. Composition: 26% HH (purity 53%), 38% LL. State #72/180: 0.5% of universe (N=3,855). BOTTOM DENSITY: 2.5% bottom in 1 in 7 bars (lift 1.44x). Asymmetry +23.7pp -> bottoms dominate. HH runs avg 2.4 bars, fragmentation MEDIUM."
     },
     "T+|C++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "MOMENTUM",
         "signal_confidence": 38,
         "conviction": "HIGH",
         "conviction_score": 12,
@@ -7368,13 +7318,12 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 72.4% bull (2.6:1 odds), +9% vs band. Composition: 51% HH (purity 70%), 12% LL. State #77/180: 0.5% of universe (N=3,676). HH runs avg 1.7 bars, fragmentation HIGH. MOMENTUM. Genuine trend with clean momentum and low turn risk. Maintain exposure."
+      "reading": "ABOVE in TRANSITION regime. 72.4% bull (2.6:1 odds), +9% vs band. Composition: 51% HH (purity 70%), 12% LL. State #77/180: 0.5% of universe (N=3,676). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T+|C++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "STRONG_TREND",
         "signal_confidence": 79,
         "conviction": "HIGH",
         "conviction_score": 41,
@@ -7474,14 +7423,13 @@
           "delta_pp": -0.6
         }
       },
-      "reading": "CEILING in TRANSITION regime. 84.6% bull (5.5:1 odds), +5% vs band. Composition: 63% HH (purity 74%), 7% LL. State #16/180: 1.1% of universe (N=8,743). TOP RISK: 2.5% top in 1 in 9 bars (lift 1.10x). 7.5% blow-off top in 1 in 29 bars (lift 1.52x). Asymmetry -17.7pp -> tops dominate. HH runs avg 3.7 bars, fragmentation MEDIUM. STRONG_TREND. Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively."
+      "reading": "CEILING in TRANSITION regime. 84.6% bull (5.5:1 odds), +5% vs band. Composition: 63% HH (purity 74%), 7% LL. State #16/180: 1.1% of universe (N=8,743). TOP RISK: 2.5% top in 1 in 9 bars (lift 1.10x). 7.5% blow-off top in 1 in 29 bars (lift 1.52x). Asymmetry -17.7pp -> tops dominate. HH runs avg 3.7 bars, fragmentation MEDIUM."
     },
     "T+|C++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 11,
+        "signal_confidence": 3,
         "conviction": "LOW",
         "conviction_score": 2,
         "predictive_edge": null,
@@ -7580,14 +7528,13 @@
           "delta_pp": -0.3
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 63.4% bull (1.7:1 odds), +16% vs band. Composition: 40% HH (purity 63%), 21% LL. State #124/180: 0.3% of universe (N=2,359). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 63.4% bull (1.7:1 odds), +16% vs band. Composition: 40% HH (purity 63%), 21% LL. State #124/180: 0.3% of universe (N=2,359). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+|C+|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 24,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 12,
         "predictive_edge": null,
@@ -7686,13 +7633,12 @@
           "delta_pp": 0.5
         }
       },
-      "reading": "BELOW in TRANSITION regime. 48.5% bull (0.9:1 odds), +11% vs band. Composition: 25% HH (purity 52%), 33% LL. State #88/180: 0.4% of universe (N=3,221). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 48.5% bull (0.9:1 odds), +11% vs band. Composition: 25% HH (purity 52%), 33% LL. State #88/180: 0.4% of universe (N=3,221). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+|C+|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 67,
         "conviction": "HIGH",
         "conviction_score": 23,
@@ -7792,13 +7738,12 @@
           "delta_pp": 1.0
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 43.1% bull (0.8:1 odds), +30% vs band. Composition: 18% HH (purity 42%), 43% LL. State #38/180: 0.7% of universe (N=5,366). BOTTOM DENSITY: 2.5% bottom in 1 in 7 bars (lift 1.46x). Asymmetry +23.9pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 43.1% bull (0.8:1 odds), +30% vs band. Composition: 18% HH (purity 42%), 43% LL. State #38/180: 0.7% of universe (N=5,366). BOTTOM DENSITY: 2.5% bottom in 1 in 7 bars (lift 1.46x). Asymmetry +23.9pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM."
     },
     "T+|C+|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "BULL_TREND",
         "signal_confidence": 18,
         "conviction": "MEDIUM",
         "conviction_score": 7,
@@ -7898,13 +7843,12 @@
           "delta_pp": -0.8
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 67.7% bull (2.1:1 odds), +2% vs band. Composition: 46% HH (purity 67%), 16% LL. State #75/180: 0.5% of universe (N=3,693). HH runs avg 1.6 bars, fragmentation HIGH. BULL_TREND. Stable uptrend above VWAP. Hold positions, do not add aggressively."
+      "reading": "ABOVE in TRANSITION regime. 67.7% bull (2.1:1 odds), +2% vs band. Composition: 46% HH (purity 67%), 16% LL. State #75/180: 0.5% of universe (N=3,693). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T+|C+|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "STRONG_TREND",
         "signal_confidence": 62,
         "conviction": "HIGH",
         "conviction_score": 31,
@@ -8004,14 +7948,13 @@
           "delta_pp": -0.8
         }
       },
-      "reading": "CEILING in TRANSITION regime. 79.5% bull (3.9:1 odds), -2% vs band. Composition: 55% HH (purity 69%), 10% LL. State #19/180: 1.1% of universe (N=8,114). TOP RISK: 2.5% top in 1 in 10 bars (lift 1.00x). 7.5% blow-off top in 1 in 34 bars (lift 1.33x). Asymmetry -15.8pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM. STRONG_TREND. Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively."
+      "reading": "CEILING in TRANSITION regime. 79.5% bull (3.9:1 odds), -2% vs band. Composition: 55% HH (purity 69%), 10% LL. State #19/180: 1.1% of universe (N=8,114). TOP RISK: 2.5% top in 1 in 10 bars (lift 1.00x). 7.5% blow-off top in 1 in 34 bars (lift 1.33x). Asymmetry -15.8pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM."
     },
     "T+|C+|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 12,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -8110,14 +8053,13 @@
           "delta_pp": -0.5
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 57.2% bull (1.3:1 odds), +4% vs band. Composition: 34% HH (purity 60%), 24% LL. State #109/180: 0.4% of universe (N=2,739). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 57.2% bull (1.3:1 odds), +4% vs band. Composition: 34% HH (purity 60%), 24% LL. State #109/180: 0.4% of universe (N=2,739). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+|C---|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 26,
         "predictive_edge": null,
@@ -8216,13 +8158,12 @@
           "delta_pp": -0.9
         }
       },
-      "reading": "BELOW in TRANSITION regime. 40.7% bull (0.7:1 odds), -7% vs band. Composition: 22% HH (purity 54%), 43% LL. State #41/180: 0.7% of universe (N=5,283). HH runs avg 1.9 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 40.7% bull (0.7:1 odds), -7% vs band. Composition: 22% HH (purity 54%), 43% LL. State #41/180: 0.7% of universe (N=5,283). HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T+|C---|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 60,
@@ -8322,14 +8263,13 @@
           "delta_pp": 2.1
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 24.0% bull (0.3:1 odds), -28% vs band. Composition: 8% HH (purity 34%), 64% LL. State #20/180: 1.1% of universe (N=7,990). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.96x). Asymmetry +32.4pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 24.0% bull (0.3:1 odds), -28% vs band. Composition: 8% HH (purity 34%), 64% LL. State #20/180: 1.1% of universe (N=7,990). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.96x). Asymmetry +32.4pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T+|C---|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 16,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 0,
         "predictive_edge": null,
@@ -8428,13 +8368,12 @@
           "delta_pp": -1.7
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 60.9% bull (1.6:1 odds), -8% vs band. Composition: 42% HH (purity 69%), 23% LL. State #107/180: 0.4% of universe (N=2,780). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 60.9% bull (1.6:1 odds), -8% vs band. Composition: 42% HH (purity 69%), 23% LL. State #107/180: 0.4% of universe (N=2,780). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T+|C---|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 54,
         "conviction": "HIGH",
         "conviction_score": 13,
@@ -8534,14 +8473,13 @@
           "delta_pp": -0.3
         }
       },
-      "reading": "CEILING in TRANSITION regime. 72.6% bull (2.6:1 odds), -10% vs band. Composition: 52% HH (purity 72%), 16% LL. State #63/180: 0.6% of universe (N=4,217). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.48x). 7.5% blow-off top in 1 in 20 bars (lift 2.25x). Asymmetry -24.4pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in TRANSITION regime. 72.6% bull (2.6:1 odds), -10% vs band. Composition: 52% HH (purity 72%), 16% LL. State #63/180: 0.6% of universe (N=4,217). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.48x). 7.5% blow-off top in 1 in 20 bars (lift 2.25x). Asymmetry -24.4pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM."
     },
     "T+|C---|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 6,
         "predictive_edge": null,
@@ -8640,14 +8578,13 @@
           "delta_pp": -1.2
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 54.8% bull (1.2:1 odds), -0% vs band. Composition: 35% HH (purity 64%), 28% LL. State #85/180: 0.4% of universe (N=3,335). HH runs avg 1.7 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 54.8% bull (1.2:1 odds), -0% vs band. Composition: 35% HH (purity 64%), 28% LL. State #85/180: 0.4% of universe (N=3,335). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T+|C--|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 21,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 22,
         "predictive_edge": null,
@@ -8746,13 +8683,12 @@
           "delta_pp": -0.4
         }
       },
-      "reading": "BELOW in TRANSITION regime. 38.9% bull (0.6:1 odds), -11% vs band. Composition: 18% HH (purity 45%), 44% LL. State #80/180: 0.5% of universe (N=3,488). HH runs avg 1.6 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 38.9% bull (0.6:1 odds), -11% vs band. Composition: 18% HH (purity 45%), 44% LL. State #80/180: 0.5% of universe (N=3,488). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T+|C--|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 64,
         "conviction": "HIGH",
         "conviction_score": 44,
@@ -8852,14 +8788,13 @@
           "delta_pp": 1.4
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 28.2% bull (0.4:1 odds), -15% vs band. Composition: 9% HH (purity 33%), 60% LL. State #32/180: 0.8% of universe (N=5,821). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.59x). Asymmetry +27.6pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 28.2% bull (0.4:1 odds), -15% vs band. Composition: 9% HH (purity 33%), 60% LL. State #32/180: 0.8% of universe (N=5,821). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.59x). Asymmetry +27.6pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM."
     },
     "T+|C--|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 20,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 4,
         "predictive_edge": null,
@@ -8958,13 +8893,12 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 56.4% bull (1.3:1 odds), -15% vs band. Composition: 34% HH (purity 60%), 26% LL. State #105/180: 0.4% of universe (N=2,801). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 56.4% bull (1.3:1 odds), -15% vs band. Composition: 34% HH (purity 60%), 26% LL. State #105/180: 0.4% of universe (N=2,801). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T+|C--|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 77,
         "conviction": "HIGH",
         "conviction_score": 9,
@@ -9064,14 +8998,13 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "CEILING in TRANSITION regime. 67.8% bull (2.1:1 odds), -16% vs band. Composition: 42% HH (purity 63%), 20% LL. State #46/180: 0.7% of universe (N=5,023). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.23x). 7.5% blow-off top in 1 in 32 bars (lift 1.40x). Asymmetry -19.3pp -> tops dominate. HH runs avg 3.0 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 67.8% bull (2.1:1 odds), -16% vs band. Composition: 42% HH (purity 63%), 20% LL. State #46/180: 0.7% of universe (N=5,023). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.23x). 7.5% blow-off top in 1 in 32 bars (lift 1.40x). Asymmetry -19.3pp -> tops dominate. HH runs avg 3.0 bars, fragmentation MEDIUM."
     },
     "T+|C--|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 23,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 11,
         "predictive_edge": null,
@@ -9170,14 +9103,13 @@
           "delta_pp": -0.1
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 47.2% bull (0.9:1 odds), -14% vs band. Composition: 24% HH (purity 52%), 33% LL. State #115/180: 0.3% of universe (N=2,632). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 47.2% bull (0.9:1 odds), -14% vs band. Composition: 24% HH (purity 52%), 33% LL. State #115/180: 0.3% of universe (N=2,632). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+|C-|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 10,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 19,
         "predictive_edge": null,
@@ -9276,13 +9208,12 @@
           "delta_pp": 1.0
         }
       },
-      "reading": "BELOW in TRANSITION regime. 38.0% bull (0.6:1 odds), -13% vs band. Composition: 16% HH (purity 41%), 43% LL. State #113/180: 0.3% of universe (N=2,639). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 38.0% bull (0.6:1 odds), -13% vs band. Composition: 16% HH (purity 41%), 43% LL. State #113/180: 0.3% of universe (N=2,639). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T+|C-|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 71,
         "conviction": "HIGH",
         "conviction_score": 34,
@@ -9382,14 +9313,13 @@
           "delta_pp": 1.3
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 29.8% bull (0.4:1 odds), -10% vs band. Composition: 10% HH (purity 34%), 57% LL. State #67/180: 0.6% of universe (N=4,164). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.57x). Asymmetry +25.6pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 29.8% bull (0.4:1 odds), -10% vs band. Composition: 10% HH (purity 34%), 57% LL. State #67/180: 0.6% of universe (N=4,164). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.57x). Asymmetry +25.6pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T+|C-|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 23,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -9488,13 +9418,12 @@
           "delta_pp": -0.5
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 59.9% bull (1.5:1 odds), -10% vs band. Composition: 37% HH (purity 62%), 22% LL. State #119/180: 0.3% of universe (N=2,481). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 59.9% bull (1.5:1 odds), -10% vs band. Composition: 37% HH (purity 62%), 22% LL. State #119/180: 0.3% of universe (N=2,481). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T+|C-|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 64,
         "conviction": "HIGH",
         "conviction_score": 13,
@@ -9594,14 +9523,13 @@
           "delta_pp": 0.1
         }
       },
-      "reading": "CEILING in TRANSITION regime. 71.2% bull (2.5:1 odds), -12% vs band. Composition: 46% HH (purity 64%), 15% LL. State #49/180: 0.7% of universe (N=4,935). TOP RISK: 2.5% top in 1 in 9 bars (lift 1.08x). 7.5% blow-off top in 1 in 42 bars (lift 1.06x). Asymmetry -16.1pp -> tops dominate. HH runs avg 2.5 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 71.2% bull (2.5:1 odds), -12% vs band. Composition: 46% HH (purity 64%), 15% LL. State #49/180: 0.7% of universe (N=4,935). TOP RISK: 2.5% top in 1 in 9 bars (lift 1.08x). 7.5% blow-off top in 1 in 42 bars (lift 1.06x). Asymmetry -16.1pp -> tops dominate. HH runs avg 2.5 bars, fragmentation MEDIUM."
     },
     "T+|C-|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 21,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 7,
         "predictive_edge": null,
@@ -9700,14 +9628,13 @@
           "delta_pp": -1.8
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 50.0% bull (1.0:1 odds), -9% vs band. Composition: 28% HH (purity 57%), 31% LL. State #139/180: 0.3% of universe (N=1,962). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 50.0% bull (1.0:1 odds), -9% vs band. Composition: 28% HH (purity 57%), 31% LL. State #139/180: 0.3% of universe (N=1,962). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T---|C+++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "DIV_UP",
-        "signal": "WATCH",
-        "signal_confidence": 16,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 18,
         "predictive_edge": null,
@@ -9806,13 +9733,12 @@
           "delta_pp": 0.9
         }
       },
-      "reading": "BELOW in DIV_UP regime. 40.4% bull (0.7:1 odds), -8% vs band. Composition: 20% HH (purity 49%), 43% LL. State #106/180: 0.4% of universe (N=2,790). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in DIV_UP regime. 40.4% bull (0.7:1 odds), -8% vs band. Composition: 20% HH (purity 49%), 43% LL. State #106/180: 0.4% of universe (N=2,790). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T---|C+++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "DIV_UP",
-        "signal": "ACCUMULATE",
         "signal_confidence": 69,
         "conviction": "HIGH",
         "conviction_score": 33,
@@ -9912,14 +9838,13 @@
           "delta_pp": 1.9
         }
       },
-      "reading": "FLOOR in DIV_UP regime. 30.0% bull (0.4:1 odds), -10% vs band. Composition: 11% HH (purity 36%), 58% LL. State #68/180: 0.5% of universe (N=4,040). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.14x). Asymmetry +34.1pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH. ACCUMULATE. Extreme capitulation zone. Statistically validated accumulation opportunity."
+      "reading": "FLOOR in DIV_UP regime. 30.0% bull (0.4:1 odds), -10% vs band. Composition: 11% HH (purity 36%), 58% LL. State #68/180: 0.5% of universe (N=4,040). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.14x). Asymmetry +34.1pp -> bottoms dominate. HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T---|C+++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "DIV_UP",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 0,
         "predictive_edge": null,
@@ -10018,13 +9943,12 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "ABOVE in DIV_UP regime. 60.9% bull (1.6:1 odds), -8% vs band. Composition: 42% HH (purity 69%), 21% LL. State #52/180: 0.6% of universe (N=4,612). HH runs avg 1.8 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in DIV_UP regime. 60.9% bull (1.6:1 odds), -8% vs band. Composition: 42% HH (purity 69%), 21% LL. State #52/180: 0.6% of universe (N=4,612). HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T---|C+++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "DIV_UP",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 33,
@@ -10124,14 +10048,13 @@
           "delta_pp": -2.0
         }
       },
-      "reading": "CEILING in DIV_UP regime. 80.1% bull (4.0:1 odds), -1% vs band. Composition: 64% HH (purity 80%), 9% LL. State #17/180: 1.1% of universe (N=8,540). TOP RISK: 2.5% top in 1 in 5 bars (lift 1.90x). 7.5% blow-off top in 1 in 13 bars (lift 3.38x). Asymmetry -28.9pp -> tops dominate. HH runs avg 4.2 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in DIV_UP regime. 80.1% bull (4.0:1 odds), -1% vs band. Composition: 64% HH (purity 80%), 9% LL. State #17/180: 1.1% of universe (N=8,540). TOP RISK: 2.5% top in 1 in 5 bars (lift 1.90x). 7.5% blow-off top in 1 in 13 bars (lift 3.38x). Asymmetry -28.9pp -> tops dominate. HH runs avg 4.2 bars, fragmentation MEDIUM."
     },
     "T---|C+++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "DIV_UP",
-        "signal": "NO_EDGE",
-        "signal_confidence": 8,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 12,
         "predictive_edge": null,
@@ -10230,14 +10153,13 @@
           "delta_pp": 0.3
         }
       },
-      "reading": "NEUTRAL in DIV_UP regime. 46.8% bull (0.9:1 odds), -15% vs band. Composition: 24% HH (purity 51%), 34% LL. State #103/180: 0.4% of universe (N=2,826). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in DIV_UP regime. 46.8% bull (0.9:1 odds), -15% vs band. Composition: 24% HH (purity 51%), 34% LL. State #103/180: 0.4% of universe (N=2,826). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T---|C++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "DIV_UP",
-        "signal": "WATCH",
-        "signal_confidence": 7,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 11,
         "predictive_edge": null,
@@ -10336,13 +10258,12 @@
           "delta_pp": 0.8
         }
       },
-      "reading": "BELOW in DIV_UP regime. 41.1% bull (0.7:1 odds), -6% vs band. Composition: 20% HH (purity 48%), 42% LL. State #159/180: 0.2% of universe (N=1,381). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in DIV_UP regime. 41.1% bull (0.7:1 odds), -6% vs band. Composition: 20% HH (purity 48%), 42% LL. State #159/180: 0.2% of universe (N=1,381). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T---|C++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "DIV_UP",
-        "signal": "BUY_DIP",
         "signal_confidence": 63,
         "conviction": "MEDIUM",
         "conviction_score": 25,
@@ -10442,14 +10363,13 @@
           "delta_pp": 1.8
         }
       },
-      "reading": "FLOOR in DIV_UP regime. 27.5% bull (0.4:1 odds), -17% vs band. Composition: 9% HH (purity 34%), 59% LL. State #131/180: 0.3% of universe (N=2,236). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.89x). Asymmetry +32.5pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in DIV_UP regime. 27.5% bull (0.4:1 odds), -17% vs band. Composition: 9% HH (purity 34%), 59% LL. State #131/180: 0.3% of universe (N=2,236). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.89x). Asymmetry +32.5pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T---|C++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "DIV_UP",
-        "signal": "NO_EDGE",
-        "signal_confidence": 15,
+        "signal_confidence": 2,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -10548,13 +10468,12 @@
           "delta_pp": -0.3
         }
       },
-      "reading": "ABOVE in DIV_UP regime. 62.4% bull (1.7:1 odds), -6% vs band. Composition: 40% HH (purity 64%), 18% LL. State #145/180: 0.2% of universe (N=1,776). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in DIV_UP regime. 62.4% bull (1.7:1 odds), -6% vs band. Composition: 40% HH (purity 64%), 18% LL. State #145/180: 0.2% of universe (N=1,776). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T---|C++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "DIV_UP",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 65,
         "conviction": "HIGH",
         "conviction_score": 21,
@@ -10654,14 +10573,13 @@
           "delta_pp": -1.6
         }
       },
-      "reading": "CEILING in DIV_UP regime. 79.9% bull (4.0:1 odds), -1% vs band. Composition: 62% HH (purity 78%), 9% LL. State #64/180: 0.6% of universe (N=4,215). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.67x). 7.5% blow-off top in 1 in 16 bars (lift 2.82x). Asymmetry -25.7pp -> tops dominate. HH runs avg 2.9 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in DIV_UP regime. 79.9% bull (4.0:1 odds), -1% vs band. Composition: 62% HH (purity 78%), 9% LL. State #64/180: 0.6% of universe (N=4,215). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.67x). 7.5% blow-off top in 1 in 16 bars (lift 2.82x). Asymmetry -25.7pp -> tops dominate. HH runs avg 2.9 bars, fragmentation MEDIUM."
     },
     "T---|C++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "DIV_UP",
-        "signal": "NO_EDGE",
-        "signal_confidence": 6,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 4,
         "predictive_edge": null,
@@ -10760,14 +10678,13 @@
           "delta_pp": 0.5
         }
       },
-      "reading": "NEUTRAL in DIV_UP regime. 53.5% bull (1.1:1 odds), -3% vs band. Composition: 30% HH (purity 55%), 28% LL. State #162/180 (rare): 0.2% of universe (N=1,325). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in DIV_UP regime. 53.5% bull (1.1:1 odds), -3% vs band. Composition: 30% HH (purity 55%), 28% LL. State #162/180 (rare): 0.2% of universe (N=1,325). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T---|C+|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 7,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 13,
         "predictive_edge": null,
@@ -10866,13 +10783,12 @@
           "delta_pp": 0.2
         }
       },
-      "reading": "BELOW in TRANSITION regime. 39.4% bull (0.7:1 odds), -10% vs band. Composition: 18% HH (purity 46%), 42% LL. State #151/180: 0.2% of universe (N=1,626). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 39.4% bull (0.7:1 odds), -10% vs band. Composition: 18% HH (purity 46%), 42% LL. State #151/180: 0.2% of universe (N=1,626). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T---|C+|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 66,
         "conviction": "MEDIUM",
         "conviction_score": 30,
@@ -10972,14 +10888,13 @@
           "delta_pp": 2.2
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 26.7% bull (0.4:1 odds), -20% vs band. Composition: 9% HH (purity 35%), 62% LL. State #102/180: 0.4% of universe (N=2,829). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.91x). Asymmetry +29.9pp -> bottoms dominate. HH runs avg 1.7 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 26.7% bull (0.4:1 odds), -20% vs band. Composition: 9% HH (purity 35%), 62% LL. State #102/180: 0.4% of universe (N=2,829). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.91x). Asymmetry +29.9pp -> bottoms dominate. HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T---|C+|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 15,
+        "signal_confidence": 2,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -11078,13 +10993,12 @@
           "delta_pp": -1.3
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 61.7% bull (1.6:1 odds), -7% vs band. Composition: 42% HH (purity 69%), 19% LL. State #143/180: 0.2% of universe (N=1,861). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 61.7% bull (1.6:1 odds), -7% vs band. Composition: 42% HH (purity 69%), 19% LL. State #143/180: 0.2% of universe (N=1,861). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T---|C+|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 52,
         "conviction": "HIGH",
         "conviction_score": 22,
@@ -11184,14 +11098,13 @@
           "delta_pp": -1.3
         }
       },
-      "reading": "CEILING in TRANSITION regime. 80.9% bull (4.2:1 odds), +0% vs band. Composition: 65% HH (purity 80%), 8% LL. State #61/180: 0.6% of universe (N=4,235). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.61x). 7.5% blow-off top in 1 in 18 bars (lift 2.47x). Asymmetry -23.5pp -> tops dominate. HH runs avg 2.8 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in TRANSITION regime. 80.9% bull (4.2:1 odds), +0% vs band. Composition: 65% HH (purity 80%), 8% LL. State #61/180: 0.6% of universe (N=4,235). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.61x). 7.5% blow-off top in 1 in 18 bars (lift 2.47x). Asymmetry -23.5pp -> tops dominate. HH runs avg 2.8 bars, fragmentation MEDIUM."
     },
     "T---|C+|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 6,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 5,
         "predictive_edge": null,
@@ -11290,14 +11203,13 @@
           "delta_pp": 0.3
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 50.7% bull (1.0:1 odds), -8% vs band. Composition: 29% HH (purity 57%), 32% LL. State #164/180 (rare): 0.2% of universe (N=1,319). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 50.7% bull (1.0:1 odds), -8% vs band. Composition: 29% HH (purity 57%), 32% LL. State #164/180 (rare): 0.2% of universe (N=1,319). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T---|C---|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "ALIGN_BEAR",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 27,
         "predictive_edge": null,
@@ -11396,13 +11308,12 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "BELOW in ALIGN_BEAR regime. 46.2% bull (0.9:1 odds), +6% vs band. Composition: 25% HH (purity 54%), 34% LL. State #12/180: 1.2% of universe (N=9,450). HH runs avg 1.9 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in ALIGN_BEAR regime. 46.2% bull (0.9:1 odds), +6% vs band. Composition: 25% HH (purity 54%), 34% LL. State #12/180: 1.2% of universe (N=9,450). HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T---|C---|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "ALIGN_BEAR",
-        "signal": "ACCUMULATE",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 68,
@@ -11502,14 +11413,13 @@
           "delta_pp": 2.5
         }
       },
-      "reading": "FLOOR in ALIGN_BEAR regime. 29.6% bull (0.4:1 odds), -11% vs band. Composition: 10% HH (purity 32%), 59% LL. State #5/180 (most frequent): 1.6% of universe (N=12,583). BOTTOM DENSITY: 2.5% bottom in 1 in 4 bars (lift 2.31x). Asymmetry +37.0pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH. ACCUMULATE. Extreme capitulation zone. Statistically validated accumulation opportunity."
+      "reading": "FLOOR in ALIGN_BEAR regime. 29.6% bull (0.4:1 odds), -11% vs band. Composition: 10% HH (purity 32%), 59% LL. State #5/180 (most frequent): 1.6% of universe (N=12,583). BOTTOM DENSITY: 2.5% bottom in 1 in 4 bars (lift 2.31x). Asymmetry +37.0pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T---|C---|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "ALIGN_BEAR",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 10,
         "conviction": "MEDIUM",
         "conviction_score": 7,
         "predictive_edge": null,
@@ -11608,13 +11518,12 @@
           "delta_pp": -0.4
         }
       },
-      "reading": "ABOVE in ALIGN_BEAR regime. 66.3% bull (2.0:1 odds), +0% vs band. Composition: 46% HH (purity 70%), 18% LL. State #33/180: 0.8% of universe (N=5,789). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in ALIGN_BEAR regime. 66.3% bull (2.0:1 odds), +0% vs band. Composition: 46% HH (purity 70%), 18% LL. State #33/180: 0.8% of universe (N=5,789). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T---|C---|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "ALIGN_BEAR",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 30,
@@ -11714,14 +11623,13 @@
           "delta_pp": -1.5
         }
       },
-      "reading": "CEILING in ALIGN_BEAR regime. 77.8% bull (3.5:1 odds), -4% vs band. Composition: 59% HH (purity 75%), 11% LL. State #14/180: 1.2% of universe (N=8,820). TOP RISK: 2.5% top in 1 in 5 bars (lift 2.03x). 7.5% blow-off top in 1 in 12 bars (lift 3.65x). Asymmetry -32.4pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in ALIGN_BEAR regime. 77.8% bull (3.5:1 odds), -4% vs band. Composition: 59% HH (purity 75%), 11% LL. State #14/180: 1.2% of universe (N=8,820). TOP RISK: 2.5% top in 1 in 5 bars (lift 2.03x). 7.5% blow-off top in 1 in 12 bars (lift 3.65x). Asymmetry -32.4pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM."
     },
     "T---|C---|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "ALIGN_BEAR",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 5,
         "predictive_edge": null,
@@ -11820,14 +11728,13 @@
           "delta_pp": -1.1
         }
       },
-      "reading": "NEUTRAL in ALIGN_BEAR regime. 57.5% bull (1.4:1 odds), +5% vs band. Composition: 36% HH (purity 62%), 24% LL. State #29/180: 0.8% of universe (N=6,107). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in ALIGN_BEAR regime. 57.5% bull (1.4:1 odds), +5% vs band. Composition: 36% HH (purity 62%), 24% LL. State #29/180: 0.8% of universe (N=6,107). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T---|C--|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "ALIGN_BEAR",
-        "signal": "WATCH",
-        "signal_confidence": 16,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 12,
         "predictive_edge": null,
@@ -11926,13 +11833,12 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "BELOW in ALIGN_BEAR regime. 45.2% bull (0.8:1 odds), +3% vs band. Composition: 21% HH (purity 47%), 36% LL. State #130/180: 0.3% of universe (N=2,286). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in ALIGN_BEAR regime. 45.2% bull (0.8:1 odds), +3% vs band. Composition: 21% HH (purity 47%), 36% LL. State #130/180: 0.3% of universe (N=2,286). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T---|C--|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "ALIGN_BEAR",
-        "signal": "BUY_DIP",
         "signal_confidence": 67,
         "conviction": "HIGH",
         "conviction_score": 32,
@@ -12032,14 +11938,13 @@
           "delta_pp": 2.1
         }
       },
-      "reading": "FLOOR in ALIGN_BEAR regime. 30.9% bull (0.5:1 odds), -7% vs band. Composition: 11% HH (purity 37%), 59% LL. State #69/180: 0.5% of universe (N=3,970). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.84x). Asymmetry +29.3pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in ALIGN_BEAR regime. 30.9% bull (0.5:1 odds), -7% vs band. Composition: 11% HH (purity 37%), 59% LL. State #69/180: 0.5% of universe (N=3,970). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.84x). Asymmetry +29.3pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM."
     },
     "T---|C--|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "ALIGN_BEAR",
-        "signal": "NO_EDGE",
-        "signal_confidence": 16,
+        "signal_confidence": 7,
         "conviction": "MEDIUM",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -12138,13 +12043,12 @@
           "delta_pp": -1.0
         }
       },
-      "reading": "ABOVE in ALIGN_BEAR regime. 65.2% bull (1.9:1 odds), -2% vs band. Composition: 44% HH (purity 68%), 17% LL. State #134/180: 0.3% of universe (N=2,183). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in ALIGN_BEAR regime. 65.2% bull (1.9:1 odds), -2% vs band. Composition: 44% HH (purity 68%), 17% LL. State #134/180: 0.3% of universe (N=2,183). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T---|C--|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "ALIGN_BEAR",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 63,
         "conviction": "HIGH",
         "conviction_score": 20,
@@ -12244,14 +12148,13 @@
           "delta_pp": -0.8
         }
       },
-      "reading": "CEILING in ALIGN_BEAR regime. 78.5% bull (3.6:1 odds), -3% vs band. Composition: 58% HH (purity 74%), 10% LL. State #65/180: 0.6% of universe (N=4,195). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.70x). 7.5% blow-off top in 1 in 16 bars (lift 2.76x). Asymmetry -26.0pp -> tops dominate. HH runs avg 2.5 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in ALIGN_BEAR regime. 78.5% bull (3.6:1 odds), -3% vs band. Composition: 58% HH (purity 74%), 10% LL. State #65/180: 0.6% of universe (N=4,195). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.70x). 7.5% blow-off top in 1 in 16 bars (lift 2.76x). Asymmetry -26.0pp -> tops dominate. HH runs avg 2.5 bars, fragmentation MEDIUM."
     },
     "T---|C--|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "ALIGN_BEAR",
-        "signal": "NO_EDGE",
-        "signal_confidence": 14,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 4,
         "predictive_edge": null,
@@ -12350,14 +12253,13 @@
           "delta_pp": 0.7
         }
       },
-      "reading": "NEUTRAL in ALIGN_BEAR regime. 54.9% bull (1.2:1 odds), +0% vs band. Composition: 31% HH (purity 57%), 27% LL. State #149/180: 0.2% of universe (N=1,711). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in ALIGN_BEAR regime. 54.9% bull (1.2:1 odds), +0% vs band. Composition: 31% HH (purity 57%), 27% LL. State #149/180: 0.2% of universe (N=1,711). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T---|C-|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 6,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 10,
         "predictive_edge": null,
@@ -12456,13 +12358,12 @@
           "delta_pp": 0.3
         }
       },
-      "reading": "BELOW in TRANSITION regime. 41.9% bull (0.7:1 odds), -4% vs band. Composition: 21% HH (purity 50%), 40% LL. State #169/180 (rare): 0.2% of universe (N=1,265). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 41.9% bull (0.7:1 odds), -4% vs band. Composition: 21% HH (purity 50%), 40% LL. State #169/180 (rare): 0.2% of universe (N=1,265). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T---|C-|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "ACCUMULATE",
         "signal_confidence": 63,
         "conviction": "MEDIUM",
         "conviction_score": 24,
@@ -12562,14 +12463,13 @@
           "delta_pp": 2.0
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 29.3% bull (0.4:1 odds), -12% vs band. Composition: 10% HH (purity 33%), 59% LL. State #123/180: 0.3% of universe (N=2,392). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.94x). Asymmetry +32.2pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH. ACCUMULATE. Extreme capitulation zone. Statistically validated accumulation opportunity."
+      "reading": "FLOOR in TRANSITION regime. 29.3% bull (0.4:1 odds), -12% vs band. Composition: 10% HH (purity 33%), 59% LL. State #123/180: 0.3% of universe (N=2,392). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.94x). Asymmetry +32.2pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T---|C-|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 6,
+        "signal_confidence": 3,
         "conviction": "LOW",
         "conviction_score": 2,
         "predictive_edge": null,
@@ -12668,13 +12568,12 @@
           "delta_pp": -1.0
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 65.4% bull (1.9:1 odds), -1% vs band. Composition: 44% HH (purity 67%), 18% LL. State #165/180 (rare): 0.2% of universe (N=1,303). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 65.4% bull (1.9:1 odds), -1% vs band. Composition: 44% HH (purity 67%), 18% LL. State #165/180 (rare): 0.2% of universe (N=1,303). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T---|C-|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 60,
         "conviction": "MEDIUM",
         "conviction_score": 18,
@@ -12774,14 +12673,13 @@
           "delta_pp": -1.9
         }
       },
-      "reading": "CEILING in TRANSITION regime. 80.7% bull (4.2:1 odds), +0% vs band. Composition: 61% HH (purity 76%), 8% LL. State #99/180: 0.4% of universe (N=2,920). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.70x). 7.5% blow-off top in 1 in 15 bars (lift 3.02x). Asymmetry -26.5pp -> tops dominate. HH runs avg 2.1 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in TRANSITION regime. 80.7% bull (4.2:1 odds), +0% vs band. Composition: 61% HH (purity 76%), 8% LL. State #99/180: 0.4% of universe (N=2,920). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.70x). 7.5% blow-off top in 1 in 15 bars (lift 3.02x). Asymmetry -26.5pp -> tops dominate. HH runs avg 2.1 bars, fragmentation MEDIUM."
     },
     "T---|C-|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 5,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": "LEADING_TOP",
@@ -12880,14 +12778,13 @@
           "delta_pp": 3.3
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 55.1% bull (1.2:1 odds), +0% vs band. Composition: 32% HH (purity 58%), 26% LL. State #177/180 (rare): 0.1% of universe (N=988). HH runs avg 1.3 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 55.1% bull (1.2:1 odds), +0% vs band. Composition: 32% HH (purity 58%), 26% LL. State #177/180 (rare): 0.1% of universe (N=988). HH runs avg 1.3 bars, fragmentation HIGH."
     },
     "T--|C+++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "DIV_UP",
-        "signal": "WATCH",
-        "signal_confidence": 7,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 9,
         "predictive_edge": null,
@@ -12986,13 +12883,12 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "BELOW in DIV_UP regime. 45.5% bull (0.8:1 odds), +4% vs band. Composition: 24% HH (purity 52%), 37% LL. State #150/180: 0.2% of universe (N=1,661). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in DIV_UP regime. 45.5% bull (0.8:1 odds), +4% vs band. Composition: 24% HH (purity 52%), 37% LL. State #150/180: 0.2% of universe (N=1,661). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T--|C+++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "DIV_UP",
-        "signal": "BUY_DIP",
         "signal_confidence": 63,
         "conviction": "MEDIUM",
         "conviction_score": 15,
@@ -13092,13 +12988,12 @@
           "delta_pp": 1.7
         }
       },
-      "reading": "FLOOR in DIV_UP regime. 41.6% bull (0.7:1 odds), +25% vs band. Composition: 20% HH (purity 49%), 47% LL. State #128/180: 0.3% of universe (N=2,339). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.96x). Asymmetry +31.6pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in DIV_UP regime. 41.6% bull (0.7:1 odds), +25% vs band. Composition: 20% HH (purity 49%), 47% LL. State #128/180: 0.3% of universe (N=2,339). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.96x). Asymmetry +31.6pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM."
     },
     "T--|C+++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "DIV_UP",
-        "signal": "BULL_TREND",
         "signal_confidence": 12,
         "conviction": "MEDIUM",
         "conviction_score": 6,
@@ -13198,13 +13093,12 @@
           "delta_pp": -0.6
         }
       },
-      "reading": "ABOVE in DIV_UP regime. 67.5% bull (2.1:1 odds), +2% vs band. Composition: 48% HH (purity 72%), 16% LL. State #87/180: 0.4% of universe (N=3,302). HH runs avg 1.8 bars, fragmentation HIGH. BULL_TREND. Stable uptrend above VWAP. Hold positions, do not add aggressively."
+      "reading": "ABOVE in DIV_UP regime. 67.5% bull (2.1:1 odds), +2% vs band. Composition: 48% HH (purity 72%), 16% LL. State #87/180: 0.4% of universe (N=3,302). HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T--|C+++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "DIV_UP",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 42,
         "conviction": "HIGH",
         "conviction_score": 33,
@@ -13304,14 +13198,13 @@
           "delta_pp": -0.6
         }
       },
-      "reading": "CEILING in DIV_UP regime. 82.8% bull (4.8:1 odds), +3% vs band. Composition: 66% HH (purity 79%), 6% LL. State #25/180: 0.9% of universe (N=6,970). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.40x). 7.5% blow-off top in 1 in 21 bars (lift 2.13x). Asymmetry -21.3pp -> tops dominate. HH runs avg 4.1 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in DIV_UP regime. 82.8% bull (4.8:1 odds), +3% vs band. Composition: 66% HH (purity 79%), 6% LL. State #25/180: 0.9% of universe (N=6,970). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.40x). 7.5% blow-off top in 1 in 21 bars (lift 2.13x). Asymmetry -21.3pp -> tops dominate. HH runs avg 4.1 bars, fragmentation MEDIUM."
     },
     "T--|C+++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "DIV_UP",
-        "signal": "NO_EDGE",
-        "signal_confidence": 15,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 4,
         "predictive_edge": null,
@@ -13410,14 +13303,13 @@
           "delta_pp": 0.4
         }
       },
-      "reading": "NEUTRAL in DIV_UP regime. 54.5% bull (1.2:1 odds), -1% vs band. Composition: 34% HH (purity 63%), 28% LL. State #140/180: 0.2% of universe (N=1,918). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in DIV_UP regime. 54.5% bull (1.2:1 odds), -1% vs band. Composition: 34% HH (purity 63%), 28% LL. State #140/180: 0.2% of universe (N=1,918). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T--|C++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "DIV_UP",
-        "signal": "WATCH",
-        "signal_confidence": 7,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 8,
         "predictive_edge": null,
@@ -13516,13 +13408,12 @@
           "delta_pp": 1.7
         }
       },
-      "reading": "BELOW in DIV_UP regime. 45.2% bull (0.8:1 odds), +3% vs band. Composition: 25% HH (purity 56%), 38% LL. State #170/180 (rare): 0.2% of universe (N=1,198). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in DIV_UP regime. 45.2% bull (0.8:1 odds), +3% vs band. Composition: 25% HH (purity 56%), 38% LL. State #170/180 (rare): 0.2% of universe (N=1,198). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T--|C++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "DIV_UP",
-        "signal": "BUY_DIP",
         "signal_confidence": 55,
         "conviction": "MEDIUM",
         "conviction_score": 17,
@@ -13622,14 +13513,13 @@
           "delta_pp": 1.5
         }
       },
-      "reading": "FLOOR in DIV_UP regime. 35.6% bull (0.6:1 odds), +7% vs band. Composition: 18% HH (purity 50%), 50% LL. State #138/180: 0.3% of universe (N=1,977). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.69x). Asymmetry +27.2pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in DIV_UP regime. 35.6% bull (0.6:1 odds), +7% vs band. Composition: 18% HH (purity 50%), 50% LL. State #138/180: 0.3% of universe (N=1,977). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.69x). Asymmetry +27.2pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM."
     },
     "T--|C++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "DIV_UP",
-        "signal": "NO_EDGE",
-        "signal_confidence": 18,
+        "signal_confidence": 4,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -13728,13 +13618,12 @@
           "delta_pp": -2.1
         }
       },
-      "reading": "ABOVE in DIV_UP regime. 62.9% bull (1.7:1 odds), -5% vs band. Composition: 45% HH (purity 71%), 18% LL. State #142/180: 0.2% of universe (N=1,895). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in DIV_UP regime. 62.9% bull (1.7:1 odds), -5% vs band. Composition: 45% HH (purity 71%), 18% LL. State #142/180: 0.2% of universe (N=1,895). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T--|C++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "DIV_UP",
-        "signal": "REDUCE",
         "signal_confidence": 71,
         "conviction": "HIGH",
         "conviction_score": 24,
@@ -13834,14 +13723,13 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "CEILING in DIV_UP regime. 82.5% bull (4.7:1 odds), +2% vs band. Composition: 64% HH (purity 78%), 8% LL. State #66/180: 0.6% of universe (N=4,166). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.33x). 7.5% blow-off top in 1 in 24 bars (lift 1.88x). Asymmetry -21.2pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in DIV_UP regime. 82.5% bull (4.7:1 odds), +2% vs band. Composition: 64% HH (purity 78%), 8% LL. State #66/180: 0.6% of universe (N=4,166). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.33x). 7.5% blow-off top in 1 in 24 bars (lift 1.88x). Asymmetry -21.2pp -> tops dominate. HH runs avg 3.3 bars, fragmentation MEDIUM."
     },
     "T--|C++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "DIV_UP",
-        "signal": "NO_EDGE",
-        "signal_confidence": 7,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 4,
         "predictive_edge": null,
@@ -13940,14 +13828,13 @@
           "delta_pp": 0.7
         }
       },
-      "reading": "NEUTRAL in DIV_UP regime. 52.9% bull (1.1:1 odds), -4% vs band. Composition: 33% HH (purity 63%), 28% LL. State #171/180 (rare): 0.2% of universe (N=1,195). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in DIV_UP regime. 52.9% bull (1.1:1 odds), -4% vs band. Composition: 33% HH (purity 63%), 28% LL. State #171/180 (rare): 0.2% of universe (N=1,195). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T--|C+|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 12,
         "predictive_edge": null,
@@ -14046,13 +13933,12 @@
           "delta_pp": -1.5
         }
       },
-      "reading": "BELOW in TRANSITION regime. 40.8% bull (0.7:1 odds), -6% vs band. Composition: 18% HH (purity 45%), 44% LL. State #155/180: 0.2% of universe (N=1,501). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 40.8% bull (0.7:1 odds), -6% vs band. Composition: 18% HH (purity 45%), 44% LL. State #155/180: 0.2% of universe (N=1,501). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T--|C+|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 57,
         "conviction": "MEDIUM",
         "conviction_score": 23,
@@ -14152,14 +14038,13 @@
           "delta_pp": 1.8
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 33.2% bull (0.5:1 odds), +0% vs band. Composition: 10% HH (purity 32%), 53% LL. State #111/180: 0.3% of universe (N=2,665). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.59x). Asymmetry +26.1pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 33.2% bull (0.5:1 odds), +0% vs band. Composition: 10% HH (purity 32%), 53% LL. State #111/180: 0.3% of universe (N=2,665). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.59x). Asymmetry +26.1pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM."
     },
     "T--|C+|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 18,
+        "signal_confidence": 7,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -14258,13 +14143,12 @@
           "delta_pp": -0.3
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 64.7% bull (1.8:1 odds), -2% vs band. Composition: 44% HH (purity 68%), 18% LL. State #147/180: 0.2% of universe (N=1,737). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 64.7% bull (1.8:1 odds), -2% vs band. Composition: 44% HH (purity 68%), 18% LL. State #147/180: 0.2% of universe (N=1,737). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T--|C+|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 64,
         "conviction": "HIGH",
         "conviction_score": 21,
@@ -14364,14 +14248,13 @@
           "delta_pp": -0.5
         }
       },
-      "reading": "CEILING in TRANSITION regime. 79.4% bull (3.9:1 odds), -2% vs band. Composition: 58% HH (purity 74%), 10% LL. State #59/180: 0.6% of universe (N=4,261). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.19x). 7.5% blow-off top in 1 in 24 bars (lift 1.85x). Asymmetry -19.2pp -> tops dominate. HH runs avg 3.1 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 79.4% bull (3.9:1 odds), -2% vs band. Composition: 58% HH (purity 74%), 10% LL. State #59/180: 0.6% of universe (N=4,261). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.19x). 7.5% blow-off top in 1 in 24 bars (lift 1.85x). Asymmetry -19.2pp -> tops dominate. HH runs avg 3.1 bars, fragmentation MEDIUM."
     },
     "T--|C+|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 8,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 4,
         "predictive_edge": null,
@@ -14470,14 +14353,13 @@
           "delta_pp": -1.1
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 54.0% bull (1.2:1 odds), -2% vs band. Composition: 31% HH (purity 58%), 29% LL. State #167/180 (rare): 0.2% of universe (N=1,283). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 54.0% bull (1.2:1 odds), -2% vs band. Composition: 31% HH (purity 58%), 29% LL. State #167/180 (rare): 0.2% of universe (N=1,283). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T--|C---|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "ALIGN_BEAR",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 25,
         "predictive_edge": null,
@@ -14576,13 +14458,12 @@
           "delta_pp": -0.4
         }
       },
-      "reading": "BELOW in ALIGN_BEAR regime. 40.9% bull (0.7:1 odds), -6% vs band. Composition: 23% HH (purity 55%), 39% LL. State #43/180: 0.7% of universe (N=5,094). HH runs avg 1.9 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in ALIGN_BEAR regime. 40.9% bull (0.7:1 odds), -6% vs band. Composition: 23% HH (purity 55%), 39% LL. State #43/180: 0.7% of universe (N=5,094). HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T--|C---|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "ALIGN_BEAR",
-        "signal": "ACCUMULATE",
         "signal_confidence": 70,
         "conviction": "HIGH",
         "conviction_score": 53,
@@ -14682,14 +14563,13 @@
           "delta_pp": 1.9
         }
       },
-      "reading": "FLOOR in ALIGN_BEAR regime. 26.3% bull (0.4:1 odds), -21% vs band. Composition: 9% HH (purity 34%), 61% LL. State #23/180: 0.9% of universe (N=7,189). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.01x). Asymmetry +32.4pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM. ACCUMULATE. Extreme capitulation zone. Statistically validated accumulation opportunity."
+      "reading": "FLOOR in ALIGN_BEAR regime. 26.3% bull (0.4:1 odds), -21% vs band. Composition: 9% HH (purity 34%), 61% LL. State #23/180: 0.9% of universe (N=7,189). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.01x). Asymmetry +32.4pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM."
     },
     "T--|C---|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "ALIGN_BEAR",
-        "signal": "NO_EDGE",
-        "signal_confidence": 16,
+        "signal_confidence": 7,
         "conviction": "MEDIUM",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -14788,13 +14668,12 @@
           "delta_pp": -1.5
         }
       },
-      "reading": "ABOVE in ALIGN_BEAR regime. 64.7% bull (1.8:1 odds), -2% vs band. Composition: 45% HH (purity 69%), 18% LL. State #112/180: 0.3% of universe (N=2,646). HH runs avg 1.7 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in ALIGN_BEAR regime. 64.7% bull (1.8:1 odds), -2% vs band. Composition: 45% HH (purity 69%), 18% LL. State #112/180: 0.3% of universe (N=2,646). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T--|C---|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "ALIGN_BEAR",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 48,
         "conviction": "HIGH",
         "conviction_score": 16,
@@ -14894,14 +14773,13 @@
           "delta_pp": -2.0
         }
       },
-      "reading": "CEILING in ALIGN_BEAR regime. 76.2% bull (3.2:1 odds), -6% vs band. Composition: 56% HH (purity 73%), 13% LL. State #70/180: 0.5% of universe (N=3,918). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.67x). 7.5% blow-off top in 1 in 20 bars (lift 2.22x). Asymmetry -25.2pp -> tops dominate. HH runs avg 3.2 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in ALIGN_BEAR regime. 76.2% bull (3.2:1 odds), -6% vs band. Composition: 56% HH (purity 73%), 13% LL. State #70/180: 0.5% of universe (N=3,918). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.67x). 7.5% blow-off top in 1 in 20 bars (lift 2.22x). Asymmetry -25.2pp -> tops dominate. HH runs avg 3.2 bars, fragmentation MEDIUM."
     },
     "T--|C---|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "ALIGN_BEAR",
-        "signal": "NO_EDGE",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": null,
@@ -15000,14 +14878,13 @@
           "delta_pp": 0.7
         }
       },
-      "reading": "NEUTRAL in ALIGN_BEAR regime. 57.3% bull (1.3:1 odds), +4% vs band. Composition: 38% HH (purity 66%), 25% LL. State #96/180: 0.4% of universe (N=3,069). HH runs avg 1.8 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in ALIGN_BEAR regime. 57.3% bull (1.3:1 odds), +4% vs band. Composition: 38% HH (purity 66%), 25% LL. State #96/180: 0.4% of universe (N=3,069). HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T--|C--|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "ALIGN_BEAR",
-        "signal": "WATCH",
-        "signal_confidence": 19,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 15,
         "predictive_edge": null,
@@ -15106,13 +14983,12 @@
           "delta_pp": -1.1
         }
       },
-      "reading": "BELOW in ALIGN_BEAR regime. 41.2% bull (0.7:1 odds), -6% vs band. Composition: 19% HH (purity 46%), 41% LL. State #132/180: 0.3% of universe (N=2,229). HH runs avg 1.6 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in ALIGN_BEAR regime. 41.2% bull (0.7:1 odds), -6% vs band. Composition: 19% HH (purity 46%), 41% LL. State #132/180: 0.3% of universe (N=2,229). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T--|C--|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "ALIGN_BEAR",
-        "signal": "BUY_DIP",
         "signal_confidence": 64,
         "conviction": "HIGH",
         "conviction_score": 33,
@@ -15212,14 +15088,13 @@
           "delta_pp": 1.9
         }
       },
-      "reading": "FLOOR in ALIGN_BEAR regime. 29.8% bull (0.4:1 odds), -10% vs band. Composition: 8% HH (purity 29%), 59% LL. State #71/180: 0.5% of universe (N=3,908). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.72x). Asymmetry +28.1pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in ALIGN_BEAR regime. 29.8% bull (0.4:1 odds), -10% vs band. Composition: 8% HH (purity 29%), 59% LL. State #71/180: 0.5% of universe (N=3,908). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.72x). Asymmetry +28.1pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T--|C--|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "ALIGN_BEAR",
-        "signal": "NO_EDGE",
-        "signal_confidence": 18,
+        "signal_confidence": 8,
         "conviction": "LOW",
         "conviction_score": 3,
         "predictive_edge": "LEADING_BOTTOM",
@@ -15318,13 +15193,12 @@
           "delta_pp": -0.6
         }
       },
-      "reading": "ABOVE in ALIGN_BEAR regime. 65.1% bull (1.9:1 odds), -2% vs band. Composition: 43% HH (purity 66%), 19% LL. State #141/180: 0.2% of universe (N=1,896). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in ALIGN_BEAR regime. 65.1% bull (1.9:1 odds), -2% vs band. Composition: 43% HH (purity 66%), 19% LL. State #141/180: 0.2% of universe (N=1,896). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T--|C--|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "ALIGN_BEAR",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 43,
         "conviction": "HIGH",
         "conviction_score": 16,
@@ -15424,14 +15298,13 @@
           "delta_pp": -1.1
         }
       },
-      "reading": "CEILING in ALIGN_BEAR regime. 76.8% bull (3.3:1 odds), -5% vs band. Composition: 53% HH (purity 69%), 12% LL. State #83/180: 0.5% of universe (N=3,410). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.38x). 7.5% blow-off top in 1 in 22 bars (lift 2.02x). Asymmetry -23.0pp -> tops dominate. HH runs avg 2.8 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in ALIGN_BEAR regime. 76.8% bull (3.3:1 odds), -5% vs band. Composition: 53% HH (purity 69%), 12% LL. State #83/180: 0.5% of universe (N=3,410). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.38x). 7.5% blow-off top in 1 in 22 bars (lift 2.02x). Asymmetry -23.0pp -> tops dominate. HH runs avg 2.8 bars, fragmentation MEDIUM."
     },
     "T--|C--|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "ALIGN_BEAR",
-        "signal": "NO_EDGE",
-        "signal_confidence": 9,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 7,
         "predictive_edge": null,
@@ -15530,14 +15403,13 @@
           "delta_pp": -0.4
         }
       },
-      "reading": "NEUTRAL in ALIGN_BEAR regime. 50.3% bull (1.0:1 odds), -8% vs band. Composition: 28% HH (purity 56%), 32% LL. State #146/180: 0.2% of universe (N=1,748). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in ALIGN_BEAR regime. 50.3% bull (1.0:1 odds), -8% vs band. Composition: 28% HH (purity 56%), 32% LL. State #146/180: 0.2% of universe (N=1,748). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T--|C-|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 16,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 12,
         "predictive_edge": null,
@@ -15636,13 +15508,12 @@
           "delta_pp": -0.2
         }
       },
-      "reading": "BELOW in TRANSITION regime. 38.9% bull (0.6:1 odds), -11% vs band. Composition: 15% HH (purity 38%), 42% LL. State #161/180 (rare): 0.2% of universe (N=1,331). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 38.9% bull (0.6:1 odds), -11% vs band. Composition: 15% HH (purity 38%), 42% LL. State #161/180 (rare): 0.2% of universe (N=1,331). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T--|C-|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 59,
         "conviction": "MEDIUM",
         "conviction_score": 23,
@@ -15742,14 +15613,13 @@
           "delta_pp": 1.8
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 31.2% bull (0.5:1 odds), -6% vs band. Composition: 8% HH (purity 24%), 56% LL. State #125/180: 0.3% of universe (N=2,353). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.73x). Asymmetry +27.9pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 31.2% bull (0.5:1 odds), -6% vs band. Composition: 8% HH (purity 24%), 56% LL. State #125/180: 0.3% of universe (N=2,353). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.73x). Asymmetry +27.9pp -> bottoms dominate. HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T--|C-|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 15,
+        "signal_confidence": 6,
         "conviction": "LOW",
         "conviction_score": 2,
         "predictive_edge": null,
@@ -15848,13 +15718,12 @@
           "delta_pp": 0.3
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 64.4% bull (1.8:1 odds), -3% vs band. Composition: 41% HH (purity 64%), 17% LL. State #168/180 (rare): 0.2% of universe (N=1,279). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 64.4% bull (1.8:1 odds), -3% vs band. Composition: 41% HH (purity 64%), 17% LL. State #168/180 (rare): 0.2% of universe (N=1,279). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T--|C-|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 67,
         "conviction": "MEDIUM",
         "conviction_score": 13,
@@ -15954,14 +15823,13 @@
           "delta_pp": -1.4
         }
       },
-      "reading": "CEILING in TRANSITION regime. 77.1% bull (3.4:1 odds), -4% vs band. Composition: 55% HH (purity 71%), 12% LL. State #117/180: 0.3% of universe (N=2,570). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.38x). 7.5% blow-off top in 1 in 25 bars (lift 1.75x). Asymmetry -21.4pp -> tops dominate. HH runs avg 2.4 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 77.1% bull (3.4:1 odds), -4% vs band. Composition: 55% HH (purity 71%), 12% LL. State #117/180: 0.3% of universe (N=2,570). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.38x). 7.5% blow-off top in 1 in 25 bars (lift 1.75x). Asymmetry -21.4pp -> tops dominate. HH runs avg 2.4 bars, fragmentation MEDIUM."
     },
     "T--|C-|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 7,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 5,
         "predictive_edge": null,
@@ -16060,14 +15928,13 @@
           "delta_pp": 1.5
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 50.6% bull (1.0:1 odds), -8% vs band. Composition: 25% HH (purity 49%), 28% LL. State #178/180 (rare): 0.1% of universe (N=985). HH runs avg 1.3 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 50.6% bull (1.0:1 odds), -8% vs band. Composition: 25% HH (purity 49%), 28% LL. State #178/180 (rare): 0.1% of universe (N=985). HH runs avg 1.3 bars, fragmentation HIGH."
     },
     "T-|C+++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 6,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 5,
         "predictive_edge": "LEADING_TOP",
@@ -16166,13 +16033,12 @@
           "delta_pp": 2.4
         }
       },
-      "reading": "BELOW in TRANSITION regime. 50.1% bull (1.0:1 odds), +15% vs band. Composition: 28% HH (purity 56%), 33% LL. State #172/180 (rare): 0.1% of universe (N=1,151). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 50.1% bull (1.0:1 odds), +15% vs band. Composition: 28% HH (purity 56%), 33% LL. State #172/180 (rare): 0.1% of universe (N=1,151). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T-|C+++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 55,
         "conviction": "MEDIUM",
         "conviction_score": 9,
@@ -16272,13 +16138,12 @@
           "delta_pp": 0.6
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 44.9% bull (0.8:1 odds), +35% vs band. Composition: 23% HH (purity 52%), 42% LL. State #153/180: 0.2% of universe (N=1,553). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.04x). Asymmetry +32.7pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 44.9% bull (0.8:1 odds), +35% vs band. Composition: 23% HH (purity 52%), 42% LL. State #153/180: 0.2% of universe (N=1,553). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.04x). Asymmetry +32.7pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM."
     },
     "T-|C+++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "MOMENTUM",
         "signal_confidence": 25,
         "conviction": "MEDIUM",
         "conviction_score": 8,
@@ -16378,13 +16243,12 @@
           "delta_pp": -0.4
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 70.2% bull (2.4:1 odds), +6% vs band. Composition: 50% HH (purity 71%), 14% LL. State #116/180: 0.3% of universe (N=2,604). HH runs avg 1.8 bars, fragmentation HIGH. MOMENTUM. Genuine trend with clean momentum and low turn risk. Maintain exposure."
+      "reading": "ABOVE in TRANSITION regime. 70.2% bull (2.4:1 odds), +6% vs band. Composition: 50% HH (purity 71%), 14% LL. State #116/180: 0.3% of universe (N=2,604). HH runs avg 1.8 bars, fragmentation HIGH."
     },
     "T-|C+++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 69,
         "conviction": "HIGH",
         "conviction_score": 32,
@@ -16484,14 +16348,13 @@
           "delta_pp": -0.8
         }
       },
-      "reading": "CEILING in TRANSITION regime. 85.7% bull (6.0:1 odds), +6% vs band. Composition: 69% HH (purity 80%), 5% LL. State #39/180: 0.7% of universe (N=5,352). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.30x). 7.5% blow-off top in 1 in 22 bars (lift 1.98x). Asymmetry -20.4pp -> tops dominate. HH runs avg 4.0 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 85.7% bull (6.0:1 odds), +6% vs band. Composition: 69% HH (purity 80%), 5% LL. State #39/180: 0.7% of universe (N=5,352). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.30x). 7.5% blow-off top in 1 in 22 bars (lift 1.98x). Asymmetry -20.4pp -> tops dominate. HH runs avg 4.0 bars, fragmentation MEDIUM."
     },
     "T-|C+++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 13,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 0,
         "predictive_edge": null,
@@ -16590,14 +16453,13 @@
           "delta_pp": 0.3
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 61.1% bull (1.6:1 odds), +11% vs band. Composition: 37% HH (purity 61%), 22% LL. State #158/180: 0.2% of universe (N=1,456). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 61.1% bull (1.6:1 odds), +11% vs band. Composition: 37% HH (purity 61%), 22% LL. State #158/180: 0.2% of universe (N=1,456). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T-|C++|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 14,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 5,
         "predictive_edge": null,
@@ -16696,13 +16558,12 @@
           "delta_pp": 0.7
         }
       },
-      "reading": "BELOW in TRANSITION regime. 50.4% bull (1.0:1 odds), +15% vs band. Composition: 28% HH (purity 55%), 33% LL. State #176/180 (rare): 0.1% of universe (N=1,051). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 50.4% bull (1.0:1 odds), +15% vs band. Composition: 28% HH (purity 55%), 33% LL. State #176/180 (rare): 0.1% of universe (N=1,051). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T-|C++|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 54,
         "conviction": "MEDIUM",
         "conviction_score": 12,
@@ -16802,13 +16663,12 @@
           "delta_pp": 1.5
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 40.0% bull (0.7:1 odds), +20% vs band. Composition: 20% HH (purity 50%), 46% LL. State #156/180: 0.2% of universe (N=1,501). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.58x). Asymmetry +24.6pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 40.0% bull (0.7:1 odds), +20% vs band. Composition: 20% HH (purity 50%), 46% LL. State #156/180: 0.2% of universe (N=1,501). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.58x). Asymmetry +24.6pp -> bottoms dominate. HH runs avg 2.2 bars, fragmentation MEDIUM."
     },
     "T-|C++|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "MOMENTUM",
         "signal_confidence": 25,
         "conviction": "MEDIUM",
         "conviction_score": 7,
@@ -16908,13 +16768,12 @@
           "delta_pp": -0.1
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 72.2% bull (2.6:1 odds), +9% vs band. Composition: 51% HH (purity 71%), 13% LL. State #157/180: 0.2% of universe (N=1,465). HH runs avg 1.6 bars, fragmentation HIGH. MOMENTUM. Genuine trend with clean momentum and low turn risk. Maintain exposure."
+      "reading": "ABOVE in TRANSITION regime. 72.2% bull (2.6:1 odds), +9% vs band. Composition: 51% HH (purity 71%), 13% LL. State #157/180: 0.2% of universe (N=1,465). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T-|C++|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "STRONG_TREND",
         "signal_confidence": 74,
         "conviction": "HIGH",
         "conviction_score": 23,
@@ -17014,14 +16873,13 @@
           "delta_pp": -0.1
         }
       },
-      "reading": "CEILING in TRANSITION regime. 83.7% bull (5.1:1 odds), +4% vs band. Composition: 65% HH (purity 78%), 7% LL. State #81/180: 0.5% of universe (N=3,480). TOP RISK: 2.5% top in 1 in 9 bars (lift 1.15x). 7.5% blow-off top in 1 in 30 bars (lift 1.47x). Asymmetry -17.5pp -> tops dominate. HH runs avg 3.4 bars, fragmentation MEDIUM. STRONG_TREND. Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively."
+      "reading": "CEILING in TRANSITION regime. 83.7% bull (5.1:1 odds), +4% vs band. Composition: 65% HH (purity 78%), 7% LL. State #81/180: 0.5% of universe (N=3,480). TOP RISK: 2.5% top in 1 in 9 bars (lift 1.15x). 7.5% blow-off top in 1 in 30 bars (lift 1.47x). Asymmetry -17.5pp -> tops dominate. HH runs avg 3.4 bars, fragmentation MEDIUM."
     },
     "T-|C++|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 8,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 0,
         "predictive_edge": null,
@@ -17120,14 +16978,13 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 59.8% bull (1.5:1 odds), +9% vs band. Composition: 38% HH (purity 64%), 24% LL. State #179/180 (rare): 0.1% of universe (N=963). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 59.8% bull (1.5:1 odds), +9% vs band. Composition: 38% HH (purity 64%), 24% LL. State #179/180 (rare): 0.1% of universe (N=963). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T-|C+|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 15,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 9,
         "predictive_edge": null,
@@ -17226,13 +17083,12 @@
           "delta_pp": 0.0
         }
       },
-      "reading": "BELOW in TRANSITION regime. 43.8% bull (0.8:1 odds), +0% vs band. Composition: 25% HH (purity 58%), 37% LL. State #166/180 (rare): 0.2% of universe (N=1,299). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 43.8% bull (0.8:1 odds), +0% vs band. Composition: 25% HH (purity 58%), 37% LL. State #166/180 (rare): 0.2% of universe (N=1,299). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T-|C+|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 67,
         "conviction": "MEDIUM",
         "conviction_score": 16,
@@ -17332,13 +17188,12 @@
           "delta_pp": 1.6
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 38.7% bull (0.6:1 odds), +17% vs band. Composition: 15% HH (purity 39%), 49% LL. State #133/180: 0.3% of universe (N=2,214). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.56x). Asymmetry +26.7pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 38.7% bull (0.6:1 odds), +17% vs band. Composition: 15% HH (purity 39%), 49% LL. State #133/180: 0.3% of universe (N=2,214). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.56x). Asymmetry +26.7pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM."
     },
     "T-|C+|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "BULL_TREND",
         "signal_confidence": 17,
         "conviction": "MEDIUM",
         "conviction_score": 5,
@@ -17438,13 +17293,12 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 69.0% bull (2.2:1 odds), +4% vs band. Composition: 51% HH (purity 74%), 17% LL. State #154/180: 0.2% of universe (N=1,527). HH runs avg 1.6 bars, fragmentation HIGH. BULL_TREND. Stable uptrend above VWAP. Hold positions, do not add aggressively."
+      "reading": "ABOVE in TRANSITION regime. 69.0% bull (2.2:1 odds), +4% vs band. Composition: 51% HH (purity 74%), 17% LL. State #154/180: 0.2% of universe (N=1,527). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T-|C+|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "STRONG_TREND",
         "signal_confidence": 57,
         "conviction": "HIGH",
         "conviction_score": 17,
@@ -17544,14 +17398,13 @@
           "delta_pp": -0.9
         }
       },
-      "reading": "CEILING in TRANSITION regime. 78.4% bull (3.6:1 odds), -3% vs band. Composition: 59% HH (purity 75%), 11% LL. State #84/180: 0.5% of universe (N=3,398). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.16x). 7.5% blow-off top in 1 in 30 bars (lift 1.47x). Asymmetry -18.3pp -> tops dominate. HH runs avg 3.1 bars, fragmentation MEDIUM. STRONG_TREND. Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively."
+      "reading": "CEILING in TRANSITION regime. 78.4% bull (3.6:1 odds), -3% vs band. Composition: 59% HH (purity 75%), 11% LL. State #84/180: 0.5% of universe (N=3,398). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.16x). 7.5% blow-off top in 1 in 30 bars (lift 1.47x). Asymmetry -18.3pp -> tops dominate. HH runs avg 3.1 bars, fragmentation MEDIUM."
     },
     "T-|C+|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 9,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 2,
         "predictive_edge": null,
@@ -17650,14 +17503,13 @@
           "delta_pp": -0.3
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 56.7% bull (1.3:1 odds), +3% vs band. Composition: 37% HH (purity 66%), 27% LL. State #173/180 (rare): 0.1% of universe (N=1,149). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 56.7% bull (1.3:1 odds), +3% vs band. Composition: 37% HH (purity 66%), 27% LL. State #173/180 (rare): 0.1% of universe (N=1,149). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T-|C---|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "HIGH",
         "conviction_score": 19,
         "predictive_edge": null,
@@ -17756,13 +17608,12 @@
           "delta_pp": 0.6
         }
       },
-      "reading": "BELOW in TRANSITION regime. 39.7% bull (0.7:1 odds), -9% vs band. Composition: 22% HH (purity 56%), 41% LL. State #92/180: 0.4% of universe (N=3,119). HH runs avg 1.9 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 39.7% bull (0.7:1 odds), -9% vs band. Composition: 22% HH (purity 56%), 41% LL. State #92/180: 0.4% of universe (N=3,119). HH runs avg 1.9 bars, fragmentation HIGH."
     },
     "T-|C---|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "ACCUMULATE",
         "signal_confidence": 69,
         "conviction": "HIGH",
         "conviction_score": 40,
@@ -17862,14 +17713,13 @@
           "delta_pp": 1.9
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 25.9% bull (0.3:1 odds), -22% vs band. Composition: 10% HH (purity 38%), 63% LL. State #54/180: 0.6% of universe (N=4,505). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.00x). Asymmetry +32.8pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM. ACCUMULATE. Extreme capitulation zone. Statistically validated accumulation opportunity."
+      "reading": "FLOOR in TRANSITION regime. 25.9% bull (0.3:1 odds), -22% vs band. Composition: 10% HH (purity 38%), 63% LL. State #54/180: 0.6% of universe (N=4,505). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 2.00x). Asymmetry +32.8pp -> bottoms dominate. HH runs avg 2.1 bars, fragmentation MEDIUM."
     },
     "T-|C---|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 14,
+        "signal_confidence": 2,
         "conviction": "LOW",
         "conviction_score": 1,
         "predictive_edge": null,
@@ -17968,13 +17818,12 @@
           "delta_pp": 0.2
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 62.2% bull (1.6:1 odds), -6% vs band. Composition: 43% HH (purity 69%), 23% LL. State #152/180: 0.2% of universe (N=1,570). HH runs avg 1.7 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 62.2% bull (1.6:1 odds), -6% vs band. Composition: 43% HH (purity 69%), 23% LL. State #152/180: 0.2% of universe (N=1,570). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T-|C---|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "TAKE_PROFIT",
         "signal_confidence": 44,
         "conviction": "MEDIUM",
         "conviction_score": 11,
@@ -18074,14 +17923,13 @@
           "delta_pp": -0.9
         }
       },
-      "reading": "CEILING in TRANSITION regime. 75.1% bull (3.0:1 odds), -7% vs band. Composition: 54% HH (purity 72%), 12% LL. State #121/180: 0.3% of universe (N=2,465). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.51x). 7.5% blow-off top in 1 in 22 bars (lift 2.04x). Asymmetry -23.7pp -> tops dominate. HH runs avg 3.1 bars, fragmentation MEDIUM. TAKE_PROFIT. Blow-off top risk imminent. Aggressive profit-taking recommended."
+      "reading": "CEILING in TRANSITION regime. 75.1% bull (3.0:1 odds), -7% vs band. Composition: 54% HH (purity 72%), 12% LL. State #121/180: 0.3% of universe (N=2,465). TOP RISK: 2.5% top in 1 in 6 bars (lift 1.51x). 7.5% blow-off top in 1 in 22 bars (lift 2.04x). Asymmetry -23.7pp -> tops dominate. HH runs avg 3.1 bars, fragmentation MEDIUM."
     },
     "T-|C---|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 15,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 4,
         "predictive_edge": null,
@@ -18180,14 +18028,13 @@
           "delta_pp": -2.5
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 54.5% bull (1.2:1 odds), -1% vs band. Composition: 33% HH (purity 61%), 28% LL. State #144/180: 0.2% of universe (N=1,819). HH runs avg 1.7 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 54.5% bull (1.2:1 odds), -1% vs band. Composition: 33% HH (purity 61%), 28% LL. State #144/180: 0.2% of universe (N=1,819). HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T-|C--|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 17,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 14,
         "predictive_edge": null,
@@ -18286,13 +18133,12 @@
           "delta_pp": 0.3
         }
       },
-      "reading": "BELOW in TRANSITION regime. 38.0% bull (0.6:1 odds), -13% vs band. Composition: 19% HH (purity 51%), 47% LL. State #148/180: 0.2% of universe (N=1,719). HH runs avg 1.5 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 38.0% bull (0.6:1 odds), -13% vs band. Composition: 19% HH (purity 51%), 47% LL. State #148/180: 0.2% of universe (N=1,719). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T-|C--|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 64,
         "conviction": "MEDIUM",
         "conviction_score": 31,
@@ -18392,14 +18238,13 @@
           "delta_pp": 1.3
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 25.0% bull (0.3:1 odds), -25% vs band. Composition: 8% HH (purity 33%), 65% LL. State #101/180: 0.4% of universe (N=2,858). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.76x). Asymmetry +29.3pp -> bottoms dominate. HH runs avg 1.7 bars, fragmentation HIGH. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 25.0% bull (0.3:1 odds), -25% vs band. Composition: 8% HH (purity 33%), 65% LL. State #101/180: 0.4% of universe (N=2,858). BOTTOM DENSITY: 2.5% bottom in 1 in 5 bars (lift 1.76x). Asymmetry +29.3pp -> bottoms dominate. HH runs avg 1.7 bars, fragmentation HIGH."
     },
     "T-|C--|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 16,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 0,
         "predictive_edge": null,
@@ -18498,13 +18343,12 @@
           "delta_pp": -0.7
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 60.3% bull (1.5:1 odds), -9% vs band. Composition: 39% HH (purity 64%), 23% LL. State #160/180 (rare): 0.2% of universe (N=1,371). HH runs avg 1.6 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "ABOVE in TRANSITION regime. 60.3% bull (1.5:1 odds), -9% vs band. Composition: 39% HH (purity 64%), 23% LL. State #160/180 (rare): 0.2% of universe (N=1,371). HH runs avg 1.6 bars, fragmentation HIGH."
     },
     "T-|C--|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 67,
         "conviction": "MEDIUM",
         "conviction_score": 11,
@@ -18604,14 +18448,13 @@
           "delta_pp": -1.4
         }
       },
-      "reading": "CEILING in TRANSITION regime. 74.7% bull (3.0:1 odds), -7% vs band. Composition: 50% HH (purity 67%), 15% LL. State #126/180: 0.3% of universe (N=2,353). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.42x). 7.5% blow-off top in 1 in 29 bars (lift 1.51x). Asymmetry -21.8pp -> tops dominate. HH runs avg 2.7 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 74.7% bull (3.0:1 odds), -7% vs band. Composition: 50% HH (purity 67%), 15% LL. State #126/180: 0.3% of universe (N=2,353). TOP RISK: 2.5% top in 1 in 7 bars (lift 1.42x). 7.5% blow-off top in 1 in 29 bars (lift 1.51x). Asymmetry -21.8pp -> tops dominate. HH runs avg 2.7 bars, fragmentation MEDIUM."
     },
     "T-|C--|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 8,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 7,
         "predictive_edge": "LEADING_BOTTOM",
@@ -18710,14 +18553,13 @@
           "delta_pp": 0.2
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 47.8% bull (0.9:1 odds), -13% vs band. Composition: 26% HH (purity 54%), 34% LL. State #163/180 (rare): 0.2% of universe (N=1,325). HH runs avg 1.4 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 47.8% bull (0.9:1 odds), -13% vs band. Composition: 26% HH (purity 54%), 34% LL. State #163/180 (rare): 0.2% of universe (N=1,325). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T-|C-|<": {
       "identity": {
         "zone": "BELOW",
         "regime": "TRANSITION",
-        "signal": "WATCH",
-        "signal_confidence": 7,
+        "signal_confidence": 0,
         "conviction": "MEDIUM",
         "conviction_score": 11,
         "predictive_edge": null,
@@ -18816,13 +18658,12 @@
           "delta_pp": 0.3
         }
       },
-      "reading": "BELOW in TRANSITION regime. 37.8% bull (0.6:1 odds), -13% vs band. Composition: 16% HH (purity 43%), 43% LL. State #175/180 (rare): 0.1% of universe (N=1,113). HH runs avg 1.4 bars, fragmentation HIGH. WATCH. Under pressure but no turn signal. Observe for accumulation setup."
+      "reading": "BELOW in TRANSITION regime. 37.8% bull (0.6:1 odds), -13% vs band. Composition: 16% HH (purity 43%), 43% LL. State #175/180 (rare): 0.1% of universe (N=1,113). HH runs avg 1.4 bars, fragmentation HIGH."
     },
     "T-|C-|<<": {
       "identity": {
         "zone": "FLOOR",
         "regime": "TRANSITION",
-        "signal": "BUY_DIP",
         "signal_confidence": 60,
         "conviction": "MEDIUM",
         "conviction_score": 19,
@@ -18922,13 +18763,12 @@
           "delta_pp": 0.6
         }
       },
-      "reading": "FLOOR in TRANSITION regime. 34.0% bull (0.5:1 odds), +2% vs band. Composition: 12% HH (purity 35%), 56% LL. State #137/180: 0.3% of universe (N=2,008). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.54x). Asymmetry +24.5pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM. BUY_DIP. Statistical dip with strong bottom asymmetry. Accumulate on confirmed support."
+      "reading": "FLOOR in TRANSITION regime. 34.0% bull (0.5:1 odds), +2% vs band. Composition: 12% HH (purity 35%), 56% LL. State #137/180: 0.3% of universe (N=2,008). BOTTOM DENSITY: 2.5% bottom in 1 in 6 bars (lift 1.54x). Asymmetry +24.5pp -> bottoms dominate. HH runs avg 2.0 bars, fragmentation MEDIUM."
     },
     "T-|C-|>": {
       "identity": {
         "zone": "ABOVE",
         "regime": "TRANSITION",
-        "signal": "BULL_TREND",
         "signal_confidence": 9,
         "conviction": "LOW",
         "conviction_score": 3,
@@ -19028,13 +18868,12 @@
           "delta_pp": -0.3
         }
       },
-      "reading": "ABOVE in TRANSITION regime. 66.4% bull (2.0:1 odds), +0% vs band. Composition: 42% HH (purity 64%), 19% LL. State #174/180 (rare): 0.1% of universe (N=1,121). HH runs avg 1.5 bars, fragmentation HIGH. BULL_TREND. Stable uptrend above VWAP. Hold positions, do not add aggressively."
+      "reading": "ABOVE in TRANSITION regime. 66.4% bull (2.0:1 odds), +0% vs band. Composition: 42% HH (purity 64%), 19% LL. State #174/180 (rare): 0.1% of universe (N=1,121). HH runs avg 1.5 bars, fragmentation HIGH."
     },
     "T-|C-|>>": {
       "identity": {
         "zone": "CEILING",
         "regime": "TRANSITION",
-        "signal": "REDUCE",
         "signal_confidence": 66,
         "conviction": "MEDIUM",
         "conviction_score": 11,
@@ -19134,14 +18973,13 @@
           "delta_pp": -0.9
         }
       },
-      "reading": "CEILING in TRANSITION regime. 75.6% bull (3.1:1 odds), -6% vs band. Composition: 52% HH (purity 69%), 13% LL. State #135/180: 0.3% of universe (N=2,142). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.24x). 7.5% blow-off top in 1 in 34 bars (lift 1.31x). Asymmetry -18.8pp -> tops dominate. HH runs avg 2.5 bars, fragmentation MEDIUM. REDUCE. Preventive distribution. Ceiling zone carries structural top risk."
+      "reading": "CEILING in TRANSITION regime. 75.6% bull (3.1:1 odds), -6% vs band. Composition: 52% HH (purity 69%), 13% LL. State #135/180: 0.3% of universe (N=2,142). TOP RISK: 2.5% top in 1 in 8 bars (lift 1.24x). 7.5% blow-off top in 1 in 34 bars (lift 1.31x). Asymmetry -18.8pp -> tops dominate. HH runs avg 2.5 bars, fragmentation MEDIUM."
     },
     "T-|C-|~": {
       "identity": {
         "zone": "NEUTRAL",
         "regime": "TRANSITION",
-        "signal": "NO_EDGE",
-        "signal_confidence": 15,
+        "signal_confidence": 0,
         "conviction": "LOW",
         "conviction_score": 5,
         "predictive_edge": null,
@@ -19240,7 +19078,7 @@
           "delta_pp": 0.1
         }
       },
-      "reading": "NEUTRAL in TRANSITION regime. 49.7% bull (1.0:1 odds), -9% vs band. Composition: 28% HH (purity 56%), 30% LL. State #180/180 (rare): 0.1% of universe (N=930). HH runs avg 1.5 bars, fragmentation HIGH. NO_EDGE. No statistical edge. Avoid action — discipline is the position."
+      "reading": "NEUTRAL in TRANSITION regime. 49.7% bull (1.0:1 odds), -9% vs band. Composition: 28% HH (purity 56%), 30% LL. State #180/180 (rare): 0.1% of universe (N=930). HH runs avg 1.5 bars, fragmentation HIGH."
     }
   }
 }

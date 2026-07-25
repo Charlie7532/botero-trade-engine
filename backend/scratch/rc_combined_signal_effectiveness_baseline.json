@@ -1,0 +1,92 @@
+[
+  {
+    "Se\u00f1al":"NO_EDGE",
+    "Total Muestras":1013165,
+    "Acertadas (Win)":575316,
+    "Erradas (Loss)":437849,
+    "Win Rate (%)":56.7840381379,
+    "Retorno Prom 20d (%)":1.550140364,
+    "Profit Factor":1.5674312667,
+    "Expectancia (%)":1.550140364
+  },
+  {
+    "Se\u00f1al":"WATCH",
+    "Total Muestras":724276,
+    "Acertadas (Win)":415331,
+    "Erradas (Loss)":308945,
+    "Win Rate (%)":57.3442996869,
+    "Retorno Prom 20d (%)":1.5215723005,
+    "Profit Factor":1.548596863,
+    "Expectancia (%)":1.5215723005
+  },
+  {
+    "Se\u00f1al":"TAKE_PROFIT",
+    "Total Muestras":659419,
+    "Acertadas (Win)":361588,
+    "Erradas (Loss)":297831,
+    "Win Rate (%)":54.8343314342,
+    "Retorno Prom 20d (%)":1.2198047861,
+    "Profit Factor":1.4030048608,
+    "Expectancia (%)":1.2198047861
+  },
+  {
+    "Se\u00f1al":"BUY_DIP",
+    "Total Muestras":649318,
+    "Acertadas (Win)":376083,
+    "Erradas (Loss)":273235,
+    "Win Rate (%)":57.9196942022,
+    "Retorno Prom 20d (%)":1.5363340353,
+    "Profit Factor":1.5950291502,
+    "Expectancia (%)":1.5363340353
+  },
+  {
+    "Se\u00f1al":"REDUCE",
+    "Total Muestras":515819,
+    "Acertadas (Win)":295503,
+    "Erradas (Loss)":220316,
+    "Win Rate (%)":57.2881185067,
+    "Retorno Prom 20d (%)":1.0057086056,
+    "Profit Factor":1.4697476208,
+    "Expectancia (%)":1.0057086056
+  },
+  {
+    "Se\u00f1al":"STRONG_TREND",
+    "Total Muestras":404601,
+    "Acertadas (Win)":235273,
+    "Erradas (Loss)":169328,
+    "Win Rate (%)":58.1493866797,
+    "Retorno Prom 20d (%)":0.9155975068,
+    "Profit Factor":1.5036260931,
+    "Expectancia (%)":0.9155975068
+  },
+  {
+    "Se\u00f1al":"ACCUMULATE",
+    "Total Muestras":259732,
+    "Acertadas (Win)":152144,
+    "Erradas (Loss)":107588,
+    "Win Rate (%)":58.5773027582,
+    "Retorno Prom 20d (%)":2.8660116486,
+    "Profit Factor":1.7620796647,
+    "Expectancia (%)":2.8660116486
+  },
+  {
+    "Se\u00f1al":"BULL_TREND",
+    "Total Muestras":207296,
+    "Acertadas (Win)":118917,
+    "Erradas (Loss)":88379,
+    "Win Rate (%)":57.3657957703,
+    "Retorno Prom 20d (%)":1.1170187418,
+    "Profit Factor":1.5093083959,
+    "Expectancia (%)":1.1170187418
+  },
+  {
+    "Se\u00f1al":"MOMENTUM",
+    "Total Muestras":132719,
+    "Acertadas (Win)":76795,
+    "Erradas (Loss)":55924,
+    "Win Rate (%)":57.8628530956,
+    "Retorno Prom 20d (%)":1.1182369964,
+    "Profit Factor":1.5515545048,
+    "Expectancia (%)":1.1182369964
+  }
+]

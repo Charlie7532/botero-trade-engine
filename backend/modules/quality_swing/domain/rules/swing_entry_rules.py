@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     )
     from backend.modules.quality_swing.domain.rules.rc_combined_lookup import CombinedSignal
     from backend.modules.quality_swing.domain.rules.rc_wave_lookup import WaveSignal
+    from backend.modules.quality_swing.domain.rules.rc_ev_lookup import RealEVSignal
     from backend.modules.quality_swing.domain.rules.slope_transition_detector import SlopeTransition
 
 
@@ -50,7 +51,9 @@ def is_accumulate_signal(
     dual_prob: DualProbability | None = None,
     combined_signal: CombinedSignal | None = None,
     wave_signal: WaveSignal | None = None,
+    real_ev_signal: RealEVSignal | None = None,
 ) -> tuple[bool, float, str]:
+
     """Evaluate whether current conditions favor accumulation.
 
     Decision cascade (committee-approved, 4 paths):
@@ -352,7 +355,9 @@ def is_trim_signal(
     dual_prob: DualProbability | None = None,
     combined_signal: CombinedSignal | None = None,
     wave_signal: WaveSignal | None = None,
+    real_ev_signal: RealEVSignal | None = None,
 ) -> tuple[bool, float, str]:
+
     """Evaluate whether current conditions favor trimming.
 
     Trimming ≠ selling. Trimming = reducing position size at statistical

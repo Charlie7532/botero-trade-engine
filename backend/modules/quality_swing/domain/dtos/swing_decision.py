@@ -12,9 +12,24 @@ from typing import Optional
 class SwingDecision:
     """Result of SwingGate evaluation for a single ticker."""
     ticker: str
-    action: str = "HOLD"  # ACCUMULATE, TRIM, HOLD
+    action_code: str = "STK_HOLD_STABLE"  # Universal Macro Taxonomy: STK_ACCUMULATE_STRUCTURAL, STK_BUY_DIP_TACTICAL, etc.
+    wave_action_code: str = "WAVE_NO_EDGE"  # Universal Micro Wave Taxonomy: WAVE_EXHAUSTION_BOTTOM, WAVE_APPROACHING_BOTTOM, etc.
+    urgency_level: str = "PASSIVE"  # FIX Tag 61/848: LOW, HIGH, PASSIVE, NORMAL, IMMEDIATE
+    scope_level: str = "STK"  # STK, SEC, MKT
     conviction: float = 0.0  # 0.0-1.0 for ACCUMULATE, 0.0-0.5 for TRIM
     reasoning: str = ""
+
+
+    @property
+    def action(self) -> str:
+        """Backward-compatible action string dynamically derived from Universal action_code."""
+        if self.action_code in ("STK_ACCUMULATE_STRUCTURAL", "STK_BUY_DIP_TACTICAL", "STK_ACCUMULATE_PASSIVE"):
+            return "ACCUMULATE"
+        if self.action_code in ("STK_TRIM_TACTICAL", "STK_DISTRIBUTE_DECAY"):
+            return "TRIM"
+        return "HOLD"
+
+
 
     # Context captured at decision time
     sigma_position: float = 0.0

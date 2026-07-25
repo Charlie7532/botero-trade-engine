@@ -276,8 +276,10 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
 18. **Vault Timestamp Standard — Midnight UTC.** All daily (`1d`) OHLCV bars MUST use midnight UTC (`00:00:00+00`) as their timestamp. This is enforced centrally in `TimescaleDataStore.save_bars()`, `upsert_ohlcv_bar()`, and `upsert_ohlcv_bar_candle()` — callers do NOT need to normalize. Never bypass the DataStore to write directly to `market.ohlcv_bars` without midnight normalization. The `volume` field in breadth indicators (S5TH, S5FI, S5TW, S5_XLK_FI, etc.) stores `n_constituents` counted, not trade volume. Historical imported data (pre-daemon) has `volume=0`; daemon-computed data has `volume>0`.
 
-19. **Sector Rotation Breadth Laws (10-Year Empirical Audit).**
-    - **No Cash Drag in Bull Market:** S5 Breadth Panic ($\ge 6$ sectors in $S5\_TH \le 20\%$) is an **Aggressive Floor Accumulation signal (WR=81.1%, +14.43% fwd 120d)**, NOT a sale/cash-drag signal.
-    - **Core Cap-Weight Protection:** Sectors with CapWeight $\ge 8\%$ (XLK, XLC, XLF, XLI) form the 75% Core structure and must NEVER be trimmed/penalized for high breadth ($S5\_FI > 60\%$) in Stage 2.
-    - **Thesis Death Threshold:** A sector's structural trend dies (Stage 4 Decay) ONLY when $S5\_TH < 40\%$ for $>30$ consecutive days.
+20. **Universal Signal & Action Taxonomy Standard.** All gates, decision engines, and DTOs MUST emit 4-dimensional action codes adhering to the Universal Institutional Taxonomy: `[SCOPE]_[INTENT]_[EXECUTION]`.
+    - **Scope Prefixes:** `MKT_` (Market/Macro), `SEC_` (Sector), `STK_` (Individual Stock/Ticker).
+    - **Stock Actions (`STK_`):** `STK_ACCUMULATE_STRUCTURAL` (Trend value buy), `STK_BUY_DIP_TACTICAL` (Extreme oversold $2\sigma+$ rebound), `STK_HOLD_STABLE` (Maintain), `STK_TRIM_TACTICAL` (Harvest profit $25\%-33\%$), `STK_DISTRIBUTE_DECAY` (Agotamiento EV $\le -0.015$), `STK_EXIT_THESIS_DEATH` (Moat breach $100\%$), `STK_EXIT_TIME_STOP` (120-day vertical barrier expiry), `STK_BLOCK_CRISIS` (Crisis veto).
+    - **Emergency Circuit Breaker:** `MKT_MACRO_CIRCUIT_BREAKER` (Systemic market crash / liquidity emergency — overrides all stock-level signals).
+    - **Urgency Tags (FIX Protocol Tag 61/848):** `URGENCY_EMERGENCY`, `URGENCY_HIGH`, `URGENCY_NORMAL`, `URGENCY_LOW`.
+
 

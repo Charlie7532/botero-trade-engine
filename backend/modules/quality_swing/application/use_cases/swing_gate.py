@@ -246,19 +246,65 @@ class SwingGate:
                 vel_svw=_vel_svw,
             )
             if _wave:
+                decision.wave_action_code = _wave.action_code
                 decision.alerts.append(
                     f"WAVE[{_wave.state_key}]: "
-                    f"signal={_wave.signal} "
+                    f"action={_wave.action_code} "
                     f"P_bot={_wave.p_any_bottom:.1f}% "
                     f"lift_bot={_wave.lift_best_bottom:.2f}× "
                     f"clean={_wave.bot_pct_clean:.0f}% "
                     f"micro={_wave.microstructure_type} "
                     f"N={_wave.n_samples}"
                 )
+
+        # ── Real Point-in-Time EV Signal (Dual Confluence: P(bull) x EV) ──
+        _real_ev = None
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_ev_lookup import lookup_real_ev
+            _real_ev = lookup_real_ev(
+                tide_slope=_slope_state.tide_level,
+                current_slope=_slope_state.current_level,
+                vwap_sigma_wave=channel.vwap_sigma_wave,
+                level="zz50",
+            )
+            if _real_ev:
+                decision.alerts.append(
+                    f"REAL_EV[{_real_ev.state_key}]({_real_ev.fallback_level}): "
+                    f"P_bull={_real_ev.p_bull:.1f}% "
+                    f"EV={_real_ev.ev:+.4f} "
+                    f"Sharpe={_real_ev.sharpe:.3f} "
+                    f"R:R={_real_ev.rr_asymmetry:.2f} "
+                    f"fatigue={_real_ev.fatigue_type} "
+                    f"unobserved={_real_ev.is_unobserved_state}"
+                )
         except Exception as e:
-            logger.warning(f"SwingGate {ticker}: Wave lookup failed: {e}")
+            logger.warning(f"SwingGate {ticker}: Real EV lookup failed: {e}")
+
+        # ── Real Point-in-Time Wave EV Signal (Micro Wave Expectancy) ──
+        _real_wave_ev = None
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_wave_ev_lookup import lookup_real_wave_ev
+            _real_wave_ev = lookup_real_wave_ev(
+                wave_slope=channel.wave_slope,
+                vwap_sigma_current=channel.vwap_sigma_current,
+                sigma_current=channel.sigma_current,
+                vel_svw=_vel_svw,
+                level="zz50",
+            )
+            if _real_wave_ev:
+                decision.alerts.append(
+                    f"WAVE_EV[{_real_wave_ev.state_key}]: "
+                    f"action={_real_wave_ev.action_code} "
+                    f"EV={_real_wave_ev.ev:+.4f} "
+                    f"Sharpe={_real_wave_ev.sharpe:.3f} "
+                    f"fatigue={_real_wave_ev.fatigue_type}"
+                )
+        except Exception as e:
+            logger.warning(f"SwingGate {ticker}: Real Wave EV lookup failed: {e}")
+
 
         # ── Load vol regime (Stateful-First: StateSnapshot preferred) ──
+
         vol_snap = None
         try:
             vol_snap = self._port.load_vol_regime_state()
@@ -452,16 +498,18 @@ class SwingGate:
             dual_prob=_dual_prob,
             combined_signal=_combined,
             wave_signal=_wave,
+            real_ev_signal=_real_ev,
         )
 
         if should_accum:
             # ── MH cascade BEAR blocks accumulation entirely ──
             if _mh_sizing_mod <= 0.0:
-                decision.action = "HOLD"
+                decision.action_code = "STK_HOLD_NEUTRAL"
                 decision.reasoning = (
                     f"MH_BLOCK: {reason_accum} — blocked by breadth cascade BEAR"
                 )
                 return decision
+
 
             # ── Passport-scaled conviction ──
             if passport and passport.viable:
@@ -518,11 +566,13 @@ class SwingGate:
                 conviction = round(conviction * _mh_sizing_mod, 2)
                 reason_accum += f" | MH_MOD: {pre_mh:.2f}→{conviction:.2f}"
 
-            decision.action = "ACCUMULATE"
+            decision.action_code = _combined.action_code if _combined else "STK_ACCUMULATE_STRUCTURAL"
+            decision.urgency_level = _combined.urgency_level if _combined else "LOW"
+            decision.scope_level = _combined.scope_level if _combined else "STK"
             decision.conviction = round(conviction, 2)
             decision.reasoning = reason_accum
             logger.info(
-                f"SwingGate {ticker}: ACCUMULATE (conviction={conviction:.2f}) — {reason_accum}"
+                f"SwingGate {ticker}: ACCUMULATE ({decision.action_code}, urgency={decision.urgency_level}, conviction={conviction:.2f}) — {reason_accum}"
             )
             return decision
 
@@ -537,6 +587,7 @@ class SwingGate:
             dual_prob=_dual_prob,
             combined_signal=_combined,
             wave_signal=_wave,
+            real_ev_signal=_real_ev,
         )
 
         if should_trim:
@@ -561,11 +612,13 @@ class SwingGate:
                         f"(piso {_turn.density_level})"
                     )
 
-            decision.action = "TRIM"
+            decision.action_code = _combined.action_code if _combined else "STK_TRIM_TACTICAL"
+            decision.urgency_level = _combined.urgency_level if _combined else "LOW"
+            decision.scope_level = _combined.scope_level if _combined else "STK"
             decision.conviction = trim_pct
             decision.reasoning = reason_trim
             logger.info(
-                f"SwingGate {ticker}: TRIM ({trim_pct:.0%}) — {reason_trim}"
+                f"SwingGate {ticker}: TRIM ({decision.action_code}, urgency={decision.urgency_level}, {trim_pct:.0%}) — {reason_trim}"
             )
             return decision
 
@@ -573,7 +626,9 @@ class SwingGate:
         if (_turn and _turn.quality_swing_action == ACTION_TRIM
                 and _turn.density_level in (DENSITY_PRESSURIZE, DENSITY_EXPLOSION)
                 and rc_result.sigma_position > 0):
-            decision.action = "TRIM"
+            decision.action_code = "STK_TRIM_TACTICAL"
+            decision.urgency_level = "LOW"
+            decision.scope_level = "STK"
             decision.conviction = round(_turn.conviction * 0.4, 2)
             decision.reasoning = (
                 f"SENTINEL_OVERRIDE: {_turn.archetype} at {_turn.density_level} "
@@ -583,14 +638,18 @@ class SwingGate:
             return decision
 
         # ── Default: HOLD ──
-        decision.action = "HOLD"
+        decision.action_code = _combined.action_code if _combined else "STK_HOLD_NEUTRAL"
+
+        decision.urgency_level = _combined.urgency_level if _combined else "PASSIVE"
+        decision.scope_level = _combined.scope_level if _combined else "STK"
         _prob_ctx = f" P(bull)={_combined.p_bull:.1f}%" if _combined else ""
         decision.reasoning = (
-            f"HOLD: σ={rc_result.sigma_position:.1f}, "
+            f"HOLD ({decision.action_code}): σ={rc_result.sigma_position:.1f}, "
             f"fear={rc_result.fear_label}, tide={rc_result.tide_slope:.3f}, "
             f"zone={rc_result.zone}{_prob_ctx}"
         )
         return decision
+
 
     # ── Internal: RC Intelligence (lazy) ──────────────────────────
 

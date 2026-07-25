@@ -66,55 +66,44 @@ def classify_signal(
     zz75_min_pct: float = 0.0,
     zz50_max_pct: float = 0.0,
 ) -> str:
-    """Assign one of 9 signals. Priority order — first match wins.
+    """Assign one of 9 Universal Taxonomy Action Codes. Priority order — first match wins.
 
-    Remediated v4 rules (meta-audit 2026-06-29):
-      ACCUMULATE    — Extreme capitulation: deep 5%/7.5% bottom density.
-      BUY_DIP       — Statistical dip: asymmetry OR bottom density, p_bull<46.
-      TAKE_PROFIT   — Blow-off top: zz25_max > 15% OR zz50_max above CEILING
-                      zone baseline (zone-relative guard).
-      STRONG_TREND  — CEILING but low structural top risk and strong p_bull.
-                      (Renamed from MOMENTUM(CEILING) to avoid semantic
-                      conflict with the committee's 'distribute preventively'
-                      principle for CEILING.)
-      REDUCE        — Remaining CEILING: structural risk, preventive trim.
-      MOMENTUM      — Clean ABOVE uptrend with high purity.
-      BULL_TREND    — Stable ABOVE uptrend, lower purity requirement.
-      WATCH         — FLOOR/BELOW with no actionable edge yet.
-      NO_EDGE       — Neutral zone with no discriminating feature.
+    Remediated v4 rules (meta-audit 2026-06-29, Universal Taxonomy 2026-07-25):
+      STK_ACCUMULATE_STRUCTURAL — Deep capitulation: deep 5%/7.5% bottom density.
+      STK_BUY_DIP_TACTICAL      — Statistical dip: asymmetry OR bottom density, p_bull<46.
+      STK_TRIM_TACTICAL         — Blow-off top: zz25_max > 15% OR zz50_max above CEILING baseline
+      STK_HOLD_EXTENDED         — CEILING but low structural top risk and strong p_bull.
+      STK_DISTRIBUTE_DECAY      — Remaining CEILING: structural risk, preventive trim.
+      STK_ACCUMULATE_PASSIVE    — Clean ABOVE uptrend with high purity.
+      STK_HOLD_STABLE           — Stable ABOVE uptrend or WATCH/NO_EDGE.
     """
     # 1. ACCUMULATE — deep capitulation (5% or 7.5% zigzag bottoms)
     if zone == "FLOOR" and p_bull < 38.0 and (zz75_min_pct > 8.0 or zz50_min_pct > 12.0):
-        return "ACCUMULATE"
+        return "STK_ACCUMULATE_STRUCTURAL"
     # 2. BUY_DIP — asymmetry edge or elevated minor bottom density
     if zone in ["FLOOR", "BELOW"] and p_bull < 46.0 and (asym_pp > 15.0 or zz25_min_pct > 18.0):
-        return "BUY_DIP"
+        return "STK_BUY_DIP_TACTICAL"
     # 3. TAKE_PROFIT — blow-off top: zz25 absolute OR zz50 zone-relative
-    #    Zone-relative guard: zz50 must exceed CEILING baseline (7.15%)
-    #    to prevent false positives on states with below-average top density.
     if zone == "CEILING" and (
         zz25_max_pct > 15.0
         or zz50_max_pct > _CEILING_ZZ50_MAX_BASELINE
     ):
-        return "TAKE_PROFIT"
+        return "STK_TRIM_TACTICAL"
     # 4. STRONG_TREND (CEILING) — strong bull with low top risk
-    #    Distinct from MOMENTUM (ABOVE) to signal that this is still
-    #    CEILING zone: remain cautious but don't aggressively trim.
     if zone == "CEILING" and p_bull > 78.0 and zz25_max_pct < 12.0:
-        return "STRONG_TREND"
+        return "STK_HOLD_EXTENDED"
     # 5. REDUCE — remaining CEILING: preventive distribution
     if zone == "CEILING":
-        return "REDUCE"
+        return "STK_DISTRIBUTE_DECAY"
     # 6. MOMENTUM (ABOVE) — clean uptrend with high purity and low turn risk
     if zone == "ABOVE" and p_bull > 70.0 and momentum_purity > 70.0 and zz25_max_pct < 10.0:
-        return "MOMENTUM"
+        return "STK_ACCUMULATE_PASSIVE"
     # 7. BULL_TREND — stable uptrend above VWAP
     if zone == "ABOVE" and p_bull > 65.0 and zz25_max_pct < 10.0:
-        return "BULL_TREND"
-    # 8. WATCH — FLOOR/BELOW but no actionable pivot signal
-    if zone in ["FLOOR", "BELOW"]:
-        return "WATCH"
-    return "NO_EDGE"
+        return "STK_HOLD_STABLE"
+    # 8. WATCH / NO_EDGE — FLOOR/BELOW or neutral zone
+    return "STK_HOLD_STABLE"
+
 
 
 def classify_conviction(abs_z: float, n: int) -> str:
@@ -164,30 +153,28 @@ def compute_signal_confidence(
     w_N = 1.0 - math.exp(-n / 1000.0)
 
     # w_edge: signal-specific predictive edge strength
-    if signal == "ACCUMULATE":
+    if signal in ("STK_ACCUMULATE_STRUCTURAL", "ACCUMULATE"):
         # Deep capitulation edge: 5%/7.5% bottom density drives the edge
-        # Normalize: 8% zz75 or 12% zz50 is the threshold — so scale accordingly
         edge_raw = (zz75_min_pct / 8.0) * 0.6 + (zz50_min_pct / 12.0) * 0.4
         w_edge = min(1.0, edge_raw)
-    elif signal == "BUY_DIP":
+    elif signal in ("STK_BUY_DIP_TACTICAL", "BUY_DIP"):
         # Asymmetry edge: positive asym_pp means bottoms dominate tops
         edge_raw = max(0.0, asym_pp) / 30.0  # 30pp = large asymmetry
         w_edge = min(1.0, edge_raw)
-    elif signal == "TAKE_PROFIT":
+    elif signal in ("STK_TRIM_TACTICAL", "TAKE_PROFIT"):
         # Top density edge — use the BETTER of zz25 and zz50 lift
-        # so that zz50-triggered TPs don't get artificially penalized
         edge_25 = max(0.0, zz25_max_pct - 10.0) / 10.0
         edge_50 = max(0.0, zz50_max_pct - 5.0) / 5.0  # 5% baseline for zz50
         edge_raw = max(edge_25, edge_50)
         w_edge = min(1.0, edge_raw)
-    elif signal in ("MOMENTUM", "STRONG_TREND"):
+    elif signal in ("STK_ACCUMULATE_PASSIVE", "MOMENTUM", "STK_HOLD_EXTENDED", "STRONG_TREND"):
         # Distance of p_bull above the 60.78% market baseline
         edge_raw = max(0.0, p_bull - 60.78) / 30.0  # 30pp above → full confidence
         w_edge = min(1.0, edge_raw)
-    elif signal == "BULL_TREND":
+    elif signal in ("STK_HOLD_STABLE", "BULL_TREND"):
         edge_raw = max(0.0, p_bull - 60.78) / 30.0
         w_edge = min(1.0, edge_raw * 0.8)  # Slightly lower than MOMENTUM
-    elif signal == "REDUCE":
+    elif signal in ("STK_DISTRIBUTE_DECAY", "REDUCE"):
         # Top-over-bottom dominance
         edge_raw = max(0.0, -asym_pp) / 25.0
         w_edge = min(1.0, edge_raw)
@@ -252,6 +239,13 @@ def safe_ratio(a: int, b: int):
 # ═══════════════════════════════════════════════════════════════
 
 SIGNAL_DESCRIPTIONS = {
+    "STK_ACCUMULATE_STRUCTURAL": "Extreme capitulation zone. Statistically validated structural accumulation opportunity.",
+    "STK_BUY_DIP_TACTICAL": "Statistical dip with strong bottom asymmetry. Accumulate on confirmed support.",
+    "STK_TRIM_TACTICAL": "Blow-off top risk imminent. Tactical profit-taking recommended.",
+    "STK_HOLD_EXTENDED": "Ceiling zone but structurally strong trend with low top risk. Hold — do not trim aggressively.",
+    "STK_DISTRIBUTE_DECAY": "Preventive distribution. Ceiling zone carries structural top risk.",
+    "STK_ACCUMULATE_PASSIVE": "Genuine trend with clean momentum and low turn risk. Maintain exposure.",
+    "STK_HOLD_STABLE": "Stable uptrend or neutral range above VWAP. Hold positions.",
     "ACCUMULATE": "Extreme capitulation zone. Statistically validated accumulation opportunity.",
     "BUY_DIP": "Statistical dip with strong bottom asymmetry. Accumulate on confirmed support.",
     "TAKE_PROFIT": "Blow-off top risk imminent. Aggressive profit-taking recommended.",
@@ -259,17 +253,19 @@ SIGNAL_DESCRIPTIONS = {
     "REDUCE": "Preventive distribution. Ceiling zone carries structural top risk.",
     "MOMENTUM": "Genuine trend with clean momentum and low turn risk. Maintain exposure.",
     "BULL_TREND": "Stable uptrend above VWAP. Hold positions, do not add aggressively.",
-    "WATCH": "Under pressure but no turn signal. Observe for accumulation setup.",
-    "NO_EDGE": "No statistical edge. Avoid action — discipline is the position.",
+    "WATCH": "FLOOR/BELOW zone with no actionable edge yet.",
+    "NO_EDGE": "Neutral zone with no discriminating feature.",
 }
+
 
 
 def generate_reading(s: dict) -> str:
     """Generate English reading from state metrics."""
     zone_name = s["identity"]["zone"]
     regime = s["identity"]["regime"]
-    signal = s["identity"]["signal"]
+    signal = s["identity"].get("signal", "")
     p = s["direction"]["p_bull"]
+
     odds = s["direction"]["odds"]
     lift_b = s["direction"]["lift_vs_band"]
     n = s["frequency"]["N"]
@@ -314,9 +310,9 @@ def generate_reading(s: dict) -> str:
         parts.append(f"Asymmetry {asym:+.1f}pp -> bottoms dominate.")
 
     parts.append(f"HH runs avg {hh_avg:.1f} bars, fragmentation {hh_frag}.")
-    parts.append(f"{signal}. {SIGNAL_DESCRIPTIONS[signal]}")
 
     return " ".join(parts)
+
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -490,13 +486,13 @@ def main():
             "identity": {
                 "zone": zone,
                 "regime": regime,
-                "signal": signal,
                 "signal_confidence": sig_confidence,
                 "conviction": classify_conviction(abs_z, n),
                 "conviction_score": conviction_score(abs_z, n),
                 "predictive_edge": pred_edge,
                 "rotation_flag": rot_flag,
             },
+
             "frequency": {
                 "N": n,
                 "pct_of_total": round(n / n_total * 100, 2),
@@ -592,7 +588,7 @@ def main():
         json.dump(output, f, indent=2, ensure_ascii=False)
 
     # ── Summary ──
-    sig_counts = Counter(s["identity"]["signal"] for s in states_out.values())
+    sig_counts = Counter(s["identity"].get("signal", "PURE_FEATURE_FACT") for s in states_out.values())
     conv_counts = Counter(s["identity"]["conviction"] for s in states_out.values())
     pred_counts = Counter(s["identity"]["predictive_edge"] for s in states_out.values() if s["identity"]["predictive_edge"])
     rot_counts = Counter(s["identity"]["rotation_flag"] for s in states_out.values() if s["identity"]["rotation_flag"])
@@ -600,6 +596,7 @@ def main():
     print(f"Generated {OUT_PATH}")
     print(f"   States: {len(states_out)}")
     print(f"   Signals: {dict(sig_counts.most_common())}")
+
     print(f"   Conviction: {dict(conv_counts.most_common())}")
     print(f"   Predictive Edge: {dict(pred_counts.most_common())}")
     print(f"   Rotation Flags: {dict(rot_counts.most_common())}")

@@ -54,3 +54,8 @@ graphify-out/
 
 # TradingView historical data exports (imported to vault, then deleted)
 DataTradingView/
+
+# Scratch Cache & Large Logs
+backend/scratch/cache/
+backend/scratch/*.log
+backend/scratch/**/*.log

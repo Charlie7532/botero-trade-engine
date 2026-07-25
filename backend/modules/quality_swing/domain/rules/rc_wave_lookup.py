@@ -32,6 +32,30 @@ _WAVE: Optional[dict] = None
 _WAVE_PATH = Path(__file__).parent / "rc_wave_derived.json"
 
 
+WAVE_ACTION_CODE_MAP = {
+    "EXHAUSTION_BOTTOM": ("WAVE_EXHAUSTION_BOTTOM", "IMMEDIATE", "STK"),
+    "DIVERGENCE_BOTTOM": ("WAVE_DIVERGENCE_BOTTOM", "HIGH", "STK"),
+    "APPROACHING_BOTTOM": ("WAVE_APPROACHING_BOTTOM", "HIGH", "STK"),
+    "WATCH_BOTTOM": ("WAVE_WATCH_BOTTOM", "NORMAL", "STK"),
+    "EXHAUSTION_TOP": ("WAVE_EXHAUSTION_TOP", "HIGH", "STK"),
+    "APPROACHING_TOP": ("WAVE_APPROACHING_TOP", "HIGH", "STK"),
+    "WATCH_TOP": ("WAVE_WATCH_TOP", "NORMAL", "STK"),
+    "CONTINUATION": ("WAVE_CONTINUATION", "PASSIVE", "STK"),
+    "NO_EDGE": ("WAVE_NO_EDGE", "PASSIVE", "STK"),
+    # Direct Universal Taxonomy mapping
+    "WAVE_EXHAUSTION_BOTTOM": ("WAVE_EXHAUSTION_BOTTOM", "IMMEDIATE", "STK"),
+    "WAVE_DIVERGENCE_BOTTOM": ("WAVE_DIVERGENCE_BOTTOM", "HIGH", "STK"),
+    "WAVE_APPROACHING_BOTTOM": ("WAVE_APPROACHING_BOTTOM", "HIGH", "STK"),
+    "WAVE_WATCH_BOTTOM": ("WAVE_WATCH_BOTTOM", "NORMAL", "STK"),
+    "WAVE_EXHAUSTION_TOP": ("WAVE_EXHAUSTION_TOP", "HIGH", "STK"),
+    "WAVE_APPROACHING_TOP": ("WAVE_APPROACHING_TOP", "HIGH", "STK"),
+    "WAVE_WATCH_TOP": ("WAVE_WATCH_TOP", "NORMAL", "STK"),
+    "WAVE_CONTINUATION": ("WAVE_CONTINUATION", "PASSIVE", "STK"),
+    "WAVE_NO_EDGE": ("WAVE_NO_EDGE", "PASSIVE", "STK"),
+}
+
+
+
 @dataclass(frozen=True)
 class WaveSignal:
     """Result of the Wave W×σVc×σc×vel lookup.
@@ -43,6 +67,9 @@ class WaveSignal:
     state_key: str            # "L1:W+++|σVc:<<|σc:<|vel:▼"
     level: str                # "L1", "L2", "L3"
     signal: str               # APPROACHING_BOTTOM / WATCH_BOTTOM / APPROACHING_TOP / WATCH_TOP / CONTINUATION / NO_EDGE
+    action_code: str          # WAVE_APPROACHING_BOTTOM / WAVE_WATCH_BOTTOM / etc.
+    urgency_level: str        # HIGH / NORMAL / PASSIVE
+    scope_level: str          # STK
     wave_direction: str       # STRONG_UP / UP / MILD_UP / MILD_DOWN / DOWN / STRONG_DOWN
     wave_zone: str            # DEEP_DISCOUNT / DISCOUNT / NEUTRAL / PREMIUM / DEEP_PREMIUM
     channel_zone: str         # DEEP_DISCOUNT / DISCOUNT / NEUTRAL / PREMIUM / DEEP_PREMIUM
@@ -54,6 +81,7 @@ class WaveSignal:
     # Frequency
     n_samples: int
     p_bull: float             # P(bull) percentage 0-100
+
 
     # Pivot prediction (composite)
     p_any_bottom: float       # P(any zigzag bottom near this state)
@@ -211,6 +239,40 @@ def _load_wave() -> dict:
     return _WAVE
 
 
+from backend.modules.quality_swing.domain.rules.signal_cataloger import SignalCataloger, WaveFeatureVector
+
+
+def classify_wave_signal_from_features(state: dict) -> tuple[str, str, str, str]:
+    """Pure Python classifier for Wave Features (Delegates to SignalCataloger)."""
+    identity = state.get("identity", {})
+    if "signal" in identity:
+        sig = identity["signal"]
+        ac, urg, sc = WAVE_ACTION_CODE_MAP.get(sig, ("WAVE_NO_EDGE", "PASSIVE", "STK"))
+        return sig, ac, urg, sc
+
+    frequency = state.get("frequency", {})
+    pivot = state.get("pivot_prediction", {})
+    composite = pivot.get("composite", {})
+    rq = state.get("reversal_quality", {})
+    bot_clean = rq.get("bottom", {}).get("pct_clean", 0.0)
+    top_clean = rq.get("top", {}).get("pct_clean", 0.0)
+
+    features = WaveFeatureVector(
+        wave_direction=identity.get("wave_direction", "NEUTRAL"),
+        wave_zone=identity.get("wave_zone", "FAIR_VALUE"),
+        channel_zone=identity.get("channel_zone", "FAIR_VALUE"),
+        momentum_state=identity.get("momentum_state", "NEUTRAL"),
+        n_samples=frequency.get("N", 0),
+        bot_lift=composite.get("lift_best_bottom", 0.0),
+        top_lift=composite.get("lift_best_top", 0.0),
+        bot_clean=bot_clean,
+        top_clean=top_clean,
+        asymmetry_bias=composite.get("asymmetry_bias", "NEUTRAL"),
+    )
+    return SignalCataloger.classify_wave(features)
+
+
+
 def _make_result(
     state_key: str,
     state: dict,
@@ -219,7 +281,7 @@ def _make_result(
     s5_th_mod: float = 1.0,
     s5_th_tag: str = "",
 ) -> WaveSignal:
-    """Convert a raw state dict into WaveSignal."""
+    """Parse a state entry into a WaveSignal domain entity."""
     identity = state["identity"]
     frequency = state["frequency"]
     pivot = state["pivot_prediction"]
@@ -233,19 +295,25 @@ def _make_result(
 
     level = state_key.split(":")[0] if ":" in state_key else "L1"
 
+    legacy_sig, ac, urg, sc = classify_wave_signal_from_features(state)
+
     return WaveSignal(
         state_key=state_key,
         level=level,
-        signal=identity["signal"],
+        signal=legacy_sig,
+        action_code=ac,
+        urgency_level=urg,
+        scope_level=sc,
         wave_direction=identity["wave_direction"],
         wave_zone=identity["wave_zone"],
         channel_zone=identity["channel_zone"],
         momentum_state=identity["momentum_state"],
         conviction=identity["conviction"],
         conviction_score=identity["conviction_score"],
-        microstructure_type=identity["microstructure_type"],
+        microstructure_type=legacy_sig,
         n_samples=frequency["N"],
         p_bull=frequency["p_bull"],
+
         p_any_bottom=composite["p_any_bottom"],
         p_any_top=composite["p_any_top"],
         lift_best_bottom=composite["lift_best_bottom"],

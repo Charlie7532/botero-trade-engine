@@ -159,3 +159,42 @@ Quality Swing (Druckenmiller):
 Core decides the portfolio composition.
 Swing decides the position sizing over time.
 
+---
+
+## Universal Signal & Action Taxonomy Standard
+
+All Quality Swing decision outputs (`SwingDecision` DTO and `SignalCataloger`) MUST conform to Rule 20 of `AGENTS.md`:
+
+```
+┌─────────────┬─────────────────────────────┬───────────┬────────────────────────────────────────┐
+│ Scope       │ Action Code                 │ Urgency   │ Description / Cause Trigger            │
+├─────────────┼─────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ MARKET      │ MKT_MACRO_CIRCUIT_BREAKER   │ EMERGENCY │ Systemic crash or crisis liquidity veto│
+│ MARKET      │ MKT_COMPLACENCY_SHIELD      │ NORMAL    │ Pre-crash defensive sizing reduction   │
+│ STOCK       │ STK_ACCUMULATE_STRUCTURAL   │ LOW       │ Structural trend value buy (T+++)      │
+│ STOCK       │ STK_BUY_DIP_TACTICAL        │ HIGH      │ Rebound in extreme 2σ+ oversold (R:R≥2.5)│
+│ STOCK       │ STK_ACCUMULATE_PASSIVE      │ LOW       │ Passive accumulation in clean uptrend  │
+│ STOCK       │ STK_HOLD_STABLE             │ PASSIVE   │ Maintain position in stable bull trend │
+│ STOCK       │ STK_HOLD_EXTENDED           │ PASSIVE   │ Maintain position in extended ceiling  │
+│ STOCK       │ STK_WATCH_PASSIVE           │ PASSIVE   │ Passive watch in discount zone         │
+│ STOCK       │ STK_HOLD_NEUTRAL            │ PASSIVE   │ Maintain position in neutral range     │
+│ STOCK       │ STK_TRIM_TACTICAL           │ LOW       │ Harvest profit in resistance (σ≥+1.5)  │
+│ STOCK       │ STK_DISTRIBUTE_DECAY        │ NORMAL    │ Reduce on EV decay (delta_ev ≤ -0.015) │
+│ STOCK       │ STK_EXIT_THESIS_DEATH       │ HIGH      │ Sell 100% on moat breach (Hohn/Munger) │
+│ STOCK       │ STK_EXIT_TIME_STOP          │ NORMAL    │ Exit on 120-day vertical barrier expiry│
+│ STOCK       │ STK_BLOCK_CRISIS            │ IMMEDIATE │ Hard crisis veto for ticker            │
+├─────────────┼─────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ WAVE (MICRO)│ WAVE_EXHAUSTION_BOTTOM      │ IMMEDIATE │ Seller exhaustion in steep drop        │
+│ WAVE (MICRO)│ WAVE_DIVERGENCE_BOTTOM      │ HIGH      │ Bullish divergence in recovering tide │
+│ WAVE (MICRO)│ WAVE_APPROACHING_BOTTOM     │ HIGH      │ High statistical bottom pivot density  │
+│ WAVE (MICRO)│ WAVE_WATCH_BOTTOM           │ NORMAL    │ Developing bottom under surveillance   │
+│ WAVE (MICRO)│ WAVE_EXHAUSTION_TOP         │ HIGH      │ Buyer exhaustion / blow-off top climax │
+│ WAVE (MICRO)│ WAVE_APPROACHING_TOP        │ HIGH      │ High statistical top pivot density     │
+│ WAVE (MICRO)│ WAVE_WATCH_TOP              │ NORMAL    │ Developing top under surveillance      │
+│ WAVE (MICRO)│ WAVE_CONTINUATION           │ PASSIVE   │ Harmonic wave momentum continuation    │
+│ WAVE (MICRO)│ WAVE_NO_EDGE                │ PASSIVE   │ Neutral micro wave timing               │
+└─────────────┴─────────────────────────────┴───────────┴────────────────────────────────────────┘
+```
+
+
+

@@ -27,6 +27,32 @@ _COMBINED: Optional[dict] = None
 _COMBINED_PATH = Path(__file__).parent / "rc_combined_derived.json"
 
 
+ACTION_CODE_MAP = {
+    "ACCUMULATE": ("STK_ACCUMULATE_STRUCTURAL", "LOW", "STK"),
+    "BUY_DIP": ("STK_BUY_DIP_TACTICAL", "HIGH", "STK"),
+    "MOMENTUM": ("STK_ACCUMULATE_PASSIVE", "LOW", "STK"),
+    "BULL_TREND": ("STK_HOLD_STABLE", "PASSIVE", "STK"),
+    "STRONG_TREND": ("STK_HOLD_EXTENDED", "PASSIVE", "STK"),
+    "WATCH": ("STK_WATCH_PASSIVE", "PASSIVE", "STK"),
+    "NO_EDGE": ("STK_HOLD_NEUTRAL", "PASSIVE", "STK"),
+    "REDUCE": ("STK_DISTRIBUTE_DECAY", "NORMAL", "STK"),
+    "TAKE_PROFIT": ("STK_TRIM_TACTICAL", "LOW", "STK"),
+    "CRISIS_VETO": ("STK_BLOCK_CRISIS", "IMMEDIATE", "STK"),
+    # Direct Universal Taxonomy mapping
+    "STK_ACCUMULATE_STRUCTURAL": ("STK_ACCUMULATE_STRUCTURAL", "LOW", "STK"),
+    "STK_BUY_DIP_TACTICAL": ("STK_BUY_DIP_TACTICAL", "HIGH", "STK"),
+    "STK_ACCUMULATE_PASSIVE": ("STK_ACCUMULATE_PASSIVE", "LOW", "STK"),
+    "STK_HOLD_STABLE": ("STK_HOLD_STABLE", "PASSIVE", "STK"),
+    "STK_HOLD_EXTENDED": ("STK_HOLD_EXTENDED", "PASSIVE", "STK"),
+    "STK_WATCH_PASSIVE": ("STK_WATCH_PASSIVE", "PASSIVE", "STK"),
+    "STK_HOLD_NEUTRAL": ("STK_HOLD_NEUTRAL", "PASSIVE", "STK"),
+    "STK_DISTRIBUTE_DECAY": ("STK_DISTRIBUTE_DECAY", "NORMAL", "STK"),
+    "STK_TRIM_TACTICAL": ("STK_TRIM_TACTICAL", "LOW", "STK"),
+    "STK_BLOCK_CRISIS": ("STK_BLOCK_CRISIS", "IMMEDIATE", "STK"),
+}
+
+
+
 @dataclass(frozen=True)
 class CombinedSignal:
     """Result of the combined T×C×σVw lookup.
@@ -37,6 +63,9 @@ class CombinedSignal:
     # Identity
     state_key: str          # "T+++|C---|<<"
     signal: str             # ACCUMULATE / BUY_DIP / TAKE_PROFIT / REDUCE / MOMENTUM / BULL_TREND / WATCH / NO_EDGE
+    action_code: str        # STK_ACCUMULATE_STRUCTURAL / STK_BUY_DIP_TACTICAL / STK_HOLD_STABLE / STK_TRIM_TACTICAL / etc.
+    urgency_level: str      # LOW / HIGH / PASSIVE / NORMAL / IMMEDIATE
+    scope_level: str        # STK / SEC / MKT
     zone: str               # FLOOR / BELOW / NEUTRAL / ABOVE / CEILING
     regime: str             # ALIGN_BULL / ALIGN_BEAR / DIV_UP / DIV_DOWN / TRANSITION
     conviction: str         # HIGH / MEDIUM / LOW
@@ -72,17 +101,17 @@ class CombinedSignal:
     @property
     def is_accumulate(self) -> bool:
         """Signal recommends accumulation."""
-        return self.signal in ("ACCUMULATE", "BUY_DIP")
+        return self.signal in ("ACCUMULATE", "BUY_DIP") or self.action_code in ("STK_ACCUMULATE_STRUCTURAL", "STK_BUY_DIP_TACTICAL")
 
     @property
     def is_trim(self) -> bool:
         """Signal recommends reducing exposure."""
-        return self.signal in ("TAKE_PROFIT", "REDUCE")
+        return self.signal in ("TAKE_PROFIT", "REDUCE") or self.action_code in ("STK_TRIM_TACTICAL", "STK_DISTRIBUTE_DECAY")
 
     @property
     def is_hold(self) -> bool:
         """Signal recommends holding or no action."""
-        return self.signal in ("MOMENTUM", "STRONG_TREND", "BULL_TREND", "WATCH", "NO_EDGE")
+        return self.signal in ("MOMENTUM", "STRONG_TREND", "BULL_TREND", "WATCH", "NO_EDGE") or self.action_code in ("STK_HOLD_STABLE", "STK_HOLD_EXTENDED", "STK_ACCUMULATE_PASSIVE")
 
     @property
     def is_bullish_zone(self) -> bool:
@@ -101,12 +130,7 @@ class CombinedSignal:
 
     @property
     def confidence_factor(self) -> float:
-        """signal_confidence as 0.0-1.0 factor.
-
-        This is the PREFERRED sizing input: it integrates empirical edge strength,
-        sample size, state stability, and pivot repetition penalty — giving a more
-        complete picture of the signal quality than conviction_score alone.
-        """
+        """signal_confidence as 0.0-1.0 factor."""
         return self.signal_confidence / 100.0
 
 
@@ -148,6 +172,31 @@ def _load_combined() -> dict:
     return _COMBINED
 
 
+from backend.modules.quality_swing.domain.rules.signal_cataloger import SignalCataloger, FeatureVector
+
+
+def classify_combined_signal_from_features(identity: dict, direction: dict, turn_risk: dict, composition: dict) -> tuple[str, str, str, str]:
+    """Pure Python classifier for Combined Features (Delegates to SignalCataloger)."""
+    if "signal" in identity:
+        sig = identity["signal"]
+        ac, urg, sc = ACTION_CODE_MAP.get(sig, ("STK_HOLD_STABLE", "PASSIVE", "STK"))
+        return sig, ac, urg, sc
+
+    features = FeatureVector(
+        zone=identity["zone"],
+        p_bull=direction["p_bull"],
+        asymmetry_pp=turn_risk["asymmetry_pp"],
+        zz25_min_pct=turn_risk["bottom_25"]["pct"],
+        zz25_max_pct=turn_risk["top_25"]["pct"],
+        zz50_min_pct=turn_risk.get("bottom_50", {}).get("pct", 0.0),
+        zz50_max_pct=turn_risk.get("top_50", {}).get("pct", 0.0),
+        zz75_min_pct=turn_risk.get("bottom_75", {}).get("pct", 0.0),
+        momentum_purity=composition["momentum_purity"],
+    )
+    return SignalCataloger.classify_combined(features)
+
+
+
 def _make_result(state_key: str, state: dict) -> CombinedSignal:
     """Convert a raw state dict into CombinedSignal."""
     identity = state["identity"]
@@ -156,9 +205,14 @@ def _make_result(state_key: str, state: dict) -> CombinedSignal:
     composition = state["composition"]
     frequency = state["frequency"]
 
+    sig, ac, urg, sc = classify_combined_signal_from_features(identity, direction, turn_risk, composition)
+
     return CombinedSignal(
         state_key=state_key,
-        signal=identity["signal"],
+        signal=sig,
+        action_code=ac,
+        urgency_level=urg,
+        scope_level=sc,
         zone=identity["zone"],
         regime=identity["regime"],
         conviction=identity["conviction"],
@@ -179,6 +233,8 @@ def _make_result(state_key: str, state: dict) -> CombinedSignal:
         rotation_flag=identity.get("rotation_flag"),
         reading=state.get("reading", ""),
     )
+
+
 
 
 # ═══════════════════════════════════════════════════════════════

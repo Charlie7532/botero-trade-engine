@@ -109,35 +109,10 @@ def compute_reversal_quality(stereo_before: dict, stereo_after: dict, tp_type_is
     }
 
 
-def classify_signal(bot_lift, top_lift, bot_clean, top_clean, bias, n):
-    """Classify the Wave signal."""
-    if n < 30:
-        return "NO_EDGE"
-
-    if bot_lift >= 1.5 and bot_clean >= 50.0 and bias in ("STRONG_BOTTOM", "MILD_BOTTOM"):
-        return "APPROACHING_BOTTOM"
-    if bot_lift >= 1.2 and bias == "STRONG_BOTTOM":
-        return "WATCH_BOTTOM"
-    if top_lift >= 1.5 and top_clean >= 50.0 and bias in ("STRONG_TOP", "MILD_TOP"):
-        return "APPROACHING_TOP"
-    if top_lift >= 1.2 and bias == "STRONG_TOP":
-        return "WATCH_TOP"
-    if bot_lift < 0.5 and top_lift < 0.5:
-        return "CONTINUATION"
-    return "NO_EDGE"
+# Decoupled Architecture: Hardcoded signals are NOT embedded in the Fact Store JSON.
+# Dynamic classification occurs in Python memory via SignalCataloger.classify_wave().
 
 
-def classify_microstructure(wave_dir, signal, vel_state):
-    """Classify microstructure type."""
-    if signal == "APPROACHING_BOTTOM" and wave_dir in ("STRONG_DOWN", "MODERATE_DOWN"):
-        return "EXHAUSTION_BOTTOM"
-    if signal == "APPROACHING_TOP" and wave_dir in ("STRONG_UP", "MODERATE_UP"):
-        return "EXHAUSTION_TOP"
-    if signal in ("APPROACHING_BOTTOM", "WATCH_BOTTOM") and wave_dir in ("MILD_UP", "MODERATE_UP"):
-        return "DIVERGENCE"
-    if signal == "CONTINUATION":
-        return "CONTINUATION"
-    return "NEUTRAL"
 
 
 def conviction_score(lift_best, n, pct_clean):
@@ -242,17 +217,10 @@ def derive_state(key, cell, baselines, n_total_obs):
         bias = "NEUTRAL"
 
     # ── Signal classification ──
-    signal = classify_signal(
-        bot_lift_best, top_lift_best,
-        rev_bottom["pct_clean"], rev_top["pct_clean"],
-        bias, n
-    )
-
-    micro_type = classify_microstructure(w_dir, signal, vel_state)
     conv = conviction_score(
-        bot_lift_best if "BOTTOM" in signal else top_lift_best,
+        max(bot_lift_best, top_lift_best),
         n,
-        rev_bottom["pct_clean"] if "BOTTOM" in signal else rev_top["pct_clean"],
+        max(rev_bottom["pct_clean"], rev_top["pct_clean"]),
     )
 
     if conv >= 60:
@@ -262,22 +230,13 @@ def derive_state(key, cell, baselines, n_total_obs):
     else:
         conviction_label = "LOW"
 
-    # ── Reading ──
+    # ── Pure Numeric Reading ──
     reading_parts = [
         f"{w_dir} wave, VWAP zone={w_zone}, channel zone={ch_zone}, momentum {vel_state}.",
         f"P_bull={p_bull:.1f}%.",
+        f"BOTTOM: p={p_any_bottom:.1f}% (lift {bot_lift_best:.2f}×).",
+        f"TOP: p={p_any_top:.1f}% (lift {top_lift_best:.2f}×)."
     ]
-    if "BOTTOM" in signal:
-        reading_parts.append(
-            f"BOTTOM: p={p_any_bottom:.1f}% (lift {bot_lift_best:.2f}×), "
-            f"reversal {rev_bottom['transition_tag']} ({rev_bottom['pct_clean']:.0f}% clean)."
-        )
-    if "TOP" in signal:
-        reading_parts.append(
-            f"TOP: p={p_any_top:.1f}% (lift {top_lift_best:.2f}×), "
-            f"reversal {rev_top['transition_tag']} ({rev_top['pct_clean']:.0f}% clean)."
-        )
-    reading_parts.append(f"Signal: {signal}. Microstructure: {micro_type}.")
     reading = " ".join(reading_parts)
 
     return {
@@ -286,11 +245,11 @@ def derive_state(key, cell, baselines, n_total_obs):
             "wave_zone": w_zone,
             "channel_zone": ch_zone,
             "momentum_state": vel_state,
-            "signal": signal,
             "conviction": conviction_label,
             "conviction_score": conv,
-            "microstructure_type": micro_type,
         },
+
+
         "frequency": {
             "N": n,
             "pct_of_total": round(n / n_total_obs * 100, 2) if n_total_obs else 0,
@@ -449,7 +408,7 @@ def main():
 
     # Signal distribution
     from collections import Counter
-    sig_counts = Counter(s["identity"]["signal"] for s in states.values())
+    sig_counts = Counter(s["identity"].get("signal", "PURE_FEATURE_FACT") for s in states.values())
 
     derived = {
         "version": f"v1_wave_derived_{datetime.now().strftime('%Y-%m-%d')}",
@@ -492,13 +451,14 @@ def main():
         pp = state["pivot_prediction"]
         logger.info(
             f"    {key}: N={freq['N']:,}, P_bull={freq['p_bull']:.1f}%, "
-            f"signal={ident['signal']}, conv={ident['conviction_score']}, "
+            f"conv={ident['conviction_score']}, "
             f"p_bot={pp['composite']['p_any_bottom']:.1f}%, "
             f"p_top={pp['composite']['p_any_top']:.1f}%, "
             f"bias={pp['asymmetry']['bias']}"
         )
 
     logger.info("=" * 90)
+
 
 
 if __name__ == "__main__":

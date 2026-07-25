@@ -1,0 +1,247 @@
+# =============================================================================
+# Botero Trade Engine — Docker Build & Push to GCP Artifact Registry
+# =============================================================================
+# Builds the backend Docker image on every PR and on main merges.
+# Pushes the image to Google Cloud Artifact Registry so that GCP deployments
+# can auto-update by pulling the latest tag.
+#
+# REQUIRED GITHUB SECRETS (Settings → Secrets and variables → Actions):
+#   GCP_PROJECT_ID       — Your GCP Project ID (e.g. "botero-trade-prod")
+#   GCP_SA_KEY           — Service Account JSON key (base64-encoded) with roles:
+#                          - Artifact Registry Writer (roles/artifactregistry.writer)
+#                          - (optional) Cloud Run Developer if deploying via Cloud Run
+#
+# OPTIONAL GITHUB SECRETS:
+#   GCP_REGION           — GCP region (default: "us-central1")
+#   GCP_AR_REPO          — Artifact Registry repo name (default: "botero-trade")
+#   GCP_SERVICE_NAME     — Cloud Run service name (default: "botero-trade-api")
+#   GCP_RUN_DEPLOY       — Set to "true" to auto-deploy to Cloud Run after push
+# =============================================================================
+
+name: 🐳 Build & Deploy Docker Image
+
+on:
+  # Build on every PR that touches backend or docker-compose
+  pull_request:
+    paths:
+      - "backend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/docker-build-gcp.yml"
+    types: [opened, synchronize, reopened]
+
+  # Build + push + deploy on merge to main
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/docker-build-gcp.yml"
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Deploy to Cloud Run after building?"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+env:
+  # ─── Configuration (override with repo secrets/variables) ──────────────────
+  GCP_REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
+  GCP_AR_REPO: ${{ secrets.GCP_AR_REPO || 'botero-trade' }}
+  IMAGE_NAME: botero-trade-api
+  GCP_SERVICE_NAME: ${{ secrets.GCP_SERVICE_NAME || 'botero-trade-api' }}
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 1: Build & Push Docker Image to Artifact Registry
+  # ───────────────────────────────────────────────────────────────────────────
+  build-and-push:
+    name: 🔨 Build & Push Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Needed for OIDC auth if using Workload Identity Federation
+
+    outputs:
+      image_sha: ${{ steps.meta.outputs.version }}
+      image_uri: ${{ steps.image-uri.outputs.uri }}
+
+    steps:
+      # ─── Checkout code ─────────────────────────────────────────────────────
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # ─── Authenticate to Google Cloud ──────────────────────────────────────
+      - name: 🔑 Authenticate to GCP
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # ─── Configure Docker to use Artifact Registry ─────────────────────────
+      - name: 🐳 Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker \
+            "${{ env.GCP_REGION }}-docker.pkg.dev" --quiet
+
+      # ─── Generate image tags & labels ─────────────────────────────────────
+      - name: 🏷️ Generate metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GCP_AR_REPO }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # Short SHA on every build
+            type=sha,format=short,prefix=sha-
+            # "latest" on main branch
+            type=raw,value=latest,enable={{is_default_branch}}
+            # PR number for PR builds
+            type=ref,event=pr,prefix=pr-
+            # Branch name for push events
+            type=ref,event=branch
+          labels: |
+            org.opencontainers.image.title=Botero Trade Engine API
+            org.opencontainers.image.description=FastAPI Python backend for algorithmic trading
+            org.opencontainers.image.source=https://github.com/Charlie7532/botero-trade-engine
+            org.opencontainers.image.licenses=MIT
+
+      # ─── Build & Push the Docker image ────────────────────────────────────
+      - name: 🐳 Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ─── Output the full image URI for downstream jobs ─────────────────────
+      - name: 📤 Set image URI output
+        id: image-uri
+        run: |
+          IMAGE_SHA="${{ steps.meta.outputs.version }}"
+          IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GCP_AR_REPO }}/${{ env.IMAGE_NAME }}:${IMAGE_SHA}"
+          echo "uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+          echo "✅ Image pushed: ${IMAGE_URI}"
+
+      # ─── Update deployment manifest with new image tag ─────────────────────
+      - name: 📝 Update image tag in deployment config
+        if: github.ref == 'refs/heads/main'
+        run: |
+          IMAGE_SHA="${{ steps.meta.outputs.version }}"
+          echo "New image tag: ${IMAGE_SHA}"
+          echo "::notice title=Docker Image Published::Image ${{ env.IMAGE_NAME }}:${IMAGE_SHA} pushed to Artifact Registry"
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 2: Deploy to Cloud Run (only on main merges or manual trigger)
+  # ───────────────────────────────────────────────────────────────────────────
+  deploy-cloud-run:
+    name: 🚀 Deploy to Cloud Run
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.deploy == 'true')
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔑 Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # ─── Deploy to Cloud Run ────────────────────────────────────────────────
+      - name: 🚀 Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.GCP_SERVICE_NAME }}
+          image: ${{ needs.build-and-push.outputs.image_uri }}
+          region: ${{ env.GCP_REGION }}
+          flags: >-
+            --port=8000
+            --min-instances=0
+            --max-instances=3
+            --cpu=1
+            --memory=1Gi
+            --timeout=300
+            --concurrency=80
+            --allow-unauthenticated
+          env_vars: |
+            PYTHONPATH=/app
+          secrets: |
+            DATABASE_URL=botero-trade-database-url:latest
+            ALPACA_API_KEY=botero-trade-alpaca-key:latest
+            ALPACA_SECRET_KEY=botero-trade-alpaca-secret:latest
+            FINNHUB_API_KEY=botero-trade-finnhub-key:latest
+            UW_API_KEY=botero-trade-uw-key:latest
+            FRED_API_KEY=botero-trade-fed-key:latest
+            GURUFOCUS_API_TOKEN=botero-trade-gurufocus-token:latest
+            ANTHROPIC_API_KEY=botero-trade-anthropic-key:latest
+            PAYLOAD_SECRET=botero-trade-payload-secret:latest
+
+      # ─── Show the deployed URL ─────────────────────────────────────────────
+      - name: 🌐 Output deployment URL
+        run: |
+          echo "✅ Deployed to Cloud Run"
+          echo "🌐 Service URL: ${{ steps.deploy.outputs.url }}"
+          echo "::notice title=Cloud Run Deployed::Service ${{ env.GCP_SERVICE_NAME }} deployed at ${{ steps.deploy.outputs.url }}"
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 3: PR Comment with build status (optional, informational)
+  # ───────────────────────────────────────────────────────────────────────────
+  comment-pr:
+    name: 💬 Comment PR with build info
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: 💬 Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const imageUri = '${{ needs.build-and-push.outputs.image_uri }}';
+            const sha = '${{ needs.build-and-push.outputs.image_sha }}';
+            const body = [
+              '## 🐳 Docker Image Built & Pushed',
+              '',
+              'The backend Docker image has been built and pushed to **GCP Artifact Registry**:',
+              '',
+              '| Field | Value |',
+              '|-------|-------|',
+              `| **Image** | \`${imageUri.split(':').slice(0,-1).join(':')}\` |`,
+              `| **Tag** | \`${sha}\` |`,
+              `| **Registry** | Artifact Registry |`,
+              `| **Built from** | [${context.sha.substring(0,7)}](${context.payload.repository.html_url}/commit/${context.sha}) |`,
+              '',
+              '> ⚠️ Image is built on PR, but **not deployed**. Deployment to Cloud Run happens automatically when this PR is merged to `main`.',
+              '',
+              '### Setup checklist (first time only)',
+              '- [ ] Create Artifact Registry repository: `' + '${{ env.GCP_REGION }}' + '-docker.pkg.dev/<PROJECT_ID>/botero-trade`',
+              '- [ ] Add `GCP_PROJECT_ID` and `GCP_SA_KEY` as GitHub Secrets',
+              '- [ ] Create Secret Manager secrets for env vars (if deploying via Cloud Run)',
+            ].join('\\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

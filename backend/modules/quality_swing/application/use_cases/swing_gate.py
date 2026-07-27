@@ -113,8 +113,9 @@ class SwingGate:
         from backend.modules.quality_swing.domain.rules.rc_slope_classifier import (
             classify_slopes,
         )
+        _atr_pct = getattr(channel, "atr_pct", 0.01)
         _slope_state = classify_slopes(
-            channel.tide_slope, channel.current_slope, channel.wave_slope
+            channel.tide_slope, channel.current_slope, channel.wave_slope, atr_pct=_atr_pct
         )
 
         # Load Observer recovery_score and velocities from Vault
@@ -256,6 +257,8 @@ class SwingGate:
                     f"micro={_wave.microstructure_type} "
                     f"N={_wave.n_samples}"
                 )
+        except Exception as e:
+            logger.warning(f"Wave lookup failed for {ticker}: {e}")
 
         # ── Real Point-in-Time EV Signal (Dual Confluence: P(bull) x EV) ──
         _real_ev = None
@@ -279,6 +282,33 @@ class SwingGate:
                 )
         except Exception as e:
             logger.warning(f"SwingGate {ticker}: Real EV lookup failed: {e}")
+
+        # ── Multiscale Kinematic Real EV Signal (2.5%, 5.0%, 7.5% Scale-Conditional Payoffs) ──
+        _multiscale_ev = None
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_multiscale_ev_lookup import lookup_multiscale_kinematic_ev
+            _multiscale_ev = lookup_multiscale_kinematic_ev(
+                tide_slope=channel.tide_slope,
+                current_slope=channel.current_slope,
+                wave_slope=channel.wave_slope,
+                sigma_current=channel.sigma_current,
+                sigma_wave=channel.sigma_wave,
+                vwap_sigma_wave=channel.vwap_sigma_wave,
+                delta_svw=_vel_svw,
+                atr_pct=_atr_pct,
+            )
+            if _multiscale_ev:
+                decision.alerts.append(
+                    f"MULTISCALE_EV[{_multiscale_ev.lookup_key}]({_multiscale_ev.fallback_level}): "
+                    f"P_bull={_multiscale_ev.p_bull:.1%} "
+                    f"EV_25={_multiscale_ev.ev_net_25:+.4f} "
+                    f"EV_50={_multiscale_ev.ev_net_50:+.4f} "
+                    f"EV_75={_multiscale_ev.ev_net_75:+.4f} "
+                    f"R:R={_multiscale_ev.rr_asymmetry:.2f} "
+                    f"traj={_multiscale_ev.kinematic_trajectory}"
+                )
+        except Exception as e:
+            logger.warning(f"SwingGate {ticker}: Multiscale EV lookup failed: {e}")
 
         # ── Real Point-in-Time Wave EV Signal (Micro Wave Expectancy) ──
         _real_wave_ev = None
@@ -566,8 +596,16 @@ class SwingGate:
                 conviction = round(conviction * _mh_sizing_mod, 2)
                 reason_accum += f" | MH_MOD: {pre_mh:.2f}→{conviction:.2f}"
 
-            decision.action_code = _tide.action_code if _tide else "STK_ACCUMULATE_STRUCTURAL"
-            decision.urgency_level = _tide.urgency_level if _tide else "LOW"
+            if _real_ev and _real_ev.ev >= 0.012:
+                decision.action_code = "STK_ACCUMULATE_STRUCTURAL" if _real_ev.rr_asymmetry >= 2.2 else "STK_BUY_DIP_TACTICAL"
+                decision.urgency_level = "LOW" if _real_ev.rr_asymmetry >= 2.2 else "HIGH"
+            elif _tide and _tide.is_accumulate:
+                decision.action_code = _tide.action_code
+                decision.urgency_level = _tide.urgency_level
+            else:
+                decision.action_code = "STK_ACCUMULATE_STRUCTURAL"
+                decision.urgency_level = "LOW"
+
             decision.scope_level = _tide.scope_level if _tide else "STK"
             decision.conviction = round(conviction, 2)
             decision.reasoning = reason_accum
@@ -612,8 +650,16 @@ class SwingGate:
                         f"(piso {_turn.density_level})"
                     )
 
-            decision.action_code = _tide.action_code if _tide else "STK_TRIM_TACTICAL"
-            decision.urgency_level = _tide.urgency_level if _tide else "LOW"
+            if _real_ev and (_real_ev.ev <= -0.0020 or _real_ev.fatigue_type == "FATIGUE_RISK"):
+                decision.action_code = "STK_TRIM_TACTICAL"
+                decision.urgency_level = "LOW"
+            elif _tide and _tide.is_trim:
+                decision.action_code = _tide.action_code
+                decision.urgency_level = _tide.urgency_level
+            else:
+                decision.action_code = "STK_TRIM_TACTICAL"
+                decision.urgency_level = "LOW"
+
             decision.scope_level = _tide.scope_level if _tide else "STK"
             decision.conviction = trim_pct
             decision.reasoning = reason_trim

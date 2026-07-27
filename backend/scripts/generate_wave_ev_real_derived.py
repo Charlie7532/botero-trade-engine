@@ -96,14 +96,48 @@ def main():
             "derived_levels": derived_levels,
         }
 
+    from backend.modules.quality_swing.domain.rules.rc_slope_classifier import _SLOPE_TH
+    from datetime import timezone
+    import subprocess
+
+    w_th = _SLOPE_TH["W"]
+
+    # Try to get git commit hash safely
+    try:
+        git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf-8").strip()
+    except Exception:
+        git_commit = "unknown"
+
     _documentation = {
         "model_purpose": "Derived Real Expected Value & Microstructure Timing Matrix for Wave Channel (W x \u03c3Vc x \u03c3c x vel)",
         "return_formula": "Real Return = (Price(t_pivot_next) / Close(t)) - 1. Zero Ghost Return bias.",
         "horizon_gate": "Maximum horizon = 120 days. Captures micro wave timing to next ZigZag pivot (2.5%, 5.0%, 7.5%).",
         "state_hierarchy": {
-            "L1": "Full 4D State: W_slope|\u03c3Vc|\u03c3c|vel_\u03c3Vw (450 granular micro timing states)",
+            "L3": "Wave Direction State: W_slope (6 macro wave slope states)",
             "L2": "Mid-Micro State: W_slope|\u03c3Vc (30 mid-wave cycle states)",
-            "L3": "Wave Direction State: W_slope (6 macro wave slope states)"
+            "L1": "Full 4D State: W_slope|\u03c3Vc|\u03c3c|vel_\u03c3Vw (450 granular micro timing states)"
+        },
+        "dimension_thresholds_definition": {
+            "Wave_slope_W": {
+                "W+++": f"Extremely Bullish Wave Trend (slope_norm >= +{w_th.get('p90', 23.3)})",
+                "W++": f"Strong Bullish Wave Trend (+{w_th.get('p75', 13.2)} <= slope_norm < +{w_th.get('p90', 23.3)})",
+                "W+": f"Mild Bullish Wave Trend (+{w_th.get('p50', 2.9)} <= slope_norm < +{w_th.get('p75', 13.2)})",
+                "W-": f"Mild Bearish Wave Trend ({w_th.get('p25', -6.9)} < slope_norm <= +{w_th.get('p50', 2.9)})",
+                "W--": f"Strong Bearish Wave Trend ({w_th.get('p10', -15.9)} < slope_norm <= {w_th.get('p25', -6.9)})",
+                "W---": f"Extremely Bearish Wave Trend (slope_norm <= {w_th.get('p10', -15.9)})"
+            },
+            "vwap_sigma_wave_position": {
+                "<<": "FLOOR — Price far below VWAP Wave (sigma_vwap < -1.0 std dev)",
+                "<": "BELOW — Price moderately below VWAP Wave (-1.0 <= sigma_vwap < -0.30)",
+                "~": "NEUTRAL — Price near VWAP Wave center (-0.30 <= sigma_vwap <= +0.30)",
+                ">": "ABOVE — Price moderately above VWAP Wave (+0.30 < sigma_vwap <= +1.0)",
+                ">>": "CEILING — Price far above VWAP Wave (sigma_vwap > +1.0 std dev)"
+            },
+            "velocity": {
+                "▲": "Upward velocity in price/VWAP deviation (rising relative momentum)",
+                "▼": "Downward velocity in price/VWAP deviation (falling relative momentum)",
+                "~": "Stable velocity in price/VWAP deviation"
+            }
         },
         "field_glossary": {
             "n": "Sample size for this micro state/level combination",
@@ -119,7 +153,13 @@ def main():
             "urgency_level": "Protocol FIX Tag 61/848 urgency level (IMMEDIATE, HIGH, NORMAL, PASSIVE)",
             "fatigue_buckets": "Raw EV performance grouped by run_length (1, 2, 3-4, 5-7, 8-10, 11+ bars)"
         },
-        "rare_event_policy": "Cells with N < 30 are flagged with is_rare_state=true and utilize Empirical Bayes shrinkage (k=20) toward parent L2/L3 states to prevent overfitting."
+        "signal_interpretation_policy": "Clean Architecture Standard: Tactical actions are dynamically evaluated in runtime by pure-domain Wave classifiers (rc_wave_multiscale_lookup.py) using empirical P(bull), EV, and R:R asymmetry.",
+        "rare_event_policy": "Cells with N < 30 are flagged with is_rare_state=true and utilize Empirical Bayes shrinkage (k=20) toward parent L2/L3 states to prevent overfitting.",
+        "reproducibility_context": {
+            "calibration_timestamp": datetime.now(timezone.utc).isoformat(),
+            "source_dataset_row_count": 4577585,
+            "calibrated_under_commit": git_commit
+        }
     }
 
     derived_output = {

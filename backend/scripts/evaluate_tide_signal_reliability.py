@@ -38,7 +38,7 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 # ═══════════════════════════════════════════════════════════════
 # Config
 # ═══════════════════════════════════════════════════════════════
-DERIVED_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_tide_derived.json"
+DERIVED_PATH = root_dir / "backend/modules/quality_swing/domain/rules/rc_tide_ev_derived.json"
 FORWARD_WINDOWS = [5, 10, 20]
 ZIGZAG_LEVELS = [0.025, 0.05, 0.075]
 ZZ_LABEL = {0.025: "2.5%", 0.05: "5.0%", 0.075: "7.5%"}
@@ -97,50 +97,40 @@ def classify_sigma_vw(value: float) -> str:
 # Data Loading
 # ═══════════════════════════════════════════════════════════════
 def load_all_data(store):
-    """Bulk-load all snapshots and zigzag points.
-
-    Returns:
-        ticker_bars: {ticker: [(date, t_slope, c_slope, svw)]}
-        ticker_zigzags: {ticker: {date: [(level, tp_type)]}}
-    """
+    """Bulk-load all snapshots and zigzag points with pandas vectorized memory layout."""
+    import pandas as pd
     conn = store._conn()
     try:
-        with conn.cursor() as cur:
-            print("  Loading channel_snapshots...")
-            t0 = time.time()
-            cur.execute("""
-                SELECT ticker, timestamp, tide_slope, current_slope, vwap_sigma_wave
-                FROM engine.channel_snapshots
-                WHERE tide_slope IS NOT NULL
-                  AND current_slope IS NOT NULL
-                  AND vwap_sigma_wave IS NOT NULL
-                ORDER BY ticker, timestamp
-            """)
-            rows = cur.fetchall()
-            print(f"    → {len(rows):,} rows in {time.time()-t0:.1f}s")
+        print("  Loading channel_snapshots via pandas C-arrays...")
+        t0 = time.time()
+        df_snaps = pd.read_sql("""
+            SELECT ticker, timestamp::date as date, tide_slope, current_slope, vwap_sigma_wave
+            FROM engine.channel_snapshots
+            WHERE tide_slope IS NOT NULL
+              AND current_slope IS NOT NULL
+              AND vwap_sigma_wave IS NOT NULL
+            ORDER BY ticker, timestamp
+        """, conn)
+        print(f"    → {len(df_snaps):,} rows in {time.time()-t0:.1f}s")
 
-            print("  Loading zigzag_points...")
-            t0 = time.time()
-            cur.execute("""
-                SELECT ticker, timestamp, min_swing_pct, tp_type
-                FROM engine.zigzag_points
-                ORDER BY ticker, timestamp
-            """)
-            zz_rows = cur.fetchall()
-            print(f"    → {len(zz_rows):,} rows in {time.time()-t0:.1f}s")
+        print("  Loading zigzag_points via pandas C-arrays...")
+        t0 = time.time()
+        df_zz = pd.read_sql("""
+            SELECT ticker, timestamp::date as date, min_swing_pct, tp_type
+            FROM engine.zigzag_points
+            ORDER BY ticker, timestamp
+        """, conn)
+        print(f"    → {len(df_zz):,} rows in {time.time()-t0:.1f}s")
 
-        # Organize by ticker
-        ticker_bars = defaultdict(list)
-        for ticker, ts, t_slope, c_slope, svw in rows:
-            d = ts.date() if hasattr(ts, 'date') else ts
-            ticker_bars[ticker].append((d, float(t_slope), float(c_slope), float(svw)))
+        ticker_bars = {}
+        for tk, group in df_snaps.groupby("ticker"):
+            ticker_bars[tk] = list(zip(group["date"].values, group["tide_slope"].values, group["current_slope"].values, group["vwap_sigma_wave"].values))
 
         ticker_zigzags = defaultdict(lambda: defaultdict(list))
-        for ticker, ts, level, tp_type in zz_rows:
-            d = ts.date() if hasattr(ts, 'date') else ts
-            ticker_zigzags[ticker][d].append((float(level), tp_type))
+        for r in df_zz.itertuples(index=False):
+            ticker_zigzags[r.ticker][r.date].append((float(r.min_swing_pct), r.tp_type))
 
-        return dict(ticker_bars), dict(ticker_zigzags)
+        return ticker_bars, dict(ticker_zigzags)
     finally:
         store._put(conn)
 
@@ -295,26 +285,51 @@ def threshold_sensitivity_scan(bars_all, zigzags_all, derived_data):
     Re-classifies the 180 states at each threshold step,
     then re-evaluates forward hits across all tickers.
     """
-    from backend.scripts.generate_derived_table import (
+    from backend.scripts.generate_tide_derived_table import (
         classify_signal as _classify_signal_original,
         _CEILING_ZZ50_MAX_BASELINE,
     )
 
-    states = derived_data["states"]
+    states = derived_data.get("l3_states", derived_data.get("states", {}))
 
-    # Extract the metrics we need for re-classification
     state_metrics = {}
     for key, v in states.items():
+        if "identity" in v:
+            zone = v["identity"]["zone"]
+            p_b = v["direction"]["p_bull"]
+            zz25_min = v["turn_risk"]["bottom_25"]["pct"]
+            zz25_max = v["turn_risk"]["top_25"]["pct"]
+            asym = v["turn_risk"]["asymmetry_pp"]
+            purity = v["composition"]["momentum_purity"]
+            zz50_min = v["turn_risk"]["bottom_50"]["pct"]
+            zz75_min = v["turn_risk"]["bottom_75"]["pct"]
+            zz50_max = v["turn_risk"]["top_50"]["pct"]
+        else:
+            levels = v.get("levels", {})
+            zz25 = levels.get("zz25", {})
+            zz50 = levels.get("zz50", {})
+            zz75 = levels.get("zz75", {})
+            parts = key.split("|")
+            zone = parts[2] if len(parts) >= 3 else "~"
+            p_b = zz50.get("p_bull", 0.5) * 100.0 if zz50.get("p_bull", 0.5) <= 1.0 else zz50.get("p_bull", 50.0)
+            zz25_min = abs(zz25.get("e_ret_min", 0.0)) * 100.0
+            zz25_max = zz25.get("e_ret_max", 0.0) * 100.0
+            asym = zz50.get("rr_asymmetry", 1.0)
+            purity = 50.0
+            zz50_min = abs(zz50.get("e_ret_min", 0.0)) * 100.0
+            zz75_min = abs(zz75.get("e_ret_min", 0.0)) * 100.0
+            zz50_max = zz50.get("e_ret_max", 0.0) * 100.0
+
         state_metrics[key] = {
-            "zone": v["identity"]["zone"],
-            "p_bull": v["direction"]["p_bull"],
-            "zz25_min_pct": v["turn_risk"]["bottom_25"]["pct"],
-            "zz25_max_pct": v["turn_risk"]["top_25"]["pct"],
-            "asym_pp": v["turn_risk"]["asymmetry_pp"],
-            "momentum_purity": v["composition"]["momentum_purity"],
-            "zz50_min_pct": v["turn_risk"]["bottom_50"]["pct"],
-            "zz75_min_pct": v["turn_risk"]["bottom_75"]["pct"],
-            "zz50_max_pct": v["turn_risk"]["top_50"]["pct"],
+            "zone": zone,
+            "p_bull": p_b,
+            "zz25_min_pct": zz25_min,
+            "zz25_max_pct": zz25_max,
+            "asym_pp": asym,
+            "momentum_purity": purity,
+            "zz50_min_pct": zz50_min,
+            "zz75_min_pct": zz75_min,
+            "zz50_max_pct": zz50_max,
         }
 
     # Thresholds to scan — (id, label, lo, hi, step, target_signal, pivot_type)
@@ -654,12 +669,26 @@ def main():
     print("Signal Reliability Evaluation")
     print("=" * 70)
 
-    # Load derived table
-    print("\n[1/5] Loading derived signal table...")
+    print("\n[1/5] Loading official probability table...")
     with open(DERIVED_PATH) as f:
         derived = json.load(f)
-    signal_lookup = {k: v["identity"]["signal"] for k, v in derived["states"].items()}
-    print(f"  → {len(signal_lookup)} states loaded")
+
+    from backend.modules.quality_swing.domain.rules.rc_tide_ev_lookup import lookup_real_ev
+
+    signal_lookup = {}
+    l3_dict = derived.get("l3_states", {})
+    for k in l3_dict.keys():
+        parts = k.split("|")
+        if len(parts) == 3:
+            t_s, c_s, svw = parts
+            sig_obj = lookup_real_ev(t_slope=t_s, c_slope=c_s, svw=svw, level="zz50")
+            if sig_obj:
+                sig_name = sig_obj.signal
+                if sig_name == "TRIM":
+                    sig_name = "TAKE_PROFIT"
+                signal_lookup[k] = sig_name
+
+    print(f"  → {len(signal_lookup)} estados L3 clasificados mediante el adaptador de EV Real")
 
     # Load all data
     print("\n[2/5] Loading data from Vault...")

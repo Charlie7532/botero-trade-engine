@@ -1,26 +1,8 @@
 {
-  "version": "v2_derived_2026-07-25",
-  "_documentation": {
-    "model_purpose": "Pre-computed Probability Lookup Table for Quality Swing Gate (T_slope x C_slope x sigma_vwap_wave)",
-    "return_formula": "P(bull) = (HH + HL) / N. Pure empirical probability based on Zigzag 2.5% stereotypes.",
-    "horizon_gate": "Point-in-time state mapping across 763,118 historical bars across 561 tickers.",
-    "state_hierarchy": {
-      "L1": "Full 3D State: T_slope|C_slope|sigma_vwap_wave (180 granular states)",
-      "L2": "Mid-Macro State: T_slope|C_slope (36 states)",
-      "L3": "Macro Tide State: T_slope (6 states)"
-    },
-    "field_glossary": {
-      "N": "Total sample size of trading days in this cell",
-      "p_bull": "Empirical probability of bullish swing continuation (HH + HL)",
-      "z_score": "Z-score of p_bull relative to global baseline (60.78%)",
-      "bias": "Directional asymmetry bias label (STRONG_BULL, MILD_BULL, NEUTRAL, etc.)"
-    },
-    "rare_event_policy": "Cells with N < 30 are flagged for Empirical Bayes parent fallback to prevent overfitting."
-  },
+  "version": "v2_derived_2026-07-27",
   "source": "rc_tide_probability_table.json v3",
   "approved_by": "Committee: Dalio (CIO), Druckenmiller (Quality Swing), PTJ/Eifert (Speculative), Weinstein/Pring (Rotation)",
   "context": {
-
     "what": "Pre-computed probability lookup table for the Swing Gate (Quality Swing department).",
     "how": "Each cell describes the historical behavior of 538 tickers when the 3 dimensions (T, C, sigma_vw) align in that configuration.",
     "dimensions": "T_slope (Tide, long-term) x C_slope (Current, medium-term) x sigma_vwap_wave (price position vs VWAP Wave)",

@@ -25,6 +25,10 @@ class TideFeatureVector:
     zz75_min_pct: float = 0.0
     momentum_purity: float = 50.0
     n_samples: int = 0
+    ev: float = 0.0
+    sharpe: float = 0.0
+    rr_asymmetry: float = 1.0
+    fatigue_type: str = "STABLE"
 
 
 @dataclass(frozen=True)
@@ -45,7 +49,7 @@ class TideSignalCataloger:
 
     Escala: T (Tide) × C (Current) × σVw (VWAP Wave) — 180 Estados L1.
     Contains explicit conditions mapping Tide feature vectors into
-    Universal Signal Taxonomy codes (STK_*).
+    Universal Signal Taxonomy codes (STK_*), incorporating Dual Confluence (P(bull) x EV).
     """
     scale: str = "MACRO_TIDE"
 
@@ -53,27 +57,46 @@ class TideSignalCataloger:
     def classify(features: TideFeatureVector) -> Tuple[str, str, str, str]:
         """Classify Tide Macro Features into Universal Action Codes.
 
+        Pure Stochastic Dual Confluence (P(bull) x EV x R:R) takes precedence over
+        rigid static zone boundaries, releasing the true quantitative edge of the EV model.
+
         Returns:
             (signal_name, action_code, urgency_level, scope_level)
         """
-        # Condition 1: STK_ACCUMULATE_STRUCTURAL — Deep capitulation
-        if features.zone == "FLOOR" and features.p_bull < 38.0 and (features.zz75_min_pct > 8.0 or features.zz50_min_pct > 12.0):
+        # Condition 0: RARE MACRO STATE TRAPPING (N < 30) -> Systemic Emergency Alerts
+        if features.n_samples > 0 and features.n_samples < 30:
+            if features.zone in ("FLOOR", "BELOW") or features.p_bull < 38.0:
+                return "SYSTEMIC_CAPITULATION", "MKT_ALERT_SYSTEMIC_CAPITULATION", "IMMEDIATE", "MKT"
+            elif features.zone == "CEILING" or features.p_bull > 80.0:
+                return "PARABOLIC_EUPHORIA", "MKT_ALERT_PARABOLIC_EUPHORIA", "IMMEDIATE", "MKT"
+            return "SYSTEMIC_DISCORDANCE", "MKT_ALERT_SYSTEMIC_LIQUIDITY_DISCORDANCE", "HIGH", "MKT"
+
+        # Condition 1: STK_ACCUMULATE_STRUCTURAL — High EV & Strong R:R Asymmetry (Dragon Released)
+        if (features.ev >= 0.020 and features.rr_asymmetry >= 2.2) or (
+            features.zone == "FLOOR" and (
+                features.p_bull < 38.0 and (features.zz75_min_pct > 8.0 or features.zz50_min_pct > 12.0)
+            )
+        ):
             return "ACCUMULATE", "STK_ACCUMULATE_STRUCTURAL", "LOW", "STK"
 
-        # Condition 2: STK_BUY_DIP_TACTICAL — Statistical dip
-        if features.zone in ("FLOOR", "BELOW") and features.p_bull < 46.0 and (features.asymmetry_pp > 15.0 or features.zz25_min_pct > 18.0):
+        # Condition 2: STK_BUY_DIP_TACTICAL — Moderate Positive EV Rebound or Statistical Dip
+        if (features.ev >= 0.012 and features.rr_asymmetry >= 1.8) or (
+            features.zone in ("FLOOR", "BELOW") and features.p_bull < 46.0 and (
+                features.asymmetry_pp > 15.0 or features.zz25_min_pct > 18.0
+            )
+        ):
             return "BUY_DIP", "STK_BUY_DIP_TACTICAL", "HIGH", "STK"
 
-        # Condition 3: STK_TRIM_TACTICAL — Blow-off top risk
-        if features.zone == "CEILING" and (features.zz25_max_pct > 15.0 or features.zz50_max_pct > 7.15):
+        # Condition 3: STK_TRIM_TACTICAL — Blow-off top risk or EV fatigue decay
+        if (features.zone == "CEILING" and (features.zz25_max_pct > 15.0 or features.zz50_max_pct > 7.15)) or features.fatigue_type == "FATIGUE_RISK":
             return "TAKE_PROFIT", "STK_TRIM_TACTICAL", "LOW", "STK"
 
         # Condition 4: STK_HOLD_EXTENDED — Strong trend at ceiling with low top risk
-        if features.zone == "CEILING" and features.p_bull > 78.0 and features.zz25_max_pct < 12.0:
+        if features.zone == "CEILING" and features.p_bull > 78.0 and features.zz25_max_pct < 12.0 and features.ev >= 0.0:
             return "STRONG_TREND", "STK_HOLD_EXTENDED", "PASSIVE", "STK"
 
-        # Condition 5: STK_DISTRIBUTE_DECAY — Preventive distribution
-        if features.zone == "CEILING":
+        # Condition 5: STK_DISTRIBUTE_DECAY — Preventive distribution or negative EV
+        if features.zone == "CEILING" or (features.ev < -0.010 and features.p_bull < 45.0):
             return "REDUCE", "STK_DISTRIBUTE_DECAY", "NORMAL", "STK"
 
         # Condition 6: STK_ACCUMULATE_PASSIVE — Clean uptrend with high purity
@@ -109,7 +132,11 @@ class WaveSignalCataloger:
             (signal_name, action_code, urgency_level, scope_level)
         """
         if features.n_samples < 30:
-            return "NO_EDGE", "WAVE_NO_EDGE", "PASSIVE", "STK"
+            if features.channel_zone in ("DEEP_DISCOUNT", "DISCOUNT") or features.wave_direction in ("STRONG_DOWN", "MODERATE_DOWN"):
+                return "RARE_CAPITULATION", "WAVE_ALERT_RARE_CAPITULATION", "IMMEDIATE", "STK"
+            elif features.channel_zone in ("DEEP_PREMIUM", "PREMIUM") or features.wave_direction in ("STRONG_UP", "MODERATE_UP"):
+                return "RARE_PARABOLIC_BLOWOFF", "WAVE_ALERT_RARE_PARABOLIC_BLOWOFF", "IMMEDIATE", "STK"
+            return "SYSTEMIC_DISCORDANCE", "WAVE_ALERT_SYSTEMIC_DISCORDANCE", "HIGH", "STK"
 
         # 1. WAVE_EXHAUSTION_BOTTOM — Agotamiento vendedor: Caída con desaceleración/frenado de flujo
         if (

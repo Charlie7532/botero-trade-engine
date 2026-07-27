@@ -18,7 +18,7 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +98,12 @@ class TideSignal:
     # Human reading
     reading: str
 
+    # Real EV Confluence fields
+    ev: float = 0.0
+    sharpe: float = 0.0
+    rr_asymmetry: float = 1.0
+    fatigue_type: str = "STABLE"
+
     @property
     def is_accumulate(self) -> bool:
         """Signal recommends accumulation."""
@@ -175,12 +181,31 @@ def _load_tide() -> dict:
 from backend.modules.quality_swing.domain.rules.signal_cataloger import TideSignalCataloger, TideFeatureVector
 
 
-def classify_tide_signal_from_features(identity: dict, direction: dict, turn_risk: dict, composition: dict) -> tuple[str, str, str, str]:
+def classify_tide_signal_from_features(identity: dict, direction: dict, turn_risk: dict, composition: dict, state_key: str = "") -> tuple[str, str, str, str, float, float, float, str]:
     """Pure Python classifier for Tide Features (Delegates to TideSignalCataloger)."""
     if "signal" in identity:
         sig = identity["signal"]
         ac, urg, sc = ACTION_CODE_MAP.get(sig, ("STK_HOLD_STABLE", "PASSIVE", "STK"))
-        return sig, ac, urg, sc
+        return sig, ac, urg, sc, 0.0, 0.0, 1.0, "STABLE"
+
+    ev_val = 0.0
+    sharpe_val = 0.0
+    rr_asym_val = 1.0
+    fatigue_val = "STABLE"
+
+    if state_key:
+        try:
+            from backend.modules.quality_swing.domain.rules.rc_tide_ev_lookup import lookup_real_ev
+            parts = state_key.split("|")
+            if len(parts) == 3:
+                real_ev = lookup_real_ev(t_slope=parts[0], c_slope=parts[1], svw=parts[2], level="zz50")
+                if real_ev:
+                    ev_val = real_ev.ev
+                    sharpe_val = real_ev.sharpe
+                    rr_asym_val = real_ev.rr_asymmetry
+                    fatigue_val = real_ev.fatigue_type
+        except Exception:
+            pass
 
     features = TideFeatureVector(
         zone=identity["zone"],
@@ -192,9 +217,13 @@ def classify_tide_signal_from_features(identity: dict, direction: dict, turn_ris
         zz50_max_pct=turn_risk.get("top_50", {}).get("pct", 0.0),
         zz75_min_pct=turn_risk.get("bottom_75", {}).get("pct", 0.0),
         momentum_purity=composition["momentum_purity"],
+        ev=ev_val,
+        sharpe=sharpe_val,
+        rr_asymmetry=rr_asym_val,
+        fatigue_type=fatigue_val,
     )
-    return TideSignalCataloger.classify(features)
-
+    sig, ac, urg, sc = TideSignalCataloger.classify(features)
+    return sig, ac, urg, sc, ev_val, sharpe_val, rr_asym_val, fatigue_val
 
 
 def _make_result(state_key: str, state: dict) -> TideSignal:
@@ -205,7 +234,7 @@ def _make_result(state_key: str, state: dict) -> TideSignal:
     composition = state["composition"]
     frequency = state["frequency"]
 
-    sig, ac, urg, sc = classify_tide_signal_from_features(identity, direction, turn_risk, composition)
+    sig, ac, urg, sc, ev, sharpe, rr_asym, fatigue = classify_tide_signal_from_features(identity, direction, turn_risk, composition, state_key=state_key)
 
     return TideSignal(
         state_key=state_key,
@@ -232,6 +261,10 @@ def _make_result(state_key: str, state: dict) -> TideSignal:
         predictive_edge=identity.get("predictive_edge"),
         rotation_flag=identity.get("rotation_flag"),
         reading=state.get("reading", ""),
+        ev=ev,
+        sharpe=sharpe,
+        rr_asymmetry=rr_asym,
+        fatigue_type=fatigue,
     )
 
 
@@ -242,16 +275,17 @@ def _make_result(state_key: str, state: dict) -> TideSignal:
 # ═══════════════════════════════════════════════════════════════
 
 def lookup_tide_signal(
-    tide_level: str,
-    current_level: str,
-    vwap_sigma_wave: float,
+    tide_level: Optional[str] = None,
+    current_level: Optional[str] = None,
+    vwap_sigma_wave: Optional[Union[str, float]] = None,
+    **kwargs,
 ) -> Optional[TideSignal]:
-    """Look up the tide signal for a T×C×σVw state.
+    """Look up the tide signal for a T×C×σVw state with flexible parameter aliases.
 
     Args:
-        tide_level: Tide slope level from SlopeState (e.g. "T+++", "T-")
-        current_level: Current slope level from SlopeState (e.g. "C---", "C++")
-        vwap_sigma_wave: σVWAP position in Wave channel (continuous value)
+        tide_level / t_slope / tide_slope: Tide slope level (e.g. "T+++", "T-")
+        current_level / c_slope / current_slope: Current slope level (e.g. "C---", "C++")
+        vwap_sigma_wave / svw: σVWAP position in Wave channel (float or str bin)
 
     Returns:
         TideSignal or None if state not found in table.
@@ -262,8 +296,28 @@ def lookup_tide_signal(
     if not states:
         return None
 
-    svw_bin = _classify_sigma(vwap_sigma_wave)
-    state_key = f"{tide_level}|{current_level}|{svw_bin}"
+    raw_t = tide_level if tide_level is not None else (kwargs.get("t_slope") if kwargs.get("t_slope") is not None else kwargs.get("tide_slope", ""))
+    raw_c = current_level if current_level is not None else (kwargs.get("c_slope") if kwargs.get("c_slope") is not None else kwargs.get("current_slope", ""))
+    raw_svw = vwap_sigma_wave if vwap_sigma_wave is not None else kwargs.get("svw", 0.0)
+
+    if isinstance(raw_t, (int, float)):
+        from backend.modules.quality_swing.domain.rules.rc_slope_classifier import _classify_one
+        resolved_t = _classify_one(float(raw_t), "T")
+    else:
+        resolved_t = str(raw_t)
+
+    if isinstance(raw_c, (int, float)):
+        from backend.modules.quality_swing.domain.rules.rc_slope_classifier import _classify_one
+        resolved_c = _classify_one(float(raw_c), "C")
+    else:
+        resolved_c = str(raw_c)
+
+    if isinstance(raw_svw, (int, float)):
+        svw_bin = _classify_sigma(float(raw_svw))
+    else:
+        svw_bin = str(raw_svw)
+
+    state_key = f"{resolved_t}|{resolved_c}|{svw_bin}"
 
     state = states.get(state_key)
     if state is None:

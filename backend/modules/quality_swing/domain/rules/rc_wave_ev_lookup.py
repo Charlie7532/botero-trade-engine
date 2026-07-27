@@ -95,7 +95,7 @@ def lookup_real_wave_ev(
     from backend.modules.quality_swing.domain.rules.rc_wave_lookup import (
         _classify_wave_slope,
         _classify_sigma,
-        _classify_vel,
+        _classify_vel_svw as _classify_vel,
     )
     w_bin = _classify_wave_slope(wave_slope)
     svc_bin = _classify_sigma(vwap_sigma_current)

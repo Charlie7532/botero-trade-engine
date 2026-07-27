@@ -1,21 +1,51 @@
 {
-  "version": "v1_wave_derived_2026-07-25",
+  "version": "v1_wave_derived_2026-07-27",
   "source": "rc_wave_probability_table.json v1_wave_2026-07-23",
-  "context": {
-    "what": "Wave pivot-prediction table for Swing Gate \u2014 complementary to Combined.",
-    "approach": "Each cell answers: how likely is a zigzag pivot given this wave microstructure? And what reversal quality?",
-    "dimensions": "W(6) \u00d7 \u03c3Vc(5) \u00d7 \u03c3c(5) \u00d7 vel_\u03c3Vw(3) = 450 states",
-    "shannon_mutual_info": {
-      "L1_full": 0.0315,
-      "L2_w_svc": 0.0118,
-      "L3_w": 0.0091,
-      "note": "Bits of Mutual Information I(WaveState; NearBottom) per resolution level"
+  "_documentation": {
+    "model_purpose": "Derived Wave Pivot-Prediction and Reversal Quality Table for Swing Gate \u2014 complementary to Combined.",
+    "return_formula": "Real Return = (Price(t_pivot_next) / Close(t)) - 1. Zero Ghost Return bias.",
+    "horizon_gate": "Maximum horizon = 120 days. Captures wave cycles to next ZigZag pivot (2.5%, 5.0%, 7.5%).",
+    "state_hierarchy": {
+      "L3": "Wave Direction State: W_slope (6 macro wave slope states)",
+      "L2": "Mid-Micro State: W_slope|\u03c3Vc (30 mid-wave cycle states)",
+      "L1": "Full 4D State: W_slope|\u03c3Vc|\u03c3c|vel_\u03c3Vw (450 granular micro timing states)"
     },
-    "complementarity": "Combined: T\u00d7C trend + \u03c3Vw position \u2192 P(bull). Wave: W cycle + \u03c3Vc/\u03c3c position + \u03c3Vw momentum \u2192 P(pivot).",
-    "n_states": 479,
-    "n_observations": 759095,
-    "n_tickers": 562,
-    "global_p_bull": 53.71
+    "dimension_thresholds_definition": {
+      "Wave_slope_W": {
+        "W+++": "Extremely Bullish Wave Trend (slope_norm >= +23.390228)",
+        "W++": "Strong Bullish Wave Trend (+13.274901 <= slope_norm < +23.390228)",
+        "W+": "Mild Bullish Wave Trend (+2.965043 <= slope_norm < +13.274901)",
+        "W-": "Mild Bearish Wave Trend (-6.930322 < slope_norm <= +2.965043)",
+        "W--": "Strong Bearish Wave Trend (-15.959635 < slope_norm <= -6.930322)",
+        "W---": "Extremely Bearish Wave Trend (slope_norm <= -15.959635)"
+      },
+      "vwap_sigma_wave_position": {
+        "<<": "FLOOR \u2014 Price far below VWAP Wave (sigma_vwap < -1.0 std dev)",
+        "<": "BELOW \u2014 Price moderately below VWAP Wave (-1.0 <= sigma_vwap < -0.30)",
+        "~": "NEUTRAL \u2014 Price near VWAP Wave center (-0.30 <= sigma_vwap <= +0.30)",
+        ">": "ABOVE \u2014 Price moderately above VWAP Wave (+0.30 < sigma_vwap <= +1.0)",
+        ">>": "CEILING \u2014 Price far above VWAP Wave (sigma_vwap > +1.0 std dev)"
+      },
+      "velocity": {
+        "\u25b2": "Upward velocity in price/VWAP deviation (rising relative momentum)",
+        "\u25bc": "Downward velocity in price/VWAP deviation (falling relative momentum)",
+        "~": "Stable velocity in price/VWAP deviation"
+      }
+    },
+    "field_glossary": {
+      "N": "Sample size for this state/level combination",
+      "p_bull": "P(next pivot = MAX). Probability of upward swing completion",
+      "p_bear": "P(next pivot = MIN). Probability of downward swing completion",
+      "ev": "Real Expected Value: P(bull)*E[ret_max] + P(bear)*E[ret_min]",
+      "shannon_mutual_info": "Bits of Mutual Information I(WaveState; NearBottom) per resolution level"
+    },
+    "signal_interpretation_policy": "Clean Architecture Standard: Tactical actions are dynamically evaluated in runtime by pure-domain Wave classifiers (rc_wave_multiscale_lookup.py) using empirical P(bull), EV, and R:R asymmetry.",
+    "rare_event_policy": "Cells with N < 30 are flagged with is_rare_state=true and utilize Empirical Bayes shrinkage (k=20) toward parent L2/L3 states to prevent overfitting.",
+    "reproducibility_context": {
+      "calibration_timestamp": "2026-07-27T05:51:00.578955+00:00",
+      "source_dataset_row_count": 759095,
+      "calibrated_under_commit": "4b316835d130a6e50b93d4bb2c5fe5db9cb935a9"
+    }
   },
   "baselines": {
     "zz25_min": {

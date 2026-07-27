@@ -145,6 +145,8 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         finally:
             self._put(conn)
 
+    load_ohlc = load_bars  # Alias for SwingDataPort compatibility
+
     def bars_last_date(self, ticker: str, tf: str) -> Optional[date]:
         conn = self._conn()
         try:

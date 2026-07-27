@@ -1,31 +1,43 @@
 """
-RC Slope Classifier — Pure Domain Rule
-==========================================
+RC Slope Classifier — Pure Domain Rule (López de Prado Volatility Standardization)
+==================================================================================
 Classifies T/C/W slopes into 6 levels each:
   +++ / ++ / + / - / -- / ---
 
-Uses empirically calibrated P33/P66 thresholds from 91K bars,
-17 tickers, 2007-2026.
+Uses empirically calibrated 100% census asymmetric quantiles from Neon Vault (4.57M samples)
+normalizing by local volatility ATR%:
+  slope_norm = slope / max(atr_pct, 0.005)
 
-Input: 3 floats (tide_slope, current_slope, wave_slope)
+Input: 3 floats (tide_slope, current_slope, wave_slope) and optional atr_pct (default 0.01)
 Output: SlopeState dataclass with levels, tripleta, and semantics
-
-This is PIEZA 2 of the unified model:
-  PIEZA 1: ChannelSnapshot (compute_channel.py) — raw computation
-  PIEZA 2: SlopeClassifier (this file) — state classification
-  PIEZA 3: UnifiedLookup (rc_unified_lookup.py) — probability tree
 """
+import json
+import logging
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+THRESHOLDS_JSON = Path(__file__).parent / "rc_vol_normalized_thresholds.json"
 
 
-# ══════════════════════════════════════════════════════════════
-# THRESHOLDS — Calibrated P33/P66 (asymmetric positive/negative)
-# Source: rc_model_synthesis.md, 91K observations, 17 tickers
-# ══════════════════════════════════════════════════════════════
+def _load_vol_thresholds() -> dict:
+    if THRESHOLDS_JSON.exists():
+        try:
+            with open(THRESHOLDS_JSON, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.warning(f"No se pudo cargar rc_vol_normalized_thresholds.json ({e}). Usando fallbacks.")
+    return {}
+
+
+_VOL_TH = _load_vol_thresholds()
+
 _SLOPE_TH = {
-    "T": {"+": (0.0456, 0.0983), "-": (0.0263, 0.0765)},
-    "C": {"+": (0.0845, 0.1749), "-": (0.0613, 0.1583)},
-    "W": {"+": (0.1262, 0.2717), "-": (0.1032, 0.2598)},
+    "T": _VOL_TH.get("tide_slope_norm", {}),
+    "C": _VOL_TH.get("current_slope_norm", {}),
+    "W": _VOL_TH.get("wave_slope_norm", {}),
 }
 
 
@@ -63,46 +75,64 @@ class SlopeState:
         return self.tide_sign != self.wave_sign
 
 
-def _classify_one(value: float, channel: str) -> str:
-    """Classify a single slope into +++/++/+/-/--/---."""
-    th = _SLOPE_TH[channel]
-    if value >= 0:
-        p33, p66 = th["+"]
-        if value >= p66:
-            return f"{channel}+++"
-        elif value >= p33:
-            return f"{channel}++"
-        else:
-            return f"{channel}+"
+def _classify_norm_one(slope_norm: float, channel_key: str, channel_prefix: str) -> str:
+    """Classify a volatility-normalized slope using 100% census quantiles."""
+    q = _VOL_TH.get(channel_key, {})
+    p97_5 = q.get("p97_5", 5.0)
+    p90 = q.get("p90", 0.86)
+    p75 = q.get("p75", 0.16)
+    p25 = q.get("p25", -0.01)
+    p10 = q.get("p10", -0.12)
+    p2_5 = q.get("p2_5", -1.37)
+
+    if slope_norm >= p97_5:
+        return f"{channel_prefix}+++"
+    elif slope_norm >= p90:
+        return f"{channel_prefix}++"
+    elif slope_norm >= p75:
+        return f"{channel_prefix}+"
+    elif slope_norm <= p2_5:
+        return f"{channel_prefix}---"
+    elif slope_norm <= p10:
+        return f"{channel_prefix}--"
+    elif slope_norm <= p25:
+        return f"{channel_prefix}-"
     else:
-        p33, p66 = th["-"]
-        av = abs(value)
-        if av >= p66:
-            return f"{channel}---"
-        elif av >= p33:
-            return f"{channel}--"
-        else:
-            return f"{channel}-"
+        return f"{channel_prefix}~"
+
+
+def _classify_one(value: float, channel: str, atr_pct: float = 0.01) -> str:
+    """Backward compatible helper wrapper for single slope classification with auto-sanitization."""
+    if atr_pct > 1.0:
+        atr_pct = atr_pct / 100.0
+    channel_map = {"T": ("tide_slope_norm", "T"), "C": ("current_slope_norm", "C"), "W": ("wave_slope_norm", "W")}
+    key, prefix = channel_map.get(channel, ("wave_slope_norm", channel))
+    atr_eff = max(atr_pct, 0.005)
+    slope_norm = value / atr_eff
+    return _classify_norm_one(slope_norm, key, prefix)
 
 
 def classify_slopes(
     tide_slope: float,
     current_slope: float,
     wave_slope: float,
+    atr_pct: float = 0.01,
 ) -> SlopeState:
-    """Classify 3 slopes into a unified SlopeState.
+    """Classify 3 slopes into a unified SlopeState using Volatility Normalization.
 
     Args:
         tide_slope: 240-bar regression slope
         current_slope: 60-bar regression slope
         wave_slope: cycle-adaptive regression slope
+        atr_pct: 14-day ATR % of asset (default 0.01 = 1%)
 
     Returns:
         SlopeState with levels, tripleta, and derived properties
     """
-    t = _classify_one(tide_slope, "T")
-    c = _classify_one(current_slope, "C")
-    w = _classify_one(wave_slope, "W")
+    t = _classify_one(tide_slope, "T", atr_pct)
+    c = _classify_one(current_slope, "C", atr_pct)
+    w = _classify_one(wave_slope, "W", atr_pct)
+
     return SlopeState(
         tide_level=t,
         current_level=c,

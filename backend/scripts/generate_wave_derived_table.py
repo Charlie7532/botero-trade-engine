@@ -410,25 +410,68 @@ def main():
     from collections import Counter
     sig_counts = Counter(s["identity"].get("signal", "PURE_FEATURE_FACT") for s in states.values())
 
+    from backend.modules.quality_swing.domain.rules.rc_slope_classifier import _SLOPE_TH
+    from datetime import timezone
+    import subprocess
+    w_th = _SLOPE_TH["W"]
+
+    # Try to get git commit hash safely
+    try:
+        git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf-8").strip()
+    except Exception:
+        git_commit = "unknown"
+
+    _documentation = {
+        "model_purpose": "Derived Wave Pivot-Prediction and Reversal Quality Table for Swing Gate — complementary to Combined.",
+        "return_formula": "Real Return = (Price(t_pivot_next) / Close(t)) - 1. Zero Ghost Return bias.",
+        "horizon_gate": "Maximum horizon = 120 days. Captures wave cycles to next ZigZag pivot (2.5%, 5.0%, 7.5%).",
+        "state_hierarchy": {
+            "L3": "Wave Direction State: W_slope (6 macro wave slope states)",
+            "L2": "Mid-Micro State: W_slope|\u03c3Vc (30 mid-wave cycle states)",
+            "L1": "Full 4D State: W_slope|\u03c3Vc|\u03c3c|vel_\u03c3Vw (450 granular micro timing states)"
+        },
+        "dimension_thresholds_definition": {
+            "Wave_slope_W": {
+                "W+++": f"Extremely Bullish Wave Trend (slope_norm >= +{w_th.get('p90', 23.3)})",
+                "W++": f"Strong Bullish Wave Trend (+{w_th.get('p75', 13.2)} <= slope_norm < +{w_th.get('p90', 23.3)})",
+                "W+": f"Mild Bullish Wave Trend (+{w_th.get('p50', 2.9)} <= slope_norm < +{w_th.get('p75', 13.2)})",
+                "W-": f"Mild Bearish Wave Trend ({w_th.get('p25', -6.9)} < slope_norm <= +{w_th.get('p50', 2.9)})",
+                "W--": f"Strong Bearish Wave Trend ({w_th.get('p10', -15.9)} < slope_norm <= {w_th.get('p25', -6.9)})",
+                "W---": f"Extremely Bearish Wave Trend (slope_norm <= {w_th.get('p10', -15.9)})"
+            },
+            "vwap_sigma_wave_position": {
+                "<<": "FLOOR — Price far below VWAP Wave (sigma_vwap < -1.0 std dev)",
+                "<": "BELOW — Price moderately below VWAP Wave (-1.0 <= sigma_vwap < -0.30)",
+                "~": "NEUTRAL — Price near VWAP Wave center (-0.30 <= sigma_vwap <= +0.30)",
+                ">": "ABOVE — Price moderately above VWAP Wave (+0.30 < sigma_vwap <= +1.0)",
+                ">>": "CEILING — Price far above VWAP Wave (sigma_vwap > +1.0 std dev)"
+            },
+            "velocity": {
+                "▲": "Upward velocity in price/VWAP deviation (rising relative momentum)",
+                "▼": "Downward velocity in price/VWAP deviation (falling relative momentum)",
+                "~": "Stable velocity in price/VWAP deviation"
+            }
+        },
+        "field_glossary": {
+            "N": "Sample size for this state/level combination",
+            "p_bull": "P(next pivot = MAX). Probability of upward swing completion",
+            "p_bear": "P(next pivot = MIN). Probability of downward swing completion",
+            "ev": "Real Expected Value: P(bull)*E[ret_max] + P(bear)*E[ret_min]",
+            "shannon_mutual_info": "Bits of Mutual Information I(WaveState; NearBottom) per resolution level"
+        },
+        "signal_interpretation_policy": "Clean Architecture Standard: Tactical actions are dynamically evaluated in runtime by pure-domain Wave classifiers (rc_wave_multiscale_lookup.py) using empirical P(bull), EV, and R:R asymmetry.",
+        "rare_event_policy": "Cells with N < 30 are flagged with is_rare_state=true and utilize Empirical Bayes shrinkage (k=20) toward parent L2/L3 states to prevent overfitting.",
+        "reproducibility_context": {
+            "calibration_timestamp": datetime.now(timezone.utc).isoformat(),
+            "source_dataset_row_count": n_total_obs,
+            "calibrated_under_commit": git_commit
+        }
+    }
+
     derived = {
         "version": f"v1_wave_derived_{datetime.now().strftime('%Y-%m-%d')}",
         "source": f"{RAW_TABLE.name} {raw['version']}",
-        "context": {
-            "what": "Wave pivot-prediction table for Swing Gate — complementary to Combined.",
-            "approach": "Each cell answers: how likely is a zigzag pivot given this wave microstructure? And what reversal quality?",
-            "dimensions": "W(6) × σVc(5) × σc(5) × vel_σVw(3) = 450 states",
-            "shannon_mutual_info": {
-                "L1_full": mi_l1,
-                "L2_w_svc": mi_l2,
-                "L3_w": mi_l3,
-                "note": "Bits of Mutual Information I(WaveState; NearBottom) per resolution level",
-            },
-            "complementarity": "Combined: T×C trend + σVw position → P(bull). Wave: W cycle + σVc/σc position + σVw momentum → P(pivot).",
-            "n_states": len(states),
-            "n_observations": n_total_obs,
-            "n_tickers": n_tickers,
-            "global_p_bull": round(weighted_p_bull, 2),
-        },
+        "_documentation": _documentation,
         "baselines": baselines,
         "vel_thresholds": raw.get("vel_thresholds"),
         "signal_distribution": dict(sig_counts.most_common()),

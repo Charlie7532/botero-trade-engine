@@ -38,6 +38,10 @@ if TYPE_CHECKING:
     from backend.modules.quality_swing.domain.rules.slope_transition_detector import SlopeTransition
 
 
+ACCUMULATE_HIGH = "ACCUMULATE"
+ACCUMULATE_MOD = "BUY_DIP"
+
+
 def is_accumulate_signal(
     sigma_pos: float,
     fear: TickerSentimentBias | None,
@@ -98,9 +102,23 @@ def is_accumulate_signal(
     # QS-1: "The value of Wave is in SUPPRESSING false positives
     #        of Combined when micro doesn't confirm."
     # ════════════════════════════════════════════════════════════
-    if tide_signal is not None and tide_signal.is_accumulate:
-        sig = tide_signal
-        base_conviction = sig.confidence_factor
+    # PATH 1: PURE STOCHASTIC REAL EV & 3D TRIAD CONFLUENCE
+    #
+    # Direct Evaluation of 3 Slopes (T x C x W), Probabilities (P_max vs P_min),
+    # and Real Expected Value E[R].
+    # ════════════════════════════════════════════════════════════
+    is_ev_accumulate = False
+    if real_ev_signal is not None:
+        is_ev_accumulate = (
+            real_ev_signal.ev >= 0.0020
+            and real_ev_signal.p_bull >= 0.42
+            and real_ev_signal.fatigue_type != "FATIGUE_RISK"
+        )
+
+    if (tide_signal is not None and tide_signal.is_accumulate) or is_ev_accumulate:
+        sig_signal = tide_signal.signal if tide_signal else (real_ev_signal.signal if real_ev_signal else "ACCUMULATE")
+        sig_state_key = tide_signal.state_key if tide_signal else (real_ev_signal.state_key if real_ev_signal else "REAL_EV")
+        base_conviction = tide_signal.confidence_factor if tide_signal else (real_ev_signal.p_bull if real_ev_signal else 0.5)
 
         # Observer timing modulation
         recovering = observer_recovery > 0.3
@@ -110,9 +128,8 @@ def is_accumulate_signal(
         # T9 structural filter: block premature bounces
         if transition and transition.cascade_type == "REBOTE_PREMATURO":
             return False, 0.0, (
-                f"TIDE_{sig.signal}_BLOCKED: [{sig.state_key}] "
-                f"P_bull={sig.p_bull:.1f}% but T9=REBOTE_PREMATURO "
-                f"— wait for Current to confirm"
+                f"TIDE_{sig_signal}_BLOCKED: [{sig_state_key}] "
+                f"T9=REBOTE_PREMATURO — wait for Current to confirm"
             )
 
         # ── Wave modulation (QS-1 + Issue 5) ──
@@ -121,9 +138,8 @@ def is_accumulate_signal(
             if wave_signal.is_top_signal:
                 # Issue 5: CONFLICT — macro ACCUM + micro TOP → BLOCK
                 return False, 0.0, (
-                    f"TIDE_WAVE_CONFLICT: [{sig.state_key}] {sig.signal} "
-                    f"P_bull={sig.p_bull:.1f}% but Wave [{wave_signal.state_key}] "
-                    f"says {wave_signal.signal} (lift_top={wave_signal.lift_best_top:.2f}×)"
+                    f"TIDE_WAVE_CONFLICT: [{sig_state_key}] {sig_signal} "
+                    f"Wave [{wave_signal.state_key}] says {wave_signal.signal}"
                 )
             elif wave_signal.is_bottom_signal:
                 # Confluence: macro + micro align → BOOST
@@ -135,12 +151,11 @@ def is_accumulate_signal(
                 )
             else:
                 # QS-1: Wave NO_EDGE — macro wants to buy, micro doesn't confirm
-                # This is THE key value of Wave: filtering premature entries
                 base_conviction *= 0.5
                 wave_tag = " [WAVE_NO_EDGE: timing premature]"
 
         # Signal-specific conviction scaling
-        if sig.signal == "ACCUMULATE":
+        if sig_signal == "ACCUMULATE":
             conviction = min(base_conviction * 1.3, 1.0)
             if recovering:
                 conviction = min(conviction * 1.15, 1.0)
@@ -152,9 +167,8 @@ def is_accumulate_signal(
             conviction = min(base_conviction * 1.0, 0.8)
             if not confirmed:
                 return False, 0.0, (
-                    f"TIDE_BUY_DIP_UNCONF: [{sig.state_key}] "
-                    f"P_bull={sig.p_bull:.1f}% asym={sig.asymmetry_pp:+.1f}pp "
-                    f"but obs={observer_recovery:+.3f} not confirmed"
+                    f"TIDE_BUY_DIP_UNCONF: [{sig_state_key}] "
+                    f"obs={observer_recovery:+.3f} not confirmed"
                 )
             if recovering:
                 conviction = min(conviction * 1.10, 0.9)
@@ -169,7 +183,7 @@ def is_accumulate_signal(
 
         # Predictive edge bonus
         pred_tag = ""
-        if sig.predictive_edge == "LEADING_BOTTOM":
+        if tide_signal and tide_signal.predictive_edge == "LEADING_BOTTOM":
             conviction = min(conviction * 1.1, 1.0)
             pred_tag = " [LEADING_BOTTOM]"
 
@@ -187,16 +201,23 @@ def is_accumulate_signal(
             conviction = min(conviction * wave_signal.extreme_vel_modifier, 1.0)
             vel_ext_tag = f" [{wave_signal.extreme_vel_tag}]"
 
+        # ── Real EV Confluence Modulation ──
+        ev_tag = ""
+        if real_ev_signal is not None:
+            ev_multiplier = 1.0 + max(min(real_ev_signal.ev * 10.0, 0.4), -0.4)
+            conviction = min(max(conviction * ev_multiplier, 0.1), 1.0)
+            ev_tag = (
+                f" [EV_CONF: ev={real_ev_signal.ev:+.4f} "
+                f"R:R={real_ev_signal.rr_asymmetry:.2f} "
+                f"fatigue={real_ev_signal.fatigue_type}]"
+            )
+
         conviction = round(conviction, 2)
+        p_bull_str = f"{tide_signal.p_bull:.1f}%" if tide_signal else (f"{real_ev_signal.p_bull:.1%}" if real_ev_signal else "N/A")
         return True, conviction, (
-            f"TIDE_{sig.signal}: [{sig.state_key}] "
-            f"P_bull={sig.p_bull:.1f}% odds={sig.odds:.1f}:1 "
-            f"bot25={sig.bottom_25_pct:.1f}% asym={sig.asymmetry_pp:+.1f}pp "
-            f"lift_band={sig.lift_vs_band:.2f} N={sig.n_samples:,} "
-            f"zone={sig.zone} regime={sig.regime} "
-            f"conv={sig.conviction}/{sig.conviction_score} "
-            f"sig_conf={sig.signal_confidence} "
-            f"obs={observer_recovery:+.3f}{pred_tag}{wave_tag}{dual_tag}{vel_ext_tag}"
+            f"TIDE_{sig_signal}: [{sig_state_key}] "
+            f"P_bull={p_bull_str} "
+            f"obs={observer_recovery:+.3f}{pred_tag}{wave_tag}{dual_tag}{vel_ext_tag}{ev_tag}"
         )
 
     # ════════════════════════════════════════════════════════════
@@ -289,60 +310,60 @@ def is_accumulate_signal(
         )
 
     # ════════════════════════════════════════════════════════════
-    # LEGACY FALLBACK: Heuristic rules (v1)
-    # Used when neither Combined nor Wave produce a signal.
+    # ARCHIVED LEGACY FALLBACK: Heuristic rules (v1)
+    # Commented out to enforce 100% pure Stochastic & EV logic.
     # ════════════════════════════════════════════════════════════
-    if fear is None:
-        return False, 0.0, "INSUFFICIENT_DATA: Need 200+ bars for fear_level"
+    # if fear is None:
+    #     return False, 0.0, "INSUFFICIENT_DATA: Need 200+ bars for fear_level"
+    #
+    # if fear.tide_slope < -0.03:
+    #     return False, 0.0, (
+    #         f"DEEP_BEAR: tide_slope={fear.tide_slope:.3f} < -0.03. "
+    #         f"Structural collapse — Druckenmiller stays out"
+    #     )
+    #
+    # # ── BULL regime (tide_slope > 0): statistical pullback ──
+    # if fear.tide_slope > 0.01:
+    #     at_support = sigma_pos <= -1.5
+    #     if at_support and below_vwap and hookup:
+    #         depth_score = min(abs(sigma_pos) / 2.0, 1.0)
+    #         fear_bonus = min(fear.fear_level / 5.0, 1.0) * 0.3
+    #         conviction = round(min(depth_score * 0.5 + fear_bonus + 0.2, 1.0), 2)
+    #
+    #         if fear.wave_flip and fear.wave_flip_direction == 1:
+    #             conviction = min(conviction + 0.15, 1.0)
+    #
+    #         if vol_regime_label == "ELEVATED":
+    #             conviction *= 0.5
+    #
+    #         return True, conviction, (
+    #             f"LEGACY_BULL_DIP: σ={sigma_pos:.1f}, fear={fear.fear_label}, "
+    #             f"tide={fear.tide_slope:.3f}, wave={fear.wave_slope:.3f}, "
+    #             f"vwap={'below' if below_vwap else 'above'}"
+    #         )
+    #
+    # # ── FLAT regime (|tide_slope| <= 0.01): extreme mean reversion ──
+    # elif abs(fear.tide_slope) <= 0.01:
+    #     if sigma_pos <= -2.0 and hookup:
+    #         conviction = 0.4
+    #         if vol_regime_label == "ELEVATED":
+    #             conviction *= 0.5
+    #         return True, conviction, (
+    #             f"LEGACY_FLAT_EXTREME: σ={sigma_pos:.1f}, mean reversion zone"
+    #         )
+    #
+    # # ── SHALLOW BEAR (-0.03 < tide_slope < -0.01): cautious dip buy ──
+    # elif fear.tide_slope > -0.03:
+    #     if sigma_pos <= -2.0 and fear.wave_slope > 0 and (below_vwap or hookup):
+    #         conviction = round(min(abs(sigma_pos) / 3.0 + 0.3, 1.0), 2) * 0.7
+    #         if vol_regime_label == "ELEVATED":
+    #             conviction *= 0.5
+    #         return True, conviction, (
+    #             f"LEGACY_SHALLOW_BEAR_DIP: σ={sigma_pos:.1f}, wave turning positive, "
+    #             f"tide={fear.tide_slope:.3f}"
+    #         )
 
-    if fear.tide_slope < -0.03:
-        return False, 0.0, (
-            f"DEEP_BEAR: tide_slope={fear.tide_slope:.3f} < -0.03. "
-            f"Structural collapse — Druckenmiller stays out"
-        )
-
-    # ── BULL regime (tide_slope > 0): statistical pullback ──
-    if fear.tide_slope > 0.01:
-        at_support = sigma_pos <= -1.5
-        if at_support and below_vwap and hookup:
-            depth_score = min(abs(sigma_pos) / 2.0, 1.0)
-            fear_bonus = min(fear.fear_level / 5.0, 1.0) * 0.3
-            conviction = round(min(depth_score * 0.5 + fear_bonus + 0.2, 1.0), 2)
-
-            if fear.wave_flip and fear.wave_flip_direction == 1:
-                conviction = min(conviction + 0.15, 1.0)
-
-            if vol_regime_label == "ELEVATED":
-                conviction *= 0.5
-
-            return True, conviction, (
-                f"LEGACY_BULL_DIP: σ={sigma_pos:.1f}, fear={fear.fear_label}, "
-                f"tide={fear.tide_slope:.3f}, wave={fear.wave_slope:.3f}, "
-                f"vwap={'below' if below_vwap else 'above'}"
-            )
-
-    # ── FLAT regime (|tide_slope| <= 0.01): extreme mean reversion ──
-    elif abs(fear.tide_slope) <= 0.01:
-        if sigma_pos <= -2.0 and hookup:
-            conviction = 0.4
-            if vol_regime_label == "ELEVATED":
-                conviction *= 0.5
-            return True, conviction, (
-                f"LEGACY_FLAT_EXTREME: σ={sigma_pos:.1f}, mean reversion zone"
-            )
-
-    # ── SHALLOW BEAR (-0.03 < tide_slope < -0.01): cautious dip buy ──
-    elif fear.tide_slope > -0.03:
-        if sigma_pos <= -2.0 and fear.wave_slope > 0 and (below_vwap or hookup):
-            conviction = round(min(abs(sigma_pos) / 3.0 + 0.3, 1.0), 2) * 0.7
-            if vol_regime_label == "ELEVATED":
-                conviction *= 0.5
-            return True, conviction, (
-                f"LEGACY_SHALLOW_BEAR_DIP: σ={sigma_pos:.1f}, wave turning positive, "
-                f"tide={fear.tide_slope:.3f}"
-            )
-
-    return False, 0.0, f"NO_SIGNAL: σ={sigma_pos:.1f}, fear={fear.fear_label if fear else '?'}"
+    return False, 0.0, f"NO_SIGNAL: σ={sigma_pos:.1f}, no active stochastic/EV signal"
 
 
 def is_trim_signal(
@@ -391,20 +412,31 @@ def is_trim_signal(
     # REDUCE: Preventive distribution (all Ceiling states)
     # Wave modulates trim conviction symmetrically to ACCUM [Issue 3]
     # ════════════════════════════════════════════════════════════
-    if tide_signal is not None and tide_signal.is_trim:
-        sig = tide_signal
+    is_ev_trim = False
+    if real_ev_signal is not None:
+        is_ev_trim = (
+            real_ev_signal.ev <= -0.0020
+            or real_ev_signal.fatigue_type == "FATIGUE_RISK"
+            or real_ev_signal.p_bear >= 0.52
+        )
+
+    if (tide_signal is not None and tide_signal.is_trim) or is_ev_trim:
+        sig_signal = tide_signal.signal if tide_signal else (real_ev_signal.signal if real_ev_signal else "TRIM")
+        sig_state_key = tide_signal.state_key if tide_signal else (real_ev_signal.state_key if real_ev_signal else "REAL_EV")
+        sig_confidence_factor = tide_signal.confidence_factor if tide_signal else (real_ev_signal.p_bear if real_ev_signal else 0.5)
+
         deteriorating = observer_recovery < -0.3
         confirmed_down = observer_recovery < 0
 
-        if sig.signal == "TAKE_PROFIT":
-            trim_pct = round(min(0.5, sig.confidence_factor * 0.6), 2)
+        if sig_signal == "TAKE_PROFIT":
+            trim_pct = round(min(0.5, sig_confidence_factor * 0.6), 2)
             if deteriorating:
                 trim_pct = min(round(trim_pct * 1.3, 2), 0.5)
             if transition and transition.cascade_type == "CORRECCION_REAL":
                 trim_pct = min(round(trim_pct * 1.4, 2), 0.5)
 
             pred_tag = ""
-            if sig.predictive_edge == "LEADING_TOP":
+            if tide_signal and tide_signal.predictive_edge == "LEADING_TOP":
                 trim_pct = min(round(trim_pct * 1.2, 2), 0.5)
                 pred_tag = " [LEADING_TOP]"
 
@@ -430,16 +462,13 @@ def is_trim_signal(
                     wave_tag = " [WAVE_NO_EDGE: moderate trim]"
 
             return True, trim_pct, (
-                f"TIDE_TAKE_PROFIT: [{sig.state_key}] "
-                f"P_bull={sig.p_bull:.1f}% top25={sig.top_25_pct:.1f}% "
-                f"asym={sig.asymmetry_pp:+.1f}pp "
-                f"zone={sig.zone} regime={sig.regime} "
-                f"N={sig.n_samples:,} obs={observer_recovery:+.3f}"
+                f"TIDE_TAKE_PROFIT: [{sig_state_key}] "
+                f"obs={observer_recovery:+.3f}"
                 f"{pred_tag}{wave_tag}"
             )
 
         else:  # REDUCE
-            trim_pct = round(min(0.3, sig.confidence_factor * 0.35), 2)
+            trim_pct = round(min(0.3, sig_confidence_factor * 0.35), 2)
             if deteriorating:
                 trim_pct = min(round(trim_pct * 1.2, 2), 0.4)
             if not confirmed_down:
@@ -455,13 +484,16 @@ def is_trim_signal(
                     trim_pct = round(trim_pct * 0.5, 2)
                     wave_tag = f" [WAVE_BOTTOM: reducing trim urgency]"
 
+            # ── Real EV Fatigue Risk Modulation ──
+            ev_trim_tag = ""
+            if real_ev_signal is not None and real_ev_signal.fatigue_type == "FATIGUE_RISK":
+                trim_pct = min(round(trim_pct * 1.25, 2), 0.5)
+                ev_trim_tag = f" [FATIGUE_RISK: ev={real_ev_signal.ev:+.4f} delta={real_ev_signal.fatigue_delta_ev:+.4f}]"
+
             return True, trim_pct, (
-                f"TIDE_REDUCE: [{sig.state_key}] "
-                f"P_bull={sig.p_bull:.1f}% top25={sig.top_25_pct:.1f}% "
-                f"asym={sig.asymmetry_pp:+.1f}pp "
-                f"zone={sig.zone} regime={sig.regime} "
-                f"N={sig.n_samples:,} obs={observer_recovery:+.3f}"
-                f"{wave_tag}"
+                f"TIDE_REDUCE: [{sig_state_key}] "
+                f"obs={observer_recovery:+.3f}"
+                f"{wave_tag}{ev_trim_tag}"
             )
 
     # ================================================================
@@ -492,33 +524,34 @@ def is_trim_signal(
             )
 
     # ════════════════════════════════════════════════════════════
-    # LEGACY FALLBACK: Heuristic trim rules (v1)
+    # ARCHIVED LEGACY FALLBACK: Heuristic trim rules (v1)
+    # Commented out to enforce 100% pure Stochastic & EV logic.
     # ════════════════════════════════════════════════════════════
-    if fear is None:
-        return False, 0.0, "INSUFFICIENT_DATA"
+    # if fear is None:
+    #     return False, 0.0, "INSUFFICIENT_DATA"
+    #
+    # # Extreme greed + overextended = trim
+    # if sigma_pos >= 2.0 and fear.fear_level == 0:
+    #     trim_pct = 0.5  # Max trim at extreme greed
+    #     return True, trim_pct, (
+    #         f"LEGACY_EXTREME_GREED: σ={sigma_pos:.1f}, fear=GREED. "
+    #         f"Druckenmiller: take chips off the table"
+    #     )
+    #
+    # if sigma_pos >= 1.5 and fear.fear_level <= 1:
+    #     trim_pct = 0.25
+    #     return True, trim_pct, (
+    #         f"LEGACY_OVEREXTENDED: σ={sigma_pos:.1f}, fear={fear.fear_label}. "
+    #         f"Statistical resistance zone"
+    #     )
+    #
+    # # Wave flip negative after extended run = early trim
+    # if (sigma_pos >= 1.0 and fear.wave_flip
+    #         and fear.wave_flip_direction == -1 and fear.fear_level <= 1):
+    #     trim_pct = 0.15
+    #     return True, trim_pct, (
+    #         f"LEGACY_WAVE_REVERSAL: σ={sigma_pos:.1f}, wave flipped negative. "
+    #         f"Early trim before potential correction"
+    #     )
 
-    # Extreme greed + overextended = trim
-    if sigma_pos >= 2.0 and fear.fear_level == 0:
-        trim_pct = 0.5  # Max trim at extreme greed
-        return True, trim_pct, (
-            f"LEGACY_EXTREME_GREED: σ={sigma_pos:.1f}, fear=GREED. "
-            f"Druckenmiller: take chips off the table"
-        )
-
-    if sigma_pos >= 1.5 and fear.fear_level <= 1:
-        trim_pct = 0.25
-        return True, trim_pct, (
-            f"LEGACY_OVEREXTENDED: σ={sigma_pos:.1f}, fear={fear.fear_label}. "
-            f"Statistical resistance zone"
-        )
-
-    # Wave flip negative after extended run = early trim
-    if (sigma_pos >= 1.0 and fear.wave_flip
-            and fear.wave_flip_direction == -1 and fear.fear_level <= 1):
-        trim_pct = 0.15
-        return True, trim_pct, (
-            f"LEGACY_WAVE_REVERSAL: σ={sigma_pos:.1f}, wave flipped negative. "
-            f"Early trim before potential correction"
-        )
-
-    return False, 0.0, f"HOLD: σ={sigma_pos:.1f}, fear={fear.fear_label if fear else '?'}"
+    return False, 0.0, f"HOLD: σ={sigma_pos:.1f}, no active stochastic/EV signal"

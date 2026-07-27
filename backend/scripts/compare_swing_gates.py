@@ -26,7 +26,8 @@ from pathlib import Path
 from collections import Counter
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-from backend.modules.quality_swing.domain.rules.rc_state_probability import lookup_probability
+from backend.modules.quality_swing.domain.rules.rc_tide_lookup import lookup_tide_signal
+from backend.modules.quality_swing.domain.rules.rc_tide_ev_lookup import lookup_real_ev
 from backend.modules.quality_swing.domain.rules.swing_entry_rules import (
     is_accumulate_signal,
     is_trim_signal,
@@ -202,27 +203,26 @@ def evaluate_both(df):
     results = []
 
     for _, row in df.iterrows():
-        # v2: Probability-based
-        rc_prob = lookup_probability(
-            tide_slope=float(row['tide_slope']),
-            sigma_current=float(row['sigma_current']),
-            sigma_wave=float(row['sigma_wave']),
-            vwap_sigma_wave=float(row['vwap_sigma_wave']),
-        )
+        t_slope = str(row['tide_slope'])
+        c_slope = str(row['current_slope'])
+        svw = float(row['vwap_sigma_wave'])
+
+        tide_sig = lookup_tide_signal(t_slope=t_slope, c_slope=c_slope, svw=svw)
+        real_ev_sig = lookup_real_ev(t_slope=t_slope, c_slope=c_slope, svw=svw)
 
         # Mock fear for legacy
         fear = MockFear(row)
         sigma_pos = float(row['sigma_current'])
-        below_vwap = float(row['vwap_sigma_wave']) < 0  # Approximation
+        below_vwap = svw < 0  # Approximation
         hookup = True  # Assume true (we don't have bar-by-bar hookup here)
 
-        # v1: Legacy (no rc_prob)
+        # v1: Legacy (Tide static cataloger rules only)
         v1_accum, v1_conv_a, v1_reason_a = is_accumulate_signal(
             sigma_pos=sigma_pos, fear=fear, below_vwap=below_vwap,
-            hookup=hookup, vol_regime_label="NORMAL", rc_prob=None,
+            hookup=hookup, vol_regime_label="NORMAL", tide_signal=tide_sig, real_ev_signal=None,
         )
         v1_trim, v1_conv_t, v1_reason_t = is_trim_signal(
-            sigma_pos=sigma_pos, fear=fear, rc_prob=None,
+            sigma_pos=sigma_pos, fear=fear, tide_signal=tide_sig, real_ev_signal=None,
         )
 
         if v1_accum:
@@ -232,13 +232,13 @@ def evaluate_both(df):
         else:
             v1_action = "HOLD"
 
-        # v2: Probability (with rc_prob)
+        # v2: Real EV Stochastic (Tide + Real EV Dual Confluence)
         v2_accum, v2_conv_a, v2_reason_a = is_accumulate_signal(
             sigma_pos=sigma_pos, fear=fear, below_vwap=below_vwap,
-            hookup=hookup, vol_regime_label="NORMAL", rc_prob=rc_prob,
+            hookup=hookup, vol_regime_label="NORMAL", tide_signal=tide_sig, real_ev_signal=real_ev_sig,
         )
         v2_trim, v2_conv_t, v2_reason_t = is_trim_signal(
-            sigma_pos=sigma_pos, fear=fear, rc_prob=rc_prob,
+            sigma_pos=sigma_pos, fear=fear, tide_signal=tide_sig, real_ev_signal=real_ev_sig,
         )
 
         if v2_accum:
@@ -259,9 +259,9 @@ def evaluate_both(df):
             'v1_conviction': v1_conv_a if v1_accum else (v1_conv_t if v1_trim else 0.0),
             'v2_action': v2_action,
             'v2_conviction': v2_conv_a if v2_accum else (v2_conv_t if v2_trim else 0.0),
-            'p_bull': rc_prob.prob_bull if rc_prob else None,
-            'rc_level': rc_prob.level if rc_prob else None,
-            'rc_n': rc_prob.n_samples if rc_prob else None,
+            'p_bull': real_ev_sig.p_bull if real_ev_sig else (tide_sig.p_bull if tide_sig else None),
+            'rc_level': real_ev_sig.fallback_level if real_ev_sig else "L0",
+            'rc_n': tide_sig.n_samples if tide_sig else 0,
             'stereotype': row['stereotype'],
             'is_bull': row['is_bull'],
             'fwd_return': row['fwd_return'],

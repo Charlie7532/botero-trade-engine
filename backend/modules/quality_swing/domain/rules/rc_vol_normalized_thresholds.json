@@ -1,0 +1,122 @@
+{
+  "_documentation": {
+    "model_purpose": "100% Census Empirical Asymmetric Quantile Thresholds for Volatility-Normalized Slopes and Oscillators (slope / EMA_ATR_14%)",
+    "calibration_method": "L\u00f3pez de Prado Dynamic Volatility Standardization on 4,570,899 samples from Neon Vault (1999-2026)",
+    "calibration_timestamp": "2026-07-27T04:14:47.313162+00:00",
+    "n_samples_total": 4577585,
+    "state_definitions": {
+      "---": "Extreme Bearish (<= p2.5%)",
+      "--": "Unusual Bearish (p2.5% < x <= p10%)",
+      "-": "Moderate Bearish (p10% < x <= p25%)",
+      "~": "Neutral Range (p25% < x < p75%)",
+      "+": "Moderate Bullish (p75% <= x < p90%)",
+      "++": "Unusual Bullish (p90% <= x < p97.5%)",
+      "+++": "Extreme Bullish (>= p97.5%)"
+    },
+    "variable_physical_meanings": {
+      "tide_slope_norm": "Eje Macro 240d: Inclinaci\u00f3n estructural del oc\u00e9ano institucional (Acumulaci\u00f3n vs Distribuci\u00f3n)",
+      "current_slope_norm": "Eje T\u00e1ctico 60d: Aceleraci\u00f3n del ciclo medio (Impulso vs Correcci\u00f3n t\u00e1ctica)",
+      "wave_slope_norm": "Eje Micro 15d: Frecuencia cinem\u00e1tica r\u00e1pida de giro de la vela/onda",
+      "vwap_sigma_wave": "Distancia Espacial al VWAP: Geometr\u00eda de Pisos (<= -1.5std) y Techos (>= +1.5std)",
+      "rsi_value": "Tensi\u00f3n El\u00e1stica y Exhausti\u00f3n: Medici\u00f3n de capitulaci\u00f3n vendedora (RSI < 35) o euforia (RSI > 68)",
+      "kalman_velocity": "Derivada Temporal Libre de Ruido: Inercia pura de absorci\u00f3n institucional en t+1"
+    },
+    "hypotheses_references": [
+      {
+        "id": "HYP_TIDE_EXPANSION",
+        "title": "Marea Macro Alcista (T+++ / T++)",
+        "status": "VALIDATED",
+        "grade": "Grade A",
+        "authority": "Hard Gate (STK_ACCUMULATE_STRUCTURAL)",
+        "governance_ref": "hypothesis-governance"
+      },
+      {
+        "id": "HYP_TIDE_CONTRACTION",
+        "title": "Marea Macro Bajista (T--- / T--)",
+        "status": "VALIDATED",
+        "grade": "Grade A",
+        "authority": "Hard Gate (STK_DISTRIBUTE_DECAY / STK_BLOCK_CRISIS)",
+        "governance_ref": "hypothesis-governance"
+      },
+      {
+        "id": "HYP_CURRENT_CORRECTION",
+        "title": "Correcci\u00f3n T\u00e1ctica en Marea Alcista (C--- / C--)",
+        "status": "VALIDATED",
+        "grade": "Grade B",
+        "authority": "Tactical Trigger (STK_BUY_DIP_TACTICAL)",
+        "governance_ref": "hypothesis-governance"
+      },
+      {
+        "id": "HYP_FLOOR_EXHAUSTION",
+        "title": "Piso Extremo por Capitulaci\u00f3n (VWAP << + RSI Low + Kalman Vel +)",
+        "status": "VALIDATED",
+        "grade": "Grade A",
+        "authority": "Hard Gate (Rebote Inminente P(bull) >= 77.1%)",
+        "governance_ref": "hypothesis-governance"
+      },
+      {
+        "id": "HYP_CEILING_EUFORIA",
+        "title": "Techo Extremo por Euforia (VWAP >> + RSI High + Kalman Vel -)",
+        "status": "VALIDATED",
+        "grade": "Grade A",
+        "authority": "Hard Gate (Agotamiento P(bear) >= 75.0%)",
+        "governance_ref": "hypothesis-governance"
+      }
+    ],
+    "signal_interpretation_policy": "Clean Architecture Standard: Business signals and thresholds are dynamically interpreted in runtime by pure-domain adapters (rc_slope_classifier.py, rc_multiscale_ev_lookup.py) using 100% census quantiles."
+  },
+  "tide_slope_norm": {
+    "p2_5": -7.107244,
+    "p10": -3.789717,
+    "p25": -0.891967,
+    "p50": 2.491619,
+    "p75": 5.893346,
+    "p90": 9.023321,
+    "p97_5": 13.102027
+  },
+  "current_slope_norm": {
+    "p2_5": -15.697735,
+    "p10": -9.304892,
+    "p25": -3.777905,
+    "p50": 2.85745,
+    "p75": 9.712965,
+    "p90": 15.882523,
+    "p97_5": 23.261499
+  },
+  "wave_slope_norm": {
+    "p2_5": -27.891341,
+    "p10": -15.959635,
+    "p25": -6.930322,
+    "p50": 2.965043,
+    "p75": 13.274901,
+    "p90": 23.390228,
+    "p97_5": 36.824149
+  },
+  "vwap_sigma_wave": {
+    "p2_5": -2.337,
+    "p10": -1.6153,
+    "p25": -0.8292,
+    "p50": 0.3804,
+    "p75": 1.332,
+    "p90": 1.9198,
+    "p97_5": 2.5238
+  },
+  "rsi_value": {
+    "p2_5": 28.6,
+    "p10": 36.7,
+    "p25": 44.2,
+    "p50": 52.8,
+    "p75": 61.1,
+    "p90": 68.2,
+    "p97_5": 75.6
+  },
+  "kalman_velocity": {
+    "p2_5": -0.3695,
+    "p10": -0.1929,
+    "p25": -0.0957,
+    "p50": -0.0136,
+    "p75": 0.0738,
+    "p90": 0.1934,
+    "p97_5": 0.4553
+  }
+}

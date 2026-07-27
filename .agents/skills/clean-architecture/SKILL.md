@@ -303,3 +303,17 @@ Is it cross-module data transfer prep?
 ---
 
 By following this skill set, the Botero Trade Engine remains highly testable, horizontally scalable, and resilient against framework or external provider changes.
+
+---
+
+## 11. JSON Fact Store Metadata Standard (Rule 21)
+
+Every generated JSON probability table, regime tree, or rule file MUST include a top-level `_documentation` dictionary containing 6 mandatory metadata blocks:
+
+1. **`model_purpose`**: Descriptive explanation of the quantitative/physical model.
+2. **`return_formula`**: Explicit mathematical formula of the target variable.
+3. **`state_hierarchy`**: Breakdown of state levels (`L0` to `L3`) and dimension mapping.
+4. **`dimension_thresholds_definition`**: Exact numerical thresholds and physical meanings for every discrete bin string (e.g. `T+++`, `C---`, `<<`, `~`, `>>`, `vel`, etc.).
+5. **`field_glossary`**: Complete glossary of every metric key in the data objects (`n`, `p_bull`, `ev`, `sharpe`, `rr_asymmetry`, `fatigue_buckets`, etc.).
+6. **`signal_interpretation_policy`**: Explicit Clean Architecture declaration stating that business signals are NOT static strings in JSON, but are dynamically interpreted by pure-domain adapters (`rc_*_lookup.py`, `signal_cataloger.py`).
+

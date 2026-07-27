@@ -132,6 +132,7 @@ def lookup_unified(
     sigma_wave: float,
     vwap_sigma_wave: float,
     min_n: int = 10,
+    atr_pct: float = 0.01,
 ) -> Optional[UnifiedProbability]:
     """Hierarchical lookup in the unified probability tree.
 
@@ -145,6 +146,7 @@ def lookup_unified(
         sigma_wave: Price position in wave channel (σ units)
         vwap_sigma_wave: Price position relative to wave VWAP (σ units)
         min_n: Minimum samples for a cell to be valid
+        atr_pct: 14-day ATR % of asset (default 0.01 = 1%)
 
     Returns:
         UnifiedProbability or None if no valid cell found
@@ -153,7 +155,7 @@ def lookup_unified(
     cells = tree.get("cells", {})
 
     # Classify slopes
-    slope = classify_slopes(tide_slope, current_slope, wave_slope)
+    slope = classify_slopes(tide_slope, current_slope, wave_slope, atr_pct=atr_pct)
     trip = slope.tripleta
 
     # Classify sigmas

@@ -282,4 +282,13 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     - **Emergency Circuit Breaker:** `MKT_MACRO_CIRCUIT_BREAKER` (Systemic market crash / liquidity emergency — overrides all stock-level signals).
     - **Urgency Tags (FIX Protocol Tag 61/848):** `URGENCY_EMERGENCY`, `URGENCY_HIGH`, `URGENCY_NORMAL`, `URGENCY_LOW`.
 
+21. **Standard JSON Fact Store Metadata Specification.** Every generated JSON probability table, regime tree, or rule file MUST contain a top-level `_documentation` dictionary with 6 mandatory metadata blocks:
+    - **`model_purpose`**: Descriptive explanation of the quantitative/physical model.
+    - **`return_formula`**: Explicit mathematical definition of the target/return variable.
+    - **`state_hierarchy`**: Breakdown of state levels (`L0` to `L3`) and dimension mapping.
+    - **`dimension_thresholds_definition`**: Exact numerical thresholds and physical meanings for every discrete bin string (e.g. `T+++`, `C---`, `<<`, `~`, `>>`, `vel`, etc.).
+    - **`field_glossary`**: Complete glossary of every metric key in the data objects (`n`, `p_bull`, `ev`, `sharpe`, `rr_asymmetry`, `fatigue_buckets`, etc.).
+    - **`signal_interpretation_policy`**: Explicit Clean Architecture declaration stating that business signals are NOT static strings in JSON, but are dynamically interpreted by pure-domain adapters (`rc_*_lookup.py`, `signal_cataloger.py`).
+
+
 

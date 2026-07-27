@@ -1,5 +1,5 @@
 {
-  "version": "v2_wave_ev_real_derived_2026-07-25",
+  "version": "v2_wave_ev_real_derived_2026-07-27",
   "source_file": "rc_wave_ev_probability_table.json",
   "description": "Real Point-in-Time Wave Microstructure Expected Value Matrix with Universal Taxonomy & Multi-Level Fallbacks",
   "_documentation": {
@@ -7,9 +7,31 @@
     "return_formula": "Real Return = (Price(t_pivot_next) / Close(t)) - 1. Zero Ghost Return bias.",
     "horizon_gate": "Maximum horizon = 120 days. Captures micro wave timing to next ZigZag pivot (2.5%, 5.0%, 7.5%).",
     "state_hierarchy": {
-      "L1": "Full 4D State: W_slope|σVc|σc|vel_σVw (450 granular micro timing states)",
+      "L3": "Wave Direction State: W_slope (6 macro wave slope states)",
       "L2": "Mid-Micro State: W_slope|σVc (30 mid-wave cycle states)",
-      "L3": "Wave Direction State: W_slope (6 macro wave slope states)"
+      "L1": "Full 4D State: W_slope|σVc|σc|vel_σVw (450 granular micro timing states)"
+    },
+    "dimension_thresholds_definition": {
+      "Wave_slope_W": {
+        "W+++": "Extremely Bullish Wave Trend (slope_norm >= +23.390228)",
+        "W++": "Strong Bullish Wave Trend (+13.274901 <= slope_norm < +23.390228)",
+        "W+": "Mild Bullish Wave Trend (+2.965043 <= slope_norm < +13.274901)",
+        "W-": "Mild Bearish Wave Trend (-6.930322 < slope_norm <= +2.965043)",
+        "W--": "Strong Bearish Wave Trend (-15.959635 < slope_norm <= -6.930322)",
+        "W---": "Extremely Bearish Wave Trend (slope_norm <= -15.959635)"
+      },
+      "vwap_sigma_wave_position": {
+        "<<": "FLOOR — Price far below VWAP Wave (sigma_vwap < -1.0 std dev)",
+        "<": "BELOW — Price moderately below VWAP Wave (-1.0 <= sigma_vwap < -0.30)",
+        "~": "NEUTRAL — Price near VWAP Wave center (-0.30 <= sigma_vwap <= +0.30)",
+        ">": "ABOVE — Price moderately above VWAP Wave (+0.30 < sigma_vwap <= +1.0)",
+        ">>": "CEILING — Price far above VWAP Wave (sigma_vwap > +1.0 std dev)"
+      },
+      "velocity": {
+        "▲": "Upward velocity in price/VWAP deviation (rising relative momentum)",
+        "▼": "Downward velocity in price/VWAP deviation (falling relative momentum)",
+        "~": "Stable velocity in price/VWAP deviation"
+      }
     },
     "field_glossary": {
       "n": "Sample size for this micro state/level combination",
@@ -25,7 +47,13 @@
       "urgency_level": "Protocol FIX Tag 61/848 urgency level (IMMEDIATE, HIGH, NORMAL, PASSIVE)",
       "fatigue_buckets": "Raw EV performance grouped by run_length (1, 2, 3-4, 5-7, 8-10, 11+ bars)"
     },
-    "rare_event_policy": "Cells with N < 30 are flagged with is_rare_state=true and utilize Empirical Bayes shrinkage (k=20) toward parent L2/L3 states to prevent overfitting."
+    "signal_interpretation_policy": "Clean Architecture Standard: Tactical actions are dynamically evaluated in runtime by pure-domain Wave classifiers (rc_wave_multiscale_lookup.py) using empirical P(bull), EV, and R:R asymmetry.",
+    "rare_event_policy": "Cells with N < 30 are flagged with is_rare_state=true and utilize Empirical Bayes shrinkage (k=20) toward parent L2/L3 states to prevent overfitting.",
+    "reproducibility_context": {
+      "calibration_timestamp": "2026-07-27T05:51:05.847656+00:00",
+      "source_dataset_row_count": 4577585,
+      "calibrated_under_commit": "4b316835d130a6e50b93d4bb2c5fe5db9cb935a9"
+    }
   },
   "n_states": 479,
   "n_rare_states": 9,

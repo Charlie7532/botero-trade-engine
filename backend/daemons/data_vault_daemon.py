@@ -1921,6 +1921,7 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         import backend.daemons.vault_providers.sector_volume_intensity_provider  # noqa: F401
         import backend.daemons.vault_providers.remaining_providers  # noqa: F401
         import backend.daemons.vault_providers.observer_provider  # noqa: F401
+        import backend.daemons.vault_providers.sv5_shock_provider  # noqa: F401
 
         adapter = VaultRefreshAdapter(store)
         pending = adapter.pending_requests(limit=20)
@@ -2180,6 +2181,14 @@ def run_cycle(store: TimescaleDataStore) -> None:
     except Exception as e:
         logger.warning(f"Sector volume intensity vault failed (non-critical): {e}")
         results["sector_volume_intensity"] = {"status": "error", "error": str(e)}
+
+    # ── Tier 3b-sept: SV5_SHOCK — Institutional Volume Shock (AFTER volume_breadth) ──
+    try:
+        from backend.daemons.vault_providers.sv5_shock_provider import SV5ShockProvider
+        results["sv5_shock"] = SV5ShockProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"SV5_SHOCK vault failed (non-critical): {e}")
+        results["sv5_shock"] = {"status": "error", "error": str(e)}
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)

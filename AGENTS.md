@@ -238,31 +238,36 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     )
     ```
 
-    **Current Vault Registry:**
+    **Vault Data Registry** — organized by indicator family. Full reference: [vault_data_registry.md](file:///root/botero-trade/.agents/references/vault_data_registry.md).
 
-    | Ticker | Type | Sector | Bars | Range |
-    |---|---|---|---:|---|
-    | `SPY` | ETF | Broad Market | 9,625 | 1993→2026 |
-    | `QQQ` | ETF | Technology | 8,100 | 1999→2026 |
-    | `AAPL` | STOCK | Technology | 8,511 | 1992→2026 |
-    | `MSFT` | STOCK | Technology | 5,078 | 2006→2026 |
-    | `AMZN` | STOCK | Consumer | 5,086 | 2006→2026 |
-    | `COST` | STOCK | Consumer | 5,093 | 2006→2026 |
-    | `HD` | STOCK | Consumer | 5,094 | 2006→2026 |
-    | `HON` | STOCK | Industrial | 5,095 | 2006→2026 |
-    | `IBM` | STOCK | Technology | 5,094 | 2006→2026 |
-    | `JNJ` | STOCK | Healthcare | 5,085 | 2006→2026 |
-    | `JPM` | STOCK | Financial | 5,091 | 2006→2026 |
-    | `MCD` | STOCK | Consumer | 5,093 | 2006→2026 |
-    | `MRK` | STOCK | Healthcare | 5,093 | 2006→2026 |
-    | `PEP` | STOCK | Consumer | 5,572 | 2004→2026 |
-    | `PG` | STOCK | Consumer | 5,086 | 2006→2026 |
-    | `WMT` | STOCK | Consumer | 5,085 | 2006→2026 |
-    | `XOM` | STOCK | Energy | 5,094 | 2006→2026 |
-    | `VIX` | INDICATOR | Volatility | 17,504 | 1990→2026 |
-    | `VVIX` | INDICATOR | Volatility | 10,024 | 2006→2026 |
-    | `CBOE_PCR` | INDICATOR | Options Flow | 4,924 | 2006→2026 |
-    | `FG` | INDICATOR | Sentiment | 3,843 | 2011→2026 |
+    **Storage Convention:** All time-series data lives in `market.ohlcv_bars`. For single-value indicators: `open=high=low=close=value, volume=0`. For breadth indicators: `volume=n_constituents`. Timestamps are midnight UTC (`00:00:00+00`), enforced by `TimescaleDataStore`. `market.ticker_metadata` classifies each ticker (`sector`, `industry`=`STOCK`|`ETF`|`INDICATOR`, `market_cap_bucket`).
+
+    **Summary (by family):**
+
+    | Family | Tickers | Bars each | Range | Interpretation |
+    |---|---:|---:|---|---|
+    | **S5 Market** (S5TH/FI/TW) | 3 | ~11,500 | 1980→2026 | % SP500 above 200d/50d/20d MA. TH=structural, FI=intermediate, TW=tactical |
+    | **SV5 Market** (SV5TH/FI/TW) | 3 | 6,933 | 1999→2026 | % SP500 with vol MA crossover. TH=50v>200v, FI=20v>50v, TW=EMA5v>20v |
+    | **S5 Sector** (S5_{ETF}_{TH\|FI\|TW}) | 36 | ~6,900-13,600 | 1972→2026 | Per-sector breadth for 11 sectors + QQQ |
+    | **SV5 Sector** (SV5_{ETF}_{TH\|FI\|TW}) | 36 | 6,933 | 1999→2026 | Per-sector volume breadth |
+    | **S5CAP Sector** (S5CAP_{ETF}_{TH\|FI\|TW}) | 21 | 6,794 | 1999→2026 | Cap-weighted sector breadth (7 sectors) |
+    | **Volatility** | 4 | varies | 1990→2026 | VIX, VVIX, SKEW, SV5_SHOCK |
+    | **Sentiment** (FG) | 1 | 3,872 | 2011→2026 | CNN Fear & Greed. 0=fear, 100=greed |
+    | **Options** (CBOE_PCR) | 1 | 4,924 | 2006→2026 | Put/Call ratio. High=fear |
+    | **Indices** (SPX, NDQ, TNX) | 3 | varies | 1927→2026 | S&P500, Nasdaq, 10Y yield |
+    | **ETFs** (SPY, QQQ, XL*, IWM, DIA) | 15 | ~2,000-8,400 | 1993→2026 | Sector + market ETFs. Real OHLCV |
+    | **SP500 Stocks** | ~500 | ~1,000-16,000 | varies | Full constituents. Real OHLCV |
+    | **TOTAL** | ~625 | **5.77M bars** | | |
+
+    **Key derived indicators:**
+
+    | Ticker | Formula | Interpretation | Thresholds |
+    |---|---|---|---|
+    | `SV5_SHOCK` | `std(Δ_SV5TW, 10d)` | Institutional volume volatility. How erratically institutional participation changes | P50=5.97, **>10=crisis proxy** (V40 VIX fallback), P90=12.66, P95=14.87 |
+    | `VIX` | CBOE implied vol | Options market fear gauge | <20=calm, 20-28=elevated, **>28=panic** (V36 redirect) |
+    | `VVIX` | Vol-of-vol | VIX instability | >120=regime transition |
+    | `SKEW` | Tail risk | OTM put demand | >140=tail hedging active |
+    | `FG` | CNN composite | Contrarian sentiment | <10=extreme fear (76% WR buy), >90=extreme greed (sell signal) |
 
     **`market.macro_data`** is LEGACY. It holds yields and breadth ADL as `(time, name, value)` scalars. New data should NOT go here — use `ohlcv_bars` with `industry='INDICATOR'` instead. Existing macro_data will be migrated over time.
 

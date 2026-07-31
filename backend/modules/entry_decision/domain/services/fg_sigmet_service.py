@@ -45,15 +45,9 @@ class MarketSIGMET:
     primary_capital_velocity: float
     rr_asymmetry_ratio: float
 
-    @property
-    def notam_id(self) -> str:
-        return self.sigmet_id
-
     def to_dict(self) -> Dict[str, Any]:
         """Returns full structured SIGMET payload as a dictionary."""
-        d = asdict(self)
-        d["notam_id"] = self.sigmet_id
-        return d
+        return asdict(self)
 
     def to_json(self, indent: int = 2) -> str:
         """Returns formatted JSON string of the SIGMET."""

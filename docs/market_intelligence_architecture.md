@@ -27,10 +27,11 @@ graph TD
         STATES["market.regime_states<br/>(Estados Persistidos via RegimeStatePort)"]
     end
 
-    subgraph "MOTOR DE SÍNTESIS Y DTOs (Domain Synthesis & NOTAM Protocol)"
+    subgraph "MOTOR DE SÍNTESIS Y DTOs (Domain Synthesis, SIGMET & NOTAM Protocol)"
         CIE["Causal Investigation Engine<br/>(Druckenmiller 5-Vector Causal Matrix)"]
         TTC["Temporal Trajectory Cascade<br/>(1M -> 1W -> 1D -> 1H -> 5M)"]
-        DTO["NOTAMTickerPayload DTO<br/>- decision, quality_sizing, spec_sizing<br/>- certainty_score (Quality/Swing/Spec)<br/>- net_liquidity_trend, kalman_vel, slope"]
+        SIGMET_DTO["MarketSIGMET DTO (VIX, VVIX, PCR, FG, SV5_TURBULENCE)<br/>- Meteorología y Regímenes Continuos de Mercado"]
+        NOTAM_DTO["MarketNOTAM DTO (Incidencias Operativas)<br/>- Circuit Breakers, Desconexión de Brokers, Blackout FOMC"]
     end
 
     subgraph "GATES CONSUMIDORES & ASIGNACIÓN DE CAPITAL (Application Layer)"

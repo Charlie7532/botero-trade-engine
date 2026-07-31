@@ -1,96 +1,40 @@
 """
-Market NOTAM REST Router — FastAPI API Boundary
-===============================================
-Exposes zero-fallback Market NOTAM services for VIX, Fear & Greed, and Put/Call Ratio.
-Reads exclusively from Neon Vault using pure domain services.
+Market NOTAM REST Router — FastAPI API Boundary (Operational Incidents & Disruption Bulletins)
+============================================================================================
+Exposes operational Market NOTAM bulletins for system disruptions, circuit breakers,
+and pipeline outages.
 """
-from typing import Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 
-from backend.modules.entry_decision.domain.services.vix_notam_service import (
-    get_vix_market_notam,
-    StrictDataPolicyError as VIXStrictError
-)
-from backend.modules.entry_decision.domain.services.fg_notam_service import (
-    get_fg_market_notam,
-    StrictDataPolicyError as FGStrictError
-)
-from backend.modules.entry_decision.domain.services.pcr_notam_service import (
-    get_pcr_market_notam,
-    StrictDataPolicyError as PCRStrictError
-)
-from backend.modules.entry_decision.domain.services.vvix_notam_service import (
-    get_vvix_market_notam,
-    StrictDataPolicyError as VVIXStrictError
+from backend.modules.entry_decision.domain.services.notam_incident_service import (
+    evaluate_operational_notams,
+    get_latest_circuit_breaker_notam
 )
 
-router = APIRouter(prefix="/notam", tags=["Market NOTAM Intelligence"])
+router = APIRouter(prefix="/notam", tags=["Market NOTAM Operational Disruption Bulletins"])
 
 
-@router.get("/vix")
-async def get_vix_notam(
-    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
-):
+@router.get("/incidents")
+async def get_operational_notams():
     """
-    Returns authoritative 3-Day Fast Kinematic VIX Market NOTAM.
-    Strict Data Policy: Zero Fallbacks. Raises 404 if date is missing or unupdated in Vault.
+    Returns active operational Market NOTAM bulletins (system disruptions, circuit breakers, outages).
     """
     try:
-        notam = get_vix_market_notam(as_of_date=as_of_date)
-        return notam.to_dict()
-    except VIXStrictError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        notams = evaluate_operational_notams()
+        return [n.to_dict() for n in notams]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/fg")
-async def get_fg_notam(
-    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
-):
+@router.get("/circuit-breaker")
+async def get_circuit_breaker():
     """
-    Returns authoritative Fear & Greed Market NOTAM.
-    Strict Data Policy: Zero Fallbacks. Raises 404 if date is missing or unupdated in Vault.
+    Returns latest active Macro/Volatility Circuit Breaker NOTAM bulletin.
     """
     try:
-        notam = get_fg_market_notam(as_of_date=as_of_date)
-        return notam.to_dict()
-    except FGStrictError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        cb = get_latest_circuit_breaker_notam()
+        if not cb:
+            return {"status": "CLEAR", "message": "No active circuit breaker NOTAM bulletin."}
+        return cb.to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/pcr")
-async def get_pcr_notam(
-    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
-):
-    """
-    Returns authoritative Put/Call Ratio Market NOTAM.
-    Strict Data Policy: Zero Fallbacks. Raises 404 if date is missing or unupdated in Vault.
-    """
-    try:
-        notam = get_pcr_market_notam(as_of_date=as_of_date)
-        return notam.to_dict()
-    except PCRStrictError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/vvix")
-async def get_vvix_notam(
-    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
-):
-    """
-    Returns authoritative 3-Day Fast Kinematic VVIX Market NOTAM.
-    Strict Data Policy: Zero Fallbacks. Raises 404 if date is missing or unupdated in Vault.
-    """
-    try:
-        notam = get_vvix_market_notam(as_of_date=as_of_date)
-        return notam.to_dict()
-    except VVIXStrictError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-

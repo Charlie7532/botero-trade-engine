@@ -68,6 +68,12 @@ class QualityEntryGate:
     # V40: SV5StdVIX threshold — empirically validated as VIX contingency (90.1% recovery)
     SV5_STD_VIX_CRASH_THRESHOLD = 10.0
 
+    # V41: SV5_TURBULENCE Risk Modifiers — Empirically validated thresholds (P75 & P90)
+    SV5_TURBULENCE_HIGH_THRESHOLD = 8.90
+    SV5_TURBULENCE_EXTREME_THRESHOLD = 12.80
+    SV5_SHOCK_HIGH_THRESHOLD = 8.90  # Alias for backward compatibility
+    SV5_SHOCK_EXTREME_THRESHOLD = 12.80  # Alias for backward compatibility
+
     def __init__(self, min_regime_days: int = 20):
         self.min_regime_days = min_regime_days
         self.inv_fi_streak = 0
@@ -110,12 +116,16 @@ class QualityEntryGate:
         vbi: Optional[float] = None,
         fgbi_peak_15d: Optional[float] = None,
         vix: Optional[float] = None,
+        sv5_turbulence: Optional[float] = None,
         sv5_shock: Optional[float] = None,
     ) -> str:
         """
         Clasifica el modo de mercado usando las 3 Antenas Pre-Evento de V28
         y disparadores híbridos de tríadas S5xSV5.
         """
+        if sv5_turbulence is None and sv5_shock is not None:
+            sv5_turbulence = sv5_shock
+
         if fgbi is not None:
             self.fgbi_window.append(fgbi)
             if len(self.fgbi_window) > 15:
@@ -274,14 +284,14 @@ class QualityEntryGate:
 
         # V36 Calibrated Redirection: If transitioning into CRASH_SISTEMICO from non-crash state,
         # but VIX <= 28.0 and v_th >= 25.0, redirect to PISO_GENERACIONAL.
-        # V40: When VIX unavailable (None), use SV5_SHOCK from Vault as crash detector.
-        # SV5_SHOCK = std(Δ_SV5TW, 10d). >10 = institutional panic = real crash.
+        # V40: When VIX unavailable (None), use SV5_TURBULENCE from Vault as crash detector.
+        # SV5_TURBULENCE = std(Δ_SV5TW, 10d). >10 = institutional panic = real crash.
         # Empirically recovers 96.9% of VIX's protective value (26yr benchmark).
         if current_mode != "CRASH_SISTEMICO" and new_mode == "CRASH_SISTEMICO" and v_th >= 25.0:
             if vix is not None:
                 if vix <= 28.0:
                     new_mode = "PISO_GENERACIONAL"
-            elif sv5_shock is not None and sv5_shock <= self.SV5_STD_VIX_CRASH_THRESHOLD:
+            elif sv5_turbulence is not None and sv5_turbulence <= self.SV5_STD_VIX_CRASH_THRESHOLD:
                 # V40 Contingency: institutions calm → not a real crash
                 new_mode = "PISO_GENERACIONAL"
 
@@ -302,6 +312,8 @@ class QualityEntryGate:
         rs_roc_20d: Optional[Dict[str, float]] = None,
         s5cap_fi: Optional[Dict[str, float]] = None,
         sec_vbi: Optional[Dict[str, float]] = None,
+        sv5_turbulence: Optional[float] = None,
+        sv5_shock: Optional[float] = None,
     ) -> Dict[str, float]:
         """
         Calcula las ponderaciones objetivo por sector según el modo V35.
@@ -532,8 +544,23 @@ class QualityEntryGate:
                 target["QQQ"] = xlk_w
 
         tot_w = sum(target.values())
-
         if tot_w > 0:
-            return {s: round(w / tot_w, 4) for s, w in target.items()}
+            target = {s: w / tot_w for s, w in target.items()}
+
+        # V41 SV5_TURBULENCE Institutional Volume Risk Modifiers:
+        # 1. RECUPERACION + SV5_TURBULENCE > 8.90 (P75) -> 0.50x risk factor (mitigates false bull-market rallies)
+        # 2. RE_ACUMULACION_ALCISTA + 8.90 <= SV5_TURBULENCE < 12.80 (P75-P90) -> 0.75x risk factor (mitigates covert institutional distribution)
+        if sv5_turbulence is None and sv5_shock is not None:
+            sv5_turbulence = sv5_shock
+
+        if sv5_turbulence is not None:
+            if mode == "RECUPERACION" and sv5_turbulence > self.SV5_TURBULENCE_HIGH_THRESHOLD:
+                target = {s: w * 0.50 for s, w in target.items()}
+            elif mode == "RE_ACUMULACION_ALCISTA" and (self.SV5_TURBULENCE_HIGH_THRESHOLD <= sv5_turbulence < self.SV5_TURBULENCE_EXTREME_THRESHOLD):
+                target = {s: w * 0.75 for s, w in target.items()}
+
+        tot_w_final = sum(target.values())
+        if tot_w_final > 0:
+            return {s: round(w, 4) for s, w in target.items()}
         return {s: 0.0 for s in avail_sectors}
 

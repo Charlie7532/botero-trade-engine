@@ -1921,7 +1921,7 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         import backend.daemons.vault_providers.sector_volume_intensity_provider  # noqa: F401
         import backend.daemons.vault_providers.remaining_providers  # noqa: F401
         import backend.daemons.vault_providers.observer_provider  # noqa: F401
-        import backend.daemons.vault_providers.sv5_shock_provider  # noqa: F401
+        import backend.daemons.vault_providers.sv5_turbulence_provider  # noqa: F401
 
         adapter = VaultRefreshAdapter(store)
         pending = adapter.pending_requests(limit=20)
@@ -2032,6 +2032,12 @@ def _log_cycle_report(results: dict) -> None:
     fg_src = fg.get("source", "—")
     lines.append(f"║    Fear & Greed   {_status_icon(fg)}  {fg_score:>6} (Δ{fg_delta}, src={fg_src})")
 
+    # PCR NOTAM
+    pcr_notam = results.get("pcr_notam", {})
+    pcr_val = _fmt(pcr_notam, "pcr_value", "", ".4f")
+    pcr_state = pcr_notam.get("state_key", "—")
+    lines.append(f"║    PCR NOTAM      {_status_icon(pcr_notam)}  {pcr_val:>6} ({pcr_state})")
+
     # Global Breadth
     s5th = _fmt(breadth, "s5th", "%")
     s5fi = _fmt(breadth, "s5fi", "%")
@@ -2114,6 +2120,12 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["cboe"] = vault_cboe_indices(store)
     results["fear_greed"] = vault_fear_greed(store)
     results["portfolio"] = vault_portfolio_data(store)
+    try:
+        from backend.daemons.vault_providers.pcr_provider import PCRProvider
+        results["pcr_notam"] = PCRProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"PCR NOTAM vault failed (non-critical): {e}")
+        results["pcr_notam"] = {"status": "error", "error": str(e)}
 
     # ── Tier 2: Moderate (~1 min) ──
     results["finnhub"] = vault_finnhub_data(store, neon_tickers)
@@ -2182,13 +2194,13 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"Sector volume intensity vault failed (non-critical): {e}")
         results["sector_volume_intensity"] = {"status": "error", "error": str(e)}
 
-    # ── Tier 3b-sept: SV5_SHOCK — Institutional Volume Shock (AFTER volume_breadth) ──
+    # ── Tier 3b-sept: SV5_TURBULENCE — Institutional Volume Turbulence (AFTER volume_breadth) ──
     try:
-        from backend.daemons.vault_providers.sv5_shock_provider import SV5ShockProvider
-        results["sv5_shock"] = SV5ShockProvider().run_full(store)
+        from backend.daemons.vault_providers.sv5_turbulence_provider import SV5TurbulenceProvider
+        results["sv5_turbulence"] = SV5TurbulenceProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"SV5_SHOCK vault failed (non-critical): {e}")
-        results["sv5_shock"] = {"status": "error", "error": str(e)}
+        logger.warning(f"SV5_TURBULENCE vault failed (non-critical): {e}")
+        results["sv5_turbulence"] = {"status": "error", "error": str(e)}
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)

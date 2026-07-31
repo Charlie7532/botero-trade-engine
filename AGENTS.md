@@ -251,7 +251,7 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     | **S5 Sector** (S5_{ETF}_{TH\|FI\|TW}) | 36 | ~6,900-13,600 | 1972→2026 | Per-sector breadth for 11 sectors + QQQ |
     | **SV5 Sector** (SV5_{ETF}_{TH\|FI\|TW}) | 36 | 6,933 | 1999→2026 | Per-sector volume breadth |
     | **S5CAP Sector** (S5CAP_{ETF}_{TH\|FI\|TW}) | 21 | 6,794 | 1999→2026 | Cap-weighted sector breadth (7 sectors) |
-    | **Volatility** | 4 | varies | 1990→2026 | VIX, VVIX, SKEW, SV5_SHOCK |
+    | **Volatility** | 4 | varies | 1990→2026 | VIX, VVIX, SKEW, SV5_TURBULENCE |
     | **Sentiment** (FG) | 1 | 3,872 | 2011→2026 | CNN Fear & Greed. 0=fear, 100=greed |
     | **Options** (CBOE_PCR) | 1 | 4,924 | 2006→2026 | Put/Call ratio. High=fear |
     | **Indices** (SPX, NDQ, TNX) | 3 | varies | 1927→2026 | S&P500, Nasdaq, 10Y yield |
@@ -263,7 +263,7 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
     | Ticker | Formula | Interpretation | Thresholds |
     |---|---|---|---|
-    | `SV5_SHOCK` | `std(Δ_SV5TW, 10d)` | Institutional volume volatility. How erratically institutional participation changes | P50=5.97, **>10=crisis proxy** (V40 VIX fallback), P90=12.66, P95=14.87 |
+    | `SV5_TURBULENCE` | `std(Δ_SV5TW, 10d)` | Institutional volume turbulence. How erratically institutional participation changes | P50=5.97, **>10=crisis proxy** (V40 VIX fallback), P90=12.66, P95=14.87 |
     | `VIX` | CBOE implied vol | Options market fear gauge | <20=calm, 20-28=elevated, **>28=panic** (V36 redirect) |
     | `VVIX` | Vol-of-vol | VIX instability | >120=regime transition |
     | `SKEW` | Tail risk | OTM put demand | >140=tail hedging active |

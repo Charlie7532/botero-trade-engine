@@ -1,0 +1,2936 @@
+{
+  "_documentation": {
+    "model_purpose": "High Yield Corporate Credit Stress Ratio (HYG/TLT) 3-Day Kinematic Velocity Matrix (Vault 2007-2026)",
+    "return_formula": "R_net = (P_ftt / P_t) - 1.0 - friction (25bps in EXTREME_CREDIT_FREEZE or CREDIT_STRESS_HIGH, 10bps standard)",
+    "velocity_lookback_window": "3 trading days (72h fast response)",
+    "data_sources": {
+      "bars": "market.ohlcv_bars (HYG, TLT, SPY)",
+      "start_date": "2007-04-11",
+      "end_date": "2026-07-30",
+      "sample_size_days": 4857,
+      "years_covered": 19.27
+    },
+    "state_hierarchy": {
+      "L0": "Credit_Ratio_Percentiles_7",
+      "L1": "Credit_3Day_Fast_Velocity_Percentiles_7"
+    },
+    "dimension_thresholds_definition": {
+      "credit_percentiles": [
+        0.05,
+        0.15,
+        0.35,
+        0.65,
+        0.85,
+        0.95
+      ],
+      "credit_edges": [
+        0.4457534453841462,
+        0.5034559702948078,
+        0.5522003435074647,
+        0.6113945020627664,
+        0.7500523886567634,
+        0.900160427808461
+      ],
+      "credit_speed_percentiles": [
+        0.05,
+        0.15,
+        0.35,
+        0.65,
+        0.85,
+        0.95
+      ],
+      "credit_speed_edges": [
+        -0.01734842227568855,
+        -0.00955234995905095,
+        -0.0029967257675510284,
+        0.0038197664831265085,
+        0.0102584555025395,
+        0.017150145135656526
+      ],
+      "credit_labels_l0": [
+        "EXTREME_CREDIT_FREEZE",
+        "CREDIT_STRESS_HIGH",
+        "CREDIT_STRESS_MODERATE",
+        "NEUTRAL_CREDIT",
+        "HEALTHY_CREDIT",
+        "EXPANSIVE_CREDIT",
+        "MAX_CREDIT_EXPANSION"
+      ],
+      "credit_labels_l1": [
+        "EXTREME_CREDIT_CRASH_3D",
+        "FAST_CREDIT_DETERIORATION_3D",
+        "DECELERATING_CREDIT_3D",
+        "STABLE_CREDIT_3D",
+        "EXPANDING_CREDIT_3D",
+        "FAST_CREDIT_RECOVERY_3D",
+        "EXTREME_CREDIT_SURGE_3D"
+      ]
+    },
+    "field_glossary": {
+      "n": "Sample size in this exact credit stress stereotype",
+      "n_pos": "Exact number of positive barrier touch outcomes in this specific condition",
+      "n_neg": "Exact number of negative barrier touch outcomes in this specific condition",
+      "p_bull": "Pure exclusive probability target threshold is hit first in this exact condition",
+      "p_bear": "Pure exclusive probability stop threshold is hit first in this exact condition",
+      "e_ret_max": "Pure exclusive average net return when MAX threshold is hit in this exact condition",
+      "e_ret_min": "Pure exclusive average net return when MIN threshold is hit in this exact condition",
+      "ev_net": "Pure exclusive net expected value for this exact condition",
+      "e_days": "Pure exclusive median First Touch Time (FTT) in trading days for hits in this condition",
+      "ftt_bull_days": "Pure exclusive median FTT for bull target hits in this condition",
+      "ftt_bear_days": "Pure exclusive median FTT for bear stop hits in this condition",
+      "ev_per_day": "Capital velocity (ev_net / e_days)",
+      "rr_asymmetry": "e_ret_max / |e_ret_min|",
+      "divergence_regime": "Multi-scale horizon divergence regime",
+      "operational_guidance": "Sizing code from Universal Institutional Taxonomy"
+    },
+    "signal_interpretation_policy": "Pure domain adapters (CreditLookupAdapter, CreditSigmetService, MarketHealthIntelligence) interpret probabilities dynamically.",
+    "reproducibility_context": {
+      "calibration_timestamp": "2026-08-01T00:00:00Z",
+      "calibrated_under_commit": "HEAD"
+    }
+  },
+  "states": {
+    "HEALTHY_CREDIT__STABLE_CREDIT_3D": {
+      "n": 278,
+      "credit_ratio_t0_stats": {
+        "min": 0.611422098878518,
+        "max": 0.7491138552121553,
+        "mean": 0.6488286820690691,
+        "std": 0.02915244015868984
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.6015336230495106,
+        "max": 0.7542917595698206,
+        "mean": 0.6485463036434012
+      },
+      "zz25": {
+        "n_pos": 130,
+        "n_neg": 148,
+        "p_bull": 0.4676,
+        "p_bear": 0.5324,
+        "e_ret_max": 0.0264,
+        "e_ret_min": -0.0308,
+        "ev_net": -0.004,
+        "e_days": 8.0,
+        "ftt_bull_days": 11.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": -0.000505,
+        "rr_asymmetry": 0.8577
+      },
+      "zz50": {
+        "n_pos": 142,
+        "n_neg": 136,
+        "p_bull": 0.5108,
+        "p_bear": 0.4892,
+        "e_ret_max": 0.0439,
+        "e_ret_min": -0.0587,
+        "ev_net": -0.0063,
+        "e_days": 21.5,
+        "ftt_bull_days": 29.0,
+        "ftt_bear_days": 17.0,
+        "ev_per_day": -0.000293,
+        "rr_asymmetry": 0.7474
+      },
+      "zz75": {
+        "n_pos": 146,
+        "n_neg": 132,
+        "p_bull": 0.5252,
+        "p_bear": 0.4748,
+        "e_ret_max": 0.0602,
+        "e_ret_min": -0.0793,
+        "ev_net": -0.006,
+        "e_days": 43.0,
+        "ftt_bull_days": 58.0,
+        "ftt_bear_days": 39.0,
+        "ev_per_day": -0.00014,
+        "rr_asymmetry": 0.7596
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BEAR",
+      "operational_guidance": "STK_BLOCK_CRISIS"
+    },
+    "HEALTHY_CREDIT__DECELERATING_CREDIT_3D": {
+      "n": 197,
+      "credit_ratio_t0_stats": {
+        "min": 0.6115199818061314,
+        "max": 0.7485751589267721,
+        "mean": 0.6447464618586088,
+        "std": 0.029557622007492085
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.602254094881405,
+        "max": 0.7575629128133596,
+        "mean": 0.64701622663836
+      },
+      "zz25": {
+        "n_pos": 102,
+        "n_neg": 95,
+        "p_bull": 0.5178,
+        "p_bear": 0.4822,
+        "e_ret_max": 0.027,
+        "e_ret_min": -0.0303,
+        "ev_net": -0.0006,
+        "e_days": 10.0,
+        "ftt_bull_days": 11.0,
+        "ftt_bear_days": 8.0,
+        "ev_per_day": -6.3e-05,
+        "rr_asymmetry": 0.8914
+      },
+      "zz50": {
+        "n_pos": 108,
+        "n_neg": 89,
+        "p_bull": 0.5482,
+        "p_bear": 0.4518,
+        "e_ret_max": 0.0448,
+        "e_ret_min": -0.06,
+        "ev_net": -0.0026,
+        "e_days": 23.0,
+        "ftt_bull_days": 24.0,
+        "ftt_bear_days": 22.0,
+        "ev_per_day": -0.000112,
+        "rr_asymmetry": 0.7457
+      },
+      "zz75": {
+        "n_pos": 102,
+        "n_neg": 95,
+        "p_bull": 0.5178,
+        "p_bear": 0.4822,
+        "e_ret_max": 0.0584,
+        "e_ret_min": -0.078,
+        "ev_net": -0.0074,
+        "e_days": 40.0,
+        "ftt_bull_days": 42.0,
+        "ftt_bear_days": 39.0,
+        "ev_per_day": -0.000184,
+        "rr_asymmetry": 0.7491
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BEAR",
+      "operational_guidance": "STK_BLOCK_CRISIS"
+    },
+    "HEALTHY_CREDIT__FAST_CREDIT_DETERIORATION_3D": {
+      "n": 91,
+      "credit_ratio_t0_stats": {
+        "min": 0.6114526594970903,
+        "max": 0.7467348846169259,
+        "mean": 0.6470383998453433,
+        "std": 0.029002964562341128
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.6120503417947903,
+        "max": 0.7460611221747585,
+        "mean": 0.6508866995612819
+      },
+      "zz25": {
+        "n_pos": 49,
+        "n_neg": 42,
+        "p_bull": 0.5385,
+        "p_bear": 0.4615,
+        "e_ret_max": 0.0271,
+        "e_ret_min": -0.0335,
+        "ev_net": -0.0009,
+        "e_days": 5.0,
+        "ftt_bull_days": 6.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": -0.000175,
+        "rr_asymmetry": 0.8086
+      },
+      "zz50": {
+        "n_pos": 50,
+        "n_neg": 41,
+        "p_bull": 0.5495,
+        "p_bear": 0.4505,
+        "e_ret_max": 0.0482,
+        "e_ret_min": -0.0528,
+        "ev_net": 0.0027,
+        "e_days": 20.5,
+        "ftt_bull_days": 26.5,
+        "ftt_bear_days": 14.5,
+        "ev_per_day": 0.00013,
+        "rr_asymmetry": 0.912
+      },
+      "zz75": {
+        "n_pos": 54,
+        "n_neg": 37,
+        "p_bull": 0.5934,
+        "p_bear": 0.4066,
+        "e_ret_max": 0.0636,
+        "e_ret_min": -0.0846,
+        "ev_net": 0.0033,
+        "e_days": 39.0,
+        "ftt_bull_days": 43.5,
+        "ftt_bear_days": 27.0,
+        "ev_per_day": 8.5e-05,
+        "rr_asymmetry": 0.7512
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "HEALTHY_CREDIT__FAST_CREDIT_RECOVERY_3D": {
+      "n": 115,
+      "credit_ratio_t0_stats": {
+        "min": 0.6124999648941333,
+        "max": 0.7493089748931141,
+        "mean": 0.6515005863373265,
+        "std": 0.03425995399992565
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.6017045024484237,
+        "max": 0.7477587326557732,
+        "mean": 0.6475356028485326
+      },
+      "zz25": {
+        "n_pos": 59,
+        "n_neg": 56,
+        "p_bull": 0.513,
+        "p_bear": 0.487,
+        "e_ret_max": 0.0277,
+        "e_ret_min": -0.0325,
+        "ev_net": -0.0016,
+        "e_days": 8.0,
+        "ftt_bull_days": 9.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": -0.000201,
+        "rr_asymmetry": 0.8527
+      },
+      "zz50": {
+        "n_pos": 54,
+        "n_neg": 61,
+        "p_bull": 0.4696,
+        "p_bear": 0.5304,
+        "e_ret_max": 0.0435,
+        "e_ret_min": -0.0567,
+        "ev_net": -0.0097,
+        "e_days": 22.0,
+        "ftt_bull_days": 25.0,
+        "ftt_bear_days": 15.0,
+        "ev_per_day": -0.000439,
+        "rr_asymmetry": 0.7668
+      },
+      "zz75": {
+        "n_pos": 51,
+        "n_neg": 64,
+        "p_bull": 0.4435,
+        "p_bear": 0.5565,
+        "e_ret_max": 0.0657,
+        "e_ret_min": -0.0726,
+        "ev_net": -0.0113,
+        "e_days": 36.0,
+        "ftt_bull_days": 42.0,
+        "ftt_bear_days": 28.0,
+        "ev_per_day": -0.000313,
+        "rr_asymmetry": 0.9051
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BEAR",
+      "operational_guidance": "STK_BLOCK_CRISIS"
+    },
+    "HEALTHY_CREDIT__EXPANDING_CREDIT_3D": {
+      "n": 212,
+      "credit_ratio_t0_stats": {
+        "min": 0.6116564361188532,
+        "max": 0.7477587326557732,
+        "mean": 0.6482679445841734,
+        "std": 0.026562715895724447
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.6004933781403314,
+        "max": 0.7471345542492264,
+        "mean": 0.6458016896946983
+      },
+      "zz25": {
+        "n_pos": 123,
+        "n_neg": 89,
+        "p_bull": 0.5802,
+        "p_bear": 0.4198,
+        "e_ret_max": 0.0274,
+        "e_ret_min": -0.0303,
+        "ev_net": 0.0032,
+        "e_days": 8.0,
+        "ftt_bull_days": 9.0,
+        "ftt_bear_days": 7.0,
+        "ev_per_day": 0.000399,
+        "rr_asymmetry": 0.9048
+      },
+      "zz50": {
+        "n_pos": 116,
+        "n_neg": 96,
+        "p_bull": 0.5472,
+        "p_bear": 0.4528,
+        "e_ret_max": 0.0425,
+        "e_ret_min": -0.0578,
+        "ev_net": -0.0029,
+        "e_days": 21.0,
+        "ftt_bull_days": 24.0,
+        "ftt_bear_days": 16.5,
+        "ev_per_day": -0.000137,
+        "rr_asymmetry": 0.7363
+      },
+      "zz75": {
+        "n_pos": 101,
+        "n_neg": 111,
+        "p_bull": 0.4764,
+        "p_bear": 0.5236,
+        "e_ret_max": 0.0624,
+        "e_ret_min": -0.0753,
+        "ev_net": -0.0097,
+        "e_days": 41.0,
+        "ftt_bull_days": 50.0,
+        "ftt_bear_days": 29.0,
+        "ev_per_day": -0.000236,
+        "rr_asymmetry": 0.8294
+      },
+      "divergence_regime": "TACTICAL_BOUNCE_ONLY",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL_ONLY_STRICT_STOP"
+    },
+    "HEALTHY_CREDIT__EXTREME_CREDIT_CRASH_3D": {
+      "n": 32,
+      "credit_ratio_t0_stats": {
+        "min": 0.6131405491593781,
+        "max": 0.748440813661515,
+        "mean": 0.6495269988128158,
+        "std": 0.03531280505976793
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.6063469959119017,
+        "max": 0.7645334320292326,
+        "mean": 0.6573525547957606
+      },
+      "zz25": {
+        "n_pos": 19,
+        "n_neg": 13,
+        "p_bull": 0.5938,
+        "p_bear": 0.4062,
+        "e_ret_max": 0.0298,
+        "e_ret_min": -0.0308,
+        "ev_net": 0.0052,
+        "e_days": 4.0,
+        "ftt_bull_days": 6.0,
+        "ftt_bear_days": 3.0,
+        "ev_per_day": 0.001288,
+        "rr_asymmetry": 0.9658
+      },
+      "zz50": {
+        "n_pos": 15,
+        "n_neg": 17,
+        "p_bull": 0.4688,
+        "p_bear": 0.5312,
+        "e_ret_max": 0.0514,
+        "e_ret_min": -0.0586,
+        "ev_net": -0.0071,
+        "e_days": 15.0,
+        "ftt_bull_days": 16.0,
+        "ftt_bear_days": 15.0,
+        "ev_per_day": -0.000471,
+        "rr_asymmetry": 0.8762
+      },
+      "zz75": {
+        "n_pos": 20,
+        "n_neg": 12,
+        "p_bull": 0.625,
+        "p_bear": 0.375,
+        "e_ret_max": 0.0562,
+        "e_ret_min": -0.0716,
+        "ev_net": 0.0083,
+        "e_days": 24.0,
+        "ftt_bull_days": 41.0,
+        "ftt_bear_days": 17.0,
+        "ev_per_day": 0.000344,
+        "rr_asymmetry": 0.7847
+      },
+      "divergence_regime": "TRANSITIONAL",
+      "operational_guidance": "STK_HOLD_STABLE"
+    },
+    "NEUTRAL_CREDIT__EXTREME_CREDIT_CRASH_3D": {
+      "n": 39,
+      "credit_ratio_t0_stats": {
+        "min": 0.5525262187589356,
+        "max": 0.6092740065993709,
+        "mean": 0.5802221597874336,
+        "std": 0.016650060569833265
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.5499656319163986,
+        "max": 0.6184118677428262,
+        "mean": 0.5872208066402124
+      },
+      "zz25": {
+        "n_pos": 15,
+        "n_neg": 24,
+        "p_bull": 0.3846,
+        "p_bear": 0.6154,
+        "e_ret_max": 0.0327,
+        "e_ret_min": -0.0411,
+        "ev_net": -0.0127,
+        "e_days": 2.0,
+        "ftt_bull_days": 4.0,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": -0.006338,
+        "rr_asymmetry": 0.7972
+      },
+      "zz50": {
+        "n_pos": 17,
+        "n_neg": 22,
+        "p_bull": 0.4359,
+        "p_bear": 0.5641,
+        "e_ret_max": 0.0541,
+        "e_ret_min": -0.0652,
+        "ev_net": -0.0132,
+        "e_days": 8.5,
+        "ftt_bull_days": 10.0,
+        "ftt_bear_days": 7.0,
+        "ev_per_day": -0.001554,
+        "rr_asymmetry": 0.8295
+      },
+      "zz75": {
+        "n_pos": 18,
+        "n_neg": 21,
+        "p_bull": 0.4615,
+        "p_bear": 0.5385,
+        "e_ret_max": 0.0781,
+        "e_ret_min": -0.0908,
+        "ev_net": -0.0128,
+        "e_days": 19.0,
+        "ftt_bull_days": 22.5,
+        "ftt_bear_days": 12.0,
+        "ev_per_day": -0.000675,
+        "rr_asymmetry": 0.8603
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BEAR",
+      "operational_guidance": "STK_BLOCK_CRISIS"
+    },
+    "NEUTRAL_CREDIT__STABLE_CREDIT_3D": {
+      "n": 520,
+      "credit_ratio_t0_stats": {
+        "min": 0.5522777431119681,
+        "max": 0.6112522263893073,
+        "mean": 0.5774472501691577,
+        "std": 0.014513886131088028
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.5390847687563795,
+        "max": 0.6243465461301967,
+        "mean": 0.577017321403988
+      },
+      "zz25": {
+        "n_pos": 324,
+        "n_neg": 196,
+        "p_bull": 0.6231,
+        "p_bear": 0.3769,
+        "e_ret_max": 0.0247,
+        "e_ret_min": -0.0318,
+        "ev_net": 0.0034,
+        "e_days": 9.0,
+        "ftt_bull_days": 11.0,
+        "ftt_bear_days": 7.0,
+        "ev_per_day": 0.000381,
+        "rr_asymmetry": 0.778
+      },
+      "zz50": {
+        "n_pos": 334,
+        "n_neg": 186,
+        "p_bull": 0.6423,
+        "p_bear": 0.3577,
+        "e_ret_max": 0.0453,
+        "e_ret_min": -0.0572,
+        "ev_net": 0.0086,
+        "e_days": 28.0,
+        "ftt_bull_days": 33.0,
+        "ftt_bear_days": 20.0,
+        "ev_per_day": 0.000309,
+        "rr_asymmetry": 0.7923
+      },
+      "zz75": {
+        "n_pos": 360,
+        "n_neg": 160,
+        "p_bull": 0.6923,
+        "p_bear": 0.3077,
+        "e_ret_max": 0.0614,
+        "e_ret_min": -0.0765,
+        "ev_net": 0.019,
+        "e_days": 48.0,
+        "ftt_bull_days": 60.0,
+        "ftt_bear_days": 30.0,
+        "ev_per_day": 0.000396,
+        "rr_asymmetry": 0.8034
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "HEALTHY_CREDIT__EXTREME_CREDIT_SURGE_3D": {
+      "n": 45,
+      "credit_ratio_t0_stats": {
+        "min": 0.6148520154880036,
+        "max": 0.7456288232744087,
+        "mean": 0.6574677599164784,
+        "std": 0.033638631424514946
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.6048013331092399,
+        "max": 0.730782004745778,
+        "mean": 0.6499601846480668
+      },
+      "zz25": {
+        "n_pos": 25,
+        "n_neg": 20,
+        "p_bull": 0.5556,
+        "p_bear": 0.4444,
+        "e_ret_max": 0.0278,
+        "e_ret_min": -0.0345,
+        "ev_net": 0.0001,
+        "e_days": 4.0,
+        "ftt_bull_days": 4.0,
+        "ftt_bear_days": 3.0,
+        "ev_per_day": 2.5e-05,
+        "rr_asymmetry": 0.8052
+      },
+      "zz50": {
+        "n_pos": 21,
+        "n_neg": 24,
+        "p_bull": 0.4667,
+        "p_bear": 0.5333,
+        "e_ret_max": 0.0526,
+        "e_ret_min": -0.0606,
+        "ev_net": -0.0077,
+        "e_days": 15.0,
+        "ftt_bull_days": 17.0,
+        "ftt_bear_days": 9.5,
+        "ev_per_day": -0.000516,
+        "rr_asymmetry": 0.8691
+      },
+      "zz75": {
+        "n_pos": 23,
+        "n_neg": 22,
+        "p_bull": 0.5111,
+        "p_bear": 0.4889,
+        "e_ret_max": 0.0681,
+        "e_ret_min": -0.0857,
+        "ev_net": -0.007,
+        "e_days": 23.0,
+        "ftt_bull_days": 28.0,
+        "ftt_bear_days": 19.0,
+        "ev_per_day": -0.000306,
+        "rr_asymmetry": 0.7955
+      },
+      "divergence_regime": "TACTICAL_BOUNCE_ONLY",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL_ONLY_STRICT_STOP"
+    },
+    "NEUTRAL_CREDIT__FAST_CREDIT_DETERIORATION_3D": {
+      "n": 126,
+      "credit_ratio_t0_stats": {
+        "min": 0.5524895014910407,
+        "max": 0.6113761041855986,
+        "mean": 0.5798202356388619,
+        "std": 0.017867285216721866
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.5492404774337788,
+        "max": 0.6223660336125648,
+        "mean": 0.5847614632469422
+      },
+      "zz25": {
+        "n_pos": 67,
+        "n_neg": 59,
+        "p_bull": 0.5317,
+        "p_bear": 0.4683,
+        "e_ret_max": 0.0259,
+        "e_ret_min": -0.033,
+        "ev_net": -0.0016,
+        "e_days": 5.5,
+        "ftt_bull_days": 6.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": -0.000298,
+        "rr_asymmetry": 0.7871
+      },
+      "zz50": {
+        "n_pos": 72,
+        "n_neg": 54,
+        "p_bull": 0.5714,
+        "p_bear": 0.4286,
+        "e_ret_max": 0.0493,
+        "e_ret_min": -0.0595,
+        "ev_net": 0.0027,
+        "e_days": 16.0,
+        "ftt_bull_days": 17.0,
+        "ftt_bear_days": 14.0,
+        "ev_per_day": 0.000167,
+        "rr_asymmetry": 0.8287
+      },
+      "zz75": {
+        "n_pos": 74,
+        "n_neg": 52,
+        "p_bull": 0.5873,
+        "p_bear": 0.4127,
+        "e_ret_max": 0.0683,
+        "e_ret_min": -0.0913,
+        "ev_net": 0.0024,
+        "e_days": 33.5,
+        "ftt_bull_days": 40.0,
+        "ftt_bear_days": 25.0,
+        "ev_per_day": 7.2e-05,
+        "rr_asymmetry": 0.7477
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "NEUTRAL_CREDIT__FAST_CREDIT_RECOVERY_3D": {
+      "n": 130,
+      "credit_ratio_t0_stats": {
+        "min": 0.5523346448681934,
+        "max": 0.6109712171068175,
+        "mean": 0.5784221078474392,
+        "std": 0.01616071082437227
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.5389957292416364,
+        "max": 0.6097181181276055,
+        "mean": 0.574432719323992
+      },
+      "zz25": {
+        "n_pos": 79,
+        "n_neg": 51,
+        "p_bull": 0.6077,
+        "p_bear": 0.3923,
+        "e_ret_max": 0.0262,
+        "e_ret_min": -0.0327,
+        "ev_net": 0.0031,
+        "e_days": 7.0,
+        "ftt_bull_days": 8.0,
+        "ftt_bear_days": 5.5,
+        "ev_per_day": 0.000443,
+        "rr_asymmetry": 0.8017
+      },
+      "zz50": {
+        "n_pos": 74,
+        "n_neg": 56,
+        "p_bull": 0.5692,
+        "p_bear": 0.4308,
+        "e_ret_max": 0.0482,
+        "e_ret_min": -0.0536,
+        "ev_net": 0.0044,
+        "e_days": 28.0,
+        "ftt_bull_days": 33.0,
+        "ftt_bear_days": 23.0,
+        "ev_per_day": 0.000156,
+        "rr_asymmetry": 0.9
+      },
+      "zz75": {
+        "n_pos": 79,
+        "n_neg": 51,
+        "p_bull": 0.6077,
+        "p_bear": 0.3923,
+        "e_ret_max": 0.0656,
+        "e_ret_min": -0.0914,
+        "ev_net": 0.004,
+        "e_days": 48.0,
+        "ftt_bull_days": 55.0,
+        "ftt_bear_days": 33.0,
+        "ev_per_day": 8.4e-05,
+        "rr_asymmetry": 0.7185
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "NEUTRAL_CREDIT__EXPANDING_CREDIT_3D": {
+      "n": 292,
+      "credit_ratio_t0_stats": {
+        "min": 0.5522043540023508,
+        "max": 0.6110621484225945,
+        "mean": 0.5777142564499134,
+        "std": 0.015553902553196301
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.5408518782499773,
+        "max": 0.6165398202855199,
+        "mean": 0.5754336205201438
+      },
+      "zz25": {
+        "n_pos": 177,
+        "n_neg": 115,
+        "p_bull": 0.6062,
+        "p_bear": 0.3938,
+        "e_ret_max": 0.0255,
+        "e_ret_min": -0.0327,
+        "ev_net": 0.0026,
+        "e_days": 8.0,
+        "ftt_bull_days": 10.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": 0.000321,
+        "rr_asymmetry": 0.7796
+      },
+      "zz50": {
+        "n_pos": 183,
+        "n_neg": 109,
+        "p_bull": 0.6267,
+        "p_bear": 0.3733,
+        "e_ret_max": 0.0462,
+        "e_ret_min": -0.0598,
+        "ev_net": 0.0067,
+        "e_days": 24.0,
+        "ftt_bull_days": 32.5,
+        "ftt_bear_days": 18.5,
+        "ev_per_day": 0.000278,
+        "rr_asymmetry": 0.7734
+      },
+      "zz75": {
+        "n_pos": 195,
+        "n_neg": 97,
+        "p_bull": 0.6678,
+        "p_bear": 0.3322,
+        "e_ret_max": 0.0631,
+        "e_ret_min": -0.0793,
+        "ev_net": 0.0158,
+        "e_days": 42.0,
+        "ftt_bull_days": 55.0,
+        "ftt_bear_days": 27.0,
+        "ev_per_day": 0.000376,
+        "rr_asymmetry": 0.7954
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "NEUTRAL_CREDIT__DECELERATING_CREDIT_3D": {
+      "n": 305,
+      "credit_ratio_t0_stats": {
+        "min": 0.5522417144618672,
+        "max": 0.6112891825698177,
+        "mean": 0.5748245096995962,
+        "std": 0.015631219565378867
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.5440507160617637,
+        "max": 0.6215579395779686,
+        "mean": 0.5768959028308618
+      },
+      "zz25": {
+        "n_pos": 181,
+        "n_neg": 124,
+        "p_bull": 0.5934,
+        "p_bear": 0.4066,
+        "e_ret_max": 0.0249,
+        "e_ret_min": -0.0314,
+        "ev_net": 0.002,
+        "e_days": 7.0,
+        "ftt_bull_days": 9.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": 0.000292,
+        "rr_asymmetry": 0.795
+      },
+      "zz50": {
+        "n_pos": 189,
+        "n_neg": 116,
+        "p_bull": 0.6197,
+        "p_bear": 0.3803,
+        "e_ret_max": 0.0455,
+        "e_ret_min": -0.0588,
+        "ev_net": 0.0058,
+        "e_days": 25.0,
+        "ftt_bull_days": 32.0,
+        "ftt_bear_days": 15.0,
+        "ev_per_day": 0.000232,
+        "rr_asymmetry": 0.7729
+      },
+      "zz75": {
+        "n_pos": 206,
+        "n_neg": 99,
+        "p_bull": 0.6754,
+        "p_bear": 0.3246,
+        "e_ret_max": 0.0634,
+        "e_ret_min": -0.084,
+        "ev_net": 0.0156,
+        "e_days": 44.5,
+        "ftt_bull_days": 56.0,
+        "ftt_bear_days": 24.0,
+        "ev_per_day": 0.00035,
+        "rr_asymmetry": 0.7549
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "NEUTRAL_CREDIT__EXTREME_CREDIT_SURGE_3D": {
+      "n": 45,
+      "credit_ratio_t0_stats": {
+        "min": 0.5522087080012772,
+        "max": 0.6095928681829828,
+        "mean": 0.5759042315540793,
+        "std": 0.01946166368827838
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.5149976274005342,
+        "max": 0.6087841535012902,
+        "mean": 0.56822107558427
+      },
+      "zz25": {
+        "n_pos": 28,
+        "n_neg": 17,
+        "p_bull": 0.6222,
+        "p_bear": 0.3778,
+        "e_ret_max": 0.0276,
+        "e_ret_min": -0.0329,
+        "ev_net": 0.0048,
+        "e_days": 7.0,
+        "ftt_bull_days": 7.5,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": 0.000679,
+        "rr_asymmetry": 0.8396
+      },
+      "zz50": {
+        "n_pos": 29,
+        "n_neg": 16,
+        "p_bull": 0.6444,
+        "p_bear": 0.3556,
+        "e_ret_max": 0.0515,
+        "e_ret_min": -0.0649,
+        "ev_net": 0.0101,
+        "e_days": 25.0,
+        "ftt_bull_days": 23.0,
+        "ftt_bear_days": 29.0,
+        "ev_per_day": 0.000406,
+        "rr_asymmetry": 0.7941
+      },
+      "zz75": {
+        "n_pos": 31,
+        "n_neg": 14,
+        "p_bull": 0.6889,
+        "p_bear": 0.3111,
+        "e_ret_max": 0.0713,
+        "e_ret_min": -0.0848,
+        "ev_net": 0.0228,
+        "e_days": 43.5,
+        "ftt_bull_days": 50.0,
+        "ftt_bear_days": 39.0,
+        "ev_per_day": 0.000523,
+        "rr_asymmetry": 0.8415
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "CREDIT_STRESS_MODERATE__FAST_CREDIT_DETERIORATION_3D": {
+      "n": 117,
+      "credit_ratio_t0_stats": {
+        "min": 0.5035576994183393,
+        "max": 0.5521943277651357,
+        "mean": 0.5300057202048362,
+        "std": 0.013718187968023609
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4939683831606116,
+        "max": 0.5630823258471884,
+        "mean": 0.5339036341732739
+      },
+      "zz25": {
+        "n_pos": 58,
+        "n_neg": 59,
+        "p_bull": 0.4957,
+        "p_bear": 0.5043,
+        "e_ret_max": 0.0291,
+        "e_ret_min": -0.0357,
+        "ev_net": -0.0035,
+        "e_days": 5.0,
+        "ftt_bull_days": 5.0,
+        "ftt_bear_days": 4.0,
+        "ev_per_day": -0.000707,
+        "rr_asymmetry": 0.8173
+      },
+      "zz50": {
+        "n_pos": 73,
+        "n_neg": 44,
+        "p_bull": 0.6239,
+        "p_bear": 0.3761,
+        "e_ret_max": 0.0457,
+        "e_ret_min": -0.0604,
+        "ev_net": 0.0058,
+        "e_days": 20.0,
+        "ftt_bull_days": 19.5,
+        "ftt_bear_days": 21.0,
+        "ev_per_day": 0.00029,
+        "rr_asymmetry": 0.7566
+      },
+      "zz75": {
+        "n_pos": 73,
+        "n_neg": 44,
+        "p_bull": 0.6239,
+        "p_bear": 0.3761,
+        "e_ret_max": 0.0674,
+        "e_ret_min": -0.0843,
+        "ev_net": 0.0103,
+        "e_days": 35.0,
+        "ftt_bull_days": 37.0,
+        "ftt_bear_days": 35.0,
+        "ev_per_day": 0.000295,
+        "rr_asymmetry": 0.7993
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "CREDIT_STRESS_MODERATE__DECELERATING_CREDIT_3D": {
+      "n": 200,
+      "credit_ratio_t0_stats": {
+        "min": 0.5034601916092356,
+        "max": 0.551557801886307,
+        "mean": 0.5297767824764847,
+        "std": 0.013318943979185514
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4933936084061666,
+        "max": 0.5634427565975642,
+        "mean": 0.5318252648642755
+      },
+      "zz25": {
+        "n_pos": 102,
+        "n_neg": 98,
+        "p_bull": 0.51,
+        "p_bear": 0.49,
+        "e_ret_max": 0.0275,
+        "e_ret_min": -0.0341,
+        "ev_net": -0.0027,
+        "e_days": 6.0,
+        "ftt_bull_days": 8.0,
+        "ftt_bear_days": 4.0,
+        "ev_per_day": -0.000449,
+        "rr_asymmetry": 0.8059
+      },
+      "zz50": {
+        "n_pos": 117,
+        "n_neg": 83,
+        "p_bull": 0.585,
+        "p_bear": 0.415,
+        "e_ret_max": 0.0476,
+        "e_ret_min": -0.056,
+        "ev_net": 0.0046,
+        "e_days": 22.0,
+        "ftt_bull_days": 25.0,
+        "ftt_bear_days": 17.0,
+        "ev_per_day": 0.000208,
+        "rr_asymmetry": 0.8487
+      },
+      "zz75": {
+        "n_pos": 125,
+        "n_neg": 75,
+        "p_bull": 0.625,
+        "p_bear": 0.375,
+        "e_ret_max": 0.0671,
+        "e_ret_min": -0.0819,
+        "ev_net": 0.0112,
+        "e_days": 38.5,
+        "ftt_bull_days": 49.0,
+        "ftt_bear_days": 29.0,
+        "ev_per_day": 0.000291,
+        "rr_asymmetry": 0.8193
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "CREDIT_STRESS_MODERATE__EXTREME_CREDIT_CRASH_3D": {
+      "n": 59,
+      "credit_ratio_t0_stats": {
+        "min": 0.5044391013366014,
+        "max": 0.5507623549885451,
+        "mean": 0.5247255324558474,
+        "std": 0.013912710422433517
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.5003310219923781,
+        "max": 0.5864332743142467,
+        "mean": 0.534486607762594
+      },
+      "zz25": {
+        "n_pos": 35,
+        "n_neg": 24,
+        "p_bull": 0.5932,
+        "p_bear": 0.4068,
+        "e_ret_max": 0.0337,
+        "e_ret_min": -0.033,
+        "ev_net": 0.0066,
+        "e_days": 4.0,
+        "ftt_bull_days": 4.0,
+        "ftt_bear_days": 3.0,
+        "ev_per_day": 0.001649,
+        "rr_asymmetry": 1.0227
+      },
+      "zz50": {
+        "n_pos": 42,
+        "n_neg": 17,
+        "p_bull": 0.7119,
+        "p_bear": 0.2881,
+        "e_ret_max": 0.0512,
+        "e_ret_min": -0.058,
+        "ev_net": 0.0198,
+        "e_days": 16.0,
+        "ftt_bull_days": 14.0,
+        "ftt_bear_days": 20.5,
+        "ev_per_day": 0.001236,
+        "rr_asymmetry": 0.8838
+      },
+      "zz75": {
+        "n_pos": 46,
+        "n_neg": 13,
+        "p_bull": 0.7797,
+        "p_bear": 0.2203,
+        "e_ret_max": 0.0698,
+        "e_ret_min": -0.083,
+        "ev_net": 0.0361,
+        "e_days": 29.5,
+        "ftt_bull_days": 30.0,
+        "ftt_bear_days": 22.0,
+        "ev_per_day": 0.001225,
+        "rr_asymmetry": 0.8411
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "CREDIT_STRESS_HIGH__EXTREME_CREDIT_CRASH_3D": {
+      "n": 44,
+      "credit_ratio_t0_stats": {
+        "min": 0.4476105729562941,
+        "max": 0.5025047754784103,
+        "mean": 0.4774695203413259,
+        "std": 0.016526301222432774
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.457747259115016,
+        "max": 0.5213568789284826,
+        "mean": 0.4875830316428672
+      },
+      "zz25": {
+        "n_pos": 31,
+        "n_neg": 13,
+        "p_bull": 0.7045,
+        "p_bear": 0.2955,
+        "e_ret_max": 0.0302,
+        "e_ret_min": -0.0407,
+        "ev_net": 0.0092,
+        "e_days": 2.0,
+        "ftt_bull_days": 2.0,
+        "ftt_bear_days": 1.0,
+        "ev_per_day": 0.004621,
+        "rr_asymmetry": 0.7413
+      },
+      "zz50": {
+        "n_pos": 28,
+        "n_neg": 16,
+        "p_bull": 0.6364,
+        "p_bear": 0.3636,
+        "e_ret_max": 0.054,
+        "e_ret_min": -0.0679,
+        "ev_net": 0.0097,
+        "e_days": 9.5,
+        "ftt_bull_days": 10.5,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": 0.001017,
+        "rr_asymmetry": 0.795
+      },
+      "zz75": {
+        "n_pos": 32,
+        "n_neg": 12,
+        "p_bull": 0.7273,
+        "p_bear": 0.2727,
+        "e_ret_max": 0.0746,
+        "e_ret_min": -0.0889,
+        "ev_net": 0.03,
+        "e_days": 18.5,
+        "ftt_bull_days": 25.0,
+        "ftt_bear_days": 5.5,
+        "ev_per_day": 0.001621,
+        "rr_asymmetry": 0.8386
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "CREDIT_STRESS_MODERATE__STABLE_CREDIT_3D": {
+      "n": 274,
+      "credit_ratio_t0_stats": {
+        "min": 0.5041169351656439,
+        "max": 0.5521296761755049,
+        "mean": 0.5304386730322574,
+        "std": 0.013292427855485919
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4722649154719831,
+        "max": 0.5606354834713472,
+        "mean": 0.5301216012216364
+      },
+      "zz25": {
+        "n_pos": 146,
+        "n_neg": 128,
+        "p_bull": 0.5328,
+        "p_bear": 0.4672,
+        "e_ret_max": 0.0273,
+        "e_ret_min": -0.0312,
+        "ev_net": -0.0,
+        "e_days": 8.0,
+        "ftt_bull_days": 9.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": -2e-06,
+        "rr_asymmetry": 0.8758
+      },
+      "zz50": {
+        "n_pos": 161,
+        "n_neg": 113,
+        "p_bull": 0.5876,
+        "p_bear": 0.4124,
+        "e_ret_max": 0.0474,
+        "e_ret_min": -0.053,
+        "ev_net": 0.006,
+        "e_days": 25.0,
+        "ftt_bull_days": 29.5,
+        "ftt_bear_days": 20.0,
+        "ev_per_day": 0.000238,
+        "rr_asymmetry": 0.8931
+      },
+      "zz75": {
+        "n_pos": 169,
+        "n_neg": 105,
+        "p_bull": 0.6168,
+        "p_bear": 0.3832,
+        "e_ret_max": 0.0657,
+        "e_ret_min": -0.0843,
+        "ev_net": 0.0082,
+        "e_days": 42.0,
+        "ftt_bull_days": 50.5,
+        "ftt_bear_days": 31.0,
+        "ev_per_day": 0.000196,
+        "rr_asymmetry": 0.7795
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "CREDIT_STRESS_MODERATE__EXTREME_CREDIT_SURGE_3D": {
+      "n": 55,
+      "credit_ratio_t0_stats": {
+        "min": 0.5036124262778231,
+        "max": 0.5517305972168611,
+        "mean": 0.5299863134153115,
+        "std": 0.01248714894536079
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4867246998036136,
+        "max": 0.5527229968756001,
+        "mean": 0.5233636679088066
+      },
+      "zz25": {
+        "n_pos": 28,
+        "n_neg": 27,
+        "p_bull": 0.5091,
+        "p_bear": 0.4909,
+        "e_ret_max": 0.0306,
+        "e_ret_min": -0.0341,
+        "ev_net": -0.0012,
+        "e_days": 6.0,
+        "ftt_bull_days": 6.5,
+        "ftt_bear_days": 4.0,
+        "ev_per_day": -0.0002,
+        "rr_asymmetry": 0.8952
+      },
+      "zz50": {
+        "n_pos": 32,
+        "n_neg": 23,
+        "p_bull": 0.5818,
+        "p_bear": 0.4182,
+        "e_ret_max": 0.0489,
+        "e_ret_min": -0.0584,
+        "ev_net": 0.004,
+        "e_days": 20.0,
+        "ftt_bull_days": 23.0,
+        "ftt_bear_days": 13.0,
+        "ev_per_day": 0.0002,
+        "rr_asymmetry": 0.8365
+      },
+      "zz75": {
+        "n_pos": 36,
+        "n_neg": 19,
+        "p_bull": 0.6545,
+        "p_bear": 0.3455,
+        "e_ret_max": 0.0686,
+        "e_ret_min": -0.0757,
+        "ev_net": 0.0187,
+        "e_days": 44.0,
+        "ftt_bull_days": 50.5,
+        "ftt_bear_days": 16.0,
+        "ev_per_day": 0.000426,
+        "rr_asymmetry": 0.9061
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "CREDIT_STRESS_HIGH__EXTREME_CREDIT_SURGE_3D": {
+      "n": 32,
+      "credit_ratio_t0_stats": {
+        "min": 0.44811562798135357,
+        "max": 0.5034295156931394,
+        "mean": 0.48060904776666147,
+        "std": 0.014851421339678638
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.40809176545940784,
+        "max": 0.5090701399813272,
+        "mean": 0.4728069474652444
+      },
+      "zz25": {
+        "n_pos": 25,
+        "n_neg": 7,
+        "p_bull": 0.7812,
+        "p_bear": 0.2188,
+        "e_ret_max": 0.0283,
+        "e_ret_min": -0.049,
+        "ev_net": 0.0114,
+        "e_days": 4.5,
+        "ftt_bull_days": 5.0,
+        "ftt_bear_days": 4.0,
+        "ev_per_day": 0.002533,
+        "rr_asymmetry": 0.5778
+      },
+      "zz50": {
+        "n_pos": 26,
+        "n_neg": 6,
+        "p_bull": 0.8125,
+        "p_bear": 0.1875,
+        "e_ret_max": 0.0506,
+        "e_ret_min": -0.0884,
+        "ev_net": 0.0245,
+        "e_days": 12.0,
+        "ftt_bull_days": 26.0,
+        "ftt_bear_days": 2.5,
+        "ev_per_day": 0.002043,
+        "rr_asymmetry": 0.572
+      },
+      "zz75": {
+        "n_pos": 27,
+        "n_neg": 5,
+        "p_bull": 0.8438,
+        "p_bear": 0.1562,
+        "e_ret_max": 0.0723,
+        "e_ret_min": -0.1005,
+        "ev_net": 0.0453,
+        "e_days": 34.5,
+        "ftt_bull_days": 40.0,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": 0.001313,
+        "rr_asymmetry": 0.7194
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "CREDIT_STRESS_HIGH__DECELERATING_CREDIT_3D": {
+      "n": 94,
+      "credit_ratio_t0_stats": {
+        "min": 0.44576632816925726,
+        "max": 0.5029889714068402,
+        "mean": 0.4836686363617043,
+        "std": 0.014953510463199747
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4451308383824432,
+        "max": 0.5122815521963041,
+        "mean": 0.48576171494306664
+      },
+      "zz25": {
+        "n_pos": 61,
+        "n_neg": 33,
+        "p_bull": 0.6489,
+        "p_bear": 0.3511,
+        "e_ret_max": 0.026,
+        "e_ret_min": -0.0324,
+        "ev_net": 0.0055,
+        "e_days": 6.0,
+        "ftt_bull_days": 6.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": 0.000918,
+        "rr_asymmetry": 0.8033
+      },
+      "zz50": {
+        "n_pos": 72,
+        "n_neg": 22,
+        "p_bull": 0.766,
+        "p_bear": 0.234,
+        "e_ret_max": 0.0471,
+        "e_ret_min": -0.0516,
+        "ev_net": 0.024,
+        "e_days": 19.0,
+        "ftt_bull_days": 24.0,
+        "ftt_bear_days": 8.5,
+        "ev_per_day": 0.001262,
+        "rr_asymmetry": 0.9119
+      },
+      "zz75": {
+        "n_pos": 89,
+        "n_neg": 5,
+        "p_bull": 0.9468,
+        "p_bear": 0.0532,
+        "e_ret_max": 0.0618,
+        "e_ret_min": -0.0682,
+        "ev_net": 0.0549,
+        "e_days": 40.0,
+        "ftt_bull_days": 41.0,
+        "ftt_bear_days": 9.5,
+        "ev_per_day": 0.001373,
+        "rr_asymmetry": 0.9069
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "EXTREME_CREDIT_FREEZE__EXTREME_CREDIT_CRASH_3D": {
+      "n": 38,
+      "credit_ratio_t0_stats": {
+        "min": 0.3415897354037872,
+        "max": 0.4454394195379661,
+        "mean": 0.3962684056866236,
+        "std": 0.03451557833912818
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.3415897354037872,
+        "max": 0.46716621480305875,
+        "mean": 0.40678295117108804
+      },
+      "zz25": {
+        "n_pos": 28,
+        "n_neg": 10,
+        "p_bull": 0.7368,
+        "p_bear": 0.2632,
+        "e_ret_max": 0.0545,
+        "e_ret_min": -0.0613,
+        "ev_net": 0.024,
+        "e_days": 1.0,
+        "ftt_bull_days": 1.0,
+        "ftt_bear_days": 1.0,
+        "ev_per_day": 0.024006,
+        "rr_asymmetry": 0.8886
+      },
+      "zz50": {
+        "n_pos": 29,
+        "n_neg": 9,
+        "p_bull": 0.7632,
+        "p_bear": 0.2368,
+        "e_ret_max": 0.0664,
+        "e_ret_min": -0.0742,
+        "ev_net": 0.0331,
+        "e_days": 2.0,
+        "ftt_bull_days": 2.0,
+        "ftt_bear_days": 1.0,
+        "ev_per_day": 0.016532,
+        "rr_asymmetry": 0.8941
+      },
+      "zz75": {
+        "n_pos": 26,
+        "n_neg": 12,
+        "p_bull": 0.6842,
+        "p_bear": 0.3158,
+        "e_ret_max": 0.0895,
+        "e_ret_min": -0.101,
+        "ev_net": 0.0294,
+        "e_days": 4.0,
+        "ftt_bull_days": 5.0,
+        "ftt_bear_days": 2.5,
+        "ev_per_day": 0.007341,
+        "rr_asymmetry": 0.8864
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "EXTREME_CREDIT_FREEZE__EXTREME_CREDIT_SURGE_3D": {
+      "n": 25,
+      "credit_ratio_t0_stats": {
+        "min": 0.35504744219590534,
+        "max": 0.44570191424370187,
+        "mean": 0.4107136690057736,
+        "std": 0.024494166397651507
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.3387487148202589,
+        "max": 0.47016985574192877,
+        "mean": 0.4027341389571207
+      },
+      "zz25": {
+        "n_pos": 14,
+        "n_neg": 11,
+        "p_bull": 0.56,
+        "p_bear": 0.44,
+        "e_ret_max": 0.0342,
+        "e_ret_min": -0.038,
+        "ev_net": 0.0024,
+        "e_days": 2.0,
+        "ftt_bull_days": 2.5,
+        "ftt_bear_days": 1.0,
+        "ev_per_day": 0.001201,
+        "rr_asymmetry": 0.8986
+      },
+      "zz50": {
+        "n_pos": 16,
+        "n_neg": 9,
+        "p_bull": 0.64,
+        "p_bear": 0.36,
+        "e_ret_max": 0.0566,
+        "e_ret_min": -0.0723,
+        "ev_net": 0.0102,
+        "e_days": 5.0,
+        "ftt_bull_days": 9.5,
+        "ftt_bear_days": 4.0,
+        "ev_per_day": 0.002032,
+        "rr_asymmetry": 0.7819
+      },
+      "zz75": {
+        "n_pos": 17,
+        "n_neg": 8,
+        "p_bull": 0.68,
+        "p_bear": 0.32,
+        "e_ret_max": 0.0805,
+        "e_ret_min": -0.0888,
+        "ev_net": 0.0263,
+        "e_days": 8.0,
+        "ftt_bull_days": 11.0,
+        "ftt_bear_days": 5.5,
+        "ev_per_day": 0.003293,
+        "rr_asymmetry": 0.9068
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "EXTREME_CREDIT_FREEZE__FAST_CREDIT_DETERIORATION_3D": {
+      "n": 32,
+      "credit_ratio_t0_stats": {
+        "min": 0.3328718040268518,
+        "max": 0.44357336492975785,
+        "mean": 0.4077569071596755,
+        "std": 0.02364013753590916
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.33612013347195285,
+        "max": 0.4454284934621532,
+        "mean": 0.41148581647412147
+      },
+      "zz25": {
+        "n_pos": 13,
+        "n_neg": 19,
+        "p_bull": 0.4062,
+        "p_bear": 0.5938,
+        "e_ret_max": 0.032,
+        "e_ret_min": -0.0448,
+        "ev_net": -0.0136,
+        "e_days": 1.0,
+        "ftt_bull_days": 2.0,
+        "ftt_bear_days": 1.0,
+        "ev_per_day": -0.013565,
+        "rr_asymmetry": 0.7158
+      },
+      "zz50": {
+        "n_pos": 18,
+        "n_neg": 14,
+        "p_bull": 0.5625,
+        "p_bear": 0.4375,
+        "e_ret_max": 0.0575,
+        "e_ret_min": -0.0674,
+        "ev_net": 0.0028,
+        "e_days": 3.0,
+        "ftt_bull_days": 4.0,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": 0.000945,
+        "rr_asymmetry": 0.8525
+      },
+      "zz75": {
+        "n_pos": 17,
+        "n_neg": 15,
+        "p_bull": 0.5312,
+        "p_bear": 0.4688,
+        "e_ret_max": 0.0796,
+        "e_ret_min": -0.0985,
+        "ev_net": -0.0039,
+        "e_days": 6.5,
+        "ftt_bull_days": 10.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": -0.000594,
+        "rr_asymmetry": 0.8085
+      },
+      "divergence_regime": "TRANSITIONAL",
+      "operational_guidance": "STK_HOLD_STABLE"
+    },
+    "EXTREME_CREDIT_FREEZE__STABLE_CREDIT_3D": {
+      "n": 44,
+      "credit_ratio_t0_stats": {
+        "min": 0.3299287651829328,
+        "max": 0.4454284934621532,
+        "mean": 0.4159588434177422,
+        "std": 0.0314864816811865
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.33194046346924394,
+        "max": 0.4503069849600217,
+        "mean": 0.41652317249806114
+      },
+      "zz25": {
+        "n_pos": 30,
+        "n_neg": 14,
+        "p_bull": 0.6818,
+        "p_bear": 0.3182,
+        "e_ret_max": 0.0272,
+        "e_ret_min": -0.0508,
+        "ev_net": 0.0024,
+        "e_days": 3.0,
+        "ftt_bull_days": 5.0,
+        "ftt_bear_days": 1.5,
+        "ev_per_day": 0.000807,
+        "rr_asymmetry": 0.5366
+      },
+      "zz50": {
+        "n_pos": 35,
+        "n_neg": 9,
+        "p_bull": 0.7955,
+        "p_bear": 0.2045,
+        "e_ret_max": 0.0536,
+        "e_ret_min": -0.0689,
+        "ev_net": 0.0285,
+        "e_days": 12.0,
+        "ftt_bull_days": 16.0,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": 0.002379,
+        "rr_asymmetry": 0.778
+      },
+      "zz75": {
+        "n_pos": 34,
+        "n_neg": 10,
+        "p_bull": 0.7727,
+        "p_bear": 0.2273,
+        "e_ret_max": 0.0805,
+        "e_ret_min": -0.0912,
+        "ev_net": 0.0415,
+        "e_days": 21.5,
+        "ftt_bull_days": 22.0,
+        "ftt_bear_days": 9.5,
+        "ev_per_day": 0.00193,
+        "rr_asymmetry": 0.8826
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "EXTREME_CREDIT_FREEZE__EXPANDING_CREDIT_3D": {
+      "n": 41,
+      "credit_ratio_t0_stats": {
+        "min": 0.3387487148202589,
+        "max": 0.4448160523694866,
+        "mean": 0.41294177921927766,
+        "std": 0.029059451542541786
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.3294368759826384,
+        "max": 0.44811562798135357,
+        "mean": 0.4100157658071022
+      },
+      "zz25": {
+        "n_pos": 23,
+        "n_neg": 18,
+        "p_bull": 0.561,
+        "p_bear": 0.439,
+        "e_ret_max": 0.0318,
+        "e_ret_min": -0.0553,
+        "ev_net": -0.0064,
+        "e_days": 2.0,
+        "ftt_bull_days": 2.0,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": -0.003217,
+        "rr_asymmetry": 0.5751
+      },
+      "zz50": {
+        "n_pos": 27,
+        "n_neg": 14,
+        "p_bull": 0.6585,
+        "p_bear": 0.3415,
+        "e_ret_max": 0.0538,
+        "e_ret_min": -0.0687,
+        "ev_net": 0.0119,
+        "e_days": 4.0,
+        "ftt_bull_days": 9.0,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": 0.002985,
+        "rr_asymmetry": 0.7824
+      },
+      "zz75": {
+        "n_pos": 27,
+        "n_neg": 14,
+        "p_bull": 0.6585,
+        "p_bear": 0.3415,
+        "e_ret_max": 0.0813,
+        "e_ret_min": -0.0907,
+        "ev_net": 0.0226,
+        "e_days": 15.0,
+        "ftt_bull_days": 18.0,
+        "ftt_bear_days": 4.5,
+        "ev_per_day": 0.001503,
+        "rr_asymmetry": 0.8962
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "EXTREME_CREDIT_FREEZE__DECELERATING_CREDIT_3D": {
+      "n": 39,
+      "credit_ratio_t0_stats": {
+        "min": 0.3294368759826384,
+        "max": 0.44550013084026857,
+        "mean": 0.40414076556185863,
+        "std": 0.03336545865720729
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.3299287651829328,
+        "max": 0.44782491708094585,
+        "mean": 0.40525286106547603
+      },
+      "zz25": {
+        "n_pos": 23,
+        "n_neg": 16,
+        "p_bull": 0.5897,
+        "p_bear": 0.4103,
+        "e_ret_max": 0.0339,
+        "e_ret_min": -0.0476,
+        "ev_net": 0.0004,
+        "e_days": 1.0,
+        "ftt_bull_days": 2.0,
+        "ftt_bear_days": 1.0,
+        "ev_per_day": 0.000447,
+        "rr_asymmetry": 0.7116
+      },
+      "zz50": {
+        "n_pos": 25,
+        "n_neg": 14,
+        "p_bull": 0.641,
+        "p_bear": 0.359,
+        "e_ret_max": 0.0536,
+        "e_ret_min": -0.0686,
+        "ev_net": 0.0098,
+        "e_days": 4.0,
+        "ftt_bull_days": 10.0,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": 0.00244,
+        "rr_asymmetry": 0.7819
+      },
+      "zz75": {
+        "n_pos": 25,
+        "n_neg": 14,
+        "p_bull": 0.641,
+        "p_bear": 0.359,
+        "e_ret_max": 0.0771,
+        "e_ret_min": -0.0913,
+        "ev_net": 0.0167,
+        "e_days": 12.0,
+        "ftt_bull_days": 17.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": 0.00139,
+        "rr_asymmetry": 0.8452
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "CREDIT_STRESS_HIGH__STABLE_CREDIT_3D": {
+      "n": 131,
+      "credit_ratio_t0_stats": {
+        "min": 0.44663213247321354,
+        "max": 0.5033112301779673,
+        "mean": 0.4825076521056248,
+        "std": 0.015425204102784121
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.43490983383735704,
+        "max": 0.512566496834376,
+        "mean": 0.482257742236581
+      },
+      "zz25": {
+        "n_pos": 70,
+        "n_neg": 61,
+        "p_bull": 0.5344,
+        "p_bear": 0.4656,
+        "e_ret_max": 0.0243,
+        "e_ret_min": -0.0297,
+        "ev_net": -0.0009,
+        "e_days": 6.0,
+        "ftt_bull_days": 6.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": -0.000146,
+        "rr_asymmetry": 0.8164
+      },
+      "zz50": {
+        "n_pos": 91,
+        "n_neg": 40,
+        "p_bull": 0.6947,
+        "p_bear": 0.3053,
+        "e_ret_max": 0.0445,
+        "e_ret_min": -0.0432,
+        "ev_net": 0.0177,
+        "e_days": 22.5,
+        "ftt_bull_days": 27.0,
+        "ftt_bear_days": 8.0,
+        "ev_per_day": 0.000787,
+        "rr_asymmetry": 1.0305
+      },
+      "zz75": {
+        "n_pos": 126,
+        "n_neg": 5,
+        "p_bull": 0.9618,
+        "p_bear": 0.0382,
+        "e_ret_max": 0.0625,
+        "e_ret_min": -0.0837,
+        "ev_net": 0.0569,
+        "e_days": 45.0,
+        "ftt_bull_days": 48.0,
+        "ftt_bear_days": 11.0,
+        "ev_per_day": 0.001265,
+        "rr_asymmetry": 0.7469
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "EXTREME_CREDIT_FREEZE__FAST_CREDIT_RECOVERY_3D": {
+      "n": 24,
+      "credit_ratio_t0_stats": {
+        "min": 0.3557995946884682,
+        "max": 0.44481859051366474,
+        "mean": 0.4090103261242752,
+        "std": 0.02147573217107377
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.36070493475876736,
+        "max": 0.444615642099125,
+        "mean": 0.40546067745643016
+      },
+      "zz25": {
+        "n_pos": 14,
+        "n_neg": 10,
+        "p_bull": 0.5833,
+        "p_bear": 0.4167,
+        "e_ret_max": 0.0362,
+        "e_ret_min": -0.0398,
+        "ev_net": 0.0045,
+        "e_days": 2.0,
+        "ftt_bull_days": 2.5,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": 0.002252,
+        "rr_asymmetry": 0.9082
+      },
+      "zz50": {
+        "n_pos": 18,
+        "n_neg": 6,
+        "p_bull": 0.75,
+        "p_bear": 0.25,
+        "e_ret_max": 0.0602,
+        "e_ret_min": -0.074,
+        "ev_net": 0.0266,
+        "e_days": 6.0,
+        "ftt_bull_days": 6.5,
+        "ftt_bear_days": 5.5,
+        "ev_per_day": 0.004437,
+        "rr_asymmetry": 0.8132
+      },
+      "zz75": {
+        "n_pos": 18,
+        "n_neg": 6,
+        "p_bull": 0.75,
+        "p_bear": 0.25,
+        "e_ret_max": 0.0814,
+        "e_ret_min": -0.0859,
+        "ev_net": 0.0396,
+        "e_days": 12.0,
+        "ftt_bull_days": 12.5,
+        "ftt_bear_days": 10.0,
+        "ev_per_day": 0.003297,
+        "rr_asymmetry": 0.9473
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "CREDIT_STRESS_HIGH__FAST_CREDIT_RECOVERY_3D": {
+      "n": 40,
+      "credit_ratio_t0_stats": {
+        "min": 0.4476899389861098,
+        "max": 0.5031802900752094,
+        "mean": 0.4821306675819802,
+        "std": 0.015084524080219623
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4394274548265506,
+        "max": 0.50317238287742,
+        "mean": 0.47824909345687755
+      },
+      "zz25": {
+        "n_pos": 25,
+        "n_neg": 15,
+        "p_bull": 0.625,
+        "p_bear": 0.375,
+        "e_ret_max": 0.0259,
+        "e_ret_min": -0.0352,
+        "ev_net": 0.003,
+        "e_days": 4.0,
+        "ftt_bull_days": 6.0,
+        "ftt_bear_days": 3.0,
+        "ev_per_day": 0.000751,
+        "rr_asymmetry": 0.7364
+      },
+      "zz50": {
+        "n_pos": 30,
+        "n_neg": 10,
+        "p_bull": 0.75,
+        "p_bear": 0.25,
+        "e_ret_max": 0.0455,
+        "e_ret_min": -0.0558,
+        "ev_net": 0.0202,
+        "e_days": 23.5,
+        "ftt_bull_days": 31.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": 0.000858,
+        "rr_asymmetry": 0.8155
+      },
+      "zz75": {
+        "n_pos": 38,
+        "n_neg": 2,
+        "p_bull": 0.95,
+        "p_bear": 0.05,
+        "e_ret_max": 0.0591,
+        "e_ret_min": -0.0787,
+        "ev_net": 0.0522,
+        "e_days": 41.0,
+        "ftt_bull_days": 43.5,
+        "ftt_bear_days": 10.0,
+        "ev_per_day": 0.001274,
+        "rr_asymmetry": 0.7509
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "CREDIT_STRESS_HIGH__EXPANDING_CREDIT_3D": {
+      "n": 96,
+      "credit_ratio_t0_stats": {
+        "min": 0.44593020163970754,
+        "max": 0.5034531560851893,
+        "mean": 0.48160590699181083,
+        "std": 0.0164269571082283
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4242219269085855,
+        "max": 0.5127742191679604,
+        "mean": 0.4790766929943994
+      },
+      "zz25": {
+        "n_pos": 51,
+        "n_neg": 45,
+        "p_bull": 0.5312,
+        "p_bear": 0.4688,
+        "e_ret_max": 0.0257,
+        "e_ret_min": -0.0345,
+        "ev_net": -0.0025,
+        "e_days": 6.0,
+        "ftt_bull_days": 6.5,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": -0.000422,
+        "rr_asymmetry": 0.7442
+      },
+      "zz50": {
+        "n_pos": 69,
+        "n_neg": 27,
+        "p_bull": 0.7188,
+        "p_bear": 0.2812,
+        "e_ret_max": 0.0448,
+        "e_ret_min": -0.0479,
+        "ev_net": 0.0187,
+        "e_days": 18.0,
+        "ftt_bull_days": 29.0,
+        "ftt_bear_days": 8.0,
+        "ev_per_day": 0.001042,
+        "rr_asymmetry": 0.9354
+      },
+      "zz75": {
+        "n_pos": 90,
+        "n_neg": 6,
+        "p_bull": 0.9375,
+        "p_bear": 0.0625,
+        "e_ret_max": 0.0607,
+        "e_ret_min": -0.0969,
+        "ev_net": 0.0509,
+        "e_days": 49.0,
+        "ftt_bull_days": 50.0,
+        "ftt_bear_days": 14.5,
+        "ev_per_day": 0.001038,
+        "rr_asymmetry": 0.6268
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "CREDIT_STRESS_MODERATE__FAST_CREDIT_RECOVERY_3D": {
+      "n": 96,
+      "credit_ratio_t0_stats": {
+        "min": 0.5040780380712993,
+        "max": 0.5521894582960759,
+        "mean": 0.5299650075593406,
+        "std": 0.013704634468786404
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4948121207792573,
+        "max": 0.5574937359357793,
+        "mean": 0.5255330888636937
+      },
+      "zz25": {
+        "n_pos": 49,
+        "n_neg": 47,
+        "p_bull": 0.5104,
+        "p_bear": 0.4896,
+        "e_ret_max": 0.0277,
+        "e_ret_min": -0.0316,
+        "ev_net": -0.0013,
+        "e_days": 9.0,
+        "ftt_bull_days": 10.0,
+        "ftt_bear_days": 7.0,
+        "ev_per_day": -0.000146,
+        "rr_asymmetry": 0.8779
+      },
+      "zz50": {
+        "n_pos": 60,
+        "n_neg": 36,
+        "p_bull": 0.625,
+        "p_bear": 0.375,
+        "e_ret_max": 0.0471,
+        "e_ret_min": -0.0491,
+        "ev_net": 0.011,
+        "e_days": 27.0,
+        "ftt_bull_days": 29.0,
+        "ftt_bear_days": 14.5,
+        "ev_per_day": 0.000408,
+        "rr_asymmetry": 0.9585
+      },
+      "zz75": {
+        "n_pos": 61,
+        "n_neg": 35,
+        "p_bull": 0.6354,
+        "p_bear": 0.3646,
+        "e_ret_max": 0.0666,
+        "e_ret_min": -0.0792,
+        "ev_net": 0.0134,
+        "e_days": 46.0,
+        "ftt_bull_days": 48.0,
+        "ftt_bear_days": 30.0,
+        "ev_per_day": 0.000292,
+        "rr_asymmetry": 0.8407
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "CREDIT_STRESS_MODERATE__EXPANDING_CREDIT_3D": {
+      "n": 170,
+      "credit_ratio_t0_stats": {
+        "min": 0.5039672750635008,
+        "max": 0.552043154972942,
+        "mean": 0.5316211691063036,
+        "std": 0.012882847662700118
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.49886843928143026,
+        "max": 0.5555362345681054,
+        "mean": 0.5292669676007906
+      },
+      "zz25": {
+        "n_pos": 86,
+        "n_neg": 84,
+        "p_bull": 0.5059,
+        "p_bear": 0.4941,
+        "e_ret_max": 0.0261,
+        "e_ret_min": -0.0312,
+        "ev_net": -0.0022,
+        "e_days": 8.0,
+        "ftt_bull_days": 10.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": -0.000278,
+        "rr_asymmetry": 0.8359
+      },
+      "zz50": {
+        "n_pos": 99,
+        "n_neg": 71,
+        "p_bull": 0.5824,
+        "p_bear": 0.4176,
+        "e_ret_max": 0.0449,
+        "e_ret_min": -0.0544,
+        "ev_net": 0.0034,
+        "e_days": 27.0,
+        "ftt_bull_days": 32.0,
+        "ftt_bear_days": 17.5,
+        "ev_per_day": 0.000127,
+        "rr_asymmetry": 0.8251
+      },
+      "zz75": {
+        "n_pos": 101,
+        "n_neg": 69,
+        "p_bull": 0.5941,
+        "p_bear": 0.4059,
+        "e_ret_max": 0.0617,
+        "e_ret_min": -0.0773,
+        "ev_net": 0.0053,
+        "e_days": 47.0,
+        "ftt_bull_days": 53.0,
+        "ftt_bear_days": 29.0,
+        "ev_per_day": 0.000113,
+        "rr_asymmetry": 0.799
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "CREDIT_STRESS_HIGH__FAST_CREDIT_DETERIORATION_3D": {
+      "n": 49,
+      "credit_ratio_t0_stats": {
+        "min": 0.44778599239154954,
+        "max": 0.5021085318579837,
+        "mean": 0.48164381377333826,
+        "std": 0.013531169209325455
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.4518673312713528,
+        "max": 0.5088747723453131,
+        "mean": 0.4862034953696755
+      },
+      "zz25": {
+        "n_pos": 25,
+        "n_neg": 24,
+        "p_bull": 0.5102,
+        "p_bear": 0.4898,
+        "e_ret_max": 0.0275,
+        "e_ret_min": -0.0366,
+        "ev_net": -0.0039,
+        "e_days": 4.0,
+        "ftt_bull_days": 4.0,
+        "ftt_bear_days": 2.0,
+        "ev_per_day": -0.000977,
+        "rr_asymmetry": 0.751
+      },
+      "zz50": {
+        "n_pos": 36,
+        "n_neg": 13,
+        "p_bull": 0.7347,
+        "p_bear": 0.2653,
+        "e_ret_max": 0.0494,
+        "e_ret_min": -0.066,
+        "ev_net": 0.0188,
+        "e_days": 12.0,
+        "ftt_bull_days": 18.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": 0.001566,
+        "rr_asymmetry": 0.7488
+      },
+      "zz75": {
+        "n_pos": 41,
+        "n_neg": 8,
+        "p_bull": 0.8367,
+        "p_bear": 0.1633,
+        "e_ret_max": 0.0663,
+        "e_ret_min": -0.094,
+        "ev_net": 0.0401,
+        "e_days": 32.0,
+        "ftt_bull_days": 39.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": 0.001254,
+        "rr_asymmetry": 0.7052
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "EXPANSIVE_CREDIT__EXPANDING_CREDIT_3D": {
+      "n": 105,
+      "credit_ratio_t0_stats": {
+        "min": 0.7514857777822805,
+        "max": 0.9000680709450516,
+        "mean": 0.8216358860782697,
+        "std": 0.04391821587663215
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.7423699453078785,
+        "max": 0.9000680709450516,
+        "mean": 0.818939208897071
+      },
+      "zz25": {
+        "n_pos": 58,
+        "n_neg": 47,
+        "p_bull": 0.5524,
+        "p_bear": 0.4476,
+        "e_ret_max": 0.0288,
+        "e_ret_min": -0.031,
+        "ev_net": 0.0021,
+        "e_days": 8.0,
+        "ftt_bull_days": 9.5,
+        "ftt_bear_days": 7.0,
+        "ev_per_day": 0.000257,
+        "rr_asymmetry": 0.9304
+      },
+      "zz50": {
+        "n_pos": 74,
+        "n_neg": 31,
+        "p_bull": 0.7048,
+        "p_bear": 0.2952,
+        "e_ret_max": 0.0482,
+        "e_ret_min": -0.0583,
+        "ev_net": 0.0167,
+        "e_days": 27.0,
+        "ftt_bull_days": 28.0,
+        "ftt_bear_days": 23.5,
+        "ev_per_day": 0.00062,
+        "rr_asymmetry": 0.8265
+      },
+      "zz75": {
+        "n_pos": 74,
+        "n_neg": 31,
+        "p_bull": 0.7048,
+        "p_bear": 0.2952,
+        "e_ret_max": 0.0734,
+        "e_ret_min": -0.061,
+        "ev_net": 0.0337,
+        "e_days": 43.0,
+        "ftt_bull_days": 45.0,
+        "ftt_bear_days": 33.0,
+        "ev_per_day": 0.000784,
+        "rr_asymmetry": 1.2033
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "EXPANSIVE_CREDIT__STABLE_CREDIT_3D": {
+      "n": 125,
+      "credit_ratio_t0_stats": {
+        "min": 0.7505479978325307,
+        "max": 0.9001437891389014,
+        "mean": 0.833536190572631,
+        "std": 0.0447004563430956
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.7455941412070322,
+        "max": 0.9042214337090613,
+        "mean": 0.8330914071584177
+      },
+      "zz25": {
+        "n_pos": 76,
+        "n_neg": 49,
+        "p_bull": 0.608,
+        "p_bear": 0.392,
+        "e_ret_max": 0.0279,
+        "e_ret_min": -0.0308,
+        "ev_net": 0.0049,
+        "e_days": 9.0,
+        "ftt_bull_days": 10.0,
+        "ftt_bear_days": 8.0,
+        "ev_per_day": 0.00054,
+        "rr_asymmetry": 0.9045
+      },
+      "zz50": {
+        "n_pos": 81,
+        "n_neg": 44,
+        "p_bull": 0.648,
+        "p_bear": 0.352,
+        "e_ret_max": 0.0437,
+        "e_ret_min": -0.0594,
+        "ev_net": 0.0074,
+        "e_days": 22.0,
+        "ftt_bull_days": 28.0,
+        "ftt_bear_days": 17.0,
+        "ev_per_day": 0.000336,
+        "rr_asymmetry": 0.7354
+      },
+      "zz75": {
+        "n_pos": 74,
+        "n_neg": 51,
+        "p_bull": 0.592,
+        "p_bear": 0.408,
+        "e_ret_max": 0.0678,
+        "e_ret_min": -0.0686,
+        "ev_net": 0.0121,
+        "e_days": 43.0,
+        "ftt_bull_days": 49.0,
+        "ftt_bear_days": 29.0,
+        "ev_per_day": 0.000282,
+        "rr_asymmetry": 0.9883
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "EXPANSIVE_CREDIT__FAST_CREDIT_RECOVERY_3D": {
+      "n": 55,
+      "credit_ratio_t0_stats": {
+        "min": 0.757579268818073,
+        "max": 0.8996969319872191,
+        "mean": 0.8230390057535792,
+        "std": 0.037091532614358005
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.7555366960117731,
+        "max": 0.89375659754541,
+        "mean": 0.8195200706460894
+      },
+      "zz25": {
+        "n_pos": 28,
+        "n_neg": 27,
+        "p_bull": 0.5091,
+        "p_bear": 0.4909,
+        "e_ret_max": 0.0278,
+        "e_ret_min": -0.0305,
+        "ev_net": -0.0008,
+        "e_days": 7.0,
+        "ftt_bull_days": 9.5,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": -0.000113,
+        "rr_asymmetry": 0.9133
+      },
+      "zz50": {
+        "n_pos": 36,
+        "n_neg": 19,
+        "p_bull": 0.6545,
+        "p_bear": 0.3455,
+        "e_ret_max": 0.0468,
+        "e_ret_min": -0.0591,
+        "ev_net": 0.0102,
+        "e_days": 20.0,
+        "ftt_bull_days": 25.0,
+        "ftt_bear_days": 12.0,
+        "ev_per_day": 0.00051,
+        "rr_asymmetry": 0.7915
+      },
+      "zz75": {
+        "n_pos": 33,
+        "n_neg": 22,
+        "p_bull": 0.6,
+        "p_bear": 0.4,
+        "e_ret_max": 0.0758,
+        "e_ret_min": -0.0767,
+        "ev_net": 0.0148,
+        "e_days": 38.0,
+        "ftt_bull_days": 45.0,
+        "ftt_bear_days": 21.0,
+        "ev_per_day": 0.000389,
+        "rr_asymmetry": 0.9878
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "EXPANSIVE_CREDIT__DECELERATING_CREDIT_3D": {
+      "n": 88,
+      "credit_ratio_t0_stats": {
+        "min": 0.7524717115113612,
+        "max": 0.8990533104933945,
+        "mean": 0.8339985214322673,
+        "std": 0.04333238715184183
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.7485751589267721,
+        "max": 0.904241811253538,
+        "mean": 0.8366485435963692
+      },
+      "zz25": {
+        "n_pos": 54,
+        "n_neg": 34,
+        "p_bull": 0.6136,
+        "p_bear": 0.3864,
+        "e_ret_max": 0.0279,
+        "e_ret_min": -0.032,
+        "ev_net": 0.0048,
+        "e_days": 8.0,
+        "ftt_bull_days": 8.5,
+        "ftt_bear_days": 8.0,
+        "ev_per_day": 0.000594,
+        "rr_asymmetry": 0.872
+      },
+      "zz50": {
+        "n_pos": 52,
+        "n_neg": 36,
+        "p_bull": 0.5909,
+        "p_bear": 0.4091,
+        "e_ret_max": 0.0466,
+        "e_ret_min": -0.0613,
+        "ev_net": 0.0024,
+        "e_days": 22.0,
+        "ftt_bull_days": 26.0,
+        "ftt_bear_days": 18.0,
+        "ev_per_day": 0.00011,
+        "rr_asymmetry": 0.7591
+      },
+      "zz75": {
+        "n_pos": 57,
+        "n_neg": 31,
+        "p_bull": 0.6477,
+        "p_bear": 0.3523,
+        "e_ret_max": 0.07,
+        "e_ret_min": -0.0764,
+        "ev_net": 0.0184,
+        "e_days": 41.0,
+        "ftt_bull_days": 44.0,
+        "ftt_bear_days": 22.5,
+        "ev_per_day": 0.000449,
+        "rr_asymmetry": 0.9153
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "EXPANSIVE_CREDIT__EXTREME_CREDIT_SURGE_3D": {
+      "n": 31,
+      "credit_ratio_t0_stats": {
+        "min": 0.7813307544592908,
+        "max": 0.892865118010827,
+        "mean": 0.8372156740201976,
+        "std": 0.03538440614193379
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.7726263487309593,
+        "max": 0.8852744792931513,
+        "mean": 0.8302174157433533
+      },
+      "zz25": {
+        "n_pos": 17,
+        "n_neg": 14,
+        "p_bull": 0.5484,
+        "p_bear": 0.4516,
+        "e_ret_max": 0.0292,
+        "e_ret_min": -0.0337,
+        "ev_net": 0.0008,
+        "e_days": 6.0,
+        "ftt_bull_days": 6.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": 0.000133,
+        "rr_asymmetry": 0.8669
+      },
+      "zz50": {
+        "n_pos": 20,
+        "n_neg": 11,
+        "p_bull": 0.6452,
+        "p_bear": 0.3548,
+        "e_ret_max": 0.0486,
+        "e_ret_min": -0.0611,
+        "ev_net": 0.0097,
+        "e_days": 22.5,
+        "ftt_bull_days": 18.0,
+        "ftt_bear_days": 24.0,
+        "ev_per_day": 0.00043,
+        "rr_asymmetry": 0.7957
+      },
+      "zz75": {
+        "n_pos": 23,
+        "n_neg": 8,
+        "p_bull": 0.7419,
+        "p_bear": 0.2581,
+        "e_ret_max": 0.0759,
+        "e_ret_min": -0.0768,
+        "ev_net": 0.0365,
+        "e_days": 44.0,
+        "ftt_bull_days": 37.5,
+        "ftt_bear_days": 56.0,
+        "ev_per_day": 0.000829,
+        "rr_asymmetry": 0.9878
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "EXPANSIVE_CREDIT__EXTREME_CREDIT_CRASH_3D": {
+      "n": 29,
+      "credit_ratio_t0_stats": {
+        "min": 0.7596545913987429,
+        "max": 0.8965553341235386,
+        "mean": 0.8189979862387491,
+        "std": 0.04356108929744957
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.7596545913987429,
+        "max": 0.9043448406486633,
+        "mean": 0.8285960332972032
+      },
+      "zz25": {
+        "n_pos": 16,
+        "n_neg": 13,
+        "p_bull": 0.5517,
+        "p_bear": 0.4483,
+        "e_ret_max": 0.0273,
+        "e_ret_min": -0.039,
+        "ev_net": -0.0024,
+        "e_days": 6.0,
+        "ftt_bull_days": 6.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": -0.000401,
+        "rr_asymmetry": 0.7008
+      },
+      "zz50": {
+        "n_pos": 16,
+        "n_neg": 13,
+        "p_bull": 0.5517,
+        "p_bear": 0.4483,
+        "e_ret_max": 0.0537,
+        "e_ret_min": -0.0556,
+        "ev_net": 0.0047,
+        "e_days": 17.0,
+        "ftt_bull_days": 21.0,
+        "ftt_bear_days": 10.0,
+        "ev_per_day": 0.000276,
+        "rr_asymmetry": 0.9655
+      },
+      "zz75": {
+        "n_pos": 19,
+        "n_neg": 10,
+        "p_bull": 0.6552,
+        "p_bear": 0.3448,
+        "e_ret_max": 0.0752,
+        "e_ret_min": -0.0853,
+        "ev_net": 0.0199,
+        "e_days": 35.0,
+        "ftt_bull_days": 41.0,
+        "ftt_bear_days": 23.0,
+        "ev_per_day": 0.000569,
+        "rr_asymmetry": 0.8826
+      },
+      "divergence_regime": "TACTICAL_PULLBACK",
+      "operational_guidance": "STK_BUY_DIP_TACTICAL"
+    },
+    "EXPANSIVE_CREDIT__FAST_CREDIT_DETERIORATION_3D": {
+      "n": 53,
+      "credit_ratio_t0_stats": {
+        "min": 0.7524419973726261,
+        "max": 0.8984429630486753,
+        "mean": 0.8280694481112872,
+        "std": 0.040803543772263924
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.7459620651440072,
+        "max": 0.9018305906790182,
+        "mean": 0.8300506255288762
+      },
+      "zz25": {
+        "n_pos": 29,
+        "n_neg": 24,
+        "p_bull": 0.5472,
+        "p_bear": 0.4528,
+        "e_ret_max": 0.0291,
+        "e_ret_min": -0.032,
+        "ev_net": 0.0014,
+        "e_days": 8.5,
+        "ftt_bull_days": 9.0,
+        "ftt_bear_days": 5.0,
+        "ev_per_day": 0.000163,
+        "rr_asymmetry": 0.9065
+      },
+      "zz50": {
+        "n_pos": 32,
+        "n_neg": 21,
+        "p_bull": 0.6038,
+        "p_bear": 0.3962,
+        "e_ret_max": 0.0488,
+        "e_ret_min": -0.0607,
+        "ev_net": 0.0054,
+        "e_days": 17.5,
+        "ftt_bull_days": 22.0,
+        "ftt_bear_days": 10.0,
+        "ev_per_day": 0.000309,
+        "rr_asymmetry": 0.8037
+      },
+      "zz75": {
+        "n_pos": 38,
+        "n_neg": 15,
+        "p_bull": 0.717,
+        "p_bear": 0.283,
+        "e_ret_max": 0.0705,
+        "e_ret_min": -0.0826,
+        "ev_net": 0.0272,
+        "e_days": 37.0,
+        "ftt_bull_days": 43.5,
+        "ftt_bear_days": 21.0,
+        "ev_per_day": 0.000735,
+        "rr_asymmetry": 0.8542
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "MAX_CREDIT_EXPANSION__FAST_CREDIT_RECOVERY_3D": {
+      "n": 25,
+      "credit_ratio_t0_stats": {
+        "min": 0.9002269824866992,
+        "max": 0.9597825880637574,
+        "mean": 0.9227623511100177,
+        "std": 0.01701154208078701
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.8915340506577819,
+        "max": 0.956427270044197,
+        "mean": 0.9191313251964618
+      },
+      "zz25": {
+        "n_pos": 15,
+        "n_neg": 10,
+        "p_bull": 0.6,
+        "p_bear": 0.4,
+        "e_ret_max": 0.0242,
+        "e_ret_min": -0.0134,
+        "ev_net": 0.0092,
+        "e_days": 12.0,
+        "ftt_bull_days": 14.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": 0.000765,
+        "rr_asymmetry": 1.8106
+      },
+      "zz50": {
+        "n_pos": 11,
+        "n_neg": 14,
+        "p_bull": 0.44,
+        "p_bear": 0.56,
+        "e_ret_max": 0.0361,
+        "e_ret_min": -0.0338,
+        "ev_net": -0.003,
+        "e_days": 41.0,
+        "ftt_bull_days": 42.0,
+        "ftt_bear_days": 41.0,
+        "ev_per_day": -7.4e-05,
+        "rr_asymmetry": 1.0695
+      },
+      "zz75": {
+        "n_pos": 13,
+        "n_neg": 12,
+        "p_bull": 0.52,
+        "p_bear": 0.48,
+        "e_ret_max": 0.0636,
+        "e_ret_min": -0.0441,
+        "ev_net": 0.0119,
+        "e_days": 58.0,
+        "ftt_bull_days": 53.0,
+        "ftt_bear_days": 59.0,
+        "ev_per_day": 0.000205,
+        "rr_asymmetry": 1.4405
+      },
+      "divergence_regime": "TRANSITIONAL",
+      "operational_guidance": "STK_HOLD_STABLE"
+    },
+    "MAX_CREDIT_EXPANSION__EXPANDING_CREDIT_3D": {
+      "n": 55,
+      "credit_ratio_t0_stats": {
+        "min": 0.9006699359740038,
+        "max": 0.956427270044197,
+        "mean": 0.9218377330028059,
+        "std": 0.012495571169125133
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.8906681807894711,
+        "max": 0.9497967440379285,
+        "mean": 0.9189740503512315
+      },
+      "zz25": {
+        "n_pos": 35,
+        "n_neg": 20,
+        "p_bull": 0.6364,
+        "p_bear": 0.3636,
+        "e_ret_max": 0.0254,
+        "e_ret_min": -0.0244,
+        "ev_net": 0.0073,
+        "e_days": 7.0,
+        "ftt_bull_days": 9.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": 0.001043,
+        "rr_asymmetry": 1.0413
+      },
+      "zz50": {
+        "n_pos": 39,
+        "n_neg": 16,
+        "p_bull": 0.7091,
+        "p_bear": 0.2909,
+        "e_ret_max": 0.0433,
+        "e_ret_min": -0.044,
+        "ev_net": 0.0179,
+        "e_days": 23.0,
+        "ftt_bull_days": 21.0,
+        "ftt_bear_days": 33.5,
+        "ev_per_day": 0.000777,
+        "rr_asymmetry": 0.983
+      },
+      "zz75": {
+        "n_pos": 37,
+        "n_neg": 18,
+        "p_bull": 0.6727,
+        "p_bear": 0.3273,
+        "e_ret_max": 0.0579,
+        "e_ret_min": -0.0736,
+        "ev_net": 0.0148,
+        "e_days": 42.5,
+        "ftt_bull_days": 33.5,
+        "ftt_bear_days": 58.5,
+        "ev_per_day": 0.000349,
+        "rr_asymmetry": 0.7861
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "MAX_CREDIT_EXPANSION__STABLE_CREDIT_3D": {
+      "n": 86,
+      "credit_ratio_t0_stats": {
+        "min": 0.900974153915439,
+        "max": 0.9526272105476267,
+        "mean": 0.9224163384688177,
+        "std": 0.013546673608573501
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.8984429630486753,
+        "max": 0.9557938048983068,
+        "mean": 0.9221952233743281
+      },
+      "zz25": {
+        "n_pos": 54,
+        "n_neg": 32,
+        "p_bull": 0.6279,
+        "p_bear": 0.3721,
+        "e_ret_max": 0.0251,
+        "e_ret_min": -0.0274,
+        "ev_net": 0.0056,
+        "e_days": 8.0,
+        "ftt_bull_days": 11.5,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": 0.000699,
+        "rr_asymmetry": 0.9172
+      },
+      "zz50": {
+        "n_pos": 53,
+        "n_neg": 33,
+        "p_bull": 0.6163,
+        "p_bear": 0.3837,
+        "e_ret_max": 0.0445,
+        "e_ret_min": -0.033,
+        "ev_net": 0.0148,
+        "e_days": 29.5,
+        "ftt_bull_days": 21.0,
+        "ftt_bear_days": 40.0,
+        "ev_per_day": 0.000501,
+        "rr_asymmetry": 1.3491
+      },
+      "zz75": {
+        "n_pos": 54,
+        "n_neg": 32,
+        "p_bull": 0.6279,
+        "p_bear": 0.3721,
+        "e_ret_max": 0.0593,
+        "e_ret_min": -0.0478,
+        "ev_net": 0.0195,
+        "e_days": 54.0,
+        "ftt_bull_days": 47.0,
+        "ftt_bear_days": 56.0,
+        "ev_per_day": 0.000361,
+        "rr_asymmetry": 1.2425
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "MAX_CREDIT_EXPANSION__EXTREME_CREDIT_SURGE_3D": {
+      "n": 10,
+      "credit_ratio_t0_stats": {
+        "min": 0.907184726622592,
+        "max": 0.9557938048983068,
+        "mean": 0.923417610837212,
+        "std": 0.013837851561712978
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.889906666524958,
+        "max": 0.9522012825791604,
+        "mean": 0.9174514091957343
+      },
+      "zz25": {
+        "n_pos": 8,
+        "n_neg": 2,
+        "p_bull": 0.8,
+        "p_bear": 0.2,
+        "e_ret_max": 0.0256,
+        "e_ret_min": -0.0058,
+        "ev_net": 0.0193,
+        "e_days": 15.0,
+        "ftt_bull_days": 15.0,
+        "ftt_bear_days": 15.0,
+        "ev_per_day": 0.001288,
+        "rr_asymmetry": 4.4118
+      },
+      "zz50": {
+        "n_pos": 8,
+        "n_neg": 2,
+        "p_bull": 0.8,
+        "p_bear": 0.2,
+        "e_ret_max": 0.0411,
+        "e_ret_min": -0.0058,
+        "ev_net": 0.0317,
+        "e_days": 31.0,
+        "ftt_bull_days": 31.0,
+        "ftt_bear_days": 31.0,
+        "ev_per_day": 0.001023,
+        "rr_asymmetry": 7.082
+      },
+      "zz75": {
+        "n_pos": 8,
+        "n_neg": 2,
+        "p_bull": 0.8,
+        "p_bear": 0.2,
+        "e_ret_max": 0.0622,
+        "e_ret_min": -0.0058,
+        "ev_net": 0.0486,
+        "e_days": 46.5,
+        "ftt_bull_days": 46.5,
+        "ftt_bear_days": 46.5,
+        "ev_per_day": 0.001046,
+        "rr_asymmetry": 10.7232
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "MAX_CREDIT_EXPANSION__DECELERATING_CREDIT_3D": {
+      "n": 48,
+      "credit_ratio_t0_stats": {
+        "min": 0.9006324275537311,
+        "max": 0.9487057749678319,
+        "mean": 0.9193052296304992,
+        "std": 0.012004689303727384
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.9014806915934741,
+        "max": 0.9517339664521235,
+        "mean": 0.9210321675129505
+      },
+      "zz25": {
+        "n_pos": 27,
+        "n_neg": 21,
+        "p_bull": 0.5625,
+        "p_bear": 0.4375,
+        "e_ret_max": 0.0259,
+        "e_ret_min": -0.0268,
+        "ev_net": 0.0029,
+        "e_days": 9.0,
+        "ftt_bull_days": 12.0,
+        "ftt_bear_days": 6.0,
+        "ev_per_day": 0.000319,
+        "rr_asymmetry": 0.9683
+      },
+      "zz50": {
+        "n_pos": 27,
+        "n_neg": 21,
+        "p_bull": 0.5625,
+        "p_bear": 0.4375,
+        "e_ret_max": 0.0419,
+        "e_ret_min": -0.0399,
+        "ev_net": 0.0061,
+        "e_days": 27.5,
+        "ftt_bull_days": 27.0,
+        "ftt_bear_days": 27.5,
+        "ev_per_day": 0.000222,
+        "rr_asymmetry": 1.0496
+      },
+      "zz75": {
+        "n_pos": 30,
+        "n_neg": 18,
+        "p_bull": 0.625,
+        "p_bear": 0.375,
+        "e_ret_max": 0.0607,
+        "e_ret_min": -0.0526,
+        "ev_net": 0.0182,
+        "e_days": 48.5,
+        "ftt_bull_days": 47.0,
+        "ftt_bear_days": 49.5,
+        "ev_per_day": 0.000375,
+        "rr_asymmetry": 1.1526
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "MAX_CREDIT_EXPANSION__FAST_CREDIT_DETERIORATION_3D": {
+      "n": 17,
+      "credit_ratio_t0_stats": {
+        "min": 0.9010693650442995,
+        "max": 0.9436703279891834,
+        "mean": 0.915267044044531,
+        "std": 0.011714519379210015
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.9010693650442995,
+        "max": 0.9487057749678319,
+        "mean": 0.9205354929709602
+      },
+      "zz25": {
+        "n_pos": 11,
+        "n_neg": 6,
+        "p_bull": 0.6471,
+        "p_bear": 0.3529,
+        "e_ret_max": 0.0257,
+        "e_ret_min": -0.0269,
+        "ev_net": 0.0071,
+        "e_days": 11.0,
+        "ftt_bull_days": 11.0,
+        "ftt_bear_days": 11.0,
+        "ev_per_day": 0.000648,
+        "rr_asymmetry": 0.9549
+      },
+      "zz50": {
+        "n_pos": 11,
+        "n_neg": 6,
+        "p_bull": 0.6471,
+        "p_bear": 0.3529,
+        "e_ret_max": 0.0449,
+        "e_ret_min": -0.0333,
+        "ev_net": 0.0173,
+        "e_days": 33.0,
+        "ftt_bull_days": 27.0,
+        "ftt_bear_days": 37.0,
+        "ev_per_day": 0.000524,
+        "rr_asymmetry": 1.3476
+      },
+      "zz75": {
+        "n_pos": 12,
+        "n_neg": 5,
+        "p_bull": 0.7059,
+        "p_bear": 0.2941,
+        "e_ret_max": 0.0675,
+        "e_ret_min": -0.0364,
+        "ev_net": 0.037,
+        "e_days": 48.5,
+        "ftt_bull_days": 56.0,
+        "ftt_bear_days": 43.5,
+        "ev_per_day": 0.000762,
+        "rr_asymmetry": 1.856
+      },
+      "divergence_regime": "FULL_STRUCTURAL_BULL",
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+    },
+    "MAX_CREDIT_EXPANSION__EXTREME_CREDIT_CRASH_3D": {
+      "n": 2,
+      "credit_ratio_t0_stats": {
+        "min": 0.9018305906790182,
+        "max": 0.9043448406486633,
+        "mean": 0.9030877156638407,
+        "std": 0.0012571249848225552
+      },
+      "credit_ratio_t_minus_1_stats": {
+        "min": 0.9142651416738422,
+        "max": 0.9176792997023009,
+        "mean": 0.9159722206880716
+      },
+      "zz25": {
+        "n_pos": 1,
+        "n_neg": 1,
+        "p_bull": 0.5,
+        "p_bear": 0.5,
+        "e_ret_max": 0.0263,
+        "e_ret_min": -0.0287,
+        "ev_net": -0.0012,
+        "e_days": 12.5,
+        "ftt_bull_days": 9.0,
+        "ftt_bear_days": 16.0,
+        "ev_per_day": -9.8e-05,
+        "rr_asymmetry": 0.9149
+      },
+      "zz50": {
+        "n_pos": 1,
+        "n_neg": 1,
+        "p_bull": 0.5,
+        "p_bear": 0.5,
+        "e_ret_max": 0.0582,
+        "e_ret_min": -0.0546,
+        "ev_net": 0.0018,
+        "e_days": 30.5,
+        "ftt_bull_days": 36.0,
+        "ftt_bear_days": 25.0,
+        "ev_per_day": 5.8e-05,
+        "rr_asymmetry": 1.0645
+      },
+      "zz75": {
+        "n_pos": 1,
+        "n_neg": 1,
+        "p_bull": 0.5,
+        "p_bear": 0.5,
+        "e_ret_max": 0.0745,
+        "e_ret_min": -0.0773,
+        "ev_net": -0.0014,
+        "e_days": 59.5,
+        "ftt_bull_days": 88.0,
+        "ftt_bear_days": 31.0,
+        "ev_per_day": -2.4e-05,
+        "rr_asymmetry": 0.9633
+      },
+      "divergence_regime": "TRANSITIONAL",
+      "operational_guidance": "STK_HOLD_STABLE"
+    }
+  }
+}

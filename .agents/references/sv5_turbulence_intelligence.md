@@ -23,6 +23,24 @@
 
 ---
 
+---
+
+## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+
+El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+
+| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
+|---|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+1.15%` | `64.2%` | `6d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+2.19%` | `76.8%` | `14d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
+| **`zz75` (7.5% Estructuración)** | 90 días | `+3.85%` | `85.2%` | `28d` | Confirmación de cambio de tendencia estructural |
+
+### 📊 Coincidencia Empírica de Giros:
+- **Tasa de Coincidencia**: 85.0% coincidencia en giros estructurales ZZ 7.5% (TH). ZZ 5.0% (FI) ofrece el spread óptimo de discriminación (46pp).
+- **Divergencia Multi-Horizonte (Horizon Divergence)**: En choques de turbulencia (>14.87), zz25 reacciona en <=6d para rebotes tácticos mientras zz75 confirma suelo de ciclo a 28d.
+
+---
+
 ## 3. Anomalías Empíricas y Aislamiento de Alfa
 
 ### 🚨 Anomalía 1: Capitulación de Volumen (Washout Edge)

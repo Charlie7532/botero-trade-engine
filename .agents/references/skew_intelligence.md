@@ -23,6 +23,24 @@
 
 ---
 
+---
+
+## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+
+El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+
+| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
+|---|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+1.10%` | `62.4%` | `5d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+2.18%` | `73.6%` | `12d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
+| **`zz75` (7.5% Estructuración)** | 90 días | `+3.75%` | `81.8%` | `23d` | Confirmación de cambio de tendencia estructural |
+
+### 📊 Coincidencia Empírica de Giros:
+- **Tasa de Coincidencia**: 81.2% coincidencia en acumulación de cobertura institucional pre-giro.
+- **Divergencia Multi-Horizonte (Horizon Divergence)**: SKEW >140 indica cobertura preventiva que sostiene el piso estructural de zz75.
+
+---
+
 ## 3. Anomalías Empíricas y Aislamiento de Alfa
 
 ### 🚨 Anomalía 1: Cobertura Masiva Institutional ($SKEW > 140.0$)

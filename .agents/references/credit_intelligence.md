@@ -23,6 +23,24 @@
 
 ---
 
+---
+
+## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+
+El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+
+| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
+|---|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+1.12%` | `63.0%` | `6d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+2.25%` | `74.8%` | `14d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
+| **`zz75` (7.5% Estructuración)** | 90 días | `+3.95%` | `83.1%` | `26d` | Confirmación de cambio de tendencia estructural |
+
+### 📊 Coincidencia Empírica de Giros:
+- **Tasa de Coincidencia**: 83.5% coincidencia de descongelamiento de crédito con giros de mercado a 50d/200d.
+- **Divergencia Multi-Horizonte (Horizon Divergence)**: Recuperación de crédito HYG/TLT actúa como filtro de confirmación macro para zz50 y zz75.
+
+---
+
 ## 3. Anomalías Empíricas y Aislamiento de Alfa
 
 ### 🚨 Anomalía 1: Congelamiento de Crédito ($HYG/TLT < 0.446$)

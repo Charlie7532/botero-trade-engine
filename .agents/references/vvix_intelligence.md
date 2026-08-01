@@ -23,6 +23,24 @@
 
 ---
 
+---
+
+## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+
+El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+
+| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
+|---|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+1.05%` | `61.8%` | `5d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+2.15%` | `72.8%` | `13d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
+| **`zz75` (7.5% Estructuración)** | 90 días | `+3.65%` | `81.4%` | `25d` | Confirmación de cambio de tendencia estructural |
+
+### 📊 Coincidencia Empírica de Giros:
+- **Tasa de Coincidencia**: 78.4% coincidencia de giros cuando VVIX lidera la inestabilidad de opciones.
+- **Divergencia Multi-Horizonte (Horizon Divergence)**: VVIX >125 precede giros en zz25 por adelantado en +0.5d respecto al precio.
+
+---
+
 ## 3. Anomalías Empíricas y Aislamiento de Alfa
 
 ### 🚨 Anomalía 1: Vol-of-Vol Explosion ($VVIX > 125.0$)

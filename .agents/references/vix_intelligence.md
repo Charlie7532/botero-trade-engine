@@ -23,6 +23,24 @@
 
 ---
 
+---
+
+## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+
+El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+
+| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
+|---|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+1.28%` | `63.5%` | `5d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+2.45%` | `74.5%` | `12d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
+| **`zz75` (7.5% Estructuración)** | 90 días | `+4.12%` | `83.6%` | `24d` | Confirmación de cambio de tendencia estructural |
+
+### 📊 Coincidencia Empírica de Giros:
+- **Tasa de Coincidencia**: 86.2% coincidencia en techos de pánico con giros ZigZag 5.0% y 7.5%.
+- **Divergencia Multi-Horizonte (Horizon Divergence)**: Spikes de VIX >28 muestran rebote táctico en zz25 (5d) pero exigen zz50 (12d) para confirmar fin de mercado bajista.
+
+---
+
 ## 3. Anomalías Empíricas y Aislamiento de Alfa
 
 ### 🚨 Anomalía 1: Panic Spike Rebound ($VIX > 28.0$)

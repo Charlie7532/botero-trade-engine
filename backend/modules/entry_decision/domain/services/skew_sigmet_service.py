@@ -103,11 +103,12 @@ def get_skew_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
             target_date = as_of_date
             check_query = f"SELECT COUNT(*) as count FROM market.ohlcv_bars WHERE ticker = 'SKEW' AND timeframe = '1d' AND time::date = '{target_date}'"
             df_check = pd.read_sql(check_query, conn)
-            if df_check.iloc[0]['count'] == 0:
+            if len(df_check) == 0 or df_check.iloc[0]['count'] == 0:
                 raise StrictDataPolicyError(
                     f"STRICT DATA POLICY: SKEW SIGMET NOT AVAILABLE for requested date '{as_of_date}'. "
                     f"Vault data does not exist for this timestamp. Latest available date in Vault is '{overall_latest}'."
                 )
+
         else:
             target_date = overall_latest
             if target_date == "UNKNOWN":

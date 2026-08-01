@@ -31,8 +31,21 @@ from backend.modules.entry_decision.domain.services.skew_sigmet_service import (
     get_skew_market_sigmet,
     StrictDataPolicyError as SKEWStrictError
 )
+from backend.modules.entry_decision.domain.services.credit_sigmet_service import (
+    get_credit_market_sigmet,
+    StrictDataPolicyError as CreditStrictError
+)
+from backend.modules.entry_decision.domain.services.yield_curve_sigmet_service import (
+    get_yield_curve_market_sigmet,
+    StrictDataPolicyError as YieldCurveStrictError
+)
+from backend.modules.entry_decision.domain.services.rotation_sigmet_service import (
+    get_rotation_market_sigmet,
+    StrictDataPolicyError as RotationStrictError
+)
 
 router = APIRouter(prefix="/sigmet", tags=["Market SIGMET Intelligence"])
+
 
 
 @router.get("/vix")
@@ -135,4 +148,57 @@ async def get_skew_sigmet(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/credit")
+async def get_credit_sigmet(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
+):
+    """
+    Returns authoritative 3-Day Fast Kinematic High Yield Corporate Credit Stress Market SIGMET.
+    Strict Data Policy: Zero Fallbacks. Raises 404 if date is missing or unupdated in Vault.
+    """
+    try:
+        sigmet = get_credit_market_sigmet(as_of_date=as_of_date)
+        return sigmet.to_dict()
+    except CreditStrictError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/yield-curve")
+async def get_yield_curve_sigmet(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
+):
+    """
+    Returns authoritative 3-Day Fast Kinematic Macro Yield Curve Spread (TNX - IRX) Market SIGMET.
+    Strict Data Policy: Zero Fallbacks. Raises 404 if date is missing or unupdated in Vault.
+    """
+    try:
+        sigmet = get_yield_curve_market_sigmet(as_of_date=as_of_date)
+        return sigmet.to_dict()
+    except YieldCurveStrictError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/rotation")
+async def get_rotation_sigmet(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
+):
+    """
+    Returns authoritative 3-Day Fast Kinematic Sector Rotation Intelligence (XLY/XLP + XLK/XLU) Market SIGMET.
+    Strict Data Policy: Zero Fallbacks. Raises 404 if date is missing or unupdated in Vault.
+    """
+    try:
+        sigmet = get_rotation_market_sigmet(as_of_date=as_of_date)
+        return sigmet.to_dict()
+    except RotationStrictError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 

@@ -2127,6 +2127,38 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"PCR NOTAM vault failed (non-critical): {e}")
         results["pcr_notam"] = {"status": "error", "error": str(e)}
 
+    # VIX SIGMET transitions
+    try:
+        from backend.daemons.vault_providers.vix_provider import VIXProvider
+        results["vix_sigmet"] = VIXProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"VIX SIGMET vault failed (non-critical): {e}")
+        results["vix_sigmet"] = {"status": "error", "error": str(e)}
+
+    # VVIX SIGMET transitions
+    try:
+        from backend.daemons.vault_providers.vvix_provider import VVIXProvider
+        results["vvix_sigmet"] = VVIXProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"VVIX SIGMET vault failed (non-critical): {e}")
+        results["vvix_sigmet"] = {"status": "error", "error": str(e)}
+
+    # SKEW SIGMET transitions
+    try:
+        from backend.daemons.vault_providers.skew_provider import SkewProvider
+        results["skew_sigmet"] = SkewProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"SKEW SIGMET vault failed (non-critical): {e}")
+        results["skew_sigmet"] = {"status": "error", "error": str(e)}
+
+    # FG SIGMET transitions
+    try:
+        from backend.daemons.vault_providers.fg_provider import FearGreedSIGMETProvider
+        results["fg_sigmet"] = FearGreedSIGMETProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"FG SIGMET vault failed (non-critical): {e}")
+        results["fg_sigmet"] = {"status": "error", "error": str(e)}
+
     # ── Tier 2: Moderate (~1 min) ──
     results["finnhub"] = vault_finnhub_data(store, neon_tickers)
     results["sec_8k"] = vault_sec_8k_filings(store)
@@ -2201,6 +2233,30 @@ def run_cycle(store: TimescaleDataStore) -> None:
     except Exception as e:
         logger.warning(f"SV5_TURBULENCE vault failed (non-critical): {e}")
         results["sv5_turbulence"] = {"status": "error", "error": str(e)}
+
+    # Credit Stress SIGMET transitions (needs HYG/TLT from ohlcv)
+    try:
+        from backend.daemons.vault_providers.credit_provider import CreditProvider
+        results["credit_sigmet"] = CreditProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Credit SIGMET vault failed (non-critical): {e}")
+        results["credit_sigmet"] = {"status": "error", "error": str(e)}
+
+    # Yield Curve SIGMET transitions (needs TNX/IRX from ohlcv)
+    try:
+        from backend.daemons.vault_providers.yield_curve_provider import YieldCurveProvider
+        results["yield_curve_sigmet"] = YieldCurveProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Yield Curve SIGMET vault failed (non-critical): {e}")
+        results["yield_curve_sigmet"] = {"status": "error", "error": str(e)}
+
+    # Sector Rotation SIGMET transitions (needs sectors from ohlcv)
+    try:
+        from backend.daemons.vault_providers.rotation_provider import RotationProvider
+        results["rotation_sigmet"] = RotationProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"Rotation SIGMET vault failed (non-critical): {e}")
+        results["rotation_sigmet"] = {"status": "error", "error": str(e)}
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)

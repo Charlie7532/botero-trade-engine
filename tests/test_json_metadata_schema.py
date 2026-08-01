@@ -32,6 +32,15 @@ def test_verify_all_rules_json_metadata_compliance():
             "rc_wave_ev_derived.json",
             "rc_wave_derived.json",
             "rc_wave_multiscale_tree.json",
+            "fg_fact_store.json",
+            "vix_fact_store.json",
+            "vvix_fact_store.json",
+            "pcr_fact_store.json",
+            "sv5_turbulence_fact_store.json",
+            "skew_fact_store.json",
+            "credit_fact_store.json",
+            "yield_curve_fact_store.json",
+            "rotation_fact_store.json",
         ]
         if path.name not in TARGET_FILES:
             continue

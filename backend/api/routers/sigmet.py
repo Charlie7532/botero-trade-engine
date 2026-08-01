@@ -201,4 +201,51 @@ async def get_rotation_sigmet(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/all")
+@router.get("")
+async def get_all_sigmets(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
+):
+    """
+    Returns an aggregated dictionary of all 9 registered Market SIGMET indicators.
+    If an individual indicator is missing data in Vault, returns a structured status payload 
+    without failing the overall response.
+    """
+    indicators = {
+        "vix": (get_vix_market_sigmet, VIXStrictError),
+        "vvix": (get_vvix_market_sigmet, VVIXStrictError),
+        "pcr": (get_pcr_market_sigmet, PCRStrictError),
+        "fg": (get_fg_market_sigmet, FGStrictError),
+        "sv5_turbulence": (get_sv5_turbulence_market_sigmet, TurbStrictError),
+        "skew": (get_skew_market_sigmet, SKEWStrictError),
+        "credit": (get_credit_market_sigmet, CreditStrictError),
+        "yield_curve": (get_yield_curve_market_sigmet, YieldCurveStrictError),
+        "rotation": (get_rotation_market_sigmet, RotationStrictError),
+    }
 
+    results = {}
+    for name, (fn, exc_type) in indicators.items():
+        try:
+            sigmet = fn(as_of_date=as_of_date)
+            results[name] = sigmet.to_dict()
+        except exc_type as e:
+            results[name] = {
+                "status": "NOTAM_NOT_AVAILABLE",
+                "detail": str(e)
+            }
+        except Exception as e:
+            results[name] = {
+                "status": "ERROR",
+                "detail": str(e)
+            }
+
+    active = sum(
+        1 for v in results.values()
+        if "sigmet_id" in v or "notam_id" in v
+    )
+
+    return {
+        "registered_count": len(indicators),
+        "active_count": active,
+        "sigmets": results
+    }

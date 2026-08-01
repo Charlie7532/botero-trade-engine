@@ -1,12 +1,12 @@
 """
-High Yield Corporate Credit Stress (CREDIT) Market SIGMET Service — Pure Domain Service
-======================================================================================
-Generates authoritative, zero-fallback Credit Market SIGMETs (Meteorological Reports).
-Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of the HYG/TLT ratio for ultra-fast reaction.
+Macro Yield Curve Spread (YIELD_CURVE) Market SIGMET Service — Pure Domain Service
+==================================================================================
+Generates authoritative, zero-fallback Yield Curve Market SIGMETs (Meteorological Reports).
+Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of the TNX - IRX spread for ultra-fast reaction.
 Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
 raises StrictDataPolicyError immediately with explicit 'SIGMET NOT AVAILABLE' message in English.
 Always includes exact UTC date and time.
-Persists StateSnapshot to RegimeStatePort under key 'credit:entry_decision:MARKET'.
+Persists StateSnapshot to RegimeStatePort under key 'yield_curve:entry_decision:MARKET'.
 """
 from datetime import datetime, timezone
 from dataclasses import dataclass, asdict
@@ -14,7 +14,7 @@ from typing import Dict, Any, Optional
 import json
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-from backend.modules.entry_decision.domain.rules.credit_lookup import credit_lookup, CreditLookupAdapter
+from backend.modules.entry_decision.domain.rules.yield_curve_lookup import yield_curve_lookup, YieldCurveLookupAdapter
 from backend.modules.shared.domain.entities.state_snapshot import StateSnapshot
 from backend.modules.shared.domain.ports.regime_state_port import RegimeStatePort
 
@@ -31,10 +31,10 @@ class MarketSIGMET:
     as_of_date: str
     issuer: str
     market_status: str
-    credit_ratio_value: float
-    credit_velocity_3d: float
+    spread_value: float
+    spread_velocity_3d: float
     state_key: str
-    credit_bin: str
+    yield_bin: str
     velocity_vector: str
     n_samples: int
     divergence_regime: str
@@ -54,11 +54,11 @@ class MarketSIGMET:
     # Alias property for test interface compatibility
     @property
     def current_state(self) -> str:
-        return self.credit_bin
+        return self.yield_bin
 
     @property
     def is_crisis_override(self) -> bool:
-        return self.action_code == "MKT_CREDIT_FREEZE_EXTREME"
+        return self.action_code in ("MKT_YIELD_CURVE_UNINVERSION_STEEPENING", "MKT_YIELD_CURVE_INVERTED_CRISIS")
 
     def to_dict(self) -> Dict[str, Any]:
         """Returns full structured SIGMET payload as a dictionary."""
@@ -72,14 +72,14 @@ class MarketSIGMET:
         """Formats the SIGMET into a high-visibility CLI / Telegram broadcast string."""
         return (
             "================================================================================\n"
-            f" 📢 MARKET SIGMET — CREDIT STRESS RATIO (HYG/TLT) [{self.sigmet_id}]\n"
+            f" 📢 MARKET SIGMET — YIELD CURVE SPREAD (TNX - IRX) [{self.sigmet_id}]\n"
             "================================================================================\n"
             f" 🕒 Timestamp UTC: {self.timestamp_utc} | Close Date: {self.as_of_date}\n"
             f" 🏢 Issuer: {self.issuer} | 🚦 Market Status: {self.market_status}\n"
             "--------------------------------------------------------------------------------\n"
             " 📊 LIVE TELEMETRY (72H FAST KINEMATICS):\n"
-            f"    • Credit Ratio Level : {self.credit_ratio_value:.4f} [{self.credit_bin}]\n"
-            f"    • Velocity (Δ3d)     : {self.credit_velocity_3d:+.4f} [{self.velocity_vector}]\n"
+            f"    • Yield Spread Level : {self.spread_value:+.4f}% [{self.yield_bin}]\n"
+            f"    • Velocity (Δ3d)     : {self.spread_velocity_3d:+.4f}% [{self.velocity_vector}]\n"
             f"    • State Key          : {self.state_key} (N = {self.n_samples} historical days)\n\n"
             " 🔮 STOCHASTIC FORECAST & HORIZON DIVERGENCE:\n"
             f"    • Active Regime      : {self.divergence_regime}\n"
@@ -96,24 +96,24 @@ class MarketSIGMET:
         )
 
 
-class CreditSigmetService:
-    """Domain service for generating Credit Stress SIGMETs and persisting state transitions."""
+class YieldCurveSigmetService:
+    """Domain service for generating Yield Curve Spread SIGMETs and persisting state transitions."""
 
-    REGIME_KEY = "credit:entry_decision:MARKET"
+    REGIME_KEY = "yield_curve:entry_decision:MARKET"
 
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
         regime_state_port: Optional[RegimeStatePort] = None,
-        credit_lookup_adapter: Optional[CreditLookupAdapter] = None,
+        yield_curve_lookup_adapter: Optional[YieldCurveLookupAdapter] = None,
     ):
         self._store = data_store or TimescaleDataStore()
         self._port = regime_state_port
-        self._lookup = credit_lookup_adapter or credit_lookup
+        self._lookup = yield_curve_lookup_adapter or yield_curve_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketSIGMET:
         """
-        Generates an authoritative Credit Stress Market SIGMET on-demand using 3-day fast velocity.
+        Generates an authoritative Yield Curve Spread Market SIGMET on-demand using 3-day fast velocity.
         Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
         in Neon Vault, raises StrictDataPolicyError immediately.
         Persists state transitions to RegimeStatePort if provided.
@@ -124,7 +124,7 @@ class CreditSigmetService:
 
             latest_bar_query = (
                 "SELECT MAX(time::date) as max_date FROM market.ohlcv_bars "
-                "WHERE ticker IN ('HYG', 'TLT') AND timeframe = '1d'"
+                "WHERE ticker IN ('TNX', 'IRX') AND timeframe = '1d'"
             )
             df_max = pd.read_sql(latest_bar_query, conn)
             overall_latest = (
@@ -137,39 +137,39 @@ class CreditSigmetService:
                 check_query = f"""
                     SELECT time::date as date, ticker, close
                     FROM market.ohlcv_bars
-                    WHERE ticker IN ('HYG', 'TLT')
+                    WHERE ticker IN ('TNX', 'IRX')
                       AND timeframe = '1d'
                       AND time::date <= '{as_of_date}'
                     ORDER BY time DESC
                 """
                 df_raw = pd.read_sql(check_query, conn)
                 
-                # Check availability for as_of_date (strictly requiring exact date)
-                has_data = False
+                # Check exact availability for as_of_date
+                has_exact = False
                 if len(df_raw) > 0:
                     date_col = 'date' if 'date' in df_raw.columns else ('time::date' if 'time::date' in df_raw.columns else 'time')
                     if date_col in df_raw.columns:
                         exact_rows = df_raw[df_raw[date_col].astype(str) == as_of_date]
                         if len(exact_rows['ticker'].unique()) >= 2:
-                            has_data = True
+                            has_exact = True
 
-                if not has_data:
+                if not has_exact:
                     raise StrictDataPolicyError(
-                        f"STRICT DATA POLICY: CREDIT SIGMET NOT AVAILABLE for requested date '{as_of_date}'. "
-                        f"Vault data does not exist for both HYG and TLT at this timestamp. Latest available date in Vault is '{overall_latest}'."
+                        f"STRICT DATA POLICY: YIELD CURVE SIGMET NOT AVAILABLE for requested date '{as_of_date}'. "
+                        f"Vault data does not exist for both TNX and IRX at this timestamp. Latest available date in Vault is '{overall_latest}'."
                     )
             else:
                 query_all = """
                     SELECT time::date as date, ticker, close
                     FROM market.ohlcv_bars
-                    WHERE ticker IN ('HYG', 'TLT')
+                    WHERE ticker IN ('TNX', 'IRX')
                       AND timeframe = '1d'
                     ORDER BY time DESC
                 """
                 df_raw = pd.read_sql(query_all, conn)
                 if len(df_raw) == 0:
                     raise StrictDataPolicyError(
-                        "STRICT DATA POLICY: CREDIT SIGMET NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'HYG' or 'TLT'."
+                        "STRICT DATA POLICY: YIELD CURVE SIGMET NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'TNX' or 'IRX'."
                     )
 
             date_col = 'date' if 'date' in df_raw.columns else 'time'
@@ -180,41 +180,47 @@ class CreditSigmetService:
 
             if len(pivot_c) < 4:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: CREDIT SIGMET NOT AVAILABLE. "
+                    f"STRICT DATA POLICY: YIELD CURVE SIGMET NOT AVAILABLE. "
                     f"Insufficient historical aligned bars ({len(pivot_c)} bars found, minimum 4 required for 72h kinematics)."
                 )
 
             pivot_c = pivot_c.sort_index()
-            credit_series = pivot_c["HYG"] / pivot_c["TLT"]
+            spread_series = pivot_c["TNX"] - pivot_c["IRX"]
 
-            credit_latest = float(credit_series.iloc[-1])
-            credit_3d_prev = float(credit_series.iloc[-4])
-            credit_delta_3d = float(credit_latest - credit_3d_prev)
+            spread_latest = float(spread_series.iloc[-1])
+            spread_3d_prev = float(spread_series.iloc[-4])
+            spread_delta_3d = float(spread_latest - spread_3d_prev)
             clean_date = str(pivot_c.index[-1])
 
-            guidance = self._lookup.lookup_credit_guidance(
-                credit_ratio=credit_latest, credit_d3=credit_delta_3d
+            guidance = self._lookup.lookup_yield_curve_guidance(
+                spread_value=spread_latest, spread_d3=spread_delta_3d
             )
             if not guidance:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: CREDIT SIGMET NOT AVAILABLE. State classification failed for ratio={credit_latest}, d3={credit_delta_3d}."
+                    f"STRICT DATA POLICY: YIELD CURVE SIGMET NOT AVAILABLE. State classification failed for spread={spread_latest}, d3={spread_delta_3d}."
                 )
 
             vec = guidance.to_vector()
             now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-            # Determine Universal Taxonomy Action Code
-            if guidance.credit_bin == "EXTREME_CREDIT_FREEZE" or guidance.velocity_vector == "EXTREME_CREDIT_CRASH_3D":
-                action_code = "MKT_CREDIT_FREEZE_EXTREME"
-                market_status = "CRISIS_CREDIT_FREEZE"
-            elif guidance.credit_bin in ("CREDIT_STRESS_HIGH", "CREDIT_STRESS_MODERATE") or guidance.velocity_vector == "FAST_CREDIT_DETERIORATION_3D":
-                action_code = "MKT_CREDIT_STRESS_ELEVATED"
-                market_status = "ELEVATED_STRESS"
+            # Universal Institutional Taxonomy Action Codes (Rule 20)
+            if guidance.yield_bin == "EXTREME_STEEPENING_UNINVERSION" or (
+                guidance.velocity_vector in ("FAST_STEEPENING_3D", "EXTREME_STEEPENING_SPIKE_3D")
+                and guidance.yield_bin in ("DEEP_INVERSION", "MODERATE_INVERSION", "FLAT_CURVE")
+            ):
+                action_code = "MKT_YIELD_CURVE_UNINVERSION_STEEPENING"
+                market_status = "CRISIS_UNINVERSION_STEEPENING"
+            elif guidance.yield_bin in ("DEEP_INVERSION", "MODERATE_INVERSION"):
+                action_code = "MKT_YIELD_CURVE_INVERTED_CRISIS"
+                market_status = "INVERTED_CURVE_CRISIS"
+            elif guidance.yield_bin == "FLAT_CURVE" or guidance.velocity_vector in ("FAST_FLATTENING_3D", "EXTREME_FLATTENING_3D"):
+                action_code = "MKT_YIELD_CURVE_FLAT_WARNING"
+                market_status = "FLAT_CURVE_WARNING"
             else:
-                action_code = "MKT_CREDIT_EXPANSION_STABLE"
-                market_status = "EXPANSIVE_STABLE"
+                action_code = "MKT_YIELD_CURVE_NORMAL_STEEP"
+                market_status = "NORMAL_EXPANSIVE_STEEP"
 
-            sigmet_id = f"SIGMET-CREDIT-{clean_date.replace('-', '')}-001"
+            sigmet_id = f"SIGMET-YIELD-CURVE-{clean_date.replace('-', '')}-001"
 
             # Stateful-First Persistence (Rule 15)
             if self._port:
@@ -223,13 +229,13 @@ class CreditSigmetService:
                     ts_dt = datetime.strptime(clean_date_short, "%Y-%m-%d").replace(tzinfo=timezone.utc)
                     self._port.commit_transition(
                         key=self.REGIME_KEY,
-                        next_state=guidance.credit_bin,
-                        trigger=f"CREDIT_RATIO={credit_latest:.4f}, Δ3d={credit_delta_3d:+.4f}",
+                        next_state=guidance.yield_bin,
+                        trigger=f"YIELD_SPREAD={spread_latest:+.4f}, Δ3d={spread_delta_3d:+.4f}",
                         timestamp=ts_dt,
                         metadata={
                             "action_code": action_code,
-                            "credit_ratio": credit_latest,
-                            "delta_3d": credit_delta_3d,
+                            "spread_value": spread_latest,
+                            "delta_3d": spread_delta_3d,
                             "state_key": guidance.state_key,
                         },
                     )
@@ -240,12 +246,12 @@ class CreditSigmetService:
                 sigmet_id=sigmet_id,
                 timestamp_utc=now_utc_str,
                 as_of_date=clean_date,
-                issuer="Botero-Trade Credit Stress Intelligence Engine",
+                issuer="Botero-Trade Yield Curve Intelligence Engine",
                 market_status=market_status,
-                credit_ratio_value=round(credit_latest, 4),
-                credit_velocity_3d=round(credit_delta_3d, 4),
+                spread_value=round(spread_latest, 4),
+                spread_velocity_3d=round(spread_delta_3d, 4),
                 state_key=guidance.state_key,
-                credit_bin=guidance.credit_bin,
+                yield_bin=guidance.yield_bin,
                 velocity_vector=guidance.velocity_vector,
                 n_samples=guidance.n,
                 divergence_regime=guidance.divergence_regime,
@@ -267,7 +273,7 @@ class CreditSigmetService:
             self._store._put(conn)
 
 
-def get_credit_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
-    """Convenience function to evaluate Credit SIGMET using default service instance."""
-    service = CreditSigmetService()
+def get_yield_curve_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
+    """Convenience function to evaluate Yield Curve SIGMET using default service instance."""
+    service = YieldCurveSigmetService()
     return service.evaluate(as_of_date=as_of_date)

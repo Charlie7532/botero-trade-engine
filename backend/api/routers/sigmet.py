@@ -27,6 +27,10 @@ from backend.modules.entry_decision.domain.services.sv5_turbulence_sigmet_servic
     get_sv5_turbulence_market_sigmet,
     StrictDataPolicyError as TurbStrictError
 )
+from backend.modules.entry_decision.domain.services.skew_sigmet_service import (
+    get_skew_market_sigmet,
+    StrictDataPolicyError as SKEWStrictError
+)
 
 router = APIRouter(prefix="/sigmet", tags=["Market SIGMET Intelligence"])
 
@@ -114,3 +118,21 @@ async def get_sv5_turbulence_sigmet(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/skew")
+async def get_skew_sigmet(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
+):
+    """
+    Returns authoritative 3-Day Fast Kinematic CBOE SKEW (Tail Risk) Market SIGMET.
+    Strict Data Policy: Zero Fallbacks. Raises 404 if date is missing or unupdated in Vault.
+    """
+    try:
+        sigmet = get_skew_market_sigmet(as_of_date=as_of_date)
+        return sigmet.to_dict()
+    except SKEWStrictError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

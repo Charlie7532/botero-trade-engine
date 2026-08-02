@@ -23,8 +23,6 @@
 
 ---
 
----
-
 ## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
 
 El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):

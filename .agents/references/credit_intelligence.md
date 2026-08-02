@@ -58,10 +58,10 @@ El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de Zi
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Ventaja $EV$ | $P(\text{bull})$ | FTT Mediana | Grado Governance |
-|---|---|---|---|---|
-| `CREDIT_FREEZE_REBOUND` ($<0.446$) | $+2.25\%$ | $74.8\%$ | 14 días | **VALIDATED Grade A** (Hard Gate Veto / Recovery) |
-| `CREDIT_EXPANSION_STABLE` ($>0.611$) | $+1.48\%$ | $68.4\%$ | 10 días | **VALIDATED Grade B** (Position Sizing $+25\%$) |
+| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| `CREDIT_FREEZE_REBOUND` ($<0.446$) | `VALIDATED` | **1.0000** | $+2.25\%$ | $74.8\%$ | 14 días | **Grade A — Hard Gate Principal** (Credit Freeze Recovery) |
+| `CREDIT_EXPANSION_STABLE` ($>0.611$) | `VALIDATED` | **0.8810** | $+1.48\%$ | $68.4\%$ | 10 días | **Grade B — Hard Gate Subordinado** (Position Sizing $+25\%$) |
 
 ---
 

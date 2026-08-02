@@ -58,10 +58,10 @@ El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de Zi
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Ventaja $EV$ | $P(\text{bull})$ | FTT Mediana | Grado Governance |
-|---|---|---|---|---|
-| `ROTATION_CYCLICAL_LEADERSHIP` ($>7.20$) | $+2.38\%$ | $75.6\%$ | 11 días | **VALIDATED Grade A** (Hard Gate Catalyst) |
-| `ROTATION_DEFENSIVE_FLIGHT` ($<1.85$) | $-0.72\%$ | $44.8\%$ | 9 días | **VALIDATED Grade B** (Position Sizing $-25\%$) |
+| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| `ROTATION_CYCLICAL_LEADERSHIP` ($>7.20$) | `VALIDATED` | **1.0000** | $+2.38\%$ | $75.6\%$ | 11 días | **Grade A — Hard Gate Principal** (Cyclical Leadership Lead) |
+| `ROTATION_DEFENSIVE_FLIGHT` ($<1.85$) | `VALIDATED` | **0.8750** | $-0.72\%$ | $44.8\%$ | 9 días | **Grade B — Hard Gate Subordinado** (Position Sizing $-25\%$) |
 
 ---
 

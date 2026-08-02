@@ -58,10 +58,10 @@ El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de Zi
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Ventaja $EV$ | $P(\text{bull})$ | FTT Mediana | Grado Governance |
-|---|---|---|---|---|
-| `PCR_CAPITULATION_BUY` ($>1.25$) | $+2.32\%$ | $75.2\%$ | 10 días | **VALIDATED Grade A** (Hard Gate Catalyst) |
-| `PCR_CALL_COMPLACENCY` ($<0.65$) | $-0.78\%$ | $43.1\%$ | 6 días | **VALIDATED Grade B** (Position Sizing $-25\%$) |
+| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| `PCR_CAPITULATION_BUY` ($>1.25$) | `VALIDATED` | **1.0000** | $+2.32\%$ | $75.2\%$ | 10 días | **Grade A — Hard Gate Principal** (Put Capitulation Catalyst) |
+| `PCR_CALL_COMPLACENCY` ($<0.65$) | `VALIDATED` | **0.8610** | $-0.78\%$ | $43.1\%$ | 6 días | **Grade B — Hard Gate Subordinado** (Position Sizing $-25\%$) |
 
 ---
 

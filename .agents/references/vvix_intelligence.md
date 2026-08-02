@@ -58,10 +58,10 @@ El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de Zi
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Ventaja $EV$ | $P(\text{bull})$ | FTT Mediana | Grado Governance |
-|---|---|---|---|---|
-| `VVIX_EXPLOSION_REBOUND` ($>125.0$) | $+2.15\%$ | $72.8\%$ | 13 días | **VALIDATED Grade A** (Hard Gate Rebound) |
-| `VVIX_REGIME_TRANSITION` ($>120.0$) | $-0.65\%$ | $44.5\%$ | 9 días | **VALIDATED Grade B** (Warning / Sizing $-33\%$) |
+| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| `VVIX_EXPLOSION_REBOUND` ($>125.0$) | `VALIDATED` | **1.0000** | $+2.15\%$ | $72.8\%$ | 13 días | **Grade A — Hard Gate Principal** (Vol-of-Vol Catalyst) |
+| `VVIX_REGIME_TRANSITION` ($>120.0$) | `VALIDATED` | **0.8790** | $-0.65\%$ | $44.5\%$ | 9 días | **Grade B — Hard Gate Subordinado** (Warning / Sizing $-33\%$) |
 
 ---
 

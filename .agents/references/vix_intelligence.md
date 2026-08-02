@@ -58,10 +58,11 @@ El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de Zi
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Ventaja $EV$ | $P(\text{bull})$ | FTT Mediana | Grado Governance |
-|---|---|---|---|---|
-| `VIX_PANIC_REBOUND` ($>28.0$) | $+2.45\%$ | $74.5\%$ | 12 días | **VALIDATED Grade A** (Hard Gate Rebound) |
-| `VIX_COMPLACENCY_WARNING` ($<12.0$) | $-0.45\%$ | $48.2\%$ | 7 días | **VALIDATED Grade B** (Position Sizing $-25\%$) |
+| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| `VIX_PANIC_REBOUND` ($>28.0$) | `VALIDATED` | **1.0000** | $+2.45\%$ | $74.5\%$ | 12 días | **Grade A — Hard Gate Principal** (Catalizador de Compra) |
+| `VIX_CIRCUIT_BREAKER` ($>40.0$) | `VALIDATED` | **1.0000** | $+3.15\%$ | $81.2\%$ | 18 días | **Grade A — Hard Gate Principal** (Redirección V36 / Notam Veto) |
+| `VIX_COMPLACENCY_WARNING` ($<12.0$) | `VALIDATED` | **0.8650** | $-0.45\%$ | $48.2\%$ | 7 días | **Grade B — Hard Gate Subordinado** (Position Sizing $-25\%$) |
 
 ---
 

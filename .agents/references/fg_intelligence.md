@@ -58,10 +58,10 @@ El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de Zi
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Ventaja $EV$ | $P(\text{bull})$ | FTT Mediana | Grado Governance |
-|---|---|---|---|---|
-| `FG_EXTREME_PANIC_BUY` ($<10.0$) | $+2.48\%$ | $76.8\%$ | 11 días | **VALIDATED Grade A** (Hard Gate Catalyst) |
-| `FG_EUPHORIA_TRIM_SIGNAL` ($>90.0$) | $-1.12\%$ | $41.2\%$ | 6 días | **VALIDATED Grade A** (Hard Veto / Trim $-50\%$) |
+| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| `FG_EXTREME_PANIC_BUY` ($<10.0$) | `VALIDATED` | **1.0000** | $+2.48\%$ | $76.8\%$ | 11 días | **Grade A — Hard Gate Principal** (Catalizador Contrario $+50\%$) |
+| `FG_EUPHORIA_TRIM_SIGNAL` ($>90.0$) | `VALIDATED` | **1.0000** | $-1.12\%$ | $41.2\%$ | 6 días | **Grade A — Hard Gate Principal** (Hard Veto / Recorte $-50\%$) |
 
 ---
 

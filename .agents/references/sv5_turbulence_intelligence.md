@@ -59,11 +59,11 @@ El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de Zi
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Ventaja $EV$ | $P(\text{bull})$ | FTT Mediana | Grado Governance |
-|---|---|---|---|---|
-| `CRISIS_TURBULENCE_VETO` ($>14.87$) | $+2.19\%$ | $76.8\%$ | 14 días | **VALIDATED Grade A** (Hard Veto / Rebound) |
-| `SERENE_VOLUME_ACCUMULATION` ($<3.56$) | $+1.45\%$ | $68.2\%$ | 11 días | **VALIDATED Grade C** (Sizing Modifier $+25\%$) |
-| `SERENITY_TRAP` ($<2.71$ + Stable) | $-0.82\%$ | $46.1\%$ | 8 días | **VALIDATED Grade B** (Filter / Reduction $-33\%$) |
+| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| `CRISIS_TURBULENCE_VETO` ($>14.87$) | `VALIDATED` | **1.0000** | $+2.19\%$ | $76.8\%$ | 14 días | **Grade A — Hard Gate Principal** (Veto Total / Capitulación) |
+| `SERENE_VOLUME_ACCUMULATION` ($<3.56$) | `VALIDATED` | **0.8840** | $+1.45\%$ | $68.2\%$ | 11 días | **Grade B — Hard Gate Subordinado** (Sizing Modifier $+25\%$) |
+| `SERENITY_TRAP` ($<2.71$ + Stable) | `VALIDATED` | **0.8720** | $-0.82\%$ | $46.1\%$ | 8 días | **Grade B — Hard Gate Subordinado** (Sizing Reduction $-33\%$) |
 
 ---
 

@@ -6,8 +6,8 @@
     "data_sources": {
       "bars": "market.ohlcv_bars",
       "start_date": "1993-01-29",
-      "end_date": "2026-07-30",
-      "sample_size_days": 8404,
+      "end_date": "2026-07-31",
+      "sample_size_days": 8405,
       "years_covered": 33.35
     },
     "state_hierarchy": {
@@ -24,12 +24,12 @@
         0.95
       ],
       "vix_edges": [
-        11.3415,
+        11.342,
         12.64,
         15.29,
-        20.6294905,
-        26.0799955,
-        33.46849999999999
+        20.625994000000002,
+        26.079994,
+        33.46799999999999
       ],
       "vix_speed_percentiles": [
         0.05,
@@ -44,7 +44,7 @@
         -1.8300000000000018,
         -0.6600000000000001,
         0.5,
-        1.8199999999999985,
+        1.8199984999999987,
         3.8700000000000045
       ],
       "vix_labels_l0": [
@@ -336,46 +336,46 @@
         "mean": 17.151312557766587
       },
       "zz25": {
-        "n_pos": 170,
-        "n_neg": 127,
-        "p_bull": 0.5724,
-        "p_bear": 0.4276,
+        "n_pos": 171,
+        "n_neg": 126,
+        "p_bull": 0.5758,
+        "p_bear": 0.4242,
         "e_ret_max": 0.0273,
-        "e_ret_min": -0.0315,
+        "e_ret_min": -0.0317,
         "ev_net": 0.0022,
         "e_days": 7.0,
         "ftt_bull_days": 7.0,
         "ftt_bear_days": 7.0,
-        "ev_per_day": 0.000312,
-        "rr_asymmetry": 0.8682
+        "ev_per_day": 0.000319,
+        "rr_asymmetry": 0.859
       },
       "zz50": {
-        "n_pos": 177,
-        "n_neg": 120,
-        "p_bull": 0.596,
-        "p_bear": 0.404,
-        "e_ret_max": 0.0606,
-        "e_ret_min": -0.0578,
-        "ev_net": 0.0127,
+        "n_pos": 178,
+        "n_neg": 119,
+        "p_bull": 0.5993,
+        "p_bear": 0.4007,
+        "e_ret_max": 0.0603,
+        "e_ret_min": -0.0583,
+        "ev_net": 0.0128,
         "e_days": 21.0,
         "ftt_bull_days": 23.0,
         "ftt_bear_days": 19.5,
-        "ev_per_day": 0.000606,
-        "rr_asymmetry": 1.0473
+        "ev_per_day": 0.00061,
+        "rr_asymmetry": 1.0349
       },
       "zz75": {
-        "n_pos": 202,
-        "n_neg": 95,
-        "p_bull": 0.6801,
-        "p_bear": 0.3199,
-        "e_ret_max": 0.0761,
-        "e_ret_min": -0.0789,
-        "ev_net": 0.0265,
+        "n_pos": 203,
+        "n_neg": 94,
+        "p_bull": 0.6835,
+        "p_bear": 0.3165,
+        "e_ret_max": 0.0758,
+        "e_ret_min": -0.0797,
+        "ev_net": 0.0266,
         "e_days": 42.0,
         "ftt_bull_days": 54.0,
         "ftt_bear_days": 27.0,
-        "ev_per_day": 0.000631,
-        "rr_asymmetry": 0.9649
+        "ev_per_day": 0.000633,
+        "rr_asymmetry": 0.9514
       },
       "divergence_regime": "FULL_STRUCTURAL_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
@@ -510,46 +510,46 @@
         "mean": 17.518144705623005
       },
       "zz25": {
-        "n_pos": 307,
-        "n_neg": 243,
-        "p_bull": 0.5582,
-        "p_bear": 0.4418,
-        "e_ret_max": 0.0274,
-        "e_ret_min": -0.0305,
-        "ev_net": 0.0018,
+        "n_pos": 309,
+        "n_neg": 241,
+        "p_bull": 0.5618,
+        "p_bear": 0.4382,
+        "e_ret_max": 0.0273,
+        "e_ret_min": -0.0307,
+        "ev_net": 0.0019,
         "e_days": 7.0,
         "ftt_bull_days": 8.0,
         "ftt_bear_days": 6.0,
-        "ev_per_day": 0.000259,
-        "rr_asymmetry": 0.8982
+        "ev_per_day": 0.000267,
+        "rr_asymmetry": 0.8882
       },
       "zz50": {
-        "n_pos": 342,
-        "n_neg": 208,
-        "p_bull": 0.6218,
-        "p_bear": 0.3782,
-        "e_ret_max": 0.0466,
-        "e_ret_min": -0.0553,
-        "ev_net": 0.0081,
+        "n_pos": 344,
+        "n_neg": 206,
+        "p_bull": 0.6255,
+        "p_bear": 0.3745,
+        "e_ret_max": 0.0464,
+        "e_ret_min": -0.0557,
+        "ev_net": 0.0082,
         "e_days": 25.0,
         "ftt_bull_days": 28.0,
         "ftt_bear_days": 19.0,
-        "ev_per_day": 0.000323,
-        "rr_asymmetry": 0.843
+        "ev_per_day": 0.000326,
+        "rr_asymmetry": 0.833
       },
       "zz75": {
-        "n_pos": 355,
-        "n_neg": 195,
-        "p_bull": 0.6455,
-        "p_bear": 0.3545,
-        "e_ret_max": 0.0664,
-        "e_ret_min": -0.0705,
-        "ev_net": 0.0179,
+        "n_pos": 357,
+        "n_neg": 193,
+        "p_bull": 0.6491,
+        "p_bear": 0.3509,
+        "e_ret_max": 0.0662,
+        "e_ret_min": -0.0711,
+        "ev_net": 0.018,
         "e_days": 43.0,
         "ftt_bull_days": 52.0,
         "ftt_bear_days": 33.0,
-        "ev_per_day": 0.000416,
-        "rr_asymmetry": 0.9421
+        "ev_per_day": 0.000419,
+        "rr_asymmetry": 0.9306
       },
       "divergence_regime": "FULL_STRUCTURAL_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
@@ -1038,40 +1038,40 @@
         "p_bear": 0.4703,
         "e_ret_max": 0.0269,
         "e_ret_min": -0.0317,
-        "ev_net": -0.0007,
+        "ev_net": -0.0006,
         "e_days": 8.0,
         "ftt_bull_days": 9.0,
         "ftt_bear_days": 6.0,
-        "ev_per_day": -8.4e-05,
-        "rr_asymmetry": 0.8477
+        "ev_per_day": -8e-05,
+        "rr_asymmetry": 0.8496
       },
       "zz50": {
         "n_pos": 419,
         "n_neg": 287,
         "p_bull": 0.5935,
         "p_bear": 0.4065,
-        "e_ret_max": 0.0453,
-        "e_ret_min": -0.0565,
-        "ev_net": 0.0039,
+        "e_ret_max": 0.0454,
+        "e_ret_min": -0.0564,
+        "ev_net": 0.004,
         "e_days": 25.0,
         "ftt_bull_days": 30.0,
         "ftt_bear_days": 20.0,
-        "ev_per_day": 0.000156,
-        "rr_asymmetry": 0.8013
+        "ev_per_day": 0.00016,
+        "rr_asymmetry": 0.8045
       },
       "zz75": {
         "n_pos": 426,
         "n_neg": 280,
         "p_bull": 0.6034,
         "p_bear": 0.3966,
-        "e_ret_max": 0.0658,
-        "e_ret_min": -0.0758,
-        "ev_net": 0.0096,
+        "e_ret_max": 0.0659,
+        "e_ret_min": -0.0757,
+        "ev_net": 0.0098,
         "e_days": 42.0,
         "ftt_bull_days": 50.0,
         "ftt_bear_days": 31.0,
-        "ev_per_day": 0.000229,
-        "rr_asymmetry": 0.8676
+        "ev_per_day": 0.000232,
+        "rr_asymmetry": 0.8707
       },
       "divergence_regime": "TACTICAL_PULLBACK",
       "operational_guidance": "STK_BUY_DIP_TACTICAL"
@@ -1326,42 +1326,42 @@
         "n_neg": 51,
         "p_bull": 0.4796,
         "p_bear": 0.5204,
-        "e_ret_max": 0.0299,
+        "e_ret_max": 0.03,
         "e_ret_min": -0.0363,
-        "ev_net": -0.0046,
+        "ev_net": -0.0045,
         "e_days": 4.0,
         "ftt_bull_days": 4.0,
         "ftt_bear_days": 4.0,
-        "ev_per_day": -0.001143,
-        "rr_asymmetry": 0.8226
+        "ev_per_day": -0.001124,
+        "rr_asymmetry": 0.8268
       },
       "zz50": {
         "n_pos": 59,
         "n_neg": 39,
         "p_bull": 0.602,
         "p_bear": 0.398,
-        "e_ret_max": 0.0479,
+        "e_ret_max": 0.048,
         "e_ret_min": -0.0686,
-        "ev_net": 0.0015,
+        "ev_net": 0.0016,
         "e_days": 12.0,
         "ftt_bull_days": 17.0,
         "ftt_bear_days": 8.0,
-        "ev_per_day": 0.000128,
-        "rr_asymmetry": 0.6983
+        "ev_per_day": 0.000134,
+        "rr_asymmetry": 0.7001
       },
       "zz75": {
         "n_pos": 60,
         "n_neg": 38,
         "p_bull": 0.6122,
         "p_bear": 0.3878,
-        "e_ret_max": 0.0686,
+        "e_ret_max": 0.0687,
         "e_ret_min": -0.0795,
-        "ev_net": 0.0112,
+        "ev_net": 0.0113,
         "e_days": 27.0,
         "ftt_bull_days": 33.0,
         "ftt_bear_days": 16.0,
-        "ev_per_day": 0.000415,
-        "rr_asymmetry": 0.8635
+        "ev_per_day": 0.000417,
+        "rr_asymmetry": 0.865
       },
       "divergence_regime": "TACTICAL_PULLBACK",
       "operational_guidance": "STK_BUY_DIP_TACTICAL"
@@ -1399,13 +1399,13 @@
         "p_bull": 0.6162,
         "p_bear": 0.3838,
         "e_ret_max": 0.0476,
-        "e_ret_min": -0.0566,
+        "e_ret_min": -0.0565,
         "ev_net": 0.0076,
         "e_days": 21.0,
         "ftt_bull_days": 25.0,
         "ftt_bear_days": 13.0,
-        "ev_per_day": 0.000362,
-        "rr_asymmetry": 0.8412
+        "ev_per_day": 0.000363,
+        "rr_asymmetry": 0.8421
       },
       "zz75": {
         "n_pos": 161,
@@ -1413,13 +1413,13 @@
         "p_bull": 0.5669,
         "p_bear": 0.4331,
         "e_ret_max": 0.0677,
-        "e_ret_min": -0.075,
-        "ev_net": 0.0059,
+        "e_ret_min": -0.0749,
+        "ev_net": 0.006,
         "e_days": 45.0,
         "ftt_bull_days": 50.5,
         "ftt_bear_days": 24.0,
         "ev_per_day": 0.000132,
-        "rr_asymmetry": 0.9035
+        "rr_asymmetry": 0.9042
       },
       "divergence_regime": "TACTICAL_PULLBACK",
       "operational_guidance": "STK_BUY_DIP_TACTICAL"
@@ -1438,104 +1438,104 @@
         "mean": 19.32825222930612
       },
       "zz25": {
-        "n_pos": 57,
-        "n_neg": 46,
-        "p_bull": 0.5534,
-        "p_bear": 0.4466,
-        "e_ret_max": 0.027,
-        "e_ret_min": -0.0327,
-        "ev_net": 0.0003,
+        "n_pos": 58,
+        "n_neg": 45,
+        "p_bull": 0.5631,
+        "p_bear": 0.4369,
+        "e_ret_max": 0.0266,
+        "e_ret_min": -0.0333,
+        "ev_net": 0.0004,
         "e_days": 6.0,
         "ftt_bull_days": 6.5,
         "ftt_bear_days": 6.0,
-        "ev_per_day": 5.7e-05,
-        "rr_asymmetry": 0.8259
+        "ev_per_day": 6.9e-05,
+        "rr_asymmetry": 0.7978
       },
       "zz50": {
-        "n_pos": 63,
-        "n_neg": 40,
-        "p_bull": 0.6117,
-        "p_bear": 0.3883,
-        "e_ret_max": 0.0458,
-        "e_ret_min": -0.0546,
-        "ev_net": 0.0068,
+        "n_pos": 64,
+        "n_neg": 39,
+        "p_bull": 0.6214,
+        "p_bear": 0.3786,
+        "e_ret_max": 0.0451,
+        "e_ret_min": -0.0557,
+        "ev_net": 0.0069,
         "e_days": 25.0,
         "ftt_bull_days": 27.0,
         "ftt_bear_days": 21.0,
-        "ev_per_day": 0.000272,
-        "rr_asymmetry": 0.8387
+        "ev_per_day": 0.000278,
+        "rr_asymmetry": 0.8101
       },
       "zz75": {
-        "n_pos": 59,
-        "n_neg": 44,
-        "p_bull": 0.5728,
-        "p_bear": 0.4272,
-        "e_ret_max": 0.0634,
-        "e_ret_min": -0.0689,
-        "ev_net": 0.0069,
+        "n_pos": 60,
+        "n_neg": 43,
+        "p_bull": 0.5825,
+        "p_bear": 0.4175,
+        "e_ret_max": 0.0623,
+        "e_ret_min": -0.0702,
+        "ev_net": 0.007,
         "e_days": 43.0,
         "ftt_bull_days": 52.0,
         "ftt_bear_days": 31.5,
-        "ev_per_day": 0.000159,
-        "rr_asymmetry": 0.9193
+        "ev_per_day": 0.000163,
+        "rr_asymmetry": 0.8875
       },
       "divergence_regime": "FULL_STRUCTURAL_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
     },
     "ELEVATED__DECELERATING_3D": {
-      "n": 528,
+      "n": 529,
       "vix_t0_stats": {
         "min": 15.29,
         "max": 20.61,
-        "mean": 17.784980227850713,
-        "std": 1.5698614652077003
+        "mean": 17.783269488593465,
+        "std": 1.5688695152588457
       },
       "vix_t_minus_1_stats": {
         "min": 14.38,
         "max": 23.57,
-        "mean": 18.180794641596478
+        "mean": 18.17873264823351
       },
       "zz25": {
-        "n_pos": 302,
-        "n_neg": 226,
-        "p_bull": 0.572,
-        "p_bear": 0.428,
-        "e_ret_max": 0.027,
-        "e_ret_min": -0.031,
+        "n_pos": 305,
+        "n_neg": 224,
+        "p_bull": 0.5766,
+        "p_bear": 0.4234,
+        "e_ret_max": 0.0268,
+        "e_ret_min": -0.0313,
         "ev_net": 0.0022,
         "e_days": 8.0,
         "ftt_bull_days": 9.0,
         "ftt_bear_days": 6.0,
-        "ev_per_day": 0.000272,
-        "rr_asymmetry": 0.8709
+        "ev_per_day": 0.000276,
+        "rr_asymmetry": 0.8569
       },
       "zz50": {
-        "n_pos": 302,
-        "n_neg": 226,
-        "p_bull": 0.572,
-        "p_bear": 0.428,
-        "e_ret_max": 0.0477,
-        "e_ret_min": -0.055,
-        "ev_net": 0.0037,
+        "n_pos": 305,
+        "n_neg": 224,
+        "p_bull": 0.5766,
+        "p_bear": 0.4234,
+        "e_ret_max": 0.0473,
+        "e_ret_min": -0.0554,
+        "ev_net": 0.0038,
         "e_days": 23.0,
         "ftt_bull_days": 25.0,
         "ftt_bear_days": 18.0,
-        "ev_per_day": 0.000161,
-        "rr_asymmetry": 0.866
+        "ev_per_day": 0.000165,
+        "rr_asymmetry": 0.853
       },
       "zz75": {
-        "n_pos": 314,
-        "n_neg": 214,
-        "p_bull": 0.5947,
-        "p_bear": 0.4053,
-        "e_ret_max": 0.0665,
-        "e_ret_min": -0.075,
-        "ev_net": 0.0092,
+        "n_pos": 317,
+        "n_neg": 212,
+        "p_bull": 0.5992,
+        "p_bear": 0.4008,
+        "e_ret_max": 0.0661,
+        "e_ret_min": -0.0756,
+        "ev_net": 0.0093,
         "e_days": 42.0,
         "ftt_bull_days": 51.0,
         "ftt_bear_days": 30.0,
-        "ev_per_day": 0.000218,
-        "rr_asymmetry": 0.8871
+        "ev_per_day": 0.000222,
+        "rr_asymmetry": 0.8747
       },
       "divergence_regime": "FULL_STRUCTURAL_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
@@ -1616,14 +1616,14 @@
         "n_neg": 113,
         "p_bull": 0.535,
         "p_bear": 0.465,
-        "e_ret_max": 0.0299,
+        "e_ret_max": 0.03,
         "e_ret_min": -0.0356,
         "ev_net": -0.0005,
         "e_days": 4.0,
         "ftt_bull_days": 5.0,
         "ftt_bear_days": 4.0,
-        "ev_per_day": -0.000134,
-        "rr_asymmetry": 0.8412
+        "ev_per_day": -0.000123,
+        "rr_asymmetry": 0.8433
       },
       "zz50": {
         "n_pos": 136,
@@ -1636,8 +1636,8 @@
         "e_days": 15.0,
         "ftt_bull_days": 21.0,
         "ftt_bear_days": 11.0,
-        "ev_per_day": 0.000241,
-        "rr_asymmetry": 0.8979
+        "ev_per_day": 0.000243,
+        "rr_asymmetry": 0.8988
       },
       "zz75": {
         "n_pos": 130,
@@ -1650,8 +1650,8 @@
         "e_days": 34.0,
         "ftt_bull_days": 43.5,
         "ftt_bear_days": 22.0,
-        "ev_per_day": 1.7e-05,
-        "rr_asymmetry": 0.8821
+        "ev_per_day": 1.8e-05,
+        "rr_asymmetry": 0.8828
       },
       "divergence_regime": "TACTICAL_PULLBACK",
       "operational_guidance": "STK_BUY_DIP_TACTICAL"

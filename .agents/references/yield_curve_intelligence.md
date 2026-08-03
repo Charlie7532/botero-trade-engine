@@ -1,70 +1,99 @@
-# Macro Yield Curve Spread Intelligence — Reference Document
+# US Treasury Yield Curve Spread (TNX - IRX) Intelligence — Reference Document
+
+> **Auto-generated**: 2026-08-03T19:05:29Z | **Source**: `yield_curve_fact_store.json` | **Status**: `VALIDATED (Grade A)`
 
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: Macro Yield Curve Spread (`YIELD_CURVE` - TNX - IRX)
-- **Fórmula**: Diferencia entre el rendimiento del Bono a 10 años (`TNX`) y las Letras del Tesoro a 3 meses (`IRX`).
-- **Almacenamiento en Vault**: Derivado a partir de `TNX` e `IRX` en `market.ohlcv_bars`.
-- **Rango Histórico**: 1990 → 2026 (~9,000 barras diarias).
-- **Umbrales Percentiles L0**:
-  - `DEEP_INVERSION`: $< -0.624$
-  - `MODERATE_INVERSION`: $-0.624 - 0.185$
-  - `FLAT_CURVE`: $0.185 - 0.898$
-  - `NORMAL_STEEP`: $0.898 - 1.967$
-  - `STEEP_CURVE`: $1.967 - 2.827$
-  - `VERY_STEEP_CURVE`: $2.827 - 3.368$
-  - `EXTREME_STEEPENING_UNINVERSION`: $> 3.368$.
+- **Nombre**: US Treasury Yield Curve Spread (TNX - IRX) (`YIELD_CURVE`)
+- **Fórmula**: Diferencial de rendimiento entre bonos del Tesoro a 10 años (TNX) y 3 meses (IRX).
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='YIELD_CURVE', timeframe='1d').
+- **Rango Histórico**: 1993-01-29 → 2026-07-30 (8,402 barras diarias / 33.34 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `DEEP_INVERSION`: $< -0.62$
+  - `MODERATE_INVERSION`: $-0.62 - 0.18$
+  - `FLAT_CURVE`: $0.18 - 0.90$
+  - `NORMAL_STEEP`: $0.90 - 1.97$
+  - `STEEP_CURVE`: $1.97 - 2.83$
+  - `VERY_STEEP_CURVE`: $2.83 - 3.37$
+  - `EXTREME_STEEPENING_UNINVERSION`: $> 3.37$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.45$)**: Estacionariedad cuantitativa del spread macro de tasas (Std = 0.0649).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00013** (cumple $\sigma^2 < 0.03$).
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged Cross-Validation).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 0.0561.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **1.0000** ✅ (significativo)
+- **Mean Sharpe Ratio**: 0.5536 ± 0.5031 (5 folds)
+- **Fold SRs**: [0.7869, -0.0839, 0.0711, 1.1452, 1.0315]
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=49 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.15%` | `55.7%` | `6.6d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.97%` | `61.9%` | `20.8d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+1.72%` | `64.0%` | `38.8d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.08%` | `62.1%` | `6d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.21%` | `74.2%` | `15d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+4.05%` | `84.0%` | `30d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 85.0% coincidencia en pivotes de ciclo macro con escala estructural ZZ 7.5%.
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: Desinversión rápida acelera el cumplimiento de objetivos TP en la escala estructural zz75.
+**Población total**: 8,401 observaciones | $P(\text{bull})$ ponderado = 61.9% | $EV_{50}$ ponderado = +0.97%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Desinversión / Empinamiento Rápido (`EXTREME_STEEPENING_UNINVERSION`)
-- **Condición**: `EXTREME_STEEPENING_UNINVERSION` o `EXTREME_STEEPENING_SPIKE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 74.2\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.21\%$.
-- **Interpretación**: El empinamiento rápido tras una inversión prolongada marca la recesión inminente o pivote de la Fed.
+### 🚨 Anomalía Empírica 1: `VERY_STEEP_CURVE__EXTREME_FLATTENING_3D` (Alcista)
+- **Condición**: Estado empírico con N=53 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 52.8\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +6.12\%$, $EV_{\text{per\_day}} = +0.7205\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
 
-### ⚠️ Anomalía 2: Curva Invertida Profunda (`DEEP_INVERSION`)
-- **Condición**: `DEEP_INVERSION` y `EXTREME_FLATTENING_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 45.1\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = -0.68\%$.
+### 🚨 Anomalía Empírica 2: `EXTREME_STEEPENING_UNINVERSION__DECELERATING_SPREAD_3D` (Alcista)
+- **Condición**: Estado empírico con N=75 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 37.3\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.85\%$, $EV_{\text{per\_day}} = +0.1679\%/\text{día}$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### 🚨 Anomalía Empírica 3: `VERY_STEEP_CURVE__FAST_FLATTENING_3D` (Alcista)
+- **Condición**: Estado empírico con N=106 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 61.3\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.77\%$, $EV_{\text{per\_day}} = +0.1789\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### ⚠️ Anomalía Bajista 1: `MODERATE_INVERSION__EXTREME_FLATTENING_3D`
+- **Condición**: Estado empírico con N=35 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 40.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -1.68\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
+
+### ⚠️ Anomalía Bajista 2: `EXTREME_STEEPENING_UNINVERSION__FAST_STEEPENING_3D`
+- **Condición**: Estado empírico con N=62 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 41.9\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.92\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### ⚠️ Anomalía Bajista 3: `EXTREME_STEEPENING_UNINVERSION__FAST_FLATTENING_3D`
+- **Condición**: Estado empírico con N=33 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 51.5\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.58\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `YIELD_UNINVERSION_REBOUND` ($>3.368$) | `VALIDATED` | **1.0000** | $+2.21\%$ | $74.2\%$ | 15 días | **Grade A — Hard Gate Principal** (Macro Uninversion Pivot) |
-| `YIELD_INVERSION_WARNING` ($<-0.624$) | `VALIDATED` | **0.8680** | $-0.68\%$ | $45.1\%$ | 12 días | **Grade B — Hard Gate Subordinado** (Position Sizing $-25\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `YIELD_CURVE` | `VALIDATED (Grade A)` | **1.0000** | 0.5536 | 61.9% | 49 | 12 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si `EXTREME_STEEPENING_UNINVERSION`: Alerta de cambio de ciclo económico macro.
-2. **`SpeculativeEntryHub`**:
-   - Si `DEEP_INVERSION`: Ajustar exigencia de stop cinemático por riesgo recesivo.
+1. **`QualityEntryGate`**: Inversión profunda (P05) es SIGMET — pero es crónica, filtrar por velocidad.
+2. **`CIO Allocator`**: Yield curve es dimensión macro independiente.

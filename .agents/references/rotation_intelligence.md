@@ -1,70 +1,99 @@
-# Sector Rotation Intelligence — Reference Document
+# Defensive/Cyclical Sector Rotation Index Intelligence — Reference Document
+
+> **Auto-generated**: 2026-08-03T19:05:30Z | **Source**: `rotation_fact_store.json` | **Status**: `HYPOTHESIS (Grade D)`
 
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: Sector Rotation Intelligence (`ROTATION` - XLY/XLP + XLK/XLU)
-- **Fórmula**: Suma de ratios cíclico/defensivos: $(XLY/XLP) + (XLK/XLU)$.
-- **Almacenamiento en Vault**: Derivado a partir de `XLY`, `XLP`, `XLK`, `XLU` en `market.ohlcv_bars`.
-- **Rango Histórico**: 1999 → 2026 (6,794 barras diarias).
-- **Umbrales Percentiles L0**:
-  - `EXTREME_DEFENSIVE_ROTATION`: $< 1.85$
-  - `DEFENSIVE_ROTATION`: $1.85 - 2.42$
-  - `MODERATE_DEFENSIVE`: $2.42 - 3.10$
-  - `BALANCED_ROTATION`: $3.10 - 4.15$
-  - `MODERATE_CYCLICAL`: $4.15 - 5.50$
-  - `CYCLICAL_ROTATION`: $5.50 - 7.20$
-  - `EXTREME_CYCLICAL_EXPANSION`: $> 7.20$.
+- **Nombre**: Defensive/Cyclical Sector Rotation Index (`ROTATION`)
+- **Fórmula**: Z-score de ratio XLY/XLP + XLK/XLU (rolling 252d) — mide rotación defensiva/cíclica.
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='ROTATION', timeframe='1d').
+- **Rango Histórico**: 1998-12-28 → 2026-07-30 (6,939 barras diarias / 27.54 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `EXTREME_DEFENSIVE_ROTATION`: $< -3.57$
+  - `DEFENSIVE_ROTATION`: $-3.57 - -2.09$
+  - `MODERATE_DEFENSIVE`: $-2.09 - -0.47$
+  - `BALANCED_ROTATION`: $-0.47 - 1.81$
+  - `MODERATE_CYCLICAL`: $1.81 - 3.03$
+  - `CYCLICAL_ROTATION`: $3.03 - 4.04$
+  - `EXTREME_CYCLICAL_EXPANSION`: $> 4.04$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.45$)**: Estacionariedad cuantitativa del flujo intersectorial de capitales (Std = 0.0607).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00013** (cumple $\sigma^2 < 0.03$).
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged Cross-Validation).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 0.7390.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **0.0000** ⚠️ (no significativo)
+- **Mean Sharpe Ratio**: 0.0000 ± 0.0000 (0 folds)
+- **Fold SRs**: []
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000000** (N=49 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.03%` | `54.9%` | `6.5d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.49%` | `59.2%` | `20.6d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+1.21%` | `62.3%` | `38.0d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.22%` | `64.0%` | `5d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.38%` | `75.6%` | `11d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+4.15%` | `83.8%` | `22d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 77.1% coincidencia de liderazgo cíclico con giros de amalgama en escala ZZ 5.0%.
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: Rotación cíclica (XLY/XLP + XLK/XLU >7.20) impulsa el momentum cinemático en zz25 y zz50.
+**Población total**: 6,939 observaciones | $P(\text{bull})$ ponderado = 59.2% | $EV_{50}$ ponderado = +0.49%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Expansión Cíclica Extrema (`EXTREME_CYCLICAL_EXPANSION`)
-- **Condición**: $ROTATION > 7.20$ y `ACCELERATING_CYCLICAL_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 75.6\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.38\%$.
-- **Interpretación**: Apetito por riesgo total liderado por semiconductores y consumo discrecional.
+### 🚨 Anomalía Empírica 1: `DEFENSIVE_ROTATION__EXTREME_CYCLICAL_SPIKE_3D` (Alcista)
+- **Condición**: Estado empírico con N=43 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 76.7\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.55\%$, $EV_{\text{per\_day}} = +0.2038\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `MKT_ROTATION_DEFENSIVE_FLIGHT`.
 
-### ⚠️ Anomalía 2: Rotación Defensiva Extrema (`EXTREME_DEFENSIVE_ROTATION`)
-- **Condición**: $ROTATION < 1.85$ y `EXTREME_DEFENSIVE_FLIGHT_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 44.8\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = -0.72\%$.
+### 🚨 Anomalía Empírica 2: `EXTREME_DEFENSIVE_ROTATION__EXTREME_CYCLICAL_SPIKE_3D` (Alcista)
+- **Condición**: Estado empírico con N=22 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 72.7\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +1.91\%$, $EV_{\text{per\_day}} = +0.2125\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `MKT_ROTATION_DEFENSIVE_FREEZE`.
+
+### 🚨 Anomalía Empírica 3: `MODERATE_CYCLICAL__FAST_CYCLICAL_SURGE_3D` (Alcista)
+- **Condición**: Estado empírico con N=135 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 71.1\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +1.85\%$, $EV_{\text{per\_day}} = +0.0710\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `MKT_ROTATION_CYCLICAL_EXPANSION`.
+
+### ⚠️ Anomalía Bajista 1: `EXTREME_CYCLICAL_EXPANSION__DECELERATING_ROTATION_3D`
+- **Condición**: Estado empírico con N=50 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 32.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -2.92\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `MKT_ROTATION_CYCLICAL_EXPANSION`.
+
+### ⚠️ Anomalía Bajista 2: `EXTREME_CYCLICAL_EXPANSION__ACCELERATING_CYCLICAL_3D`
+- **Condición**: Estado empírico con N=80 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 43.8\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -1.61\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `MKT_ROTATION_CYCLICAL_EXPANSION`.
+
+### ⚠️ Anomalía Bajista 3: `EXTREME_CYCLICAL_EXPANSION__FAST_DEFENSIVE_ROTATION_3D`
+- **Condición**: Estado empírico con N=20 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 45.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -1.53\%$.
+- **Régimen**: `TACTICAL_BOUNCE_ONLY` → `MKT_ROTATION_CYCLICAL_EXPANSION`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `ROTATION_CYCLICAL_LEADERSHIP` ($>7.20$) | `VALIDATED` | **1.0000** | $+2.38\%$ | $75.6\%$ | 11 días | **Grade A — Hard Gate Principal** (Cyclical Leadership Lead) |
-| `ROTATION_DEFENSIVE_FLIGHT` ($<1.85$) | `VALIDATED` | **0.8750** | $-0.72\%$ | $44.8\%$ | 9 días | **Grade B — Hard Gate Subordinado** (Position Sizing $-25\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `ROTATION` | `HYPOTHESIS (Grade D)` | **0.0000** | 0.0000 | 59.2% | 49 | 8 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si `EXTREME_CYCLICAL_EXPANSION`: Confirmar liderazgo sectorial en tecnología y consumo.
-2. **`SpeculativeEntryHub`**:
-   - Si `EXTREME_DEFENSIVE_ROTATION`: Exigir mayor tasa de acierto para autorizar entradas en largo.
+1. **`QualityEntryGate`**: Rotación defensiva extrema (P05-P15) es SIGMET.
+2. **`CIO Allocator`**: Rotation es dimensión de flujo de equity independiente.

@@ -1,70 +1,99 @@
-# High Yield Corporate Credit Stress Intelligence — Reference Document
+# High Yield Corporate Credit Stress Ratio (HYG/TLT) Intelligence — Reference Document
+
+> **Auto-generated**: 2026-08-03T19:05:27Z | **Source**: `credit_fact_store.json` | **Status**: `VALIDATED (Grade A)`
 
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: High Yield Corporate Credit Stress Ratio (`CREDIT` - HYG/TLT)
-- **Fórmula**: Ratio entre el ETF de Bonos Corporativos de Alto Rendimiento (`HYG`) y el ETF de Bonos del Tesoro de Largo Plazo (`TLT`).
-- **Almacenamiento en Vault**: Derivado a partir de `HYG` y `TLT` en `market.ohlcv_bars`.
-- **Rango Histórico**: 2007 → 2026 (4,857 barras diarias).
-- **Umbrales Percentiles L0**:
-  - `EXTREME_CREDIT_FREEZE`: $< 0.446$
-  - `CREDIT_STRESS_HIGH`: $0.446 - 0.503$
-  - `CREDIT_STRESS_MODERATE`: $0.503 - 0.552$
-  - `NEUTRAL_CREDIT`: $0.552 - 0.611$
-  - `HEALTHY_CREDIT`: $0.611 - 0.750$
-  - `EXPANSIVE_CREDIT`: $0.750 - 0.900$
-  - `MAX_CREDIT_EXPANSION`: $> 0.900$.
+- **Nombre**: High Yield Corporate Credit Stress Ratio (HYG/TLT) (`CREDIT`)
+- **Fórmula**: Ratio HYG/TLT — mide apetito por riesgo crediticio vs refugio soberano.
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='CREDIT', timeframe='1d').
+- **Rango Histórico**: 2007-04-11 → 2026-07-30 (4,857 barras diarias / 19.27 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `EXTREME_CREDIT_FREEZE`: $< 0.45$
+  - `CREDIT_STRESS_HIGH`: $0.45 - 0.50$
+  - `CREDIT_STRESS_MODERATE`: $0.50 - 0.55$
+  - `NEUTRAL_CREDIT`: $0.55 - 0.61$
+  - `HEALTHY_CREDIT`: $0.61 - 0.75$
+  - `EXPANSIVE_CREDIT`: $0.75 - 0.90$
+  - `MAX_CREDIT_EXPANSION`: $> 0.90$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.45$)**: Estacionariedad cuantitativa de spreads de crédito corporativo (Std = 0.0068).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00013** (cumple $\sigma^2 < 0.03$).
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged Cross-Validation).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 0.0064.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **0.9966** ✅ (significativo)
+- **Mean Sharpe Ratio**: 0.7137 ± 0.4050 (5 folds)
+- **Fold SRs**: [0.2187, 1.3452, 0.5834, 0.6409, 1.1374]
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=49 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.11%` | `56.5%` | `7.1d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.66%` | `61.1%` | `22.1d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+1.47%` | `64.9%` | `40.4d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.12%` | `63.0%` | `6d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.25%` | `74.8%` | `14d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+3.95%` | `83.1%` | `26d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 83.5% coincidencia de descongelamiento de crédito con giros de mercado a 50d/200d.
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: Recuperación de crédito HYG/TLT actúa como filtro de confirmación macro para zz50 y zz75.
+**Población total**: 4,856 observaciones | $P(\text{bull})$ ponderado = 61.1% | $EV_{50}$ ponderado = +0.66%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Congelamiento de Crédito ($HYG/TLT < 0.446$)
-- **Condición**: `EXTREME_CREDIT_FREEZE` o `EXTREME_CREDIT_CRASH_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 74.8\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.25\%$.
-- **Fricción**: 25 bps por congelamiento de liquidez en bonos de alto rendimiento.
+### 🚨 Anomalía Empírica 1: `EXTREME_CREDIT_FREEZE__EXTREME_CREDIT_CRASH_3D` (Alcista)
+- **Condición**: Estado empírico con N=38 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 76.3\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +3.31\%$, $EV_{\text{per\_day}} = +1.6532\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
 
-### ⚠️ Anomalía 2: Expansión de Crédito Saludable ($HYG/TLT > 0.611$)
-- **Condición**: `HEALTHY_CREDIT` y `STABLE_CREDIT_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 68.4\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +1.48\%$.
+### 🚨 Anomalía Empírica 2: `EXTREME_CREDIT_FREEZE__STABLE_CREDIT_3D` (Alcista)
+- **Condición**: Estado empírico con N=44 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 79.5\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.85\%$, $EV_{\text{per\_day}} = +0.2379\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### 🚨 Anomalía Empírica 3: `EXTREME_CREDIT_FREEZE__FAST_CREDIT_RECOVERY_3D` (Alcista)
+- **Condición**: Estado empírico con N=24 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 75.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.66\%$, $EV_{\text{per\_day}} = +0.4437\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### ⚠️ Anomalía Bajista 1: `NEUTRAL_CREDIT__EXTREME_CREDIT_CRASH_3D`
+- **Condición**: Estado empírico con N=39 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 43.6\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -1.32\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
+
+### ⚠️ Anomalía Bajista 2: `HEALTHY_CREDIT__FAST_CREDIT_RECOVERY_3D`
+- **Condición**: Estado empírico con N=115 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 47.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.97\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
+
+### ⚠️ Anomalía Bajista 3: `HEALTHY_CREDIT__EXTREME_CREDIT_SURGE_3D`
+- **Condición**: Estado empírico con N=45 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 46.7\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.77\%$.
+- **Régimen**: `TACTICAL_BOUNCE_ONLY` → `STK_BUY_DIP_TACTICAL_ONLY_STRICT_STOP`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `CREDIT_FREEZE_REBOUND` ($<0.446$) | `VALIDATED` | **1.0000** | $+2.25\%$ | $74.8\%$ | 14 días | **Grade A — Hard Gate Principal** (Credit Freeze Recovery) |
-| `CREDIT_EXPANSION_STABLE` ($>0.611$) | `VALIDATED` | **0.8810** | $+1.48\%$ | $68.4\%$ | 10 días | **Grade B — Hard Gate Subordinado** (Position Sizing $+25\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `CREDIT` | `VALIDATED (Grade A)` | **0.9966** | 0.7137 | 61.1% | 49 | 2 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si `EXTREME_CREDIT_FREEZE`: Activar protocolo de crisis en liquidez corporativa.
-2. **`SpeculativeEntryHub`**:
-   - Si `CREDIT_STRESS_HIGH`: Bloquear apalancamiento especulativo por ensanchamiento de spreads de default.
+1. **`QualityEntryGate`**: Credit stress alto (P05-P15) es zona de alerta SIGMET.
+2. **`CIO Allocator`**: Credit es dimensión independiente de volatilidad (bond market).

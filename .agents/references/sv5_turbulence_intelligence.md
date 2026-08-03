@@ -1,73 +1,99 @@
-# SV5_TURBULENCE Intelligence — Institutional Volume Turbulence Reference Document
+# SV5 Institutional Volume Turbulence Intelligence — Reference Document
+
+> **Auto-generated**: 2026-08-03T19:05:25Z | **Source**: `sv5_turbulence_fact_store.json` | **Status**: `VALIDATED (Grade A)`
 
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: Institutional Volume Turbulence (`SV5_TURBULENCE`)
-- **Fórmula**: $\text{std}(\Delta_{\text{SV5TW}}, 10d)$ (Desviación estándar móvil de 10 días de los cambios diarios en amplitud de volumen).
-- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='SV5_TURBULENCE', open=high=low=close=value, volume=0).
-- **Rango Histórico**: 1999 → 2026 (6,922 barras diarias / 27.47 años).
-- **Umbrales Percentiles L0**:
-  - `P05` (Deep Serenity): $< 2.710$
-  - `P15` (Serene Volume): $2.710 - 3.557$
-  - `P35` (Normal Participation): $3.557 - 4.852$
-  - `P65` (Elevated Participation): $4.852 - 7.461$
-  - `P85` (High Volume Turbulence): $7.461 - 10.949$
-  - `P95` (Extreme Turbulence Shock): $10.949 - 14.867$
-  - `CRISIS_TURBULENCE_VETO`: $> 14.867$
+- **Nombre**: SV5 Institutional Volume Turbulence (`SV5_TURBULENCE`)
+- **Fórmula**: std(Δ_SV5TW, 10d) — desviación estándar del cambio en participación institucional.
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='SV5_TURBULENCE', timeframe='1d').
+- **Rango Histórico**: 1999-01-19 → 2026-07-30 (6,922 barras diarias / 27.47 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `DEEP_SERENITY`: $< 2.71$
+  - `SERENE_VOLUME`: $2.71 - 3.56$
+  - `NORMAL_PARTICIPATION`: $3.56 - 4.85$
+  - `ELEVATED_PARTICIPATION`: $4.85 - 7.46$
+  - `HIGH_VOLUME_TURBULENCE`: $7.46 - 10.95$
+  - `EXTREME_TURBULENCE_SHOCK`: $10.95 - 14.87$
+  - `CRISIS_TURBULENCE_VETO`: $> 14.87$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.45$)**: Preserva la memoria estructural de las transiciones de régimen institucional garantizando estacionariedad cuantitativa (Std = 1.0805).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00014** (cumple $\sigma^2 < 0.03$). Certidumbre asertiva alta en los extremos de capitulación.
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged Cross-Validation de 10 días de purga y 5 días de embargo).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 3.3694.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **0.9958** ✅ (significativo)
+- **Mean Sharpe Ratio**: 0.5428 ± 0.3774 (5 folds)
+- **Fold SRs**: [0.0253, 0.2647, 0.7484, 0.6801, 1.0978]
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000000** (N=49 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.02%` | `54.8%` | `6.5d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.47%` | `59.1%` | `20.5d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+1.19%` | `62.2%` | `38.8d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.15%` | `64.2%` | `6d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.19%` | `76.8%` | `14d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+3.85%` | `85.2%` | `28d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 85.0% coincidencia en giros estructurales ZZ 7.5% (TH). ZZ 5.0% (FI) ofrece el spread óptimo de discriminación (46pp).
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: En choques de turbulencia (>14.87), zz25 reacciona en <=6d para rebotes tácticos mientras zz75 confirma suelo de ciclo a 28d.
+**Población total**: 6,921 observaciones | $P(\text{bull})$ ponderado = 59.1% | $EV_{50}$ ponderado = +0.47%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Capitulación de Volumen (Washout Edge)
-- **Condición**: $SV5\_TURBULENCE > 14.87$ y `EXTREME_TURBULENCE_SPIKE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 76.8\%$ ($+26.8\text{ pp}$ sobre la moneda al aire).
+### 🚨 Anomalía Empírica 1: `CRISIS_TURBULENCE_VETO__STABLE_3D` (Alcista)
+- **Condición**: Estado empírico con N=65 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 75.4\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.44\%$, $EV_{\text{per\_day}} = +0.1437\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### 🚨 Anomalía Empírica 2: `CRISIS_TURBULENCE_VETO__EXTREME_TURBULENCE_SPIKE_3D` (Alcista)
+- **Condición**: Estado empírico con N=112 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 76.8\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = +2.19\%$, $EV_{\text{per\_day}} = +0.1045\%/\text{día}$.
-- **Interpretación**: Las sacudidas extremas de volumen institucional marcan el agotamiento de vendedores y la formación de suelos generacionales.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
 
-### ⚠️ Anomalía 2: Trampa de Serenidad (Liquidity Decay)
-- **Condición**: $SV5\_TURBULENCE < 2.71$ y `STABLE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 46.1\%$ (peor que el 50/50 de una moneda al aire).
+### 🚨 Anomalía Empírica 3: `CRISIS_TURBULENCE_VETO__DECELERATING_3D` (Alcista)
+- **Condición**: Estado empírico con N=40 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 67.5\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +1.71\%$, $EV_{\text{per\_day}} = +0.0951\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### ⚠️ Anomalía Bajista 1: `SERENE_VOLUME__STABLE_3D`
+- **Condición**: Estado empírico con N=269 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 46.1\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = -0.82\%$.
-- **Interpretación**: La baja variación de volumen sin impulso de precios indica apatía institucional y decaimiento de liquidez.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
+
+### ⚠️ Anomalía Bajista 2: `EXTREME_TURBULENCE_SHOCK__RISING_3D`
+- **Condición**: Estado empírico con N=100 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 51.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.54\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### ⚠️ Anomalía Bajista 3: `HIGH_VOLUME_TURBULENCE__EXTREME_TURBULENCE_SPIKE_3D`
+- **Condición**: Estado empírico con N=64 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 56.2\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.49\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `CRISIS_TURBULENCE_VETO` ($>14.87$) | `VALIDATED` | **1.0000** | $+2.19\%$ | $76.8\%$ | 14 días | **Grade A — Hard Gate Principal** (Veto Total / Capitulación) |
-| `SERENE_VOLUME_ACCUMULATION` ($<3.56$) | `VALIDATED` | **0.8840** | $+1.45\%$ | $68.2\%$ | 11 días | **Grade B — Hard Gate Subordinado** (Sizing Modifier $+25\%$) |
-| `SERENITY_TRAP` ($<2.71$ + Stable) | `VALIDATED` | **0.8720** | $-0.82\%$ | $46.1\%$ | 8 días | **Grade B — Hard Gate Subordinado** (Sizing Reduction $-33\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `SV5_TURBULENCE` | `VALIDATED (Grade A)` | **0.9958** | 0.5428 | 59.1% | 49 | 0 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si $SV5\_TURBULENCE > 14.87$: Autorizar acumulación táctica en Moats (Capitulación Institucional).
-   - Si $SV5\_TURBULENCE < 2.71$ con velocidad estable: Reducir tamaño de posición en $-33\%$ (Riesgo de Trampa de Serenidad).
-2. **`SpeculativeEntryHub`**:
-   - Si $SV5\_TURBULENCE > 10.0$: Elevar fricción de ejecución a 25 bps.
+1. **`QualityEntryGate`**: Turbulencia > P95 indica régimen de vol institucional.
+2. **`CIO Allocator`**: Turbulencia es proxy de VIX cuando VIX no está disponible.

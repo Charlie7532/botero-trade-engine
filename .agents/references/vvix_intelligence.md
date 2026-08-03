@@ -1,70 +1,99 @@
-# VVIX Intelligence — CBOE Vol-of-Vol Index Reference Document
+# CBOE VVIX (Volatility of VIX) Intelligence — Reference Document
+
+> **Auto-generated**: 2026-08-03T19:05:23Z | **Source**: `vvix_fact_store.json` | **Status**: `VALIDATED (Grade A)`
 
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: CBOE Vol-of-Vol Index (`VVIX`)
-- **Fórmula**: Volatilidad implícita a 30 días del índice VIX.
-- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='VVIX', open=high=low=close=value, volume=0).
-- **Rango Histórico**: 2006 → 2026 (~5,000 barras diarias).
-- **Umbrales Percentiles L0**:
-  - `VERY_LOW_VVIX`: $< 75.0$
-  - `LOW_VVIX`: $75.0 - 85.0$
-  - `NORMAL_VVIX`: $85.0 - 98.0$
-  - `ELEVATED_VVIX`: $98.0 - 112.0$
-  - `HIGH_VVIX`: $112.0 - 125.0$
-  - `EXTREME_VVIX_TAIL`: $125.0 - 140.0$
-  - `CRISIS_VVIX_SPIKE`: $> 140.0$
+- **Nombre**: CBOE VVIX (Volatility of VIX) (`VVIX`)
+- **Fórmula**: Volatilidad implícita del VIX — mide la inestabilidad del mercado de volatilidad.
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='VVIX', timeframe='1d').
+- **Rango Histórico**: 2006-03-06 → 2026-07-30 (5,072 barras diarias / 20.13 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `DEEP_STABILITY`: $< 71.02$
+  - `STABLE_VOL`: $71.02 - 78.73$
+  - `NORMAL_VVIX`: $78.73 - 85.78$
+  - `ELEVATED_VVIX`: $85.78 - 96.87$
+  - `HIGH_VVIX_RISK`: $96.87 - 109.95$
+  - `EXTREME_VVIX_INSTABILITY`: $109.95 - 122.16$
+  - `VOL_OF_VOL_CRISIS`: $> 122.16$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.40$)**: Estacionariedad cuantitativa garantizada (Std = 11.9253).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00013** (cumple $\sigma^2 < 0.03$).
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged Cross-Validation).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 4.5217.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **0.9912** ✅ (significativo)
+- **Mean Sharpe Ratio**: 0.5687 ± 0.5017 (5 folds)
+- **Fold SRs**: [-0.1605, 1.107, 0.863, 0.4079, 1.1922]
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=49 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.17%` | `57.5%` | `7.4d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.76%` | `62.0%` | `22.0d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+1.68%` | `66.4%` | `40.4d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.05%` | `61.8%` | `5d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.15%` | `72.8%` | `13d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+3.65%` | `81.4%` | `25d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 78.4% coincidencia de giros cuando VVIX lidera la inestabilidad de opciones.
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: VVIX >125 precede giros en zz25 por adelantado en +0.5d respecto al precio.
+**Población total**: 5,071 observaciones | $P(\text{bull})$ ponderado = 62.0% | $EV_{50}$ ponderado = +0.76%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Vol-of-Vol Explosion ($VVIX > 125.0$)
-- **Condición**: $VVIX > 125.0$ y `EXTREME_VVIX_SPIKE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 72.8\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.15\%$.
-- **Fricción**: 25 bps descontados por volatilidad de la curva de opciones.
+### 🚨 Anomalía Empírica 1: `VOL_OF_VOL_CRISIS__DECELERATING_3D` (Alcista)
+- **Condición**: Estado empírico con N=28 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 85.7\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +3.48\%$, $EV_{\text{per\_day}} = +0.2176\%/\text{día}$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
 
-### ⚠️ Anomalía 2: Regime Transition Warning ($VVIX > 120.0$ + $VIX < 20.0$)
-- **Condición**: Inestabilidad de VIX previa al estallido del precio.
-- **Probabilidad Bull**: $P(\text{bull}) = 44.5\%$.
-- **Interpretación**: Comportamiento asimétrico donde el mercado de opciones prevé un cambio destructivo del régimen de volatilidad.
+### 🚨 Anomalía Empírica 2: `NORMAL_VVIX__VVIX_ACCUMULATION_3D` (Alcista)
+- **Condición**: Estado empírico con N=37 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 75.7\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.72\%$, $EV_{\text{per\_day}} = +0.1007\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### 🚨 Anomalía Empírica 3: `ELEVATED_VVIX__EXTREME_VVIX_SPIKE_3D` (Alcista)
+- **Condición**: Estado empírico con N=20 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 75.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.39\%$, $EV_{\text{per\_day}} = +0.1405\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### ⚠️ Anomalía Bajista 1: `DEEP_STABILITY__RISING_3D`
+- **Condición**: Estado empírico con N=32 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 40.6\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -1.13\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### ⚠️ Anomalía Bajista 2: `HIGH_VVIX_RISK__EXTREME_VVIX_SPIKE_3D`
+- **Condición**: Estado empírico con N=70 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 54.3\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.68\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### ⚠️ Anomalía Bajista 3: `VOL_OF_VOL_CRISIS__EXTREME_VVIX_CRUSH_3D`
+- **Condición**: Estado empírico con N=28 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 50.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.48\%$.
+- **Régimen**: `TRANSITIONAL` → `STK_HOLD_STABLE`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `VVIX_EXPLOSION_REBOUND` ($>125.0$) | `VALIDATED` | **1.0000** | $+2.15\%$ | $72.8\%$ | 13 días | **Grade A — Hard Gate Principal** (Vol-of-Vol Catalyst) |
-| `VVIX_REGIME_TRANSITION` ($>120.0$) | `VALIDATED` | **0.8790** | $-0.65\%$ | $44.5\%$ | 9 días | **Grade B — Hard Gate Subordinado** (Warning / Sizing $-33\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `VVIX` | `VALIDATED (Grade A)` | **0.9912** | 0.5687 | 62.0% | 49 | 0 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si $VVIX > 120.0$: Alerta de transición de régimen de volatilidad. Exige confirmación de amalgama S5FI.
-2. **`SpeculativeEntryHub`**:
-   - Si $VVIX > 125.0$: Invocación de Gate de la estructura Vanna/Charm para calibrar el tamaño de la posición en derivados.
+1. **`QualityEntryGate`**: VVIX es confirmador de régimen de VIX, no señal primaria.
+2. **`SpeculativeEntryHub`**: VVIX > P95 indica transición de régimen vol.

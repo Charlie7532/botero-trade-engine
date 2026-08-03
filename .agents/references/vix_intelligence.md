@@ -1,72 +1,99 @@
-# VIX Intelligence — CBOE Volatility Index Reference Document
+# CBOE Volatility Index Intelligence — Reference Document
+
+> **Auto-generated**: 2026-08-03T19:05:22Z | **Source**: `vix_fact_store.json` | **Status**: `VALIDATED (Grade A)`
 
 ## 1. Ficha Técnica del Indicador
 - **Nombre**: CBOE Volatility Index (`VIX`)
 - **Fórmula**: Volatilidad implícita a 30 días calculada de las opciones OTM de SPX.
-- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='VIX', open=high=low=close=value, volume=0).
-- **Rango Histórico**: 1990 → 2026 (~9,000 barras diarias).
-- **Umbrales Percentiles L0**:
-  - `DEEP_CALM`: $< 12.0$
-  - `CALM`: $12.0 - 15.0$
-  - `NORMAL`: $15.0 - 18.0$
-  - `ELEVATED`: $18.0 - 22.0$
-  - `HIGH_VOL`: $22.0 - 28.0$
-  - `EXTREME_VOL`: $28.0 - 36.0$
-  - `CRISIS_SPIKE`: $> 36.0$ (o $VIX > 40.0$ Redirección V36 / NOTAM Circuit Breaker).
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='VIX', timeframe='1d').
+- **Rango Histórico**: 1993-01-29 → 2026-07-30 (8,404 barras diarias / 33.35 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `DEEP_CALM`: $< 11.34$
+  - `CALM`: $11.34 - 12.64$
+  - `NORMAL`: $12.64 - 15.29$
+  - `ELEVATED`: $15.29 - 20.63$
+  - `HIGH_VOL`: $20.63 - 26.08$
+  - `EXTREME_VOL`: $26.08 - 33.47$
+  - `CRISIS_SPIKE`: $> 33.47$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.40$)**: Estacionariedad cuantitativa preservando memoria de shocks de volatilidad (Std = 0.8027).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00013** (cumple $\sigma^2 < 0.03$).
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged CV).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 1.9206.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **1.0000** ✅ (significativo)
+- **Mean Sharpe Ratio**: 0.5360 ± 0.3125 (5 folds)
+- **Fold SRs**: [0.844, 0.1135, 0.198, 0.8203, 0.6772]
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=46 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.16%` | `55.9%` | `8.1d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.98%` | `62.1%` | `23.0d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+1.73%` | `64.2%` | `40.9d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.28%` | `63.5%` | `5d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.45%` | `74.5%` | `12d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+4.12%` | `83.6%` | `24d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 86.2% coincidencia en techos de pánico con giros ZigZag 5.0% y 7.5%.
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: Spikes de VIX >28 muestran rebote táctico en zz25 (5d) pero exigen zz50 (12d) para confirmar fin de mercado bajista.
+**Población total**: 8,403 observaciones | $P(\text{bull})$ ponderado = 62.1% | $EV_{50}$ ponderado = +0.98%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Panic Spike Rebound ($VIX > 28.0$)
-- **Condición**: $VIX > 28.0$ y `EXTREME_SPIKE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 74.5\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.45\%$, $EV_{\text{per\_day}} = +0.112\%/\text{día}$.
-- **Fricción**: 25 bps descontados en el Fact Store.
+### 🚨 Anomalía Empírica 1: `DEEP_CALM__RISING_3D` (Alcista)
+- **Condición**: Estado empírico con N=42 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 81.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.67\%$, $EV_{\text{per\_day}} = +0.0721\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
 
-### ⚠️ Anomalía 2: Complacency Decay ($VIX < 12.0$)
-- **Condición**: $VIX < 12.0$ y `STABLE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 48.2\%$ (inferior al 50/50).
-- **Esperanza Matemática**: $EV_{\text{net}} = -0.45\%$.
+### 🚨 Anomalía Empírica 2: `NORMAL__FAST_CRUSH_3D` (Alcista)
+- **Condición**: Estado empírico con N=122 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 71.3\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.37\%$, $EV_{\text{per\_day}} = +0.0657\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### 🚨 Anomalía Empírica 3: `CALM__RISING_3D` (Alcista)
+- **Condición**: Estado empírico con N=152 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 79.6\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.19\%$, $EV_{\text{per\_day}} = +0.0634\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### ⚠️ Anomalía Bajista 1: `CRISIS_SPIKE__RISING_3D`
+- **Condición**: Estado empírico con N=37 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 48.6\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.43\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
+
+### ⚠️ Anomalía Bajista 2: `HIGH_VOL__DECELERATING_3D`
+- **Condición**: Estado empírico con N=300 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 51.7\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.16\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### ⚠️ Anomalía Bajista 3: `HIGH_VOL__FAST_CRUSH_3D`
+- **Condición**: Estado empírico con N=226 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 53.5\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.04\%$.
+- **Régimen**: `TRANSITIONAL` → `STK_HOLD_STABLE`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `VIX_PANIC_REBOUND` ($>28.0$) | `VALIDATED` | **1.0000** | $+2.45\%$ | $74.5\%$ | 12 días | **Grade A — Hard Gate Principal** (Catalizador de Compra) |
-| `VIX_CIRCUIT_BREAKER` ($>40.0$) | `VALIDATED` | **1.0000** | $+3.15\%$ | $81.2\%$ | 18 días | **Grade A — Hard Gate Principal** (Redirección V36 / Notam Veto) |
-| `VIX_COMPLACENCY_WARNING` ($<12.0$) | `VALIDATED` | **0.8650** | $-0.45\%$ | $48.2\%$ | 7 días | **Grade B — Hard Gate Subordinado** (Position Sizing $-25\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `VIX` | `VALIDATED (Grade A)` | **1.0000** | 0.5360 | 62.1% | 46 | 4 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si $VIX > 40.0$: Invocación de `NOTAM_CIRCUIT_BREAKER` (Redirección V36 de protección total).
-   - Si $VIX > 28.0$: Activa compra de caídas en convicción MOAT.
-2. **`SpeculativeEntryHub`**:
-   - Si $VIX < 12.0$: Bloquear trades especulativos por compresión de prima de volatilidad.
+1. **`QualityEntryGate`**: Consultar fact store para señal específica por nivel + velocidad.
+2. **`SpeculativeEntryHub`**: En estados `FULL_STRUCTURAL_BEAR`, respetar el bloqueo.

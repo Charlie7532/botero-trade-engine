@@ -1,70 +1,99 @@
-# Fear & Greed Intelligence — CNN Fear & Greed Index Reference Document
+# CNN Fear & Greed Index Intelligence — Reference Document
+
+> **Auto-generated**: 2026-08-03T19:05:24Z | **Source**: `fg_fact_store.json` | **Status**: `VALIDATED (Grade A)`
 
 ## 1. Ficha Técnica del Indicador
 - **Nombre**: CNN Fear & Greed Index (`FG`)
-- **Fórmula**: Índice compuesto contrario de 7 indicadores de mercado (0 a 100).
-- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='FG', open=high=low=close=value, volume=0).
-- **Rango Histórico**: 2011 → 2026 (3,872 barras diarias).
-- **Umbrales Percentiles L0**:
-  - `EXTREME_FEAR_PANIC`: $< 10.0$
-  - `HIGH_FEAR`: $10.0 - 25.0$
-  - `MODERATE_FEAR`: $25.0 - 45.0$
-  - `NEUTRAL_SENTIMENT`: $45.0 - 55.0$
-  - `MODERATE_GREED`: $55.0 - 75.0$
-  - `HIGH_GREED`: $75.0 - 90.0$
-  - `EXTREME_GREED_EUPHORIA`: $> 90.0$
+- **Fórmula**: Índice compuesto CNN de 7 indicadores de sentimiento (0=miedo extremo, 100=codicia extrema).
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='FG', timeframe='1d').
+- **Rango Histórico**: market.ohlcv_bars → present (3,870 barras diarias / 15.4 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `DEEP_FEAR`: $< 12.00$
+  - `EUPHORIA`: $12.00 - 24.56$
+  - `EXTREME_FEAR`: $24.56 - 41.00$
+  - `EXTREME_GREED`: $41.00 - 59.52$
+  - `FEAR`: $59.52 - 71.14$
+  - `GREED`: $71.14 - 81.00$
+  - `NEUTRAL`: $> 81.00$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.45$)**: Memoria estructural preservada con estacionariedad garantizada (Std = 5.9154).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00012** (cumple $\sigma^2 < 0.03$). Certidumbre asertiva altísima en zonas de capitulación.
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged Cross-Validation).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 10.9852.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **0.9977** ✅ (significativo)
+- **Mean Sharpe Ratio**: 0.7745 ± 0.3001 (5 folds)
+- **Fold SRs**: [0.6618, 0.5827, 0.4069, 0.8712, 1.2817]
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=46 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.27%` | `58.3%` | `9.1d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+1.11%` | `64.7%` | `28.2d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+2.14%` | `68.8%` | `57.7d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.35%` | `65.1%` | `5d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.48%` | `76.8%` | `11d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+4.25%` | `84.5%` | `22d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 77.1% coincidencia contraria con giros de precio en escala ZZ 5.0%.
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: Miedo extremo (<10) dispara compra táctica inmediata en zz25 y acumulación estructural en zz75.
+**Población total**: 3,870 observaciones | $P(\text{bull})$ ponderado = 64.7% | $EV_{50}$ ponderado = +1.11%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Capitulación Contraria ($FG < 10.0$)
-- **Condición**: $FG < 10.0$ y `EXTREME_FEAR_CRASH_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 76.8\%$ ($+26.8\text{ pp}$ sobre la moneda al aire).
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.48\%$, $EV_{\text{per\_day}} = +0.118\%/\text{día}$.
-- **Fricción**: 25 bps descontados en el Fact Store.
+### 🚨 Anomalía Empírica 1: `EUPHORIA__RISING_3D` (Alcista)
+- **Condición**: Estado empírico con N=44 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 79.5\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.68\%$, $EV_{\text{per\_day}} = +0.0743\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
 
-### ⚠️ Anomalía 2: Euforia Extrema ($FG > 90.0$)
-- **Condición**: $FG > 90.0$ y `EXTREME_GREED_SURGE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 41.2\%$ (destrucción de capital en long).
-- **Esperanza Matemática**: $EV_{\text{net}} = -1.12\%$.
+### 🚨 Anomalía Empírica 2: `EUPHORIA__FALLING_3D` (Alcista)
+- **Condición**: Estado empírico con N=26 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 73.1\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.49\%$, $EV_{\text{per\_day}} = +0.0682\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### 🚨 Anomalía Empírica 3: `GREED__SURGING_EXTREME_3D` (Alcista)
+- **Condición**: Estado empírico con N=46 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 76.1\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.31\%$, $EV_{\text{per\_day}} = +0.0571\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### ⚠️ Anomalía Bajista 1: `EXTREME_GREED__SURGING_EXTREME_3D`
+- **Condición**: Estado empírico con N=26 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 42.3\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.73\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### ⚠️ Anomalía Bajista 2: `EXTREME_GREED__FALLING_3D`
+- **Condición**: Estado empírico con N=46 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 43.5\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.44\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### ⚠️ Anomalía Bajista 3: `FEAR__SURGING_EXTREME_3D`
+- **Condición**: Estado empírico con N=42 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 47.6\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.35\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `FG_EXTREME_PANIC_BUY` ($<10.0$) | `VALIDATED` | **1.0000** | $+2.48\%$ | $76.8\%$ | 11 días | **Grade A — Hard Gate Principal** (Catalizador Contrario $+50\%$) |
-| `FG_EUPHORIA_TRIM_SIGNAL` ($>90.0$) | `VALIDATED` | **1.0000** | $-1.12\%$ | $41.2\%$ | 6 días | **Grade A — Hard Gate Principal** (Hard Veto / Recorte $-50\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `FG` | `VALIDATED (Grade A)` | **0.9977** | 0.7745 | 64.7% | 46 | 1 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si $FG < 10.0$: Actúa como catalizador de alta convicción para acumular posiciones MOAT ($+50\%$ sizing).
-2. **`SpeculativeEntryHub`**:
-   - Si $FG > 90.0$: Invocación de estado `MKT_SES_1_EUPHORIA` para recortar posiciones especulativas.
+1. **`QualityEntryGate`**: Fear extremo es contrarian — BUT requiere confirmación por velocidad.
+2. **Greed extremo NO es señal bajista** — data empírica muestra EV positivo.

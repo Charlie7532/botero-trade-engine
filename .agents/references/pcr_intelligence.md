@@ -1,70 +1,99 @@
 # CBOE Put/Call Ratio Intelligence — Reference Document
 
+> **Auto-generated**: 2026-08-03T19:05:24Z | **Source**: `pcr_fact_store.json` | **Status**: `VALIDATED (Grade A)`
+
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: CBOE Total Put/Call Ratio (`CBOE_PCR`)
-- **Fórmula**: Ratio diario entre volumen negociado de opciones Put y Call.
-- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='CBOE_PCR', open=high=low=close=value, volume=0).
-- **Rango Histórico**: 2006 → 2026 (4,924 barras diarias).
-- **Umbrales Percentiles L0**:
-  - `EXTREME_CALL_COMPLACENCY`: $< 0.65$
-  - `CALL_DOMINATED`: $0.65 - 0.78$
-  - `NORMAL_EQUILIBRIUM`: $0.78 - 0.92$
-  - `ELEVATED_PUT_HEDGING`: $0.92 - 1.08$
-  - `HIGH_PUT_PROTECTION`: $1.08 - 1.25$
-  - `EXTREME_PANIC_PUTS`: $1.25 - 1.45$
-  - `CRISIS_PUT_PANIC_SPIKE`: $> 145.0$ (ó $> 1.45$).
+- **Nombre**: CBOE Put/Call Ratio (`CBOE_PCR`)
+- **Fórmula**: Ratio total de volumen de puts vs calls en opciones CBOE.
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='CBOE_PCR', timeframe='1d').
+- **Rango Histórico**: market.ohlcv_bars → present (4,922 barras diarias / 19.5 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `DEEP_BULLISH`: $< 0.73$
+  - `BULLISH`: $0.73 - 0.80$
+  - `MODERATE_BULLISH`: $0.80 - 0.87$
+  - `NEUTRAL`: $0.87 - 0.98$
+  - `MODERATE_BEARISH`: $0.98 - 1.09$
+  - `BEARISH`: $1.09 - 1.23$
+  - `EXTREME_HEDGING`: $> 1.23$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.45$)**: Estacionariedad cuantitativa de demanda de cobertura (Std = 0.1253).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00013** (cumple $\sigma^2 < 0.03$).
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged Cross-Validation).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 0.0734.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **0.9927** ✅ (significativo)
+- **Mean Sharpe Ratio**: 0.5866 ± 0.4220 (5 folds)
+- **Fold SRs**: [-0.0768, 1.0919, 0.8922, 0.5282, 0.9627]
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=45 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.12%` | `57.2%` | `7.1d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.68%` | `61.7%` | `21.7d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+1.56%` | `66.0%` | `39.9d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.18%` | `63.8%` | `4d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.32%` | `75.2%` | `10d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+3.92%` | `82.9%` | `20d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 75.5% coincidencia en capitulación de opciones Put.
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: PCR >1.25 muestra piso cinemático táctico a 4d (zz25) y expansión a 20d (zz75).
+**Población total**: 4,922 observaciones | $P(\text{bull})$ ponderado = 61.7% | $EV_{50}$ ponderado = +0.68%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Capitulación de Coberturas ($PCR > 1.25$)
-- **Condición**: $PCR > 1.25$ y `EXTREME_PCR_SPIKE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 75.2\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.32\%$.
-- **Fricción**: 10 bps estándar.
+### 🚨 Anomalía Empírica 1: `MODERATE_BEARISH__EXTREME_HEDGING_SPIKE_3D` (Alcista)
+- **Condición**: Estado empírico con N=31 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 80.7\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.06\%$, $EV_{\text{per\_day}} = +0.0794\%/\text{día}$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
 
-### ⚠️ Anomalía 2: Complacencia Masiva de Calls ($PCR < 0.65$)
-- **Condición**: $PCR < 0.65$ y `EXTREME_PCR_CRUSH_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 43.1\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = -0.78\%$.
+### 🚨 Anomalía Empírica 2: `NEUTRAL__EXTREME_PUT_COLLAPSE_3D` (Alcista)
+- **Condición**: Estado empírico con N=48 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 72.9\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.01\%$, $EV_{\text{per\_day}} = +0.1119\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### 🚨 Anomalía Empírica 3: `BULLISH__PUT_UNWIND_3D` (Alcista)
+- **Condición**: Estado empírico con N=93 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 73.1\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +1.65\%$, $EV_{\text{per\_day}} = +0.0635\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### ⚠️ Anomalía Bajista 1: `BEARISH__STABLE_3D`
+- **Condición**: Estado empírico con N=75 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 52.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.20\%$.
+- **Régimen**: `TACTICAL_BUY_DIP_ONLY` → `STK_BUY_DIP_TACTICAL_ONLY_STRICT_STOP`.
+
+### ⚠️ Anomalía Bajista 2: `DEEP_BULLISH__PUT_UNWIND_3D`
+- **Condición**: Estado empírico con N=48 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 62.5\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.15\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+
+### ⚠️ Anomalía Bajista 3: `EXTREME_HEDGING__EXTREME_HEDGING_SPIKE_3D`
+- **Condición**: Estado empírico con N=115 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 54.8\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.09\%$.
+- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `PCR_CAPITULATION_BUY` ($>1.25$) | `VALIDATED` | **1.0000** | $+2.32\%$ | $75.2\%$ | 10 días | **Grade A — Hard Gate Principal** (Put Capitulation Catalyst) |
-| `PCR_CALL_COMPLACENCY` ($<0.65$) | `VALIDATED` | **0.8610** | $-0.78\%$ | $43.1\%$ | 6 días | **Grade B — Hard Gate Subordinado** (Position Sizing $-25\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `CBOE_PCR` | `VALIDATED (Grade A)` | **0.9927** | 0.5866 | 61.7% | 45 | 4 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si $PCR > 1.25$: Valida extremo de cobertura institucional y autoriza buy-the-dip.
-2. **`SpeculativeEntryHub`**:
-   - Si $PCR < 0.65$: Bloquear acumulación de Calls OTM por saturación de prima.
+1. **`QualityEntryGate`**: PCR extremo (P95) es señal contrarian, no de pánico.
+2. **`SpeculativeEntryHub`**: Consultar régimen de divergencia antes de actuar.

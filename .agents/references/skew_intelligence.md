@@ -1,70 +1,99 @@
-# CBOE SKEW Tail Risk Intelligence — Reference Document
+# CBOE SKEW Index Intelligence — Reference Document
+
+> **Auto-generated**: 2026-08-03T19:05:26Z | **Source**: `skew_fact_store.json` | **Status**: `VALIDATED (Grade A)`
 
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: CBOE SKEW Tail Risk Index (`SKEW`)
-- **Fórmula**: Perfil de sesgo de volatilidad implícita en opciones OTM de SPX (mide el precio de la cola izquierda / riesgo de cisne negro).
-- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='SKEW', open=high=low=close=value, volume=0).
-- **Rango Histórico**: 1990 → 2026 (~9,000 barras diarias).
-- **Umbrales Percentiles L0**:
-  - `EXTREME_TAIL_COMPLACENCY`: $< 115.0$
-  - `LOW_TAIL_RISK`: $115.0 - 122.0$
-  - `MODERATE_TAIL_RISK`: $122.0 - 130.0$
-  - `NORMAL_TAIL_RISK`: $130.0 - 140.0$
-  - `HIGH_TAIL_HEDGING`: $140.0 - 150.0$
-  - `EXTREME_BLACK_SWAN_HEDGE`: $150.0 - 160.0$
-  - `CRISIS_SKEW_SPIKE`: $> 160.0$.
+- **Nombre**: CBOE SKEW Index (`SKEW`)
+- **Fórmula**: Medida de riesgo de cola: demanda de puts OTM en SPX. 100=neutral, >130=cola activa.
+- **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='SKEW', timeframe='1d').
+- **Rango Histórico**: N/A → present (8,417 barras diarias / 33.4 años).
+- **Umbrales Percentiles L0** (empíricos del Fact Store):
+  - `BLACK_SWAN_PARANOIA`: $< 110.47$
+  - `COMPLACENCY`: $110.47 - 113.27$
+  - `DEEP_COMPLACENCY`: $113.27 - 117.41$
+  - `ELEVATED`: $117.41 - 124.58$
+  - `HIGH_TAIL_RISK`: $124.58 - 137.02$
+  - `NORMAL_HIGH`: $137.02 - 148.03$
+  - `NORMAL_LOW`: $> 148.03$
 
 ---
 
-## 2. Análisis de Deep Learning y Certidumbre Cuantitativa
-- **Diferenciación Fraccional ($d=0.45$)**: Estacionariedad cuantitativa de demanda de coberturas lejanas (Std = 2.0824).
-- **Incertidumbre Epistémica ($\sigma^2_{\text{epistémica}}$)**: **0.00014** (cumple $\sigma^2 < 0.03$).
-- **Deflated Sharpe Ratio (DSR)**: **1.0000** (Purged Cross-Validation).
+## 2. Validación Cuantitativa y Certidumbre
+
+### Estacionariedad
+- **Diferenciación Fraccional ($d=0.40$)**: Std = 3.7194.
+
+### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
+- **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
+- **DSR p-value**: **1.0000** ✅ (significativo)
+- **Mean Sharpe Ratio**: 0.6154 ± 0.3062 (5 folds)
+- **Fold SRs**: [0.7945, 0.2447, 0.3628, 0.921, 1.0093]
+
+### Incertidumbre Epistémica (Bootstrap)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=46 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag y Coincidencia de Giros Empíricos
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
 
-El Fact Store del indicador evalúa la dinámica en **3 escalas temporales de ZigZag** codificadas bajo el método Triple Barrier (López de Prado):
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+|---|---|---|---|---|
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.16%` | `55.1%` | `6.8d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.95%` | `58.8%` | `21.2d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+1.73%` | `61.3%` | `38.8d` |
 
-| Escala ZigZag | Horizonte Máximo | Esperanza $EV_{\text{net}}$ | Win Rate $P(\text{bull})$ | Mediana FTT | Aplicación Operativa |
-|---|---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+1.10%` | `62.4%` | `5d` | Entradas tácticas y rebotes cinemáticos de corto plazo |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+2.18%` | `73.6%` | `12d` | **Punto Óptimo de Discriminación** (Spread de 46pp) |
-| **`zz75` (7.5% Estructuración)** | 90 días | `+3.75%` | `81.8%` | `23d` | Confirmación de cambio de tendencia estructural |
-
-### 📊 Coincidencia Empírica de Giros:
-- **Tasa de Coincidencia**: 81.2% coincidencia en acumulación de cobertura institucional pre-giro.
-- **Divergencia Multi-Horizonte (Horizon Divergence)**: SKEW >140 indica cobertura preventiva que sostiene el piso estructural de zz75.
+**Población total**: 8,417 observaciones | $P(\text{bull})$ ponderado = 58.8% | $EV_{50}$ ponderado = +0.95%
 
 ---
 
-## 3. Anomalías Empíricas y Aislamiento de Alfa
+## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
 
-### 🚨 Anomalía 1: Cobertura Masiva Institutional ($SKEW > 140.0$)
-- **Condición**: $SKEW > 140.0$ y `EXTREME_SKEW_SPIKE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 73.6\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.18\%$.
-- **Interpretación**: Compradores institucionales acumulando coberturas antes de rebotes tácticos.
+### 🚨 Anomalía Empírica 1: `COMPLACENCY__FAST_RELAXATION_3D` (Alcista)
+- **Condición**: Estado empírico con N=53 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 60.5\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +3.03\%$, $EV_{\text{per\_day}} = +0.1893\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
 
-### ⚠️ Anomalía 2: Ausencia de Coberturas / Complacencia ($SKEW < 115.0$)
-- **Condición**: $SKEW < 115.0$ y `STABLE_3D`.
-- **Probabilidad Bull**: $P(\text{bull}) = 45.8\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = -0.52\%$.
+### 🚨 Anomalía Empírica 2: `DEEP_COMPLACENCY__RISING_HEDGING_3D` (Alcista)
+- **Condición**: Estado empírico con N=40 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 76.9\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.96\%$, $EV_{\text{per\_day}} = +0.1646\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### 🚨 Anomalía Empírica 3: `NORMAL_LOW__STABLE_3D` (Alcista)
+- **Condición**: Estado empírico con N=700 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 62.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +2.44\%$, $EV_{\text{per\_day}} = +0.1222\%/\text{día}$.
+- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+
+### ⚠️ Anomalía Bajista 1: `BLACK_SWAN_PARANOIA__EXTREME_RELAXATION_3D`
+- **Condición**: Estado empírico con N=36 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 33.3\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -2.15\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
+
+### ⚠️ Anomalía Bajista 2: `BLACK_SWAN_PARANOIA__STABLE_3D`
+- **Condición**: Estado empírico con N=43 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 41.7\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -1.33\%$.
+- **Régimen**: `TACTICAL_BOUNCE_ONLY` → `STK_BUY_DIP_TACTICAL_ONLY_STRICT_STOP`.
+
+### ⚠️ Anomalía Bajista 3: `COMPLACENCY__STABLE_3D`
+- **Condición**: Estado empírico con N=394 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 47.0\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.74\%$.
+- **Régimen**: `FULL_STRUCTURAL_BEAR` → `STK_BLOCK_CRISIS`.
 
 ---
 
 ## 4. Registro Formal de Evidencia (`hypothesis-governance`)
 
-| Patrón / Regla | Status Tag | DSR Score | Ventaja $EV$ | $P(\text{{bull}})$ | FTT Mediana | Grado & Nivel de Autoridad (`hypothesis-governance`) |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| `SKEW_TAIL_HEDGE_ACCUMULATION` ($>140$) | `VALIDATED` | **1.0000** | $+2.18\%$ | $73.6\%$ | 12 días | **Grade A — Hard Gate Principal** (Tail Risk Catalyst) |
-| `SKEW_UNHEDGED_COMPLACENCY` ($<115$) | `VALIDATED` | **0.8540** | $-0.52\%$ | $45.8\%$ | 8 días | **Grade B — Hard Gate Subordinado** (Position Sizing $-25\%$) |
+| Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
+| `SKEW` | `VALIDATED (Grade A)` | **1.0000** | 0.6154 | 58.8% | 46 | 2 | **Grade C — Informational Only** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**:
-   - Si $SKEW > 140.0$: Valida acumulación de coberturas institucionales de cisne negro.
-2. **`SpeculativeEntryHub`**:
-   - Si $SKEW < 115.0$: Reducir apalancamiento por complacencia de coberturas.
+1. **`QualityEntryGate`**: SKEW extremo (P95) indica protección de cola activa.
+2. **`SpeculativeEntryHub`**: Consultar régimen de divergencia por velocidad.

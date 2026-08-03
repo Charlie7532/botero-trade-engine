@@ -1,8 +1,8 @@
 """
 CNN Fear & Greed Index Vault Provider
 ====================================
-Vault provider for Fear & Greed Market SIGMET & 3-Day Kinematic Velocity Telemetry.
-Reads FG from Vault, generates authoritative MarketSIGMET, and persists:
+Vault provider for Fear & Greed Market METAR & 3-Day Kinematic Velocity Telemetry.
+Reads FG from Vault, generates authoritative MarketMETAR, and persists:
   1. MCP Snapshot: mcp_snapshot("fg/sigmet", "MARKET")
   2. Stateful-First Regime Transitions: market.regime_states ("fg:sigmet:MARKET")
 
@@ -16,36 +16,36 @@ from backend.daemons.vault_providers import register_provider
 from backend.daemons.data_vault_daemon import _already_vaulted_today
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.shared.infrastructure.postgres_regime_state import PostgresRegimeStateAdapter
-from backend.modules.entry_decision.domain.services.fg_sigmet_service import (
-    get_fg_market_sigmet,
+from backend.modules.entry_decision.domain.services.fg_metar_service import (
+    get_fg_market_metar,
     StrictDataPolicyError,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class FearGreedSIGMETProvider:
-    """Vault provider for CNN Fear & Greed Index SIGMET and state transitions."""
+class FearGreedMETARProvider:
+    """Vault provider for CNN Fear & Greed Index METAR and state transitions."""
 
-    name = "fg_sigmet"
+    name = "fg_metar"
     categories = ["fg", "fear_greed"]
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
-        """Compute and persist FG Market SIGMET and regime state from Vault data."""
+        """Compute and persist FG Market METAR and regime state from Vault data."""
         if _already_vaulted_today(store, "fg/sigmet", "MARKET"):
-            logger.info("📊 FG Market SIGMET already vaulted today — skipping")
+            logger.info("📊 FG Market METAR already vaulted today — skipping")
             return {"status": "skipped", "reason": "already_today"}
 
         return self._compute(store)
 
     def run_ticker(self, store: TimescaleDataStore, ticker: str) -> Dict[str, Any]:
-        """FG SIGMET is market-wide — falls back to run_full."""
+        """FG METAR is market-wide — falls back to run_full."""
         return self._compute(store)
 
     def _compute(self, store: TimescaleDataStore) -> Dict[str, Any]:
-        """Core computation: read Vault → SIGMET service → persist snapshot & regime state."""
+        """Core computation: read Vault → METAR service → persist snapshot & regime state."""
         try:
-            sigmet = get_fg_market_sigmet()
+            sigmet = get_fg_market_metar()
             store.save_mcp_snapshot("fg/sigmet", "MARKET", sigmet.to_dict())
 
             try:
@@ -70,13 +70,13 @@ class FearGreedSIGMETProvider:
                 logger.warning(f"FG Provider: Regime state persistence skipped: {e}")
 
             logger.info(
-                f"📊 FG SIGMET Vaulted: State={sigmet.state_key} | "
+                f"📊 FG METAR Vaulted: State={sigmet.state_key} | "
                 f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
             )
 
             return {
                 "status": "ok",
-                "sigmet_id": sigmet.sigmet_id,
+                "metar_id": sigmet.metar_id,
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
@@ -93,4 +93,4 @@ class FearGreedSIGMETProvider:
             return {"status": "error", "error": str(e)}
 
 
-register_provider(FearGreedSIGMETProvider())
+register_provider(FearGreedMETARProvider())

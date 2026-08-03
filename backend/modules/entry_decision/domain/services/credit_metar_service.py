@@ -1,10 +1,10 @@
 """
-High Yield Corporate Credit Stress (CREDIT) Market SIGMET Service — Pure Domain Service
+High Yield Corporate Credit Stress (CREDIT) Market METAR Service — Pure Domain Service
 ======================================================================================
-Generates authoritative, zero-fallback Credit Market SIGMETs (Meteorological Reports).
+Generates authoritative, zero-fallback Credit Market METARs (Meteorological Reports).
 Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of the HYG/TLT ratio for ultra-fast reaction.
 Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
-raises StrictDataPolicyError immediately with explicit 'SIGMET NOT AVAILABLE' message in English.
+raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
 Always includes exact UTC date and time.
 Persists StateSnapshot to RegimeStatePort under key 'credit:entry_decision:MARKET'.
 """
@@ -25,8 +25,8 @@ class StrictDataPolicyError(Exception):
 
 
 @dataclass(frozen=True)
-class MarketSIGMET:
-    sigmet_id: str
+class MarketMETAR:
+    metar_id: str
     timestamp_utc: str
     as_of_date: str
     issuer: str
@@ -61,18 +61,18 @@ class MarketSIGMET:
         return self.action_code == "MKT_CREDIT_FREEZE_EXTREME"
 
     def to_dict(self) -> Dict[str, Any]:
-        """Returns full structured SIGMET payload as a dictionary."""
+        """Returns full structured METAR payload as a dictionary."""
         return asdict(self)
 
     def to_json(self, indent: int = 2) -> str:
-        """Returns formatted JSON string of the SIGMET."""
+        """Returns formatted JSON string of the METAR."""
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
     def format_cli_broadcast(self) -> str:
-        """Formats the SIGMET into a high-visibility CLI / Telegram broadcast string."""
+        """Formats the METAR into a high-visibility CLI / Telegram broadcast string."""
         return (
             "================================================================================\n"
-            f" 📢 MARKET SIGMET — CREDIT STRESS RATIO (HYG/TLT) [{self.sigmet_id}]\n"
+            f" 📢 MARKET METAR — CREDIT STRESS RATIO (HYG/TLT) [{self.metar_id}]\n"
             "================================================================================\n"
             f" 🕒 Timestamp UTC: {self.timestamp_utc} | Close Date: {self.as_of_date}\n"
             f" 🏢 Issuer: {self.issuer} | 🚦 Market Status: {self.market_status}\n"
@@ -96,8 +96,8 @@ class MarketSIGMET:
         )
 
 
-class CreditSigmetService:
-    """Domain service for generating Credit Stress SIGMETs and persisting state transitions."""
+class CreditMetarService:
+    """Domain service for generating Credit Stress METARs and persisting state transitions."""
 
     REGIME_KEY = "credit:entry_decision:MARKET"
 
@@ -111,9 +111,9 @@ class CreditSigmetService:
         self._port = regime_state_port
         self._lookup = credit_lookup_adapter or credit_lookup
 
-    def evaluate(self, as_of_date: Optional[str] = None) -> MarketSIGMET:
+    def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
         """
-        Generates an authoritative Credit Stress Market SIGMET on-demand using 3-day fast velocity.
+        Generates an authoritative Credit Stress Market METAR on-demand using 3-day fast velocity.
         Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
         in Neon Vault, raises StrictDataPolicyError immediately.
         Persists state transitions to RegimeStatePort if provided.
@@ -155,7 +155,7 @@ class CreditSigmetService:
 
                 if not has_data:
                     raise StrictDataPolicyError(
-                        f"STRICT DATA POLICY: CREDIT SIGMET NOT AVAILABLE for requested date '{as_of_date}'. "
+                        f"STRICT DATA POLICY: CREDIT METAR NOT AVAILABLE for requested date '{as_of_date}'. "
                         f"Vault data does not exist for both HYG and TLT at this timestamp. Latest available date in Vault is '{overall_latest}'."
                     )
             else:
@@ -169,7 +169,7 @@ class CreditSigmetService:
                 df_raw = pd.read_sql(query_all, conn)
                 if len(df_raw) == 0:
                     raise StrictDataPolicyError(
-                        "STRICT DATA POLICY: CREDIT SIGMET NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'HYG' or 'TLT'."
+                        "STRICT DATA POLICY: CREDIT METAR NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'HYG' or 'TLT'."
                     )
 
             date_col = 'date' if 'date' in df_raw.columns else 'time'
@@ -180,7 +180,7 @@ class CreditSigmetService:
 
             if len(pivot_c) < 4:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: CREDIT SIGMET NOT AVAILABLE. "
+                    f"STRICT DATA POLICY: CREDIT METAR NOT AVAILABLE. "
                     f"Insufficient historical aligned bars ({len(pivot_c)} bars found, minimum 4 required for 72h kinematics)."
                 )
 
@@ -197,7 +197,7 @@ class CreditSigmetService:
             )
             if not guidance:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: CREDIT SIGMET NOT AVAILABLE. State classification failed for ratio={credit_latest}, d3={credit_delta_3d}."
+                    f"STRICT DATA POLICY: CREDIT METAR NOT AVAILABLE. State classification failed for ratio={credit_latest}, d3={credit_delta_3d}."
                 )
 
             vec = guidance.to_vector()
@@ -214,7 +214,7 @@ class CreditSigmetService:
                 action_code = "MKT_CREDIT_EXPANSION_STABLE"
                 market_status = "EXPANSIVE_STABLE"
 
-            sigmet_id = f"SIGMET-CREDIT-{clean_date.replace('-', '')}-001"
+            metar_id = f"METAR-CREDIT-{clean_date.replace('-', '')}-001"
 
             # Stateful-First Persistence (Rule 15)
             if self._port:
@@ -236,8 +236,8 @@ class CreditSigmetService:
                 except Exception:
                     pass
 
-            return MarketSIGMET(
-                sigmet_id=sigmet_id,
+            return MarketMETAR(
+                metar_id=metar_id,
                 timestamp_utc=now_utc_str,
                 as_of_date=clean_date,
                 issuer="Botero-Trade Credit Stress Intelligence Engine",
@@ -267,7 +267,7 @@ class CreditSigmetService:
             self._store._put(conn)
 
 
-def get_credit_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
-    """Convenience function to evaluate Credit SIGMET using default service instance."""
-    service = CreditSigmetService()
+def get_credit_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
+    """Convenience function to evaluate Credit METAR using default service instance."""
+    service = CreditMetarService()
     return service.evaluate(as_of_date=as_of_date)

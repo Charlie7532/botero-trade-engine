@@ -1,10 +1,10 @@
 """
-CBOE Volatility Index (VIX) Market SIGMET Service — Pure Domain Service
+CBOE Volatility Index (VIX) Market METAR Service — Pure Domain Service
 ======================================================================
-Generates authoritative, zero-fallback VIX Market SIGMETs (Meteorological Reports).
+Generates authoritative, zero-fallback VIX Market METARs (Meteorological Reports).
 Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) for ultra-fast reaction.
 Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
-raises StrictDataPolicyError immediately with explicit 'SIGMET NOT AVAILABLE' message in English.
+raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
 Always includes exact UTC date and time.
 """
 from datetime import datetime, timezone
@@ -20,8 +20,8 @@ class StrictDataPolicyError(Exception):
     pass
 
 @dataclass(frozen=True)
-class MarketSIGMET:
-    sigmet_id: str
+class MarketMETAR:
+    metar_id: str
     timestamp_utc: str
     as_of_date: str
     issuer: str
@@ -46,18 +46,18 @@ class MarketSIGMET:
     rr_asymmetry_ratio: float
 
     def to_dict(self) -> Dict[str, Any]:
-        """Returns full structured SIGMET payload as a dictionary."""
+        """Returns full structured METAR payload as a dictionary."""
         return asdict(self)
 
     def to_json(self, indent: int = 2) -> str:
-        """Returns formatted JSON string of the SIGMET."""
+        """Returns formatted JSON string of the METAR."""
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
     def format_cli_broadcast(self) -> str:
-        """Formats the SIGMET into a high-visibility CLI / Telegram broadcast string."""
+        """Formats the METAR into a high-visibility CLI / Telegram broadcast string."""
         return (
             "================================================================================\n"
-            f" 📢 MARKET SIGMET — CBOE VOLATILITY INDEX (VIX) [{self.sigmet_id}]\n"
+            f" 📢 MARKET METAR — CBOE VOLATILITY INDEX (VIX) [{self.metar_id}]\n"
             "================================================================================\n"
             f" 🕒 Timestamp UTC: {self.timestamp_utc} | Close Date: {self.as_of_date}\n"
             f" 🏢 Issuer: {self.issuer} | 🚦 Market Status: {self.market_status}\n"
@@ -80,9 +80,9 @@ class MarketSIGMET:
         )
 
 
-def get_vix_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
+def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
     """
-    Generates an authoritative VIX Market SIGMET on-demand using 3-day fast velocity.
+    Generates an authoritative VIX Market METAR on-demand using 3-day fast velocity.
     Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
     in Neon Vault, raises StrictDataPolicyError immediately.
     """
@@ -109,7 +109,7 @@ def get_vix_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
             
             if len(df_vix) < 4 or str(df_vix.iloc[0]['date']) != as_of_date:
                 raise StrictDataPolicyError(
-                    f"⚠️ SIGMET NOT AVAILABLE: Data not updated in Neon Vault for the requested date ({as_of_date}). "
+                    f"⚠️ METAR NOT AVAILABLE: Data not updated in Neon Vault for the requested date ({as_of_date}). "
                     f"The latest valid bar registered in Vault is ({overall_latest})."
                 )
         else:
@@ -125,7 +125,7 @@ def get_vix_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
             
             if len(df_vix) < 4:
                 raise StrictDataPolicyError(
-                    f"⚠️ SIGMET NOT AVAILABLE: Insufficient historical VIX bars in Neon Vault "
+                    f"⚠️ METAR NOT AVAILABLE: Insufficient historical VIX bars in Neon Vault "
                     f"to compute 3-day velocity. Required >= 4, found {len(df_vix)}."
                 )
             
@@ -141,14 +141,14 @@ def get_vix_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
         guidance = vix_lookup.lookup_vix_guidance(vix_val=vix_val, vix_d3=vix_d3)
         if not guidance:
             raise StrictDataPolicyError(
-                f"⚠️ SIGMET NOT AVAILABLE: Unmapped state key in Fact Store for VIX={vix_val}, d3={vix_d3}."
+                f"⚠️ METAR NOT AVAILABLE: Unmapped state key in Fact Store for VIX={vix_val}, d3={vix_d3}."
             )
 
         vec = guidance.to_vector()
         now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         clean_date = latest_date_str.replace("-", "")
-        sigmet_id = f"SIGMET-VIX-{clean_date}-001"
+        metar_id = f"METAR-VIX-{clean_date}-001"
 
         if guidance.operational_guidance == "STK_BLOCK_CRISIS":
             status = "CRISIS_VETO"
@@ -157,8 +157,8 @@ def get_vix_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
         else:
             status = "CLEAR"
 
-        return MarketSIGMET(
-            sigmet_id=sigmet_id,
+        return MarketMETAR(
+            metar_id=metar_id,
             timestamp_utc=now_utc,
             as_of_date=latest_date_str,
             issuer="MarketHealthIntelligence.VIXVolatilityAdapter",

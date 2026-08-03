@@ -1,8 +1,8 @@
 """
 High Yield Corporate Credit Stress (CREDIT) Vault Provider
 ===========================================================
-Vault provider for Credit Stress Market SIGMET & 3-Day Kinematic Velocity Telemetry.
-Reads HYG/TLT credit stress ratio from Vault, generates authoritative MarketSIGMET, and persists:
+Vault provider for Credit Stress Market METAR & 3-Day Kinematic Velocity Telemetry.
+Reads HYG/TLT credit stress ratio from Vault, generates authoritative MarketMETAR, and persists:
   1. MCP Snapshot: mcp_snapshot("credit/sigmet", "MARKET")
   2. Stateful-First Regime Transitions: market.regime_states ("credit:entry_decision:MARKET")
 
@@ -16,8 +16,8 @@ from backend.daemons.vault_providers import register_provider
 from backend.daemons.data_vault_daemon import _already_vaulted_today
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.shared.infrastructure.postgres_regime_state import PostgresRegimeStateAdapter
-from backend.modules.entry_decision.domain.services.credit_sigmet_service import (
-    get_credit_market_sigmet,
+from backend.modules.entry_decision.domain.services.credit_metar_service import (
+    get_credit_market_metar,
     StrictDataPolicyError,
 )
 
@@ -25,27 +25,27 @@ logger = logging.getLogger(__name__)
 
 
 class CreditProvider:
-    """Vault provider for Credit Stress Index SIGMET and state transitions."""
+    """Vault provider for Credit Stress Index METAR and state transitions."""
 
     name = "credit"
     categories = ["credit", "hyg_tlt"]
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
-        """Compute and persist Credit Stress Market SIGMET and regime state from Vault data."""
+        """Compute and persist Credit Stress Market METAR and regime state from Vault data."""
         if _already_vaulted_today(store, "credit/sigmet", "MARKET"):
-            logger.info("📊 Credit Stress Market SIGMET already vaulted today — skipping")
+            logger.info("📊 Credit Stress Market METAR already vaulted today — skipping")
             return {"status": "skipped", "reason": "already_today"}
 
         return self._compute(store)
 
     def run_ticker(self, store: TimescaleDataStore, ticker: str) -> Dict[str, Any]:
-        """Credit SIGMET is market-wide — falls back to run_full."""
+        """Credit METAR is market-wide — falls back to run_full."""
         return self._compute(store)
 
     def _compute(self, store: TimescaleDataStore) -> Dict[str, Any]:
-        """Core computation: read Vault → SIGMET service → persist snapshot & regime state."""
+        """Core computation: read Vault → METAR service → persist snapshot & regime state."""
         try:
-            sigmet = get_credit_market_sigmet()
+            sigmet = get_credit_market_metar()
             store.save_mcp_snapshot("credit/sigmet", "MARKET", sigmet.to_dict())
 
             try:
@@ -70,13 +70,13 @@ class CreditProvider:
                 logger.warning(f"Credit Provider: Regime state persistence skipped: {e}")
 
             logger.info(
-                f"📊 Credit SIGMET Vaulted: State={sigmet.state_key} | "
+                f"📊 Credit METAR Vaulted: State={sigmet.state_key} | "
                 f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
             )
 
             return {
                 "status": "ok",
-                "sigmet_id": sigmet.sigmet_id,
+                "metar_id": sigmet.metar_id,
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,

@@ -1,35 +1,34 @@
 #!/usr/bin/env python3
 """
-Generate Empirical High-Yield Corporate Credit Stress (CREDIT) Fact Store Table (Vault 2007–2026)
-================================================================================================
-Calculates exact empirical asymmetric percentiles for HYG/TLT credit stress ratio (L0 - 7 Bins)
-and Credit 3-day Fast Kinematic Velocity (L1 - 7 Vectors) across 19+ years of
-aligned market history in Neon Vault (2007–2026, 4,850+ trading sessions).
+Generate Empirical Macro Yield Curve Spread (YIELD_CURVE) Fact Store Table (Vault TNX-IRX)
+==========================================================================================
+Calculates exact empirical asymmetric percentiles for TNX - IRX yield curve spread (L0 - 7 Bins)
+and Yield Spread 3-day Fast Kinematic Velocity (L1 - 7 Vectors) across aligned market history
+in Neon Vault (TNX, IRX, SPY).
 
-L0 Labels (Static Ratio HYG/TLT Level):
-  - EXTREME_CREDIT_FREEZE (Ratio <= P05)
-  - CREDIT_STRESS_HIGH (P05 < Ratio <= P15)
-  - CREDIT_STRESS_MODERATE (P15 < Ratio <= P35)
-  - NEUTRAL_CREDIT (P35 < Ratio <= P65)
-  - HEALTHY_CREDIT (P65 < Ratio <= P85)
-  - EXPANSIVE_CREDIT (P85 < Ratio <= P95)
-  - MAX_CREDIT_EXPANSION (Ratio > P95)
+L0 Labels (Static Yield Spread Level = TNX - IRX):
+  - DEEP_INVERSION (Spread <= P05)
+  - MODERATE_INVERSION (P05 < Spread <= P15)
+  - FLAT_CURVE (P15 < Spread <= P35)
+  - NORMAL_STEEP (P35 < Spread <= P65)
+  - STEEP_CURVE (P65 < Spread <= P85)
+  - VERY_STEEP_CURVE (P85 < Spread <= P95)
+  - EXTREME_STEEPENING_UNINVERSION (Spread > P95)
 
 L1 Labels (3-Day Fast Velocity Delta_3d):
-  - EXTREME_CREDIT_CRASH_3D (Delta_3d <= P05)
-  - FAST_CREDIT_DETERIORATION_3D (P05 < Delta_3d <= P15)
-  - DECELERATING_CREDIT_3D (P15 < Delta_3d <= P35)
-  - STABLE_CREDIT_3D (P35 < Delta_3d <= P65)
-  - EXPANDING_CREDIT_3D (P65 < Delta_3d <= P85)
-  - FAST_CREDIT_RECOVERY_3D (P85 < Delta_3d <= P95)
-  - EXTREME_CREDIT_SURGE_3D (Delta_3d > P95)
+  - EXTREME_FLATTENING_3D (Delta_3d <= P05)
+  - FAST_FLATTENING_3D (P05 < Delta_3d <= P15)
+  - DECELERATING_SPREAD_3D (P15 < Delta_3d <= P35)
+  - STABLE_SPREAD_3D (P35 < Delta_3d <= P65)
+  - STEEPENING_SPREAD_3D (P65 < Delta_3d <= P85)
+  - FAST_STEEPENING_3D (P85 < Delta_3d <= P95)
+  - EXTREME_STEEPENING_SPIKE_3D (Delta_3d > P95)
 
-Outputs a Rule 21 compliant JSON Fact Store matching the exact schema of vix_fact_store.json.
+Outputs a Rule 21 compliant JSON Fact Store matching the standard schema.
 
 Usage:
-    python -m backend.scripts.generate_credit_fact_table
+    python -m backend.scripts.generate_yield_curve_fact_table
 """
-import os
 import sys
 import json
 import logging
@@ -43,9 +42,9 @@ sys.path.insert(0, str(root_dir))
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-logger = logging.getLogger("GenerateCreditFactTable")
+logger = logging.getLogger("GenerateYieldCurveFactTable")
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/credit_fact_store.json"
+OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/yield_curve_fact_store.json"
 
 ZIGZAG_LEVELS = [0.025, 0.05, 0.075]
 ZIGZAG_LABEL = {0.025: "zz25", 0.05: "zz50", 0.075: "zz75"}
@@ -53,22 +52,22 @@ MAX_HORIZONS = {0.025: 30, 0.05: 60, 0.075: 90}
 
 PERCENTILES_7 = [0.05, 0.15, 0.35, 0.65, 0.85, 0.95]
 LABELS_L0 = [
-    "EXTREME_CREDIT_FREEZE",
-    "CREDIT_STRESS_HIGH",
-    "CREDIT_STRESS_MODERATE",
-    "NEUTRAL_CREDIT",
-    "HEALTHY_CREDIT",
-    "EXPANSIVE_CREDIT",
-    "MAX_CREDIT_EXPANSION",
+    "DEEP_INVERSION",
+    "MODERATE_INVERSION",
+    "FLAT_CURVE",
+    "NORMAL_STEEP",
+    "STEEP_CURVE",
+    "VERY_STEEP_CURVE",
+    "EXTREME_STEEPENING_UNINVERSION",
 ]
 LABELS_L1 = [
-    "EXTREME_CREDIT_CRASH_3D",
-    "FAST_CREDIT_DETERIORATION_3D",
-    "DECELERATING_CREDIT_3D",
-    "STABLE_CREDIT_3D",
-    "EXPANDING_CREDIT_3D",
-    "FAST_CREDIT_RECOVERY_3D",
-    "EXTREME_CREDIT_SURGE_3D",
+    "EXTREME_FLATTENING_3D",
+    "FAST_FLATTENING_3D",
+    "DECELERATING_SPREAD_3D",
+    "STABLE_SPREAD_3D",
+    "STEEPENING_SPREAD_3D",
+    "FAST_STEEPENING_3D",
+    "EXTREME_STEEPENING_SPIKE_3D",
 ]
 
 
@@ -81,20 +80,20 @@ def classify_bin(v: float, edges: list) -> str:
 
 def classify_speed(v: float, edges: list) -> str:
     if pd.isna(v):
-        return "STABLE_CREDIT_3D"
+        return "STABLE_SPREAD_3D"
     for idx, e in enumerate(edges):
         if v < e:
             return LABELS_L1[idx]
     return LABELS_L1[-1]
 
 
-def calculate_3d_credit_stats(df_aligned: pd.DataFrame):
+def calculate_3d_yield_curve_stats(df_aligned: pd.DataFrame):
     prices_c = df_aligned["close"].values
     prices_h = df_aligned["high"].values
     prices_l = df_aligned["low"].values
-    credit_vals = df_aligned["credit_ratio"].values
-    credit_prev_vals = df_aligned["credit_prev"].values
-    credit_bins_arr = df_aligned["credit_bin"].values
+    yield_vals = df_aligned["yield_spread"].values
+    yield_prev_vals = df_aligned["yield_prev"].values
+    yield_bins_arr = df_aligned["yield_bin"].values
     state_keys_arr = df_aligned["state_key"].values
     n = len(prices_c)
 
@@ -109,21 +108,21 @@ def calculate_3d_credit_stats(df_aligned: pd.DataFrame):
 
     for state_k, idx_list in state_indices.items():
         n_state = len(idx_list)
-        credit_t0_vals = credit_vals[idx_list]
-        credit_t_minus1_vals = credit_prev_vals[idx_list]
+        yield_t0_vals = yield_vals[idx_list]
+        yield_t_minus1_vals = yield_prev_vals[idx_list]
 
         state_doc = {
             "n": int(n_state),
-            "credit_ratio_t0_stats": {
-                "min": float(np.min(credit_t0_vals)),
-                "max": float(np.max(credit_t0_vals)),
-                "mean": float(np.mean(credit_t0_vals)),
-                "std": float(np.std(credit_t0_vals)) if n_state > 1 else 0.0,
+            "yield_spread_t0_stats": {
+                "min": float(np.min(yield_t0_vals)),
+                "max": float(np.max(yield_t0_vals)),
+                "mean": float(np.mean(yield_t0_vals)),
+                "std": float(np.std(yield_t0_vals)) if n_state > 1 else 0.0,
             },
-            "credit_ratio_t_minus_1_stats": {
-                "min": float(np.min(credit_t_minus1_vals)),
-                "max": float(np.max(credit_t_minus1_vals)),
-                "mean": float(np.mean(credit_t_minus1_vals)),
+            "yield_spread_t_minus_1_stats": {
+                "min": float(np.min(yield_t_minus1_vals)),
+                "max": float(np.max(yield_t_minus1_vals)),
+                "mean": float(np.mean(yield_t_minus1_vals)),
             },
         }
 
@@ -142,8 +141,8 @@ def calculate_3d_credit_stats(df_aligned: pd.DataFrame):
 
             for i in idx_list:
                 p0 = prices_c[i]
-                local_bin = credit_bins_arr[i]
-                friction = 0.0025 if local_bin in ("EXTREME_CREDIT_FREEZE", "CREDIT_STRESS_HIGH") else 0.0010
+                local_bin = yield_bins_arr[i]
+                friction = 0.0025 if local_bin in ("DEEP_INVERSION", "MODERATE_INVERSION") else 0.0010
 
                 target_up = p0 * (1.0 + target_pct)
                 target_dn = p0 * (1.0 - target_pct)
@@ -256,7 +255,7 @@ def calculate_3d_credit_stats(df_aligned: pd.DataFrame):
 
 
 def main():
-    logger.info("Cargando historia completa de Neon Vault (market.ohlcv_bars HYG, TLT, SPY 2007–2026)...")
+    logger.info("Cargando historia completa de Neon Vault (market.ohlcv_bars TNX, IRX, SPY)...")
     store = TimescaleDataStore()
     conn = store._conn()
     try:
@@ -264,7 +263,7 @@ def main():
             """
             SELECT time::date as date, ticker, open, high, low, close
             FROM market.ohlcv_bars
-            WHERE ticker IN ('HYG', 'TLT', 'SPY')
+            WHERE ticker IN ('TNX', 'IRX', 'SPY')
               AND timeframe = '1d'
             ORDER BY time, ticker
         """,
@@ -278,71 +277,71 @@ def main():
     pivot_l = df_bars.pivot(index="date", columns="ticker", values="low").dropna()
 
     common = pivot_c.index
-    hyg_c = pivot_c["HYG"].loc[common]
-    tlt_c = pivot_c["TLT"].loc[common]
+    tnx_c = pivot_c["TNX"].loc[common]
+    irx_c = pivot_c["IRX"].loc[common]
     spy_c = pivot_c["SPY"].loc[common]
     spy_h = pivot_h["SPY"].loc[common]
     spy_l = pivot_l["SPY"].loc[common]
 
-    credit_ratio = hyg_c / tlt_c
+    yield_spread = tnx_c - irx_c
 
     start_date = common.min()
     end_date = common.max()
     n_days = len(common)
     logger.info(f"Población de entrenamiento: {start_date} a {end_date} ({n_days} días hábiles / {n_days/252:.2f} años)")
 
-    # Compute 7-scale percentiles for L0 (Credit Level) and L1 (3-Day Fast Velocity Vectors)
-    credit_edges = [float(x) for x in credit_ratio.quantile(PERCENTILES_7)]
-    credit_d3 = credit_ratio.diff(3)
-    vel_edges = [float(x) for x in credit_d3.dropna().quantile(PERCENTILES_7)]
+    # Compute 7-scale percentiles for L0 (Yield Spread Level) and L1 (3-Day Fast Velocity Vectors)
+    yield_edges = [float(x) for x in yield_spread.quantile(PERCENTILES_7)]
+    yield_d3 = yield_spread.diff(3)
+    vel_edges = [float(x) for x in yield_d3.dropna().quantile(PERCENTILES_7)]
 
-    logger.info(f"Cortes Credit Level (L0 - 2007-2026): {credit_edges}")
-    logger.info(f"Cortes Credit Velocity 3-Day (L1 - 2007-2026): {vel_edges}")
+    logger.info(f"Cortes Yield Spread Level (L0): {yield_edges}")
+    logger.info(f"Cortes Yield Spread Velocity 3-Day (L1): {vel_edges}")
 
     df_aligned = pd.DataFrame(
         {
             "close": spy_c,
             "high": spy_h,
             "low": spy_l,
-            "credit_ratio": credit_ratio,
-            "credit_prev": credit_ratio.shift(1),
-            "credit_bin": credit_ratio.apply(lambda v: classify_bin(v, credit_edges)),
-            "credit_speed": credit_d3.apply(lambda v: classify_speed(v, vel_edges)),
+            "yield_spread": yield_spread,
+            "yield_prev": yield_spread.shift(1),
+            "yield_bin": yield_spread.apply(lambda v: classify_bin(v, yield_edges)),
+            "yield_speed": yield_d3.apply(lambda v: classify_speed(v, vel_edges)),
         }
     ).dropna()
 
-    df_aligned["state_key"] = df_aligned["credit_bin"] + "__" + df_aligned["credit_speed"]
+    df_aligned["state_key"] = df_aligned["yield_bin"] + "__" + df_aligned["yield_speed"]
 
-    # Compute pure Credit 3-day volatility statistics using Intraday High/Low FTT
-    pure_states = calculate_3d_credit_stats(df_aligned)
+    # Compute pure Yield Curve 3-day volatility statistics using Intraday High/Low FTT
+    pure_states = calculate_3d_yield_curve_stats(df_aligned)
 
     # Final document structure (Rule 21)
     fact_store = {
         "_documentation": {
-            "model_purpose": "High Yield Corporate Credit Stress Ratio (HYG/TLT) 3-Day Kinematic Velocity Matrix (Vault 2007-2026)",
-            "return_formula": "R_net = (P_ftt / P_t) - 1.0 - friction (25bps in EXTREME_CREDIT_FREEZE or CREDIT_STRESS_HIGH, 10bps standard)",
+            "model_purpose": "Macro Yield Curve Spread (TNX - IRX) 3-Day Kinematic Velocity Matrix (Vault 1962-2026)",
+            "return_formula": "R_net = (P_ftt / P_t) - 1.0 - friction (25bps in DEEP_INVERSION or MODERATE_INVERSION, 10bps standard)",
             "velocity_lookback_window": "3 trading days (72h fast response)",
             "data_sources": {
-                "bars": "market.ohlcv_bars (HYG, TLT, SPY)",
+                "bars": "market.ohlcv_bars (TNX, IRX, SPY)",
                 "start_date": str(start_date),
                 "end_date": str(end_date),
                 "sample_size_days": int(n_days),
                 "years_covered": round(float(n_days / 252.0), 2),
             },
             "state_hierarchy": {
-                "L0": "Credit_Ratio_Percentiles_7",
-                "L1": "Credit_3Day_Fast_Velocity_Percentiles_7",
+                "L0": "Yield_Spread_Percentiles_7",
+                "L1": "Yield_Spread_3Day_Fast_Velocity_Percentiles_7",
             },
             "dimension_thresholds_definition": {
-                "credit_percentiles": PERCENTILES_7,
-                "credit_edges": credit_edges,
-                "credit_speed_percentiles": PERCENTILES_7,
-                "credit_speed_edges": vel_edges,
-                "credit_labels_l0": LABELS_L0,
-                "credit_labels_l1": LABELS_L1,
+                "yield_percentiles": PERCENTILES_7,
+                "yield_edges": yield_edges,
+                "yield_speed_percentiles": PERCENTILES_7,
+                "yield_speed_edges": vel_edges,
+                "yield_labels_l0": LABELS_L0,
+                "yield_labels_l1": LABELS_L1,
             },
             "field_glossary": {
-                "n": "Sample size in this exact credit stress stereotype",
+                "n": "Sample size in this exact yield curve stereotype",
                 "n_pos": "Exact number of positive barrier touch outcomes in this specific condition",
                 "n_neg": "Exact number of negative barrier touch outcomes in this specific condition",
                 "p_bull": "Pure exclusive probability target threshold is hit first in this exact condition",
@@ -358,7 +357,7 @@ def main():
                 "divergence_regime": "Multi-scale horizon divergence regime",
                 "operational_guidance": "Sizing code from Universal Institutional Taxonomy",
             },
-            "signal_interpretation_policy": "Pure domain adapters (CreditLookupAdapter, CreditMetarService, MarketHealthIntelligence) interpret probabilities dynamically.",
+            "signal_interpretation_policy": "Pure domain adapters (YieldCurveLookupAdapter, YieldCurveMetarService, MarketHealthIntelligence) interpret probabilities dynamically.",
             "reproducibility_context": {
                 "calibration_timestamp": "2026-08-01T00:00:00Z",
                 "calibrated_under_commit": "HEAD",
@@ -371,7 +370,7 @@ def main():
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(fact_store, f, indent=2, ensure_ascii=False)
 
-    logger.info(f"Fact Store 3-Day Fast Credit Stress Velocity guardado exitosamente en {OUTPUT_PATH}")
+    logger.info(f"Fact Store 3-Day Fast Yield Curve Velocity guardado exitosamente en {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

@@ -1,10 +1,10 @@
 """
-Macro Yield Curve Spread (YIELD_CURVE) Market SIGMET Service — Pure Domain Service
+Macro Yield Curve Spread (YIELD_CURVE) Market METAR Service — Pure Domain Service
 ==================================================================================
-Generates authoritative, zero-fallback Yield Curve Market SIGMETs (Meteorological Reports).
+Generates authoritative, zero-fallback Yield Curve Market METARs (Meteorological Reports).
 Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of the TNX - IRX spread for ultra-fast reaction.
 Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
-raises StrictDataPolicyError immediately with explicit 'SIGMET NOT AVAILABLE' message in English.
+raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
 Always includes exact UTC date and time.
 Persists StateSnapshot to RegimeStatePort under key 'yield_curve:entry_decision:MARKET'.
 """
@@ -25,8 +25,8 @@ class StrictDataPolicyError(Exception):
 
 
 @dataclass(frozen=True)
-class MarketSIGMET:
-    sigmet_id: str
+class MarketMETAR:
+    metar_id: str
     timestamp_utc: str
     as_of_date: str
     issuer: str
@@ -61,18 +61,18 @@ class MarketSIGMET:
         return self.action_code in ("MKT_YIELD_CURVE_UNINVERSION_STEEPENING", "MKT_YIELD_CURVE_INVERTED_CRISIS")
 
     def to_dict(self) -> Dict[str, Any]:
-        """Returns full structured SIGMET payload as a dictionary."""
+        """Returns full structured METAR payload as a dictionary."""
         return asdict(self)
 
     def to_json(self, indent: int = 2) -> str:
-        """Returns formatted JSON string of the SIGMET."""
+        """Returns formatted JSON string of the METAR."""
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
     def format_cli_broadcast(self) -> str:
-        """Formats the SIGMET into a high-visibility CLI / Telegram broadcast string."""
+        """Formats the METAR into a high-visibility CLI / Telegram broadcast string."""
         return (
             "================================================================================\n"
-            f" 📢 MARKET SIGMET — YIELD CURVE SPREAD (TNX - IRX) [{self.sigmet_id}]\n"
+            f" 📢 MARKET METAR — YIELD CURVE SPREAD (TNX - IRX) [{self.metar_id}]\n"
             "================================================================================\n"
             f" 🕒 Timestamp UTC: {self.timestamp_utc} | Close Date: {self.as_of_date}\n"
             f" 🏢 Issuer: {self.issuer} | 🚦 Market Status: {self.market_status}\n"
@@ -96,8 +96,8 @@ class MarketSIGMET:
         )
 
 
-class YieldCurveSigmetService:
-    """Domain service for generating Yield Curve Spread SIGMETs and persisting state transitions."""
+class YieldCurveMetarService:
+    """Domain service for generating Yield Curve Spread METARs and persisting state transitions."""
 
     REGIME_KEY = "yield_curve:entry_decision:MARKET"
 
@@ -111,9 +111,9 @@ class YieldCurveSigmetService:
         self._port = regime_state_port
         self._lookup = yield_curve_lookup_adapter or yield_curve_lookup
 
-    def evaluate(self, as_of_date: Optional[str] = None) -> MarketSIGMET:
+    def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
         """
-        Generates an authoritative Yield Curve Spread Market SIGMET on-demand using 3-day fast velocity.
+        Generates an authoritative Yield Curve Spread Market METAR on-demand using 3-day fast velocity.
         Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
         in Neon Vault, raises StrictDataPolicyError immediately.
         Persists state transitions to RegimeStatePort if provided.
@@ -155,7 +155,7 @@ class YieldCurveSigmetService:
 
                 if not has_exact:
                     raise StrictDataPolicyError(
-                        f"STRICT DATA POLICY: YIELD CURVE SIGMET NOT AVAILABLE for requested date '{as_of_date}'. "
+                        f"STRICT DATA POLICY: YIELD CURVE METAR NOT AVAILABLE for requested date '{as_of_date}'. "
                         f"Vault data does not exist for both TNX and IRX at this timestamp. Latest available date in Vault is '{overall_latest}'."
                     )
             else:
@@ -169,7 +169,7 @@ class YieldCurveSigmetService:
                 df_raw = pd.read_sql(query_all, conn)
                 if len(df_raw) == 0:
                     raise StrictDataPolicyError(
-                        "STRICT DATA POLICY: YIELD CURVE SIGMET NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'TNX' or 'IRX'."
+                        "STRICT DATA POLICY: YIELD CURVE METAR NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'TNX' or 'IRX'."
                     )
 
             date_col = 'date' if 'date' in df_raw.columns else 'time'
@@ -180,7 +180,7 @@ class YieldCurveSigmetService:
 
             if len(pivot_c) < 4:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: YIELD CURVE SIGMET NOT AVAILABLE. "
+                    f"STRICT DATA POLICY: YIELD CURVE METAR NOT AVAILABLE. "
                     f"Insufficient historical aligned bars ({len(pivot_c)} bars found, minimum 4 required for 72h kinematics)."
                 )
 
@@ -197,7 +197,7 @@ class YieldCurveSigmetService:
             )
             if not guidance:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: YIELD CURVE SIGMET NOT AVAILABLE. State classification failed for spread={spread_latest}, d3={spread_delta_3d}."
+                    f"STRICT DATA POLICY: YIELD CURVE METAR NOT AVAILABLE. State classification failed for spread={spread_latest}, d3={spread_delta_3d}."
                 )
 
             vec = guidance.to_vector()
@@ -220,7 +220,7 @@ class YieldCurveSigmetService:
                 action_code = "MKT_YIELD_CURVE_NORMAL_STEEP"
                 market_status = "NORMAL_EXPANSIVE_STEEP"
 
-            sigmet_id = f"SIGMET-YIELD-CURVE-{clean_date.replace('-', '')}-001"
+            metar_id = f"METAR-YIELD-CURVE-{clean_date.replace('-', '')}-001"
 
             # Stateful-First Persistence (Rule 15)
             if self._port:
@@ -242,8 +242,8 @@ class YieldCurveSigmetService:
                 except Exception:
                     pass
 
-            return MarketSIGMET(
-                sigmet_id=sigmet_id,
+            return MarketMETAR(
+                metar_id=metar_id,
                 timestamp_utc=now_utc_str,
                 as_of_date=clean_date,
                 issuer="Botero-Trade Yield Curve Intelligence Engine",
@@ -273,7 +273,7 @@ class YieldCurveSigmetService:
             self._store._put(conn)
 
 
-def get_yield_curve_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
-    """Convenience function to evaluate Yield Curve SIGMET using default service instance."""
-    service = YieldCurveSigmetService()
+def get_yield_curve_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
+    """Convenience function to evaluate Yield Curve METAR using default service instance."""
+    service = YieldCurveMetarService()
     return service.evaluate(as_of_date=as_of_date)

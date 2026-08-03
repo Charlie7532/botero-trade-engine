@@ -389,7 +389,7 @@ def main():
                 "divergence_regime": "Multi-scale horizon divergence regime",
                 "operational_guidance": "Sizing code from Universal Institutional Taxonomy",
             },
-            "signal_interpretation_policy": "Pure domain adapters (RotationLookupAdapter, RotationSigmetService, MarketHealthIntelligence) interpret probabilities dynamically.",
+            "signal_interpretation_policy": "Pure domain adapters (RotationLookupAdapter, RotationMetarService, MarketHealthIntelligence) interpret probabilities dynamically.",
             "reproducibility_context": {
                 "calibration_timestamp": "2026-08-01T00:00:00Z",
                 "calibrated_under_commit": "HEAD",

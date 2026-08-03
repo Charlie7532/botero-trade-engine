@@ -297,6 +297,13 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
 22. **Strict User Approval Before Code/File Mutations or Git Commits for Architectural Proposals.** AI agents MUST NEVER create new reference files, mutate codebase logic, or execute `git commit` / `git push` for architectural proposals, taxonomies, or plans until the USER has explicitly reviewed and approved the plan. All initial design proposals and prompts must remain in Planning Mode / Artifacts (`master_taxonomic_homologation_prompt.md`, `implementation_plan.md`) without mutating codebase files or committing to git.
 
+23. **4-Tier Aeronautical Market Alert Taxonomy Standard (METAR / TAF / SIGMET / NOTAM).** All market observation, forecasting, hazard alert, and operational disruption services MUST strictly adhere to the 4-tier aeronautical classification:
+    - **`METAR` (Multi-Station Telemetry):** Routine daily observation and 72h kinematic velocity ($\Delta 3d$) across the 9 market stations (VIX, VVIX, PCR, F&G, SV5_Turbulence, SKEW, Credit Stress, Yield Curve, Sector Rotation). Always active. Endpoint: `/api/metar/*`.
+    - **`TAF` (Terminal Market Forecast):** Stochastic probability matrix and horizon divergence forecast ($P_{bull}, EV$, Capital Velocity at 2.5%, 5.0%, 7.5% scales). Integrated into METAR telemetry.
+    - **`SIGMET` (Severe Weather Hazard Bulletins):** Issued ONLY when a station breaches extreme hazard thresholds (VIX $\ge 28$, SKEW $\ge 145$, SV5_Turbulence surge, Yield Curve inversion, Extreme Fear capitulation). Returns `status: CLEAR` with empty list `[]` when no severe market weather is present. Endpoint: `/api/sigmet/active`.
+    - **`NOTAM` (Operational Disruption Bulletins):** Reserved strictly for infrastructure outages, Neon Vault pipeline staleness, broker API connectivity failures, FOMC blackout periods, or Macro Circuit Breaker halts. Endpoint: `/api/notam/incidents`.
+
+
 
 
 

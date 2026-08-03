@@ -1,7 +1,7 @@
 """
-Unit Tests for RotationSigmetService (Sector Rotation Intelligence)
+Unit Tests for RotationMetarService (Sector Rotation Intelligence)
 ====================================================================
-Verifies Sector Rotation SIGMET Service behavior:
+Verifies Sector Rotation METAR Service behavior:
   - Evaluation of composite rotation index (XLY/XLP + XLK/XLU Z-scores).
   - Strict Data Policy enforcement (StrictDataPolicyError).
   - RegimeStatePort persistence (key: rotation:entry_decision:MARKET).
@@ -12,11 +12,11 @@ from unittest.mock import MagicMock
 import pandas as pd
 import numpy as np
 
-from backend.modules.entry_decision.domain.services.rotation_sigmet_service import (
-    RotationSigmetService,
+from backend.modules.entry_decision.domain.services.rotation_metar_service import (
+    RotationMetarService,
     StrictDataPolicyError,
-    MarketSIGMET,
-    get_rotation_market_sigmet,
+    MarketMETAR,
+    get_rotation_market_metar,
 )
 
 
@@ -32,20 +32,20 @@ def mock_port():
     return port
 
 
-def test_rotation_sigmet_service_strict_error_on_empty(mock_store, mock_port):
+def test_rotation_metar_service_strict_error_on_empty(mock_store, mock_port):
     conn = MagicMock()
     mock_store._conn.return_value = conn
 
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(pd, "read_sql", lambda q, c: pd.DataFrame())
-        svc = RotationSigmetService(data_store=mock_store, regime_state_port=mock_port)
+        svc = RotationMetarService(data_store=mock_store, regime_state_port=mock_port)
 
         with pytest.raises(StrictDataPolicyError) as exc_info:
             svc.evaluate("2026-07-31")
-        assert "SIGMET NOT AVAILABLE" in str(exc_info.value)
+        assert "METAR NOT AVAILABLE" in str(exc_info.value)
 
 
-def test_rotation_sigmet_service_evaluation(mock_store, mock_port):
+def test_rotation_metar_service_evaluation(mock_store, mock_port):
     conn = MagicMock()
     mock_store._conn.return_value = conn
 
@@ -58,17 +58,17 @@ def test_rotation_sigmet_service_evaluation(mock_store, mock_port):
 
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(pd, "read_sql", lambda q, c: df)
-        svc = RotationSigmetService(data_store=mock_store, regime_state_port=mock_port)
-        sigmet = svc.evaluate("2026-07-31")
+        svc = RotationMetarService(data_store=mock_store, regime_state_port=mock_port)
+        metar = svc.evaluate("2026-07-31")
 
-        assert isinstance(sigmet, MarketSIGMET)
-        assert sigmet.action_code in [
+        assert isinstance(metar, MarketMETAR)
+        assert metar.action_code in [
             "MKT_ROTATION_CYCLICAL_EXPANSION",
             "MKT_ROTATION_NEUTRAL_BALANCED",
             "MKT_ROTATION_DEFENSIVE_FLIGHT",
             "MKT_ROTATION_DEFENSIVE_FREEZE",
         ]
-        assert sigmet.as_of_date == "2026-07-31"
+        assert metar.as_of_date == "2026-07-31"
         assert mock_port.commit_transition.called
         committed_keys = [call[0][0] for call in mock_port.commit_transition.call_args_list]
         assert "rotation:entry_decision:MARKET" in committed_keys
@@ -76,7 +76,7 @@ def test_rotation_sigmet_service_evaluation(mock_store, mock_port):
 
 
 
-def test_rotation_sigmet_cli_broadcast(mock_store, mock_port):
+def test_rotation_metar_cli_broadcast(mock_store, mock_port):
     conn = MagicMock()
     mock_store._conn.return_value = conn
 
@@ -89,10 +89,10 @@ def test_rotation_sigmet_cli_broadcast(mock_store, mock_port):
 
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(pd, "read_sql", lambda q, c: df)
-        svc = RotationSigmetService(data_store=mock_store, regime_state_port=mock_port)
-        sigmet = svc.evaluate("2026-07-31")
+        svc = RotationMetarService(data_store=mock_store, regime_state_port=mock_port)
+        metar = svc.evaluate("2026-07-31")
 
-        broadcast = sigmet.format_cli_broadcast()
-        assert "MARKET SIGMET — SECTOR ROTATION INTELLIGENCE" in broadcast
+        broadcast = metar.format_cli_broadcast()
+        assert "MARKET METAR — SECTOR ROTATION INTELLIGENCE" in broadcast
         assert "LIVE TELEMETRY" in broadcast
         assert "OPERATIONAL DIRECTIVES" in broadcast

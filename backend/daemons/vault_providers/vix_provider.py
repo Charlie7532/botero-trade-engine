@@ -1,8 +1,8 @@
 """
 CBOE VIX Volatility Index Vault Provider
 ========================================
-Vault provider for VIX Market SIGMET & 3-Day Kinematic Velocity Telemetry.
-Reads VIX from Vault, generates authoritative MarketSIGMET, and persists:
+Vault provider for VIX Market METAR & 3-Day Kinematic Velocity Telemetry.
+Reads VIX from Vault, generates authoritative MarketMETAR, and persists:
   1. MCP Snapshot: mcp_snapshot("vix/sigmet", "MARKET")
   2. Stateful-First Regime Transitions: market.regime_states ("vix:sigmet:MARKET")
 
@@ -16,8 +16,8 @@ from backend.daemons.vault_providers import register_provider
 from backend.daemons.data_vault_daemon import _already_vaulted_today
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.shared.infrastructure.postgres_regime_state import PostgresRegimeStateAdapter
-from backend.modules.entry_decision.domain.services.vix_sigmet_service import (
-    get_vix_market_sigmet,
+from backend.modules.entry_decision.domain.services.vix_metar_service import (
+    get_vix_market_metar,
     StrictDataPolicyError,
 )
 
@@ -25,27 +25,27 @@ logger = logging.getLogger(__name__)
 
 
 class VIXProvider:
-    """Vault provider for CBOE VIX Volatility Index SIGMET and state transitions."""
+    """Vault provider for CBOE VIX Volatility Index METAR and state transitions."""
 
-    name = "vix_sigmet"
+    name = "vix_metar"
     categories = ["vix", "volatility"]
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
-        """Compute and persist VIX Market SIGMET and regime state from Vault data."""
+        """Compute and persist VIX Market METAR and regime state from Vault data."""
         if _already_vaulted_today(store, "vix/sigmet", "MARKET"):
-            logger.info("📊 VIX Market SIGMET already vaulted today — skipping")
+            logger.info("📊 VIX Market METAR already vaulted today — skipping")
             return {"status": "skipped", "reason": "already_today"}
 
         return self._compute(store)
 
     def run_ticker(self, store: TimescaleDataStore, ticker: str) -> Dict[str, Any]:
-        """VIX SIGMET is market-wide — falls back to run_full."""
+        """VIX METAR is market-wide — falls back to run_full."""
         return self._compute(store)
 
     def _compute(self, store: TimescaleDataStore) -> Dict[str, Any]:
-        """Core computation: read Vault → SIGMET service → persist snapshot & regime state."""
+        """Core computation: read Vault → METAR service → persist snapshot & regime state."""
         try:
-            sigmet = get_vix_market_sigmet()
+            sigmet = get_vix_market_metar()
             store.save_mcp_snapshot("vix/sigmet", "MARKET", sigmet.to_dict())
 
             try:
@@ -70,13 +70,13 @@ class VIXProvider:
                 logger.warning(f"VIX Provider: Regime state persistence skipped: {e}")
 
             logger.info(
-                f"📊 VIX SIGMET Vaulted: State={sigmet.state_key} | "
+                f"📊 VIX METAR Vaulted: State={sigmet.state_key} | "
                 f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
             )
 
             return {
                 "status": "ok",
-                "sigmet_id": sigmet.sigmet_id,
+                "metar_id": sigmet.metar_id,
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,

@@ -1,10 +1,10 @@
 """
-CBOE SKEW Index Market SIGMET Service — Pure Domain Service
+CBOE SKEW Index Market METAR Service — Pure Domain Service
 ===========================================================
-Generates authoritative, zero-fallback SKEW Market SIGMETs.
+Generates authoritative, zero-fallback SKEW Market METARs.
 Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) for tail-risk evaluation.
 Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
-raises StrictDataPolicyError immediately with explicit 'SIGMET NOT AVAILABLE' message in English.
+raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
 Always includes exact UTC date and time.
 """
 from datetime import datetime, timezone
@@ -24,8 +24,8 @@ class StrictDataPolicyError(Exception):
 
 
 @dataclass(frozen=True)
-class MarketSIGMET:
-    sigmet_id: str
+class MarketMETAR:
+    metar_id: str
     timestamp_utc: str
     as_of_date: str
     issuer: str
@@ -50,18 +50,18 @@ class MarketSIGMET:
     rr_asymmetry_ratio: float
 
     def to_dict(self) -> Dict[str, Any]:
-        """Returns full structured SIGMET payload as a dictionary."""
+        """Returns full structured METAR payload as a dictionary."""
         return asdict(self)
 
     def to_json(self, indent: int = 2) -> str:
-        """Returns formatted JSON string of the SIGMET."""
+        """Returns formatted JSON string of the METAR."""
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
     def format_cli_broadcast(self) -> str:
-        """Formats the SIGMET into a high-visibility CLI / Telegram broadcast string."""
+        """Formats the METAR into a high-visibility CLI / Telegram broadcast string."""
         return (
             "================================================================================\n"
-            f" 📢 MARKET SIGMET — CBOE SKEW INDEX (TAIL RISK) [{self.sigmet_id}]\n"
+            f" 📢 MARKET METAR — CBOE SKEW INDEX (TAIL RISK) [{self.metar_id}]\n"
             "================================================================================\n"
             f" 🕒 Timestamp UTC: {self.timestamp_utc} | Close Date: {self.as_of_date}\n"
             f" 🏢 Issuer: {self.issuer} | 🚦 Market Status: {self.market_status}\n"
@@ -84,9 +84,9 @@ class MarketSIGMET:
         )
 
 
-def get_skew_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
+def get_skew_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
     """
-    Generates an authoritative SKEW Market SIGMET on-demand using 3-day fast velocity.
+    Generates an authoritative SKEW Market METAR on-demand using 3-day fast velocity.
     Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
     in Neon Vault, raises StrictDataPolicyError immediately.
     """
@@ -105,7 +105,7 @@ def get_skew_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
             df_check = pd.read_sql(check_query, conn)
             if len(df_check) == 0 or df_check.iloc[0]['count'] == 0:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: SKEW SIGMET NOT AVAILABLE for requested date '{as_of_date}'. "
+                    f"STRICT DATA POLICY: SKEW METAR NOT AVAILABLE for requested date '{as_of_date}'. "
                     f"Vault data does not exist for this timestamp. Latest available date in Vault is '{overall_latest}'."
                 )
 
@@ -113,7 +113,7 @@ def get_skew_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
             target_date = overall_latest
             if target_date == "UNKNOWN":
                 raise StrictDataPolicyError(
-                    "STRICT DATA POLICY: SKEW SIGMET NOT AVAILABLE. Neon Vault contains zero OHLCV bars for ticker 'SKEW'."
+                    "STRICT DATA POLICY: SKEW METAR NOT AVAILABLE. Neon Vault contains zero OHLCV bars for ticker 'SKEW'."
                 )
 
         # Query 10 trading bars up to target_date to compute 3-day velocity
@@ -126,7 +126,7 @@ def get_skew_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
         df_skew = pd.read_sql(query, conn)
         if len(df_skew) < 4:
             raise StrictDataPolicyError(
-                f"STRICT DATA POLICY: SKEW SIGMET NOT AVAILABLE for date '{target_date}'. "
+                f"STRICT DATA POLICY: SKEW METAR NOT AVAILABLE for date '{target_date}'. "
                 f"Insufficient historical bars in Vault ({len(df_skew)} bars found, minimum 4 required for 72h kinematics)."
             )
 
@@ -140,7 +140,7 @@ def get_skew_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
         guidance = skew_lookup.lookup_skew_guidance(skew_val=skew_latest, skew_d3=skew_delta_3d)
         if not guidance:
             raise StrictDataPolicyError(
-                f"STRICT DATA POLICY: SKEW SIGMET NOT AVAILABLE. State classification failed for SKEW={skew_latest}, d3={skew_delta_3d}."
+                f"STRICT DATA POLICY: SKEW METAR NOT AVAILABLE. State classification failed for SKEW={skew_latest}, d3={skew_delta_3d}."
             )
 
         vec = guidance.to_vector()
@@ -155,10 +155,10 @@ def get_skew_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
         else:
             market_status = "NORMAL_OPERATIONAL"
 
-        sigmet_id = f"SIGMET-SKEW-{clean_date.replace('-', '')}-001"
+        metar_id = f"METAR-SKEW-{clean_date.replace('-', '')}-001"
 
-        return MarketSIGMET(
-            sigmet_id=sigmet_id,
+        return MarketMETAR(
+            metar_id=metar_id,
             timestamp_utc=now_utc_str,
             as_of_date=clean_date,
             issuer="Botero-Trade SKEW Intelligence Engine",

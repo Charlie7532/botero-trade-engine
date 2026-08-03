@@ -1,11 +1,11 @@
 """
-Sector Rotation Intelligence (ROTATION) Market SIGMET Service — Pure Domain Service
+Sector Rotation Intelligence (ROTATION) Market METAR Service — Pure Domain Service
 ====================================================================================
-Generates authoritative, zero-fallback Sector Rotation Market SIGMETs (Meteorological Reports).
+Generates authoritative, zero-fallback Sector Rotation Market METARs (Meteorological Reports).
 Evaluates cyclical vs defensive institutional capital migration (XLY/XLP + XLK/XLU Z-scores).
 Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of the composite Rotation Index.
 Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
-raises StrictDataPolicyError immediately with explicit 'SIGMET NOT AVAILABLE' message in English.
+raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
 Always includes exact UTC date and time.
 Persists StateSnapshot to RegimeStatePort under key 'rotation:entry_decision:MARKET'.
 """
@@ -27,8 +27,8 @@ class StrictDataPolicyError(Exception):
 
 
 @dataclass(frozen=True)
-class MarketSIGMET:
-    sigmet_id: str
+class MarketMETAR:
+    metar_id: str
     timestamp_utc: str
     as_of_date: str
     issuer: str
@@ -62,18 +62,18 @@ class MarketSIGMET:
         return self.action_code == "MKT_ROTATION_DEFENSIVE_FREEZE"
 
     def to_dict(self) -> Dict[str, Any]:
-        """Returns full structured SIGMET payload as a dictionary."""
+        """Returns full structured METAR payload as a dictionary."""
         return asdict(self)
 
     def to_json(self, indent: int = 2) -> str:
-        """Returns formatted JSON string of the SIGMET."""
+        """Returns formatted JSON string of the METAR."""
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
     def format_cli_broadcast(self) -> str:
-        """Formats the SIGMET into a high-visibility CLI / Telegram broadcast string."""
+        """Formats the METAR into a high-visibility CLI / Telegram broadcast string."""
         return (
             "================================================================================\n"
-            f" 📢 MARKET SIGMET — SECTOR ROTATION INTELLIGENCE (XLY/XLP + XLK/XLU) [{self.sigmet_id}]\n"
+            f" 📢 MARKET METAR — SECTOR ROTATION INTELLIGENCE (XLY/XLP + XLK/XLU) [{self.metar_id}]\n"
             "================================================================================\n"
             f" 🕒 Timestamp UTC: {self.timestamp_utc} | Close Date: {self.as_of_date}\n"
             f" 🏢 Issuer: {self.issuer} | 🚦 Market Status: {self.market_status}\n"
@@ -97,8 +97,8 @@ class MarketSIGMET:
         )
 
 
-class RotationSigmetService:
-    """Domain service for generating Sector Rotation SIGMETs and persisting state transitions."""
+class RotationMetarService:
+    """Domain service for generating Sector Rotation METARs and persisting state transitions."""
 
     REGIME_KEY = "rotation:entry_decision:MARKET"
 
@@ -112,9 +112,9 @@ class RotationSigmetService:
         self._port = regime_state_port
         self._lookup = rotation_lookup_adapter or rotation_lookup
 
-    def evaluate(self, as_of_date: Optional[str] = None) -> MarketSIGMET:
+    def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
         """
-        Generates an authoritative Sector Rotation Market SIGMET on-demand using 3-day fast velocity.
+        Generates an authoritative Sector Rotation Market METAR on-demand using 3-day fast velocity.
         Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
         in Neon Vault for all required sector tickers, raises StrictDataPolicyError immediately.
         Persists state transitions to RegimeStatePort if provided.
@@ -156,7 +156,7 @@ class RotationSigmetService:
 
                 if not has_exact:
                     raise StrictDataPolicyError(
-                        f"STRICT DATA POLICY: ROTATION SIGMET NOT AVAILABLE for requested date '{as_of_date}'. "
+                        f"STRICT DATA POLICY: ROTATION METAR NOT AVAILABLE for requested date '{as_of_date}'. "
                         f"Vault data does not exist for all required sector tickers ({required_tickers}) at this timestamp. "
                         f"Latest available date in Vault is '{overall_latest}'."
                     )
@@ -171,7 +171,7 @@ class RotationSigmetService:
                 df_raw = pd.read_sql(query_all, conn)
                 if len(df_raw) == 0:
                     raise StrictDataPolicyError(
-                        f"STRICT DATA POLICY: ROTATION SIGMET NOT AVAILABLE. Neon Vault contains zero OHLCV bars for sector tickers ({required_tickers})."
+                        f"STRICT DATA POLICY: ROTATION METAR NOT AVAILABLE. Neon Vault contains zero OHLCV bars for sector tickers ({required_tickers})."
                     )
 
             date_col = 'date' if 'date' in df_raw.columns else 'time'
@@ -182,7 +182,7 @@ class RotationSigmetService:
 
             if len(pivot_c) < 256:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: ROTATION SIGMET NOT AVAILABLE. "
+                    f"STRICT DATA POLICY: ROTATION METAR NOT AVAILABLE. "
                     f"Insufficient historical aligned bars ({len(pivot_c)} bars found, minimum 256 required for rolling 252d Z-score)."
                 )
 
@@ -210,7 +210,7 @@ class RotationSigmetService:
             )
             if not guidance:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: ROTATION SIGMET NOT AVAILABLE. State classification failed for index={rot_latest}, d3={rot_delta_3d}."
+                    f"STRICT DATA POLICY: ROTATION METAR NOT AVAILABLE. State classification failed for index={rot_latest}, d3={rot_delta_3d}."
                 )
 
             vec = guidance.to_vector()
@@ -227,10 +227,10 @@ class RotationSigmetService:
             else:
                 market_status = "NORMAL_BALANCED"
 
-            sigmet_id = f"SIGMET-ROTATION-{clean_date.replace('-', '')}-001"
+            metar_id = f"METAR-ROTATION-{clean_date.replace('-', '')}-001"
 
-            sigmet = MarketSIGMET(
-                sigmet_id=sigmet_id,
+            metar = MarketMETAR(
+                metar_id=metar_id,
                 timestamp_utc=now_utc_str,
                 as_of_date=clean_date,
                 issuer="Botero-Trade Sector Rotation Intelligence Engine",
@@ -260,28 +260,28 @@ class RotationSigmetService:
             if self._port:
                 try:
                     state_keys = [
-                        (self.REGIME_KEY, sigmet.state_key),
-                        ("rotation:regime:MARKET", sigmet.divergence_regime),
-                        ("rotation:guidance:MARKET", sigmet.operational_guidance),
+                        (self.REGIME_KEY, metar.state_key),
+                        ("rotation:regime:MARKET", metar.divergence_regime),
+                        ("rotation:guidance:MARKET", metar.operational_guidance),
                     ]
                     for key, state_label in state_keys:
                         current = self._port.get_current(key)
                         if current is None or current.current_state != state_label:
-                            trigger_msg = f"ROTATION_INDEX={sigmet.rotation_index_value:.4f}, d3={sigmet.rotation_velocity_3d:+.4f}"
+                            trigger_msg = f"ROTATION_INDEX={metar.rotation_index_value:.4f}, d3={metar.rotation_velocity_3d:+.4f}"
                             self._port.commit_transition(key, state_label, trigger=trigger_msg)
                         else:
                             self._port.increment_duration(key)
                 except Exception:
                     pass
 
-            return sigmet
+            return metar
         finally:
             self._store._put(conn)
 
 
-def get_rotation_market_sigmet(as_of_date: Optional[str] = None) -> MarketSIGMET:
+def get_rotation_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
     """
-    Standalone global helper to generate authoritative Sector Rotation Market SIGMET.
+    Standalone global helper to generate authoritative Sector Rotation Market METAR.
     """
-    service = RotationSigmetService()
+    service = RotationMetarService()
     return service.evaluate(as_of_date=as_of_date)

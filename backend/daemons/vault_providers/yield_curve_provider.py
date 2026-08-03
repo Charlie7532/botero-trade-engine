@@ -1,8 +1,8 @@
 """
 Macro Yield Curve Spread (YIELD_CURVE) Vault Provider
 =====================================================
-Vault provider for Yield Curve Market SIGMET & 3-Day Kinematic Velocity Telemetry.
-Reads TNX and IRX from Vault, generates authoritative MarketSIGMET, and persists:
+Vault provider for Yield Curve Market METAR & 3-Day Kinematic Velocity Telemetry.
+Reads TNX and IRX from Vault, generates authoritative MarketMETAR, and persists:
   1. MCP Snapshot: mcp_snapshot("yield_curve/sigmet", "MARKET")
   2. Stateful-First Regime Transitions: market.regime_states ("yield_curve:sigmet:MARKET")
 
@@ -16,8 +16,8 @@ from backend.daemons.vault_providers import register_provider
 from backend.daemons.data_vault_daemon import _already_vaulted_today
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.shared.infrastructure.postgres_regime_state import PostgresRegimeStateAdapter
-from backend.modules.entry_decision.domain.services.yield_curve_sigmet_service import (
-    get_yield_curve_market_sigmet,
+from backend.modules.entry_decision.domain.services.yield_curve_metar_service import (
+    get_yield_curve_market_metar,
     StrictDataPolicyError,
 )
 
@@ -25,28 +25,28 @@ logger = logging.getLogger(__name__)
 
 
 class YieldCurveProvider:
-    """Vault provider for Macro Yield Curve Spread (TNX - IRX) SIGMET and state transitions."""
+    """Vault provider for Macro Yield Curve Spread (TNX - IRX) METAR and state transitions."""
 
     name = "yield_curve"
     categories = ["yield_curve", "macro_yields"]
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
-        """Compute and persist Yield Curve Market SIGMET and regime state from Vault data."""
+        """Compute and persist Yield Curve Market METAR and regime state from Vault data."""
         if _already_vaulted_today(store, "yield_curve/sigmet", "MARKET"):
-            logger.info("📊 Yield Curve Market SIGMET already vaulted today — skipping")
+            logger.info("📊 Yield Curve Market METAR already vaulted today — skipping")
             return {"status": "skipped", "reason": "already_today"}
 
         return self._compute(store)
 
     def run_ticker(self, store: TimescaleDataStore, ticker: str) -> Dict[str, Any]:
-        """Yield Curve SIGMET is market-wide — falls back to run_full."""
+        """Yield Curve METAR is market-wide — falls back to run_full."""
         return self._compute(store)
 
     def _compute(self, store: TimescaleDataStore) -> Dict[str, Any]:
-        """Core computation: read Vault → SIGMET service → persist snapshot & regime state."""
+        """Core computation: read Vault → METAR service → persist snapshot & regime state."""
         try:
-            # 1. Generate live authoritative Market SIGMET using zero-fallback policy
-            sigmet = get_yield_curve_market_sigmet()
+            # 1. Generate live authoritative Market METAR using zero-fallback policy
+            sigmet = get_yield_curve_market_metar()
 
             # 2. Persist MCP Snapshot ("yield_curve/sigmet", "MARKET")
             store.save_mcp_snapshot("yield_curve/sigmet", "MARKET", sigmet.to_dict())
@@ -78,13 +78,13 @@ class YieldCurveProvider:
                 logger.warning(f"Yield Curve Provider: Regime state persistence skipped: {e}")
 
             logger.info(
-                f"📊 Yield Curve SIGMET Vaulted: State={sigmet.state_key} | "
+                f"📊 Yield Curve METAR Vaulted: State={sigmet.state_key} | "
                 f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
             )
 
             return {
                 "status": "ok",
-                "sigmet_id": sigmet.sigmet_id,
+                "metar_id": sigmet.metar_id,
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,

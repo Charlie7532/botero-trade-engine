@@ -2127,37 +2127,37 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"PCR NOTAM vault failed (non-critical): {e}")
         results["pcr_notam"] = {"status": "error", "error": str(e)}
 
-    # VIX SIGMET transitions
+    # VIX METAR transitions
     try:
         from backend.daemons.vault_providers.vix_provider import VIXProvider
-        results["vix_sigmet"] = VIXProvider().run_full(store)
+        results["vix_metar"] = VIXProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"VIX SIGMET vault failed (non-critical): {e}")
-        results["vix_sigmet"] = {"status": "error", "error": str(e)}
+        logger.warning(f"VIX METAR vault failed (non-critical): {e}")
+        results["vix_metar"] = {"status": "error", "error": str(e)}
 
-    # VVIX SIGMET transitions
+    # VVIX METAR transitions
     try:
         from backend.daemons.vault_providers.vvix_provider import VVIXProvider
-        results["vvix_sigmet"] = VVIXProvider().run_full(store)
+        results["vvix_metar"] = VVIXProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"VVIX SIGMET vault failed (non-critical): {e}")
-        results["vvix_sigmet"] = {"status": "error", "error": str(e)}
+        logger.warning(f"VVIX METAR vault failed (non-critical): {e}")
+        results["vvix_metar"] = {"status": "error", "error": str(e)}
 
-    # SKEW SIGMET transitions
+    # SKEW METAR transitions
     try:
         from backend.daemons.vault_providers.skew_provider import SkewProvider
-        results["skew_sigmet"] = SkewProvider().run_full(store)
+        results["skew_metar"] = SkewProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"SKEW SIGMET vault failed (non-critical): {e}")
-        results["skew_sigmet"] = {"status": "error", "error": str(e)}
+        logger.warning(f"SKEW METAR vault failed (non-critical): {e}")
+        results["skew_metar"] = {"status": "error", "error": str(e)}
 
-    # FG SIGMET transitions
+    # FG METAR transitions
     try:
-        from backend.daemons.vault_providers.fg_provider import FearGreedSIGMETProvider
-        results["fg_sigmet"] = FearGreedSIGMETProvider().run_full(store)
+        from backend.daemons.vault_providers.fg_provider import FearGreedMETARProvider
+        results["fg_metar"] = FearGreedMETARProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"FG SIGMET vault failed (non-critical): {e}")
-        results["fg_sigmet"] = {"status": "error", "error": str(e)}
+        logger.warning(f"FG METAR vault failed (non-critical): {e}")
+        results["fg_metar"] = {"status": "error", "error": str(e)}
 
     # ── Tier 2: Moderate (~1 min) ──
     results["finnhub"] = vault_finnhub_data(store, neon_tickers)
@@ -2234,29 +2234,29 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"SV5_TURBULENCE vault failed (non-critical): {e}")
         results["sv5_turbulence"] = {"status": "error", "error": str(e)}
 
-    # Credit Stress SIGMET transitions (needs HYG/TLT from ohlcv)
+    # Credit Stress METAR transitions (needs HYG/TLT from ohlcv)
     try:
         from backend.daemons.vault_providers.credit_provider import CreditProvider
-        results["credit_sigmet"] = CreditProvider().run_full(store)
+        results["credit_metar"] = CreditProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"Credit SIGMET vault failed (non-critical): {e}")
-        results["credit_sigmet"] = {"status": "error", "error": str(e)}
+        logger.warning(f"Credit METAR vault failed (non-critical): {e}")
+        results["credit_metar"] = {"status": "error", "error": str(e)}
 
-    # Yield Curve SIGMET transitions (needs TNX/IRX from ohlcv)
+    # Yield Curve METAR transitions (needs TNX/IRX from ohlcv)
     try:
         from backend.daemons.vault_providers.yield_curve_provider import YieldCurveProvider
-        results["yield_curve_sigmet"] = YieldCurveProvider().run_full(store)
+        results["yield_curve_metar"] = YieldCurveProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"Yield Curve SIGMET vault failed (non-critical): {e}")
-        results["yield_curve_sigmet"] = {"status": "error", "error": str(e)}
+        logger.warning(f"Yield Curve METAR vault failed (non-critical): {e}")
+        results["yield_curve_metar"] = {"status": "error", "error": str(e)}
 
-    # Sector Rotation SIGMET transitions (needs sectors from ohlcv)
+    # Sector Rotation METAR transitions (needs sectors from ohlcv)
     try:
         from backend.daemons.vault_providers.rotation_provider import RotationProvider
-        results["rotation_sigmet"] = RotationProvider().run_full(store)
+        results["rotation_metar"] = RotationProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"Rotation SIGMET vault failed (non-critical): {e}")
-        results["rotation_sigmet"] = {"status": "error", "error": str(e)}
+        logger.warning(f"Rotation METAR vault failed (non-critical): {e}")
+        results["rotation_metar"] = {"status": "error", "error": str(e)}
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)

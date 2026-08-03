@@ -295,5 +295,8 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     - **`field_glossary`**: Complete glossary of every metric key in the data objects (`n`, `p_bull`, `ev`, `sharpe`, `rr_asymmetry`, `fatigue_buckets`, etc.).
     - **`signal_interpretation_policy`**: Explicit Clean Architecture declaration stating that business signals are NOT static strings in JSON, but are dynamically interpreted by pure-domain adapters (`rc_*_lookup.py`, `signal_cataloger.py`).
 
+22. **Strict User Approval Before Code/File Mutations or Git Commits for Architectural Proposals.** AI agents MUST NEVER create new reference files, mutate codebase logic, or execute `git commit` / `git push` for architectural proposals, taxonomies, or plans until the USER has explicitly reviewed and approved the plan. All initial design proposals and prompts must remain in Planning Mode / Artifacts (`master_taxonomic_homologation_prompt.md`, `implementation_plan.md`) without mutating codebase files or committing to git.
+
+
 
 

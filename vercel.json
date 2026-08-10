@@ -1,4 +1,10 @@
 {
+  "experimentalServices": {
+    "frontend": {
+      "routePrefix": "/",
+      "framework": "nextjs"
+    }
+  },
   "crons": [
     {
       "path": "/api/infra-snapshots/capture",

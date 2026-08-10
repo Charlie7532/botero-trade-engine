@@ -495,6 +495,8 @@ export interface Bot {
    */
   executionType: 'agent' | 'strategy';
   strategyType:
+    | 'quality_core'
+    | 'quality_swing'
     | 'quality_value'
     | 'quality_growth'
     | 'quality_dividend'

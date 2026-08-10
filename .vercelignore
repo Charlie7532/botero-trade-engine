@@ -1,0 +1,12 @@
+# Python backend — runs on GCP, not Vercel
+backend/
+mcp-servers/
+
+# Data files
+data/
+*.log
+*.out
+
+# Dev artifacts
+scratch/
+tests/

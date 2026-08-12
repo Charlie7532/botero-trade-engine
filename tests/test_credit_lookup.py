@@ -12,7 +12,7 @@ def test_credit_lookup_valid_state():
     guidance = credit_lookup.lookup_credit_guidance(credit_ratio=0.64, credit_d3=0.0)
     assert guidance is not None
     assert isinstance(guidance, CreditStateGuidance)
-    assert guidance.credit_bin in ['CREDIT_CRISIS', 'CREDIT_STRESS', 'ELEVATED_CREDIT_STRESS', 'STABLE_CREDIT', 'CREDIT_EASE', 'DEEP_CREDIT_EASE']
+    assert guidance.credit_bin in ['DEEP_CREDIT_EASE', 'CREDIT_EASE', 'STABLE_CREDIT', 'ELEVATED_CREDIT_STRESS', 'CREDIT_STRESS', 'CREDIT_CRISIS']
     assert guidance.velocity_vector in ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D']
 
     vec = guidance.to_vector()

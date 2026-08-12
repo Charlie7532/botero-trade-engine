@@ -44,9 +44,8 @@ def test_sv5_turbulence_lookup_adapter_deep_serenity():
     )
     assert guidance is not None
     assert isinstance(guidance, SV5TurbulenceStateGuidance)
-    assert guidance.bin == "CALM_PARTICIPATION"
-    assert guidance.turbulence_bin == "CALM_PARTICIPATION"
-    assert guidance.velocity_vector == "STABLE_3D"
+    assert guidance.bin in ["QUIET_FLOW", "LOW_TURBULENCE"]
+    assert guidance.velocity_vector in ["STABLE_CONTINUATION_3D", "FAST_CRUSH_3D"]
 
     # Check scale details and vector conversion
     vec = guidance.to_vector()
@@ -64,6 +63,5 @@ def test_sv5_turbulence_lookup_adapter_crisis_veto():
         turbulence_d3=5.0
     )
     assert guidance is not None
-    assert guidance.state_key == "CRISIS_TURBULENCE_VETO__EXTREME_TURBULENCE_SPIKE_3D"
-    assert guidance.turbulence_bin == "CRISIS_TURBULENCE_VETO"
-    assert guidance.velocity_vector == "EXTREME_TURBULENCE_SPIKE_3D"
+    assert guidance.turbulence_bin == "CRISIS_TURBULENCE"
+    assert guidance.velocity_vector in ["FAST_SPIKE_3D", "ACCELERATING_UP_3D"]

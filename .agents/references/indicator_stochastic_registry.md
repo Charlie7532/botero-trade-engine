@@ -20,6 +20,7 @@
 | **ROTATION** | `S5_*` / `SV5_*` | `rotation_metar_service.py` | Sector Breadth & Institutional Rotation across 11 GICS sectors + QQQ. |
 | **YIELD_CURVE** | `YIELD_SPREAD` | `yield_curve_metar_service.py` | Macro Yield Curve Spread (TNX - IRX). Ciclo de crédito y recesión. |
 | **BSI** | `S5TW` | `bsi_metar_service.py` | Breadth Shock Index (% de acciones S&P 500 sobre 20-DMA). Impulso y capitulación táctica. |
+| **DXY** | `DXY` | `dxy_metar_service.py` | US Dollar Index. Liquidez soberana global, absorción en Emergentes e inflación por commodities (Petróleo/Oro). |
 
 ---
 

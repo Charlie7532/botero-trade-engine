@@ -29,6 +29,7 @@ from backend.modules.entry_decision.domain.services.credit_metar_service import 
 from backend.modules.entry_decision.domain.services.yield_curve_metar_service import get_yield_curve_market_metar, StrictDataPolicyError as YieldCurveError
 from backend.modules.entry_decision.domain.services.rotation_metar_service import get_rotation_market_metar, StrictDataPolicyError as RotationError
 from backend.modules.entry_decision.domain.services.bsi_metar_service import get_bsi_market_metar, StrictDataPolicyError as BSIError
+from backend.modules.entry_decision.domain.services.dxy_metar_service import get_dxy_market_metar, StrictDataPolicyError as DXYError
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
 
@@ -41,6 +42,7 @@ STATION_WEIGHTS = {
     "yield_curve": 1.0,
     "credit": 1.0,
     "pcr": 1.0,
+    "dxy": 1.2,
     "vvix": 0.8,
     "fg": 0.8,
     "rotation": 0.8,
@@ -60,6 +62,7 @@ D1_BEARISH_BINS = {
     "DEEP_INVERSION",                                          # Yield Curve
     "DEFENSIVE_CAPITULATION", "DEFENSIVE",                     # Rotation
     "BREADTH_WASHED_OUT",                                      # BSI
+    "DOLLAR_SPIKE_CRISIS", "ELEVATED_DOLLAR_STRESS",           # DXY
 }
 
 # Bullish D1 bins: complacency / ease / euphoria
@@ -74,6 +77,7 @@ D1_BULLISH_BINS = {
     "EXTREME_STEEPNING", "STEEPNING_CURVE",                    # Yield Curve
     "AGGRESSIVE_ROTATION", "CYCLICAL_LEADERSHIP",              # Rotation
     "HYPER_EXPANSIVE_BREADTH", "EXPANSIVE_BREADTH",            # BSI
+    "DEEP_DOLLAR_CRUSH", "WEAK_DOLLAR",                        # DXY
 }
 
 
@@ -193,6 +197,7 @@ class ConvergenceCompositor:
             ("yield_curve", get_yield_curve_market_metar),
             ("rotation", get_rotation_market_metar),
             ("bsi", get_bsi_market_metar),
+            ("dxy", get_dxy_market_metar),
         ]
 
         # ── Parallel fetching ────────────────────────────────────────

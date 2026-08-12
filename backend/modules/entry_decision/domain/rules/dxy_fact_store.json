@@ -1,0 +1,3031 @@
+{
+  "_documentation": {
+    "model_purpose": "11th METAR Station: DXY (US Dollar Index) Global Sovereign Liquidity & Commodity Inflation Engine",
+    "intermarket_mechanics": "Surging DXY (+2\u03c3) = Global Liquidity Squeeze + Commodity Deflation. Crushing DXY (-2\u03c3) = EM Capital Inflow + Commodity Inflation (Oil/Gold Cost-Push).",
+    "state_hierarchy": "150 Gaussian States (6 D1 Magnitude x 5 D2 Velocity x 5 D3 Volatility)",
+    "dimension_thresholds_definition": {
+      "d1_edges": [
+        76.1231,
+        84.2773,
+        95.963,
+        108.56,
+        135.5228
+      ],
+      "d2_edges": [
+        -1.82,
+        -0.72,
+        0.73,
+        1.8
+      ],
+      "d3_edges": [
+        0.0114,
+        0.1024,
+        0.8888,
+        1.6066
+      ]
+    },
+    "signal_interpretation_policy": "Strict Gaussian quantile edges derived from 14,008 historical DXY bars (1971-2026)."
+  },
+  "fact_store": {
+    "DEEP_DOLLAR_CRUSH__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_CRUSH_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_CRUSH_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_CRUSH_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__DECELERATING_DOWN_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 1,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": -0.006202,
+        "zz50": -0.030713,
+        "zz75": -0.03146
+      },
+      "capital_velocity": -0.006143,
+      "rr_asymmetry": 0.33
+    },
+    "DEEP_DOLLAR_CRUSH__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 5,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 0.4,
+        "zz75": 0.2
+      },
+      "ev_net": {
+        "zz25": -0.015191,
+        "zz50": -0.005135,
+        "zz75": -0.017955
+      },
+      "capital_velocity": -0.001027,
+      "rr_asymmetry": 0.89
+    },
+    "DEEP_DOLLAR_CRUSH__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 27,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.3333,
+        "zz50": 0.4074,
+        "zz75": 0.4444
+      },
+      "ev_net": {
+        "zz25": -0.006325,
+        "zz50": -0.004338,
+        "zz75": -0.008825
+      },
+      "capital_velocity": -0.000868,
+      "rr_asymmetry": 0.92
+    },
+    "DEEP_DOLLAR_CRUSH__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 11,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.2727,
+        "zz50": 0.1818,
+        "zz75": 0.3636
+      },
+      "ev_net": {
+        "zz25": -0.005511,
+        "zz50": -0.013138,
+        "zz75": -0.016198
+      },
+      "capital_velocity": -0.002628,
+      "rr_asymmetry": 0.78
+    },
+    "DEEP_DOLLAR_CRUSH__DECELERATING_DOWN_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__STABLE_CONTINUATION_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 2,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": 0.003004,
+        "zz50": 0.005901,
+        "zz75": 0.014703
+      },
+      "capital_velocity": 0.00118,
+      "rr_asymmetry": 3.84
+    },
+    "DEEP_DOLLAR_CRUSH__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 27,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5185,
+        "zz50": 0.5185,
+        "zz75": 0.4074
+      },
+      "ev_net": {
+        "zz25": 0.001862,
+        "zz50": 0.001742,
+        "zz75": -0.005854
+      },
+      "capital_velocity": 0.000348,
+      "rr_asymmetry": 1.16
+    },
+    "DEEP_DOLLAR_CRUSH__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 122,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.4344,
+        "zz50": 0.4754,
+        "zz75": 0.4836
+      },
+      "ev_net": {
+        "zz25": -0.001447,
+        "zz50": -0.002978,
+        "zz75": -0.006878
+      },
+      "capital_velocity": -0.000596,
+      "rr_asymmetry": 0.81
+    },
+    "DEEP_DOLLAR_CRUSH__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 31,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5806,
+        "zz50": 0.5161,
+        "zz75": 0.5484
+      },
+      "ev_net": {
+        "zz25": -5.2e-05,
+        "zz50": -0.000205,
+        "zz75": 0.004493
+      },
+      "capital_velocity": -4.1e-05,
+      "rr_asymmetry": 0.92
+    },
+    "DEEP_DOLLAR_CRUSH__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 2,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 1.0,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.036141,
+        "zz50": 0.037675,
+        "zz75": 0.020367
+      },
+      "capital_velocity": 0.007535,
+      "rr_asymmetry": 3.77
+    },
+    "DEEP_DOLLAR_CRUSH__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__ACCELERATING_UP_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 16,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5625,
+        "zz50": 0.5625,
+        "zz75": 0.625
+      },
+      "ev_net": {
+        "zz25": 0.000659,
+        "zz50": 0.001686,
+        "zz75": 0.006
+      },
+      "capital_velocity": 0.000337,
+      "rr_asymmetry": 0.98
+    },
+    "DEEP_DOLLAR_CRUSH__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 9,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.4444,
+        "zz50": 0.6667,
+        "zz75": 0.5556
+      },
+      "ev_net": {
+        "zz25": 0.002283,
+        "zz50": 0.005807,
+        "zz75": -0.000296
+      },
+      "capital_velocity": 0.001161,
+      "rr_asymmetry": 1.08
+    },
+    "DEEP_DOLLAR_CRUSH__ACCELERATING_UP_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 3,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 0.3333,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": -0.021851,
+        "zz50": -0.037334,
+        "zz75": -0.020737
+      },
+      "capital_velocity": -0.007467,
+      "rr_asymmetry": 0.02
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_SPIKE_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_SPIKE_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 0,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 1,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 1.0,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": 0.029132,
+        "zz50": 0.01992,
+        "zz75": 0.00622
+      },
+      "capital_velocity": 0.003984,
+      "rr_asymmetry": 1.99
+    },
+    "DEEP_DOLLAR_CRUSH__FAST_SPIKE_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DEEP_DOLLAR_CRUSH",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "WEAK_DOLLAR__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "WEAK_DOLLAR__FAST_CRUSH_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "WEAK_DOLLAR__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 13,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.3077,
+        "zz50": 0.6154,
+        "zz75": 0.6923
+      },
+      "ev_net": {
+        "zz25": -0.005399,
+        "zz50": 0.001077,
+        "zz75": 0.016057
+      },
+      "capital_velocity": 0.000215,
+      "rr_asymmetry": 0.68
+    },
+    "WEAK_DOLLAR__FAST_CRUSH_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 1,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": -0.020961,
+        "zz50": -0.015913,
+        "zz75": 0.027765
+      },
+      "capital_velocity": -0.003183,
+      "rr_asymmetry": 0.63
+    },
+    "WEAK_DOLLAR__FAST_CRUSH_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 2,
+      "operational_guidance": "STK_BUY_DIP_TACTICAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": -0.009281,
+        "zz50": -0.001787,
+        "zz75": -0.002698
+      },
+      "capital_velocity": -0.000357,
+      "rr_asymmetry": 0.66
+    },
+    "WEAK_DOLLAR__DECELERATING_DOWN_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 5,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.4,
+        "zz50": 0.6,
+        "zz75": 0.6
+      },
+      "ev_net": {
+        "zz25": -0.001088,
+        "zz50": -0.005541,
+        "zz75": -0.002062
+      },
+      "capital_velocity": -0.001108,
+      "rr_asymmetry": 0.34
+    },
+    "WEAK_DOLLAR__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 12,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5833,
+        "zz50": 0.4167,
+        "zz75": 0.75
+      },
+      "ev_net": {
+        "zz25": 0.000392,
+        "zz50": 0.002747,
+        "zz75": 0.010302
+      },
+      "capital_velocity": 0.000549,
+      "rr_asymmetry": 2.47
+    },
+    "WEAK_DOLLAR__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 105,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.581,
+        "zz50": 0.619,
+        "zz75": 0.6
+      },
+      "ev_net": {
+        "zz25": 0.001958,
+        "zz50": 0.003767,
+        "zz75": 0.000958
+      },
+      "capital_velocity": 0.000753,
+      "rr_asymmetry": 0.96
+    },
+    "WEAK_DOLLAR__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 26,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5769,
+        "zz50": 0.6154,
+        "zz75": 0.6538
+      },
+      "ev_net": {
+        "zz25": 0.004118,
+        "zz50": 0.006314,
+        "zz75": 0.006801
+      },
+      "capital_velocity": 0.001263,
+      "rr_asymmetry": 1.38
+    },
+    "WEAK_DOLLAR__DECELERATING_DOWN_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 5,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.6,
+        "zz50": 0.4,
+        "zz75": 0.6
+      },
+      "ev_net": {
+        "zz25": 0.003383,
+        "zz50": -0.002558,
+        "zz75": -0.003696
+      },
+      "capital_velocity": -0.000512,
+      "rr_asymmetry": 1.07
+    },
+    "WEAK_DOLLAR__STABLE_CONTINUATION_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 18,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.7222,
+        "zz50": 0.7222,
+        "zz75": 0.8889
+      },
+      "ev_net": {
+        "zz25": 0.004636,
+        "zz50": 0.010218,
+        "zz75": 0.014569
+      },
+      "capital_velocity": 0.002044,
+      "rr_asymmetry": 2.48
+    },
+    "WEAK_DOLLAR__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 140,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5857,
+        "zz50": 0.6429,
+        "zz75": 0.6286
+      },
+      "ev_net": {
+        "zz25": 0.000546,
+        "zz50": 0.004573,
+        "zz75": 0.004607
+      },
+      "capital_velocity": 0.000915,
+      "rr_asymmetry": 1.04
+    },
+    "WEAK_DOLLAR__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 700,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5957,
+        "zz50": 0.6171,
+        "zz75": 0.65
+      },
+      "ev_net": {
+        "zz25": 0.001355,
+        "zz50": 0.002309,
+        "zz75": 0.005625
+      },
+      "capital_velocity": 0.000462,
+      "rr_asymmetry": 0.85
+    },
+    "WEAK_DOLLAR__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 141,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.6241,
+        "zz50": 0.5957,
+        "zz75": 0.6879
+      },
+      "ev_net": {
+        "zz25": 0.000845,
+        "zz50": 0.001471,
+        "zz75": 0.00549
+      },
+      "capital_velocity": 0.000294,
+      "rr_asymmetry": 0.82
+    },
+    "WEAK_DOLLAR__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 33,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5152,
+        "zz50": 0.6364,
+        "zz75": 0.7576
+      },
+      "ev_net": {
+        "zz25": -0.000961,
+        "zz50": 0.0048,
+        "zz75": 0.010792
+      },
+      "capital_velocity": 0.00096,
+      "rr_asymmetry": 1.13
+    },
+    "WEAK_DOLLAR__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 2,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.0,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": -0.008123,
+        "zz50": -0.003272,
+        "zz75": 0.000726
+      },
+      "capital_velocity": -0.000654,
+      "rr_asymmetry": 3.06
+    },
+    "WEAK_DOLLAR__ACCELERATING_UP_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 19,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5263,
+        "zz50": 0.4737,
+        "zz75": 0.5789
+      },
+      "ev_net": {
+        "zz25": -0.00079,
+        "zz50": -0.012813,
+        "zz75": -0.004538
+      },
+      "capital_velocity": -0.002563,
+      "rr_asymmetry": 0.39
+    },
+    "WEAK_DOLLAR__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 98,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.4898,
+        "zz50": 0.551,
+        "zz75": 0.6735
+      },
+      "ev_net": {
+        "zz25": -0.002153,
+        "zz50": -0.000438,
+        "zz75": 0.004453
+      },
+      "capital_velocity": -8.8e-05,
+      "rr_asymmetry": 0.78
+    },
+    "WEAK_DOLLAR__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 29,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5517,
+        "zz50": 0.6207,
+        "zz75": 0.6552
+      },
+      "ev_net": {
+        "zz25": -0.002058,
+        "zz50": 0.00371,
+        "zz75": 0.003317
+      },
+      "capital_velocity": 0.000742,
+      "rr_asymmetry": 1.04
+    },
+    "WEAK_DOLLAR__ACCELERATING_UP_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 4,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.25,
+        "zz50": 1.0,
+        "zz75": 0.75
+      },
+      "ev_net": {
+        "zz25": -0.005943,
+        "zz50": 0.009444,
+        "zz75": 0.013112
+      },
+      "capital_velocity": 0.001889,
+      "rr_asymmetry": 0.94
+    },
+    "WEAK_DOLLAR__FAST_SPIKE_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 1,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": -0.035693,
+        "zz50": -0.137598,
+        "zz75": -0.13915
+      },
+      "capital_velocity": -0.02752,
+      "rr_asymmetry": 0.07
+    },
+    "WEAK_DOLLAR__FAST_SPIKE_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "WEAK_DOLLAR__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 11,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5455,
+        "zz50": 0.5455,
+        "zz75": 0.5455
+      },
+      "ev_net": {
+        "zz25": 0.006174,
+        "zz50": -0.007383,
+        "zz75": -0.019816
+      },
+      "capital_velocity": -0.001477,
+      "rr_asymmetry": 0.5
+    },
+    "WEAK_DOLLAR__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 5,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.2,
+        "zz50": 0.4,
+        "zz75": 0.2
+      },
+      "ev_net": {
+        "zz25": -0.00121,
+        "zz50": -0.018086,
+        "zz75": -0.02318
+      },
+      "capital_velocity": -0.003617,
+      "rr_asymmetry": 0.14
+    },
+    "WEAK_DOLLAR__FAST_SPIKE_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "WEAK_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 2,
+      "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
+      "divergence_regime": "COMMODITY_REFLATION_EM_SURGE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": -0.015028,
+        "zz50": -0.010014,
+        "zz75": -0.025255
+      },
+      "capital_velocity": -0.002003,
+      "rr_asymmetry": 0.19
+    },
+    "MODERATE_LOW_DOLLAR__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 1,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": -0.010145,
+        "zz50": -0.004577,
+        "zz75": -0.006276
+      },
+      "capital_velocity": -0.000915,
+      "rr_asymmetry": 2.18
+    },
+    "MODERATE_LOW_DOLLAR__FAST_CRUSH_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 2,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": -0.00545,
+        "zz50": 0.000132,
+        "zz75": 0.01372
+      },
+      "capital_velocity": 2.6e-05,
+      "rr_asymmetry": 1.02
+    },
+    "MODERATE_LOW_DOLLAR__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 17,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.7647,
+        "zz50": 0.5882,
+        "zz75": 0.4706
+      },
+      "ev_net": {
+        "zz25": 0.004742,
+        "zz50": 0.008269,
+        "zz75": 0.007123
+      },
+      "capital_velocity": 0.001654,
+      "rr_asymmetry": 1.75
+    },
+    "MODERATE_LOW_DOLLAR__FAST_CRUSH_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 7,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5714,
+        "zz50": 0.7143,
+        "zz75": 0.5714
+      },
+      "ev_net": {
+        "zz25": -0.009839,
+        "zz50": 0.004842,
+        "zz75": 0.009176
+      },
+      "capital_velocity": 0.000968,
+      "rr_asymmetry": 0.97
+    },
+    "MODERATE_LOW_DOLLAR__FAST_CRUSH_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 1,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 1.0,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": 0.002086,
+        "zz50": 0.005547,
+        "zz75": -0.012043
+      },
+      "capital_velocity": 0.001109,
+      "rr_asymmetry": 0.55
+    },
+    "MODERATE_LOW_DOLLAR__DECELERATING_DOWN_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 5,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 0.8,
+        "zz75": 0.8
+      },
+      "ev_net": {
+        "zz25": 0.021986,
+        "zz50": 0.035371,
+        "zz75": 0.04015
+      },
+      "capital_velocity": 0.007074,
+      "rr_asymmetry": 3.22
+    },
+    "MODERATE_LOW_DOLLAR__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 23,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.6522,
+        "zz50": 0.5652,
+        "zz75": 0.6522
+      },
+      "ev_net": {
+        "zz25": 0.002193,
+        "zz50": 0.000479,
+        "zz75": 0.004721
+      },
+      "capital_velocity": 9.6e-05,
+      "rr_asymmetry": 0.84
+    },
+    "MODERATE_LOW_DOLLAR__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 213,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5962,
+        "zz50": 0.6103,
+        "zz75": 0.5915
+      },
+      "ev_net": {
+        "zz25": 0.005569,
+        "zz50": 0.007444,
+        "zz75": 0.007843
+      },
+      "capital_velocity": 0.001489,
+      "rr_asymmetry": 1.38
+    },
+    "MODERATE_LOW_DOLLAR__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 64,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5156,
+        "zz50": 0.5625,
+        "zz75": 0.5156
+      },
+      "ev_net": {
+        "zz25": -0.000332,
+        "zz50": 0.000313,
+        "zz75": -0.000887
+      },
+      "capital_velocity": 6.3e-05,
+      "rr_asymmetry": 0.81
+    },
+    "MODERATE_LOW_DOLLAR__DECELERATING_DOWN_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 15,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5333,
+        "zz50": 0.6,
+        "zz75": 0.8
+      },
+      "ev_net": {
+        "zz25": -0.001253,
+        "zz50": 0.003781,
+        "zz75": 0.012576
+      },
+      "capital_velocity": 0.000756,
+      "rr_asymmetry": 1.21
+    },
+    "MODERATE_LOW_DOLLAR__STABLE_CONTINUATION_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 40,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.6,
+        "zz75": 0.55
+      },
+      "ev_net": {
+        "zz25": 0.001108,
+        "zz50": -0.0001,
+        "zz75": 4.3e-05
+      },
+      "capital_velocity": -2e-05,
+      "rr_asymmetry": 0.66
+    },
+    "MODERATE_LOW_DOLLAR__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 227,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5551,
+        "zz50": 0.6432,
+        "zz75": 0.674
+      },
+      "ev_net": {
+        "zz25": 0.001555,
+        "zz50": 0.004588,
+        "zz75": 0.008552
+      },
+      "capital_velocity": 0.000918,
+      "rr_asymmetry": 1.06
+    },
+    "MODERATE_LOW_DOLLAR__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 1141,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5688,
+        "zz50": 0.589,
+        "zz75": 0.6503
+      },
+      "ev_net": {
+        "zz25": 0.001126,
+        "zz50": 0.003089,
+        "zz75": 0.008683
+      },
+      "capital_velocity": 0.000618,
+      "rr_asymmetry": 1.05
+    },
+    "MODERATE_LOW_DOLLAR__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 218,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.6101,
+        "zz50": 0.6147,
+        "zz75": 0.633
+      },
+      "ev_net": {
+        "zz25": 0.001735,
+        "zz50": 0.00616,
+        "zz75": 0.005458
+      },
+      "capital_velocity": 0.001232,
+      "rr_asymmetry": 1.28
+    },
+    "MODERATE_LOW_DOLLAR__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 41,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.4878,
+        "zz50": 0.6098,
+        "zz75": 0.6341
+      },
+      "ev_net": {
+        "zz25": -0.000847,
+        "zz50": 0.003342,
+        "zz75": 0.004851
+      },
+      "capital_velocity": 0.000668,
+      "rr_asymmetry": 1.15
+    },
+    "MODERATE_LOW_DOLLAR__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 4,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.25,
+        "zz75": 0.25
+      },
+      "ev_net": {
+        "zz25": -0.010406,
+        "zz50": -0.014029,
+        "zz75": -0.032844
+      },
+      "capital_velocity": -0.002806,
+      "rr_asymmetry": 1.21
+    },
+    "MODERATE_LOW_DOLLAR__ACCELERATING_UP_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 52,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.6154,
+        "zz75": 0.7308
+      },
+      "ev_net": {
+        "zz25": 0.002745,
+        "zz50": 0.010886,
+        "zz75": 0.017612
+      },
+      "capital_velocity": 0.002177,
+      "rr_asymmetry": 2.13
+    },
+    "MODERATE_LOW_DOLLAR__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 201,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5771,
+        "zz50": 0.592,
+        "zz75": 0.5821
+      },
+      "ev_net": {
+        "zz25": 0.001411,
+        "zz50": 0.00279,
+        "zz75": 0.013232
+      },
+      "capital_velocity": 0.000558,
+      "rr_asymmetry": 0.92
+    },
+    "MODERATE_LOW_DOLLAR__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 57,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.4561,
+        "zz50": 0.5088,
+        "zz75": 0.5088
+      },
+      "ev_net": {
+        "zz25": -0.00265,
+        "zz50": -0.000228,
+        "zz75": -0.001532
+      },
+      "capital_velocity": -4.6e-05,
+      "rr_asymmetry": 0.94
+    },
+    "MODERATE_LOW_DOLLAR__ACCELERATING_UP_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 12,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.4167,
+        "zz75": 0.5833
+      },
+      "ev_net": {
+        "zz25": 0.064779,
+        "zz50": 0.068848,
+        "zz75": 0.073823
+      },
+      "capital_velocity": 0.01377,
+      "rr_asymmetry": 14.51
+    },
+    "MODERATE_LOW_DOLLAR__FAST_SPIKE_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 1,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 1.0,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": -0.039718,
+        "zz50": 0.02692,
+        "zz75": 0.061231
+      },
+      "capital_velocity": 0.005384,
+      "rr_asymmetry": 2.69
+    },
+    "MODERATE_LOW_DOLLAR__FAST_SPIKE_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 1,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 1.0,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": 0.001115,
+        "zz50": 0.001394,
+        "zz75": 0.003345
+      },
+      "capital_velocity": 0.000279,
+      "rr_asymmetry": 0.14
+    },
+    "MODERATE_LOW_DOLLAR__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 9,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.4444,
+        "zz50": 0.5556,
+        "zz75": 0.2222
+      },
+      "ev_net": {
+        "zz25": -0.01754,
+        "zz50": 0.000301,
+        "zz75": -0.013281
+      },
+      "capital_velocity": 6e-05,
+      "rr_asymmetry": 0.83
+    },
+    "MODERATE_LOW_DOLLAR__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 8,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.25
+      },
+      "ev_net": {
+        "zz25": 0.001396,
+        "zz50": 0.000489,
+        "zz75": -0.013871
+      },
+      "capital_velocity": 9.8e-05,
+      "rr_asymmetry": 1.09
+    },
+    "MODERATE_LOW_DOLLAR__FAST_SPIKE_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_LOW_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_CRUSH_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 2,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": -0.020685,
+        "zz50": -0.022754,
+        "zz75": -0.01278
+      },
+      "capital_velocity": -0.004551,
+      "rr_asymmetry": 0.44
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 20,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.4,
+        "zz75": 0.7
+      },
+      "ev_net": {
+        "zz25": 0.00056,
+        "zz50": -0.002376,
+        "zz75": 0.016943
+      },
+      "capital_velocity": -0.000475,
+      "rr_asymmetry": 1.17
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_CRUSH_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 9,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5556,
+        "zz50": 0.4444,
+        "zz75": 0.6667
+      },
+      "ev_net": {
+        "zz25": -0.002823,
+        "zz50": -0.006857,
+        "zz75": 0.008179
+      },
+      "capital_velocity": -0.001371,
+      "rr_asymmetry": 0.62
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_CRUSH_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 4,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.25,
+        "zz50": 0.25,
+        "zz75": 0.25
+      },
+      "ev_net": {
+        "zz25": -0.045956,
+        "zz50": -0.027106,
+        "zz75": -0.022059
+      },
+      "capital_velocity": -0.005421,
+      "rr_asymmetry": 0.03
+    },
+    "MODERATE_HIGH_DOLLAR__DECELERATING_DOWN_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 1,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 1.0,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": 0.010172,
+        "zz50": 0.021746,
+        "zz75": 0.028882
+      },
+      "capital_velocity": 0.004349,
+      "rr_asymmetry": 2.17
+    },
+    "MODERATE_HIGH_DOLLAR__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 37,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.4595,
+        "zz50": 0.6216,
+        "zz75": 0.5676
+      },
+      "ev_net": {
+        "zz25": 2.7e-05,
+        "zz50": 0.001733,
+        "zz75": 0.003373
+      },
+      "capital_velocity": 0.000347,
+      "rr_asymmetry": 0.79
+    },
+    "MODERATE_HIGH_DOLLAR__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 192,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5469,
+        "zz50": 0.6042,
+        "zz75": 0.6302
+      },
+      "ev_net": {
+        "zz25": -0.000582,
+        "zz50": 0.003015,
+        "zz75": 0.003985
+      },
+      "capital_velocity": 0.000603,
+      "rr_asymmetry": 0.87
+    },
+    "MODERATE_HIGH_DOLLAR__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 55,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.4545,
+        "zz50": 0.6364,
+        "zz75": 0.6545
+      },
+      "ev_net": {
+        "zz25": -0.003428,
+        "zz50": 0.000417,
+        "zz75": 0.001894
+      },
+      "capital_velocity": 8.3e-05,
+      "rr_asymmetry": 0.6
+    },
+    "MODERATE_HIGH_DOLLAR__DECELERATING_DOWN_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 6,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.3333,
+        "zz50": 0.3333,
+        "zz75": 0.8333
+      },
+      "ev_net": {
+        "zz25": -0.007865,
+        "zz50": 0.000633,
+        "zz75": 0.008824
+      },
+      "capital_velocity": 0.000127,
+      "rr_asymmetry": 2.13
+    },
+    "MODERATE_HIGH_DOLLAR__STABLE_CONTINUATION_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 34,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5882,
+        "zz50": 0.7059,
+        "zz75": 0.5882
+      },
+      "ev_net": {
+        "zz25": 0.003422,
+        "zz50": 0.006789,
+        "zz75": 0.005451
+      },
+      "capital_velocity": 0.001358,
+      "rr_asymmetry": 1.08
+    },
+    "MODERATE_HIGH_DOLLAR__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 249,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5863,
+        "zz50": 0.6386,
+        "zz75": 0.6386
+      },
+      "ev_net": {
+        "zz25": 0.000608,
+        "zz50": 0.003435,
+        "zz75": 0.005
+      },
+      "capital_velocity": 0.000687,
+      "rr_asymmetry": 0.85
+    },
+    "MODERATE_HIGH_DOLLAR__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 1054,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.574,
+        "zz50": 0.5987,
+        "zz75": 0.6176
+      },
+      "ev_net": {
+        "zz25": 0.000996,
+        "zz50": 0.002531,
+        "zz75": 0.004285
+      },
+      "capital_velocity": 0.000506,
+      "rr_asymmetry": 0.89
+    },
+    "MODERATE_HIGH_DOLLAR__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 217,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5668,
+        "zz50": 0.5806,
+        "zz75": 0.553
+      },
+      "ev_net": {
+        "zz25": 0.000541,
+        "zz50": 0.00069,
+        "zz75": 0.002981
+      },
+      "capital_velocity": 0.000138,
+      "rr_asymmetry": 0.77
+    },
+    "MODERATE_HIGH_DOLLAR__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 39,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5897,
+        "zz50": 0.5641,
+        "zz75": 0.641
+      },
+      "ev_net": {
+        "zz25": -0.000947,
+        "zz50": 0.004576,
+        "zz75": 0.006967
+      },
+      "capital_velocity": 0.000915,
+      "rr_asymmetry": 1.18
+    },
+    "MODERATE_HIGH_DOLLAR__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 3,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.3333,
+        "zz50": 0.6667,
+        "zz75": 0.6667
+      },
+      "ev_net": {
+        "zz25": -0.007536,
+        "zz50": 0.007167,
+        "zz75": 0.007867
+      },
+      "capital_velocity": 0.001433,
+      "rr_asymmetry": 1.3
+    },
+    "MODERATE_HIGH_DOLLAR__ACCELERATING_UP_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 33,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.3939,
+        "zz50": 0.5152,
+        "zz75": 0.4545
+      },
+      "ev_net": {
+        "zz25": -0.003338,
+        "zz50": -0.006133,
+        "zz75": -0.009007
+      },
+      "capital_velocity": -0.001227,
+      "rr_asymmetry": 0.49
+    },
+    "MODERATE_HIGH_DOLLAR__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 226,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5398,
+        "zz50": 0.5354,
+        "zz75": 0.615
+      },
+      "ev_net": {
+        "zz25": 0.00216,
+        "zz50": 0.00191,
+        "zz75": 0.00714
+      },
+      "capital_velocity": 0.000382,
+      "rr_asymmetry": 1.04
+    },
+    "MODERATE_HIGH_DOLLAR__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 45,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.6667,
+        "zz50": 0.6667,
+        "zz75": 0.5778
+      },
+      "ev_net": {
+        "zz25": 0.005413,
+        "zz50": 0.008147,
+        "zz75": 0.007158
+      },
+      "capital_velocity": 0.001629,
+      "rr_asymmetry": 1.14
+    },
+    "MODERATE_HIGH_DOLLAR__ACCELERATING_UP_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 9,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.4444,
+        "zz50": 0.5556,
+        "zz75": 0.4444
+      },
+      "ev_net": {
+        "zz25": -0.004216,
+        "zz50": -0.000332,
+        "zz75": -8.6e-05
+      },
+      "capital_velocity": -6.6e-05,
+      "rr_asymmetry": 0.76
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_SPIKE_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_SPIKE_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 4,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.75,
+        "zz50": 0.75,
+        "zz75": 0.75
+      },
+      "ev_net": {
+        "zz25": -0.011118,
+        "zz50": 0.020151,
+        "zz75": 0.016834
+      },
+      "capital_velocity": 0.00403,
+      "rr_asymmetry": 2.66
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 22,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.4545,
+        "zz50": 0.4545,
+        "zz75": 0.6818
+      },
+      "ev_net": {
+        "zz25": -0.005898,
+        "zz50": -0.009397,
+        "zz75": 0.010261
+      },
+      "capital_velocity": -0.001879,
+      "rr_asymmetry": 0.66
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 6,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.6667,
+        "zz50": 0.6667,
+        "zz75": 0.6667
+      },
+      "ev_net": {
+        "zz25": 0.015996,
+        "zz50": 0.028302,
+        "zz75": 0.014347
+      },
+      "capital_velocity": 0.00566,
+      "rr_asymmetry": 2.52
+    },
+    "MODERATE_HIGH_DOLLAR__FAST_SPIKE_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "MODERATE_HIGH_DOLLAR",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_HOLD_STABLE",
+      "divergence_regime": "GOLDILOCKS_CURRENCY_BALANCED",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 1,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.0,
+        "zz50": 1.0,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": -0.009133,
+        "zz50": 0.015574,
+        "zz75": 0.020258
+      },
+      "capital_velocity": 0.003115,
+      "rr_asymmetry": 1.56
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_CRUSH_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 2,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 0.5,
+        "zz75": 1.0
+      },
+      "ev_net": {
+        "zz25": 0.006628,
+        "zz50": 0.006455,
+        "zz75": 0.008928
+      },
+      "capital_velocity": 0.001291,
+      "rr_asymmetry": 1.82
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 14,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.4286,
+        "zz50": 0.3571,
+        "zz75": 0.2857
+      },
+      "ev_net": {
+        "zz25": 0.001724,
+        "zz50": -0.002915,
+        "zz75": -0.001075
+      },
+      "capital_velocity": -0.000583,
+      "rr_asymmetry": 1.43
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_CRUSH_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 9,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5556,
+        "zz50": 0.5556,
+        "zz75": 0.3333
+      },
+      "ev_net": {
+        "zz25": 0.002387,
+        "zz50": 0.006058,
+        "zz75": -0.002304
+      },
+      "capital_velocity": 0.001212,
+      "rr_asymmetry": 1.53
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_CRUSH_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "ELEVATED_DOLLAR_STRESS__DECELERATING_DOWN_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 3,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.3333,
+        "zz50": 0.3333,
+        "zz75": 0.3333
+      },
+      "ev_net": {
+        "zz25": 0.000869,
+        "zz50": 0.011292,
+        "zz75": 0.003327
+      },
+      "capital_velocity": 0.002258,
+      "rr_asymmetry": 4.72
+    },
+    "ELEVATED_DOLLAR_STRESS__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 8,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.375,
+        "zz50": 0.5,
+        "zz75": 0.25
+      },
+      "ev_net": {
+        "zz25": -0.008643,
+        "zz50": -0.002397,
+        "zz75": -0.012742
+      },
+      "capital_velocity": -0.000479,
+      "rr_asymmetry": 0.7
+    },
+    "ELEVATED_DOLLAR_STRESS__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 52,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.4615,
+        "zz50": 0.4808,
+        "zz75": 0.2885
+      },
+      "ev_net": {
+        "zz25": 0.000358,
+        "zz50": -0.003517,
+        "zz75": -0.01162
+      },
+      "capital_velocity": -0.000703,
+      "rr_asymmetry": 0.8
+    },
+    "ELEVATED_DOLLAR_STRESS__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 12,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5833,
+        "zz50": 0.5,
+        "zz75": 0.5833
+      },
+      "ev_net": {
+        "zz25": 0.002439,
+        "zz50": 0.0021,
+        "zz75": -0.007175
+      },
+      "capital_velocity": 0.00042,
+      "rr_asymmetry": 1.21
+    },
+    "ELEVATED_DOLLAR_STRESS__DECELERATING_DOWN_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 2,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": -0.003072,
+        "zz50": -0.02831,
+        "zz75": -0.018344
+      },
+      "capital_velocity": -0.005662,
+      "rr_asymmetry": 0.35
+    },
+    "ELEVATED_DOLLAR_STRESS__STABLE_CONTINUATION_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 4,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.25,
+        "zz50": 0.0,
+        "zz75": 0.25
+      },
+      "ev_net": {
+        "zz25": -0.017062,
+        "zz50": -0.040682,
+        "zz75": -0.018715
+      },
+      "capital_velocity": -0.008136,
+      "rr_asymmetry": 0.25
+    },
+    "ELEVATED_DOLLAR_STRESS__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 34,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5588,
+        "zz50": 0.5588,
+        "zz75": 0.4118
+      },
+      "ev_net": {
+        "zz25": -0.002141,
+        "zz50": -0.001868,
+        "zz75": -0.007783
+      },
+      "capital_velocity": -0.000374,
+      "rr_asymmetry": 0.63
+    },
+    "ELEVATED_DOLLAR_STRESS__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 168,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.4702,
+        "zz50": 0.4464,
+        "zz75": 0.4107
+      },
+      "ev_net": {
+        "zz25": -0.001303,
+        "zz50": -0.002887,
+        "zz75": -0.006134
+      },
+      "capital_velocity": -0.000577,
+      "rr_asymmetry": 0.95
+    },
+    "ELEVATED_DOLLAR_STRESS__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 30,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.6,
+        "zz50": 0.4333,
+        "zz75": 0.5333
+      },
+      "ev_net": {
+        "zz25": 0.002573,
+        "zz50": 0.001799,
+        "zz75": 0.001383
+      },
+      "capital_velocity": 0.00036,
+      "rr_asymmetry": 1.55
+    },
+    "ELEVATED_DOLLAR_STRESS__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 5,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.2,
+        "zz50": 0.4,
+        "zz75": 0.4
+      },
+      "ev_net": {
+        "zz25": -0.007827,
+        "zz50": -0.008009,
+        "zz75": -0.038586
+      },
+      "capital_velocity": -0.001602,
+      "rr_asymmetry": 0.97
+    },
+    "ELEVATED_DOLLAR_STRESS__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 2,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.017973,
+        "zz50": 0.018626,
+        "zz75": 0.000741
+      },
+      "capital_velocity": 0.003725,
+      "rr_asymmetry": 5.71
+    },
+    "ELEVATED_DOLLAR_STRESS__ACCELERATING_UP_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 13,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.3846,
+        "zz50": 0.3077,
+        "zz75": 0.6154
+      },
+      "ev_net": {
+        "zz25": -0.001971,
+        "zz50": -0.007226,
+        "zz75": 0.002698
+      },
+      "capital_velocity": -0.001445,
+      "rr_asymmetry": 1.07
+    },
+    "ELEVATED_DOLLAR_STRESS__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 63,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5397,
+        "zz50": 0.4603,
+        "zz75": 0.5238
+      },
+      "ev_net": {
+        "zz25": 0.000496,
+        "zz50": -0.000621,
+        "zz75": -0.001249
+      },
+      "capital_velocity": -0.000124,
+      "rr_asymmetry": 1.11
+    },
+    "ELEVATED_DOLLAR_STRESS__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 14,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5714,
+        "zz50": 0.5714,
+        "zz75": 0.7857
+      },
+      "ev_net": {
+        "zz25": 0.011131,
+        "zz50": 0.014406,
+        "zz75": 0.028337
+      },
+      "capital_velocity": 0.002881,
+      "rr_asymmetry": 2.46
+    },
+    "ELEVATED_DOLLAR_STRESS__ACCELERATING_UP_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 4,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.75,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": -0.003414,
+        "zz50": -0.004431,
+        "zz75": -0.011851
+      },
+      "capital_velocity": -0.000886,
+      "rr_asymmetry": 0.16
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_SPIKE_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 1,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 1.0,
+        "zz50": 1.0,
+        "zz75": 0.0
+      },
+      "ev_net": {
+        "zz25": 0.017073,
+        "zz50": 0.006313,
+        "zz75": -0.011776
+      },
+      "capital_velocity": 0.001263,
+      "rr_asymmetry": 0.63
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_SPIKE_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 3,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.3333,
+        "zz50": 0.3333,
+        "zz75": 0.3333
+      },
+      "ev_net": {
+        "zz25": -0.008905,
+        "zz50": -0.031037,
+        "zz75": -0.038036
+      },
+      "capital_velocity": -0.006207,
+      "rr_asymmetry": 0.24
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 14,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.2143,
+        "zz50": 0.0714,
+        "zz75": 0.2857
+      },
+      "ev_net": {
+        "zz25": -0.015732,
+        "zz50": -0.027748,
+        "zz75": -0.019461
+      },
+      "capital_velocity": -0.00555,
+      "rr_asymmetry": 0.69
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 3,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.6667,
+        "zz50": 0.3333,
+        "zz75": 0.3333
+      },
+      "ev_net": {
+        "zz25": -0.00462,
+        "zz50": -0.011692,
+        "zz75": -0.020418
+      },
+      "capital_velocity": -0.002338,
+      "rr_asymmetry": 0.09
+    },
+    "ELEVATED_DOLLAR_STRESS__FAST_SPIKE_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "ELEVATED_DOLLAR_STRESS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_TRIM_TACTICAL",
+      "divergence_regime": "CORPORATE_MARGIN_COMPRESSION",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_CRUSH_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_CRUSH_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_CRUSH_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_CRUSH_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__DECELERATING_DOWN_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__DECELERATING_DOWN_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "DECELERATING_DOWN_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__STABLE_CONTINUATION_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "STABLE_CONTINUATION_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__ACCELERATING_UP_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__ACCELERATING_UP_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "ACCELERATING_UP_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_SPIKE_3D__VOL_EXTREME_SQUEEZE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_EXTREME_SQUEEZE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_SPIKE_3D__VOL_MODERATE_COMPRESSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_MODERATE_COMPRESSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_NEUTRAL_BASELINE",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_ACCELERATING_EXPANSION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    },
+    "DOLLAR_SPIKE_CRISIS__FAST_SPIKE_3D__VOL_PEAK_DECELERATION": {
+      "d1_bin": "DOLLAR_SPIKE_CRISIS",
+      "d2_bin": "FAST_SPIKE_3D",
+      "d3_bin": "VOL_PEAK_DECELERATION",
+      "n_samples": 0,
+      "operational_guidance": "STK_BLOCK_CRISIS",
+      "divergence_regime": "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
+      "p_bull": {
+        "zz25": 0.5,
+        "zz50": 0.5,
+        "zz75": 0.5
+      },
+      "ev_net": {
+        "zz25": 0.0,
+        "zz50": 0.0,
+        "zz75": 0.0
+      },
+      "capital_velocity": 0.0,
+      "rr_asymmetry": 1.0
+    }
+  }
+}

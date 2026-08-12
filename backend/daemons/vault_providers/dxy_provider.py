@@ -1,0 +1,94 @@
+"""
+US Dollar Index (DXY) Vault Provider
+====================================
+Vault provider for DXY Market METAR & 3-Day Kinematic Velocity Telemetry.
+Reads DXY ticker from Vault, generates authoritative MarketMETAR, and persists:
+  1. MCP Snapshot: mcp_snapshot("dxy/sigmet", "MARKET")
+  2. Stateful-First Regime Transitions: market.regime_states ("dxy:entry_decision:MARKET")
+
+Follows Rules 13, 15, 16, 17, 18.
+"""
+import logging
+from typing import Dict, Any, Optional
+
+from backend.daemons.vault_providers import register_provider
+from backend.daemons.data_vault_daemon import _already_vaulted_today
+from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.postgres_regime_state import PostgresRegimeStateAdapter
+from backend.modules.entry_decision.domain.services.dxy_metar_service import (
+    get_dxy_market_metar,
+    StrictDataPolicyError,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class DXYProvider:
+    """Vault provider for DXY Market METAR and state transitions."""
+
+    name = "dxy"
+    categories = ["dxy", "dollar", "currency_stress"]
+
+    def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
+        """Compute and persist DXY Market METAR and regime state from Vault data."""
+        if _already_vaulted_today(store, "dxy/sigmet", "MARKET"):
+            logger.info("📊 DXY Market METAR already vaulted today — skipping")
+            return {"status": "skipped", "reason": "already_today"}
+
+        return self._compute(store)
+
+    def run_ticker(self, store: TimescaleDataStore, ticker: str) -> Dict[str, Any]:
+        """DXY METAR is market-wide — falls back to run_full."""
+        return self._compute(store)
+
+    def _compute(self, store: TimescaleDataStore) -> Dict[str, Any]:
+        """Core computation: read Vault → METAR service → persist snapshot & regime state."""
+        try:
+            sigmet = get_dxy_market_metar()
+            store.save_mcp_snapshot("dxy/sigmet", "MARKET", sigmet.to_dict())
+
+            try:
+                regime_store = PostgresRegimeStateAdapter()
+
+                state_keys = [
+                    ("dxy:entry_decision:MARKET", sigmet.state_key),
+                    ("dxy:regime:MARKET", sigmet.divergence_regime),
+                    ("dxy:guidance:MARKET", sigmet.operational_guidance),
+                ]
+
+                for key, state_label in state_keys:
+                    transition = regime_store.transition_regime(
+                        key=key,
+                        new_state=state_label,
+                        trigger_event=f"DXY={sigmet.dxy_index_value:.2f}, d3={sigmet.dxy_velocity_3d:+.2f}",
+                        department="entry_decision",
+                    )
+                    if transition and transition.entered_at == transition.as_of:
+                        logger.info(
+                            f"🔄 RegimeState Transition [{key}]: "
+                            f"{transition.previous_state} → {transition.current_state} "
+                            f"({transition.trigger_event})"
+                        )
+            except Exception as e:
+                logger.warning(f"Failed to record DXY RegimeState transition (non-fatal): {e}")
+
+            logger.info(
+                f"📊 DXY METAR Vaulted: State={sigmet.state_key} | "
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+            )
+            return {
+                "status": "ok",
+                "metar_id": sigmet.metar_id,
+                "state_key": sigmet.state_key,
+                "divergence_regime": sigmet.divergence_regime,
+                "guidance": sigmet.operational_guidance,
+            }
+        except StrictDataPolicyError as e:
+            logger.error(f"DXY METAR Vault failed: {e}")
+            return {"status": "error", "error": str(e)}
+        except Exception as e:
+            logger.error(f"Unexpected error computing DXY METAR: {e}")
+            return {"status": "error", "error": str(e)}
+
+
+register_provider(DXYProvider)

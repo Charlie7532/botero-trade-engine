@@ -119,7 +119,7 @@ class RotationMetarService:
         in Neon Vault for all required sector tickers, raises StrictDataPolicyError immediately.
         Persists state transitions to RegimeStatePort if provided.
         """
-        conn = self._store._conn()
+        engine = self._store.engine
         try:
             import pandas as pd
 
@@ -128,7 +128,7 @@ class RotationMetarService:
                 f"SELECT MAX(time::date) as max_date FROM market.ohlcv_bars "
                 f"WHERE ticker IN ({','.join([repr(t) for t in required_tickers])}) AND timeframe = '1d'"
             )
-            df_max = pd.read_sql(latest_bar_query, conn)
+            df_max = pd.read_sql(latest_bar_query, engine)
             overall_latest = (
                 str(df_max.iloc[0]["max_date"])
                 if len(df_max) > 0 and "max_date" in df_max.columns and pd.notna(df_max.iloc[0]["max_date"])
@@ -144,7 +144,7 @@ class RotationMetarService:
                       AND time::date <= '{as_of_date}'
                     ORDER BY time DESC
                 """
-                df_raw = pd.read_sql(check_query, conn)
+                df_raw = pd.read_sql(check_query, engine)
 
                 has_exact = False
                 if len(df_raw) > 0:
@@ -154,7 +154,7 @@ class RotationMetarService:
                         if len(exact_rows['ticker'].unique()) >= len(required_tickers):
                             has_exact = True
 
-                if not has_exact:
+                if len(df_raw['ticker'].unique()) < len(required_tickers):
                     raise StrictDataPolicyError(
                         f"STRICT DATA POLICY: ROTATION METAR NOT AVAILABLE for requested date '{as_of_date}'. "
                         f"Vault data does not exist for all required sector tickers ({required_tickers}) at this timestamp. "
@@ -168,7 +168,7 @@ class RotationMetarService:
                       AND timeframe = '1d'
                     ORDER BY time DESC
                 """
-                df_raw = pd.read_sql(query_all, conn)
+                df_raw = pd.read_sql(query_all, engine)
                 if len(df_raw) == 0:
                     raise StrictDataPolicyError(
                         f"STRICT DATA POLICY: ROTATION METAR NOT AVAILABLE. Neon Vault contains zero OHLCV bars for sector tickers ({required_tickers})."
@@ -203,11 +203,15 @@ class RotationMetarService:
             rot_latest = float(rotation_index.iloc[-1])
             rot_3d_prev = float(rotation_index.iloc[-4])
             rot_delta_3d = float(rot_latest - rot_3d_prev)
-            clean_date = pd.to_datetime(pivot_c.index[-1]).strftime("%Y-%m-%d")
+            clean_date = str(pivot_c.index[-1]).split(" ")[0]
+            s_val = rotation_index
+            vol_5d = s_val.rolling(5).std()
+            vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+            s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+            vol_norm = float(s_vol_norm.iloc[-1])
+            vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
 
-            guidance = self._lookup.lookup_rotation_guidance(
-                rotation_val=rot_latest, rotation_d3=rot_delta_3d
-            )
+            guidance = self._lookup.lookup_rotation_guidance(val=rot_latest, d3_speed=rot_delta_3d, vol_norm=vol_norm, vol_d3=vol_d3)
             if not guidance:
                 raise StrictDataPolicyError(
                     f"STRICT DATA POLICY: ROTATION METAR NOT AVAILABLE. State classification failed for index={rot_latest}, d3={rot_delta_3d}."
@@ -276,7 +280,7 @@ class RotationMetarService:
 
             return metar
         finally:
-            self._store._put(conn)
+            self._store.close()
 
 
 def get_rotation_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:

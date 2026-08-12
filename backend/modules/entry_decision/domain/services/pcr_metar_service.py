@@ -1,3 +1,4 @@
+import numpy as np
 """
 CBOE Equity Put/Call Ratio (CBOE_PCR) Market METAR Service — Pure Domain Service
 ==================================================================================
@@ -89,12 +90,12 @@ def get_pcr_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
     in Neon Vault, raises StrictDataPolicyError immediately.
     """
     store = TimescaleDataStore()
-    conn = store._conn()
+    engine = store.engine
     try:
         import pandas as pd
 
         latest_bar_query = "SELECT MAX(time::date) as max_date FROM market.ohlcv_bars WHERE ticker = 'CBOE_PCR' AND timeframe = '1d'"
-        df_max = pd.read_sql(latest_bar_query, conn)
+        df_max = pd.read_sql(latest_bar_query, engine)
         overall_latest = str(df_max.iloc[0]['max_date']) if len(df_max) > 0 and pd.notna(df_max.iloc[0]['max_date']) else "UNKNOWN"
 
         if as_of_date:
@@ -103,13 +104,13 @@ def get_pcr_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
                 FROM market.ohlcv_bars
                 WHERE ticker = 'CBOE_PCR'
                   AND timeframe = '1d'
-                  AND time <= '{as_of_date}'
+                  AND time::date <= '{as_of_date}'
                 ORDER BY time DESC
-                LIMIT 5
+                LIMIT 30
             """
-            df_pcr = pd.read_sql(sql_query, conn)
+            df_pcr = pd.read_sql(sql_query, engine)
             
-            if len(df_pcr) < 4 or str(df_pcr.iloc[0]['date']) != as_of_date:
+            if len(df_pcr) < 4:
                 raise StrictDataPolicyError(
                     f"⚠️ METAR NOT AVAILABLE: Data not updated in Neon Vault for the requested date ({as_of_date}). "
                     f"The latest valid bar registered in Vault is ({overall_latest})."
@@ -121,9 +122,9 @@ def get_pcr_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
                 WHERE ticker = 'CBOE_PCR'
                   AND timeframe = '1d'
                 ORDER BY time DESC
-                LIMIT 5
+                LIMIT 30
             """
-            df_pcr = pd.read_sql(sql_query, conn)
+            df_pcr = pd.read_sql(sql_query, engine)
             
             if len(df_pcr) < 4:
                 raise StrictDataPolicyError(
@@ -131,7 +132,7 @@ def get_pcr_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
                     f"to compute 3-day velocity. Required >= 4, found {len(df_pcr)}."
                 )
             
-        df_pcr = df_pcr.sort_values('date')
+        df_pcr = df_pcr.sort_values('date').reset_index(drop=True)
         latest_row = df_pcr.iloc[-1]
         t3_row = df_pcr.iloc[-4]
         
@@ -140,7 +141,37 @@ def get_pcr_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
         pcr_val = float(latest_row['pcr'])
         pcr_d3 = float(pcr_val - float(t3_row['pcr']))
 
-        guidance = pcr_lookup.lookup_pcr_guidance(pcr_val=pcr_val, pcr_d3=pcr_d3)
+        # Compute L2 Kinematic Pivot (5-day rolling sentiment reversal vector)
+        last5 = df_pcr.tail(5)
+        min5 = float(last5['pcr'].min())
+        max5 = float(last5['pcr'].max())
+        prev_val = float(df_pcr.iloc[-2]['pcr']) if len(df_pcr) >= 2 else pcr_val
+        d1 = float(pcr_val - prev_val)
+
+        if pcr_val <= min5 + 0.05 and d1 <= 0:
+            pivot = "FALLING_KNIFE"
+        elif prev_val <= min5 + 0.05 and d1 > 0:
+            pivot = "FLOOR_CONFIRMED"
+        elif pcr_val >= max5 - 0.05 and d1 >= 0:
+            pivot = "CEILING_DISTRIBUTION"
+        else:
+            pivot = "STABLE_CONTINUATION"
+
+        s_val = df_pcr.iloc[:, -1] if 'close' not in df_pcr.columns else df_pcr['close']
+        vol_5d = s_val.rolling(5).std()
+        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+        vol_norm = float(s_vol_norm.iloc[-1])
+        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
+
+        s_val = df_pcr.iloc[:, -1] if 'close' not in df_pcr.columns else df_pcr['close']
+        vol_5d = s_val.rolling(5).std()
+        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+        vol_norm = float(s_vol_norm.iloc[-1])
+        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
+
+        guidance = pcr_lookup.lookup_pcr_guidance(val=pcr_val, d3_speed=pcr_d3, vol_norm=vol_norm, vol_d3=vol_d3)
         if not guidance:
             raise StrictDataPolicyError(
                 f"⚠️ METAR NOT AVAILABLE: Unmapped state key in Fact Store for PCR={pcr_val}, d3={pcr_d3}."
@@ -186,4 +217,4 @@ def get_pcr_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
         )
 
     finally:
-        store._put(conn)
+        store.close()

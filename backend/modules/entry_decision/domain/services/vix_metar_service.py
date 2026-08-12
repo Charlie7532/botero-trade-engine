@@ -1,3 +1,4 @@
+import numpy as np
 """
 CBOE Volatility Index (VIX) Market METAR Service — Pure Domain Service
 ======================================================================
@@ -87,12 +88,12 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
     in Neon Vault, raises StrictDataPolicyError immediately.
     """
     store = TimescaleDataStore()
-    conn = store._conn()
+    engine = store.engine
     try:
         import pandas as pd
 
         latest_bar_query = "SELECT MAX(time::date) as max_date FROM market.ohlcv_bars WHERE ticker = 'VIX' AND timeframe = '1d'"
-        df_max = pd.read_sql(latest_bar_query, conn)
+        df_max = pd.read_sql(latest_bar_query, engine)
         overall_latest = str(df_max.iloc[0]['max_date']) if len(df_max) > 0 and pd.notna(df_max.iloc[0]['max_date']) else "UNKNOWN"
 
         if as_of_date:
@@ -101,11 +102,11 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
                 FROM market.ohlcv_bars
                 WHERE ticker = 'VIX'
                   AND timeframe = '1d'
-                  AND time <= '{as_of_date}'
+                  AND time::date <= '{as_of_date}'
                 ORDER BY time DESC
-                LIMIT 5
+                LIMIT 30
             """
-            df_vix = pd.read_sql(sql_query, conn)
+            df_vix = pd.read_sql(sql_query, engine)
             
             if len(df_vix) < 4 or str(df_vix.iloc[0]['date']) != as_of_date:
                 raise StrictDataPolicyError(
@@ -119,9 +120,9 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
                 WHERE ticker = 'VIX'
                   AND timeframe = '1d'
                 ORDER BY time DESC
-                LIMIT 5
+                LIMIT 30
             """
-            df_vix = pd.read_sql(sql_query, conn)
+            df_vix = pd.read_sql(sql_query, engine)
             
             if len(df_vix) < 4:
                 raise StrictDataPolicyError(
@@ -129,7 +130,7 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
                     f"to compute 3-day velocity. Required >= 4, found {len(df_vix)}."
                 )
             
-        df_vix = df_vix.sort_values('date')
+        df_vix = df_vix.sort_values('date').reset_index(drop=True)
         latest_row = df_vix.iloc[-1]
         t3_row = df_vix.iloc[-4]
         
@@ -138,7 +139,37 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
         vix_val = float(latest_row['vix'])
         vix_d3 = float(vix_val - float(t3_row['vix']))
 
-        guidance = vix_lookup.lookup_vix_guidance(vix_val=vix_val, vix_d3=vix_d3)
+        # Compute L2 Kinematic Pivot (5-day rolling volatility reversal vector)
+        last5 = df_vix.tail(5)
+        min5 = float(last5['vix'].min())
+        max5 = float(last5['vix'].max())
+        prev_val = float(df_vix.iloc[-2]['vix']) if len(df_vix) >= 2 else vix_val
+        d1 = float(vix_val - prev_val)
+
+        if vix_val >= max5 - 0.5 and d1 >= 0:
+            pivot = "PANIC_SPIKE_CAPITULATION"
+        elif prev_val >= max5 - 0.5 and d1 < 0:
+            pivot = "VOL_CRUSH_REBOUND"
+        elif vix_val <= min5 + 0.5 and d1 <= 0:
+            pivot = "COMPLACENCY_FLOOR"
+        else:
+            pivot = "STABLE_CONTINUATION"
+
+        s_val = df_vix.iloc[:, -1] if 'close' not in df_vix.columns else df_vix['close']
+        vol_5d = s_val.rolling(5).std()
+        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+        vol_norm = float(s_vol_norm.iloc[-1])
+        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
+
+        s_val = df_vix.iloc[:, -1] if 'close' not in df_vix.columns else df_vix['close']
+        vol_5d = s_val.rolling(5).std()
+        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+        vol_norm = float(s_vol_norm.iloc[-1])
+        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
+
+        guidance = vix_lookup.lookup_vix_guidance(val=vix_val, d3_speed=vix_d3, vol_norm=vol_norm, vol_d3=vol_d3)
         if not guidance:
             raise StrictDataPolicyError(
                 f"⚠️ METAR NOT AVAILABLE: Unmapped state key in Fact Store for VIX={vix_val}, d3={vix_d3}."
@@ -184,4 +215,4 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
         )
 
     finally:
-        store._put(conn)
+        store.close()

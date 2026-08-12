@@ -1,3 +1,4 @@
+import numpy as np
 """
 CBOE SKEW Index Market METAR Service — Pure Domain Service
 ===========================================================
@@ -91,18 +92,18 @@ def get_skew_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
     in Neon Vault, raises StrictDataPolicyError immediately.
     """
     store = TimescaleDataStore()
-    conn = store._conn()
+    engine = store.engine
     try:
         import pandas as pd
 
         latest_bar_query = "SELECT MAX(time::date) as max_date FROM market.ohlcv_bars WHERE ticker = 'SKEW' AND timeframe = '1d'"
-        df_max = pd.read_sql(latest_bar_query, conn)
+        df_max = pd.read_sql(latest_bar_query, engine)
         overall_latest = str(df_max.iloc[0]['max_date']) if len(df_max) > 0 and pd.notna(df_max.iloc[0]['max_date']) else "UNKNOWN"
 
         if as_of_date:
             target_date = as_of_date
             check_query = f"SELECT COUNT(*) as count FROM market.ohlcv_bars WHERE ticker = 'SKEW' AND timeframe = '1d' AND time::date = '{target_date}'"
-            df_check = pd.read_sql(check_query, conn)
+            df_check = pd.read_sql(check_query, engine)
             if len(df_check) == 0 or df_check.iloc[0]['count'] == 0:
                 raise StrictDataPolicyError(
                     f"STRICT DATA POLICY: SKEW METAR NOT AVAILABLE for requested date '{as_of_date}'. "
@@ -121,36 +122,43 @@ def get_skew_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
             SELECT time::date as date, close
             FROM market.ohlcv_bars
             WHERE ticker = 'SKEW' AND timeframe = '1d' AND time::date <= '{target_date}'
-            ORDER BY time DESC LIMIT 10
+            ORDER BY time DESC LIMIT 30
         """
-        df_skew = pd.read_sql(query, conn)
+        df_skew = pd.read_sql(query, engine)
         if len(df_skew) < 4:
             raise StrictDataPolicyError(
                 f"STRICT DATA POLICY: SKEW METAR NOT AVAILABLE for date '{target_date}'. "
-                f"Insufficient historical bars in Vault ({len(df_skew)} bars found, minimum 4 required for 72h kinematics)."
+                f"Insufficient historical bars in Vault ({len(df_skew)} bars found, minimum 20 required for 72h kinematics)."
             )
 
         df_skew = df_skew.sort_values("date").reset_index(drop=True)
-        skew_latest = float(df_skew.iloc[-1]['close'])
+        skew_val = float(df_skew.iloc[-1]['close'])
         skew_3d_prev = float(df_skew.iloc[-4]['close'])
-        skew_delta_3d = float(skew_latest - skew_3d_prev)
+        skew_d3 = float(skew_val - skew_3d_prev)
         clean_date = str(df_skew.iloc[-1]['date'])
 
         # Perform pure domain lookup against skew_fact_store.json
-        guidance = skew_lookup.lookup_skew_guidance(skew_val=skew_latest, skew_d3=skew_delta_3d)
+        s_val = df_skew.iloc[:, -1] if 'close' not in df_skew.columns else df_skew['close']
+        vol_5d = s_val.rolling(5).std()
+        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+        vol_norm = float(s_vol_norm.iloc[-1])
+        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
+
+        guidance = skew_lookup.lookup_skew_guidance(val=skew_val, d3_speed=skew_d3, vol_norm=vol_norm, vol_d3=vol_d3)
         if not guidance:
             raise StrictDataPolicyError(
-                f"STRICT DATA POLICY: SKEW METAR NOT AVAILABLE. State classification failed for SKEW={skew_latest}, d3={skew_delta_3d}."
+                f"STRICT DATA POLICY: SKEW METAR NOT AVAILABLE. State classification failed for SKEW={skew_val}, d3={skew_d3}."
             )
 
         vec = guidance.to_vector()
         now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        if skew_latest >= 148.0 or (skew_latest >= 140.0 and skew_delta_3d >= 6.67):
+        if skew_val >= 148.0 or (skew_val >= 140.0 and skew_d3 >= 6.67):
             market_status = "CRISIS_TAIL_RISK_EXTREME"
-        elif skew_latest >= 137.0:
+        elif skew_val >= 137.0:
             market_status = "ELEVATED_TAIL_RISK"
-        elif skew_latest <= 110.47:
+        elif skew_val <= 110.47:
             market_status = "COMPLACENT"
         else:
             market_status = "NORMAL_OPERATIONAL"
@@ -163,8 +171,8 @@ def get_skew_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
             as_of_date=clean_date,
             issuer="Botero-Trade SKEW Intelligence Engine",
             market_status=market_status,
-            skew_index_value=round(skew_latest, 2),
-            skew_velocity_3d=round(skew_delta_3d, 2),
+            skew_index_value=round(skew_val, 2),
+            skew_velocity_3d=round(skew_d3, 2),
             state_key=guidance.state_key,
             skew_bin=guidance.skew_bin,
             velocity_vector=guidance.velocity_vector,
@@ -183,4 +191,4 @@ def get_skew_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
             rr_asymmetry_ratio=guidance.zz50.rr_asymmetry,
         )
     finally:
-        store._put(conn)
+        store.close()

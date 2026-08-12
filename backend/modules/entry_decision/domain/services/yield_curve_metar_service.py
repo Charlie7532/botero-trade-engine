@@ -1,3 +1,4 @@
+import numpy as np
 """
 Macro Yield Curve Spread (YIELD_CURVE) Market METAR Service — Pure Domain Service
 ==================================================================================
@@ -55,6 +56,14 @@ class MarketMETAR:
     @property
     def current_state(self) -> str:
         return self.yield_bin
+
+    @property
+    def yield_spread_value(self) -> float:
+        return self.spread_value
+
+    @property
+    def yield_velocity_3d(self) -> float:
+        return self.spread_velocity_3d
 
     @property
     def is_crisis_override(self) -> bool:
@@ -118,7 +127,7 @@ class YieldCurveMetarService:
         in Neon Vault, raises StrictDataPolicyError immediately.
         Persists state transitions to RegimeStatePort if provided.
         """
-        conn = self._store._conn()
+        engine = self._store.engine
         try:
             import pandas as pd
 
@@ -126,7 +135,7 @@ class YieldCurveMetarService:
                 "SELECT MAX(time::date) as max_date FROM market.ohlcv_bars "
                 "WHERE ticker IN ('TNX', 'IRX') AND timeframe = '1d'"
             )
-            df_max = pd.read_sql(latest_bar_query, conn)
+            df_max = pd.read_sql(latest_bar_query, engine)
             overall_latest = (
                 str(df_max.iloc[0]["max_date"])
                 if len(df_max) > 0 and "max_date" in df_max.columns and pd.notna(df_max.iloc[0]["max_date"])
@@ -142,7 +151,7 @@ class YieldCurveMetarService:
                       AND time::date <= '{as_of_date}'
                     ORDER BY time DESC
                 """
-                df_raw = pd.read_sql(check_query, conn)
+                df_raw = pd.read_sql(check_query, engine)
                 
                 # Check exact availability for as_of_date
                 has_exact = False
@@ -166,7 +175,7 @@ class YieldCurveMetarService:
                       AND timeframe = '1d'
                     ORDER BY time DESC
                 """
-                df_raw = pd.read_sql(query_all, conn)
+                df_raw = pd.read_sql(query_all, engine)
                 if len(df_raw) == 0:
                     raise StrictDataPolicyError(
                         "STRICT DATA POLICY: YIELD CURVE METAR NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'TNX' or 'IRX'."
@@ -181,7 +190,7 @@ class YieldCurveMetarService:
             if len(pivot_c) < 4:
                 raise StrictDataPolicyError(
                     f"STRICT DATA POLICY: YIELD CURVE METAR NOT AVAILABLE. "
-                    f"Insufficient historical aligned bars ({len(pivot_c)} bars found, minimum 4 required for 72h kinematics)."
+                    f"Insufficient historical aligned bars ({len(pivot_c)} bars found, minimum 20 required for 72h kinematics)."
                 )
 
             pivot_c = pivot_c.sort_index()
@@ -191,10 +200,14 @@ class YieldCurveMetarService:
             spread_3d_prev = float(spread_series.iloc[-4])
             spread_delta_3d = float(spread_latest - spread_3d_prev)
             clean_date = str(pivot_c.index[-1])
+            s_val = spread_series
+            vol_5d = s_val.rolling(5).std()
+            vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+            s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+            vol_norm = float(s_vol_norm.iloc[-1])
+            vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
 
-            guidance = self._lookup.lookup_yield_curve_guidance(
-                spread_value=spread_latest, spread_d3=spread_delta_3d
-            )
+            guidance = self._lookup.lookup_yield_curve_guidance(val=spread_latest, d3_speed=spread_delta_3d, vol_norm=vol_norm, vol_d3=vol_d3)
             if not guidance:
                 raise StrictDataPolicyError(
                     f"STRICT DATA POLICY: YIELD CURVE METAR NOT AVAILABLE. State classification failed for spread={spread_latest}, d3={spread_delta_3d}."
@@ -270,7 +283,7 @@ class YieldCurveMetarService:
             )
 
         finally:
-            self._store._put(conn)
+            self._store.close()
 
 
 def get_yield_curve_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:

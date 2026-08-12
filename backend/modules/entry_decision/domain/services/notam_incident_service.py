@@ -69,13 +69,13 @@ def evaluate_operational_notams() -> List[OperationalNOTAM]:
     notams: List[OperationalNOTAM] = []
 
     store = TimescaleDataStore()
-    conn = store._conn()
+    engine = store.engine
     try:
         import pandas as pd
 
         # 1. Check Vault Data Freshness Incident
         query = "SELECT MAX(time::date) as max_date FROM market.ohlcv_bars WHERE ticker = 'SPY' AND timeframe = '1d'"
-        df = pd.read_sql(query, conn)
+        df = pd.read_sql(query, engine)
         latest_vault_date = str(df.iloc[0]['max_date']) if len(df) > 0 and pd.notna(df.iloc[0]['max_date']) else None
 
         if not latest_vault_date:
@@ -96,7 +96,7 @@ def evaluate_operational_notams() -> List[OperationalNOTAM]:
 
         # 2. Check Macro Circuit Breaker (VIX > 40 or Severe Crisis)
         vix_query = "SELECT close FROM market.ohlcv_bars WHERE ticker = 'VIX' AND timeframe = '1d' ORDER BY time DESC LIMIT 1"
-        df_vix = pd.read_sql(vix_query, conn)
+        df_vix = pd.read_sql(vix_query, engine)
         if len(df_vix) > 0 and pd.notna(df_vix.iloc[0]['close']):
             vix_close = float(df_vix.iloc[0]['close'])
             if vix_close >= 40.0:
@@ -117,7 +117,7 @@ def evaluate_operational_notams() -> List[OperationalNOTAM]:
 
         return notams
     finally:
-        store._put(conn)
+        store.close()
 
 
 def get_latest_circuit_breaker_notam() -> Optional[OperationalNOTAM]:

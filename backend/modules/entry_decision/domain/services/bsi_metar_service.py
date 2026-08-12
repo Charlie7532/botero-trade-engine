@@ -1,21 +1,21 @@
-import numpy as np
 """
-High Yield Corporate Credit Stress (CREDIT) Market METAR Service — Pure Domain Service
-======================================================================================
-Generates authoritative, zero-fallback Credit Market METARs (Meteorological Reports).
-Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of the HYG/LQD ratio for ultra-fast reaction.
-Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
+Breadth Shock Index (BSI / S5TW) Market METAR Service — Pure Domain Service
+==========================================================================
+Generates authoritative, zero-fallback BSI (S5TW Tactical Breadth) Market METARs.
+Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of S5TW (% of S&P 500 above 20-DMA) for fast shock detection.
+Strict Data Policy: Zero Fallbacks. If a requested date is missing in Neon Vault,
 raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
-Always includes exact UTC date and time.
-Persists StateSnapshot to RegimeStatePort under key 'credit:entry_decision:MARKET'.
+Persists StateSnapshot to RegimeStatePort under key 'bsi:entry_decision:MARKET'.
+Follows Rules 15, 23, 24.
 """
 from datetime import datetime, timezone
 from dataclasses import dataclass, asdict
 from typing import Dict, Any, Optional
 import json
+import numpy as np
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-from backend.modules.entry_decision.domain.rules.credit_lookup import credit_lookup, CreditLookupAdapter
+from backend.modules.entry_decision.domain.rules.bsi_lookup import bsi_lookup, BSILookupAdapter
 from backend.modules.shared.domain.entities.state_snapshot import StateSnapshot
 from backend.modules.shared.domain.ports.regime_state_port import RegimeStatePort
 
@@ -32,10 +32,10 @@ class MarketMETAR:
     as_of_date: str
     issuer: str
     market_status: str
-    credit_ratio_value: float
-    credit_velocity_3d: float
+    bsi_value: float
+    bsi_velocity_3d: float
     state_key: str
-    credit_bin: str
+    bsi_bin: str
     velocity_vector: str
     n_samples: int
     divergence_regime: str
@@ -52,21 +52,18 @@ class MarketMETAR:
     primary_capital_velocity: float
     rr_asymmetry_ratio: float
 
-    # Alias property for test interface compatibility
     @property
     def current_state(self) -> str:
-        return self.credit_bin
+        return self.bsi_bin
 
     @property
     def is_crisis_override(self) -> bool:
-        return self.action_code == "MKT_CREDIT_FREEZE_EXTREME"
+        return self.bsi_bin == "BREADTH_WASHED_OUT" or self.velocity_vector == "FAST_CRUSH_3D"
 
     def to_dict(self) -> Dict[str, Any]:
-        """Returns full structured METAR payload as a dictionary."""
         return asdict(self)
 
     def to_json(self, indent: int = 2) -> str:
-        """Returns formatted JSON string of the METAR."""
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
     def format_cli_broadcast(self) -> str:
@@ -77,14 +74,14 @@ class MarketMETAR:
 
         return (
             "================================================================================\n"
-            f" 📢 MARKET METAR — CREDIT STRESS RATIO (HYG/LQD) [{self.metar_id}]\n"
+            f" 📢 MARKET METAR — BREADTH SHOCK INDEX (S5TW) [{self.metar_id}]\n"
             "================================================================================\n"
             f" 🕒 Timestamp UTC: {self.timestamp_utc} | Close Date: {self.as_of_date}\n"
             f" 🏢 Issuer: {self.issuer} | 🚦 Market Status: {self.market_status}\n"
             "--------------------------------------------------------------------------------\n"
             " 📊 LIVE TELEMETRY (72H FAST KINEMATICS):\n"
-            f"    • Credit Ratio Level : {self.credit_ratio_value:.4f} [{self.credit_bin}]\n"
-            f"    • Velocity (Δ3d)     : {self.credit_velocity_3d:+.4f} [{self.velocity_vector}]\n"
+            f"    • S5TW Breadth Level : {self.bsi_value:.2f}% [{self.bsi_bin}]\n"
+            f"    • Velocity (Δ3d)     : {self.bsi_velocity_3d:+.2f}pp [{self.velocity_vector}]\n"
             f"    • State Key          : {self.state_key} (N = {self.n_samples} historical days)\n\n"
             " 🔮 STOCHASTIC FORECAST & HORIZON DIVERGENCE:\n"
             f"    • Active Regime      : {self.divergence_regime}\n"
@@ -101,24 +98,24 @@ class MarketMETAR:
         )
 
 
-class CreditMetarService:
-    """Domain service for generating Credit Stress METARs and persisting state transitions."""
+class BSIMetarService:
+    """Domain service for generating Breadth Shock Index METARs and persisting state transitions."""
 
-    REGIME_KEY = "credit:entry_decision:MARKET"
+    REGIME_KEY = "bsi:entry_decision:MARKET"
 
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
         regime_state_port: Optional[RegimeStatePort] = None,
-        credit_lookup_adapter: Optional[CreditLookupAdapter] = None,
+        bsi_lookup_adapter: Optional[BSILookupAdapter] = None,
     ):
         self._store = data_store or TimescaleDataStore()
         self._port = regime_state_port
-        self._lookup = credit_lookup_adapter or credit_lookup
+        self._lookup = bsi_lookup_adapter or bsi_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
         """
-        Generates an authoritative Credit Stress Market METAR on-demand using 3-day fast velocity.
+        Generates an authoritative BSI Market METAR on-demand using 3-day fast velocity.
         Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
         in Neon Vault, raises StrictDataPolicyError immediately.
         Persists state transitions to RegimeStatePort if provided.
@@ -129,7 +126,7 @@ class CreditMetarService:
 
             latest_bar_query = (
                 "SELECT MAX(time::date) as max_date FROM market.ohlcv_bars "
-                "WHERE ticker IN ('HYG', 'LQD') AND timeframe = '1d'"
+                "WHERE ticker = 'S5TW' AND timeframe = '1d'"
             )
             df_max = pd.read_sql(latest_bar_query, engine)
             overall_latest = (
@@ -140,90 +137,89 @@ class CreditMetarService:
 
             if as_of_date:
                 check_query = f"""
-                    SELECT time::date as date, ticker, close
+                    SELECT time::date as date, close
                     FROM market.ohlcv_bars
-                    WHERE ticker IN ('HYG', 'LQD')
+                    WHERE ticker = 'S5TW'
                       AND timeframe = '1d'
                       AND time::date <= '{as_of_date}'
                     ORDER BY time DESC
                 """
                 df_raw = pd.read_sql(check_query, engine)
-                
-                # Check availability for as_of_date (strictly requiring exact date)
                 has_data = False
                 if len(df_raw) > 0:
                     date_col = 'date' if 'date' in df_raw.columns else ('time::date' if 'time::date' in df_raw.columns else 'time')
                     if date_col in df_raw.columns:
                         exact_rows = df_raw[df_raw[date_col].astype(str) == as_of_date]
-                        if len(exact_rows['ticker'].unique()) >= 2:
+                        if len(exact_rows) >= 1:
                             has_data = True
 
                 if not has_data:
                     raise StrictDataPolicyError(
-                        f"STRICT DATA POLICY: CREDIT METAR NOT AVAILABLE for requested date '{as_of_date}'. "
-                        f"Vault data does not exist for both HYG and LQD at this timestamp. Latest available date in Vault is '{overall_latest}'."
+                        f"STRICT DATA POLICY: BSI METAR NOT AVAILABLE for requested date '{as_of_date}'. "
+                        f"Vault data does not exist for S5TW at this timestamp. Latest available date in Vault is '{overall_latest}'."
                     )
             else:
                 query_all = """
-                    SELECT time::date as date, ticker, close
+                    SELECT time::date as date, close
                     FROM market.ohlcv_bars
-                    WHERE ticker IN ('HYG', 'LQD')
+                    WHERE ticker = 'S5TW'
                       AND timeframe = '1d'
                     ORDER BY time DESC
                 """
                 df_raw = pd.read_sql(query_all, engine)
                 if len(df_raw) == 0:
                     raise StrictDataPolicyError(
-                        "STRICT DATA POLICY: CREDIT METAR NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'HYG' or 'LQD'."
+                        "STRICT DATA POLICY: BSI METAR NOT AVAILABLE. Neon Vault contains zero OHLCV bars for 'S5TW'."
                     )
 
             date_col = 'date' if 'date' in df_raw.columns else 'time'
-            pivot_c = df_raw.pivot(index=date_col, columns="ticker", values="close").dropna()
-            
-            if as_of_date:
-                pivot_c = pivot_c[pivot_c.index.astype(str) <= as_of_date]
+            df_raw = df_raw.sort_values(by=date_col)
+            s_val = df_raw.set_index(date_col)["close"]
 
-            if len(pivot_c) < 4:
+            if as_of_date:
+                s_val = s_val[s_val.index.astype(str) <= as_of_date]
+
+            if len(s_val) < 4:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: CREDIT METAR NOT AVAILABLE. "
-                    f"Insufficient historical aligned bars ({len(pivot_c)} bars found, minimum 20 required for 72h kinematics)."
+                    f"STRICT DATA POLICY: BSI METAR NOT AVAILABLE. "
+                    f"Insufficient historical aligned bars ({len(s_val)} bars found, minimum 4 required for 72h kinematics)."
                 )
 
-            pivot_c = pivot_c.sort_index()
-            credit_series = pivot_c["HYG"] / pivot_c["LQD"]
+            bsi_latest = float(s_val.iloc[-1])
+            bsi_3d_prev = float(s_val.iloc[-4])
+            bsi_delta_3d = float(bsi_latest - bsi_3d_prev)
+            clean_date = str(s_val.index[-1]).split(" ")[0]
 
-            credit_latest = float(credit_series.iloc[-1])
-            credit_3d_prev = float(credit_series.iloc[-4])
-            credit_delta_3d = float(credit_latest - credit_3d_prev)
-            clean_date = str(pivot_c.index[-1]).split(" ")[0]
-            s_val = credit_series
             vol_2d = s_val.rolling(2).std()
             vol_10d = s_val.rolling(10).std().replace(0, np.nan)
             s_vol_norm = (vol_2d / vol_10d).fillna(1.0)
             vol_norm = float(s_vol_norm.iloc[-1])
             vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
 
-            guidance = self._lookup.lookup_credit_guidance(val=credit_latest, d3_speed=credit_delta_3d, vol_norm=vol_norm, vol_d3=vol_d3)
+            guidance = self._lookup.lookup_bsi_guidance(val=bsi_latest, d3_speed=bsi_delta_3d, vol_norm=vol_norm, vol_d3=vol_d3)
             if not guidance:
                 raise StrictDataPolicyError(
-                    f"STRICT DATA POLICY: CREDIT METAR NOT AVAILABLE. State classification failed for ratio={credit_latest}, d3={credit_delta_3d}."
+                    f"STRICT DATA POLICY: BSI METAR NOT AVAILABLE. State classification failed for S5TW={bsi_latest}, d3={bsi_delta_3d}."
                 )
 
             vec = guidance.to_vector()
             now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
             # Determine Universal Taxonomy Action Code
-            if guidance.credit_bin == "CREDIT_CRISIS" or guidance.velocity_vector == "FAST_CRUSH_3D":
-                action_code = "MKT_CREDIT_FREEZE_EXTREME"
-                market_status = "CRISIS_CREDIT_FREEZE"
-            elif guidance.credit_bin in ("CREDIT_STRESS", "ELEVATED_CREDIT_STRESS") or guidance.velocity_vector == "DECELERATING_DOWN_3D":
-                action_code = "MKT_CREDIT_STRESS_ELEVATED"
-                market_status = "ELEVATED_STRESS"
-            else:
-                action_code = "MKT_CREDIT_EXPANSION_STABLE"
+            if guidance.bsi_bin == "BREADTH_WASHED_OUT" or guidance.velocity_vector == "FAST_CRUSH_3D":
+                action_code = "MKT_BREADTH_WASHED_OUT"
+                market_status = "CRISIS_BREADTH_WASH"
+            elif guidance.velocity_vector == "FAST_SPIKE_3D":
+                action_code = "MKT_BREADTH_SHOCK_REVERSAL"
+                market_status = "BREADTH_IMPULSE_SHOCK"
+            elif guidance.bsi_bin in ("HYPER_EXPANSIVE_BREADTH", "EXPANSIVE_BREADTH"):
+                action_code = "MKT_BREADTH_EXPANSIVE"
                 market_status = "EXPANSIVE_STABLE"
+            else:
+                action_code = "MKT_BREADTH_NEUTRAL"
+                market_status = "NEUTRAL_STABLE"
 
-            metar_id = f"METAR-CREDIT-{clean_date.replace('-', '')}-001"
+            metar_id = f"METAR-BSI-{clean_date.replace('-', '')}-001"
 
             # Stateful-First Persistence (Rule 15)
             if self._port:
@@ -232,15 +228,9 @@ class CreditMetarService:
                     ts_dt = datetime.strptime(clean_date_short, "%Y-%m-%d").replace(tzinfo=timezone.utc)
                     self._port.commit_transition(
                         key=self.REGIME_KEY,
-                        next_state=guidance.credit_bin,
-                        trigger=f"CREDIT_RATIO={credit_latest:.4f}, Δ3d={credit_delta_3d:+.4f}",
-                        timestamp=ts_dt,
-                        metadata={
-                            "action_code": action_code,
-                            "credit_ratio": credit_latest,
-                            "delta_3d": credit_delta_3d,
-                            "state_key": guidance.state_key,
-                        },
+                        current_state=guidance.state_key,
+                        entered_at=ts_dt,
+                        trigger_event=f"S5TW={bsi_latest:.2f}%, d3={bsi_delta_3d:+.2f}pp",
                     )
                 except Exception:
                     pass
@@ -249,12 +239,12 @@ class CreditMetarService:
                 metar_id=metar_id,
                 timestamp_utc=now_utc_str,
                 as_of_date=clean_date,
-                issuer="Botero-Trade Credit Stress Intelligence Engine",
+                issuer="Botero-Trade Breadth Shock Intelligence Engine",
                 market_status=market_status,
-                credit_ratio_value=round(credit_latest, 4),
-                credit_velocity_3d=round(credit_delta_3d, 4),
+                bsi_value=round(bsi_latest, 2),
+                bsi_velocity_3d=round(bsi_delta_3d, 2),
                 state_key=guidance.state_key,
-                credit_bin=guidance.credit_bin,
+                bsi_bin=guidance.bsi_bin,
                 velocity_vector=guidance.velocity_vector,
                 n_samples=guidance.n,
                 divergence_regime=guidance.divergence_regime,
@@ -276,7 +266,7 @@ class CreditMetarService:
             self._store.close()
 
 
-def get_credit_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
-    """Convenience function to evaluate Credit METAR using default service instance."""
-    service = CreditMetarService()
+def get_bsi_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
+    """Convenience function to evaluate BSI METAR using default service instance."""
+    service = BSIMetarService()
     return service.evaluate(as_of_date=as_of_date)

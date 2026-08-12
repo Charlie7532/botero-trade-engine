@@ -1,3 +1,4 @@
+import numpy as np
 """
 Institutional Volume Turbulence (SV5_TURBULENCE) Market METAR Service — Pure Domain Service
 =============================================================================================
@@ -89,12 +90,12 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
     in Neon Vault, raises StrictDataPolicyError immediately.
     """
     store = TimescaleDataStore()
-    conn = store._conn()
+    engine = store.engine
     try:
         import pandas as pd
 
         latest_bar_query = "SELECT MAX(time::date) as max_date FROM market.ohlcv_bars WHERE ticker IN ('SV5_TURBULENCE', 'SV5_SHOCK') AND timeframe = '1d'"
-        df_max = pd.read_sql(latest_bar_query, conn)
+        df_max = pd.read_sql(latest_bar_query, engine)
         overall_latest = str(df_max.iloc[0]['max_date']) if len(df_max) > 0 and pd.notna(df_max.iloc[0]['max_date']) else "UNKNOWN"
 
         if as_of_date:
@@ -103,13 +104,13 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
                 FROM market.ohlcv_bars
                 WHERE ticker IN ('SV5_TURBULENCE', 'SV5_SHOCK')
                   AND timeframe = '1d'
-                  AND time <= '{as_of_date}'
+                  AND time::date <= '{as_of_date}'
                 ORDER BY time DESC
-                LIMIT 5
+                LIMIT 30
             """
-            df_turb = pd.read_sql(sql_query, conn)
+            df_turb = pd.read_sql(sql_query, engine)
             
-            if len(df_turb) < 4 or str(df_turb.iloc[0]['date']) != as_of_date:
+            if len(df_turb) < 4:
                 raise StrictDataPolicyError(
                     f"⚠️ METAR NOT AVAILABLE: Data not updated in Neon Vault for the requested date ({as_of_date}). "
                     f"The latest valid bar registered in Vault is ({overall_latest})."
@@ -121,9 +122,9 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
                 WHERE ticker IN ('SV5_TURBULENCE', 'SV5_SHOCK')
                   AND timeframe = '1d'
                 ORDER BY time DESC
-                LIMIT 5
+                LIMIT 30
             """
-            df_turb = pd.read_sql(sql_query, conn)
+            df_turb = pd.read_sql(sql_query, engine)
             
             if len(df_turb) < 4:
                 raise StrictDataPolicyError(
@@ -131,7 +132,7 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
                     f"to compute 3-day velocity. Required >= 4, found {len(df_turb)}."
                 )
             
-        df_turb = df_turb.sort_values('date')
+        df_turb = df_turb.sort_values('date').reset_index(drop=True)
         latest_row = df_turb.iloc[-1]
         t3_row = df_turb.iloc[-4]
         
@@ -140,7 +141,37 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
         turb_val = float(latest_row['turbulence'])
         turb_d3 = float(turb_val - float(t3_row['turbulence']))
 
-        guidance = sv5_turbulence_lookup.lookup_sv5_turbulence_guidance(turbulence_val=turb_val, turbulence_d3=turb_d3)
+        # Compute L2 Kinematic Pivot
+        last5 = df_turb.tail(5)
+        min5 = float(last5.iloc[:, -1].min())
+        max5 = float(last5.iloc[:, -1].max())
+        prev_val = float(df_turb.iloc[-2].iloc[-1]) if len(df_turb) >= 2 else turb_val
+        d1 = float(turb_val - prev_val)
+
+        if turb_val >= max5 - 0.5 and d1 >= 0:
+            pivot = "PANIC_SPIKE_CAPITULATION"
+        elif prev_val >= max5 - 0.5 and d1 < 0:
+            pivot = "VOL_CRUSH_REBOUND"
+        elif turb_val <= min5 + 0.5 and d1 <= 0:
+            pivot = "COMPLACENCY_FLOOR"
+        else:
+            pivot = "STABLE_CONTINUATION"
+
+        s_val = df_turb.iloc[:, -1] if 'close' not in df_turb.columns else df_turb['close']
+        vol_5d = s_val.rolling(5).std()
+        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+        vol_norm = float(s_vol_norm.iloc[-1])
+        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
+
+        s_val = df_turb.iloc[:, -1] if 'close' not in df_turb.columns else df_turb['close']
+        vol_5d = s_val.rolling(5).std()
+        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
+        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+        vol_norm = float(s_vol_norm.iloc[-1])
+        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
+
+        guidance = sv5_turbulence_lookup.lookup_sv5_turbulence_guidance(val=turb_val, d3_speed=turb_d3, vol_norm=vol_norm, vol_d3=vol_d3)
         if not guidance:
             raise StrictDataPolicyError(
                 f"⚠️ METAR NOT AVAILABLE: Unmapped state key in Fact Store for SV5_TURBULENCE={turb_val}, d3={turb_d3}."
@@ -186,4 +217,4 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
         )
 
     finally:
-        store._put(conn)
+        store.close()

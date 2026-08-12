@@ -1922,6 +1922,7 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         import backend.daemons.vault_providers.remaining_providers  # noqa: F401
         import backend.daemons.vault_providers.observer_provider  # noqa: F401
         import backend.daemons.vault_providers.sv5_turbulence_provider  # noqa: F401
+        import backend.daemons.vault_providers.cnn_fg_sp_provider  # noqa: F401
 
         adapter = VaultRefreshAdapter(store)
         pending = adapter.pending_requests(limit=20)
@@ -2202,6 +2203,14 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"Volume breadth vault failed (non-critical): {e}")
         results["volume_breadth"] = {"status": "error", "error": str(e)}
 
+    # ── Tier 3b-ter2: CNN FG SPIndex — FG_SP Composite + 7 Sub-indicators (AFTER ohlcv) ──
+    try:
+        from backend.daemons.vault_providers.cnn_fg_sp_provider import CnnFgSpProvider
+        results["cnn_fg_sp"] = CnnFgSpProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"CNN FG_SP vault failed (non-critical): {e}")
+        results["cnn_fg_sp"] = {"status": "error", "error": str(e)}
+
     # ── Tier 3b-quat: Sector Volume Breadth — SV5_{ETF}_{TH|FI|TW} (AFTER ohlcv) ──
     try:
         from backend.daemons.vault_providers.sector_volume_breadth_provider import SectorVolumeBreadthProvider
@@ -2234,7 +2243,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"SV5_TURBULENCE vault failed (non-critical): {e}")
         results["sv5_turbulence"] = {"status": "error", "error": str(e)}
 
-    # Credit Stress METAR transitions (needs HYG/TLT from ohlcv)
+    # Credit Stress METAR transitions (needs HYG/LQD from ohlcv)
     try:
         from backend.daemons.vault_providers.credit_provider import CreditProvider
         results["credit_metar"] = CreditProvider().run_full(store)
@@ -2257,6 +2266,14 @@ def run_cycle(store: TimescaleDataStore) -> None:
     except Exception as e:
         logger.warning(f"Rotation METAR vault failed (non-critical): {e}")
         results["rotation_metar"] = {"status": "error", "error": str(e)}
+
+    # Breadth Shock Index (BSI) METAR transitions (needs S5TW from breadth)
+    try:
+        from backend.daemons.vault_providers.bsi_provider import BSIProvider
+        results["bsi_metar"] = BSIProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"BSI METAR vault failed (non-critical): {e}")
+        results["bsi_metar"] = {"status": "error", "error": str(e)}
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)

@@ -39,7 +39,7 @@ def test_lookup_adapter_extremes():
     )
     assert guidance is not None
     assert isinstance(guidance, FGStateGuidance)
-    assert guidance.state_key == "DEEP_FEAR__STABLE_3D"
+    assert guidance.bin == "EXTREME_FEAR"
     
     # Check scale details
     assert guidance.zz50.p_bull > 0.0
@@ -55,6 +55,6 @@ def test_lookup_adapter_euphoria():
         fg_d3=0.0
     )
     assert guidance is not None
-    assert guidance.state_key == "EUPHORIA__STABLE_3D"
+    assert guidance.bin == "EXTREME_GREED"
     assert guidance.divergence_regime == "FULL_STRUCTURAL_BULL"
     assert guidance.operational_guidance == "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"

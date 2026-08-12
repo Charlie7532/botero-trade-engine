@@ -44,6 +44,10 @@ from backend.modules.entry_decision.domain.services.rotation_metar_service impor
     get_rotation_market_metar,
     StrictDataPolicyError as RotationStrictError
 )
+from backend.modules.entry_decision.domain.services.bsi_metar_service import (
+    get_bsi_market_metar,
+    StrictDataPolicyError as BSIStrictError
+)
 
 router = APIRouter(prefix="/metar", tags=["Market METAR Multi-Station Telemetry"])
 
@@ -174,13 +178,27 @@ async def get_rotation_metar(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/bsi")
+async def get_bsi_metar(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
+):
+    """Returns authoritative 3-Day Fast Kinematic Breadth Shock Index (S5TW) Market METAR."""
+    try:
+        metar = get_bsi_market_metar(as_of_date=as_of_date)
+        return metar.to_dict()
+    except BSIStrictError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/all")
 @router.get("")
 async def get_all_metars(
     as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
 ):
     """
-    Returns an aggregated dictionary of all 9 registered Market METAR stations.
+    Returns an aggregated dictionary of all 10 registered Market METAR stations.
     """
     indicators = {
         "vix": (get_vix_market_metar, VIXStrictError),
@@ -192,6 +210,7 @@ async def get_all_metars(
         "credit": (get_credit_market_metar, CreditStrictError),
         "yield_curve": (get_yield_curve_market_metar, YieldCurveStrictError),
         "rotation": (get_rotation_market_metar, RotationStrictError),
+        "bsi": (get_bsi_market_metar, BSIStrictError),
     }
 
     results = {}
@@ -220,3 +239,23 @@ async def get_all_metars(
         "active_count": active,
         "metars": results
     }
+
+
+@router.get("/convergence")
+async def get_convergence_report(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
+):
+    """
+    Returns authoritative Multi-Station Convergence Report.
+    Includes Bullish Score, Weighted Composite EV, Rarity Audit (N<10),
+    Cross-Station Signals (Distribution Battle, Floor Veto, Confirmed Dip),
+    and Unified Guidance with explicit Horizon (1D, 3D, 5D, WAIT).
+    """
+    try:
+        from backend.modules.entry_decision.domain.services.convergence_compositor import ConvergenceCompositor
+        compositor = ConvergenceCompositor()
+        report = compositor.compute(as_of_date=as_of_date)
+        return report.to_dict()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

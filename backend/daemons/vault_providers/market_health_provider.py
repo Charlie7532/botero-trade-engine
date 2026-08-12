@@ -51,7 +51,7 @@ class MarketHealthProvider:
             s5tw = store.load_bars("S5TW", "1d", start=start)
             fg = store.load_bars("FG", "1d", start=start)
             hyg = store.load_bars("HYG", "1d", start=start)
-            tlt = store.load_bars("TLT", "1d", start=start)
+            lqd = store.load_bars("LQD", "1d", start=start)
 
             # VIX from ohlcv_bars (canonical ticker: VIX)
             vix = store.load_bars("VIX", "1d", start=start)
@@ -127,7 +127,7 @@ class MarketHealthProvider:
                 s5tw_df=s5tw,
                 fg_df=fg,
                 hyg_df=hyg,
-                tlt_df=tlt,
+                lqd_df=lqd,
                 vix_df=vix,
                 yields_10y=tnx_df,
                 yields_3m=irx_df,

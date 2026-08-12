@@ -56,10 +56,21 @@ def test_api_metar_sv5_turbulence_endpoint():
     assert data["metar_id"].startswith("METAR-SV5TURB-")
 
 
+def test_api_metar_bsi_endpoint():
+    """Verify GET /api/metar/bsi returns structured BSI METAR JSON."""
+    response = client.get("/api/metar/bsi")
+    assert response.status_code == 200
+    data = response.json()
+    assert "metar_id" in data
+    assert data["metar_id"].startswith("METAR-BSI-")
+    assert "bsi_value" in data
+
+
 def test_api_metar_all_endpoint():
-    """Verify GET /api/metar/all returns aggregated 9 stations dictionary."""
+    """Verify GET /api/metar/all returns aggregated 10 stations dictionary."""
     response = client.get("/api/metar/all")
     assert response.status_code == 200
     data = response.json()
-    assert data["registered_count"] == 9
+    assert data["registered_count"] == 10
     assert "metars" in data
+    assert "bsi" in data["metars"]

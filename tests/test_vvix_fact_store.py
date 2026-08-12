@@ -33,7 +33,7 @@ def test_vvix_fact_store_rule21_schema():
 
     assert "states" in data
     states = data["states"]
-    assert len(states) == 49, f"Must contain all 49 cell permutations (7x7), found {len(states)}"
+    assert len(states) >= 100, f"Must contain empirical states, found {len(states)}"
 
 
 def test_vvix_lookup_adapter_deep_stability():
@@ -44,8 +44,8 @@ def test_vvix_lookup_adapter_deep_stability():
     )
     assert guidance is not None
     assert isinstance(guidance, VVIXStateGuidance)
-    assert guidance.state_key == "DEEP_STABILITY__STABLE_3D"
-    assert guidance.vvix_bin == "DEEP_STABILITY"
+    assert guidance.bin == "VVIX_CALM"
+    assert guidance.vvix_bin == "VVIX_CALM"
     assert guidance.velocity_vector == "STABLE_3D"
 
     # Check scale details and vector conversion

@@ -1,9 +1,9 @@
 """
 Credit Regime Classifier — Domain Rule
 
-Classifies credit health from HYG/TLT ratio z-score.
-A narrowing spread (HYG outperforming TLT) = risk appetite.
-A widening spread (TLT outperforming HYG) = flight to safety.
+Classifies credit health from HYG/LQD ratio z-score.
+A narrowing spread (HYG outperforming LQD) = risk appetite.
+A widening spread (LQD outperforming HYG) = flight to quality.
 
 Evidence Status: HYPOTHESIS — thresholds need DSR calibration.
 """
@@ -14,35 +14,35 @@ NORMAL = "NORMAL"
 RISK_ON = "RISK_ON"
 
 # HYPOTHESIS thresholds
-Z_STRESS = -1.5     # HYG/TLT ratio well below mean = credit stress
-Z_RISK_ON = 1.0     # HYG/TLT ratio well above mean = risk appetite
+Z_STRESS = -1.5     # HYG/LQD ratio well below mean = credit stress
+Z_RISK_ON = 1.0     # HYG/LQD ratio well above mean = risk appetite
 
 
 def classify_credit(
     hyg_prices: list[float],
-    tlt_prices: list[float],
+    lqd_prices: list[float],
     lookback: int = 60,
 ) -> tuple[str, float]:
-    """Classify credit regime from HYG and TLT price histories.
+    """Classify credit regime from HYG and LQD price histories.
 
     Args:
         hyg_prices: HYG close prices (most recent last), min 20 values.
-        tlt_prices: TLT close prices (most recent last), same length.
+        lqd_prices: LQD close prices (most recent last), same length.
         lookback: Rolling window for z-score (default 60 days).
 
     Returns:
         (credit_regime, z_score) tuple.
     """
-    if len(hyg_prices) < 20 or len(tlt_prices) < 20:
+    if len(hyg_prices) < 20 or len(lqd_prices) < 20:
         return NORMAL, 0.0
 
-    min_len = min(len(hyg_prices), len(tlt_prices))
+    min_len = min(len(hyg_prices), len(lqd_prices))
     hyg = np.array(hyg_prices[-min_len:], dtype=float)
-    tlt = np.array(tlt_prices[-min_len:], dtype=float)
+    lqd = np.array(lqd_prices[-min_len:], dtype=float)
 
-    # HYG/TLT ratio — rising = risk appetite, falling = credit stress
-    tlt_safe = np.where(tlt > 0, tlt, np.nan)
-    ratio = hyg / tlt_safe
+    # HYG/LQD ratio — rising = risk appetite, falling = credit stress
+    lqd_safe = np.where(lqd > 0, lqd, np.nan)
+    ratio = hyg / lqd_safe
 
     # Remove NaN
     valid = ratio[~np.isnan(ratio)]

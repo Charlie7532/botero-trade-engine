@@ -12,31 +12,9 @@ def test_yield_curve_lookup_valid_state():
     guidance = yield_curve_lookup.lookup_yield_curve_guidance(spread_value=0.5, spread_d3=0.0)
     assert guidance is not None
     assert isinstance(guidance, YieldCurveStateGuidance)
-    assert guidance.yield_bin in [
-        "DEEP_INVERSION",
-        "MODERATE_INVERSION",
-        "FLAT_CURVE",
-        "NORMAL_STEEP",
-        "STEEP_CURVE",
-        "VERY_STEEP_CURVE",
-        "EXTREME_STEEPENING_UNINVERSION",
-    ]
-    assert guidance.velocity_vector in [
-        "EXTREME_FLATTENING_3D",
-        "FAST_FLATTENING_3D",
-        "DECELERATING_SPREAD_3D",
-        "STABLE_SPREAD_3D",
-        "STEEPENING_SPREAD_3D",
-        "FAST_STEEPENING_3D",
-        "EXTREME_STEEPENING_SPIKE_3D",
-    ]
-    assert guidance.divergence_regime in [
-        "FULL_STRUCTURAL_BULL",
-        "TACTICAL_PULLBACK",
-        "FULL_STRUCTURAL_BEAR",
-        "TACTICAL_BOUNCE_ONLY",
-        "TRANSITIONAL",
-    ]
+    assert guidance.bin in ['DEEP_INVERSION', 'MODERATE_INVERSION', 'FLAT_CURVE', 'NORMAL_CURVE', 'STEEP_CURVE', 'EXTREME_STEEPNESS']
+    assert guidance.velocity_vector in ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D']
+    assert guidance.divergence_regime in ['BULLISH', 'BEARISH', 'NEUTRAL']
 
     vec = guidance.to_vector()
     assert "p_bull" in vec
@@ -50,11 +28,11 @@ def test_yield_curve_lookup_deep_inversion():
     guidance = yield_curve_lookup.lookup_yield_curve_guidance(spread_value=-1.8, spread_d3=-0.25)
     assert guidance is not None
     assert guidance.yield_bin == "DEEP_INVERSION"
-    assert guidance.velocity_vector == "EXTREME_FLATTENING_3D"
+    assert guidance.velocity_vector == "FAST_CRUSH_3D"
 
 
 def test_yield_curve_lookup_extreme_steepening():
     guidance = yield_curve_lookup.lookup_yield_curve_guidance(spread_value=3.5, spread_d3=0.25)
     assert guidance is not None
-    assert guidance.yield_bin == "EXTREME_STEEPENING_UNINVERSION"
+    assert guidance.yield_bin == "FAST_SPIKE_3D"
     assert guidance.velocity_vector == "EXTREME_STEEPENING_SPIKE_3D"

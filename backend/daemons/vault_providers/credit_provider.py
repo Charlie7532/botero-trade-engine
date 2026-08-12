@@ -2,7 +2,7 @@
 High Yield Corporate Credit Stress (CREDIT) Vault Provider
 ===========================================================
 Vault provider for Credit Stress Market METAR & 3-Day Kinematic Velocity Telemetry.
-Reads HYG/TLT credit stress ratio from Vault, generates authoritative MarketMETAR, and persists:
+Reads HYG/LQD credit stress ratio from Vault, generates authoritative MarketMETAR, and persists:
   1. MCP Snapshot: mcp_snapshot("credit/sigmet", "MARKET")
   2. Stateful-First Regime Transitions: market.regime_states ("credit:entry_decision:MARKET")
 
@@ -28,7 +28,7 @@ class CreditProvider:
     """Vault provider for Credit Stress Index METAR and state transitions."""
 
     name = "credit"
-    categories = ["credit", "hyg_tlt"]
+    categories = ["credit", "hyg_lqd"]
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
         """Compute and persist Credit Stress Market METAR and regime state from Vault data."""

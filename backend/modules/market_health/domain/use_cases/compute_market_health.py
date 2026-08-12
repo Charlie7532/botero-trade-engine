@@ -49,9 +49,9 @@ def compute_market_health(
     s5tw_df: Optional[pd.DataFrame] = None,
     # F&G — from Vault (FG bars, 14 years)
     fg_df: Optional[pd.DataFrame] = None,
-    # G4: Credit — from Vault (HYG + TLT bars)
+    # G4: Credit — from Vault (HYG + LQD bars)
     hyg_df: Optional[pd.DataFrame] = None,
-    tlt_df: Optional[pd.DataFrame] = None,
+    lqd_df: Optional[pd.DataFrame] = None,
     # G2: Vol — from Vault (VIX bars for z-score)
     vix_df: Optional[pd.DataFrame] = None,
     # G6: Macro — from Vault (yields + FRED snapshot)
@@ -111,11 +111,11 @@ def compute_market_health(
     snap.flow_direction = flow_direction
 
     # ── G4: Credit Health ────────────────────────────────────
-    if hyg_df is not None and tlt_df is not None:
+    if hyg_df is not None and lqd_df is not None:
         hyg_prices = hyg_df["close"].tolist() if not hyg_df.empty else []
-        tlt_prices = tlt_df["close"].tolist() if not tlt_df.empty else []
+        lqd_prices = lqd_df["close"].tolist() if not lqd_df.empty else []
         snap.credit_regime, snap.credit_spread_zscore = classify_credit(
-            hyg_prices, tlt_prices,
+            hyg_prices, lqd_prices,
         )
 
     # ── G5: Rotation (injected) ──────────────────────────────

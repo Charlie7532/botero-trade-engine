@@ -95,11 +95,11 @@ Evidence Status: `HYPOTHESIS` — flow_score formula is empirical.
 | Input | Source |
 |---|---|
 | HYG bars | `ohlcv_bars` ticker='HYG' (2021–present, 1,262 bars) |
-| TLT bars | `ohlcv_bars` ticker='TLT' |
+| LQD bars | `ohlcv_bars` ticker='LQD' |
 
 **CreditRegime classification:**
 ```
-HYG/TLT ratio z-score (60d rolling):
+HYG/LQD ratio z-score (60d rolling):
   z < -1.5 → STRESS     (flight to safety, HY selling)
   z > +1.0 → RISK_ON    (risk appetite, HY buying)
   else     → NORMAL
@@ -155,7 +155,7 @@ Evidence Status: Yield inversion → recession = `VALIDATED` (7/8 since 1970).
 | 2 | NYSE 52wk Hi/Lo ratio | _(no direct equivalent)_ |
 | 3 | McClellan Volume Summation | G1: SPX ADL |
 | 4 | CBOE Put/Call ratio | G3: Options flow |
-| 5 | Junk Bond spread (HY vs IG) | G4: HYG/TLT |
+| 5 | Junk Bond spread (HY vs IG) | G4: HYG/LQD |
 | 6 | VIX vs 50d mean | G2: Vol regime |
 | 7 | Stock vs Bond returns (20d) | G4/G5: TLT vs SPY |
 
@@ -380,7 +380,7 @@ backend/modules/market_health/
 │   ├── rules/
 │   │   ├── __init__.py
 │   │   ├── cascade_classifier.py    # CascadeState from S5TW/FI/TH
-│   │   ├── credit_classifier.py     # CreditRegime from HYG/TLT ratio
+│   │   ├── credit_classifier.py     # CreditRegime from HYG/LQD ratio
 │   │   ├── macro_cycle_classifier.py # CyclePhase from FRED + yields
 │   │   ├── fg_signal.py             # F&G contrarian logic + divergence
 │   │   └── convergence_scorer.py    # Count 6 converging dimensions

@@ -105,3 +105,64 @@ tests pairwise/triplet combinations under these constraints:
 5. **Never override the RetrainTrigger's degradation.** If decay > 25%, the signal
    is DEGRADED automatically. A human or agent may investigate, but the demotion stands
    until revalidation passes.
+6. **Never publish a rule without a Confidence Card.** See below.
+
+---
+
+## Confidence Card Standard
+
+Every operational rule in intelligence files (`xx_intelligence.md`), interaction
+registries (`metar_interactions.md`), domain rules, and gate configurations MUST
+carry a **Confidence Card** with the following mandatory fields:
+
+| Field | Description | Example |
+|---|---|---|
+| **N** | Sample size | `626` |
+| **Test Type** | Validation method | `Purged 5-Fold CV + Walk-Forward OOS` |
+| **Metric** | Primary performance metric | `AUC 0.8146` or `WR 71.2%` |
+| **CI 95%** | 95% confidence interval | `[0.78, 0.85]` |
+| **DSR Grade** | Hypothesis Governance grade | `B (DSR > 0.85)` |
+| **Window** | Temporal scope / lag | `t_-1 to t_-5 (PREDICTIVE)` |
+| **OOS Period** | Out-of-sample date range | `2020-01-17 → 2026-07-29` |
+| **Last Validated** | Date of last validation | `2026-08-05` |
+| **Status** | Lifecycle status | `VALIDATED (Grade B)` |
+| **Decay Check** | Next scheduled revalidation | `2026-11-05` |
+
+### Automatic Status Rules
+
+- Rules **without** a Confidence Card → automatic `CANDIDATE` status → **CANNOT**
+  influence sizing or gating decisions.
+- Rules with **N < 30** → automatic **Grade D maximum** regardless of WR/AUC
+  (insufficient statistical power per López de Prado).
+- Rules with **Last Validated > 6 months ago** → automatic `DEGRADED` status →
+  must be re-validated before use.
+
+### Confidence Card Format (Markdown)
+
+```markdown
+> **Confidence Card**
+> | Field | Value |
+> |---|---|
+> | N | 626 |
+> | Test Type | Purged 5-Fold CV + Walk-Forward OOS |
+> | Metric | AUC 0.8146 OOS |
+> | CI 95% | [0.78, 0.85] |
+> | DSR Grade | B |
+> | Window | t_-1 to t_-5 (predictive, no t_0) |
+> | OOS Period | 2020-01-17 → 2026-07-29 |
+> | Last Validated | 2026-08-05 |
+> | Status | VALIDATED (Grade B) |
+> | Decay Check | 2026-11-05 |
+```
+
+---
+
+## Decay & Revalidation Policy
+
+1. **Quarterly decay checks** — every VALIDATED rule must be re-tested every 3 months.
+2. **Regime shift trigger** — if Vault population grows >20% or a structural market
+   event occurs (e.g., new rate regime, liquidity crisis), all rules must be re-validated.
+3. **Decay detection** — if Walk-Forward OOS metric drops >25% from its Confidence Card
+   value, the rule is automatically DEGRADED.
+4. **Revalidation** — a DEGRADED rule re-enters the 5-Step Pipeline from Step 3
+   (Walk-Forward Validation). If it passes, its Confidence Card is updated with new dates.

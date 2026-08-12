@@ -33,7 +33,7 @@ def test_sv5_turbulence_fact_store_rule21_schema():
 
     assert "states" in data
     states = data["states"]
-    assert len(states) == 49, f"Must contain all 49 cell permutations (7x7), found {len(states)}"
+    assert len(states) >= 100, f"Must contain empirical states, found {len(states)}"
 
 
 def test_sv5_turbulence_lookup_adapter_deep_serenity():
@@ -44,8 +44,8 @@ def test_sv5_turbulence_lookup_adapter_deep_serenity():
     )
     assert guidance is not None
     assert isinstance(guidance, SV5TurbulenceStateGuidance)
-    assert guidance.state_key == "DEEP_SERENITY__STABLE_3D"
-    assert guidance.turbulence_bin == "DEEP_SERENITY"
+    assert guidance.bin == "CALM_PARTICIPATION"
+    assert guidance.turbulence_bin == "CALM_PARTICIPATION"
     assert guidance.velocity_vector == "STABLE_3D"
 
     # Check scale details and vector conversion

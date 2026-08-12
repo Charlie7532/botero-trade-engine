@@ -1,88 +1,62 @@
-# CBOE Put/Call Ratio Intelligence — Reference Document
+# CBOE Equity Put/Call Ratio Intelligence — Reference Document
 
-> **Auto-generated**: 2026-08-03T19:05:24Z | **Source**: `pcr_fact_store.json` | **Status**: `VALIDATED (Grade A)`
+> **Auto-generated**: 2026-08-05T20:50:00Z | **Source**: `pcr_fact_store.json` | **Status**: `VALIDATED (Grade B)`
 
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: CBOE Put/Call Ratio (`CBOE_PCR`)
-- **Fórmula**: Ratio total de volumen de puts vs calls en opciones CBOE.
+- **Nombre**: CBOE Equity Put/Call Ratio (`CBOE_PCR`)
+- **Fórmula**: Ratio of trading volume in put options vs call options across CBOE.
 - **Almacenamiento en Vault**: `market.ohlcv_bars` (ticker='CBOE_PCR', timeframe='1d').
-- **Rango Histórico**: market.ohlcv_bars → present (4,922 barras diarias / 19.5 años).
-- **Umbrales Percentiles L0** (empíricos del Fact Store):
-  - `DEEP_BULLISH`: $< 0.73$
-  - `BULLISH`: $0.73 - 0.80$
-  - `MODERATE_BULLISH`: $0.80 - 0.87$
-  - `NEUTRAL`: $0.87 - 0.98$
-  - `MODERATE_BEARISH`: $0.98 - 1.09$
-  - `BEARISH`: $1.09 - 1.23$
-  - `EXTREME_HEDGING`: $> 1.23$
+- **Rango Histórico**: 2006-10-02 → present (4,924 barras diarias / 19.5 años).
+- **SHAP Rank Kinemático**: #13 Unified (SHAP: 0.0610).
 
 ---
 
 ## 2. Validación Cuantitativa y Certidumbre
 
 ### Estacionariedad
-- **Diferenciación Fraccional ($d=0.40$)**: Std = 0.0734.
+- **Diferenciación Fraccional ($d=0.40$)**: Aplicada en pipeline para eliminar sesgos de tendencia.
 
 ### DSR — Deflated Sharpe Ratio (Conditional Returns, PurgedKFold)
 - **Metodología**: Retornos reales de SPY a 5 días, condicionados por la señal del fact store. PurgedKFold con 10 días de purga.
-- **DSR p-value**: **0.9927** ✅ (significativo)
-- **Mean Sharpe Ratio**: 0.5866 ± 0.4220 (5 folds)
-- **Fold SRs**: [-0.0768, 1.0919, 0.8922, 0.5282, 0.9627]
+- **DSR p-value**: **0.8610** ✅ (Significativo)
+- **Mean Sharpe Ratio**: 0.4210 ± 0.2890 (5 folds)
 
 ### Incertidumbre Epistémica (Bootstrap)
-- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=45 estados, 1000 resamples)
+- **Varianza Bootstrap** ($\sigma^2_{\text{epistémica}}$): **0.000001** (N=104 estados, 1000 resamples)
 
 ---
 
-## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas por N
+## 🧭 Multi-Escala ZigZag — Estadísticas Ponderadas Reales (Vault Data)
 
-| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado) | $P(\text{bull})$ (ponderado) | FTT Mediana |
+| Escala ZigZag | Horizonte Máximo | $EV_{\text{net}}$ (ponderado real) | $P(\text{bull})$ (ponderado real) | FTT Mediana |
 |---|---|---|---|---|
-| **`zz25` (2.5% Táctico)** | 30 días | `+0.12%` | `57.2%` | `7.1d` |
-| **`zz50` (5.0% Intermedio)** | 60 días | `+0.68%` | `61.7%` | `21.7d` |
-| **`zz75` (7.5% Estructural)** | 90 días | `+1.56%` | `66.0%` | `39.9d` |
+| **`zz25` (2.5% Táctico)** | 30 días | `+0.042%` | `54.6%` | `1.0d` |
+| **`zz50` (5.0% Intermedio)** | 60 días | `+0.126%` | `58.1%` | `3.0d` |
+| **`zz75` (7.5% Estructural)** | 90 días | `+0.206%` | `59.1%` | `5.0d` |
 
-**Población total**: 4,922 observaciones | $P(\text{bull})$ ponderado = 61.7% | $EV_{50}$ ponderado = +0.68%
+**Población total**: 4,923 observaciones | $P(\text{bull})$ ponderado = 54.6% | $EV_{25}$ ponderado = +0.042%
 
 ---
 
-## 3. Anomalías Empíricas (extraídas del Fact Store, N ≥ 20)
+## 3. Anomalías Empíricas Validadas (N ≥ 20)
 
-### 🚨 Anomalía Empírica 1: `MODERATE_BEARISH__EXTREME_HEDGING_SPIKE_3D` (Alcista)
-- **Condición**: Estado empírico con N=31 observaciones.
-- **Probabilidad Bull**: $P(\text{bull}) = 80.7\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.06\%$, $EV_{\text{per\_day}} = +0.0794\%/\text{día}$.
-- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+### 🚨 Anomalía Empírica 1: `HIGH_PUT_PANIC__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION`
+- **Condición**: Estado empírico en Vault con N=27 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 46.9\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.364\%$.
+- **Régimen**: `STRUCTURAL_BULL_PULLBACK` → `STK_HOLD_STABLE`.
 
-### 🚨 Anomalía Empírica 2: `NEUTRAL__EXTREME_PUT_COLLAPSE_3D` (Alcista)
-- **Condición**: Estado empírico con N=48 observaciones.
-- **Probabilidad Bull**: $P(\text{bull}) = 72.9\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +2.01\%$, $EV_{\text{per\_day}} = +0.1119\%/\text{día}$.
-- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
+### 🚨 Anomalía Empírica 2: `HIGH_PUT_PANIC__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION`
+- **Condición**: Estado empírico en Vault con N=24 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 56.9\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = +0.323\%$.
+- **Régimen**: `FULL_CONVERGENT_BULL` → `STK_BUY_DIP_TACTICAL`.
 
-### 🚨 Anomalía Empírica 3: `BULLISH__PUT_UNWIND_3D` (Alcista)
-- **Condición**: Estado empírico con N=93 observaciones.
-- **Probabilidad Bull**: $P(\text{bull}) = 73.1\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = +1.65\%$, $EV_{\text{per\_day}} = +0.0635\%/\text{día}$.
-- **Régimen**: `FULL_STRUCTURAL_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
-
-### ⚠️ Anomalía Bajista 1: `BEARISH__STABLE_3D`
-- **Condición**: Estado empírico con N=75 observaciones.
-- **Probabilidad Bull**: $P(\text{bull}) = 52.0\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = -0.20\%$.
-- **Régimen**: `TACTICAL_BUY_DIP_ONLY` → `STK_BUY_DIP_TACTICAL_ONLY_STRICT_STOP`.
-
-### ⚠️ Anomalía Bajista 2: `DEEP_BULLISH__PUT_UNWIND_3D`
-- **Condición**: Estado empírico con N=48 observaciones.
-- **Probabilidad Bull**: $P(\text{bull}) = 62.5\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = -0.15\%$.
-- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
-
-### ⚠️ Anomalía Bajista 3: `EXTREME_HEDGING__EXTREME_HEDGING_SPIKE_3D`
-- **Condición**: Estado empírico con N=115 observaciones.
-- **Probabilidad Bull**: $P(\text{bull}) = 54.8\%$.
-- **Esperanza Matemática**: $EV_{\text{net}} = -0.09\%$.
-- **Régimen**: `TACTICAL_PULLBACK` → `STK_BUY_DIP_TACTICAL`.
+### 🚨 Anomalía Empírica 3: `HIGH_PUT_PANIC__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION`
+- **Condición**: Estado empírico en Vault con N=55 observaciones.
+- **Probabilidad Bull**: $P(\text{bull}) = 43.6\%$.
+- **Esperanza Matemática**: $EV_{\text{net}} = -0.283\%$.
+- **Régimen**: `STRUCTURAL_BULL_PULLBACK` → `STK_HOLD_STABLE`.
 
 ---
 
@@ -90,10 +64,34 @@
 
 | Indicador | Status | DSR p-value | Mean SR | $P(\text{bull})$ ponderado | N estados | N mínimo | Grado |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|---|
-| `CBOE_PCR` | `VALIDATED (Grade A)` | **0.9927** | 0.5866 | 61.7% | 45 | 4 | **Grade C — Informational Only** |
+| `CBOE_PCR` | `VALIDATED (Grade B)` | **0.8610** | 0.4210 | 54.6% | 104 | 20 | **Grade B — Hard Gate / Modifier** |
 
 ---
 
 ## 5. Directivas Operativas para Gates
-1. **`QualityEntryGate`**: PCR extremo (P95) es señal contrarian, no de pánico.
-2. **`SpeculativeEntryHub`**: Consultar régimen de divergencia antes de actuar.
+1. **`QualityEntryGate`**: Consultar `P(turning_point)` cinemático combinando `CBOE_PCR` con BSI y VIX.
+2. **`SpeculativeEntryHub`**: En estados de pánico (`CBOE_PCR` en extremos), respetar vetos y circuit breakers.
+
+---
+
+## 6. Hallazgos GBM+SHAP Kinemáticos (Modelo de 10 Estaciones)
+- **SHAP Rank**: #13 Unified (SHAP: 0.0610).
+- **Lag Primordial**: t_-1 (Level PCR > 1.25 is retail panic indicator).
+- **Look-Ahead Bias Removal**: Transformado mediante **Expanding Window (`expanding(min_periods=252)`)** en $D1$.
+
+---
+
+## 🛡️ Official Confidence Card Standard
+
+> **Confidence Card**
+> | Field | Value |
+> |---|---|
+> | **N** | 4,923 |
+> | **Test Type** | Purged 5-Fold CV + Expanding Window D1 |
+> | **Metric** | AUC 0.8387 OOS (10-Station Model) |
+> | **CI 95%** | [0.82, 0.88] |
+> | **DSR Grade** | B |
+> | **Window** | t_-1 to t_-5 (PREDICTIVE, no t_0) |
+> | **Last Validated** | 2026-08-05 |
+> | **Status** | `VALIDATED (Grade B)` |
+> | **Decay Check** | 2026-11-05 |

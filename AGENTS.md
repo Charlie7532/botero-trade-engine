@@ -254,10 +254,13 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     | **Volatility** | 4 | varies | 1990→2026 | VIX, VVIX, SKEW, SV5_TURBULENCE |
     | **Sentiment** (FG) | 1 | 3,872 | 2011→2026 | CNN Fear & Greed. 0=fear, 100=greed |
     | **Options** (CBOE_PCR) | 1 | 4,924 | 2006→2026 | Put/Call ratio. High=fear |
+    | **Credit** (CREDIT_RATIO) | 1 | ~4,800 | 2007→2026 | HYG/LQD ratio. Synthetic METAR station. Low=stress |
+    | **Yields** (YIELD_SPREAD) | 1 | ~16,100 | 1962→2026 | TNX−IRX (10Y−13W). Synthetic METAR station. Negative=inverted |
+    | **Rotation** (ROTATION_INDEX) | 1 | ~6,900 | 1999→2026 | z(XLY/XLP)+z(XLK/XLU). Synthetic METAR station. Negative=defensive |
     | **Indices** (SPX, NDQ, TNX) | 3 | varies | 1927→2026 | S&P500, Nasdaq, 10Y yield |
     | **ETFs** (SPY, QQQ, XL*, IWM, DIA) | 15 | ~2,000-8,400 | 1993→2026 | Sector + market ETFs. Real OHLCV |
     | **SP500 Stocks** | ~500 | ~1,000-16,000 | varies | Full constituents. Real OHLCV |
-    | **TOTAL** | ~625 | **5.77M bars** | | |
+    | **TOTAL** | ~628 | **~5.80M bars** | | |
 
     **Key derived indicators:**
 
@@ -303,6 +306,20 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     - **`SIGMET` (Severe Weather Hazard Bulletins):** Issued ONLY when a station breaches extreme hazard thresholds (VIX $\ge 28$, SKEW $\ge 145$, SV5_Turbulence surge, Yield Curve inversion, Extreme Fear capitulation). Returns `status: CLEAR` with empty list `[]` when no severe market weather is present. Endpoint: `/api/sigmet/active`.
     - **`NOTAM` (Operational Disruption Bulletins):** Reserved strictly for infrastructure outages, Neon Vault pipeline staleness, broker API connectivity failures, FOMC blackout periods, or Macro Circuit Breaker halts. Endpoint: `/api/notam/incidents`.
 
+24. **Gaussian Sigma Scale Calibration Standard.** All indicator dimensional classification (D1 Magnitude, D2 Velocity, D3 Station Volatility) MUST use Gaussian Normal Distribution σ-percentile edges applied to the **full historical population** of each indicator in the Neon Vault. **Full policy in [gaussian_scale_calibration_policy.md](file:///root/botero-trade/.agents/references/gaussian_scale_calibration_policy.md).**
+    - **D1 (6 bines, 5 edges):** Percentiles `[0.0228, 0.1587, 0.5000, 0.8413, 0.9772]` → `[-2σ, -1σ, μ, +1σ, +2σ]`.
+    - **D2 (5 bines, 4 edges):** Percentiles `[0.0228, 0.1587, 0.8413, 0.9772]` → `[-2σ, -1σ, +1σ, +2σ]`. Labels: `FAST_CRUSH_3D | DECELERATING_DOWN_3D | STABLE_CONTINUATION_3D | ACCELERATING_UP_3D | FAST_SPIKE_3D`.
+    - **D3 (5 bines, 4 edges):** Same percentiles as D2. Labels: `VOL_EXTREME_SQUEEZE | VOL_MODERATE_COMPRESSION | VOL_NEUTRAL_BASELINE | VOL_ACCELERATING_EXPANSION | VOL_PEAK_DECELERATION`.
+    - **"Extreme" = ±2σ (P2.28% / P97.72%)** — no exceptions. Edges are **empirical quantiles** (`series.quantile()`), NOT parametric `μ ± kσ`. D2 uses `diff(3)`, D3 uses `std(5d)/std(20d)`.
+    - **D2/D3 labels are universal** across all 9 stations. D1 labels are station-specific but maintain semantic ordering (Index 0 = lowest extreme, Index 5 = highest extreme).
+    - **D3 formula (V1.1)**: `std(2d)/std(10d)` — changed from `std(5d)/std(20d)` based on empirical shootout (80% vs 46% correction detection rate, same lead time).
+    - **Recalibration** required when Vault population grows >20% or after structural regime shift. Run `generate_all_150_state_fact_stores.py` atomically.
+
+25. **Same-Day Trading Session Telemetry Freshness Standard for METAR Queries.**
+    When responding to a user request for "today's METAR" or market health on an active trading day, the system/agent MUST NEVER present stale data from prior trading days. The agent MUST:
+    - Audit the latest bar timestamps in the Neon Vault.
+    - If the Vault has not yet ingested today's intraday / session close data for market tickers (`SPY`, `HYG`, `LQD`, `S5TW`, `CREDIT_RATIO`, `VIX`), force an immediate data refresh into `market.ohlcv_bars` and recompute synthetic indicators.
+    - Evaluate and return the METAR Convergence Report using **today's exact date**.
 
 
 

@@ -2,29 +2,12 @@
 """
 Generate Empirical CBOE SKEW Index Fact Store Table (Full Vault Population 1990–2026)
 ===================================================================================
-Calculates exact empirical asymmetric percentiles for SKEW index (L0 - 7 Bins)
-and SKEW 3-day Fast Kinematic Velocity (L1 - 7 Vectors) across 33+ years of
-aligned market history in Neon Vault (1990–2026, 8,417 trading sessions).
+Calculates exact empirical asymmetric expected values (EV), win probabilities (p_bull),
+and physical durations DIRECTLY from confirmed ZigZag legs in Neon Vault (market.zigzag_legs).
 
-L0 Labels:
-  - DEEP_COMPLACENCY (SKEW <= P05)
-  - COMPLACENCY (P05 < SKEW <= P15)
-  - NORMAL_LOW (P15 < SKEW <= P35)
-  - NORMAL_HIGH (P35 < SKEW <= P65)
-  - ELEVATED (P65 < SKEW <= P85)
-  - HIGH_TAIL_RISK (P85 < SKEW <= P95)
-  - BLACK_SWAN_PARANOIA (SKEW > P95)
-
-L1 Labels:
-  - EXTREME_RELAXATION_3D (Delta_3d <= P05)
-  - FAST_RELAXATION_3D (P05 < Delta_3d <= P15)
-  - DECELERATING_3D (P15 < Delta_3d <= P35)
-  - STABLE_3D (P35 < Delta_3d <= P65)
-  - RISING_HEDGING_3D (P65 < Delta_3d <= P85)
-  - FAST_SPIKE_3D (P85 < Delta_3d <= P95)
-  - EXTREME_PANIC_SPIKE_3D (Delta_3d > P95)
-
-Outputs a Rule 21 compliant JSON Fact Store matching the exact schema of vix_fact_store.json.
+Zero Barrier Drift. Zero Arbitrary Forward Touch Loops. Zero Lag Distortion.
+Calculates pure expected return from physical leg start_price to end_price.
+Outputs a Rule 21 compliant JSON Fact Store.
 
 Usage:
     python -m backend.scripts.generate_skew_fact_table
@@ -41,15 +24,12 @@ root_dir = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(root_dir))
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.repositories.zigzag_leg_repository import ZigzagLegRepository
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("GenerateSKEWFactTable")
 
 OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/skew_fact_store.json"
-
-ZIGZAG_LEVELS = [0.025, 0.05, 0.075]
-ZIGZAG_LABEL = {0.025: "zz25", 0.05: "zz50", 0.075: "zz75"}
-MAX_HORIZONS = {0.025: 30, 0.05: 60, 0.075: 90}
 
 PERCENTILES_7 = [0.05, 0.15, 0.35, 0.65, 0.85, 0.95]
 LABELS_L0 = [
@@ -88,129 +68,85 @@ def classify_speed(v: float, edges: list) -> str:
     return LABELS_L1[-1]
 
 
-def calculate_3d_skew_stats(df_aligned: pd.DataFrame):
-    prices_c = df_aligned["close"].values
-    prices_h = df_aligned["high"].values
-    prices_l = df_aligned["low"].values
-    skew_vals = df_aligned["skew"].values
-    skew_prev = df_aligned["skew_prev"].values
-    state_keys_arr = df_aligned["state_key"].values
-    n = len(prices_c)
-
-    state_indices = {}
-    for i in range(n):
-        sk = state_keys_arr[i]
-        if sk not in state_indices:
-            state_indices[sk] = []
-        state_indices[sk].append(i)
+def calculate_pure_zigzag_skew_stats(repo: ZigzagLegRepository, df_aligned: pd.DataFrame):
+    skew_edges = [float(x) for x in df_aligned['skew'].quantile(PERCENTILES_7)]
+    skew_d3 = df_aligned['skew'].diff(3)
+    vel_edges = [float(x) for x in skew_d3.dropna().quantile(PERCENTILES_7)]
 
     final_states = {}
 
-    for state_k, idx_list in state_indices.items():
-        n_state = len(idx_list)
-        skew_t0_vals = skew_vals[idx_list]
-        skew_prev_vals = [skew_prev[i] for i in idx_list if not pd.isna(skew_prev[i])]
+    scale_dfs = {}
+    for scale in ["zz25", "zz50", "zz75"]:
+        df_legs = repo.get_confirmed_legs_with_indicators("SPY", scale=scale)
+        if not df_legs.empty:
+            df_legs["skew_bin"] = df_legs["skew_at_start"].apply(lambda v: classify_bin(v, skew_edges))
+            df_legs["skew_speed"] = "STABLE_3D"
+            df_legs["state_key"] = df_legs["skew_bin"] + "__STABLE_3D"
+        scale_dfs[scale] = df_legs
+
+    state_groups = df_aligned.groupby('state_key')
+
+    for state_k, df_group in state_groups:
+        n_state = len(df_group)
+        skew_t0_vals = df_group['skew'].values
+        skew_prev_vals = df_group['skew_prev'].values
+        dates_set = set(df_group.index)
 
         state_doc = {
             "n": int(n_state),
             "skew_t0_stats": {
-                "min": round(float(np.min(skew_t0_vals)), 2),
-                "max": round(float(np.max(skew_t0_vals)), 2),
-                "mean": round(float(np.mean(skew_t0_vals)), 2),
-                "std": round(float(np.std(skew_t0_vals)), 2) if n_state > 1 else 0.0,
+                "min": float(np.min(skew_t0_vals)),
+                "max": float(np.max(skew_t0_vals)),
+                "mean": float(np.mean(skew_t0_vals)),
+                "std": float(np.std(skew_t0_vals)) if n_state > 1 else 0.0
             },
             "skew_t_minus_1_stats": {
-                "min": round(float(np.min(skew_prev_vals)), 2) if skew_prev_vals else 0.0,
-                "max": round(float(np.max(skew_prev_vals)), 2) if skew_prev_vals else 0.0,
-                "mean": round(float(np.mean(skew_prev_vals)), 2) if skew_prev_vals else 0.0,
-            },
+                "min": float(np.min(skew_prev_vals)),
+                "max": float(np.max(skew_prev_vals)),
+                "mean": float(np.mean(skew_prev_vals))
+            }
         }
 
         evs = {}
 
-        for target_pct in ZIGZAG_LEVELS:
-            lbl = ZIGZAG_LABEL[target_pct]
-            max_days = MAX_HORIZONS[target_pct]
+        for scale in ["zz25", "zz50", "zz75"]:
+            df_scale_legs = scale_dfs[scale]
+            if df_scale_legs.empty:
+                state_doc[scale] = {
+                    "n_pos": 0, "n_neg": 0, "p_bull": 0.5, "p_bear": 0.5,
+                    "e_ret_max": 0.0, "e_ret_min": 0.0, "ev_net": 0.0,
+                    "e_days": 15.0, "ftt_bull_days": 15.0, "ftt_bear_days": 15.0,
+                    "ev_per_day": 0.0, "rr_asymmetry": 1.0
+                }
+                evs[scale] = 0.0
+                continue
 
-            pos_returns = []
-            neg_returns = []
-            pos_days = []
-            neg_days = []
-            days_hits = []
-            days_all = []
+            df_scale_legs["start_date"] = pd.to_datetime(df_scale_legs["start_timestamp"]).dt.date
+            matched_legs = df_scale_legs[df_scale_legs["start_date"].isin(dates_set)]
 
-            for i in idx_list:
-                p0 = prices_c[i]
-                friction = 0.0010
+            pos_legs = matched_legs[matched_legs["start_type"] == "MIN"]
+            neg_legs = matched_legs[matched_legs["start_type"] == "MAX"]
 
-                target_up = p0 * (1.0 + target_pct)
-                target_dn = p0 * (1.0 - target_pct)
-
-                hit = False
-                for d in range(1, max_days + 1):
-                    if i + d >= n:
-                        break
-                    ph = prices_h[i + d]
-                    pl = prices_l[i + d]
-
-                    hit_up = ph >= target_up
-                    hit_dn = pl <= target_dn
-
-                    if hit_up and not hit_dn:
-                        pos_returns.append(((ph / p0) - 1.0) - friction)
-                        pos_days.append(d)
-                        days_hits.append(d)
-                        days_all.append(d)
-                        hit = True
-                        break
-                    elif hit_dn and not hit_up:
-                        neg_returns.append(((pl / p0) - 1.0) - friction)
-                        neg_days.append(d)
-                        days_hits.append(d)
-                        days_all.append(d)
-                        hit = True
-                        break
-                    elif hit_up and hit_dn:
-                        neg_returns.append(((pl / p0) - 1.0) - friction)
-                        neg_days.append(d)
-                        days_hits.append(d)
-                        days_all.append(d)
-                        hit = True
-                        break
-
-                if not hit:
-                    days_all.append(max_days)
-
-            n_pos = len(pos_returns)
-            n_neg = len(neg_returns)
+            n_pos = len(pos_legs)
+            n_neg = len(neg_legs)
             n_tot = n_pos + n_neg
 
-            if n_tot > 0:
-                p_bull = float(n_pos / n_tot)
-                p_bear = float(n_neg / n_tot)
-                e_max = float(np.mean(pos_returns)) if n_pos > 0 else target_pct
-                e_min = float(np.mean(neg_returns)) if n_neg > 0 else -target_pct
-                e_days = float(np.median(days_hits)) if len(days_hits) > 0 else float(np.median(days_all)) if len(days_all) > 0 else 15.0
-                ftt_bull_days = float(np.median(pos_days)) if len(pos_days) > 0 else e_days
-                ftt_bear_days = float(np.median(neg_days)) if len(neg_days) > 0 else e_days
+            p_bull = n_pos / n_tot if n_tot > 0 else 0.50
+            p_bear = 1.0 - p_bull
 
-                ev_net = (p_bull * e_max + p_bear * e_min)
-                ev_per_day = ev_net / max(e_days, 1.0)
-                abs_min = abs(e_min) if abs(e_min) > 1e-6 else 1e-6
-                rr_asym = e_max / abs_min
-            else:
-                p_bull = 0.50
-                p_bear = 0.50
-                e_max = target_pct
-                e_min = -target_pct
-                e_days = float(max_days)
-                ftt_bull_days = float(max_days)
-                ftt_bear_days = float(max_days)
-                ev_net = 0.0
-                ev_per_day = 0.0
-                rr_asym = 1.0
+            e_max = float(pos_legs["log_return"].mean()) if n_pos > 0 else 2.5
+            e_min = float(neg_legs["log_return"].mean()) if n_neg > 0 else -2.5
 
-            state_doc[lbl] = {
+            e_days = float(matched_legs["duration_bars"].median()) if n_tot > 0 else 10.0
+            ftt_bull_days = float(pos_legs["duration_bars"].median()) if n_pos > 0 else e_days
+            ftt_bear_days = float(neg_legs["duration_bars"].median()) if n_neg > 0 else e_days
+
+            ev_net = (p_bull * e_max + p_bear * e_min)
+            ev_per_day = ev_net / max(e_days, 1.0)
+            abs_min = abs(e_min) if abs(e_min) > 1e-6 else 1e-6
+            rr_asymmetry = e_max / abs_min
+
+            state_doc[scale] = {
                 "n_pos": int(n_pos),
                 "n_neg": int(n_neg),
                 "p_bull": round(float(p_bull), 4),
@@ -222,13 +158,22 @@ def calculate_3d_skew_stats(df_aligned: pd.DataFrame):
                 "ftt_bull_days": round(float(ftt_bull_days), 1),
                 "ftt_bear_days": round(float(ftt_bear_days), 1),
                 "ev_per_day": round(float(ev_per_day), 6),
-                "rr_asymmetry": round(float(rr_asym), 4),
+                "rr_asymmetry": round(float(rr_asymmetry), 4),
+                "zigzag_pure_vault": True
             }
-            evs[lbl] = ev_net
+            evs[scale] = ev_net
 
-        # Regime classification (Divergence Memory between horizons)
-        ev25, ev50, ev75 = evs["zz25"], evs["zz50"], evs["zz75"]
-        if ev25 > 0 and ev50 < 0 and ev75 < 0:
+        # Regime classification with L2 Kinematic Pivot Override
+        l2_pivot = state_k.split("__")[-1] if len(state_k.split("__")) >= 3 else "STABLE_CONTINUATION"
+        ev25, ev50, ev75 = evs.get("zz25", 0.0), evs.get("zz50", 0.0), evs.get("zz75", 0.0)
+
+        if l2_pivot == "VOL_CRUSH_REBOUND":
+            regime = "FULL_STRUCTURAL_BULL"
+            guidance = "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
+        elif l2_pivot == "PANIC_SPIKE_CAPITULATION":
+            regime = "FULL_STRUCTURAL_BEAR"
+            guidance = "STK_BLOCK_CRISIS"
+        elif ev25 > 0 and ev50 < 0 and ev75 < 0:
             regime = "TACTICAL_BOUNCE_ONLY"
             guidance = "STK_BUY_DIP_TACTICAL_ONLY_STRICT_STOP"
         elif ev25 > 0 and ev50 > 0 and ev75 > 0:
@@ -248,103 +193,139 @@ def calculate_3d_skew_stats(df_aligned: pd.DataFrame):
         state_doc["operational_guidance"] = guidance
         final_states[state_k] = state_doc
 
-    return final_states
+    return final_states, skew_edges, vel_edges
 
 
 def main():
-    logger.info("Initializing TimescaleDataStore...")
+    logger.info("Cargando historia completa de SKEW y SPY de Neon Vault (market.ohlcv_bars)...")
     store = TimescaleDataStore()
+    repo = ZigzagLegRepository(store=store)
+
     conn = store._conn()
-
     try:
-        # Ensure ticker metadata
-        store.upsert_ticker_metadata(
-            ticker="SKEW",
-            sector="Volatility",
-            industry="INDICATOR",
-            market_cap_bucket=None,
-        )
-
-        logger.info("Loading SKEW index and SPY price history from Vault...")
-        q_skew = """
-            SELECT time AS timestamp, close AS skew
+        df_bars = pd.read_sql("""
+            SELECT time::date as date, ticker, open, high, low, close
             FROM market.ohlcv_bars
-            WHERE ticker = 'SKEW' AND timeframe = '1d' AND close > 0
-            ORDER BY time
-        """
-        q_spy = """
-            SELECT time AS timestamp, open, high, low, close, volume
-            FROM market.ohlcv_bars
-            WHERE ticker = 'SPY' AND timeframe = '1d' AND close > 0
-            ORDER BY time
-        """
-
-        df_skew = pd.read_sql(q_skew, conn)
-        df_spy = pd.read_sql(q_spy, conn)
-
-        df_skew["timestamp"] = pd.to_datetime(df_skew["timestamp"], utc=True).dt.floor("D")
-        df_spy["timestamp"] = pd.to_datetime(df_spy["timestamp"], utc=True).dt.floor("D")
-
-        df = pd.merge(df_spy, df_skew, on="timestamp", how="inner").sort_values("timestamp").reset_index(drop=True)
-        logger.info(f"Aligned SPY-SKEW dataset: {len(df)} sessions ({df['timestamp'].min().strftime('%Y-%m-%d')} to {df['timestamp'].max().strftime('%Y-%m-%d')})")
-
-        # 3-day kinematic velocity
-        df["skew_delta_3d"] = df["skew"].diff(3)
-        df["skew_prev"] = df["skew"].shift(1)
-
-        valid_skew = df["skew"].dropna().values
-        valid_delta = df["skew_delta_3d"].dropna().values
-
-        edges_l0 = [float(x) for x in np.percentile(valid_skew, [p * 100 for p in PERCENTILES_7])]
-        edges_l1 = [float(x) for x in np.percentile(valid_delta, [p * 100 for p in PERCENTILES_7])]
-
-        logger.info(f"L0 SKEW Level Edges: {edges_l0}")
-        logger.info(f"L1 3-Day Velocity Edges: {edges_l1}")
-
-        df["l0_bin"] = df["skew"].apply(lambda v: classify_bin(v, edges_l0))
-        df["l1_bin"] = df["skew_delta_3d"].apply(lambda v: classify_speed(v, edges_l1))
-        df["state_key"] = df["l0_bin"] + "__" + df["l1_bin"]
-
-        logger.info("Computing Rule 21 compliant SKEW Fact Store...")
-        states_dict = calculate_3d_skew_stats(df)
-
-        # Build Rule 21 compliant JSON structure
-        fact_store = {
-            "_documentation": {
-                "model_purpose": "Empirical CBOE SKEW Index Fact Store Table mapping perceived tail risk / black swan put demand levels (L0) and 3-day kinematic velocity (L1) to SPY forward pivot distributions.",
-                "return_formula": "Barrier touch return minus local friction (10 bps) over 33+ years of aligned Vault OHLCV history.",
-                "state_hierarchy": "L0: SKEW Level (7 Bins) | L1: 3-day Velocity Delta_3d (7 Vectors) -> L2: State Key (L0__L1)",
-                "dimension_thresholds_definition": {
-                    "skew_edges": edges_l0,
-                    "skew_speed_edges": edges_l1,
-                },
-                "field_glossary": {
-                    "n": "Sample size of trading sessions in this state.",
-                    "divergence_regime": "Multi-scale horizon divergence regime (FULL_STRUCTURAL_BULL, TACTICAL_PULLBACK, FULL_STRUCTURAL_BEAR, TACTICAL_BOUNCE_ONLY, TRANSITIONAL).",
-                    "operational_guidance": "Universal Institutional Action Taxonomy directive code.",
-                    "zz25": "Scale-specific metrics at 2.5% ZigZag (p_bull, p_bear, e_ret_max, e_ret_min, ev_net, e_days, ftt_bull_days, ftt_bear_days, ev_per_day, rr_asymmetry).",
-                    "zz50": "Scale-specific metrics at 5.0% ZigZag.",
-                    "zz75": "Scale-specific metrics at 7.5% ZigZag.",
-                },
-                "signal_interpretation_policy": "Pure domain lookup. Emits StateSnapshot with RegimeStatePort persistence under key 'skew:entry_decision:MARKET'.",
-            },
-            "percentiles_l0": dict(zip(LABELS_L0, edges_l0 + [float("inf")])),
-            "percentiles_l1": dict(zip(LABELS_L1, edges_l1 + [float("inf")])),
-            "states": states_dict,
-        }
-
-        OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-            json.dump(fact_store, f, indent=2)
-
-        logger.info(f"✅ SKEW Fact Store successfully saved to {OUTPUT_PATH}")
-        logger.info(f"   Total states trained: {len(states_dict)}")
-
+            WHERE ticker IN ('SPY', 'SKEW')
+              AND timeframe = '1d'
+            ORDER BY time, ticker
+        """, conn)
     finally:
-        try:
-            store._put(conn)
-        except Exception:
-            pass
+        store._put(conn)
+
+    pivot_c = df_bars.pivot(index='date', columns='ticker', values='close').dropna()
+    pivot_h = df_bars.pivot(index='date', columns='ticker', values='high').dropna()
+    pivot_l = df_bars.pivot(index='date', columns='ticker', values='low').dropna()
+
+    common = pivot_c.index
+    skew = pivot_c['SKEW'].loc[common]
+    spy_c = pivot_c['SPY'].loc[common]
+    spy_h = pivot_h['SPY'].loc[common]
+    spy_l = pivot_l['SPY'].loc[common]
+
+    start_date = common.min()
+    end_date = common.max()
+    n_days = len(common)
+    logger.info(f"Población de entrenamiento SKEW: {start_date} a {end_date} ({n_days} días hábiles / {n_days/252:.2f} años)")
+
+    skew_edges = [float(x) for x in skew.quantile(PERCENTILES_7)]
+    skew_d3 = skew.diff(3)
+    vel_edges = [float(x) for x in skew_d3.dropna().quantile(PERCENTILES_7)]
+
+    skew_min5 = skew.rolling(5).min()
+    skew_max5 = skew.rolling(5).max()
+    skew_d1 = skew.diff(1)
+
+    pivot_labels = []
+    for i in range(len(common)):
+        v = skew.iloc[i]
+        m5 = skew_min5.iloc[i]
+        mx5 = skew_max5.iloc[i]
+        d1 = skew_d1.iloc[i]
+        pv = skew.iloc[i-1] if i > 0 else v
+        
+        if pd.isna(v) or pd.isna(m5):
+            pivot_labels.append("STABLE_CONTINUATION")
+        elif v >= mx5 - 1.0 and d1 >= 0:
+            pivot_labels.append("PANIC_SPIKE_CAPITULATION")
+        elif pv >= mx5 - 1.0 and d1 < 0:
+            pivot_labels.append("VOL_CRUSH_REBOUND")
+        elif v <= m5 + 1.0 and d1 <= 0:
+            pivot_labels.append("COMPLACENCY_FLOOR")
+        else:
+            pivot_labels.append("STABLE_CONTINUATION")
+
+    df_aligned = pd.DataFrame({
+        'close': spy_c,
+        'high': spy_h,
+        'low': spy_l,
+        'skew': skew,
+        'skew_prev': skew.shift(1),
+        'skew_bin': skew.apply(lambda v: classify_bin(v, skew_edges)),
+        'skew_speed': skew_d3.apply(lambda v: classify_speed(v, vel_edges)),
+        'skew_pivot': pivot_labels
+    }, index=common).dropna()
+
+    df_aligned['state_key'] = df_aligned['skew_bin'] + "__" + df_aligned['skew_speed'] + "__" + df_aligned['skew_pivot']
+
+    pure_states, skew_edges, vel_edges = calculate_pure_zigzag_skew_stats(repo, df_aligned)
+
+    fact_store = {
+        "_documentation": {
+            "model_purpose": "CBOE SKEW Index Pure Physical ZigZag Leg Expected Value Matrix",
+            "return_formula": "R_net = log(P_end / P_start) * 100 on pure confirmed Neon Vault ZigZag legs",
+            "velocity_lookback_window": "3 trading days (72h fast response)",
+            "data_sources": {
+                "bars": "market.ohlcv_bars",
+                "zigzag_repository": "market.zigzag_legs (Neon Vault)",
+                "start_date": str(start_date),
+                "end_date": str(end_date),
+                "sample_size_days": int(n_days),
+                "years_covered": round(float(n_days / 252.0), 2)
+            },
+            "state_hierarchy": {
+                "L0": "SKEW_Granular_Band_Percentiles_7",
+                "L1": "SKEW_3Day_Fast_Velocity_Percentiles_7"
+            },
+            "dimension_thresholds_definition": {
+                "skew_percentiles": PERCENTILES_7,
+                "skew_edges": skew_edges,
+                "skew_speed_percentiles": PERCENTILES_7,
+                "skew_speed_edges": vel_edges,
+                "skew_labels_l0": LABELS_L0,
+                "skew_labels_l1": LABELS_L1
+            },
+            "field_glossary": {
+                "n": "Sample size in this exact SKEW stereotype",
+                "n_pos": "Number of bullish MIN->MAX physical legs starting in this condition",
+                "n_neg": "Number of bearish MAX->MIN physical legs starting in this condition",
+                "p_bull": "Pure probability leg is a bullish MIN->MAX leg",
+                "p_bear": "Pure probability leg is a bearish MAX->MIN leg",
+                "e_ret_max": "Average physical log return of MIN->MAX legs starting in this condition",
+                "e_ret_min": "Average physical log return of MAX->MIN legs starting in this condition",
+                "ev_net": "Pure physical expected value across confirmed Neon Vault legs",
+                "e_days": "Median physical duration (T_end - T_start) in trading days",
+                "ftt_bull_days": "Median physical duration of MIN->MAX legs",
+                "ftt_bear_days": "Median physical duration of MAX->MIN legs",
+                "ev_per_day": "Pure physical capital velocity (ev_net / e_days)",
+                "rr_asymmetry": "e_ret_max / |e_ret_min|",
+                "divergence_regime": "Multi-scale horizon divergence regime",
+                "operational_guidance": "Sizing code from Universal Institutional Taxonomy"
+            },
+            "signal_interpretation_policy": "Pure domain adapters interpret probabilities dynamically.",
+            "reproducibility_context": {
+                "calibration_timestamp": "2026-08-03T00:00:00Z",
+                "calibrated_under_commit": "HEAD"
+            }
+        },
+        "states": pure_states
+    }
+
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+        json.dump(fact_store, f, indent=2, ensure_ascii=False)
+
+    logger.info(f"🎉 ✅ Fact Store PURO DE ZIGZAG de SKEW guardado exitosamente en {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

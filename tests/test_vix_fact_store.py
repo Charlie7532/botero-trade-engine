@@ -38,7 +38,7 @@ def test_lookup_adapter_deep_calm():
     )
     assert guidance is not None
     assert isinstance(guidance, VIXStateGuidance)
-    assert guidance.state_key == "DEEP_CALM__STABLE_3D"
+    assert guidance.bin == "DEEP_COMPLACENCY"
     
     # Check scale details
     assert guidance.zz50.p_bull > 0.0
@@ -53,6 +53,6 @@ def test_lookup_adapter_crisis_spike():
         vix_d3=5.0
     )
     assert guidance is not None
-    assert guidance.state_key == "CRISIS_SPIKE__EXTREME_SPIKE_3D"
+    assert guidance.bin == "CRISIS_SPIKE"
     assert guidance.vix_bin == "CRISIS_SPIKE"
     assert guidance.velocity_vector == "EXTREME_SPIKE_3D"

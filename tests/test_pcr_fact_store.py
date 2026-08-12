@@ -12,7 +12,7 @@ from backend.modules.entry_decision.domain.rules.pcr_lookup import (
 def test_pcr_fact_store_loading():
     """Verify that pcr_lookup adapter loads the Fact Store successfully."""
     adapter = PCRLookupAdapter()
-    assert len(adapter.pcr_edges) == 6
+    assert len(adapter.edges_d1) == 6
     assert len(adapter.pcr_speed_edges) == 6
     assert len(adapter.states) >= 40  # 45 empirical state permutations observed
 
@@ -22,14 +22,8 @@ def test_pcr_guidance_lookup_valid():
     guidance = pcr_lookup.lookup_pcr_guidance(pcr_val=0.85, pcr_d3=-0.10)
     assert guidance is not None
     assert isinstance(guidance, PCRStateGuidance)
-    assert guidance.pcr_bin in [
-        "DEEP_BULLISH", "BULLISH", "MODERATE_BULLISH",
-        "NEUTRAL", "MODERATE_BEARISH", "BEARISH", "EXTREME_HEDGING"
-    ]
-    assert guidance.velocity_vector in [
-        "EXTREME_PUT_COLLAPSE_3D", "PUT_UNWIND_3D", "DECELERATING_3D",
-        "STABLE_3D", "RISING_3D", "PUT_SURGE_3D", "EXTREME_HEDGING_SPIKE_3D"
-    ]
+    assert guidance.pcr_bin in ['CALL_EUPHORIA', 'BULLISH_BIAS', 'NEUTRAL_PCR', 'ELEVATED_PUTS', 'PANIC_PUTS', 'EXTREME_HEDGING']
+    assert guidance.velocity_vector in ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D']
     assert guidance.n > 0
 
 

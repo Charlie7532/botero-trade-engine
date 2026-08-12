@@ -12,22 +12,8 @@ def test_skew_lookup_valid_state():
     guidance = skew_lookup.lookup_skew_guidance(skew_val=135.0, skew_d3=0.0)
     assert guidance is not None
     assert isinstance(guidance, SkewStateGuidance)
-    assert guidance.skew_bin in [
-        "DEEP_COMPLACENCY",
-        "COMPLACENCY",
-        "NORMAL_LOW",
-        "NORMAL_HIGH",
-        "ELEVATED",
-        "HIGH_TAIL_RISK",
-        "BLACK_SWAN_PARANOIA",
-    ]
-    assert guidance.divergence_regime in [
-        "FULL_STRUCTURAL_BULL",
-        "TACTICAL_PULLBACK",
-        "FULL_STRUCTURAL_BEAR",
-        "TACTICAL_BOUNCE_ONLY",
-        "TRANSITIONAL",
-    ]
+    assert guidance.skew_bin in ['TAIL_COMPLACENCY', 'NORMAL_TAIL', 'ELEVATED_TAIL', 'HIGH_SKEW', 'PARANOIA_SKEW', 'BLACK_SWAN_PARANOIA']
+    assert guidance.divergence_regime in ['BULLISH', 'BEARISH', 'NEUTRAL']
     
     vec = guidance.to_vector()
     assert "p_bull" in vec

@@ -50,8 +50,8 @@ def test_credit_metar_service_expansion(mock_store, mock_port):
 
     dates = pd.date_range(end="2026-07-31", periods=10, freq="D")
     df_hyg = pd.DataFrame({"date": dates, "ticker": "HYG", "close": 78.0})
-    df_tlt = pd.DataFrame({"date": dates, "ticker": "TLT", "close": 90.0})
-    df = pd.concat([df_hyg, df_tlt])
+    df_lqd = pd.DataFrame({"date": dates, "ticker": "LQD", "close": 105.0})
+    df = pd.concat([df_hyg, df_lqd])
 
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(pd, "read_sql", lambda q, c: df)
@@ -64,7 +64,7 @@ def test_credit_metar_service_expansion(mock_store, mock_port):
             "MKT_CREDIT_STRESS_ELEVATED",
             "MKT_CREDIT_FREEZE_EXTREME",
         ]
-        assert metar.credit_ratio_value == pytest.approx(78.0 / 90.0, rel=1e-3)
+        assert metar.credit_ratio_value == pytest.approx(78.0 / 105.0, rel=1e-3)
         assert mock_port.commit_transition.called
         assert mock_port.commit_transition.call_args[1]["key"] == "credit:entry_decision:MARKET"
 
@@ -74,10 +74,10 @@ def test_credit_metar_service_freeze(mock_store, mock_port):
     mock_store._conn.return_value = conn
 
     dates = pd.date_range(end="2026-07-31", periods=10, freq="D")
-    # Low ratio HYG/TLT = 30.0 / 100.0 = 0.30 (Extreme freeze)
-    df_hyg = pd.DataFrame({"date": dates, "ticker": "HYG", "close": 30.0})
-    df_tlt = pd.DataFrame({"date": dates, "ticker": "TLT", "close": 100.0})
-    df = pd.concat([df_hyg, df_tlt])
+    # Low ratio HYG/LQD = 50.0 / 100.0 = 0.50 (CREDIT_CRISIS)
+    df_hyg = pd.DataFrame({"date": dates, "ticker": "HYG", "close": 50.0})
+    df_lqd = pd.DataFrame({"date": dates, "ticker": "LQD", "close": 100.0})
+    df = pd.concat([df_hyg, df_lqd])
 
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(pd, "read_sql", lambda q, c: df)
@@ -86,7 +86,7 @@ def test_credit_metar_service_freeze(mock_store, mock_port):
 
         assert metar.action_code == "MKT_CREDIT_FREEZE_EXTREME"
         assert metar.is_crisis_override is True
-        assert metar.credit_bin == "EXTREME_CREDIT_FREEZE"
+        assert metar.credit_bin == "CREDIT_CRISIS"
 
 
 def test_credit_metar_cli_broadcast(mock_store, mock_port):
@@ -95,8 +95,8 @@ def test_credit_metar_cli_broadcast(mock_store, mock_port):
 
     dates = pd.date_range(end="2026-07-31", periods=10, freq="D")
     df_hyg = pd.DataFrame({"date": dates, "ticker": "HYG", "close": 70.0})
-    df_tlt = pd.DataFrame({"date": dates, "ticker": "TLT", "close": 100.0})
-    df = pd.concat([df_hyg, df_tlt])
+    df_lqd = pd.DataFrame({"date": dates, "ticker": "LQD", "close": 100.0})
+    df = pd.concat([df_hyg, df_lqd])
 
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(pd, "read_sql", lambda q, c: df)

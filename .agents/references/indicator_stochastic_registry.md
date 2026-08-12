@@ -6,7 +6,7 @@
 
 ---
 
-## Registered METAR Telemetry Stations (9 Domain Services)
+## Registered METAR Telemetry Stations (10 Domain Services)
 
 | Indicator / Domain | Ticker | Service File | Primary Metric / Interpretation |
 |---|---|---|---|
@@ -16,9 +16,10 @@
 | **FG** | `FG` | `fg_metar_service.py` | CNN Fear & Greed Index (0-100). Sentimiento contrario (<10=Miedo Extremo 76% WR, >90=Euforia). |
 | **CBOE_PCR** | `CBOE_PCR` | `pcr_metar_service.py` | CBOE Equity Put/Call Ratio. Medida de cobertura en mercado de opciones. |
 | **SKEW** | `SKEW` | `skew_metar_service.py` | CBOE SKEW Index. Riesgo de cola y demanda de Puts OTM. |
-| **CREDIT** | `HYG/LQD` / FRED | `credit_metar_service.py` | Corporate Credit Spreads. Estrés en liquidez corporativa. |
+| **CREDIT** | `HYG/LQD` | `credit_metar_service.py` | High Yield Corporate Credit Stress Ratio. Liquidez corporativa sin ruido de tipos. |
 | **ROTATION** | `S5_*` / `SV5_*` | `rotation_metar_service.py` | Sector Breadth & Institutional Rotation across 11 GICS sectors + QQQ. |
-| **YIELD_CURVE** | `T10Y2Y` / `TNX` | `yield_curve_metar_service.py` | Macro Yield Curve Spread (10Y-2Y). Ciclo de crédito y recesión. |
+| **YIELD_CURVE** | `YIELD_SPREAD` | `yield_curve_metar_service.py` | Macro Yield Curve Spread (TNX - IRX). Ciclo de crédito y recesión. |
+| **BSI** | `S5TW` | `bsi_metar_service.py` | Breadth Shock Index (% de acciones S&P 500 sobre 20-DMA). Impulso y capitulación táctica. |
 
 ---
 

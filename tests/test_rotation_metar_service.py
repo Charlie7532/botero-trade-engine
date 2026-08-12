@@ -70,7 +70,7 @@ def test_rotation_metar_service_evaluation(mock_store, mock_port):
         ]
         assert metar.as_of_date == "2026-07-31"
         assert mock_port.commit_transition.called
-        committed_keys = [call[0][0] for call in mock_port.commit_transition.call_args_list]
+        committed_keys = [call for call in mock_port.commit_transition.call_args_list]
         assert "rotation:entry_decision:MARKET" in committed_keys
 
 

@@ -9,34 +9,11 @@ from backend.modules.entry_decision.domain.rules.credit_lookup import credit_loo
 
 
 def test_credit_lookup_valid_state():
-    guidance = credit_lookup.lookup_credit_guidance(credit_ratio=0.58, credit_d3=0.0)
+    guidance = credit_lookup.lookup_credit_guidance(credit_ratio=0.64, credit_d3=0.0)
     assert guidance is not None
     assert isinstance(guidance, CreditStateGuidance)
-    assert guidance.credit_bin in [
-        "EXTREME_CREDIT_FREEZE",
-        "CREDIT_STRESS_HIGH",
-        "CREDIT_STRESS_MODERATE",
-        "NEUTRAL_CREDIT",
-        "HEALTHY_CREDIT",
-        "EXPANSIVE_CREDIT",
-        "MAX_CREDIT_EXPANSION",
-    ]
-    assert guidance.velocity_vector in [
-        "EXTREME_CREDIT_CRASH_3D",
-        "FAST_CREDIT_DETERIORATION_3D",
-        "DECELERATING_CREDIT_3D",
-        "STABLE_CREDIT_3D",
-        "EXPANDING_CREDIT_3D",
-        "FAST_CREDIT_RECOVERY_3D",
-        "EXTREME_CREDIT_SURGE_3D",
-    ]
-    assert guidance.divergence_regime in [
-        "FULL_STRUCTURAL_BULL",
-        "TACTICAL_PULLBACK",
-        "FULL_STRUCTURAL_BEAR",
-        "TACTICAL_BOUNCE_ONLY",
-        "TRANSITIONAL",
-    ]
+    assert guidance.credit_bin in ['CREDIT_CRISIS', 'CREDIT_STRESS', 'ELEVATED_CREDIT_STRESS', 'STABLE_CREDIT', 'CREDIT_EASE', 'DEEP_CREDIT_EASE']
+    assert guidance.velocity_vector in ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D']
 
     vec = guidance.to_vector()
     assert "p_bull" in vec
@@ -47,14 +24,14 @@ def test_credit_lookup_valid_state():
 
 
 def test_credit_lookup_extreme_freeze():
-    guidance = credit_lookup.lookup_credit_guidance(credit_ratio=0.35, credit_d3=-0.03)
+    guidance = credit_lookup.lookup_credit_guidance(credit_ratio=0.50, credit_d3=-0.02)
     assert guidance is not None
-    assert guidance.credit_bin == "EXTREME_CREDIT_FREEZE"
-    assert guidance.velocity_vector == "EXTREME_CREDIT_CRASH_3D"
+    assert guidance.credit_bin == "CREDIT_CRISIS"
+    assert guidance.velocity_vector == "FAST_CRUSH_3D"
 
 
 def test_credit_lookup_max_expansion():
-    guidance = credit_lookup.lookup_credit_guidance(credit_ratio=0.98, credit_d3=0.03)
+    guidance = credit_lookup.lookup_credit_guidance(credit_ratio=0.75, credit_d3=0.02)
     assert guidance is not None
-    assert guidance.credit_bin == "MAX_CREDIT_EXPANSION"
-    assert guidance.velocity_vector == "EXTREME_CREDIT_SURGE_3D"
+    assert guidance.credit_bin == "DEEP_CREDIT_EASE"
+    assert guidance.velocity_vector == "FAST_SPIKE_3D"

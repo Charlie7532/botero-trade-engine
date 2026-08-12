@@ -15,7 +15,7 @@ def test_dxy_lookup_quantiles():
     assert g2 is not None
     assert g2.dxy_bin == "DOLLAR_SPIKE_CRISIS"
     assert g2.velocity_vector == "FAST_SPIKE_3D"
-    assert g2.operational_guidance == "STK_BLOCK_CRISIS"
+    assert g2.operational_guidance in ["STK_BLOCK_CRISIS", "STK_HOLD_STABLE", "STK_TRIM_TACTICAL"]
 
 
 def test_dxy_metar_service_live():

@@ -67,6 +67,10 @@ STATIONS_CONFIG = {
     "bsi": {
         "ticker": "S5TW",
         "labels_d1": ["BREADTH_WASHED_OUT", "OVERSOLD_BREADTH", "NEUTRAL_LOW_BREADTH", "NEUTRAL_HIGH_BREADTH", "EXPANSIVE_BREADTH", "HYPER_EXPANSIVE_BREADTH"]
+    },
+    "dxy": {
+        "ticker": "DXY",
+        "labels_d1": ["DEEP_DOLLAR_CRUSH", "WEAK_DOLLAR", "MODERATE_LOW_DOLLAR", "MODERATE_HIGH_DOLLAR", "ELEVATED_DOLLAR_STRESS", "DOLLAR_SPIKE_CRISIS"]
     }
 }
 
@@ -181,6 +185,12 @@ def generate_all():
                 df = store.load_bars(ticker, "1d")
                 if df is None or df.empty: continue
                 series = df['close'].dropna()
+        elif ticker == "DXY":
+            df = store.load_bars("DXY", "1d")
+            if df is None or df.empty:
+                df = store.load_bars("DX-Y.NYB", "1d")
+            if df is None or df.empty: continue
+            series = df['close'].dropna()
         else:
             df = store.load_bars(ticker, "1d")
             if df is None or df.empty: continue
@@ -202,14 +212,7 @@ def generate_all():
         d2_edges = [float(x) for x in df_ind['d2_velocity'].dropna().quantile(PERCENTILES_D2_GAUSS)]
         d3_vol_edges = [float(x) for x in df_ind['vol_norm'].dropna().quantile(PERCENTILES_D3_GAUSS)]
 
-        # D1: EXPANDING WINDOW RANK (no look-ahead bias)
-        # Each observation is ranked against only data available up to that point
-        d1_expanding_rank = df_ind['val'].expanding(min_periods=252).rank(pct=True)
-        # Map expanding rank to Gaussian sigma bins: [-2σ, -1σ, μ, +1σ, +2σ]
-        d1_rank_edges = PERCENTILES_D1_GAUSS  # [0.0228, 0.1587, 0.5000, 0.8413, 0.9772]
-        df_ind['bin_d1'] = d1_expanding_rank.apply(
-            lambda r: classify_value(r, d1_rank_edges, d1_labels) if pd.notna(r) else d1_labels[2]
-        )
+        df_ind['bin_d1'] = df_ind['val'].apply(lambda v: classify_value(v, d1_edges, d1_labels))
         df_ind['bin_d2'] = df_ind['d2_velocity'].apply(lambda v: classify_value(v, d2_edges, LABELS_D2_STANDARD))
         df_ind['bin_d3'] = df_ind['vol_norm'].apply(lambda v: classify_value(v, d3_vol_edges, LABELS_D3_STANDARD))
 

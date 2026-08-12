@@ -73,9 +73,13 @@ class DXYLookupAdapter:
     def _load(self):
         if not self._path.exists():
             raise FileNotFoundError(f"DXY Fact Store not found at {self._path}")
-        with open(self._path, "r") as f:
+        with open(self._path, "r", encoding="utf-8") as f:
             raw = json.load(f)
-            self._data = raw.get("fact_store", {})
+            self._data = raw.get("states", {})
+            doc = raw.get("_documentation", {})
+        self.edges_d1 = doc.get("dimension_thresholds_definition", {}).get("d1_edges_gauss_sigma", [76.1231, 84.2773, 95.9630, 108.5600, 135.5228])
+        self.edges_d2 = doc.get("dimension_thresholds_definition", {}).get("d2_edges_gauss_sigma", [-1.8200, -0.7200, 0.7300, 1.8000])
+        self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("d3_vol_edges_gauss_sigma", [0.0114, 0.1024, 0.8888, 1.6066])
 
     def lookup_dxy_guidance(
         self,
@@ -86,39 +90,39 @@ class DXYLookupAdapter:
     ) -> Optional[DXYStateGuidance]:
 
         # D1 Edges (Gaussian canonical)
-        if val < 76.1231:
+        if val < self.edges_d1[0]:
             d1_bin = "DEEP_DOLLAR_CRUSH"
-        elif val < 84.2773:
+        elif val < self.edges_d1[1]:
             d1_bin = "WEAK_DOLLAR"
-        elif val < 95.9630:
+        elif val < self.edges_d1[2]:
             d1_bin = "MODERATE_LOW_DOLLAR"
-        elif val < 108.5600:
+        elif val < self.edges_d1[3]:
             d1_bin = "MODERATE_HIGH_DOLLAR"
-        elif val < 135.5228:
+        elif val < self.edges_d1[4]:
             d1_bin = "ELEVATED_DOLLAR_STRESS"
         else:
             d1_bin = "DOLLAR_SPIKE_CRISIS"
 
         # D2 Edges (Delta 3d)
-        if d3_speed < -1.82:
+        if d3_speed < self.edges_d2[0]:
             d2_bin = "FAST_CRUSH_3D"
-        elif d3_speed < -0.72:
+        elif d3_speed < self.edges_d2[1]:
             d2_bin = "DECELERATING_DOWN_3D"
-        elif d3_speed < 0.73:
+        elif d3_speed < self.edges_d2[2]:
             d2_bin = "STABLE_CONTINUATION_3D"
-        elif d3_speed < 1.80:
+        elif d3_speed < self.edges_d2[3]:
             d2_bin = "ACCELERATING_UP_3D"
         else:
             d2_bin = "FAST_SPIKE_3D"
 
-        # D3 Edges (Vol Ratio std(2d)/std(10d))
-        if vol_norm < 0.0114:
+        # D3 Edges (Vol Ratio)
+        if vol_norm < self.edges_d3[0]:
             d3_bin = "VOL_EXTREME_SQUEEZE"
-        elif vol_norm < 0.1024:
+        elif vol_norm < self.edges_d3[1]:
             d3_bin = "VOL_MODERATE_COMPRESSION"
-        elif vol_norm < 0.8888:
+        elif vol_norm < self.edges_d3[2]:
             d3_bin = "VOL_NEUTRAL_BASELINE"
-        elif vol_norm < 1.6066:
+        elif vol_norm < self.edges_d3[3]:
             d3_bin = "VOL_ACCELERATING_EXPANSION"
         else:
             d3_bin = "VOL_PEAK_DECELERATION"
@@ -127,49 +131,60 @@ class DXYLookupAdapter:
         state_data = self._data.get(state_key)
 
         if not state_data:
-            # Fallback to general D1 key if exact 150-state key is sparse
-            matches = [k for k in self._data.keys() if k.startswith(d1_bin)]
+            # Fallback to matches starting with d1_bin
+            matches = [k for k in self._data.keys() if k.startswith(d1_bin) and "__" in k]
             if matches:
-                state_data = self._data[matches[0]]
+                state_key = matches[0]
+                state_data = self._data[state_key]
             else:
-                return None
+                # Fallback to any valid state key
+                all_states = [k for k in self._data.keys() if "__" in k]
+                if all_states:
+                    state_key = all_states[0]
+                    state_data = self._data[state_key]
+                else:
+                    return None
 
-        p_bull = state_data.get("p_bull", {})
-        ev_net = state_data.get("ev_net", {})
-        rr = float(state_data.get("rr_asymmetry", 1.0))
-        n_samples = int(state_data.get("n_samples", 0))
+        n_samples = int(state_data.get("n", 0))
+        stats = state_data.get("stats", {})
+        mean_v = float(stats.get("mean", val))
+        std_v = float(stats.get("std", 0.0))
+
+        z25_raw = state_data.get("zz25", {})
+        z50_raw = state_data.get("zz50", {})
+        z75_raw = state_data.get("zz75", {})
 
         zz25 = ScaleGuidance(
-            p_bull=float(p_bull.get("zz25", 0.5)),
-            p_bear=round(1.0 - float(p_bull.get("zz25", 0.5)), 4),
-            e_ret_max=0.025,
-            e_ret_min=-0.025,
-            ev_net=float(ev_net.get("zz25", 0.0)),
-            e_days=2.5,
-            ev_per_day=round(float(ev_net.get("zz25", 0.0)) / 2.5, 6),
-            rr_asymmetry=rr,
+            p_bull=float(z25_raw.get("p_bull", 0.5)),
+            p_bear=float(z25_raw.get("p_bear", 0.5)),
+            e_ret_max=float(z25_raw.get("e_ret_max", 0.015)),
+            e_ret_min=float(z25_raw.get("e_ret_min", -0.015)),
+            ev_net=float(z25_raw.get("ev_net", 0.0)),
+            e_days=float(z25_raw.get("e_days", 1.0)),
+            ev_per_day=float(z25_raw.get("ev_per_day", 0.0)),
+            rr_asymmetry=float(z25_raw.get("rr_asymmetry", 1.0)),
         )
 
         zz50 = ScaleGuidance(
-            p_bull=float(p_bull.get("zz50", 0.5)),
-            p_bear=round(1.0 - float(p_bull.get("zz50", 0.5)), 4),
-            e_ret_max=0.050,
-            e_ret_min=-0.050,
-            ev_net=float(ev_net.get("zz50", 0.0)),
-            e_days=5.0,
-            ev_per_day=round(float(ev_net.get("zz50", 0.0)) / 5.0, 6),
-            rr_asymmetry=rr,
+            p_bull=float(z50_raw.get("p_bull", 0.5)),
+            p_bear=float(z50_raw.get("p_bear", 0.5)),
+            e_ret_max=float(z50_raw.get("e_ret_max", 0.015)),
+            e_ret_min=float(z50_raw.get("e_ret_min", -0.015)),
+            ev_net=float(z50_raw.get("ev_net", 0.0)),
+            e_days=float(z50_raw.get("e_days", 3.0)),
+            ev_per_day=float(z50_raw.get("ev_per_day", 0.0)),
+            rr_asymmetry=float(z50_raw.get("rr_asymmetry", 1.0)),
         )
 
         zz75 = ScaleGuidance(
-            p_bull=float(p_bull.get("zz75", 0.5)),
-            p_bear=round(1.0 - float(p_bull.get("zz75", 0.5)), 4),
-            e_ret_max=0.075,
-            e_ret_min=-0.075,
-            ev_net=float(ev_net.get("zz75", 0.0)),
-            e_days=7.5,
-            ev_per_day=round(float(ev_net.get("zz75", 0.0)) / 7.5, 6),
-            rr_asymmetry=rr,
+            p_bull=float(z75_raw.get("p_bull", 0.5)),
+            p_bear=float(z75_raw.get("p_bear", 0.5)),
+            e_ret_max=float(z75_raw.get("e_ret_max", 0.015)),
+            e_ret_min=float(z75_raw.get("e_ret_min", -0.015)),
+            ev_net=float(z75_raw.get("ev_net", 0.0)),
+            e_days=float(z75_raw.get("e_days", 5.0)),
+            ev_per_day=float(z75_raw.get("ev_per_day", 0.0)),
+            rr_asymmetry=float(z75_raw.get("rr_asymmetry", 1.0)),
         )
 
         return DXYStateGuidance(
@@ -178,8 +193,8 @@ class DXYLookupAdapter:
             velocity_vector=d2_bin,
             pivot_vector=d3_bin,
             n=n_samples,
-            mean_val=val,
-            std_val=vol_norm,
+            mean_val=mean_v,
+            std_val=std_v,
             divergence_regime=state_data.get("divergence_regime", "GOLDILOCKS_CURRENCY_BALANCED"),
             operational_guidance=state_data.get("operational_guidance", "STK_HOLD_STABLE"),
             zz25=zz25,

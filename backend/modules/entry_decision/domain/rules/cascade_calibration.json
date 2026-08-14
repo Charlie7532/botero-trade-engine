@@ -1,0 +1,62 @@
+{
+  "_documentation": {
+    "model_purpose": "Cascade Conviction Z-Score Calibration & Asymmetric Tercile Edges",
+    "sample_size_pivots": 1589,
+    "updated_at": "2026-08-13T17:30:47Z"
+  },
+  "d1_bear_5": {
+    "mean": 0.3299,
+    "std": 0.2856
+  },
+  "domino_zz25": {
+    "mean": 0.0532,
+    "std": 0.035
+  },
+  "domino_zz50": {
+    "mean": 0.1003,
+    "std": 0.0643
+  },
+  "tercile_edges": [
+    -0.356,
+    0.175
+  ],
+  "baseline_ic_in_sample": {
+    "cascade_50": 0.4155,
+    "cascade_75": 0.3465,
+    "cascade_50to75": 0.4113
+  },
+  "baseline_ic_oos": {
+    "cascade_50": 0.3245,
+    "cascade_75": 0.2634,
+    "cascade_50to75": 0.3388
+  },
+  "type_mask": {
+    "MIN": {
+      "w_bear": 0.66,
+      "w_dom": 0.34,
+      "w_bear_c75": 0.5,
+      "w_dom_c75": 0.5,
+      "stations": [
+        "vix",
+        "bsi",
+        "fg",
+        "credit",
+        "rotation"
+      ]
+    },
+    "MAX": {
+      "w_bear": 0.66,
+      "w_dom": 0.34,
+      "w_bear_c75": 0.5,
+      "w_dom_c75": 0.5,
+      "stations": [
+        "vix",
+        "bsi",
+        "credit",
+        "rotation"
+      ]
+    }
+  },
+  "decay_threshold": 0.1,
+  "last_checked": "2026-08-14T11:36:56Z"
+}

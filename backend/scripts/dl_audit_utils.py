@@ -206,6 +206,8 @@ def population_weighted_stats(states: dict) -> dict:
 
 def build_l0_threshold_table(edges: list, labels: list) -> str:
     """Build L0 threshold table from fact store edges."""
+    if not edges:
+        return "\n".join(f"  - `{label}`" for label in labels)
     lines = []
     for i, label in enumerate(labels):
         if i == 0:

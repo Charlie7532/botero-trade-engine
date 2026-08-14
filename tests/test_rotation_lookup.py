@@ -29,7 +29,7 @@ def test_rotation_lookup_extreme_defensive():
     assert guidance is not None
     assert guidance.rotation_bin == "DEFENSIVE_CAPITULATION"
     assert guidance.velocity_vector == "FAST_CRUSH_3D"
-    assert guidance.operational_guidance in ["STK_TRIM_TACTICAL", "STK_BLOCK_CRISIS", "STK_HOLD_STABLE"]
+    assert guidance.operational_guidance == "STK_TRIM_TACTICAL"
 
 
 def test_rotation_lookup_cyclical_expansion():
@@ -37,4 +37,4 @@ def test_rotation_lookup_cyclical_expansion():
     assert guidance is not None
     assert guidance.rotation_bin == "AGGRESSIVE_ROTATION"
     assert guidance.velocity_vector == "FAST_SPIKE_3D"
-    assert guidance.operational_guidance in ["STK_BUY_DIP_TACTICAL", "STK_ACCUMULATE_STRUCTURAL", "STK_HOLD_STABLE"]
+    assert guidance.operational_guidance == "STK_HOLD_STABLE"

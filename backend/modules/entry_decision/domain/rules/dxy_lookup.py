@@ -17,6 +17,7 @@ class ScaleGuidance:
     e_days: float
     ev_per_day: float
     rr_asymmetry: float
+    confidence_tier: str = "MODERATE"
 
 
 @dataclass(frozen=True)
@@ -33,6 +34,7 @@ class DXYStateGuidance:
     zz25: ScaleGuidance
     zz50: ScaleGuidance
     zz75: ScaleGuidance
+    zigzag_kinematic: Optional[Dict[str, Any]] = None
 
     @property
     def bin(self) -> str:
@@ -61,145 +63,137 @@ class DXYStateGuidance:
             "primary_ev_net": self.zz50.ev_net,
             "primary_e_days": self.zz50.e_days,
             "primary_capital_velocity": self.zz50.ev_per_day,
+            "zigzag_kinematic": self.zigzag_kinematic,
         }
 
 
 class DXYLookupAdapter:
-    def __init__(self, fact_store_path: Path = FACT_STORE_PATH):
-        self._path = fact_store_path
-        self._data: Dict[str, Any] = {}
-        self._load()
+    """
+    Lookup adapter for 11th METAR station: DXY (US Dollar Index).
+    Reads harmonized V3 fact store with dual-layer architecture:
+      - Standard layer: zz25, zz50, zz75 (fwd 1d/3d/5d returns with Bayesian Shrinkage m=10)
+      - Kinematic layer: physical ZigZag legs + structural_momentum
+    """
 
-    def _load(self):
-        if not self._path.exists():
-            raise FileNotFoundError(f"DXY Fact Store not found at {self._path}")
-        with open(self._path, "r", encoding="utf-8") as f:
-            raw = json.load(f)
-            self._data = raw.get("states", {})
-            doc = raw.get("_documentation", {})
-        self.edges_d1 = doc.get("dimension_thresholds_definition", {}).get("d1_edges_gauss_sigma", [76.1231, 84.2773, 95.9630, 108.5600, 135.5228])
-        self.edges_d2 = doc.get("dimension_thresholds_definition", {}).get("d2_edges_gauss_sigma", [-1.8200, -0.7200, 0.7300, 1.8000])
-        self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("d3_vol_edges_gauss_sigma", [0.0114, 0.1024, 0.8888, 1.6066])
+    def __init__(self):
+        with open(FACT_STORE_PATH, "r", encoding="utf-8") as f:
+            self._data = json.load(f)
+
+        doc = self._data.get("_documentation", {})
+        thresh = doc.get("dimension_thresholds_definition", {})
+
+        # Default Gaussian sigma edges for DXY (Standardized station_labels_d1 schema)
+        self.edges_d1 = thresh.get("dxy_edges_d1", thresh.get("d1_edges_full_population", [76.1231, 84.2773, 95.963, 108.56, 135.5228]))
+        self.edges_d2 = thresh.get("dxy_edges_d2", thresh.get("d2_edges_gauss_sigma", [-1.82, -0.72, 0.73, 1.80]))
+        self.edges_d3 = thresh.get("dxy_edges_d3", thresh.get("d3_vol_edges_gauss_sigma", [0.0114, 0.1024, 0.8888, 1.6066]))
+
+        self.labels_d1 = thresh.get("dxy_labels_d1", thresh.get("d1_labels", [
+            "DEEP_DOLLAR_CRUSH", "WEAK_DOLLAR", "MODERATE_LOW_DOLLAR",
+            "MODERATE_HIGH_DOLLAR", "ELEVATED_DOLLAR_STRESS", "DOLLAR_SPIKE_CRISIS"
+        ]))
+        self.labels_d2 = thresh.get("dxy_labels_d2", thresh.get("d2_labels", [
+            "FAST_CRUSH_3D", "DECELERATING_DOWN_3D", "STABLE_CONTINUATION_3D",
+            "ACCELERATING_UP_3D", "FAST_SPIKE_3D"
+        ]))
+        self.labels_d3 = thresh.get("dxy_labels_d3", thresh.get("d3_labels", [
+            "VOL_EXTREME_SQUEEZE", "VOL_MODERATE_COMPRESSION", "VOL_NEUTRAL_BASELINE",
+            "VOL_ACCELERATING_EXPANSION", "VOL_PEAK_DECELERATION"
+        ]))
+        self.states = self._data.get("states", {})
+
+    def _classify_d1(self, v: float) -> str:
+        for idx, e in enumerate(self.edges_d1):
+            if v < e:
+                return self.labels_d1[idx]
+        return self.labels_d1[-1]
+
+    def _classify_d2(self, v: float) -> str:
+        for idx, e in enumerate(self.edges_d2):
+            if v < e:
+                return self.labels_d2[idx]
+        return self.labels_d2[-1]
+
+    def _classify_d3(self, vol_norm: float) -> str:
+        for idx, e in enumerate(self.edges_d3):
+            if vol_norm < e:
+                return self.labels_d3[idx]
+        return self.labels_d3[-1]
 
     def lookup_dxy_guidance(
         self,
-        val: float,
-        d3_speed: float,
+        val: Optional[float] = None,
+        d3_speed: float = 0.0,
         vol_norm: float = 1.0,
-        vol_d3: float = 0.0,
+        **kwargs
     ) -> Optional[DXYStateGuidance]:
+        if val is None:
+            for alt_k in ["dxy_val", "val", "dxy_index", "usd_val"]:
+                if alt_k in kwargs and kwargs[alt_k] is not None:
+                    val = kwargs[alt_k]
+                    break
+        if d3_speed == 0.0:
+            for alt_s in ["dxy_d3", "diff3", "d2_speed"]:
+                if alt_s in kwargs and kwargs[alt_s] is not None:
+                    d3_speed = kwargs[alt_s]
+                    break
 
-        # D1 Edges (Gaussian canonical)
-        if val < self.edges_d1[0]:
-            d1_bin = "DEEP_DOLLAR_CRUSH"
-        elif val < self.edges_d1[1]:
-            d1_bin = "WEAK_DOLLAR"
-        elif val < self.edges_d1[2]:
-            d1_bin = "MODERATE_LOW_DOLLAR"
-        elif val < self.edges_d1[3]:
-            d1_bin = "MODERATE_HIGH_DOLLAR"
-        elif val < self.edges_d1[4]:
-            d1_bin = "ELEVATED_DOLLAR_STRESS"
-        else:
-            d1_bin = "DOLLAR_SPIKE_CRISIS"
+        if val is None:
+            val = 95.0  # Default neutral DXY
 
-        # D2 Edges (Delta 3d)
-        if d3_speed < self.edges_d2[0]:
-            d2_bin = "FAST_CRUSH_3D"
-        elif d3_speed < self.edges_d2[1]:
-            d2_bin = "DECELERATING_DOWN_3D"
-        elif d3_speed < self.edges_d2[2]:
-            d2_bin = "STABLE_CONTINUATION_3D"
-        elif d3_speed < self.edges_d2[3]:
-            d2_bin = "ACCELERATING_UP_3D"
-        else:
-            d2_bin = "FAST_SPIKE_3D"
+        cat_d1 = self._classify_d1(val)
+        cat_d2 = self._classify_d2(d3_speed)
+        cat_d3 = self._classify_d3(vol_norm)
 
-        # D3 Edges (Vol Ratio)
-        if vol_norm < self.edges_d3[0]:
-            d3_bin = "VOL_EXTREME_SQUEEZE"
-        elif vol_norm < self.edges_d3[1]:
-            d3_bin = "VOL_MODERATE_COMPRESSION"
-        elif vol_norm < self.edges_d3[2]:
-            d3_bin = "VOL_NEUTRAL_BASELINE"
-        elif vol_norm < self.edges_d3[3]:
-            d3_bin = "VOL_ACCELERATING_EXPANSION"
-        else:
-            d3_bin = "VOL_PEAK_DECELERATION"
+        target_key = f"{cat_d1}__{cat_d2}__{cat_d3}"
+        matched_key = target_key if target_key in self.states else None
+        state = self.states.get(target_key)
 
-        state_key = f"{d1_bin}__{d2_bin}__{d3_bin}"
-        state_data = self._data.get(state_key)
+        # Fallbacks for unpopulated states
+        if not state:
+            matched_key = f"{cat_d1}__{cat_d2}__VOL_NEUTRAL_BASELINE"
+            state = self.states.get(matched_key)
+        if not state:
+            matching = [k for k in self.states.keys() if k.startswith(f"{cat_d1}__{cat_d2}")]
+            if matching:
+                matched_key = matching[0]
+                state = self.states.get(matched_key)
+        if not state:
+            matching = [k for k in self.states.keys() if k.startswith(f"{cat_d1}")]
+            if matching:
+                matched_key = matching[0]
+                state = self.states.get(matched_key)
 
-        if not state_data:
-            # Fallback to matches starting with d1_bin
-            matches = [k for k in self._data.keys() if k.startswith(d1_bin) and "__" in k]
-            if matches:
-                state_key = matches[0]
-                state_data = self._data[state_key]
-            else:
-                # Fallback to any valid state key
-                all_states = [k for k in self._data.keys() if "__" in k]
-                if all_states:
-                    state_key = all_states[0]
-                    state_data = self._data[state_key]
-                else:
-                    return None
+        if not state:
+            return None
 
-        n_samples = int(state_data.get("n", 0))
-        stats = state_data.get("stats", {})
-        mean_v = float(stats.get("mean", val))
-        std_v = float(stats.get("std", 0.0))
+        def _make_scale(d: dict) -> ScaleGuidance:
+            return ScaleGuidance(
+                p_bull=d.get("p_bull", 0.5),
+                p_bear=d.get("p_bear", 0.5),
+                e_ret_max=d.get("e_ret_max", 0.0),
+                e_ret_min=d.get("e_ret_min", 0.0),
+                ev_net=d.get("ev_net", 0.0),
+                e_days=d.get("e_days", 1.0),
+                ev_per_day=d.get("ev_per_day", 0.0),
+                rr_asymmetry=d.get("rr_asymmetry", 1.0),
+                confidence_tier=d.get("confidence_tier", "MODERATE"),
+            )
 
-        z25_raw = state_data.get("zz25", {})
-        z50_raw = state_data.get("zz50", {})
-        z75_raw = state_data.get("zz75", {})
-
-        zz25 = ScaleGuidance(
-            p_bull=float(z25_raw.get("p_bull", 0.5)),
-            p_bear=float(z25_raw.get("p_bear", 0.5)),
-            e_ret_max=float(z25_raw.get("e_ret_max", 0.015)),
-            e_ret_min=float(z25_raw.get("e_ret_min", -0.015)),
-            ev_net=float(z25_raw.get("ev_net", 0.0)),
-            e_days=float(z25_raw.get("e_days", 1.0)),
-            ev_per_day=float(z25_raw.get("ev_per_day", 0.0)),
-            rr_asymmetry=float(z25_raw.get("rr_asymmetry", 1.0)),
-        )
-
-        zz50 = ScaleGuidance(
-            p_bull=float(z50_raw.get("p_bull", 0.5)),
-            p_bear=float(z50_raw.get("p_bear", 0.5)),
-            e_ret_max=float(z50_raw.get("e_ret_max", 0.015)),
-            e_ret_min=float(z50_raw.get("e_ret_min", -0.015)),
-            ev_net=float(z50_raw.get("ev_net", 0.0)),
-            e_days=float(z50_raw.get("e_days", 3.0)),
-            ev_per_day=float(z50_raw.get("ev_per_day", 0.0)),
-            rr_asymmetry=float(z50_raw.get("rr_asymmetry", 1.0)),
-        )
-
-        zz75 = ScaleGuidance(
-            p_bull=float(z75_raw.get("p_bull", 0.5)),
-            p_bear=float(z75_raw.get("p_bear", 0.5)),
-            e_ret_max=float(z75_raw.get("e_ret_max", 0.015)),
-            e_ret_min=float(z75_raw.get("e_ret_min", -0.015)),
-            ev_net=float(z75_raw.get("ev_net", 0.0)),
-            e_days=float(z75_raw.get("e_days", 5.0)),
-            ev_per_day=float(z75_raw.get("ev_per_day", 0.0)),
-            rr_asymmetry=float(z75_raw.get("rr_asymmetry", 1.0)),
-        )
-
+        stats = state.get("stats", {})
         return DXYStateGuidance(
-            state_key=state_key,
-            dxy_bin=d1_bin,
-            velocity_vector=d2_bin,
-            pivot_vector=d3_bin,
-            n=n_samples,
-            mean_val=mean_v,
-            std_val=std_v,
-            divergence_regime=state_data.get("divergence_regime", "GOLDILOCKS_CURRENCY_BALANCED"),
-            operational_guidance=state_data.get("operational_guidance", "STK_HOLD_STABLE"),
-            zz25=zz25,
-            zz50=zz50,
-            zz75=zz75,
+            state_key=matched_key,
+            dxy_bin=cat_d1,
+            velocity_vector=cat_d2,
+            pivot_vector=cat_d3,
+            n=state.get("n", 0),
+            mean_val=stats.get("mean", 0.0),
+            std_val=stats.get("std", 0.0),
+            divergence_regime=state.get("divergence_regime", "NEUTRAL"),
+            operational_guidance=state.get("operational_guidance", "STK_HOLD_STABLE"),
+            zz25=_make_scale(state["zz25"]),
+            zz50=_make_scale(state["zz50"]),
+            zz75=_make_scale(state["zz75"]),
+            zigzag_kinematic=state.get("zigzag_kinematic"),
         )
 
 

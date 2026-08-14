@@ -55,6 +55,6 @@ def test_lookup_adapter_euphoria():
         fg_d3=0.0
     )
     assert guidance is not None
-    assert guidance.bin == "EXTREME_GREED"
+    assert guidance.bin == "EUPHORIA"
     assert guidance.divergence_regime == "FULL_CONVERGENT_BULL"
-    assert guidance.operational_guidance in ["STK_HOLD_STABLE", "STK_ACCUMULATE_STRUCTURAL"]
+    assert guidance.operational_guidance == "STK_HOLD_STABLE"

@@ -2275,14 +2275,6 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"BSI METAR vault failed (non-critical): {e}")
         results["bsi_metar"] = {"status": "error", "error": str(e)}
 
-    # DXY Dollar METAR transitions (needs DXY from ohlcv)
-    try:
-        from backend.daemons.vault_providers.dxy_provider import DXYProvider
-        results["dxy_metar"] = DXYProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"DXY METAR vault failed (non-critical): {e}")
-        results["dxy_metar"] = {"status": "error", "error": str(e)}
-
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)
 

@@ -1,5 +1,5 @@
 """
-Kinematic METAR GBM + Purged K-Fold + SHAP Analysis Engine — V2 (CORRECTED)
+Kinematic METAR GBM + Purged K-Fold + SHAP Analysis Engine — V3 (11 STATIONS)
 =============================================================================
 Fixes all 8 blind spots from gbm_shap_forensic_audit.md:
 
@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 # CONFIGURATION
 # ═══════════════════════════════════════════════════════════════
 
-# Core METAR stations (10)
+# Core METAR stations (11)
 STATIONS = {
     "vix": "VIX",
     "vvix": "VVIX",
@@ -48,7 +48,8 @@ STATIONS = {
     "credit": "CREDIT_RATIO",
     "yield_curve": "YIELD_SPREAD",
     "rotation": "ROTATION_INDEX",
-    "bsi": "S5TW",  # Station #10: Breadth Shock Index / S5TW
+    "bsi": "S5TW",        # Station #10: Breadth Shock Index / S5TW
+    "dxy": "DXY",         # Station #11: US Dollar Index
 }
 
 # Macro context tickers (already in Vault)
@@ -58,11 +59,12 @@ MACRO_TICKERS = {
 }
 
 # Tiered availability: which stations exist in each era
+# DXY starts 1971 → available in all tiers
 TIER_STATIONS = {
-    "tier1": ["vix", "skew", "yield_curve"],
-    "tier2": ["vix", "skew", "yield_curve", "rotation", "sv5t", "bsi"],
-    "tier3": ["vix", "skew", "yield_curve", "rotation", "sv5t", "bsi", "vvix", "pcr", "credit"],
-    "tier4": ["vix", "skew", "yield_curve", "rotation", "sv5t", "bsi", "vvix", "pcr", "credit", "fg"],
+    "tier1": ["vix", "skew", "yield_curve", "dxy"],
+    "tier2": ["vix", "skew", "yield_curve", "rotation", "sv5t", "bsi", "dxy"],
+    "tier3": ["vix", "skew", "yield_curve", "rotation", "sv5t", "bsi", "vvix", "pcr", "credit", "dxy"],
+    "tier4": ["vix", "skew", "yield_curve", "rotation", "sv5t", "bsi", "vvix", "pcr", "credit", "fg", "dxy"],
 }
 
 # Proximity lags: t_-1 through t_-5 (EXCLUDING t_0 — PC-1 fix)
@@ -143,7 +145,7 @@ def build_predictive_dataset(store: TimescaleDataStore):
     """Build dataset with PC-1 through PC-8 corrections applied."""
 
     logger.info("=" * 80)
-    logger.info("PHASE 1: LOADING DATA FROM VAULT (10 METAR STATIONS)")
+    logger.info("PHASE 1: LOADING DATA FROM VAULT (11 METAR STATIONS + DXY)")
     logger.info("=" * 80)
 
     # Load SPY
@@ -574,18 +576,18 @@ def _train_and_evaluate(X, y, label):
 
 def generate_report(results: dict, cb_results: dict, n_pivots: int, n_samples: int):
     """Generate comprehensive markdown report."""
-    output = Path("/root/.gemini/antigravity-ide/brain/9a53440e-00d8-462a-a24c-5de375c3d552")
-    report_path = output / "kinematic_gbm_shap_report_v2.md"
+    output = Path("/root/.gemini/antigravity-ide/brain/2000c42e-d2d7-4c39-9f6f-27b26e3f1614")
+    report_path = output / "kinematic_gbm_shap_report_v3.md"
 
     u = results["unified"]
     lines = [
-        "# Kinematic METAR GBM + SHAP Report V2 (CORRECTED)",
+        "# Kinematic METAR GBM + SHAP Report V3 (11 STATIONS — Post-Fix Recalibration)",
         "",
         "> **Corrections Applied**: PC-1 (no t_0), PC-2 (tiered stations), PC-3 (1d/3d/5d), "
         "PC-4 (interactions), PC-5 (segregated ZIG/ZAG), PC-6 (SV5T trifasic), "
         "PC-7 (YIELD macro), PC-8 (liquidity context)",
         f"> **Data**: {n_pivots} ZZ25 pivots | {n_samples} clean samples | "
-        f"9 METAR + 2 Macro + BSI + SV5T phases",
+        f"11 METAR (incl. DXY) + 2 Macro + SV5T phases",
         f"> **Key**: Features are from t_-1 to t_-5 (PREDICTIVE, no t_0 circularity)",
         "",
         "---",
@@ -719,7 +721,7 @@ def main():
     # Phase 6: Persist trained model for production inference
     model_dir = Path("backend/models")
     model_dir.mkdir(parents=True, exist_ok=True)
-    model_path = model_dir / "metar_gbm_v2.joblib"
+    model_path = model_dir / "metar_gbm_v3.joblib"
     model_artifact = {
         "model": results["unified"]["best_model"],
         "feature_cols": feature_cols,

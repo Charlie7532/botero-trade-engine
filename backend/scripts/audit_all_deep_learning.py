@@ -192,8 +192,8 @@ INDICATORS = [
     },
     {
         "name": "Credit Stress",
-        "full_name": "High Yield Corporate Credit Stress Ratio (HYG/TLT)",
-        "formula": "Ratio HYG/TLT — mide apetito por riesgo crediticio vs refugio soberano.",
+        "full_name": "High Yield Corporate Credit Stress Ratio (HYG/LQD)",
+        "formula": "Ratio HYG/LQD — mide apetito por riesgo crediticio vs crédito investment-grade.",
         "vault_ticker": "CREDIT",
         "data_loader": load_credit_ratio,
         "fact_store": "credit_fact_store.json",
@@ -271,7 +271,8 @@ def audit_single_indicator(config: dict, spy_close: pd.Series, store) -> dict:
     doc = fact_store["_documentation"]
     states = fact_store["states"]
     thresh = doc["dimension_thresholds_definition"]
-    edges = thresh[config["edge_key"]]
+    edge_k = config["edge_key"]
+    edges = thresh.get(edge_k, thresh.get(f"{edge_k}_d1", thresh.get(f"{config['name'].lower()}_edges_d1", [])))
 
     # Get labels: from fact store if available, else infer from state keys
     label_key = config["label_key"]

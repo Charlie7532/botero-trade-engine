@@ -1,15 +1,16 @@
 """
-US Dollar Index (DXY) Vault Provider
-====================================
+DXY (US Dollar Index) Vault Provider — 11th METAR Station
+========================================================
 Vault provider for DXY Market METAR & 3-Day Kinematic Velocity Telemetry.
-Reads DXY ticker from Vault, generates authoritative MarketMETAR, and persists:
+Reads DXY from Vault, generates authoritative MarketMETAR, and persists:
   1. MCP Snapshot: mcp_snapshot("dxy/sigmet", "MARKET")
-  2. Stateful-First Regime Transitions: market.regime_states ("dxy:entry_decision:MARKET")
+  2. Stateful-First Regime Transitions: market.regime_states ("dxy:sigmet:MARKET")
 
+All inputs read from Vault — zero external API calls in the domain layer.
 Follows Rules 13, 15, 16, 17, 18.
 """
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from backend.daemons.vault_providers import register_provider
 from backend.daemons.data_vault_daemon import _already_vaulted_today
@@ -24,10 +25,10 @@ logger = logging.getLogger(__name__)
 
 
 class DXYProvider:
-    """Vault provider for DXY Market METAR and state transitions."""
+    """Vault provider for DXY US Dollar Index METAR and state transitions."""
 
-    name = "dxy"
-    categories = ["dxy", "dollar", "currency_stress"]
+    name = "dxy_metar"
+    categories = ["dxy", "macro", "liquidity"]
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
         """Compute and persist DXY Market METAR and regime state from Vault data."""
@@ -51,44 +52,45 @@ class DXYProvider:
                 regime_store = PostgresRegimeStateAdapter()
 
                 state_keys = [
-                    ("dxy:entry_decision:MARKET", sigmet.state_key),
+                    ("dxy:sigmet:MARKET", sigmet.state_key),
                     ("dxy:regime:MARKET", sigmet.divergence_regime),
                     ("dxy:guidance:MARKET", sigmet.operational_guidance),
                 ]
 
                 for key, state_label in state_keys:
-                    transition = regime_store.transition_regime(
-                        key=key,
-                        new_state=state_label,
-                        trigger_event=f"DXY={sigmet.dxy_index_value:.2f}, d3={sigmet.dxy_velocity_3d:+.2f}",
-                        department="entry_decision",
-                    )
-                    if transition and transition.entered_at == transition.as_of:
-                        logger.info(
-                            f"🔄 RegimeState Transition [{key}]: "
-                            f"{transition.previous_state} → {transition.current_state} "
-                            f"({transition.trigger_event})"
-                        )
+                    current = regime_store.get_current(key)
+                    if current is None or current.current_state != state_label:
+                        trigger_msg = f"DXY={sigmet.dxy_index_value:.2f}, d3={sigmet.dxy_velocity_3d:+.2f}"
+                        regime_store.commit_transition(key, state_label, trigger=trigger_msg)
+                    else:
+                        regime_store.increment_duration(key)
+
+                regime_store.close()
             except Exception as e:
-                logger.warning(f"Failed to record DXY RegimeState transition (non-fatal): {e}")
+                logger.warning(f"DXY Provider: Regime state persistence skipped: {e}")
 
             logger.info(
                 f"📊 DXY METAR Vaulted: State={sigmet.state_key} | "
                 f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
             )
+
             return {
                 "status": "ok",
                 "metar_id": sigmet.metar_id,
+                "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "guidance": sigmet.operational_guidance,
+                "operational_guidance": sigmet.operational_guidance,
+                "dxy_value": sigmet.dxy_index_value,
+                "dxy_d3": sigmet.dxy_velocity_3d,
             }
-        except StrictDataPolicyError as e:
-            logger.error(f"DXY METAR Vault failed: {e}")
-            return {"status": "error", "error": str(e)}
+
+        except StrictDataPolicyError as spe:
+            logger.warning(f"DXY Provider: Strict Data Policy notice — {spe}")
+            return {"status": "skipped", "reason": str(spe)}
         except Exception as e:
-            logger.error(f"Unexpected error computing DXY METAR: {e}")
+            logger.error(f"DXY Provider computation failed: {e}")
             return {"status": "error", "error": str(e)}
 
 
-register_provider(DXYProvider)
+register_provider(DXYProvider())

@@ -162,13 +162,6 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
         vol_norm = float(s_vol_norm.iloc[-1])
         vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
 
-        s_val = df_vix.iloc[:, -1] if 'close' not in df_vix.columns else df_vix['close']
-        vol_5d = s_val.rolling(5).std()
-        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
-        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
-        vol_norm = float(s_vol_norm.iloc[-1])
-        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
-
         guidance = vix_lookup.lookup_vix_guidance(val=vix_val, d3_speed=vix_d3, vol_norm=vol_norm, vol_d3=vol_d3)
         if not guidance:
             raise StrictDataPolicyError(

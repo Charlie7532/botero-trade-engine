@@ -44,8 +44,9 @@ def test_vvix_lookup_adapter_deep_stability():
     )
     assert guidance is not None
     assert isinstance(guidance, VVIXStateGuidance)
-    assert guidance.bin in ["EXTREME_COMPLACENCY", "LOW_VVIX"]
-    assert guidance.velocity_vector in ["STABLE_CONTINUATION_3D", "FAST_CRUSH_3D"]
+    assert guidance.bin == "EXTREME_COMPLACENCY"
+    assert guidance.vvix_bin == "EXTREME_COMPLACENCY"
+    assert guidance.velocity_vector == "STABLE_CONTINUATION_3D"
 
     # Check scale details and vector conversion
     vec = guidance.to_vector()
@@ -63,5 +64,6 @@ def test_vvix_lookup_adapter_vol_of_vol_crisis():
         vvix_d3=15.0
     )
     assert guidance is not None
-    assert guidance.vvix_bin in ["EXTREME_VVIX", "HIGH_VVIX"]
-    assert guidance.velocity_vector == "FAST_SPIKE_3D"
+    assert guidance.state_key == "EXTREME_VVIX__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION"
+    assert guidance.vvix_bin == "EXTREME_VVIX"
+    assert guidance.velocity_vector == "ACCELERATING_UP_3D"

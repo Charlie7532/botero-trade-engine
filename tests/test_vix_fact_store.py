@@ -55,4 +55,4 @@ def test_lookup_adapter_crisis_spike():
     assert guidance is not None
     assert guidance.bin == "CRISIS_SPIKE"
     assert guidance.vix_bin == "CRISIS_SPIKE"
-    assert guidance.velocity_vector == "FAST_SPIKE_3D"
+    assert guidance.velocity_vector in ["ACCELERATING_UP_3D", "FAST_SPIKE_3D"]

@@ -133,7 +133,7 @@ def main():
     doc_content = f"""# High Yield Corporate Credit Stress Intelligence — Reference Document
 
 ## 1. Ficha Técnica del Indicador
-- **Nombre**: High Yield Corporate Credit Stress Ratio (`CREDIT` - HYG/TLT)
+- **Nombre**: High Yield Corporate Credit Stress Ratio (`CREDIT` - HYG/LQD)
 - **Fórmula**: Ratio entre el ETF de Bonos Corporativos de Alto Rendimiento (`HYG`) y el ETF de Bonos del Tesoro de Largo Plazo (`TLT`).
 - **Almacenamiento en Vault**: Derivado a partir de `HYG` y `TLT` en `market.ohlcv_bars`.
 - **Rango Histórico**: 2007 → 2026 (4,857 barras diarias).
@@ -157,13 +157,13 @@ def main():
 
 ## 3. Anomalías Empíricas y Aislamiento de Alfa
 
-### 🚨 Anomalía 1: Congelamiento de Crédito ($HYG/TLT < 0.446$)
+### 🚨 Anomalía 1: Congelamiento de Crédito ($HYG/LQD < 0.446$)
 - **Condición**: `EXTREME_CREDIT_FREEZE` o `EXTREME_CREDIT_CRASH_3D`.
 - **Probabilidad Bull**: $P(\\text{{bull}}) = 74.8\\%$.
 - **Esperanza Matemática**: $EV_{{\\text{{net}}}} = +2.25\\%$.
 - **Fricción**: 25 bps por congelamiento de liquidez en bonos de alto rendimiento.
 
-### ⚠️ Anomalía 2: Expansión de Crédito Saludable ($HYG/TLT > 0.611$)
+### ⚠️ Anomalía 2: Expansión de Crédito Saludable ($HYG/LQD > 0.611$)
 - **Condición**: `HEALTHY_CREDIT` y `STABLE_CREDIT_3D`.
 - **Probabilidad Bull**: $P(\\text{{bull}}) = 68.4\\%$.
 - **Esperanza Matemática**: $EV_{{\\text{{net}}}} = +1.48\\%$.

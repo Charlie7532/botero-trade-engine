@@ -285,7 +285,7 @@ def threshold_sensitivity_scan(bars_all, zigzags_all, derived_data):
     Re-classifies the 180 states at each threshold step,
     then re-evaluates forward hits across all tickers.
     """
-    from backend.scripts.generate_tide_derived_table import (
+    from backend.scripts.generators.generate_tide_derived_table import (
         classify_signal as _classify_signal_original,
         _CEILING_ZZ50_MAX_BASELINE,
     )

@@ -3,9 +3,9 @@ from dotenv import load_dotenv; load_dotenv()
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.entry_decision.application.use_cases.quality_entry_gate import QualityEntryGate
-from backend.scripts.backtest_qqq_integrated_gate import load_data, SECTORS_11, run_simulation
-from backend.scripts.test_v39_surgical_qqq_gate import run_v39_simulation
-from backend.scripts.test_v40_volatility_adjusted_qqq_gate import run_v40_simulation
+from backend.scripts._lib.backtest_qqq_integrated_gate import load_data, SECTORS_11, run_simulation
+from backend.scripts._lib.backtest_qqq_integrated_gate import run_v39_simulation
+from backend.scripts._lib.backtest_qqq_integrated_gate import run_v40_simulation
 
 store = TimescaleDataStore()
 price_pivot, mkt_breadth, sec_ind_pivot = load_data(store, start_date="1999-01-01")

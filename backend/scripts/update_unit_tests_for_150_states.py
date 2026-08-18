@@ -1,7 +1,21 @@
 """
 Authoritative 150-State Unit Test Assertion Fixer
 =================================================
-Updates test assertion lists in all unit test files to strictly match the 150-state Gaussian taxonomy.
+Updates test assertion lists in all unit test files to strictly match the 150-state Gaussian taxonomy:
+D1 Labels per station:
+- VIX: DEEP_COMPLACENCY, LOW_VOL, MODERATE_VOL, HIGH_VOL, ELEVATED_PANIC, CRISIS_SPIKE
+- VVIX: VVIX_CALM, LOW_VVIX, MODERATE_VVIX, HIGH_VVIX, EXTREME_VVIX, VOL_OF_VOL_CRISIS
+- PCR: CALL_EUPHORIA, BULLISH_BIAS, NEUTRAL_PCR, ELEVATED_PUTS, PANIC_PUTS, EXTREME_HEDGING
+- FG: EXTREME_FEAR, FEAR, NEUTRAL_FEAR, NEUTRAL_GREED, GREED, EXTREME_GREED
+- SV5_TURBULENCE: CALM_PARTICIPATION, LOW_TURBULENCE, MODERATE_TURBULENCE, ELEVATED_PARTICIPATION, HIGH_TURBULENCE, TURBULENCE_CRISIS
+- SKEW: TAIL_COMPLACENCY, NORMAL_TAIL, ELEVATED_TAIL, HIGH_SKEW, PARANOIA_SKEW, BLACK_SWAN_PARANOIA
+- CREDIT: DEEP_CREDIT_EASE, CREDIT_EASE, STABLE_CREDIT, ELEVATED_CREDIT_STRESS, CREDIT_STRESS, CREDIT_CRISIS
+- YIELD_CURVE: DEEP_INVERSION, MODERATE_INVERSION, FLAT_CURVE, NORMAL_CURVE, STEEP_CURVE, EXTREME_STEEPNESS
+- ROTATION: DEEP_DEFENSIVE, DEFENSIVE, NEUTRAL_DEFENSIVE, NEUTRAL_CYCLICAL, CYCLICAL, EXTREME_CYCLICAL
+
+D2 Standard Labels: FAST_CRUSH_3D, DECELERATING_DOWN_3D, STABLE_CONTINUATION_3D, ACCELERATING_UP_3D, FAST_SPIKE_3D
+D3 Standard Labels: VOL_EXTREME_SQUEEZE, VOL_MODERATE_COMPRESSION, VOL_NEUTRAL_BASELINE, VOL_ACCELERATING_EXPANSION, VOL_PEAK_DECELERATION
+Divergence Regimes: BULLISH, BEARISH, NEUTRAL
 """
 from pathlib import Path
 import re
@@ -9,23 +23,18 @@ import re
 TESTS_DIR = Path("tests")
 
 D2_STANDARD = ["FAST_CRUSH_3D", "DECELERATING_DOWN_3D", "STABLE_CONTINUATION_3D", "ACCELERATING_UP_3D", "FAST_SPIKE_3D"]
-DIVERGENCE_REGIMES = [
-    "FULL_CONVERGENT_BULL", "FULL_CONVERGENT_BEAR", "STRUCTURAL_BULL_PULLBACK",
-    "TACTICAL_REBOUND_IN_BEAR", "MIXED_HORIZON_TRANSITION", "GOLDILOCKS_CURRENCY_BALANCED",
-    "COMMODITY_REFLATION_EM_SURGE", "CORPORATE_MARGIN_COMPRESSION", "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE",
-    "BULLISH", "BEARISH", "NEUTRAL"
-]
+DIVERGENCE_REGIMES = ["BULLISH", "BEARISH", "NEUTRAL"]
 
 STATION_D1 = {
     "vix": ["DEEP_COMPLACENCY", "LOW_VOL", "MODERATE_VOL", "HIGH_VOL", "ELEVATED_PANIC", "CRISIS_SPIKE"],
     "vvix": ["VVIX_CALM", "LOW_VVIX", "MODERATE_VVIX", "HIGH_VVIX", "EXTREME_VVIX", "VOL_OF_VOL_CRISIS"],
-    "pcr": ["CALL_EUPHORIA", "BULLISH_PCR", "NEUTRAL_PCR", "ELEVATED_PUTS", "BEARISH_PCR", "EXTREME_PUT_PANIC"],
-    "fg": ["EXTREME_FEAR", "FEAR", "NEUTRAL_FEAR", "NEUTRAL_GREED", "GREED", "EXTREME_GREED", "EUPHORIA"],
-    "sv5_turbulence": ["QUIET_FLOW", "LOW_TURBULENCE", "MODERATE_TURBULENCE", "ELEVATED_TURBULENCE", "CRISIS_TURBULENCE"],
-    "skew": ["BLACK_SWAN_PARANOIA", "TAIL_PARANOIA", "ELEVATED_TAIL_RISK", "NORMAL_TAIL_RISK", "TAIL_COMPLACENCY", "DEEP_TAIL_COMPLACENCY"],
+    "pcr": ["CALL_EUPHORIA", "BULLISH_BIAS", "NEUTRAL_PCR", "ELEVATED_PUTS", "PANIC_PUTS", "EXTREME_HEDGING"],
+    "fg": ["EXTREME_FEAR", "FEAR", "NEUTRAL_FEAR", "NEUTRAL_GREED", "GREED", "EXTREME_GREED"],
+    "sv5_turbulence": ["CALM_PARTICIPATION", "LOW_TURBULENCE", "MODERATE_TURBULENCE", "ELEVATED_PARTICIPATION", "HIGH_TURBULENCE", "TURBULENCE_CRISIS"],
+    "skew": ["TAIL_COMPLACENCY", "NORMAL_TAIL", "ELEVATED_TAIL", "HIGH_SKEW", "PARANOIA_SKEW", "BLACK_SWAN_PARANOIA"],
     "credit": ["DEEP_CREDIT_EASE", "CREDIT_EASE", "STABLE_CREDIT", "ELEVATED_CREDIT_STRESS", "CREDIT_STRESS", "CREDIT_CRISIS"],
-    "yield_curve": ["DEEP_INVERSION", "MODERATE_INVERSION", "FLAT_CURVE", "NORMAL_CURVE", "STEEP_CURVE", "EXTREME_STEEPNING"],
-    "rotation": ["DEFENSIVE_CAPITULATION", "DEFENSIVE_FLIGHT", "NEUTRAL_DEFENSIVE", "NEUTRAL_ROTATION", "AGGRESSIVE_ROTATION", "CYCLICAL_LEADERSHIP"],
+    "yield_curve": ["DEEP_INVERSION", "MODERATE_INVERSION", "FLAT_CURVE", "NORMAL_CURVE", "STEEP_CURVE", "EXTREME_STEEPNESS"],
+    "rotation": ["DEEP_DEFENSIVE", "DEFENSIVE", "NEUTRAL_DEFENSIVE", "NEUTRAL_CYCLICAL", "CYCLICAL", "EXTREME_CYCLICAL"]
 }
 
 def update_test_file(station_name: str, test_filename: str):
@@ -38,33 +47,21 @@ def update_test_file(station_name: str, test_filename: str):
 
     # Replace bin list assertion
     bin_attr = f"{station_name}_bin" if f"{station_name}_bin" in content else "bin"
-    if "yield_curve" in test_filename:
-        bin_attr = "yield_bin"
-    elif "rotation" in test_filename:
-        bin_attr = "rotation_bin"
-    elif "skew" in test_filename:
-        bin_attr = "skew_bin"
-
+    
+    # Use regex to replace bin assertion block
     pattern_bin = re.compile(rf"assert guidance\.\w+_bin in \[[\s\S]*?\]", re.MULTILINE)
     replacement_bin = f"assert guidance.{bin_attr} in {d1_labels}"
     content = pattern_bin.sub(replacement_bin, content)
 
+    # Replace velocity_vector assertion block
     pattern_vel = re.compile(r"assert guidance\.velocity_vector in \[[\s\S]*?\]", re.MULTILINE)
     replacement_vel = f"assert guidance.velocity_vector in {D2_STANDARD}"
     content = pattern_vel.sub(replacement_vel, content)
 
+    # Replace divergence_regime assertion block
     pattern_div = re.compile(r"assert guidance\.divergence_regime in \[[\s\S]*?\]", re.MULTILINE)
     replacement_div = f"assert guidance.divergence_regime in {DIVERGENCE_REGIMES}"
     content = pattern_div.sub(replacement_div, content)
-
-    # Specific hardcoded fixes in legacy test files
-    content = content.replace('"EXTREME_SPIKE_3D"', '"FAST_SPIKE_3D"')
-    content = content.replace('"FULL_STRUCTURAL_BULL"', '"FULL_CONVERGENT_BULL"')
-    content = content.replace('"DEEP_DEFENSIVE"', '"DEFENSIVE_CAPITULATION"')
-    content = content.replace('"EXTREME_CYCLICAL"', '"AGGRESSIVE_ROTATION"')
-    content = content.replace('"FAST_SPIKE_3D"', '"EXTREME_STEEPNING"')
-    content = content.replace('assert len(adapter.edges_d1) == 6', 'assert len(adapter.edges_d1) >= 5')
-    content = content.replace('assert vec["primary_capital_velocity"] == vec["ev_per_day"][1]', 'assert vec["primary_capital_velocity"] == vec["ev_per_day"]["zz50"]')
 
     fpath.write_text(content, encoding="utf-8")
     print(f"✅ Updated test assertions in {test_filename}")

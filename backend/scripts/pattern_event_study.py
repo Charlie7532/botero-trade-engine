@@ -33,7 +33,7 @@ from backend.modules.pattern_recognition.application.use_cases.detect_patterns i
 from backend.modules.simulation.infrastructure.signal_adapters import PatternSignalAdapter
 
 # Full 30-ticker Quality Universe
-from backend.scripts.calibrate_passports import QUALITY_TICKERS
+from backend.scripts._lib.calibrate_passports import QUALITY_TICKERS
 
 OOS_TICKERS = ["TSLA", "NFLX", "UBER"]
 

@@ -23,7 +23,7 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 from backend.modules.simulation.infrastructure.signal_adapters import (
     RSISignalAdapter, RegressionChannelAdapter,
 )
-from backend.scripts.calibrate_passports import QUALITY_TICKERS
+from backend.scripts._lib.calibrate_passports import QUALITY_TICKERS
 
 import logging
 logging.getLogger("backend.modules").setLevel(logging.ERROR)

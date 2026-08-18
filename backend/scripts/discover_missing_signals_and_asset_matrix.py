@@ -15,7 +15,7 @@ from dotenv import load_dotenv; load_dotenv()
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.entry_decision.application.use_cases.quality_entry_gate import QualityEntryGate
-from backend.scripts.backtest_qqq_integrated_gate import load_data, SECTORS_11
+from backend.scripts._lib.backtest_qqq_integrated_gate import load_data, SECTORS_11
 
 def main():
     store = TimescaleDataStore()

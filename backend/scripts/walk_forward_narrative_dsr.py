@@ -26,7 +26,7 @@ load_dotenv(_root / ".env")
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.pattern_recognition.application.use_cases.detect_patterns import PatternRecognitionIntelligence
 from backend.modules.simulation.infrastructure.signal_adapters import PatternSignalAdapter
-from backend.scripts.calibrate_passports import QUALITY_TICKERS
+from backend.scripts._lib.calibrate_passports import QUALITY_TICKERS
 
 import logging
 logging.getLogger("backend.modules.pattern_recognition").setLevel(logging.ERROR)

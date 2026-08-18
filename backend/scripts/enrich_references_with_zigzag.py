@@ -68,7 +68,7 @@ INDICATORS_ZIGZAG_DETAILS = {
         "zz50_net": "+2.25%", "zz50_wr": "74.8%", "zz50_ftt": "14d",
         "zz75_net": "+3.95%", "zz75_wr": "83.1%", "zz75_ftt": "26d",
         "coincidence": "83.5% coincidencia de descongelamiento de crédito con giros de mercado a 50d/200d.",
-        "divergence": "Recuperación de crédito HYG/TLT actúa como filtro de confirmación macro para zz50 y zz75."
+        "divergence": "Recuperación de crédito HYG/LQD actúa como filtro de confirmación macro para zz50 y zz75."
     },
     "yield_curve": {
         "title": "YIELD_CURVE",

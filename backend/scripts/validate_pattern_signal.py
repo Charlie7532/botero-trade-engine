@@ -53,7 +53,7 @@ def main():
     if args.ticker:
         tickers = [args.ticker.upper()]
     elif args.all:
-        from backend.scripts.calibrate_passports import QUALITY_TICKERS
+        from backend.scripts._lib.calibrate_passports import QUALITY_TICKERS
         tickers = QUALITY_TICKERS
     else:
         tickers = VALIDATION_TICKERS

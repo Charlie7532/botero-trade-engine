@@ -46,7 +46,7 @@ from unified_pretrainer_v2 import (
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.shared.infrastructure.ticker_profile_store import TickerProfileStore
 
-MODELS_DIR = root / "backend" / "models"
+MODELS_DIR = root / "data" / "models"
 RESULTS_DIR = root / "backend" / "scratch" / "optimization_results"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 LOG_FILE = RESULTS_DIR / "progress.log"

@@ -449,7 +449,7 @@ def persist_exit_results(store, model, feature_cols, profiles, best_threshold, i
         return
 
     # 1. Save model pickle
-    model_dir = root_dir / "backend" / "models"
+    model_dir = root_dir / "data" / "models"
     model_dir.mkdir(exist_ok=True)
     model_path = model_dir / "meta_label_exit_v1.pkl"
     with open(model_path, 'wb') as f:

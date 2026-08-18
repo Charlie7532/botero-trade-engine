@@ -40,7 +40,7 @@ from backend.modules.shared.infrastructure.ticker_profile_store import TickerPro
 
 logger = logging.getLogger(__name__)
 
-MODELS_DIR = Path(__file__).resolve().parent.parent.parent.parent / "models"
+MODELS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "models"
 
 # Feature columns — must match unified_pretrainer_v2.py exactly
 # Includes residual_std_*, reg_value_*, vwap_* which are present in ChannelSnapshot

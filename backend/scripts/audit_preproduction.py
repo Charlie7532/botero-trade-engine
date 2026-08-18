@@ -61,7 +61,7 @@ FEATURES = [
     'geo_accel_align', 'geo_phase_angle',
 ]
 
-MODELS_DIR = root_dir / "backend" / "models"
+MODELS_DIR = root_dir / "data" / "models"
 findings = {"pass": 0, "warn": 0, "fail": 0}
 
 def check(passed, msg_ok, msg_fail):

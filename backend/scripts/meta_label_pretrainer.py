@@ -431,7 +431,7 @@ def persist_results(store, model, feature_cols, profiles, best_threshold, import
     sp("STEP 5: Persisting Results")
 
     # 1. Save model pickle
-    model_dir = root_dir / "backend" / "models"
+    model_dir = root_dir / "data" / "models"
     model_dir.mkdir(exist_ok=True)
     model_path = model_dir / "meta_label_v1.pkl"
     with open(model_path, 'wb') as f:

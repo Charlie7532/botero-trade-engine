@@ -46,7 +46,7 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
 
-MODELS_DIR = root_dir / "backend" / "models"
+MODELS_DIR = root_dir / "data" / "models"
 
 # Tickers
 TICKERS = [

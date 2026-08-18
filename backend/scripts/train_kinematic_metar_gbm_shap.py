@@ -719,7 +719,7 @@ def main():
     generate_report(results, cb_results, len(pivots), len(df_clean))
 
     # Phase 6: Persist trained model for production inference
-    model_dir = Path("backend/models")
+    model_dir = Path("data/models")
     model_dir.mkdir(parents=True, exist_ok=True)
     model_path = model_dir / "metar_gbm_v3.joblib"
     model_artifact = {

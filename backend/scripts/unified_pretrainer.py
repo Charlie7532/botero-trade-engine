@@ -598,7 +598,7 @@ def persist_results(model, feature_cols, importance_df, entry_thr, exit_thr,
         print("    ⚠️ No model to persist.")
         return
 
-    model_dir = root_dir / "backend" / "models"
+    model_dir = root_dir / "data" / "models"
     model_dir.mkdir(exist_ok=True)
 
     if not dry_run:

@@ -16,7 +16,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-MODELS_DIR = Path(__file__).resolve().parent.parent.parent.parent / "models"
+MODELS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "models"
 
 
 class SentinelModelLoader:

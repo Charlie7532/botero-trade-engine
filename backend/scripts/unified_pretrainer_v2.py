@@ -1036,7 +1036,7 @@ def persist_head(head_name, result, dry_run=False):
     if result is None:
         return
 
-    model_dir = root_dir / "backend" / "models"
+    model_dir = root_dir / "data" / "models"
     model_dir.mkdir(exist_ok=True)
 
     if dry_run:
@@ -1086,7 +1086,7 @@ def persist_head(head_name, result, dry_run=False):
 # STATEFUL CONFIDENCE ASSESSMENT
 # ═══════════════════════════════════════════════════════════════
 
-READINESS_PATH = root_dir / "backend" / "models" / "training_readiness.json"
+READINESS_PATH = root_dir / "data" / "models" / "training_readiness.json"
 
 # Statistical thresholds for grading
 GRADE_THRESHOLDS = {
@@ -1265,7 +1265,7 @@ def assess_readiness(df, ohlcv_cache, profiles):
               f"{power:>4.1%} │ {mde_80:>4.2%} │ {ci_width:>4.2%} │ {emoji} {overall}")
 
     # Persist
-    model_dir = root_dir / "backend" / "models"
+    model_dir = root_dir / "data" / "models"
     model_dir.mkdir(exist_ok=True)
     with open(READINESS_PATH, 'w') as f:
         json.dump(readiness, f, indent=2, default=str)

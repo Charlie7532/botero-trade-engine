@@ -51,10 +51,6 @@ class MarketMETAR:
     primary_e_days: float
     primary_capital_velocity: float
     rr_asymmetry_ratio: float
-    sigma_depth_d1: Optional[float] = None
-    sigma_depth_d2: Optional[float] = None
-    sigma_depth_d3: Optional[float] = None
-    overflow_flag: Optional[str] = None
 
     # Alias property for test interface compatibility
     @property
@@ -274,10 +270,6 @@ class CreditMetarService:
                 primary_e_days=guidance.zz50.e_days,
                 primary_capital_velocity=guidance.zz50.ev_per_day,
                 rr_asymmetry_ratio=guidance.zz50.rr_asymmetry,
-                sigma_depth_d1=guidance.sigma_depth_d1,
-                sigma_depth_d2=guidance.sigma_depth_d2,
-                sigma_depth_d3=guidance.sigma_depth_d3,
-                overflow_flag=guidance.overflow_flag,
             )
 
         finally:

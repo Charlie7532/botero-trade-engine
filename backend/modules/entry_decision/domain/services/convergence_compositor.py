@@ -178,17 +178,17 @@ def rarity_amplifier(n: int) -> float:
         return 1.5
 
 
-def d1_directional_vote(state_key: str) -> float:
+def d1_directional_vote(state_key: str) -> int:
     """Extract D1 bin from state key and return directional vote.
-    Returns +1.0 (bullish), -1.0 (bearish), or 0.0 (neutral)."""
+    Returns +1 (bullish), -1 (bearish), or 0 (neutral)."""
     if not state_key:
-        return 0.0
+        return 0
     d1_bin = state_key.split("__")[0]
     if d1_bin in D1_BEARISH_BINS:
-        return -1.0
+        return -1
     elif d1_bin in D1_BULLISH_BINS:
-        return +1.0
-    return 0.0
+        return +1
+    return 0
 
 
 # ── Report Dataclass ──────────────────────────────────────────────────────
@@ -363,11 +363,9 @@ class ConvergenceCompositor:
         for name, metar in results.items():
             st_key = metar.get("state_key", "")
             data = metar.get("data", {})
-            n_samp = metar.get("n_samples", 0) or 0
-            rf = reliability_factor(n_samp)
 
-            # Channel 3: D1 vote (N-attenuated: no evidence → no vote)
-            vote = d1_directional_vote(st_key) * rf
+            # D1 vote
+            vote = d1_directional_vote(st_key)
             if vote > 0:
                 n_bullish_vote += 1
             elif vote < 0:

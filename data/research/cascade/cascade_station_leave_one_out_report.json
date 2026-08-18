@@ -1,0 +1,268 @@
+{
+  "_meta": {
+    "analysis": "CASCADE (Grupo A) Leave-One-Out",
+    "formula": "d1_bear_5(fractional) → z_bear → cascade_conviction = 0.66*z_bear + 0.34*z_dom25",
+    "target": "cascade_50 (0/1)",
+    "metric": "Spearman IC",
+    "data": "quants_obs.pkl",
+    "n_pivots": 1590,
+    "bootstrap": "3000 iteraciones, paired, seed=42",
+    "generated_at": "2026-08-17T13:44:30.271243"
+  },
+  "calibration": {
+    "d1_mean": 0.41,
+    "d1_std": 0.3206,
+    "dom25_mean": 0.0532,
+    "dom25_std": 0.035,
+    "w_bear": 0.66,
+    "w_dom": 0.34,
+    "baseline_ic_in_sample": {
+      "cascade_50": 0.4155,
+      "cascade_75": 0.3463,
+      "cascade_50to75": 0.4113
+    }
+  },
+  "full_cascade": {
+    "ic_vs_cascade_50": 0.414678,
+    "ic_bootstrap_mean": 0.414802,
+    "ic_bootstrap_ci95": [
+      0.373047,
+      0.456072
+    ],
+    "n_valid": 1589,
+    "ic_vs_stored_cascade_conviction": 0.413907,
+    "d1_bear_5_mean": 0.372631,
+    "d1_bear_5_std": 0.29635
+  },
+  "leave_one_out": [
+    {
+      "station": "vix",
+      "delta_ic": 0.114684,
+      "delta_ci95": [
+        0.087778,
+        0.140298
+      ],
+      "p_dead_weight": 0.0,
+      "verdict": "APORTA_VALOR",
+      "full_ic": 0.414678,
+      "loo_ic": 0.299994,
+      "coverage": 1.0,
+      "n_active_mean_loo": 2.62,
+      "d1_bear_5_full_mean": 0.372631,
+      "d1_bear_5_loo_mean": 0.318265,
+      "vote_distribution": {
+        "bear": 0.4811,
+        "neutral": 0.4931,
+        "bull": 0.0258
+      },
+      "n_valid_votes": 1590
+    },
+    {
+      "station": "bsi",
+      "delta_ic": 0.005949,
+      "delta_ci95": [
+        -0.008185,
+        0.021207
+      ],
+      "p_dead_weight": 0.194,
+      "verdict": "APORTA_DEBIL",
+      "full_ic": 0.414678,
+      "loo_ic": 0.408729,
+      "coverage": 1.0,
+      "n_active_mean_loo": 2.62,
+      "d1_bear_5_full_mean": 0.372631,
+      "d1_bear_5_loo_mean": 0.430136,
+      "vote_distribution": {
+        "bear": 0.3704,
+        "neutral": 0.5063,
+        "bull": 0.1233
+      },
+      "n_valid_votes": 1590
+    },
+    {
+      "station": "fg",
+      "delta_ic": 0.004371,
+      "delta_ci95": [
+        -0.001836,
+        0.010579
+      ],
+      "p_dead_weight": 0.0883,
+      "verdict": "APORTA_DEBIL",
+      "full_ic": 0.414678,
+      "loo_ic": 0.410307,
+      "coverage": 0.3585,
+      "n_active_mean_loo": 3.44,
+      "d1_bear_5_full_mean": 0.372631,
+      "d1_bear_5_loo_mean": 0.370414,
+      "vote_distribution": {
+        "bear": 0.3989,
+        "neutral": 0.5448,
+        "bull": 0.0562
+      },
+      "n_valid_votes": 569
+    },
+    {
+      "station": "credit",
+      "delta_ic": -0.002022,
+      "delta_ci95": [
+        -0.015451,
+        0.011787
+      ],
+      "p_dead_weight": 0.6167,
+      "verdict": "PESO_MUERTO_DEBIL",
+      "full_ic": 0.414678,
+      "loo_ic": 0.4167,
+      "coverage": 0.5755,
+      "n_active_mean_loo": 3.05,
+      "d1_bear_5_full_mean": 0.372631,
+      "d1_bear_5_loo_mean": 0.338129,
+      "vote_distribution": {
+        "bear": 0.6404,
+        "neutral": 0.2557,
+        "bull": 0.1038
+      },
+      "n_valid_votes": 915
+    },
+    {
+      "station": "rotation",
+      "delta_ic": -0.012392,
+      "delta_ci95": [
+        -0.028192,
+        0.003815
+      ],
+      "p_dead_weight": 0.9303,
+      "verdict": "PESO_MUERTO_DEBIL",
+      "full_ic": 0.414678,
+      "loo_ic": 0.42707,
+      "coverage": 0.8673,
+      "n_active_mean_loo": 2.75,
+      "d1_bear_5_full_mean": 0.372631,
+      "d1_bear_5_loo_mean": 0.406211,
+      "vote_distribution": {
+        "bear": 0.2922,
+        "neutral": 0.6048,
+        "bull": 0.103
+      },
+      "n_valid_votes": 1379
+    }
+  ],
+  "locomotora": {
+    "station": "vix",
+    "delta_ic": 0.114684,
+    "verdict": "APORTA_VALOR"
+  },
+  "peso_muerto": {
+    "station": "rotation",
+    "delta_ic": -0.012392,
+    "verdict": "PESO_MUERTO_DEBIL"
+  },
+  "ranked_contributions": [
+    {
+      "rank": 1,
+      "station": "vix",
+      "delta_ic": 0.114684,
+      "verdict": "APORTA_VALOR"
+    },
+    {
+      "rank": 2,
+      "station": "bsi",
+      "delta_ic": 0.005949,
+      "verdict": "APORTA_DEBIL"
+    },
+    {
+      "rank": 3,
+      "station": "fg",
+      "delta_ic": 0.004371,
+      "verdict": "APORTA_DEBIL"
+    },
+    {
+      "rank": 4,
+      "station": "credit",
+      "delta_ic": -0.002022,
+      "verdict": "PESO_MUERTO_DEBIL"
+    },
+    {
+      "rank": 5,
+      "station": "rotation",
+      "delta_ic": -0.012392,
+      "verdict": "PESO_MUERTO_DEBIL"
+    }
+  ],
+  "by_pivot_type": {
+    "MIN": {
+      "vix": {
+        "ic_full": 0.4778,
+        "ic_loo": 0.361668,
+        "delta_ic": 0.116132,
+        "verdict": "APORTA",
+        "n_pivots": 795
+      },
+      "bsi": {
+        "ic_full": 0.4778,
+        "ic_loo": 0.458952,
+        "delta_ic": 0.018848,
+        "verdict": "APORTA",
+        "n_pivots": 795
+      },
+      "fg": {
+        "ic_full": 0.4778,
+        "ic_loo": 0.468866,
+        "delta_ic": 0.008935,
+        "verdict": "APORTA",
+        "n_pivots": 795
+      },
+      "credit": {
+        "ic_full": 0.4778,
+        "ic_loo": 0.483197,
+        "delta_ic": -0.005396,
+        "verdict": "PESO MUERTO",
+        "n_pivots": 795
+      },
+      "rotation": {
+        "ic_full": 0.4778,
+        "ic_loo": 0.493406,
+        "delta_ic": -0.015606,
+        "verdict": "PESO MUERTO",
+        "n_pivots": 795
+      }
+    },
+    "MAX": {
+      "vix": {
+        "ic_full": 0.353719,
+        "ic_loo": 0.23809,
+        "delta_ic": 0.115629,
+        "verdict": "APORTA",
+        "n_pivots": 795
+      },
+      "bsi": {
+        "ic_full": 0.353719,
+        "ic_loo": 0.35747,
+        "delta_ic": -0.003751,
+        "verdict": "PESO MUERTO",
+        "n_pivots": 795
+      },
+      "fg": {
+        "ic_full": 0.353719,
+        "ic_loo": 0.353719,
+        "delta_ic": 0.0,
+        "verdict": "NEUTRAL",
+        "n_pivots": 795
+      },
+      "credit": {
+        "ic_full": 0.353719,
+        "ic_loo": 0.350747,
+        "delta_ic": 0.002972,
+        "verdict": "APORTA",
+        "n_pivots": 795
+      },
+      "rotation": {
+        "ic_full": 0.353719,
+        "ic_loo": 0.363096,
+        "delta_ic": -0.009377,
+        "verdict": "PESO MUERTO",
+        "n_pivots": 795
+      }
+    }
+  },
+  "summary": "Locomotora del cascade: vix (Δ_IC=+0.1147). Peso muerto: rotation (Δ_IC=-0.0124). El cascade completo tiene IC=+0.4147 (n=1589) contra cascade_50."
+}

@@ -1,0 +1,2034 @@
+{
+  "SV5T": {
+    "station": "SV5T",
+    "extreme_d1": "CRISIS_TURBULENCE",
+    "MIN_A_wr": 0.8125,
+    "MIN_A_wr_ci95": [
+      0.625,
+      1.0
+    ],
+    "MIN_A_N": 16,
+    "MIN_A_wr_baseline": 0.8119402985074626,
+    "MIN_A_wr_delta": 0.0005597014925373678,
+    "MIN_A_N_baseline": 670,
+    "MIN_B_wins_n": 13,
+    "MIN_B_wins_mean": 0.0736760210204542,
+    "MIN_B_wins_median": 0.054425186301599204,
+    "MIN_B_wins_std": 0.049540370924375236,
+    "MIN_B_wins_p25": 0.04454371269388124,
+    "MIN_B_wins_p75": 0.0675911658962507,
+    "MIN_B_wins_max": 0.20836511568777016,
+    "MIN_B_wins_deciles": [
+      0.03830259421481093,
+      0.04454371269388124,
+      0.054425186301599204,
+      0.0675911658962507,
+      0.14301211362916852
+    ],
+    "MIN_C_losses_n": 3,
+    "MIN_C_losses_mean": -0.0344363226712725,
+    "MIN_C_losses_median": -0.028312691436942372,
+    "MIN_C_losses_std": 0.010880921277506402,
+    "MIN_C_losses_maxloss": -0.04972382956338761,
+    "MIN_C_losses_p25": -0.03901826050016499,
+    "MIN_C_losses_p75": -0.026792569225214946,
+    "MIN_C_wipeouts_n": 0,
+    "MIN_C_wipeouts_pct": 0.0,
+    "MIN_C_wipeouts_returns": [],
+    "MIN_D_profit_factor": 9.27110483900876,
+    "MIN_D_avg_win_loss_ratio": 2.1394857320789447,
+    "MIN_D_kelly": 0.7248621171253123,
+    "MIN_D_ev_pct": 5.340495657825545,
+    "MIN_D_ev_ci95": [
+      2.4964334903102126,
+      8.369124256832034
+    ],
+    "MIN_D_sharpe": 0.8666950212480592,
+    "MIN_E_max_win_streak": 9,
+    "MIN_E_max_loss_streak": 2,
+    "MIN_E_avg_win_streak": 4.333333333333333,
+    "MIN_E_avg_loss_streak": 1.5,
+    "MIN_E_total_streaks": 5,
+    "MIN_E_streak_list": [
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "MIN_F_pivot_day_return_mean": 2.0637566179007436,
+    "MIN_F_pivot_day_return_std": 2.4166712196034243,
+    "MIN_F_cost_at_pivot_mean": 2.0637566179007436,
+    "MIN_F_entry_same_day_pct": 0.0,
+    "MIN_G_knife_n": 0,
+    "MIN_G_knife_pct": 0.0,
+    "MIN_total": 16,
+    "MIN_wins": 13,
+    "MIN_losses": 3,
+    "MAX_A_wr": 0.7,
+    "MAX_A_wr_ci95": [
+      0.4,
+      1.0
+    ],
+    "MAX_A_N": 10,
+    "MAX_A_wr_baseline": 0.8136094674556213,
+    "MAX_A_wr_delta": -0.1136094674556214,
+    "MAX_A_N_baseline": 676,
+    "MAX_B_wins_n": 7,
+    "MAX_B_wins_mean": 0.07547068333580834,
+    "MAX_B_wins_median": 0.05861497112140446,
+    "MAX_B_wins_std": 0.04128617340611792,
+    "MAX_B_wins_p25": 0.04820371949387836,
+    "MAX_B_wins_p75": 0.08165935413772113,
+    "MAX_B_wins_max": 0.16935002981514613,
+    "MAX_B_wins_deciles": [],
+    "MAX_C_losses_n": 3,
+    "MAX_C_losses_mean": -0.07032271703849775,
+    "MAX_C_losses_median": -0.03863703071217017,
+    "MAX_C_losses_std": 0.04838470993238311,
+    "MAX_C_losses_maxloss": -0.13868825238688243,
+    "MAX_C_losses_p25": -0.0886626415495263,
+    "MAX_C_losses_p75": -0.036139949364305424,
+    "MAX_C_wipeouts_n": 0,
+    "MAX_C_wipeouts_pct": 0.0,
+    "MAX_C_wipeouts_returns": [],
+    "MAX_D_profit_factor": 2.5041447278051296,
+    "MAX_D_avg_win_loss_ratio": 1.0732048833450556,
+    "MAX_D_kelly": 0.4204634411791579,
+    "MAX_D_ev_pct": 3.173266322351651,
+    "MAX_D_ev_ci95": [
+      -1.8775910533631313,
+      8.019722583701867
+    ],
+    "MAX_D_sharpe": 0.39792846571614837,
+    "MAX_E_max_win_streak": 3,
+    "MAX_E_max_loss_streak": 2,
+    "MAX_E_avg_win_streak": 2.3333333333333335,
+    "MAX_E_avg_loss_streak": 1.5,
+    "MAX_E_total_streaks": 5,
+    "MAX_E_streak_list": [
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "MAX_F_pivot_day_return_mean": -3.020740016433297,
+    "MAX_F_pivot_day_return_std": 3.1790221228273663,
+    "MAX_F_cost_at_pivot_mean": 3.020740016433297,
+    "MAX_F_entry_same_day_pct": 0.0,
+    "MAX_G_knife_n": 2,
+    "MAX_G_knife_pct": 20.0,
+    "MAX_G_knife_dates": [
+      "2008-10-07",
+      "2025-04-09"
+    ],
+    "MAX_G_knife_returns": [
+      -7.95676884375291,
+      -10.129051073602858
+    ],
+    "MAX_G_knife_vix": [
+      53.67999,
+      33.63
+    ],
+    "MAX_G_knife_state_keys": [
+      "CRISIS_TURBULENCE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_TURBULENCE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE"
+    ],
+    "MAX_G_knife_velocities": [
+      1.5979490019064428,
+      0.016993832480284965
+    ],
+    "MAX_G_knife_volatilities": [
+      0.08440020260258374,
+      0.05671827307390916
+    ],
+    "MAX_total": 10,
+    "MAX_wins": 7,
+    "MAX_losses": 3,
+    "ALL_N": 26,
+    "ALL_wr": 0.7692307692307693,
+    "ALL_wr_ci95": [
+      0.6153846153846154,
+      0.9230769230769231
+    ],
+    "ALL_ev_pct": 4.506945913412508
+  },
+  "VIX": {
+    "station": "VIX",
+    "extreme_d1": "CRISIS_SPIKE",
+    "MIN_A_wr": 0.723404255319149,
+    "MIN_A_wr_ci95": [
+      0.6276595744680851,
+      0.8085106382978723
+    ],
+    "MIN_A_N": 94,
+    "MIN_A_wr_baseline": 0.8487874465049928,
+    "MIN_A_wr_delta": -0.12538319118584385,
+    "MIN_A_N_baseline": 701,
+    "MIN_B_wins_n": 68,
+    "MIN_B_wins_mean": 0.06814249596017964,
+    "MIN_B_wins_median": 0.0605742671072117,
+    "MIN_B_wins_std": 0.03467729946781683,
+    "MIN_B_wins_p25": 0.04923091883909264,
+    "MIN_B_wins_p75": 0.0807107710540444,
+    "MIN_B_wins_max": 0.2626226369944964,
+    "MIN_B_wins_deciles": [
+      0.038117949572222455,
+      0.04923091883909264,
+      0.0605742671072117,
+      0.0807107710540444,
+      0.0960937555573069
+    ],
+    "MIN_C_losses_n": 26,
+    "MIN_C_losses_mean": -0.07207221955995888,
+    "MIN_C_losses_median": -0.06500978611156122,
+    "MIN_C_losses_std": 0.03264708004894589,
+    "MIN_C_losses_maxloss": -0.14990997820524976,
+    "MIN_C_losses_p25": -0.09535615199342631,
+    "MIN_C_losses_p75": -0.046717376703590635,
+    "MIN_C_wipeouts_n": 0,
+    "MIN_C_wipeouts_pct": 0.0,
+    "MIN_C_wipeouts_returns": [],
+    "MIN_D_profit_factor": 2.472781283499906,
+    "MIN_D_avg_win_loss_ratio": 0.9454751966323169,
+    "MIN_D_kelly": 0.43085745381017665,
+    "MIN_D_ev_pct": 2.9359702305673245,
+    "MIN_D_ev_ci95": [
+      1.5067430876627927,
+      4.321201518107182
+    ],
+    "MIN_D_sharpe": 0.4111776333463715,
+    "MIN_E_max_win_streak": 8,
+    "MIN_E_max_loss_streak": 2,
+    "MIN_E_avg_win_streak": 2.9565217391304346,
+    "MIN_E_avg_loss_streak": 1.1818181818181819,
+    "MIN_E_total_streaks": 45,
+    "MIN_E_streak_list": [
+      [
+        1,
+        7
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        6
+      ]
+    ],
+    "MIN_F_pivot_day_return_mean": 5.072395022867627,
+    "MIN_F_pivot_day_return_std": 2.9461692411663156,
+    "MIN_F_cost_at_pivot_mean": 5.072395022867627,
+    "MIN_F_entry_same_day_pct": 0.0,
+    "MIN_G_knife_n": 0,
+    "MIN_G_knife_pct": 0.0,
+    "MIN_total": 94,
+    "MIN_wins": 68,
+    "MIN_losses": 26,
+    "MAX_A_wr": 0.6233766233766234,
+    "MAX_A_wr_ci95": [
+      0.5194805194805194,
+      0.7272727272727273
+    ],
+    "MAX_A_N": 77,
+    "MAX_A_wr_baseline": 0.8563458856345886,
+    "MAX_A_wr_delta": -0.23296926225796522,
+    "MAX_A_N_baseline": 717,
+    "MAX_B_wins_n": 48,
+    "MAX_B_wins_mean": 0.07649191035926085,
+    "MAX_B_wins_median": 0.06963181029462545,
+    "MAX_B_wins_std": 0.03451609358966196,
+    "MAX_B_wins_p25": 0.04664969152529869,
+    "MAX_B_wins_p75": 0.09923738340650132,
+    "MAX_B_wins_max": 0.16935002981514613,
+    "MAX_B_wins_deciles": [
+      0.036754760754353466,
+      0.04664969152529869,
+      0.06963181029462545,
+      0.09923738340650132,
+      0.11961372829997165
+    ],
+    "MAX_C_losses_n": 29,
+    "MAX_C_losses_mean": -0.07545297074110753,
+    "MAX_C_losses_median": -0.0698905908096279,
+    "MAX_C_losses_std": 0.03942316923249971,
+    "MAX_C_losses_maxloss": -0.17715899919289746,
+    "MAX_C_losses_p25": -0.09162271556482282,
+    "MAX_C_losses_p75": -0.04636150234741798,
+    "MAX_C_wipeouts_n": 0,
+    "MAX_C_wipeouts_pct": 0.0,
+    "MAX_C_wipeouts_returns": [],
+    "MAX_D_profit_factor": 1.6779630896097582,
+    "MAX_D_avg_win_loss_ratio": 1.013769366639229,
+    "MAX_D_kelly": 0.25186867589155604,
+    "MAX_D_ev_pct": 1.9265916178602638,
+    "MAX_D_ev_ci95": [
+      0.0925474549046736,
+      3.6463408180497674
+    ],
+    "MAX_D_sharpe": 0.2345252041887826,
+    "MAX_E_max_win_streak": 6,
+    "MAX_E_max_loss_streak": 3,
+    "MAX_E_avg_win_streak": 2.4,
+    "MAX_E_avg_loss_streak": 1.5263157894736843,
+    "MAX_E_total_streaks": 39,
+    "MAX_E_streak_list": [
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "MAX_F_pivot_day_return_mean": -4.9202862529835505,
+    "MAX_F_pivot_day_return_std": 3.0765390248506073,
+    "MAX_F_cost_at_pivot_mean": 4.9202862529835505,
+    "MAX_F_entry_same_day_pct": 0.0,
+    "MAX_G_knife_n": 30,
+    "MAX_G_knife_pct": 38.961038961038966,
+    "MAX_G_knife_dates": [
+      "1998-08-31",
+      "2008-09-29",
+      "2008-10-07",
+      "2008-10-09",
+      "2008-10-14",
+      "2008-10-15",
+      "2008-10-20",
+      "2008-10-21",
+      "2008-10-28",
+      "2008-11-04",
+      "2008-11-06",
+      "2008-11-10",
+      "2008-11-13",
+      "2008-11-18",
+      "2008-11-20",
+      "2008-12-03",
+      "2008-12-05",
+      "2009-02-04",
+      "2009-02-26",
+      "2009-03-04",
+      "2009-03-05",
+      "2009-03-19",
+      "2011-08-08",
+      "2011-10-03",
+      "2020-03-10",
+      "2020-03-16",
+      "2020-03-25",
+      "2020-03-31",
+      "2020-04-01",
+      "2020-04-06"
+    ],
+    "MAX_G_knife_returns": [
+      -9.98946311899369,
+      -8.786846014193772,
+      -7.95676884375291,
+      -16.935002981514614,
+      -14.990997820524976,
+      -11.513292433537824,
+      -5.056004036326933,
+      -6.5034468775344685,
+      -10.303480475381999,
+      -5.353955978584174,
+      -5.176026823134949,
+      -5.448550193656443,
+      -10.509102801700642,
+      -6.97661086906673,
+      -9.901830081202279,
+      -5.339861095297726,
+      -6.989368921058592,
+      -8.949279606419115,
+      -7.3515032002078655,
+      -6.449842184712507,
+      -6.454760908964186,
+      -5.518518518518523,
+      -8.201508801899404,
+      -5.721807810443169,
+      -7.077498960210726,
+      -5.620864149474497,
+      -6.475521747610702,
+      -7.378574412334327,
+      -5.072244682993931,
+      -7.0525093632958775
+    ],
+    "MAX_G_knife_vix": [
+      44.28,
+      46.71999,
+      53.67999,
+      63.92,
+      55.12999,
+      69.25,
+      52.96999,
+      53.10999,
+      66.95999,
+      47.73,
+      63.67999,
+      59.98,
+      59.82999,
+      67.64,
+      80.85999,
+      60.71999,
+      59.92999,
+      43.84999,
+      44.65999,
+      47.56,
+      50.17,
+      43.67999,
+      48.0,
+      45.45,
+      47.3,
+      82.69,
+      63.95,
+      53.54,
+      57.06,
+      45.24
+    ],
+    "MAX_G_knife_state_keys": [
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_PEAK_DECELERATION",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE",
+      "CRISIS_SPIKE__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+      "CRISIS_SPIKE__FAST_CRUSH_3D__VOL_ACCELERATING_EXPANSION",
+      "CRISIS_SPIKE__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE",
+      "CRISIS_SPIKE__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+      "CRISIS_SPIKE__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_CRUSH_3D__VOL_EXTREME_SQUEEZE",
+      "CRISIS_SPIKE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION",
+      "CRISIS_SPIKE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION",
+      "CRISIS_SPIKE__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CRISIS_SPIKE__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE"
+    ],
+    "MAX_G_knife_velocities": [
+      13.14,
+      11.530000000000001,
+      8.419999999999995,
+      11.87001,
+      -8.790010000000002,
+      -0.7000000000000028,
+      -16.280009999999997,
+      -14.499999999999993,
+      -0.8399999999999892,
+      -15.169990000000006,
+      10.0,
+      5.419999999999995,
+      -0.15000999999999465,
+      7.810009999999998,
+      11.709999999999994,
+      5.439990000000002,
+      -3.0500100000000003,
+      -0.9900100000000052,
+      -7.960009999999997,
+      1.210010000000004,
+      -2.479990000000001,
+      -0.060000000000002274,
+      24.62,
+      4.3700000000000045,
+      7.68,
+      28.79,
+      -2.0900000000000034,
+      -7.460000000000001,
+      -8.480000000000004,
+      -11.82
+    ],
+    "MAX_G_knife_volatilities": [
+      0.6170387152207917,
+      1.8953871458470042,
+      0.15901270506314735,
+      0.5027414537663479,
+      0.011014331134839694,
+      1.143179417174698,
+      1.6717728367716698,
+      0.013355369067615171,
+      1.0306900803629409,
+      0.41272039457852583,
+      0.6089181891172887,
+      0.4100904383990998,
+      0.864022755669818,
+      0.21554848779498167,
+      0.6294966286074452,
+      0.18944020449019178,
+      0.48094075968931765,
+      0.23319024867353408,
+      0.002100477335466568,
+      0.7736840844599703,
+      0.5919755001669731,
+      0.778120806605671,
+      1.3981572008868253,
+      0.5076539319019799,
+      0.6575708601216601,
+      1.0668774691290561,
+      0.1961663270879078,
+      0.3740998911314961,
+      0.46844474643002154,
+      0.15682957640365452
+    ],
+    "MAX_total": 77,
+    "MAX_wins": 48,
+    "MAX_losses": 29,
+    "ALL_N": 171,
+    "ALL_wr": 0.6783625730994152,
+    "ALL_wr_ci95": [
+      0.6081871345029239,
+      0.7485380116959064
+    ],
+    "ALL_ev_pct": 2.4814547149039115
+  },
+  "BSI": {
+    "station": "BSI",
+    "extreme_d1": "BREADTH_WASHED_OUT",
+    "MIN_A_wr": 0.79,
+    "MIN_A_wr_ci95": [
+      0.71,
+      0.8602499999999986
+    ],
+    "MIN_A_N": 100,
+    "MIN_A_wr_baseline": 0.8402877697841726,
+    "MIN_A_wr_delta": -0.0502877697841726,
+    "MIN_A_N_baseline": 695,
+    "MIN_B_wins_n": 79,
+    "MIN_B_wins_mean": 0.06114551407346945,
+    "MIN_B_wins_median": 0.050529022050825656,
+    "MIN_B_wins_std": 0.035099672559822936,
+    "MIN_B_wins_p25": 0.03831738759286252,
+    "MIN_B_wins_p75": 0.07722500140773558,
+    "MIN_B_wins_max": 0.2626226369944964,
+    "MIN_B_wins_deciles": [
+      0.03129521990585906,
+      0.03831738759286252,
+      0.050529022050825656,
+      0.07722500140773558,
+      0.09648899893381158
+    ],
+    "MIN_C_losses_n": 21,
+    "MIN_C_losses_mean": -0.07645586446068584,
+    "MIN_C_losses_median": -0.06592765460910144,
+    "MIN_C_losses_std": 0.029432284737243353,
+    "MIN_C_losses_maxloss": -0.14990997820524976,
+    "MIN_C_losses_p25": -0.08342846039880514,
+    "MIN_C_losses_p75": -0.057527881040892126,
+    "MIN_C_wipeouts_n": 0,
+    "MIN_C_wipeouts_pct": 0.0,
+    "MIN_C_wipeouts_returns": [],
+    "MIN_D_profit_factor": 3.008580207478776,
+    "MIN_D_avg_win_loss_ratio": 0.7997491690766366,
+    "MIN_D_kelly": 0.5274176702897249,
+    "MIN_D_ev_pct": 3.2249224581296856,
+    "MIN_D_ev_ci95": [
+      1.9653845404635353,
+      4.50747598314203
+    ],
+    "MIN_D_sharpe": 0.4920044703877896,
+    "MIN_E_max_win_streak": 10,
+    "MIN_E_max_loss_streak": 2,
+    "MIN_E_avg_win_streak": 4.157894736842105,
+    "MIN_E_avg_loss_streak": 1.105263157894737,
+    "MIN_E_total_streaks": 38,
+    "MIN_E_streak_list": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        6
+      ]
+    ],
+    "MIN_F_pivot_day_return_mean": 4.165149762318018,
+    "MIN_F_pivot_day_return_std": 2.9457939520421976,
+    "MIN_F_cost_at_pivot_mean": 4.165149762318018,
+    "MIN_F_entry_same_day_pct": 0.0,
+    "MIN_G_knife_n": 0,
+    "MIN_G_knife_pct": 0.0,
+    "MIN_total": 100,
+    "MIN_wins": 79,
+    "MIN_losses": 21,
+    "MAX_A_wr": 0.5573770491803278,
+    "MAX_A_wr_ci95": [
+      0.4262295081967213,
+      0.6725409836065551
+    ],
+    "MAX_A_N": 61,
+    "MAX_A_wr_baseline": 0.8567530695770805,
+    "MAX_A_wr_delta": -0.2993760203967527,
+    "MAX_A_N_baseline": 733,
+    "MAX_B_wins_n": 34,
+    "MAX_B_wins_mean": 0.07692176004106556,
+    "MAX_B_wins_median": 0.06796186446551417,
+    "MAX_B_wins_std": 0.03566764466416648,
+    "MAX_B_wins_p25": 0.04850039544161883,
+    "MAX_B_wins_p75": 0.09553356506897306,
+    "MAX_B_wins_max": 0.16935002981514613,
+    "MAX_B_wins_deciles": [
+      0.036315340974100684,
+      0.04850039544161883,
+      0.06796186446551417,
+      0.09553356506897306,
+      0.12558813358609602
+    ],
+    "MAX_C_losses_n": 27,
+    "MAX_C_losses_mean": -0.0622257135019189,
+    "MAX_C_losses_median": -0.05222238521343692,
+    "MAX_C_losses_std": 0.03543728993219459,
+    "MAX_C_losses_maxloss": -0.17451663154036479,
+    "MAX_C_losses_p25": -0.08431164344362152,
+    "MAX_C_losses_p75": -0.033166765674085275,
+    "MAX_C_wipeouts_n": 0,
+    "MAX_C_wipeouts_pct": 0.0,
+    "MAX_C_wipeouts_returns": [],
+    "MAX_D_profit_factor": 1.5566625614866374,
+    "MAX_D_avg_win_loss_ratio": 1.2361732105923295,
+    "MAX_D_kelly": 0.1993180433492734,
+    "MAX_D_ev_pct": 1.5331894702367528,
+    "MAX_D_ev_ci95": [
+      -0.42542184270295685,
+      3.4094743447173794
+    ],
+    "MAX_D_sharpe": 0.1972497575813117,
+    "MAX_E_max_win_streak": 5,
+    "MAX_E_max_loss_streak": 5,
+    "MAX_E_avg_win_streak": 2.125,
+    "MAX_E_avg_loss_streak": 1.6875,
+    "MAX_E_total_streaks": 32,
+    "MAX_E_streak_list": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "MAX_F_pivot_day_return_mean": -4.561095566797678,
+    "MAX_F_pivot_day_return_std": 3.3202996899940564,
+    "MAX_F_cost_at_pivot_mean": 4.561095566797678,
+    "MAX_F_entry_same_day_pct": 0.0,
+    "MAX_G_knife_n": 23,
+    "MAX_G_knife_pct": 37.704918032786885,
+    "MAX_G_knife_dates": [
+      "1998-08-04",
+      "1998-08-31",
+      "2001-09-19",
+      "2002-07-10",
+      "2008-09-29",
+      "2008-10-07",
+      "2008-10-09",
+      "2008-10-14",
+      "2008-10-15",
+      "2008-10-21",
+      "2008-11-20",
+      "2009-03-04",
+      "2009-03-05",
+      "2010-05-06",
+      "2011-08-08",
+      "2011-08-11",
+      "2011-10-03",
+      "2018-02-05",
+      "2020-02-27",
+      "2020-03-03",
+      "2020-03-10",
+      "2020-03-16",
+      "2020-03-25"
+    ],
+    "MAX_G_knife_returns": [
+      -5.903645378492728,
+      -9.98946311899369,
+      -5.119617224880385,
+      -5.985219111064854,
+      -8.786846014193772,
+      -7.95676884375291,
+      -16.935002981514614,
+      -14.990997820524976,
+      -11.513292433537824,
+      -6.5034468775344685,
+      -9.901830081202279,
+      -6.449842184712507,
+      -6.454760908964186,
+      -6.487179487179495,
+      -8.201508801899404,
+      -5.552472250252283,
+      -5.721807810443169,
+      -6.217147000181267,
+      -8.352609755244256,
+      -5.184170277848576,
+      -7.077498960210726,
+      -5.620864149474497,
+      -6.475521747610702
+    ],
+    "MAX_G_knife_vix": [
+      31.06,
+      44.28,
+      40.56,
+      34.1,
+      46.71999,
+      53.67999,
+      63.92,
+      55.12999,
+      69.25,
+      53.10999,
+      80.85999,
+      47.56,
+      50.17,
+      32.79999,
+      48.0,
+      39.0,
+      45.45,
+      37.32,
+      39.16,
+      36.82,
+      47.3,
+      82.69,
+      63.95
+    ],
+    "MAX_G_knife_state_keys": [
+      "BREADTH_WASHED_OUT__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_EXTREME_SQUEEZE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+      "BREADTH_WASHED_OUT__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "BREADTH_WASHED_OUT__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE"
+    ],
+    "MAX_G_knife_velocities": [
+      -21.2,
+      -23.900000000000002,
+      -9.499999999999998,
+      -26.2,
+      -13.899999999999999,
+      -10.8,
+      -3.8,
+      3.1,
+      -0.7,
+      4.300000000000001,
+      -15.600000000000001,
+      -2.9000000000000004,
+      1.0,
+      -58.0,
+      -6.9,
+      4.4,
+      -19.8,
+      -55.5,
+      -24.599999999999998,
+      1.6,
+      -7.4,
+      -1.0999999999999999,
+      5.1
+    ],
+    "MAX_G_knife_volatilities": [
+      0.745511852445918,
+      0.301290063992037,
+      0.1390749444027991,
+      0.5482647221072773,
+      1.5267227950706146,
+      0.15956693488524948,
+      0.04354895562598043,
+      0.0,
+      0.5784906722901568,
+      1.0930265881264642,
+      0.27781405416977806,
+      0.9234670348606431,
+      0.7173115312255307,
+      0.5837648818860323,
+      0.08965937751193019,
+      0.5295749678155764,
+      0.5703038306238317,
+      0.6405962676974007,
+      0.17763157439748142,
+      0.0777471801138582,
+      0.23402230722897732,
+      0.1402092333450303,
+      0.12041009251603116
+    ],
+    "MAX_total": 61,
+    "MAX_wins": 34,
+    "MAX_losses": 27,
+    "ALL_N": 161,
+    "ALL_wr": 0.7018633540372671,
+    "ALL_wr_ci95": [
+      0.6335403726708074,
+      0.7701863354037267
+    ],
+    "ALL_ev_pct": 2.5839553012261525
+  },
+  "CREDIT": {
+    "station": "CREDIT",
+    "extreme_d1": "CREDIT_STRESS",
+    "MIN_A_wr": 0.7844827586206896,
+    "MIN_A_wr_ci95": [
+      0.7068965517241379,
+      0.853448275862069
+    ],
+    "MIN_A_N": 116,
+    "MIN_A_wr_baseline": 0.8064516129032258,
+    "MIN_A_wr_delta": -0.021968854282536143,
+    "MIN_A_N_baseline": 341,
+    "MIN_B_wins_n": 91,
+    "MIN_B_wins_mean": 0.06321673691264194,
+    "MIN_B_wins_median": 0.0526075857038657,
+    "MIN_B_wins_std": 0.038979513851591346,
+    "MIN_B_wins_p25": 0.037362972032805586,
+    "MIN_B_wins_p75": 0.07722500140773558,
+    "MIN_B_wins_max": 0.2626226369944964,
+    "MIN_B_wins_deciles": [
+      0.029949617465945044,
+      0.037362972032805586,
+      0.0526075857038657,
+      0.07722500140773558,
+      0.10700437773608495
+    ],
+    "MIN_C_losses_n": 25,
+    "MIN_C_losses_mean": -0.07052011489935188,
+    "MIN_C_losses_median": -0.06656445993031357,
+    "MIN_C_losses_std": 0.03357418773618745,
+    "MIN_C_losses_maxloss": -0.14990997820524976,
+    "MIN_C_losses_p25": -0.0822061444898815,
+    "MIN_C_losses_p75": -0.0470893275342924,
+    "MIN_C_wipeouts_n": 0,
+    "MIN_C_wipeouts_pct": 0.0,
+    "MIN_C_wipeouts_returns": [],
+    "MIN_D_profit_factor": 3.2630253466040724,
+    "MIN_D_avg_win_loss_ratio": 0.8964355347813385,
+    "MIN_D_kelly": 0.5440669863567309,
+    "MIN_D_ev_pct": 3.4394139539367394,
+    "MIN_D_ev_ci95": [
+      2.202590122277953,
+      4.7251797084723535
+    ],
+    "MIN_D_sharpe": 0.5150818879794525,
+    "MIN_E_max_win_streak": 16,
+    "MIN_E_max_loss_streak": 2,
+    "MIN_E_avg_win_streak": 3.9565217391304346,
+    "MIN_E_avg_loss_streak": 1.0869565217391304,
+    "MIN_E_total_streaks": 46,
+    "MIN_E_streak_list": [
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        16
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "MIN_F_pivot_day_return_mean": 2.792389522562914,
+    "MIN_F_pivot_day_return_std": 2.7009637545965157,
+    "MIN_F_cost_at_pivot_mean": 2.792389522562914,
+    "MIN_F_entry_same_day_pct": 0.0,
+    "MIN_G_knife_n": 0,
+    "MIN_G_knife_pct": 0.0,
+    "MIN_total": 116,
+    "MIN_wins": 91,
+    "MIN_losses": 25,
+    "MAX_A_wr": 0.7272727272727273,
+    "MAX_A_wr_ci95": [
+      0.6464646464646465,
+      0.8080808080808081
+    ],
+    "MAX_A_N": 99,
+    "MAX_A_wr_baseline": 0.8212290502793296,
+    "MAX_A_wr_delta": -0.09395632300660228,
+    "MAX_A_N_baseline": 358,
+    "MAX_B_wins_n": 72,
+    "MAX_B_wins_mean": 0.05183405697942458,
+    "MAX_B_wins_median": 0.045255119958847456,
+    "MAX_B_wins_std": 0.027560427452495713,
+    "MAX_B_wins_p25": 0.03294998361223522,
+    "MAX_B_wins_p75": 0.057342695981529246,
+    "MAX_B_wins_max": 0.16935002981514613,
+    "MAX_B_wins_deciles": [
+      0.028274069707522463,
+      0.03294998361223522,
+      0.045255119958847456,
+      0.057342695981529246,
+      0.08548631522749012
+    ],
+    "MAX_C_losses_n": 27,
+    "MAX_C_losses_mean": -0.07010970321061587,
+    "MAX_C_losses_median": -0.07232458489555427,
+    "MAX_C_losses_std": 0.03694764327093114,
+    "MAX_C_losses_maxloss": -0.17451663154036479,
+    "MAX_C_losses_p25": -0.0880479389290133,
+    "MAX_C_losses_p75": -0.03639930213747389,
+    "MAX_C_wipeouts_n": 0,
+    "MAX_C_wipeouts_pct": 0.0,
+    "MAX_C_wipeouts_returns": [],
+    "MAX_D_profit_factor": 1.9715409653053928,
+    "MAX_D_avg_win_loss_ratio": 0.7393278619895224,
+    "MAX_D_kelly": 0.35838730207940794,
+    "MAX_D_ev_pct": 1.8576667836686274,
+    "MAX_D_ev_ci95": [
+      0.6534488986657007,
+      3.0070569971746846
+    ],
+    "MAX_D_sharpe": 0.2984534045435616,
+    "MAX_E_max_win_streak": 10,
+    "MAX_E_max_loss_streak": 3,
+    "MAX_E_avg_win_streak": 3.130434782608696,
+    "MAX_E_avg_loss_streak": 1.2272727272727273,
+    "MAX_E_total_streaks": 45,
+    "MAX_E_streak_list": [
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "MAX_F_pivot_day_return_mean": -3.2920016336724904,
+    "MAX_F_pivot_day_return_std": 2.6873150590963153,
+    "MAX_F_cost_at_pivot_mean": 3.2920016336724904,
+    "MAX_F_entry_same_day_pct": 0.0,
+    "MAX_G_knife_n": 22,
+    "MAX_G_knife_pct": 22.22222222222222,
+    "MAX_G_knife_dates": [
+      "2008-10-07",
+      "2008-10-09",
+      "2008-10-15",
+      "2008-10-20",
+      "2008-10-21",
+      "2008-11-04",
+      "2008-11-06",
+      "2008-11-10",
+      "2008-11-13",
+      "2009-06-02",
+      "2010-05-06",
+      "2011-08-08",
+      "2011-08-11",
+      "2011-10-03",
+      "2020-03-03",
+      "2020-03-10",
+      "2020-03-16",
+      "2020-03-25",
+      "2020-03-31",
+      "2020-04-01",
+      "2020-04-06",
+      "2020-05-12"
+    ],
+    "MAX_G_knife_returns": [
+      -7.95676884375291,
+      -16.935002981514614,
+      -11.513292433537824,
+      -5.056004036326933,
+      -6.5034468775344685,
+      -5.353955978584174,
+      -5.176026823134949,
+      -5.448550193656443,
+      -10.509102801700642,
+      -8.220614448988151,
+      -6.487179487179495,
+      -8.201508801899404,
+      -5.552472250252283,
+      -5.721807810443169,
+      -5.184170277848576,
+      -7.077498960210726,
+      -5.620864149474497,
+      -6.475521747610702,
+      -7.378574412334327,
+      -5.072244682993931,
+      -7.0525093632958775,
+      -5.191340402392619
+    ],
+    "MAX_G_knife_vix": [
+      53.67999,
+      63.92,
+      69.25,
+      52.96999,
+      53.10999,
+      47.73,
+      63.67999,
+      59.98,
+      59.82999,
+      29.62999,
+      32.79999,
+      48.0,
+      39.0,
+      45.45,
+      36.82,
+      47.3,
+      82.69,
+      63.95,
+      53.54,
+      57.06,
+      45.24,
+      33.04
+    ],
+    "MAX_G_knife_state_keys": [
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_MODERATE_COMPRESSION",
+      "CREDIT_STRESS__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__ACCELERATING_UP_3D__VOL_MODERATE_COMPRESSION",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE",
+      "CREDIT_STRESS__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION",
+      "CREDIT_STRESS__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_ACCELERATING_EXPANSION",
+      "CREDIT_STRESS__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+      "CREDIT_STRESS__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "CREDIT_STRESS__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE"
+    ],
+    "MAX_G_knife_velocities": [
+      -0.03833379278607385,
+      -0.039226012879106764,
+      0.02250522617346029,
+      -0.03510650096452883,
+      -0.015897208213147662,
+      0.004834547458138605,
+      -0.016121412335308172,
+      0.005504780505063311,
+      -0.009338748143313258,
+      0.0034814002924633547,
+      -0.017262047362215482,
+      -0.033824782200970405,
+      0.019175915562466783,
+      -0.022133292258854187,
+      -0.00824150723848427,
+      0.0001834344147239042,
+      -0.026006703976053425,
+      -0.048402140310820574,
+      -0.0020269205301979287,
+      -0.011953328900855209,
+      -0.0037609141615451147,
+      0.004301222510038949
+    ],
+    "MAX_G_knife_volatilities": [
+      0.7836792242615143,
+      0.04787825368785909,
+      0.7992531065982597,
+      0.19456135633743202,
+      0.26987024425082407,
+      0.10549843192367224,
+      0.162467417876991,
+      0.009948955701500128,
+      0.07984421219062934,
+      0.5536121469705483,
+      0.4501650723886499,
+      0.7208449564232186,
+      0.8787194938180204,
+      0.5891828065992137,
+      0.7862899774395039,
+      1.4831177675411864,
+      1.506444130990526,
+      0.2856418592070813,
+      0.07893767506286586,
+      0.23651529883077085,
+      0.2022287675332591,
+      0.7059853903678887
+    ],
+    "MAX_total": 99,
+    "MAX_wins": 72,
+    "MAX_losses": 27,
+    "ALL_N": 215,
+    "ALL_wr": 0.7581395348837209,
+    "ALL_wr_ci95": [
+      0.6975581395348838,
+      0.813953488372093
+    ],
+    "ALL_ev_pct": 2.711074559255144
+  }
+}

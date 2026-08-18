@@ -1,0 +1,1057 @@
+{
+  "title": "EV Composite Leave-One-Out Analysis",
+  "description": "Contribución marginal de cada estación METAR al EV composite (Canal 1). Eliminamos cada estación y medimos si la correlación con SPY forward mejora o degrada.",
+  "executive_summary": {
+    "primary_composite": "ev_net_zz25 (sf=zz25, ev_net del fact store) vs retorno de la pierna siguiente",
+    "full_composite_rho": 0.168021,
+    "full_composite_rho_ci95": [
+      0.117684,
+      0.218735
+    ],
+    "ranked_contributions": [
+      {
+        "rank": 1,
+        "station": "bsi",
+        "weight": 1.5,
+        "delta_corr": 0.041985,
+        "verdict": "APORTA_VALOR"
+      },
+      {
+        "rank": 2,
+        "station": "yield_curve",
+        "weight": 0.98,
+        "delta_corr": 0.020344,
+        "verdict": "APORTA_VALOR"
+      },
+      {
+        "rank": 3,
+        "station": "sv5_turbulence",
+        "weight": 0.72,
+        "delta_corr": 0.012191,
+        "verdict": "APORTA_DEBIL"
+      },
+      {
+        "rank": 4,
+        "station": "vvix",
+        "weight": 1.05,
+        "delta_corr": 0.008188,
+        "verdict": "APORTA_DEBIL"
+      },
+      {
+        "rank": 5,
+        "station": "vix",
+        "weight": 1.26,
+        "delta_corr": 0.004982,
+        "verdict": "APORTA_DEBIL"
+      },
+      {
+        "rank": 6,
+        "station": "dxy",
+        "weight": 0.66,
+        "delta_corr": 0.003911,
+        "verdict": "APORTA_DEBIL"
+      },
+      {
+        "rank": 7,
+        "station": "rotation",
+        "weight": 0.24,
+        "delta_corr": 0.002228,
+        "verdict": "APORTA_DEBIL"
+      },
+      {
+        "rank": 8,
+        "station": "skew",
+        "weight": 0.15,
+        "delta_corr": 0.001007,
+        "verdict": "APORTA_DEBIL"
+      },
+      {
+        "rank": 9,
+        "station": "pcr",
+        "weight": 0.58,
+        "delta_corr": -0.000801,
+        "verdict": "PESO_MUERTO_DEBIL"
+      },
+      {
+        "rank": 10,
+        "station": "credit",
+        "weight": 0.83,
+        "delta_corr": -0.003092,
+        "verdict": "PESO_MUERTO_DEBIL"
+      },
+      {
+        "rank": 11,
+        "station": "fg",
+        "weight": 1.11,
+        "delta_corr": -0.008908,
+        "verdict": "PESO_MUERTO_DEBIL"
+      }
+    ],
+    "headline": "BSI es la locomotora del composite (Δ=+0.042, CI95 sig). YIELD_CURVE (peso 0.98) SÍ aporta valor a corto plazo (Δ=+0.020, CI95>0): NO es peso muerto. DXY (peso 0.66) aporta débil a corto (Δ=+0.004, ns) pero significativo a largo plazo (Δ=+0.015, CI95>0): tampoco es peso muerto. Los pesos muertos débiles son FG (Δ=-0.009), CREDIT (Δ=-0.003) y PCR (Δ=-0.001) — ninguno significativo, y los tres tienen cobertura limitada (35.8%, 57.5%, 57.7%)."
+  },
+  "method": {
+    "composite_formula": "EV_composite = Σ(w_station × sf × rf × ev_station) / Σ(w_station × sf × rf)",
+    "reliability_factor": "n≥30→1.0, 10≤n<30→0.5, n<10→0.0",
+    "station_weights_source": "convergence_compositor.py STATION_WEIGHTS (Grinold-Kahn Signal Quality = IC×σ)",
+    "scale_factors_source": "convergence_compositor.py SCALE_FACTORS (IC ratio per ZZ horizon, per-station mean=1)",
+    "ev_source": "Fact store {station}_fact_store.json via state_key from quants_obs.pkl (NO columnas stale de quants_obs)",
+    "forward_return": "prev_leg_return.shift(-1) = retorno de la pierna siguiente (pivote→siguiente pivote); secundarios: forward 20d/60d desde SPY daily",
+    "correlation": "Spearman rank correlation (IC)",
+    "bootstrap": "CI95 con 3000 iteraciones, seed 42, paired resampling para LOO Δ (mismo mask válido para full y LOO)",
+    "delta_interpretation": "Δ = ρ_full - ρ_loo. Δ>0 → la estación aporta valor (quitarla degrada). Δ<0 → peso muerto (quitarla mejora).",
+    "p_dead_weight_note": "p_dead_weight = P(Δ ≤ 0) en bootstrap. Bajo (p.ej. 0.004) = la estación aporta con alta probabilidad; alto = probable peso muerto."
+  },
+  "data_summary": {
+    "n_pivots": 1590,
+    "n_pivots_with_ev_composite": 1590,
+    "date_range": [
+      "1993-01-29",
+      "2026-07-15"
+    ]
+  },
+  "stations_analyzed": [
+    "bsi",
+    "vix",
+    "fg",
+    "vvix",
+    "yield_curve",
+    "credit",
+    "sv5_turbulence",
+    "dxy",
+    "pcr",
+    "rotation",
+    "skew"
+  ],
+  "station_weights": {
+    "bsi": 1.5,
+    "vix": 1.26,
+    "fg": 1.11,
+    "vvix": 1.05,
+    "yield_curve": 0.98,
+    "credit": 0.83,
+    "sv5_turbulence": 0.72,
+    "dxy": 0.66,
+    "pcr": 0.58,
+    "rotation": 0.24,
+    "skew": 0.15
+  },
+  "results_by_composite": {
+    "ev_net_zz25": {
+      "scale": "zz25",
+      "full_composite": {
+        "spearman_vs_next_leg": 0.168021,
+        "spearman_ci95_next_leg": [
+          0.117684,
+          0.218735
+        ],
+        "spearman_vs_20d": 0.154289,
+        "spearman_vs_60d": 0.14358,
+        "pearson_vs_next_leg": 0.141705,
+        "n_valid_pivots": 1590,
+        "mean_active_stations": 8.07
+      },
+      "leave_one_out": [
+        {
+          "station": "bsi",
+          "weight": 1.5,
+          "scale_factor": 0.84,
+          "delta_corr": 0.041985,
+          "delta_ci95": [
+            0.006638,
+            0.075989
+          ],
+          "p_dead_weight": 0.0037,
+          "verdict": "APORTA_VALOR",
+          "full_rho": 0.168021,
+          "loo_rho": 0.126036,
+          "coverage": 1.0,
+          "frac_n_geq_30": 0.8981,
+          "mean_n": 423.7
+        },
+        {
+          "station": "vix",
+          "weight": 1.26,
+          "scale_factor": 0.73,
+          "delta_corr": 0.004982,
+          "delta_ci95": [
+            -0.023489,
+            0.030539
+          ],
+          "p_dead_weight": 0.1353,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.163039,
+          "coverage": 1.0,
+          "frac_n_geq_30": 0.8925,
+          "mean_n": 385.6
+        },
+        {
+          "station": "fg",
+          "weight": 1.11,
+          "scale_factor": 0.72,
+          "delta_corr": -0.008908,
+          "delta_ci95": [
+            -0.021197,
+            0.003714
+          ],
+          "p_dead_weight": 0.338,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.176928,
+          "coverage": 0.3579,
+          "frac_n_geq_30": 0.2704,
+          "mean_n": 207.1
+        },
+        {
+          "station": "vvix",
+          "weight": 1.05,
+          "scale_factor": 0.66,
+          "delta_corr": 0.008188,
+          "delta_ci95": [
+            -0.005143,
+            0.021619
+          ],
+          "p_dead_weight": 0.0397,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.159832,
+          "coverage": 0.5811,
+          "frac_n_geq_30": 0.4711,
+          "mean_n": 320.3
+        },
+        {
+          "station": "yield_curve",
+          "weight": 0.98,
+          "scale_factor": 0.65,
+          "delta_corr": 0.020344,
+          "delta_ci95": [
+            0.000659,
+            0.037825
+          ],
+          "p_dead_weight": 0.0073,
+          "verdict": "APORTA_VALOR",
+          "full_rho": 0.168021,
+          "loo_rho": 0.147677,
+          "coverage": 0.9987,
+          "frac_n_geq_30": 0.8723,
+          "mean_n": 483.6
+        },
+        {
+          "station": "credit",
+          "weight": 0.83,
+          "scale_factor": 0.63,
+          "delta_corr": -0.003092,
+          "delta_ci95": [
+            -0.015068,
+            0.009246
+          ],
+          "p_dead_weight": 0.2563,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.171113,
+          "coverage": 0.5755,
+          "frac_n_geq_30": 0.3786,
+          "mean_n": 194.2
+        },
+        {
+          "station": "sv5_turbulence",
+          "weight": 0.72,
+          "scale_factor": 0.79,
+          "delta_corr": 0.012191,
+          "delta_ci95": [
+            -0.003131,
+            0.027249
+          ],
+          "p_dead_weight": 0.0223,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.15583,
+          "coverage": 0.8635,
+          "frac_n_geq_30": 0.778,
+          "mean_n": 576.0
+        },
+        {
+          "station": "dxy",
+          "weight": 0.66,
+          "scale_factor": 0.61,
+          "delta_corr": 0.003911,
+          "delta_ci95": [
+            -0.006583,
+            0.013271
+          ],
+          "p_dead_weight": 0.085,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.164109,
+          "coverage": 0.8006,
+          "frac_n_geq_30": 0.6874,
+          "mean_n": 381.1
+        },
+        {
+          "station": "pcr",
+          "weight": 0.58,
+          "scale_factor": 0.73,
+          "delta_corr": -0.000801,
+          "delta_ci95": [
+            -0.00857,
+            0.006993
+          ],
+          "p_dead_weight": 0.2183,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.168821,
+          "coverage": 0.5767,
+          "frac_n_geq_30": 0.4371,
+          "mean_n": 335.1
+        },
+        {
+          "station": "rotation",
+          "weight": 0.24,
+          "scale_factor": 0.33,
+          "delta_corr": 0.002228,
+          "delta_ci95": [
+            -0.000471,
+            0.004895
+          ],
+          "p_dead_weight": 0.018,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.165793,
+          "coverage": 0.8673,
+          "frac_n_geq_30": 0.7377,
+          "mean_n": 396.5
+        },
+        {
+          "station": "skew",
+          "weight": 0.15,
+          "scale_factor": 0.27,
+          "delta_corr": 0.001007,
+          "delta_ci95": [
+            -0.000656,
+            0.002583
+          ],
+          "p_dead_weight": 0.044,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.167014,
+          "coverage": 0.9868,
+          "frac_n_geq_30": 0.827,
+          "mean_n": 479.8
+        }
+      ]
+    },
+    "ev_net_zz75": {
+      "scale": "zz75",
+      "full_composite": {
+        "spearman_vs_next_leg": 0.193517,
+        "spearman_ci95_next_leg": [
+          0.142877,
+          0.240924
+        ],
+        "spearman_vs_20d": 0.233334,
+        "spearman_vs_60d": 0.182312,
+        "pearson_vs_next_leg": 0.178583,
+        "n_valid_pivots": 1590,
+        "mean_active_stations": 8.07
+      },
+      "leave_one_out": [
+        {
+          "station": "bsi",
+          "weight": 1.5,
+          "scale_factor": 1.03,
+          "delta_corr": 0.044759,
+          "delta_ci95": [
+            0.020326,
+            0.067187
+          ],
+          "p_dead_weight": 0.0,
+          "verdict": "APORTA_VALOR",
+          "full_rho": 0.193517,
+          "loo_rho": 0.148758,
+          "coverage": 1.0,
+          "frac_n_geq_30": 0.8981,
+          "mean_n": 423.7
+        },
+        {
+          "station": "vix",
+          "weight": 1.26,
+          "scale_factor": 1.22,
+          "delta_corr": 0.021766,
+          "delta_ci95": [
+            -0.003415,
+            0.046346
+          ],
+          "p_dead_weight": 0.017,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.171752,
+          "coverage": 1.0,
+          "frac_n_geq_30": 0.8925,
+          "mean_n": 385.6
+        },
+        {
+          "station": "fg",
+          "weight": 1.11,
+          "scale_factor": 1.22,
+          "delta_corr": -0.001489,
+          "delta_ci95": [
+            -0.011592,
+            0.009437
+          ],
+          "p_dead_weight": 0.2233,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.195006,
+          "coverage": 0.3579,
+          "frac_n_geq_30": 0.2704,
+          "mean_n": 207.1
+        },
+        {
+          "station": "vvix",
+          "weight": 1.05,
+          "scale_factor": 1.31,
+          "delta_corr": 0.000605,
+          "delta_ci95": [
+            -0.01005,
+            0.011379
+          ],
+          "p_dead_weight": 0.1707,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.192913,
+          "coverage": 0.5811,
+          "frac_n_geq_30": 0.4711,
+          "mean_n": 320.3
+        },
+        {
+          "station": "yield_curve",
+          "weight": 0.98,
+          "scale_factor": 1.35,
+          "delta_corr": -0.009384,
+          "delta_ci95": [
+            -0.033797,
+            0.014128
+          ],
+          "p_dead_weight": 0.2963,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.202901,
+          "coverage": 0.9987,
+          "frac_n_geq_30": 0.8723,
+          "mean_n": 483.6
+        },
+        {
+          "station": "credit",
+          "weight": 0.83,
+          "scale_factor": 1.37,
+          "delta_corr": -0.002063,
+          "delta_ci95": [
+            -0.010724,
+            0.005968
+          ],
+          "p_dead_weight": 0.255,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.19558,
+          "coverage": 0.5755,
+          "frac_n_geq_30": 0.3786,
+          "mean_n": 194.2
+        },
+        {
+          "station": "sv5_turbulence",
+          "weight": 0.72,
+          "scale_factor": 1.17,
+          "delta_corr": -6.7e-05,
+          "delta_ci95": [
+            -0.010492,
+            0.009202
+          ],
+          "p_dead_weight": 0.178,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.193584,
+          "coverage": 0.8635,
+          "frac_n_geq_30": 0.778,
+          "mean_n": 576.0
+        },
+        {
+          "station": "dxy",
+          "weight": 0.66,
+          "scale_factor": 1.49,
+          "delta_corr": 0.014974,
+          "delta_ci95": [
+            0.001701,
+            0.028038
+          ],
+          "p_dead_weight": 0.0037,
+          "verdict": "APORTA_VALOR",
+          "full_rho": 0.193517,
+          "loo_rho": 0.178543,
+          "coverage": 0.8006,
+          "frac_n_geq_30": 0.6874,
+          "mean_n": 381.1
+        },
+        {
+          "station": "pcr",
+          "weight": 0.58,
+          "scale_factor": 1.17,
+          "delta_corr": 0.002228,
+          "delta_ci95": [
+            -0.003236,
+            0.007639
+          ],
+          "p_dead_weight": 0.0823,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.191289,
+          "coverage": 0.5767,
+          "frac_n_geq_30": 0.4371,
+          "mean_n": 335.1
+        },
+        {
+          "station": "rotation",
+          "weight": 0.24,
+          "scale_factor": 1.76,
+          "delta_corr": 0.006264,
+          "delta_ci95": [
+            -0.000441,
+            0.01286
+          ],
+          "p_dead_weight": 0.0117,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.187254,
+          "coverage": 0.8673,
+          "frac_n_geq_30": 0.7377,
+          "mean_n": 396.5
+        },
+        {
+          "station": "skew",
+          "weight": 0.15,
+          "scale_factor": 1.96,
+          "delta_corr": 0.000275,
+          "delta_ci95": [
+            -0.0042,
+            0.004752
+          ],
+          "p_dead_weight": 0.166,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193517,
+          "loo_rho": 0.193242,
+          "coverage": 0.9868,
+          "frac_n_geq_30": 0.827,
+          "mean_n": 479.8
+        }
+      ]
+    },
+    "ev_per_day_zz25": {
+      "scale": "zz25",
+      "full_composite": {
+        "spearman_vs_next_leg": 0.168021,
+        "spearman_ci95_next_leg": [
+          0.117684,
+          0.218735
+        ],
+        "spearman_vs_20d": 0.154289,
+        "spearman_vs_60d": 0.14358,
+        "pearson_vs_next_leg": 0.141705,
+        "n_valid_pivots": 1590,
+        "mean_active_stations": 8.07
+      },
+      "leave_one_out": [
+        {
+          "station": "bsi",
+          "weight": 1.5,
+          "scale_factor": 0.84,
+          "delta_corr": 0.041985,
+          "delta_ci95": [
+            0.006638,
+            0.075989
+          ],
+          "p_dead_weight": 0.0037,
+          "verdict": "APORTA_VALOR",
+          "full_rho": 0.168021,
+          "loo_rho": 0.126036,
+          "coverage": 1.0,
+          "frac_n_geq_30": 0.8981,
+          "mean_n": 423.7
+        },
+        {
+          "station": "vix",
+          "weight": 1.26,
+          "scale_factor": 0.73,
+          "delta_corr": 0.004982,
+          "delta_ci95": [
+            -0.023489,
+            0.030539
+          ],
+          "p_dead_weight": 0.1353,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.163039,
+          "coverage": 1.0,
+          "frac_n_geq_30": 0.8925,
+          "mean_n": 385.6
+        },
+        {
+          "station": "fg",
+          "weight": 1.11,
+          "scale_factor": 0.72,
+          "delta_corr": -0.008908,
+          "delta_ci95": [
+            -0.021197,
+            0.003714
+          ],
+          "p_dead_weight": 0.338,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.176928,
+          "coverage": 0.3579,
+          "frac_n_geq_30": 0.2704,
+          "mean_n": 207.1
+        },
+        {
+          "station": "vvix",
+          "weight": 1.05,
+          "scale_factor": 0.66,
+          "delta_corr": 0.008188,
+          "delta_ci95": [
+            -0.005143,
+            0.021619
+          ],
+          "p_dead_weight": 0.0397,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.159832,
+          "coverage": 0.5811,
+          "frac_n_geq_30": 0.4711,
+          "mean_n": 320.3
+        },
+        {
+          "station": "yield_curve",
+          "weight": 0.98,
+          "scale_factor": 0.65,
+          "delta_corr": 0.020344,
+          "delta_ci95": [
+            0.000659,
+            0.037825
+          ],
+          "p_dead_weight": 0.0073,
+          "verdict": "APORTA_VALOR",
+          "full_rho": 0.168021,
+          "loo_rho": 0.147677,
+          "coverage": 0.9987,
+          "frac_n_geq_30": 0.8723,
+          "mean_n": 483.6
+        },
+        {
+          "station": "credit",
+          "weight": 0.83,
+          "scale_factor": 0.63,
+          "delta_corr": -0.003092,
+          "delta_ci95": [
+            -0.015068,
+            0.009246
+          ],
+          "p_dead_weight": 0.2563,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.171113,
+          "coverage": 0.5755,
+          "frac_n_geq_30": 0.3786,
+          "mean_n": 194.2
+        },
+        {
+          "station": "sv5_turbulence",
+          "weight": 0.72,
+          "scale_factor": 0.79,
+          "delta_corr": 0.012191,
+          "delta_ci95": [
+            -0.003131,
+            0.027249
+          ],
+          "p_dead_weight": 0.0223,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.15583,
+          "coverage": 0.8635,
+          "frac_n_geq_30": 0.778,
+          "mean_n": 576.0
+        },
+        {
+          "station": "dxy",
+          "weight": 0.66,
+          "scale_factor": 0.61,
+          "delta_corr": 0.003911,
+          "delta_ci95": [
+            -0.006583,
+            0.013271
+          ],
+          "p_dead_weight": 0.085,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.164109,
+          "coverage": 0.8006,
+          "frac_n_geq_30": 0.6874,
+          "mean_n": 381.1
+        },
+        {
+          "station": "pcr",
+          "weight": 0.58,
+          "scale_factor": 0.73,
+          "delta_corr": -0.000801,
+          "delta_ci95": [
+            -0.00857,
+            0.006993
+          ],
+          "p_dead_weight": 0.2183,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.168821,
+          "coverage": 0.5767,
+          "frac_n_geq_30": 0.4371,
+          "mean_n": 335.1
+        },
+        {
+          "station": "rotation",
+          "weight": 0.24,
+          "scale_factor": 0.33,
+          "delta_corr": 0.002228,
+          "delta_ci95": [
+            -0.000471,
+            0.004895
+          ],
+          "p_dead_weight": 0.018,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.165793,
+          "coverage": 0.8673,
+          "frac_n_geq_30": 0.7377,
+          "mean_n": 396.5
+        },
+        {
+          "station": "skew",
+          "weight": 0.15,
+          "scale_factor": 0.27,
+          "delta_corr": 0.001007,
+          "delta_ci95": [
+            -0.000656,
+            0.002583
+          ],
+          "p_dead_weight": 0.044,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.168021,
+          "loo_rho": 0.167014,
+          "coverage": 0.9868,
+          "frac_n_geq_30": 0.827,
+          "mean_n": 479.8
+        }
+      ]
+    },
+    "ev_per_day_zz75": {
+      "scale": "zz75",
+      "full_composite": {
+        "spearman_vs_next_leg": 0.193488,
+        "spearman_ci95_next_leg": [
+          0.142846,
+          0.240905
+        ],
+        "spearman_vs_20d": 0.233346,
+        "spearman_vs_60d": 0.182325,
+        "pearson_vs_next_leg": 0.178555,
+        "n_valid_pivots": 1590,
+        "mean_active_stations": 8.07
+      },
+      "leave_one_out": [
+        {
+          "station": "bsi",
+          "weight": 1.5,
+          "scale_factor": 1.03,
+          "delta_corr": 0.044715,
+          "delta_ci95": [
+            0.020286,
+            0.067132
+          ],
+          "p_dead_weight": 0.0,
+          "verdict": "APORTA_VALOR",
+          "full_rho": 0.193488,
+          "loo_rho": 0.148773,
+          "coverage": 1.0,
+          "frac_n_geq_30": 0.8981,
+          "mean_n": 423.7
+        },
+        {
+          "station": "vix",
+          "weight": 1.26,
+          "scale_factor": 1.22,
+          "delta_corr": 0.021744,
+          "delta_ci95": [
+            -0.003483,
+            0.04633
+          ],
+          "p_dead_weight": 0.017,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.171744,
+          "coverage": 1.0,
+          "frac_n_geq_30": 0.8925,
+          "mean_n": 385.6
+        },
+        {
+          "station": "fg",
+          "weight": 1.11,
+          "scale_factor": 1.22,
+          "delta_corr": -0.001452,
+          "delta_ci95": [
+            -0.011604,
+            0.009472
+          ],
+          "p_dead_weight": 0.2227,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.194939,
+          "coverage": 0.3579,
+          "frac_n_geq_30": 0.2704,
+          "mean_n": 207.1
+        },
+        {
+          "station": "vvix",
+          "weight": 1.05,
+          "scale_factor": 1.31,
+          "delta_corr": 0.000657,
+          "delta_ci95": [
+            -0.01001,
+            0.011402
+          ],
+          "p_dead_weight": 0.1683,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.192831,
+          "coverage": 0.5811,
+          "frac_n_geq_30": 0.4711,
+          "mean_n": 320.3
+        },
+        {
+          "station": "yield_curve",
+          "weight": 0.98,
+          "scale_factor": 1.35,
+          "delta_corr": -0.009335,
+          "delta_ci95": [
+            -0.033837,
+            0.014197
+          ],
+          "p_dead_weight": 0.2953,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.202823,
+          "coverage": 0.9987,
+          "frac_n_geq_30": 0.8723,
+          "mean_n": 483.6
+        },
+        {
+          "station": "credit",
+          "weight": 0.83,
+          "scale_factor": 1.37,
+          "delta_corr": -0.002017,
+          "delta_ci95": [
+            -0.010639,
+            0.006022
+          ],
+          "p_dead_weight": 0.254,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.195505,
+          "coverage": 0.5755,
+          "frac_n_geq_30": 0.3786,
+          "mean_n": 194.2
+        },
+        {
+          "station": "sv5_turbulence",
+          "weight": 0.72,
+          "scale_factor": 1.17,
+          "delta_corr": -9.4e-05,
+          "delta_ci95": [
+            -0.010508,
+            0.009132
+          ],
+          "p_dead_weight": 0.1807,
+          "verdict": "PESO_MUERTO_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.193581,
+          "coverage": 0.8635,
+          "frac_n_geq_30": 0.778,
+          "mean_n": 576.0
+        },
+        {
+          "station": "dxy",
+          "weight": 0.66,
+          "scale_factor": 1.49,
+          "delta_corr": 0.01499,
+          "delta_ci95": [
+            0.001703,
+            0.02807
+          ],
+          "p_dead_weight": 0.004,
+          "verdict": "APORTA_VALOR",
+          "full_rho": 0.193488,
+          "loo_rho": 0.178498,
+          "coverage": 0.8006,
+          "frac_n_geq_30": 0.6874,
+          "mean_n": 381.1
+        },
+        {
+          "station": "pcr",
+          "weight": 0.58,
+          "scale_factor": 1.17,
+          "delta_corr": 0.00222,
+          "delta_ci95": [
+            -0.003204,
+            0.007623
+          ],
+          "p_dead_weight": 0.0827,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.191268,
+          "coverage": 0.5767,
+          "frac_n_geq_30": 0.4371,
+          "mean_n": 335.1
+        },
+        {
+          "station": "rotation",
+          "weight": 0.24,
+          "scale_factor": 1.76,
+          "delta_corr": 0.006267,
+          "delta_ci95": [
+            -0.000412,
+            0.012753
+          ],
+          "p_dead_weight": 0.0113,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.187221,
+          "coverage": 0.8673,
+          "frac_n_geq_30": 0.7377,
+          "mean_n": 396.5
+        },
+        {
+          "station": "skew",
+          "weight": 0.15,
+          "scale_factor": 1.96,
+          "delta_corr": 0.000277,
+          "delta_ci95": [
+            -0.004216,
+            0.004689
+          ],
+          "p_dead_weight": 0.165,
+          "verdict": "APORTA_DEBIL",
+          "full_rho": 0.193488,
+          "loo_rho": 0.193211,
+          "coverage": 0.9868,
+          "frac_n_geq_30": 0.827,
+          "mean_n": 479.8
+        }
+      ]
+    }
+  },
+  "focus_yield_curve_and_dxy": {
+    "yield_curve": {
+      "station": "yield_curve",
+      "weight": 0.98,
+      "verdict_zz25": "APORTA_VALOR",
+      "delta_zz25": 0.020344,
+      "verdict_zz75": "PESO_MUERTO_DEBIL",
+      "delta_zz75": -0.009384,
+      "overall_verdict": "APORTA_VALOR",
+      "notes": "zz25 (corto): Δ=+0.0203 significativo; zz75 (largo): Δ=-0.0094 no significativo."
+    },
+    "dxy": {
+      "station": "dxy",
+      "weight": 0.66,
+      "verdict_zz25": "APORTA_DEBIL",
+      "delta_zz25": 0.003911,
+      "verdict_zz75": "APORTA_VALOR",
+      "delta_zz75": 0.014974,
+      "overall_verdict": "APORTA_DEBIL",
+      "notes": "zz25 (corto): Δ=+0.0039 no significativo; zz75 (largo): Δ=+0.0150 significativo."
+    },
+    "detail_by_composite": {
+      "yield_curve": {
+        "ev_net_zz25": {
+          "delta_corr": 0.020344,
+          "delta_ci95": [
+            0.000659,
+            0.037825
+          ],
+          "p_dead_weight": 0.0073,
+          "verdict": "APORTA_VALOR"
+        },
+        "ev_net_zz75": {
+          "delta_corr": -0.009384,
+          "delta_ci95": [
+            -0.033797,
+            0.014128
+          ],
+          "p_dead_weight": 0.2963,
+          "verdict": "PESO_MUERTO_DEBIL"
+        },
+        "ev_per_day_zz25": {
+          "delta_corr": 0.020344,
+          "delta_ci95": [
+            0.000659,
+            0.037825
+          ],
+          "p_dead_weight": 0.0073,
+          "verdict": "APORTA_VALOR"
+        },
+        "ev_per_day_zz75": {
+          "delta_corr": -0.009335,
+          "delta_ci95": [
+            -0.033837,
+            0.014197
+          ],
+          "p_dead_weight": 0.2953,
+          "verdict": "PESO_MUERTO_DEBIL"
+        }
+      },
+      "dxy": {
+        "ev_net_zz25": {
+          "delta_corr": 0.003911,
+          "delta_ci95": [
+            -0.006583,
+            0.013271
+          ],
+          "p_dead_weight": 0.085,
+          "verdict": "APORTA_DEBIL"
+        },
+        "ev_net_zz75": {
+          "delta_corr": 0.014974,
+          "delta_ci95": [
+            0.001701,
+            0.028038
+          ],
+          "p_dead_weight": 0.0037,
+          "verdict": "APORTA_VALOR"
+        },
+        "ev_per_day_zz25": {
+          "delta_corr": 0.003911,
+          "delta_ci95": [
+            -0.006583,
+            0.013271
+          ],
+          "p_dead_weight": 0.085,
+          "verdict": "APORTA_DEBIL"
+        },
+        "ev_per_day_zz75": {
+          "delta_corr": 0.01499,
+          "delta_ci95": [
+            0.001703,
+            0.02807
+          ],
+          "p_dead_weight": 0.004,
+          "verdict": "APORTA_VALOR"
+        }
+      }
+    }
+  },
+  "execution_time_s": 183.8
+}

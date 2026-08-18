@@ -1,0 +1,260 @@
+{
+  "_meta": {
+    "task": "cascade_add_one_in",
+    "question": "¿AÑADIR yield_curve y dxy al Grupo A mejora el IC del cascade_conviction vs cascade_50?",
+    "data": "scratch/quants_obs.pkl (1,590 pivotes zz25)",
+    "formula": "cascade_conviction = 0.66*(d1_bear_5-0.41)/0.3206 + 0.34*(abs_prev_leg_return-0.0532)/0.035",
+    "weights": {
+      "w_bear": 0.66,
+      "w_dom": 0.34
+    },
+    "calibration": {
+      "d1_bear_5_mean": 0.41,
+      "d1_bear_5_std": 0.3206,
+      "domino_zz25_mean": 0.0532,
+      "domino_zz25_std": 0.035
+    },
+    "counting": "FRACCIONAL (type-mask MIN/MAX; FG MIN-only)",
+    "bootstrap": {
+      "n_iter": 3000,
+      "seed": 42
+    },
+    "baseline_documented": 0.4155,
+    "note": "z_bear usa calibración FIJA del Grupo A base (0.41/0.3206); no se re-estandariza al añadir estaciones."
+  },
+  "baseline_replication": {
+    "ic": 0.4147,
+    "ci95": [
+      0.3718,
+      0.4552
+    ],
+    "n_valid": 1589
+  },
+  "configs": {
+    "base": {
+      "ic": 0.4147,
+      "ci95": [
+        0.3718,
+        0.4552
+      ],
+      "n_valid": 1589,
+      "stations_min": [
+        "vix",
+        "bsi",
+        "fg",
+        "credit",
+        "rotation"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi",
+        "credit",
+        "rotation"
+      ],
+      "n_stations_label": 5
+    },
+    "plus_yield_curve": {
+      "ic": 0.3964,
+      "ci95": [
+        0.3538,
+        0.4378
+      ],
+      "n_valid": 1589,
+      "stations_min": [
+        "vix",
+        "bsi",
+        "fg",
+        "credit",
+        "rotation",
+        "yield_curve"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi",
+        "credit",
+        "rotation",
+        "yield_curve"
+      ],
+      "n_stations_label": 6
+    },
+    "plus_dxy": {
+      "ic": 0.41,
+      "ci95": [
+        0.3681,
+        0.4508
+      ],
+      "n_valid": 1589,
+      "stations_min": [
+        "vix",
+        "bsi",
+        "fg",
+        "credit",
+        "rotation",
+        "dxy"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi",
+        "credit",
+        "rotation",
+        "dxy"
+      ],
+      "n_stations_label": 6
+    },
+    "plus_both": {
+      "ic": 0.3939,
+      "ci95": [
+        0.3507,
+        0.435
+      ],
+      "n_valid": 1589,
+      "stations_min": [
+        "vix",
+        "bsi",
+        "fg",
+        "credit",
+        "rotation",
+        "yield_curve",
+        "dxy"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi",
+        "credit",
+        "rotation",
+        "yield_curve",
+        "dxy"
+      ],
+      "n_stations_label": 7
+    }
+  },
+  "delta_ic_vs_base": {
+    "plus_yield_curve": {
+      "delta_ic_vs_base": -0.0183,
+      "ci95": [
+        -0.0309,
+        -0.0055
+      ],
+      "frac_boot_gt0": 0.0027,
+      "frac_boot_lt0": 0.9973
+    },
+    "plus_dxy": {
+      "delta_ic_vs_base": -0.0047,
+      "ci95": [
+        -0.0207,
+        0.011
+      ],
+      "frac_boot_gt0": 0.2827,
+      "frac_boot_lt0": 0.7173
+    },
+    "plus_both": {
+      "delta_ic_vs_base": -0.0209,
+      "ci95": [
+        -0.0412,
+        -0.0012
+      ],
+      "frac_boot_gt0": 0.019,
+      "frac_boot_lt0": 0.981
+    }
+  },
+  "verdicts": {
+    "base": "baseline",
+    "plus_yield_curve": "degrada significativa (CI95 todo < 0) -> añade ruido, excluir",
+    "plus_dxy": "no significativo (CI95 cruza 0) -> redundante / sin valor marginal",
+    "plus_both": "degrada significativa (CI95 todo < 0) -> añade ruido, excluir"
+  },
+  "by_pivot_type": {
+    "base": {
+      "MIN": {
+        "ic": 0.4778,
+        "n": 794
+      },
+      "MAX": {
+        "ic": 0.3537,
+        "n": 795
+      }
+    },
+    "plus_yield_curve": {
+      "MIN": {
+        "ic": 0.4569,
+        "n": 794
+      },
+      "MAX": {
+        "ic": 0.3359,
+        "n": 795
+      }
+    },
+    "plus_dxy": {
+      "MIN": {
+        "ic": 0.4663,
+        "n": 794
+      },
+      "MAX": {
+        "ic": 0.3527,
+        "n": 795
+      }
+    },
+    "plus_both": {
+      "MIN": {
+        "ic": 0.45,
+        "n": 794
+      },
+      "MAX": {
+        "ic": 0.336,
+        "n": 795
+      }
+    }
+  },
+  "context": {
+    "yield_curve": {
+      "standalone_ic_vs_cascade_50": 0.0719,
+      "n_covered": 1588,
+      "spearman_vs_base_d1_bear_5": 0.0426
+    },
+    "dxy": {
+      "standalone_ic_vs_cascade_50": -0.0278,
+      "n_covered": 1273,
+      "spearman_vs_base_d1_bear_5": 0.1507
+    }
+  },
+  "robustness_no_type_mask": {
+    "base": {
+      "ic": 0.4162,
+      "ci95": [
+        0.3738,
+        0.4565
+      ],
+      "n": 1589
+    },
+    "plus_yield_curve": {
+      "ic": 0.3993,
+      "ci95": [
+        0.3567,
+        0.4397
+      ],
+      "n": 1589
+    },
+    "plus_dxy": {
+      "ic": 0.4118,
+      "ci95": [
+        0.37,
+        0.453
+      ],
+      "n": 1589
+    },
+    "plus_both": {
+      "ic": 0.3976,
+      "ci95": [
+        0.3549,
+        0.4386
+      ],
+      "n": 1589
+    }
+  },
+  "conclusion": {
+    "base_ic": 0.4147,
+    "best_additive": "plus_dxy",
+    "best_delta": -0.0047,
+    "verdict": "no significativo (CI95 cruza 0) -> redundante / sin valor marginal"
+  }
+}

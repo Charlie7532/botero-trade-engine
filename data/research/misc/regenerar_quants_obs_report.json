@@ -1,0 +1,420 @@
+{
+  "meta": {
+    "script": "regenerar_quants_obs.py",
+    "run_utc": "2026-08-17T15:50:19.287460+00:00",
+    "input": "/root/botero-trade/scratch/quants_obs.pkl",
+    "backup": "/root/botero-trade/scratch/quants_obs.pkl.bak",
+    "backup_bytes": 2529901,
+    "report": "/root/botero-trade/scratch/regenerar_quants_obs_report.json",
+    "n_rows": 1590,
+    "n_columns": 141,
+    "stations": [
+      "vix",
+      "vvix",
+      "pcr",
+      "fg",
+      "sv5_turbulence",
+      "skew",
+      "credit",
+      "yield_curve",
+      "rotation",
+      "bsi",
+      "dxy"
+    ],
+    "touched_columns": [
+      "vix_n",
+      "vvix_n",
+      "pcr_n",
+      "fg_n",
+      "sv5_turbulence_n",
+      "skew_n",
+      "credit_n",
+      "yield_curve_n",
+      "rotation_n",
+      "bsi_n",
+      "dxy_n",
+      "skew_sk"
+    ],
+    "fact_store_dir": "/root/botero-trade/backend/modules/entry_decision/domain/rules",
+    "skew_reclassification_method": "skew_lookup.SkewLookupAdapter.lookup_skew_guidance() — edges actuales skew_edges_d1/d2/d3 + cadena de fallback de producción (D1__D2__D3 -> D1__D2__VOL_NEUTRAL_BASELINE -> D1__D2__* -> D1__*)"
+  },
+  "per_station_state_key_match": {
+    "vix": {
+      "state_key_nonnull": 1590,
+      "state_key_matched": 1590,
+      "state_key_mismatch": 0
+    },
+    "vvix": {
+      "state_key_nonnull": 924,
+      "state_key_matched": 924,
+      "state_key_mismatch": 0
+    },
+    "pcr": {
+      "state_key_nonnull": 917,
+      "state_key_matched": 917,
+      "state_key_mismatch": 0
+    },
+    "fg": {
+      "state_key_nonnull": 569,
+      "state_key_matched": 569,
+      "state_key_mismatch": 0
+    },
+    "sv5_turbulence": {
+      "state_key_nonnull": 1373,
+      "state_key_matched": 1373,
+      "state_key_mismatch": 0
+    },
+    "skew": {
+      "state_key_nonnull": 1586,
+      "state_key_matched": 1569,
+      "state_key_mismatch": 17
+    },
+    "credit": {
+      "state_key_nonnull": 915,
+      "state_key_matched": 915,
+      "state_key_mismatch": 0
+    },
+    "yield_curve": {
+      "state_key_nonnull": 1588,
+      "state_key_matched": 1588,
+      "state_key_mismatch": 0
+    },
+    "rotation": {
+      "state_key_nonnull": 1379,
+      "state_key_matched": 1379,
+      "state_key_mismatch": 0
+    },
+    "bsi": {
+      "state_key_nonnull": 1590,
+      "state_key_matched": 1590,
+      "state_key_mismatch": 0
+    },
+    "dxy": {
+      "state_key_nonnull": 1273,
+      "state_key_matched": 1273,
+      "state_key_mismatch": 0
+    }
+  },
+  "per_station_n": {
+    "vix": {
+      "dtype": "int64",
+      "n_nonnull": 1590,
+      "n_nan": 0,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 1691.0,
+      "mean": 385.57169811320756,
+      "median": 222.0,
+      "unique": 57
+    },
+    "vvix": {
+      "dtype": "float64",
+      "n_nonnull": 924,
+      "n_nan": 666,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 904.0,
+      "mean": 320.3300865800866,
+      "median": 157.0,
+      "unique": 43
+    },
+    "pcr": {
+      "dtype": "float64",
+      "n_nonnull": 917,
+      "n_nan": 673,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 1044.0,
+      "mean": 335.0687022900763,
+      "median": 151.0,
+      "unique": 44
+    },
+    "fg": {
+      "dtype": "float64",
+      "n_nonnull": 569,
+      "n_nan": 1021,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 659.0,
+      "mean": 207.1335676625659,
+      "median": 147.0,
+      "unique": 40
+    },
+    "sv5_turbulence": {
+      "dtype": "float64",
+      "n_nonnull": 1373,
+      "n_nan": 217,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 1307.0,
+      "mean": 575.9927166788056,
+      "median": 249.0,
+      "unique": 54
+    },
+    "skew": {
+      "dtype": "float64",
+      "n_nonnull": 1586,
+      "n_nan": 4,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 1387.0,
+      "mean": 475.0031525851198,
+      "median": 273.0,
+      "unique": 46
+    },
+    "credit": {
+      "dtype": "float64",
+      "n_nonnull": 915,
+      "n_nan": 675,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 651.0,
+      "mean": 194.23387978142077,
+      "median": 96.0,
+      "unique": 47
+    },
+    "yield_curve": {
+      "dtype": "float64",
+      "n_nonnull": 1588,
+      "n_nan": 2,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 1510.0,
+      "mean": 483.6454659949622,
+      "median": 250.0,
+      "unique": 59
+    },
+    "rotation": {
+      "dtype": "float64",
+      "n_nonnull": 1379,
+      "n_nan": 211,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 1078.0,
+      "mean": 396.51269035532994,
+      "median": 194.0,
+      "unique": 56
+    },
+    "bsi": {
+      "dtype": "int64",
+      "n_nonnull": 1590,
+      "n_nan": 0,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 1239.0,
+      "mean": 423.7251572327044,
+      "median": 226.0,
+      "unique": 61
+    },
+    "dxy": {
+      "dtype": "float64",
+      "n_nonnull": 1273,
+      "n_nan": 317,
+      "n_zero": 0,
+      "min": 1.0,
+      "max": 1013.0,
+      "mean": 381.12411626080126,
+      "median": 178.0,
+      "unique": 55
+    }
+  },
+  "skew_obsolete": {
+    "n_obsolete_keys": 6,
+    "n_rows": 17,
+    "obsolete_keys": [
+      {
+        "key": "ELEVATED_TAIL_RISK__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION",
+        "n_rows": 3
+      },
+      {
+        "key": "HIGH_TAIL_RISK__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE",
+        "n_rows": 1
+      },
+      {
+        "key": "LOW_TAIL_RISK__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION",
+        "n_rows": 1
+      },
+      {
+        "key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION",
+        "n_rows": 2
+      },
+      {
+        "key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "n_rows": 7
+      },
+      {
+        "key": "NORMAL_TAIL_RISK__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION",
+        "n_rows": 3
+      }
+    ],
+    "reclassified_rows": [
+      {
+        "index": 52,
+        "pivot_date": "1996-04-11",
+        "old_key": "NORMAL_TAIL_RISK__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION",
+        "new_key": "LOW_TAIL_RISK__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": true,
+        "n": 1
+      },
+      {
+        "index": 63,
+        "pivot_date": "1996-07-18",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      },
+      {
+        "index": 99,
+        "pivot_date": "1997-06-19",
+        "old_key": "LOW_TAIL_RISK__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+        "used_fallback": false,
+        "n": 15
+      },
+      {
+        "index": 126,
+        "pivot_date": "1997-10-30",
+        "old_key": "ELEVATED_TAIL_RISK__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION",
+        "exact_key_D1_D2_D3": "NORMAL_TAIL_RISK__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "NORMAL_TAIL_RISK__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION",
+        "used_fallback": true,
+        "n": 6
+      },
+      {
+        "index": 181,
+        "pivot_date": "1998-09-16",
+        "old_key": "HIGH_TAIL_RISK__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE",
+        "exact_key_D1_D2_D3": "HIGH_TAIL_RISK__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE",
+        "new_key": "HIGH_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": true,
+        "n": 47
+      },
+      {
+        "index": 343,
+        "pivot_date": "2000-07-17",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "used_fallback": false,
+        "n": 12
+      },
+      {
+        "index": 504,
+        "pivot_date": "2002-07-15",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      },
+      {
+        "index": 521,
+        "pivot_date": "2002-08-08",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      },
+      {
+        "index": 522,
+        "pivot_date": "2002-08-08",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      },
+      {
+        "index": 553,
+        "pivot_date": "2002-10-15",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      },
+      {
+        "index": 783,
+        "pivot_date": "2008-08-08",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      },
+      {
+        "index": 784,
+        "pivot_date": "2008-08-08",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      },
+      {
+        "index": 814,
+        "pivot_date": "2008-10-15",
+        "old_key": "ELEVATED_TAIL_RISK__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION",
+        "exact_key_D1_D2_D3": "NORMAL_TAIL_RISK__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION",
+        "new_key": "NORMAL_TAIL_RISK__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION",
+        "used_fallback": true,
+        "n": 6
+      },
+      {
+        "index": 815,
+        "pivot_date": "2008-10-15",
+        "old_key": "ELEVATED_TAIL_RISK__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION",
+        "exact_key_D1_D2_D3": "NORMAL_TAIL_RISK__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION",
+        "new_key": "NORMAL_TAIL_RISK__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION",
+        "used_fallback": true,
+        "n": 6
+      },
+      {
+        "index": 816,
+        "pivot_date": "2008-10-16",
+        "old_key": "NORMAL_TAIL_RISK__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "used_fallback": false,
+        "n": 12
+      },
+      {
+        "index": 949,
+        "pivot_date": "2009-07-23",
+        "old_key": "NORMAL_TAIL_RISK__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      },
+      {
+        "index": 950,
+        "pivot_date": "2009-07-23",
+        "old_key": "NORMAL_TAIL_RISK__DECELERATING_DOWN_3D__VOL_MODERATE_COMPRESSION",
+        "exact_key_D1_D2_D3": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "new_key": "LOW_TAIL_RISK__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "used_fallback": false,
+        "n": 57
+      }
+    ]
+  },
+  "verification": {
+    "n_rows_unchanged": true,
+    "columns_unchanged": true,
+    "index_order_unchanged": true,
+    "untouched_columns_identical": true,
+    "untouched_columns_diff": [],
+    "untouched_columns_md5_before": "d4e8d89f007874cfc8a77e00ad28307d",
+    "untouched_columns_md5_after": "d4e8d89f007874cfc8a77e00ad28307d",
+    "skew_sk_changed_rows": 17,
+    "skew_sk_changed_rows_expected": 17,
+    "skew_obsolete_keys_remaining": 0,
+    "skew_obsolete_keys_remaining_list": [],
+    "all_n_no_longer_all_zero": true
+  }
+}

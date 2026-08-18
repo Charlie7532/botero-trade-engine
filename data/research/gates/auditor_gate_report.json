@@ -1,0 +1,177 @@
+{
+  "auditor": "auditor_gate.py",
+  "timestamp": "2026-08-16T17:25:58.011631+00:00",
+  "status_files": {
+    "coordinator": true,
+    "coordinator_out": true,
+    "cat1": true,
+    "cat1_out": true,
+    "cat2": true,
+    "cat2_out": true,
+    "cat3": true,
+    "cat3_out": false
+  },
+  "verdicts": [
+    {
+      "signal": "CAT1 bins calibrados",
+      "verdict": "✅",
+      "note": "usa dimension_thresholds_definition del fact store"
+    },
+    {
+      "signal": "CAT1 estado actual credit",
+      "verdict": "✅",
+      "note": "p_bull_zz25=0.5236, n=519 (pero SIN CI95)"
+    },
+    {
+      "signal": "CAT1 estado actual yield_curve",
+      "verdict": "✅",
+      "note": "p_bull_zz25=0.5417, n=38 (pero SIN CI95)"
+    },
+    {
+      "signal": "CAT1 estado actual dxy",
+      "verdict": "✅",
+      "note": "p_bull_zz25=0.542864, n=1013 (pero SIN CI95)"
+    },
+    {
+      "signal": "CAT1 estado actual rotation",
+      "verdict": "✅",
+      "note": "p_bull_zz25=0.6, n=40 (pero SIN CI95)"
+    },
+    {
+      "signal": "CAT1 régimen (EXPANSION/TRANSICION/CONTRACCION)",
+      "verdict": "🚨",
+      "note": "'EXPANSION' es etiqueta binaria/triestado SIN probabilidad + CI95 + N (umbrales 60/40 hardcoded)"
+    },
+    {
+      "signal": "CAT1 señales GRADE A (CREDIT_STRESS/YIELD/DXY/ROTATION)",
+      "verdict": "🤫",
+      "note": "calculadas con CI95+N+wins/losses pero SOLO impresas en stdout — NO persistidas en cat1_economia_results.json"
+    },
+    {
+      "signal": "CAT2 bins calibrados",
+      "verdict": "✅",
+      "note": "usa dimension_thresholds_definition del fact store"
+    },
+    {
+      "signal": "CAT2 graduated_pct (percentil crudo)",
+      "verdict": "🚨",
+      "note": "usa expanding().rank(pct=True) = percentil crudo para el estado graduado y el índice de protección, MIENTRAS CAT1/CAT3 usan σ-band calibrado"
+    },
+    {
+      "signal": "CAT2 índice de protección + etiquetas emoji (🔴 BOCHORNO…)",
+      "verdict": "🚨",
+      "note": "headline binario por umbrales (80/60/40/20) SIN CI95 + N sobre el índice agregado"
+    },
+    {
+      "signal": "CAT2 PANICO_TOTAL",
+      "verdict": "✅",
+      "note": "N=13 (10≤N<30, direccional con CI ancho) — CI95, wins/losses SEPARADOS"
+    },
+    {
+      "signal": "CAT2 PANICO_TOTAL_PCT90",
+      "verdict": "✅",
+      "note": "N=47 — CI95, wins/losses SEPARADOS"
+    },
+    {
+      "signal": "CAT2 PANICO_TOTAL_EXACT_P85",
+      "verdict": "✅",
+      "note": "N=55 — CI95, wins/losses SEPARADOS"
+    },
+    {
+      "signal": "CAT2 CAPITULACION",
+      "verdict": "✅",
+      "note": "N=741 — CI95, wins/losses SEPARADOS"
+    },
+    {
+      "signal": "CAT2 SUB_REACCION",
+      "verdict": "✅",
+      "note": "N=193 — CI95, wins/losses SEPARADOS"
+    },
+    {
+      "signal": "CAT2 PCR_EXTREME_PUT_PANIC",
+      "verdict": "✅",
+      "note": "N=55 — CI95, wins/losses SEPARADOS"
+    },
+    {
+      "signal": "CAT2 PCR_EXTREME_CALL_HEAVY",
+      "verdict": "✅",
+      "note": "N=67 — CI95, wins/losses SEPARADOS"
+    },
+    {
+      "signal": "CAT2 PANICO_TOTAL (3 variantes)",
+      "verdict": "🚨",
+      "note": "expone bins-calibrados (N=13) Y percentiles crudos (N=47/55) para la MISMA señal — riesgo de que el consumidor elija la versión raw (PF 8.09 vs 2.76)"
+    },
+    {
+      "signal": "CAT2 monotonicidad medida",
+      "verdict": "🚨",
+      "note": "NO mide monotonicidad (solo CI95 por horizonte + splits 2-way; sin tabla retorno-vs-bin)"
+    },
+    {
+      "signal": "CAT3 salida",
+      "verdict": "🤫",
+      "note": "cat3_accion.py existe (script completo) pero NO se ha ejecutado — no hay cat3_accion_report.json. Además el script solo imprime a stdout, NO escribe JSON (gap: coordinator no podrá consumirlo)."
+    },
+    {
+      "signal": "CAT3 bins calibrados (código)",
+      "verdict": "✅",
+      "note": "load_calibrated_edges() lee fact store"
+    },
+    {
+      "signal": "coordinator bins calibrados",
+      "verdict": "✅",
+      "note": "usa dimension_thresholds_definition del fact store"
+    },
+    {
+      "signal": "coordinator TAF (cono multi-escala)",
+      "verdict": "🚨",
+      "note": "31 celdas scale SIN CI95 (solo p_bull + n) y 10 celdas huérfanas (n<10) expuestas junto a pobladas — ej. credit zz75 n=1 p_bull=0.4545"
+    },
+    {
+      "signal": "coordinator TAF 'direction' (BULL/BEAR)",
+      "verdict": "🚨",
+      "note": "etiqueta binaria derivada de p_bull≥0.5 — redundante (p_bull ya la expresa) y sin CI95 propia"
+    },
+    {
+      "signal": "coordinator METAR 'metar_word' (NORMAL/BOCHORNO…)",
+      "verdict": "🚨",
+      "note": "etiquetas cualitativas {'CAT1': 'NORMAL', 'CAT2': 'FRESCO-SECO', 'CAT3': 'CÁLIDO-HÚMEDO'} SIN probabilidad + CI95 + N (umbrales graduated hardcoded)"
+    },
+    {
+      "signal": "coordinator cascade_conviction (c50/c75/c50to75)",
+      "verdict": "🚨",
+      "note": "score agregado (-0.8321406106746706, 0.20089364152699496, 1.2367156971461095) tercile=t1_low SIN CI95 — es un score de compositor, no una señal con N"
+    },
+    {
+      "signal": "coordinator RÉGIMEN (secuencia)",
+      "verdict": "✅",
+      "note": "MACRO-DRIVEN p=0.83, CI95=[0.7931689613723713, 0.8610581052254117], N=470"
+    },
+    {
+      "signal": "coordinator grade_a PANICO_TOTAL",
+      "verdict": "🚨",
+      "note": "ref usa percentiles crudos ('PF 8.09 @60d, WR 82%, N=55 (raw P85, sin dedup)') en vez de bins calibrados; sin CI95 ni wins/losses"
+    },
+    {
+      "signal": "coordinator monotonicidad medida",
+      "verdict": "🚨",
+      "note": "NO mide monotonicidad (cascade tercil + régimen binario; sin retorno-vs-score)"
+    }
+  ],
+  "violations": [
+    "CAT1: p_bull_zz25/p_bull_zz50 en 'estado_actual_por_sensor' NO llevan CI95 (solo punto + N). La regla exige CI95 en toda señal expuesta.",
+    "CAT1: 'regimen' (EXPANSION/TRANSICION/CONTRACCION) es una etiqueta binaria sin respaldo probabilístico — viola la regla de oro. Umbrales 60/40 en cat1_economia.py line ~310-317.",
+    "CAT1: las señales GRADE A (CREDIT_STRESS, YIELD, DXY, ROTATION) con CI95+N y wins/losses NO se guardan en el JSON de salida — el coordinator no puede consumirlas. Solo están en stdout.",
+    "CAT2: 'graduated_pct' y el 'CAT2 PROTECTION INDEX' se calculan con percentiles crudos (expanding().rank(pct=True)) — INCONSISTENTE con CAT1/CAT3 que usan σ-band calibrado. El índice de protección (headline 53.09%) se basa en percentiles crudos, no en bins calibrados. (La clasificación D1 y las GRADE A SÍ usan bins calibrados.)",
+    "CAT2: 'CAT2 PROTECTION INDEX' se expone como etiqueta emoji (🔴 BOCHORNO ALTO / 🟢 AIRE SECO…, umbrales 80/60/40/20) SIN CI95 + N — etiqueta binaria sin respaldo probabilístico.",
+    "CAT2: PANICO_TOTAL se expone en 3 versiones (bins N=13, pct≥90 N=47, raw≥P85 N=55) sin designar cuál es la canónica. La versión raw (PF 8.09) es la conocida sobre-inflada por percentiles crudos (pitfall #84: raw P85 → PF 2.45). Solo la versión de bins calibrados debe ser la señal operativa.",
+    "CAT2: no mide monotonicidad del edge a través de los bins D1 (solo CI95 por horizonte y contrastes 2-way CAPITULACIÓN vs SUB-REACCIÓN).",
+    "CAT3: script sin salida JSON — 'main()' solo hace print(), no json.dump. El coordinator no tendrá una salida estructurada de CAT3.",
+    "coordinator TAF: expone p_bull (probabilidad puntual) SIN CI95 en las 31 celdas scale. La regla exige probabilidad + CI95 + N. Además mezcla 10 celdas huérfanas (n<10, 'ANECDOTAL'/'LOW') con pobladas en el mismo cono de dispersión.",
+    "coordinator TAF: 'direction' BULL/BEAR es una etiqueta binaria redundante (p_bull>=0.5) expuesta junto a p_bull sin CI95 — la regla prohíbe etiquetas binarias sin respaldo probabilístico completo.",
+    "coordinator METAR: 'metar_word' ['NORMAL', 'FRESCO-SECO', 'CÁLIDO-HÚMEDO'] son etiquetas cualitativas sin respaldo probabilístico (umbrales 97.7/84.13/70/50/30/15.87/2.28 hardcoded en metar_word()).",
+    "coordinator: cascade_conviction (c50/c75/c50to75 + tercile) se expone SIN CI95. El tercile es una discretización binaria sin intervalo de confianza sobre el score.",
+    "coordinator grade_a PANICO_TOTAL: cita 'PF 8.09 @60d, WR 82%, N=55 (raw P85, sin dedup)' = percentil crudo (PF 8.09 inflado), no la versión de bins calibrados (PF ~2.45). Solo 'active' booleano, sin CI95+N ni wins/losses del estado actual.",
+    "coordinator: no mide monotonicidad forward-return vs cascade_conviction / estado graduado (solo tercil y régimen binario)."
+  ]
+}

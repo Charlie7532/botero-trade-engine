@@ -1,0 +1,270 @@
+{
+  "version": "V35 (Final Retrained & Calibrated)",
+  "total_spy_shares_accumulated": 923.54,
+  "total_years_audited": 28,
+  "start_date": "1999-03-18",
+  "end_date": "2026-07-21",
+  "yearly": [
+    {
+      "year": 1999,
+      "spy_ret": 11.1,
+      "v35_shares": 105.67,
+      "v35_ret": 23.2,
+      "alpha": 12.2
+    },
+    {
+      "year": 2000,
+      "spy_ret": -9.8,
+      "v35_shares": 116.05,
+      "v35_ret": -0.1,
+      "alpha": 9.7
+    },
+    {
+      "year": 2001,
+      "spy_ret": -11.3,
+      "v35_shares": 145.32,
+      "v35_ret": 12.8,
+      "alpha": 24.1
+    },
+    {
+      "year": 2002,
+      "spy_ret": -23.6,
+      "v35_shares": 195.02,
+      "v35_ret": 2.3,
+      "alpha": 26.0
+    },
+    {
+      "year": 2003,
+      "spy_ret": 22.2,
+      "v35_shares": 190.86,
+      "v35_ret": 21.0,
+      "alpha": -1.2
+    },
+    {
+      "year": 2004,
+      "spy_ret": 8.7,
+      "v35_shares": 192.07,
+      "v35_ret": 9.4,
+      "alpha": 0.7
+    },
+    {
+      "year": 2005,
+      "spy_ret": 3.5,
+      "v35_shares": 204.06,
+      "v35_ret": 9.7,
+      "alpha": 6.2
+    },
+    {
+      "year": 2006,
+      "spy_ret": 11.8,
+      "v35_shares": 205.1,
+      "v35_ret": 12.8,
+      "alpha": 1.0
+    },
+    {
+      "year": 2007,
+      "spy_ret": 3.4,
+      "v35_shares": 212.44,
+      "v35_ret": 6.4,
+      "alpha": 2.9
+    },
+    {
+      "year": 2008,
+      "spy_ret": -37.7,
+      "v35_shares": 312.24,
+      "v35_ret": -8.0,
+      "alpha": 29.8
+    },
+    {
+      "year": 2009,
+      "spy_ret": 19.9,
+      "v35_shares": 349.05,
+      "v35_ret": 34.0,
+      "alpha": 14.2
+    },
+    {
+      "year": 2010,
+      "spy_ret": 11.0,
+      "v35_shares": 318.09,
+      "v35_ret": 1.2,
+      "alpha": -9.8
+    },
+    {
+      "year": 2011,
+      "spy_ret": -1.2,
+      "v35_shares": 319.51,
+      "v35_ret": -1.3,
+      "alpha": -0.1
+    },
+    {
+      "year": 2012,
+      "spy_ret": 11.7,
+      "v35_shares": 364.08,
+      "v35_ret": 27.1,
+      "alpha": 15.4
+    },
+    {
+      "year": 2013,
+      "spy_ret": 26.4,
+      "v35_shares": 370.43,
+      "v35_ret": 28.2,
+      "alpha": 1.7
+    },
+    {
+      "year": 2014,
+      "spy_ret": 12.4,
+      "v35_shares": 375.19,
+      "v35_ret": 13.6,
+      "alpha": 1.2
+    },
+    {
+      "year": 2015,
+      "spy_ret": -0.8,
+      "v35_shares": 395.38,
+      "v35_ret": 4.3,
+      "alpha": 5.1
+    },
+    {
+      "year": 2016,
+      "spy_ret": 11.2,
+      "v35_shares": 375.44,
+      "v35_ret": 5.9,
+      "alpha": -5.3
+    },
+    {
+      "year": 2017,
+      "spy_ret": 18.5,
+      "v35_shares": 391.56,
+      "v35_ret": 22.5,
+      "alpha": 4.1
+    },
+    {
+      "year": 2018,
+      "spy_ret": -7.0,
+      "v35_shares": 399.39,
+      "v35_ret": -4.3,
+      "alpha": 2.8
+    },
+    {
+      "year": 2019,
+      "spy_ret": 28.7,
+      "v35_shares": 404.13,
+      "v35_ret": 30.0,
+      "alpha": 1.4
+    },
+    {
+      "year": 2020,
+      "spy_ret": 15.1,
+      "v35_shares": 584.14,
+      "v35_ret": 67.2,
+      "alpha": 52.1
+    },
+    {
+      "year": 2021,
+      "spy_ret": 28.8,
+      "v35_shares": 596.61,
+      "v35_ret": 31.6,
+      "alpha": 2.8
+    },
+    {
+      "year": 2022,
+      "spy_ret": -19.9,
+      "v35_shares": 793.03,
+      "v35_ret": 7.8,
+      "alpha": 27.8
+    },
+    {
+      "year": 2023,
+      "spy_ret": 24.8,
+      "v35_shares": 752.38,
+      "v35_ret": 18.2,
+      "alpha": -6.6
+    },
+    {
+      "year": 2024,
+      "spy_ret": 24.0,
+      "v35_shares": 776.31,
+      "v35_ret": 28.3,
+      "alpha": 4.3
+    },
+    {
+      "year": 2025,
+      "spy_ret": 16.6,
+      "v35_shares": 878.54,
+      "v35_ret": 31.6,
+      "alpha": 15.0
+    },
+    {
+      "year": 2026,
+      "spy_ret": 9.5,
+      "v35_shares": 923.54,
+      "v35_ret": 14.7,
+      "alpha": 5.2
+    }
+  ],
+  "regimes": [
+    {
+      "regime": "BEAR_RALLY",
+      "days": 2,
+      "pct_time": 0.0,
+      "win_rate": 0.0,
+      "avg_daily_ret": -0.108
+    },
+    {
+      "regime": "CRASH_SISTEMICO",
+      "days": 68,
+      "pct_time": 1.0,
+      "win_rate": 22.1,
+      "avg_daily_ret": 6.805
+    },
+    {
+      "regime": "DISTRIBUCION_PRE_CRASH",
+      "days": 1371,
+      "pct_time": 19.9,
+      "win_rate": 56.2,
+      "avg_daily_ret": 0.313
+    },
+    {
+      "regime": "MERCADO_SANO",
+      "days": 4267,
+      "pct_time": 62.0,
+      "win_rate": 55.7,
+      "avg_daily_ret": 0.102
+    },
+    {
+      "regime": "NORMAL",
+      "days": 182,
+      "pct_time": 2.6,
+      "win_rate": 54.4,
+      "avg_daily_ret": 2.383
+    },
+    {
+      "regime": "PISO_GENERACIONAL",
+      "days": 597,
+      "pct_time": 8.7,
+      "win_rate": 55.3,
+      "avg_daily_ret": 0.765
+    },
+    {
+      "regime": "PULLBACK_ALCISTA",
+      "days": 98,
+      "pct_time": 1.4,
+      "win_rate": 64.3,
+      "avg_daily_ret": 4.704
+    },
+    {
+      "regime": "RECUPERACION",
+      "days": 106,
+      "pct_time": 1.5,
+      "win_rate": 53.8,
+      "avg_daily_ret": 5.741
+    },
+    {
+      "regime": "RE_ACUMULACION_ALCISTA",
+      "days": 186,
+      "pct_time": 2.7,
+      "win_rate": 62.4,
+      "avg_daily_ret": 1.816
+    }
+  ]
+}

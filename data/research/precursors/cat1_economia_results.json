@@ -1,0 +1,51 @@
+{
+  "salud_economica_ultimo_dia": 72.5191531814042,
+  "regimen_ultimo_dia": "EXPANSION",
+  "regime_distribution": {
+    "EXPANSION": 2275,
+    "TRANSICION": 1603,
+    "CONTRACCION": 26
+  },
+  "rotation_dxy_corr_level": 0.0542253008225108,
+  "rotation_dxy_corr_d2": -0.07478758837293373,
+  "lead_anticip_n": 191,
+  "lead_anticip_median_days": 7.0,
+  "estado_actual_por_sensor": {
+    "credit": {
+      "d1": "DEEP_CREDIT_EASE",
+      "d2": "STABLE_CONTINUATION_3D",
+      "d3": "VOL_NEUTRAL_BASELINE",
+      "depth_sigma": 2.3720126281037635,
+      "health": 100.0,
+      "p_bull_zz25": 0.5236,
+      "n": 519
+    },
+    "yield_curve": {
+      "d1": "FLAT_CURVE",
+      "d2": "DECELERATING_DOWN_3D",
+      "d3": "VOL_MODERATE_COMPRESSION",
+      "depth_sigma": -0.3551881069249234,
+      "health": 68.66000929594469,
+      "p_bull_zz25": 0.5417,
+      "n": 38
+    },
+    "dxy": {
+      "d1": "MODERATE_HIGH_DOLLAR",
+      "d2": "STABLE_CONTINUATION_3D",
+      "d3": "VOL_NEUTRAL_BASELINE",
+      "depth_sigma": 0.8648660317731289,
+      "health": 53.76243801835308,
+      "p_bull_zz25": 0.542864,
+      "n": 1013
+    },
+    "rotation": {
+      "d1": "BALANCED",
+      "d2": "ACCELERATING_UP_3D",
+      "d3": "VOL_MODERATE_COMPRESSION",
+      "depth_sigma": 0.33853506746764034,
+      "health": 67.65416541131907,
+      "p_bull_zz25": 0.6,
+      "n": 40
+    }
+  }
+}

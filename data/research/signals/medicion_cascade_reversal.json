@@ -1,0 +1,137 @@
+{
+  "señal": "cascade_reversal",
+  "forward": "next_leg",
+  "n_total": 1590,
+  "activa": {
+    "dist": {
+      "n": 0
+    },
+    "wl": {},
+    "ci_mean": {
+      "ci_lo": null,
+      "ci_hi": null,
+      "n": 0,
+      "nota": "N<20"
+    }
+  },
+  "baseline": {
+    "dist": {
+      "n": 1589,
+      "mean": 0.004064893306833343,
+      "median": 0.025108443276516734,
+      "p5": -0.07652746352837815,
+      "p25": -0.0447310243183493,
+      "p75": 0.04726780069245806,
+      "p95": 0.09291801211013365,
+      "std": 0.06354683000272777
+    },
+    "wl": {
+      "win_rate": 0.500314663310258,
+      "n_wins": 795,
+      "n_losses": 794,
+      "mean_win": 0.057236586266960425,
+      "mean_loss": -0.04917376652100171,
+      "profit_factor": 1.165431828842585
+    }
+  },
+  "baseline_pivot_type": "ALL",
+  "timing_temprano": {
+    "estadistica": {
+      "n": 0
+    }
+  },
+  "costo_tarde": {
+    "n": 0,
+    "costo_medio": null
+  },
+  "sensibilidad": [
+    {
+      "k": 0,
+      "n": 0,
+      "mean": null
+    },
+    {
+      "k": 1,
+      "n": 0,
+      "mean": null
+    },
+    {
+      "k": 2,
+      "n": 0,
+      "mean": null
+    },
+    {
+      "k": 3,
+      "n": 0,
+      "mean": null
+    },
+    {
+      "k": 5,
+      "n": 0,
+      "mean": null
+    }
+  ],
+  "triada": {
+    "zz25": {
+      "mean": 0.0,
+      "median": 0.0,
+      "win_rate": 0.0,
+      "n": 0
+    },
+    "cascade_50": {
+      "rate_activa": 0.0,
+      "rate_baseline": 0.5059786028949025,
+      "delta": -0.5059786028949025,
+      "n": 0
+    },
+    "cascade_75": {
+      "rate_activa": 0.0,
+      "rate_baseline": 0.2680931403398364,
+      "delta": -0.2680931403398364,
+      "n": 0
+    },
+    "duracion_bars": {
+      "mean": 0.0,
+      "median": 0.0,
+      "baseline_mean": 7.838892385147892,
+      "n": 0
+    }
+  },
+  "duracion_desglose": null,
+  "anticipacion_zigzag": null,
+  "capture_ratio": null,
+  "drawdown_anticipacion": null,
+  "desglose_d2d3": null,
+  "estabilidad_decada": {
+    "1990": {
+      "n": 0,
+      "mean": null,
+      "wr": null
+    },
+    "2000": {
+      "n": 0,
+      "mean": null,
+      "wr": null
+    },
+    "2010": {
+      "n": 0,
+      "mean": null,
+      "wr": null
+    },
+    "2020": {
+      "n": 0,
+      "mean": null,
+      "wr": null
+    }
+  },
+  "punteria": {},
+  "offset_entrada": {},
+  "lookback_crash": {},
+  "spearman": null,
+  "meta": {
+    "seed": 42,
+    "bootstrap": 3000,
+    "determinista": true,
+    "sin_agentes": true
+  }
+}

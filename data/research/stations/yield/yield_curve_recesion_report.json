@@ -1,0 +1,858 @@
+{
+  "report_title": "Yield Curve Inversion → SPY Drawdown Analysis",
+  "report_date": "2026-08-17",
+  "data_sources": {
+    "spy": "market.ohlcv_bars (SPY daily close, 1993-2026)",
+    "tnx": "market.ohlcv_bars (TNX 10Y Treasury yield, 1962-2026)",
+    "irx": "market.ohlcv_bars (IRX 3M Treasury yield, 1960-2026)",
+    "yield_curve": "TNX − IRX (10Y-3M spread), computed daily",
+    "quants_obs": "quants_obs.pkl (1,590 SPY zz25 pivots, context only)"
+  },
+  "data_period": "1993-01-29 to 2026-08-14",
+  "yield_curve_daily_period": "1962-01-02 to 2026-08-14",
+  "definition": {
+    "yield_curve": "TNX (10Y Treasury) − IRX (3M Treasury) spread",
+    "inversion": "yield_curve < 0",
+    "signal": "FIRST daily crossing below zero in each inversion episode",
+    "drawdown": "Maximum peak-to-trough decline in SPY over forward horizon",
+    "severe_drawdown": ">15% peak-to-trough",
+    "horizons": "6, 12, 18, 24 months from signal date"
+  },
+  "limitations": [
+    "SPY data comienza en 1993 — no cubre las recesiones NBER de 1953-1990 (7 de 8)",
+    "Solo spread 10Y-3M. El spread 2Y-10Y (más usado por el mercado) no está disponible en esta data",
+    "La data de TNX comienza en 1962 e IRX en 1960 — el spread completo existe desde 1962",
+    "Cubre 4 episodios de inversión con SPY: 2000, 2006-2007, 2019, 2022-2024",
+    "El episodio 2024-2026 está en curso (curva todavía invertida al corte)"
+  ],
+  "episodes": [
+    {
+      "episode_id": 1,
+      "signal_date": "1966-01-12",
+      "yc_at_signal_pct": -0.05,
+      "deepest_yc_pct": -0.05,
+      "deepest_yc_date": "1966-01-12",
+      "num_crossings": 1,
+      "first_cross": "1966-01-12",
+      "last_cross": "1966-01-12",
+      "exit_date": "1966-01-20",
+      "is_still_inverted": false,
+      "days_inverted": 8,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 2,
+      "signal_date": "1966-09-08",
+      "yc_at_signal_pct": -0.03,
+      "deepest_yc_pct": -0.42,
+      "deepest_yc_date": "1966-10-18",
+      "num_crossings": 2,
+      "first_cross": "1966-09-08",
+      "last_cross": "1967-02-07",
+      "exit_date": "1967-02-08",
+      "is_still_inverted": false,
+      "days_inverted": 153,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 3,
+      "signal_date": "1968-12-19",
+      "yc_at_signal_pct": -0.01,
+      "deepest_yc_pct": -0.45,
+      "deepest_yc_date": "1969-07-23",
+      "num_crossings": 16,
+      "first_cross": "1968-12-19",
+      "last_cross": "1970-01-16",
+      "exit_date": "1970-02-10",
+      "is_still_inverted": false,
+      "days_inverted": 418,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 4,
+      "signal_date": "1973-06-01",
+      "yc_at_signal_pct": -0.01,
+      "deepest_yc_pct": -1.87,
+      "deepest_yc_date": "1973-09-10",
+      "num_crossings": 1,
+      "first_cross": "1973-06-01",
+      "last_cross": "1973-06-01",
+      "exit_date": "1974-02-05",
+      "is_still_inverted": false,
+      "days_inverted": 249,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 5,
+      "signal_date": "1974-02-07",
+      "yc_at_signal_pct": -0.18,
+      "deepest_yc_pct": -1.59,
+      "deepest_yc_date": "1974-08-23",
+      "num_crossings": 7,
+      "first_cross": "1974-02-07",
+      "last_cross": "1974-11-04",
+      "exit_date": "1974-11-06",
+      "is_still_inverted": false,
+      "days_inverted": 272,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 6,
+      "signal_date": "1978-11-01",
+      "yc_at_signal_pct": -0.19,
+      "deepest_yc_pct": -2.98,
+      "deepest_yc_date": "1980-03-12",
+      "num_crossings": 9,
+      "first_cross": "1978-11-01",
+      "last_cross": "1979-06-27",
+      "exit_date": "1980-04-30",
+      "is_still_inverted": false,
+      "days_inverted": 546,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 7,
+      "signal_date": "1980-10-27",
+      "yc_at_signal_pct": -0.18,
+      "deepest_yc_pct": -3.73,
+      "deepest_yc_date": "1980-12-10",
+      "num_crossings": 5,
+      "first_cross": "1980-10-27",
+      "last_cross": "1981-04-24",
+      "exit_date": "1981-09-09",
+      "is_still_inverted": false,
+      "days_inverted": 317,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 8,
+      "signal_date": "1982-02-16",
+      "yc_at_signal_pct": -0.04,
+      "deepest_yc_pct": -0.04,
+      "deepest_yc_date": "1982-02-16",
+      "num_crossings": 1,
+      "first_cross": "1982-02-16",
+      "last_cross": "1982-02-16",
+      "exit_date": "1982-02-17",
+      "is_still_inverted": false,
+      "days_inverted": 1,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 9,
+      "signal_date": "1989-05-31",
+      "yc_at_signal_pct": -0.01,
+      "deepest_yc_pct": -0.07,
+      "deepest_yc_date": "1989-06-09",
+      "num_crossings": 3,
+      "first_cross": "1989-05-31",
+      "last_cross": "1989-07-21",
+      "exit_date": "1989-07-27",
+      "is_still_inverted": false,
+      "days_inverted": 57,
+      "spy_at_signal": null,
+      "prior_peak": {
+        "date": null,
+        "price": null,
+        "dd_at_signal_pct": null,
+        "days_peak_to_signal": null
+      },
+      "forward_drawdowns": {
+        "6": null,
+        "12": null,
+        "18": null,
+        "24": null
+      }
+    },
+    {
+      "episode_id": 10,
+      "signal_date": "2000-07-27",
+      "yc_at_signal_pct": -0.02,
+      "deepest_yc_pct": -0.763,
+      "deepest_yc_date": "2001-01-02",
+      "num_crossings": 3,
+      "first_cross": "2000-07-27",
+      "last_cross": "2001-01-17",
+      "exit_date": "2001-01-19",
+      "is_still_inverted": false,
+      "days_inverted": 176,
+      "spy_at_signal": 145.38,
+      "prior_peak": {
+        "date": "2000-03-24",
+        "price": 153.56,
+        "dd_at_signal_pct": -5.33,
+        "days_peak_to_signal": 125
+      },
+      "forward_drawdowns": {
+        "6": {
+          "max_drawdown_pct": -17.15,
+          "peak_date": "2000-09-01",
+          "trough_date": "2000-12-20",
+          "peak_price": 152.38,
+          "trough_price": 126.25,
+          "forward_return_pct": -6.43,
+          "days_peak_to_trough": 110,
+          "days_signal_to_trough": 146,
+          "segment_start_price": 145.38,
+          "segment_end_price": 136.03,
+          "recovered": false
+        },
+        "12": {
+          "max_drawdown_pct": -27.55,
+          "peak_date": "2000-09-01",
+          "trough_date": "2001-04-03",
+          "peak_price": 152.38,
+          "trough_price": 110.39,
+          "forward_return_pct": -16.9,
+          "days_peak_to_trough": 214,
+          "days_signal_to_trough": 250,
+          "segment_start_price": 145.38,
+          "segment_end_price": 120.81,
+          "recovered": false
+        },
+        "18": {
+          "max_drawdown_pct": -36.16,
+          "peak_date": "2000-09-01",
+          "trough_date": "2001-09-21",
+          "peak_price": 152.38,
+          "trough_price": 97.28,
+          "forward_return_pct": -21.89,
+          "days_peak_to_trough": 385,
+          "days_signal_to_trough": 421,
+          "segment_start_price": 145.38,
+          "segment_end_price": 113.55,
+          "recovered": false
+        },
+        "24": {
+          "max_drawdown_pct": -47.53,
+          "peak_date": "2000-09-01",
+          "trough_date": "2002-07-23",
+          "peak_price": 152.38,
+          "trough_price": 79.95,
+          "forward_return_pct": -41.12,
+          "days_peak_to_trough": 690,
+          "days_signal_to_trough": 726,
+          "segment_start_price": 145.38,
+          "segment_end_price": 85.6,
+          "recovered": false
+        }
+      }
+    },
+    {
+      "episode_id": 11,
+      "signal_date": "2006-08-01",
+      "yc_at_signal_pct": -0.002,
+      "deepest_yc_pct": -0.475,
+      "deepest_yc_date": "2007-02-27",
+      "num_crossings": 3,
+      "first_cross": "2006-08-01",
+      "last_cross": "2006-09-19",
+      "exit_date": "2007-05-15",
+      "is_still_inverted": false,
+      "days_inverted": 287,
+      "spy_at_signal": 127.22,
+      "prior_peak": {
+        "date": "2006-05-09",
+        "price": 132.62,
+        "dd_at_signal_pct": -4.07,
+        "days_peak_to_signal": 84
+      },
+      "forward_drawdowns": {
+        "6": {
+          "max_drawdown_pct": -1.8,
+          "peak_date": "2006-12-14",
+          "trough_date": "2007-01-05",
+          "peak_price": 143.12,
+          "trough_price": 140.54,
+          "forward_return_pct": 12.24,
+          "days_peak_to_trough": 22,
+          "days_signal_to_trough": 157,
+          "segment_start_price": 127.22,
+          "segment_end_price": 142.79,
+          "recovery_date": "2007-01-12",
+          "recovered": true
+        },
+        "12": {
+          "max_drawdown_pct": -6.42,
+          "peak_date": "2007-07-19",
+          "trough_date": "2007-07-27",
+          "peak_price": 155.07,
+          "trough_price": 145.11,
+          "forward_return_pct": 15.1,
+          "days_peak_to_trough": 8,
+          "days_signal_to_trough": 360,
+          "segment_start_price": 127.22,
+          "segment_end_price": 146.43,
+          "recovered": false
+        },
+        "18": {
+          "max_drawdown_pct": -16.46,
+          "peak_date": "2007-10-09",
+          "trough_date": "2008-01-22",
+          "peak_price": 156.48,
+          "trough_price": 130.72,
+          "forward_return_pct": 6.04,
+          "days_peak_to_trough": 105,
+          "days_signal_to_trough": 539,
+          "segment_start_price": 127.22,
+          "segment_end_price": 134.91,
+          "recovered": false
+        },
+        "24": {
+          "max_drawdown_pct": -22.68,
+          "peak_date": "2007-10-09",
+          "trough_date": "2008-07-15",
+          "peak_price": 156.48,
+          "trough_price": 120.99,
+          "forward_return_pct": -0.31,
+          "days_peak_to_trough": 280,
+          "days_signal_to_trough": 714,
+          "segment_start_price": 127.22,
+          "segment_end_price": 126.83,
+          "recovered": false
+        }
+      }
+    },
+    {
+      "episode_id": 12,
+      "signal_date": "2007-07-31",
+      "yc_at_signal_pct": -0.039,
+      "deepest_yc_pct": -0.042,
+      "deepest_yc_date": "2007-08-07",
+      "num_crossings": 2,
+      "first_cross": "2007-07-31",
+      "last_cross": "2007-08-07",
+      "exit_date": "2007-08-08",
+      "is_still_inverted": false,
+      "days_inverted": 8,
+      "spy_at_signal": 145.72,
+      "prior_peak": {
+        "date": "2007-07-19",
+        "price": 155.07,
+        "dd_at_signal_pct": -6.03,
+        "days_peak_to_signal": 12
+      },
+      "forward_drawdowns": {
+        "6": {
+          "max_drawdown_pct": -16.46,
+          "peak_date": "2007-10-09",
+          "trough_date": "2008-01-22",
+          "peak_price": 156.48,
+          "trough_price": 130.72,
+          "forward_return_pct": -6.73,
+          "days_peak_to_trough": 105,
+          "days_signal_to_trough": 175,
+          "segment_start_price": 145.72,
+          "segment_end_price": 135.91,
+          "recovered": false
+        },
+        "12": {
+          "max_drawdown_pct": -22.68,
+          "peak_date": "2007-10-09",
+          "trough_date": "2008-07-15",
+          "peak_price": 156.48,
+          "trough_price": 120.99,
+          "forward_return_pct": -11.8,
+          "days_peak_to_trough": 280,
+          "days_signal_to_trough": 350,
+          "segment_start_price": 145.72,
+          "segment_end_price": 128.53,
+          "recovered": false
+        },
+        "18": {
+          "max_drawdown_pct": -51.78,
+          "peak_date": "2007-10-09",
+          "trough_date": "2008-11-20",
+          "peak_price": 156.48,
+          "trough_price": 75.45,
+          "forward_return_pct": -40.03,
+          "days_peak_to_trough": 408,
+          "days_signal_to_trough": 478,
+          "segment_start_price": 145.72,
+          "segment_end_price": 87.39,
+          "recovered": false
+        },
+        "24": {
+          "max_drawdown_pct": -56.47,
+          "peak_date": "2007-10-09",
+          "trough_date": "2009-03-09",
+          "peak_price": 156.48,
+          "trough_price": 68.11,
+          "forward_return_pct": -32.29,
+          "days_peak_to_trough": 517,
+          "days_signal_to_trough": 587,
+          "segment_start_price": 145.72,
+          "segment_end_price": 98.67,
+          "recovered": false
+        }
+      }
+    },
+    {
+      "episode_id": 13,
+      "signal_date": "2019-03-27",
+      "yc_at_signal_pct": -0.004,
+      "deepest_yc_pct": -0.474,
+      "deepest_yc_date": "2019-08-28",
+      "num_crossings": 8,
+      "first_cross": "2019-03-27",
+      "last_cross": "2020-02-20",
+      "exit_date": "2020-03-03",
+      "is_still_inverted": false,
+      "days_inverted": 342,
+      "spy_at_signal": 279.65,
+      "prior_peak": {
+        "date": "2018-09-20",
+        "price": 293.58,
+        "dd_at_signal_pct": -4.74,
+        "days_peak_to_signal": 188
+      },
+      "forward_drawdowns": {
+        "6": {
+          "max_drawdown_pct": -6.62,
+          "peak_date": "2019-05-03",
+          "trough_date": "2019-06-03",
+          "peak_price": 294.03,
+          "trough_price": 274.57,
+          "forward_return_pct": 6.43,
+          "days_peak_to_trough": 31,
+          "days_signal_to_trough": 68,
+          "segment_start_price": 279.65,
+          "segment_end_price": 297.62,
+          "recovery_date": "2019-06-20",
+          "recovered": true
+        },
+        "12": {
+          "max_drawdown_pct": -34.1,
+          "peak_date": "2020-02-19",
+          "trough_date": "2020-03-23",
+          "peak_price": 338.34,
+          "trough_price": 222.95,
+          "forward_return_pct": -6.6,
+          "days_peak_to_trough": 33,
+          "days_signal_to_trough": 362,
+          "segment_start_price": 279.65,
+          "segment_end_price": 261.2,
+          "recovered": false
+        },
+        "18": {
+          "max_drawdown_pct": -34.1,
+          "peak_date": "2020-02-19",
+          "trough_date": "2020-03-23",
+          "peak_price": 338.34,
+          "trough_price": 222.95,
+          "forward_return_pct": 15.68,
+          "days_peak_to_trough": 33,
+          "days_signal_to_trough": 362,
+          "segment_start_price": 279.65,
+          "segment_end_price": 323.5,
+          "recovery_date": "2020-08-18",
+          "recovered": true
+        },
+        "24": {
+          "max_drawdown_pct": -34.1,
+          "peak_date": "2020-02-19",
+          "trough_date": "2020-03-23",
+          "peak_price": 338.34,
+          "trough_price": 222.95,
+          "forward_return_pct": 41.6,
+          "days_peak_to_trough": 33,
+          "days_signal_to_trough": 362,
+          "segment_start_price": 279.65,
+          "segment_end_price": 395.98,
+          "recovery_date": "2020-08-18",
+          "recovered": true
+        }
+      }
+    },
+    {
+      "episode_id": 14,
+      "signal_date": "2022-11-10",
+      "yc_at_signal_pct": -0.227,
+      "deepest_yc_pct": -1.705,
+      "deepest_yc_date": "2023-05-04",
+      "num_crossings": 1,
+      "first_cross": "2022-11-10",
+      "last_cross": "2022-11-10",
+      "exit_date": "2024-11-12",
+      "is_still_inverted": false,
+      "days_inverted": 733,
+      "spy_at_signal": 394.69,
+      "prior_peak": {
+        "date": "2022-01-03",
+        "price": 477.71,
+        "dd_at_signal_pct": -17.38,
+        "days_peak_to_signal": 311
+      },
+      "forward_drawdowns": {
+        "6": {
+          "max_drawdown_pct": -7.61,
+          "peak_date": "2022-11-30",
+          "trough_date": "2022-12-28",
+          "peak_price": 407.68,
+          "trough_price": 376.66,
+          "forward_return_pct": 4.42,
+          "days_peak_to_trough": 28,
+          "days_signal_to_trough": 48,
+          "segment_start_price": 394.69,
+          "segment_end_price": 412.13,
+          "recovery_date": "2023-02-01",
+          "recovered": true
+        },
+        "12": {
+          "max_drawdown_pct": -10.29,
+          "peak_date": "2023-07-31",
+          "trough_date": "2023-10-27",
+          "peak_price": 457.79,
+          "trough_price": 410.68,
+          "forward_return_pct": 11.63,
+          "days_peak_to_trough": 88,
+          "days_signal_to_trough": 351,
+          "segment_start_price": 394.69,
+          "segment_end_price": 440.61,
+          "recovered": false
+        },
+        "18": {
+          "max_drawdown_pct": -10.29,
+          "peak_date": "2023-07-31",
+          "trough_date": "2023-10-27",
+          "peak_price": 457.79,
+          "trough_price": 410.68,
+          "forward_return_pct": 31.96,
+          "days_peak_to_trough": 88,
+          "days_signal_to_trough": 351,
+          "segment_start_price": 394.69,
+          "segment_end_price": 520.84,
+          "recovery_date": "2023-12-01",
+          "recovered": true
+        },
+        "24": {
+          "max_drawdown_pct": -10.29,
+          "peak_date": "2023-07-31",
+          "trough_date": "2023-10-27",
+          "peak_price": 457.79,
+          "trough_price": 410.68,
+          "forward_return_pct": 51.56,
+          "days_peak_to_trough": 88,
+          "days_signal_to_trough": 351,
+          "segment_start_price": 394.69,
+          "segment_end_price": 598.19,
+          "recovery_date": "2023-12-01",
+          "recovered": true
+        }
+      }
+    },
+    {
+      "episode_id": 15,
+      "signal_date": "2024-11-19",
+      "yc_at_signal_pct": -0.03,
+      "deepest_yc_pct": -0.196,
+      "deepest_yc_date": "2024-11-29",
+      "num_crossings": 5,
+      "first_cross": "2024-11-19",
+      "last_cross": "2025-04-29",
+      "exit_date": "2025-05-01",
+      "is_still_inverted": false,
+      "days_inverted": 163,
+      "spy_at_signal": 590.3,
+      "prior_peak": {
+        "date": "2024-11-11",
+        "price": 598.76,
+        "dd_at_signal_pct": -1.41,
+        "days_peak_to_signal": 8
+      },
+      "forward_drawdowns": {
+        "6": {
+          "max_drawdown_pct": -19.0,
+          "peak_date": "2025-02-19",
+          "trough_date": "2025-04-08",
+          "peak_price": 612.93,
+          "trough_price": 496.48,
+          "forward_return_pct": 0.43,
+          "days_peak_to_trough": 48,
+          "days_signal_to_trough": 140,
+          "segment_start_price": 590.3,
+          "segment_end_price": 592.85,
+          "recovered": false
+        },
+        "12": {
+          "max_drawdown_pct": -19.0,
+          "peak_date": "2025-02-19",
+          "trough_date": "2025-04-08",
+          "peak_price": 612.93,
+          "trough_price": 496.48,
+          "forward_return_pct": 12.25,
+          "days_peak_to_trough": 48,
+          "days_signal_to_trough": 140,
+          "segment_start_price": 590.3,
+          "segment_end_price": 662.63,
+          "recovery_date": "2025-06-27",
+          "recovered": true
+        },
+        "18": {
+          "max_drawdown_pct": -19.0,
+          "peak_date": "2025-02-19",
+          "trough_date": "2025-04-08",
+          "peak_price": 612.93,
+          "trough_price": 496.48,
+          "forward_return_pct": 25.57,
+          "days_peak_to_trough": 48,
+          "days_signal_to_trough": 140,
+          "segment_start_price": 590.3,
+          "segment_end_price": 741.25,
+          "recovery_date": "2025-06-27",
+          "recovered": true
+        },
+        "24": {
+          "max_drawdown_pct": -19.0,
+          "peak_date": "2025-02-19",
+          "trough_date": "2025-04-08",
+          "peak_price": 612.93,
+          "trough_price": 496.48,
+          "forward_return_pct": 31.52,
+          "days_peak_to_trough": 48,
+          "days_signal_to_trough": 140,
+          "segment_start_price": 590.3,
+          "segment_end_price": 776.34,
+          "recovery_date": "2025-06-27",
+          "recovered": true
+        }
+      }
+    }
+  ],
+  "case_2022_2024": {
+    "spy_peak_2022": {
+      "date": "2022-01-03",
+      "price": 477.71
+    },
+    "spy_trough_2022": {
+      "date": "2022-10-12",
+      "price": 356.56
+    },
+    "spy_drawdown_2022_pct": -25.4,
+    "spy_drawdown_peak_to_trough_days": 282,
+    "first_inversion": {
+      "date": "2022-11-10",
+      "yc_pct": -0.23,
+      "spy_price": 394.69,
+      "dd_from_peak_pct": -17.4,
+      "days_after_peak": 311,
+      "days_before_trough": null,
+      "days_after_trough": 29
+    },
+    "deepest_inversion": {
+      "date": "2023-05-04",
+      "yc_pct": -1.7
+    },
+    "svb_crisis": {
+      "date": "2023-03-10",
+      "curve_inverted": true,
+      "yc_pct": -1.11,
+      "spy_price": 385.91
+    },
+    "inversion_preceded_trough": false,
+    "drawdown_mostly_before_inversion": true,
+    "yc_inverted_before_spy_peak": false
+  },
+  "summary": {
+    "6m": {
+      "n_episodes": 6,
+      "mean_drawdown_pct": -11.44,
+      "median_drawdown_pct": -12.04,
+      "min_drawdown_pct": -19.0,
+      "max_drawdown_pct": -1.8,
+      "std_drawdown_pct": 6.4,
+      "drawdown_gt_10_pct": 3,
+      "drawdown_gt_15_pct": 3,
+      "drawdown_gt_20_pct": 0,
+      "drawdown_gt_25_pct": 0,
+      "episodes": [
+        -17.15,
+        -1.8,
+        -16.46,
+        -6.62,
+        -7.61,
+        -19.0
+      ]
+    },
+    "12m": {
+      "n_episodes": 6,
+      "mean_drawdown_pct": -20.01,
+      "median_drawdown_pct": -20.84,
+      "min_drawdown_pct": -34.1,
+      "max_drawdown_pct": -6.42,
+      "std_drawdown_pct": 9.51,
+      "drawdown_gt_10_pct": 5,
+      "drawdown_gt_15_pct": 4,
+      "drawdown_gt_20_pct": 3,
+      "drawdown_gt_25_pct": 2,
+      "episodes": [
+        -27.55,
+        -6.42,
+        -22.68,
+        -34.1,
+        -10.29,
+        -19.0
+      ]
+    },
+    "18m": {
+      "n_episodes": 6,
+      "mean_drawdown_pct": -27.96,
+      "median_drawdown_pct": -26.55,
+      "min_drawdown_pct": -51.78,
+      "max_drawdown_pct": -10.29,
+      "std_drawdown_pct": 14.12,
+      "drawdown_gt_10_pct": 6,
+      "drawdown_gt_15_pct": 5,
+      "drawdown_gt_20_pct": 3,
+      "drawdown_gt_25_pct": 3,
+      "episodes": [
+        -36.16,
+        -16.46,
+        -51.78,
+        -34.1,
+        -10.29,
+        -19.0
+      ]
+    },
+    "24m": {
+      "n_episodes": 6,
+      "mean_drawdown_pct": -31.68,
+      "median_drawdown_pct": -28.39,
+      "min_drawdown_pct": -56.47,
+      "max_drawdown_pct": -10.29,
+      "std_drawdown_pct": 16.18,
+      "drawdown_gt_10_pct": 6,
+      "drawdown_gt_15_pct": 5,
+      "drawdown_gt_20_pct": 4,
+      "drawdown_gt_25_pct": 3,
+      "episodes": [
+        -47.53,
+        -22.68,
+        -56.47,
+        -34.1,
+        -10.29,
+        -19.0
+      ]
+    }
+  },
+  "lead_time_analysis": {
+    "median_days_signal_to_trough": 474.0,
+    "all_lead_times_days": [
+      726,
+      714,
+      587,
+      362,
+      351,
+      140
+    ]
+  },
+  "verdict": {
+    "total_signals": 6,
+    "complete_episodes": 5,
+    "incomplete_episodes": 1,
+    "hits_dd15_24m": 4,
+    "hit_rate": "4/5 (80%)",
+    "false_alarms": [
+      "2022-11-10"
+    ],
+    "conclusion": "4/5 (80%) de los episodios COMPLETOS de inversión de la curva 10Y-3M precedieron drawdowns >15% de SPY en 24 meses. PERO el caso 2022-2024 es una FALSA ALARMA con nuestra definición: la curva 10Y-3M se invirtió en 2022-11-10 (29 días DESPUÉS del fondo de SPY en 2022-10-12). El drawdown de -25.4% ya estaba completo. La curva de rendimiento 10Y-3M NO predijo este drawdown — llegó tarde. Esto NO significa que la curva 'falló' como predictor de recesión NBER (la economía NO entró en recesión NBER en 2022-2024), sino que con NUESTRA definición de drawdown, la señal llegó después del daño. El spread 2Y-10Y (no disponible en esta data) sí se invirtió en julio 2022, 3 meses ANTES del trough — ese spread SÍ habría precedido el drawdown. Conclusión: la curva 10Y-3M es un predictor FUERTE pero NO infalible de drawdowns severos (4/5). El caso 2022 revela que el timing importa: la inversión puede llegar tarde cuando el drawdown es rápido y profundo.",
+    "key_finding_2022": "La inversión 10Y-3M ocurrió en 2022-11-10, DESPUÉS del trough de SPY (2022-10-12). El drawdown de -25.4% ya estaba completo. La curva NO predijo este drawdown con nuestra definición.",
+    "nber_context": "La curva 10Y-3M tiene 8/8 en predecir recesiones NBER desde 1950. En 2022-2024, la curva se invirtió profundamente (−1.70%) pero NO hubo recesión NBER. El debate académico: ¿falló la curva o la definición de recesión es demasiado estrecha? Con NUESTRA definición (drawdown de SPY >15%), la respuesta es: la curva NO predijo este drawdown porque llegó después del fondo. Pero el spread 2Y-10Y (invertido desde julio 2022) SÍ habría precedido el drawdown. La elección del spread importa."
+  }
+}

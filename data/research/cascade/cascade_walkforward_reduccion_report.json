@@ -1,0 +1,736 @@
+{
+  "_meta": {
+    "task": "cascade_walkforward_reduccion",
+    "question": "¿La reducción del Grupo A (5 estaciones → vix+bsi y variantes) sobrevive OOS, o es overfitting in-sample?",
+    "data": "scratch/quants_obs.pkl (1,590 pivotes zz25)",
+    "formula": "cascade_conviction = 0.66*(d1_bear_5-0.41)/0.3206 + 0.34*(abs_prev_leg_return-0.0532)/0.035",
+    "counting": "FRACCIONAL, type-mask MIN/MAX (fg MIN-only)",
+    "metric": "Spearman IC vs cascade_50",
+    "walk_forward": {
+      "train_init": 500,
+      "step": 50,
+      "n_folds": 22,
+      "expanding": true,
+      "test_size_last_fold": 40
+    },
+    "bootstrap": {
+      "n_iter": 3000,
+      "seed": 42
+    },
+    "calibration_primary": "FIJA (0.41/0.3206 Grupo A base, aplicada a todas las configs)",
+    "calibration_robustness": "REFIT por fold (mu/sigma del train)",
+    "generated_at": "2026-08-17T15:45:39.232763"
+  },
+  "calibration": {
+    "d1_mean": 0.41,
+    "d1_std": 0.3206,
+    "dom25_mean": 0.0532,
+    "dom25_std": 0.035,
+    "w_bear": 0.66,
+    "w_dom": 0.34,
+    "baseline_ic_in_sample": {
+      "cascade_50": 0.4155,
+      "cascade_75": 0.3463,
+      "cascade_50to75": 0.4113
+    },
+    "baseline_ic_oos": {
+      "cascade_50": 0.3245,
+      "cascade_75": 0.2596,
+      "cascade_50to75": 0.3388
+    }
+  },
+  "configs": {
+    "A_5estaciones": {
+      "stations": [
+        "vix",
+        "bsi",
+        "fg",
+        "credit",
+        "rotation"
+      ],
+      "stations_min": [
+        "vix",
+        "bsi",
+        "fg",
+        "credit",
+        "rotation"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi",
+        "credit",
+        "rotation"
+      ],
+      "n_stations_label": 5
+    },
+    "B_vix_bsi": {
+      "stations": [
+        "vix",
+        "bsi"
+      ],
+      "stations_min": [
+        "vix",
+        "bsi"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi"
+      ],
+      "n_stations_label": 2
+    },
+    "C_vix_bsi_fg": {
+      "stations": [
+        "vix",
+        "bsi",
+        "fg"
+      ],
+      "stations_min": [
+        "vix",
+        "bsi",
+        "fg"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi"
+      ],
+      "n_stations_label": 3
+    },
+    "D_vix_bsi_credit": {
+      "stations": [
+        "vix",
+        "bsi",
+        "credit"
+      ],
+      "stations_min": [
+        "vix",
+        "bsi",
+        "credit"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi",
+        "credit"
+      ],
+      "n_stations_label": 3
+    },
+    "E_vix_bsi_rotation": {
+      "stations": [
+        "vix",
+        "bsi",
+        "rotation"
+      ],
+      "stations_min": [
+        "vix",
+        "bsi",
+        "rotation"
+      ],
+      "stations_max": [
+        "vix",
+        "bsi",
+        "rotation"
+      ],
+      "n_stations_label": 3
+    }
+  },
+  "in_sample_reference": {
+    "A_5estaciones": {
+      "ic_is": 0.414678,
+      "n_active_mean": 3.622
+    },
+    "B_vix_bsi": {
+      "ic_is": 0.432397,
+      "n_active_mean": 2.0
+    },
+    "C_vix_bsi_fg": {
+      "ic_is": 0.433239,
+      "n_active_mean": 2.179
+    },
+    "D_vix_bsi_credit": {
+      "ic_is": 0.419351,
+      "n_active_mean": 2.575
+    },
+    "E_vix_bsi_rotation": {
+      "ic_is": 0.414195,
+      "n_active_mean": 2.867
+    }
+  },
+  "oos_fixed_calibration": {
+    "A_5estaciones": {
+      "mean_fold_ic": 0.318901,
+      "ci95_mean_fold": [
+        0.247281,
+        0.388046
+      ],
+      "pooled_ic": 0.464808,
+      "ci95_pooled": [
+        0.417572,
+        0.510737
+      ],
+      "pct_folds_positive": 95.45,
+      "n_folds": 22,
+      "n_folds_valid": 22
+    },
+    "B_vix_bsi": {
+      "mean_fold_ic": 0.307064,
+      "ci95_mean_fold": [
+        0.238486,
+        0.375393
+      ],
+      "pooled_ic": 0.461648,
+      "ci95_pooled": [
+        0.41502,
+        0.509445
+      ],
+      "pct_folds_positive": 95.45,
+      "n_folds": 22,
+      "n_folds_valid": 22
+    },
+    "C_vix_bsi_fg": {
+      "mean_fold_ic": 0.318488,
+      "ci95_mean_fold": [
+        0.255986,
+        0.380847
+      ],
+      "pooled_ic": 0.463,
+      "ci95_pooled": [
+        0.414747,
+        0.512572
+      ],
+      "pct_folds_positive": 95.45,
+      "n_folds": 22,
+      "n_folds_valid": 22
+    },
+    "D_vix_bsi_credit": {
+      "mean_fold_ic": 0.311223,
+      "ci95_mean_fold": [
+        0.240292,
+        0.383892
+      ],
+      "pooled_ic": 0.454095,
+      "ci95_pooled": [
+        0.406639,
+        0.501554
+      ],
+      "pct_folds_positive": 95.45,
+      "n_folds": 22,
+      "n_folds_valid": 22
+    },
+    "E_vix_bsi_rotation": {
+      "mean_fold_ic": 0.304635,
+      "ci95_mean_fold": [
+        0.234791,
+        0.367753
+      ],
+      "pooled_ic": 0.453473,
+      "ci95_pooled": [
+        0.404425,
+        0.500779
+      ],
+      "pct_folds_positive": 95.45,
+      "n_folds": 22,
+      "n_folds_valid": 22
+    }
+  },
+  "oos_refit_calibration": {
+    "A_5estaciones": {
+      "mean_fold_ic": 0.316441,
+      "ci95_mean_fold": [
+        0.242892,
+        0.386155
+      ],
+      "pct_folds_positive": 95.45
+    },
+    "B_vix_bsi": {
+      "mean_fold_ic": 0.307979,
+      "ci95_mean_fold": [
+        0.238448,
+        0.376295
+      ],
+      "pct_folds_positive": 95.45
+    },
+    "C_vix_bsi_fg": {
+      "mean_fold_ic": 0.318803,
+      "ci95_mean_fold": [
+        0.255232,
+        0.381688
+      ],
+      "pct_folds_positive": 95.45
+    },
+    "D_vix_bsi_credit": {
+      "mean_fold_ic": 0.311038,
+      "ci95_mean_fold": [
+        0.23886,
+        0.384735
+      ],
+      "pct_folds_positive": 95.45
+    },
+    "E_vix_bsi_rotation": {
+      "mean_fold_ic": 0.302619,
+      "ci95_mean_fold": [
+        0.231156,
+        0.368153
+      ],
+      "pct_folds_positive": 95.45
+    }
+  },
+  "paired_vs_A_fixed": {
+    "B_vix_bsi": {
+      "delta_mean_fold_ic": -0.011837,
+      "ci95_delta": [
+        -0.049147,
+        0.028201
+      ],
+      "frac_folds_beats_A": 0.4091,
+      "p_delta_le0_boot": 0.7243
+    },
+    "C_vix_bsi_fg": {
+      "delta_mean_fold_ic": -0.000413,
+      "ci95_delta": [
+        -0.034491,
+        0.037117
+      ],
+      "frac_folds_beats_A": 0.4545,
+      "p_delta_le0_boot": 0.5043
+    },
+    "D_vix_bsi_credit": {
+      "delta_mean_fold_ic": -0.007678,
+      "ci95_delta": [
+        -0.037785,
+        0.026369
+      ],
+      "frac_folds_beats_A": 0.4091,
+      "p_delta_le0_boot": 0.7007
+    },
+    "E_vix_bsi_rotation": {
+      "delta_mean_fold_ic": -0.014266,
+      "ci95_delta": [
+        -0.036184,
+        0.010846
+      ],
+      "frac_folds_beats_A": 0.2273,
+      "p_delta_le0_boot": 0.8777
+    }
+  },
+  "paired_vs_A_refit": {
+    "B_vix_bsi": {
+      "delta_mean_fold_ic": -0.008462,
+      "ci95_delta": [
+        -0.046543,
+        0.033052
+      ],
+      "frac_folds_beats_A": 0.4091,
+      "p_delta_le0_boot": 0.6653
+    },
+    "C_vix_bsi_fg": {
+      "delta_mean_fold_ic": 0.002362,
+      "ci95_delta": [
+        -0.033082,
+        0.042848
+      ],
+      "frac_folds_beats_A": 0.5,
+      "p_delta_le0_boot": 0.447
+    },
+    "D_vix_bsi_credit": {
+      "delta_mean_fold_ic": -0.005403,
+      "ci95_delta": [
+        -0.035551,
+        0.029509
+      ],
+      "frac_folds_beats_A": 0.4091,
+      "p_delta_le0_boot": 0.644
+    },
+    "E_vix_bsi_rotation": {
+      "delta_mean_fold_ic": -0.013822,
+      "ci95_delta": [
+        -0.037183,
+        0.013135
+      ],
+      "frac_folds_beats_A": 0.3182,
+      "p_delta_le0_boot": 0.863
+    }
+  },
+  "fold_details": [
+    {
+      "fold": 1,
+      "train_range": [
+        0,
+        500
+      ],
+      "test_range": [
+        500,
+        550
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.25293,
+      "B_vix_bsi": 0.33262,
+      "C_vix_bsi_fg": 0.33262,
+      "D_vix_bsi_credit": 0.33262,
+      "E_vix_bsi_rotation": 0.25293
+    },
+    {
+      "fold": 2,
+      "train_range": [
+        0,
+        550
+      ],
+      "test_range": [
+        550,
+        600
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.118841,
+      "B_vix_bsi": 0.101015,
+      "C_vix_bsi_fg": 0.101015,
+      "D_vix_bsi_credit": 0.101015,
+      "E_vix_bsi_rotation": 0.118841
+    },
+    {
+      "fold": 3,
+      "train_range": [
+        0,
+        600
+      ],
+      "test_range": [
+        600,
+        650
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.306017,
+      "B_vix_bsi": 0.362467,
+      "C_vix_bsi_fg": 0.362467,
+      "D_vix_bsi_credit": 0.362467,
+      "E_vix_bsi_rotation": 0.306017
+    },
+    {
+      "fold": 4,
+      "train_range": [
+        0,
+        650
+      ],
+      "test_range": [
+        650,
+        700
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.332043,
+      "B_vix_bsi": 0.308944,
+      "C_vix_bsi_fg": 0.308944,
+      "D_vix_bsi_credit": 0.346479,
+      "E_vix_bsi_rotation": 0.285846
+    },
+    {
+      "fold": 5,
+      "train_range": [
+        0,
+        700
+      ],
+      "test_range": [
+        700,
+        750
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.326814,
+      "B_vix_bsi": 0.219857,
+      "C_vix_bsi_fg": 0.219857,
+      "D_vix_bsi_credit": 0.270364,
+      "E_vix_bsi_rotation": 0.294133
+    },
+    {
+      "fold": 6,
+      "train_range": [
+        0,
+        750
+      ],
+      "test_range": [
+        750,
+        800
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.049933,
+      "B_vix_bsi": 0.216376,
+      "C_vix_bsi_fg": 0.216376,
+      "D_vix_bsi_credit": 0.249665,
+      "E_vix_bsi_rotation": 0.085996
+    },
+    {
+      "fold": 7,
+      "train_range": [
+        0,
+        800
+      ],
+      "test_range": [
+        800,
+        850
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.339479,
+      "B_vix_bsi": 0.16974,
+      "C_vix_bsi_fg": 0.16974,
+      "D_vix_bsi_credit": 0.268754,
+      "E_vix_bsi_rotation": 0.339479
+    },
+    {
+      "fold": 8,
+      "train_range": [
+        0,
+        850
+      ],
+      "test_range": [
+        850,
+        900
+      ],
+      "test_size": 50,
+      "A_5estaciones": -0.051086,
+      "B_vix_bsi": 0.0,
+      "C_vix_bsi_fg": 0.0,
+      "D_vix_bsi_credit": 0.0,
+      "E_vix_bsi_rotation": -0.061303
+    },
+    {
+      "fold": 9,
+      "train_range": [
+        0,
+        900
+      ],
+      "test_range": [
+        900,
+        950
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.082041,
+      "B_vix_bsi": 0.08487,
+      "C_vix_bsi_fg": 0.08487,
+      "D_vix_bsi_credit": 0.082041,
+      "E_vix_bsi_rotation": 0.082041
+    },
+    {
+      "fold": 10,
+      "train_range": [
+        0,
+        950
+      ],
+      "test_range": [
+        950,
+        1000
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.28007,
+      "B_vix_bsi": 0.325334,
+      "C_vix_bsi_fg": 0.325334,
+      "D_vix_bsi_credit": 0.302702,
+      "E_vix_bsi_rotation": 0.302702
+    },
+    {
+      "fold": 11,
+      "train_range": [
+        0,
+        1000
+      ],
+      "test_range": [
+        1000,
+        1050
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.466266,
+      "B_vix_bsi": 0.382506,
+      "C_vix_bsi_fg": 0.340625,
+      "D_vix_bsi_credit": 0.371337,
+      "E_vix_bsi_rotation": 0.496978
+    },
+    {
+      "fold": 12,
+      "train_range": [
+        0,
+        1050
+      ],
+      "test_range": [
+        1050,
+        1100
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.583471,
+      "B_vix_bsi": 0.608418,
+      "C_vix_bsi_fg": 0.572384,
+      "D_vix_bsi_credit": 0.589015,
+      "E_vix_bsi_rotation": 0.577928
+    },
+    {
+      "fold": 13,
+      "train_range": [
+        0,
+        1100
+      ],
+      "test_range": [
+        1100,
+        1150
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.202113,
+      "B_vix_bsi": 0.363803,
+      "C_vix_bsi_fg": 0.401339,
+      "D_vix_bsi_credit": 0.08662,
+      "E_vix_bsi_rotation": 0.352254
+    },
+    {
+      "fold": 14,
+      "train_range": [
+        0,
+        1150
+      ],
+      "test_range": [
+        1150,
+        1200
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.472442,
+      "B_vix_bsi": 0.350795,
+      "C_vix_bsi_fg": 0.342308,
+      "D_vix_bsi_credit": 0.401717,
+      "E_vix_bsi_rotation": 0.438494
+    },
+    {
+      "fold": 15,
+      "train_range": [
+        0,
+        1200
+      ],
+      "test_range": [
+        1200,
+        1250
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.17754,
+      "B_vix_bsi": 0.052707,
+      "C_vix_bsi_fg": 0.210828,
+      "D_vix_bsi_credit": 0.085996,
+      "E_vix_bsi_rotation": 0.063803
+    },
+    {
+      "fold": 16,
+      "train_range": [
+        0,
+        1250
+      ],
+      "test_range": [
+        1250,
+        1300
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.633207,
+      "B_vix_bsi": 0.607934,
+      "C_vix_bsi_fg": 0.607934,
+      "D_vix_bsi_credit": 0.706215,
+      "E_vix_bsi_rotation": 0.526502
+    },
+    {
+      "fold": 17,
+      "train_range": [
+        0,
+        1300
+      ],
+      "test_range": [
+        1300,
+        1350
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.276467,
+      "B_vix_bsi": 0.235392,
+      "C_vix_bsi_fg": 0.276467,
+      "D_vix_bsi_credit": 0.225913,
+      "E_vix_bsi_rotation": 0.25119
+    },
+    {
+      "fold": 18,
+      "train_range": [
+        0,
+        1350
+      ],
+      "test_range": [
+        1350,
+        1400
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.405206,
+      "B_vix_bsi": 0.305733,
+      "C_vix_bsi_fg": 0.33499,
+      "D_vix_bsi_credit": 0.340841,
+      "E_vix_bsi_rotation": 0.329138
+    },
+    {
+      "fold": 19,
+      "train_range": [
+        0,
+        1400
+      ],
+      "test_range": [
+        1400,
+        1450
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.355483,
+      "B_vix_bsi": 0.298378,
+      "C_vix_bsi_fg": 0.381181,
+      "D_vix_bsi_credit": 0.306943,
+      "E_vix_bsi_rotation": 0.275535
+    },
+    {
+      "fold": 20,
+      "train_range": [
+        0,
+        1450
+      ],
+      "test_range": [
+        1450,
+        1500
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.484382,
+      "B_vix_bsi": 0.442262,
+      "C_vix_bsi_fg": 0.453494,
+      "D_vix_bsi_credit": 0.436646,
+      "E_vix_bsi_rotation": 0.478766
+    },
+    {
+      "fold": 21,
+      "train_range": [
+        0,
+        1500
+      ],
+      "test_range": [
+        1500,
+        1550
+      ],
+      "test_size": 50,
+      "A_5estaciones": 0.452017,
+      "B_vix_bsi": 0.566118,
+      "C_vix_bsi_fg": 0.498828,
+      "D_vix_bsi_credit": 0.554415,
+      "E_vix_bsi_rotation": 0.469571
+    },
+    {
+      "fold": 22,
+      "train_range": [
+        0,
+        1550
+      ],
+      "test_range": [
+        1550,
+        1590
+      ],
+      "test_size": 40,
+      "A_5estaciones": 0.470147,
+      "B_vix_bsi": 0.420131,
+      "C_vix_bsi_fg": 0.465145,
+      "D_vix_bsi_credit": 0.425133,
+      "E_vix_bsi_rotation": 0.435136
+    }
+  ],
+  "verdict": {
+    "overall": "LA REDUCCIÓN NO SOBREVIVE OOS. La mejora in-sample del leave-one-out es overfitting in-sample. NO tocar el cascade: mantener las 5 estaciones del Grupo A.",
+    "best_reduced_config": "C_vix_bsi_fg",
+    "best_reduced_delta_oos": -0.000413,
+    "best_reduced_status": "NO_SOBREVIVE_OOS",
+    "criterion": "robusta = delta_OOS_mean_fold > 0 y (CI95 no cruza 0 hacia abajo o folds>A >= 60%)",
+    "action": "NO TOCAR el cascade (mantener 5 estaciones Grupo A)"
+  }
+}

@@ -86,7 +86,7 @@ def main():
     print(f"  Feature Lake base: {len(df):,d} observations, {len(df.columns)} cols")
 
     # Expand with derived features (atr_ratio, sigma_high, overnight_gap, etc.)
-    from backend.scripts.feature_optimizer import expand_feature_lake
+    from backend.scripts._lib.feature_optimizer import expand_feature_lake
     derived = expand_feature_lake(df)
     print(f"  Derived features added: {len(derived)} cols → total {len(df.columns)} cols")
 

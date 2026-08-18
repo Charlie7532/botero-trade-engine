@@ -59,3 +59,22 @@ DataTradingView/
 backend/scratch/cache/
 backend/scratch/*.log
 backend/scratch/**/*.log
+
+# ═══════════════════════════════════════════════
+# V3 Taxonomy — Added 2026-08-18
+# ═══════════════════════════════════════════════
+
+# Data zone
+data/cache/
+data/imports/
+data/research/**/*.csv
+data/research/feature_lake/*.csv
+
+# Research scripts
+research/**/__pycache__/
+
+# Deprecated binaries (keep .md READMEs, exclude heavy files)
+**/_deprecated/*.pkl
+**/_deprecated/*.joblib
+**/_deprecated/*.csv
+**/_deprecated/*.parquet

@@ -1,11 +1,11 @@
 """
 Market SIGMET Hazard Intelligence Engine — Pure Domain Service
 ================================================================
-Evaluates active METAR telemetry across ALL 9 stations against severe hazard thresholds.
+Evaluates active METAR telemetry across ALL 11 stations against severe hazard thresholds.
 Emits authoritative Market SIGMETs ONLY when a severe weather anomaly or crisis hazard is active.
 
 In aviation, SIGMETs are NOT daily routine reports; they are severe weather advisories.
-If all 9 METAR stations report benign/normal conditions, evaluate_market_sigmets() returns an empty list.
+If all 11 METAR stations report benign/normal conditions, evaluate_market_sigmets() returns an empty list.
 
 Follows Institutional Taxonomy: Universal Institutional Action Taxonomy Standard.
 """
@@ -32,6 +32,7 @@ from backend.modules.entry_decision.domain.services.credit_metar_service import 
 from backend.modules.entry_decision.domain.services.yield_curve_metar_service import get_yield_curve_market_metar
 from backend.modules.entry_decision.domain.services.rotation_metar_service import get_rotation_market_metar
 from backend.modules.entry_decision.domain.services.bsi_metar_service import get_bsi_market_metar
+from backend.modules.entry_decision.domain.services.dxy_metar_service import get_dxy_market_metar
 
 
 @dataclass(frozen=True)
@@ -66,13 +67,74 @@ class MarketSIGMET:
             "--------------------------------------------------------------------------------\n"
             f" 🎯 Hazard Title: {self.title}\n"
             f" 📝 Details     : {self.description}\n"
-            "================================================================================"
+            "================================================================================\n"
         )
+
+
+def _check_overflow_sigmet(station: str, metar: Any, now_str: str) -> Optional[MarketSIGMET]:
+    """
+    Evaluates empirical ±3σ statistical tail overflows across D1, D2, and D3 dimensions.
+    Emits OVERFLOW_MULTI (Black Swan), OVERFLOW_EXTREMO (> 4σ), or OVERFLOW_MODERADO (3σ < depth ≤ 4σ).
+    """
+    flag = getattr(metar, "overflow_flag", None)
+    if not flag:
+        return None
+    d1 = getattr(metar, "sigma_depth_d1", None)
+    d2 = getattr(metar, "sigma_depth_d2", None)
+    d3 = getattr(metar, "sigma_depth_d3", None)
+    depths = [abs(d) for d in (d1, d2, d3) if d is not None]
+    max_depth = max(depths) if depths else 0.0
+
+    as_of = str(getattr(metar, "as_of_date", "")).replace("-", "")
+
+    if flag == "MULTI":
+        return MarketSIGMET(
+            sigmet_id=f"SIGMET-OVERFLOW-{station}-{as_of}-MULTI",
+            timestamp_utc=now_str,
+            as_of_date=getattr(metar, "as_of_date", ""),
+            hazard_type="OVERFLOW_MULTI",
+            severity="CRITICAL",
+            station=station,
+            title=f"{station} Multi-Dimensional σ-Overflow (Black Swan Anomaly)",
+            description=f"{station} breached ±3σ across multiple dimensions (D1={d1}, D2={d2}, D3={d3}). Systemic Black Swan anomaly.",
+            operational_action="MKT_MACRO_CIRCUIT_BREAKER",
+            is_active=True,
+            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag}
+        )
+    elif max_depth > 4.0:
+        return MarketSIGMET(
+            sigmet_id=f"SIGMET-OVERFLOW-{station}-{as_of}-EXTREMO",
+            timestamp_utc=now_str,
+            as_of_date=getattr(metar, "as_of_date", ""),
+            hazard_type="OVERFLOW_EXTREMO",
+            severity="CRITICAL",
+            station=station,
+            title=f"{station} Extreme σ-Overflow ({max_depth:.1f}σ > 4σ)",
+            description=f"{station} breached extreme statistical limits with depth {max_depth:.1f}σ ({flag}).",
+            operational_action="STK_BLOCK_CRISIS",
+            is_active=True,
+            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag}
+        )
+    elif max_depth > 3.0:
+        return MarketSIGMET(
+            sigmet_id=f"SIGMET-OVERFLOW-{station}-{as_of}-MODERADO",
+            timestamp_utc=now_str,
+            as_of_date=getattr(metar, "as_of_date", ""),
+            hazard_type="OVERFLOW_MODERADO",
+            severity="WARNING",
+            station=station,
+            title=f"{station} Moderate σ-Overflow ({max_depth:.1f}σ > 3σ)",
+            description=f"{station} breached statistical tail limit with depth {max_depth:.1f}σ ({flag}).",
+            operational_action="STK_HOLD_STABLE",
+            is_active=True,
+            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag}
+        )
+    return None
 
 
 def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGMET]:
     """
-    Evaluates active METAR telemetry across ALL 10 stations against severe hazard thresholds.
+    Evaluates active METAR telemetry across ALL 11 stations against severe hazard thresholds.
     Returns a list of active MarketSIGMET objects. If conditions are normal across all stations,
     returns an empty list [].
     """
@@ -98,6 +160,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"vix": vix_metar.vix_index_value, "vix_d3": vix_metar.vix_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("VIX", vix_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("VIX", e)
 
@@ -120,6 +185,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"vvix": vvix_metar.vvix_index_value, "vvix_d3": vvix_metar.vvix_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("VVIX", vvix_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("VVIX", e)
 
@@ -142,6 +210,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"pcr": pcr_metar.pcr_ratio_value, "pcr_d3": pcr_metar.pcr_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("PCR", pcr_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("PCR", e)
 
@@ -164,6 +235,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"fg": fg_metar.fear_greed_score, "fg_d3": fg_metar.fear_greed_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("FG", fg_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("FG", e)
 
@@ -186,6 +260,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"turbulence": turb_metar.turbulence_value, "turbulence_d3": turb_metar.turbulence_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("SV5_TURBULENCE", turb_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("SV5_TURBULENCE", e)
 
@@ -208,6 +285,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"skew": skew_metar.skew_index_value, "skew_d3": skew_metar.skew_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("SKEW", skew_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("SKEW", e)
 
@@ -230,6 +310,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"credit_ratio": credit_metar.credit_ratio_value, "credit_d3": credit_metar.credit_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("CREDIT", credit_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("CREDIT", e)
 
@@ -252,6 +335,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"spread": yc_metar.yield_spread_value}
                 )
             )
+        ovf = _check_overflow_sigmet("YIELD_CURVE", yc_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("YIELD_CURVE", e)
 
@@ -274,6 +360,9 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"rotation_index": rot_metar.rotation_index_value, "rotation_d3": rot_metar.rotation_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("ROTATION", rot_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("ROTATION", e)
 
@@ -296,7 +385,35 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     telemetry_snapshot={"bsi_value": bsi_metar.bsi_value, "bsi_d3": bsi_metar.bsi_velocity_3d}
                 )
             )
+        ovf = _check_overflow_sigmet("BSI", bsi_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("BSI", e)
+
+    # 11. Station DXY: Dollar Spike Liquidity Crisis
+    try:
+        dxy_metar = get_dxy_market_metar(as_of_date=as_of_date)
+        if dxy_metar.dxy_bin == "DOLLAR_SPIKE_CRISIS":
+            sigmets.append(
+                MarketSIGMET(
+                    sigmet_id=f"SIGMET-DXY-{dxy_metar.as_of_date.replace('-','')}-001",
+                    timestamp_utc=now_str,
+                    as_of_date=dxy_metar.as_of_date,
+                    hazard_type="SIGMET_DOLLAR_LIQUIDITY_CRISIS",
+                    severity="CRITICAL",
+                    station="DXY",
+                    title="Dollar Spike Liquidity Crisis (DXY σ+2 extreme)",
+                    description=f"Dollar Index ({dxy_metar.dxy_index_value:.2f}) in DOLLAR_SPIKE_CRISIS zone (σ+2). Flight-to-safety USD surge compresses equity valuations and EM capital flows.",
+                    operational_action="STK_BLOCK_CRISIS",
+                    is_active=True,
+                    telemetry_snapshot={"dxy": dxy_metar.dxy_index_value, "dxy_d3": dxy_metar.dxy_velocity_3d}
+                )
+            )
+        ovf = _check_overflow_sigmet("DXY", dxy_metar, now_str)
+        if ovf:
+            sigmets.append(ovf)
+    except Exception as e:
+        _log_station_failure("DXY", e)
 
     return sigmets

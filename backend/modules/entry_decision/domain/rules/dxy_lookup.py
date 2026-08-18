@@ -4,6 +4,8 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
+from backend.modules.entry_decision.domain.rules.sigma_overflow import validate_overflow
+
 FACT_STORE_PATH = Path(__file__).parent / "dxy_fact_store.json"
 
 
@@ -35,6 +37,10 @@ class DXYStateGuidance:
     zz50: ScaleGuidance
     zz75: ScaleGuidance
     zigzag_kinematic: Optional[Dict[str, Any]] = None
+    sigma_depth_d1: Optional[float] = None
+    sigma_depth_d2: Optional[float] = None
+    sigma_depth_d3: Optional[float] = None
+    overflow_flag: Optional[str] = None  # "UPPER"|"LOWER"|"MULTI"|None
 
     @property
     def bin(self) -> str:
@@ -64,6 +70,10 @@ class DXYStateGuidance:
             "primary_e_days": self.zz50.e_days,
             "primary_capital_velocity": self.zz50.ev_per_day,
             "zigzag_kinematic": self.zigzag_kinematic,
+            "sigma_depth_d1": self.sigma_depth_d1,
+            "sigma_depth_d2": self.sigma_depth_d2,
+            "sigma_depth_d3": self.sigma_depth_d3,
+            "overflow_flag": self.overflow_flag,
         }
 
 
@@ -179,6 +189,12 @@ class DXYLookupAdapter:
                 confidence_tier=d.get("confidence_tier", "MODERATE"),
             )
 
+        d1_depth, f1 = validate_overflow("dxy", "d1", val)
+        d2_depth, f2 = validate_overflow("dxy", "d2", d3_speed)
+        d3_depth, f3 = validate_overflow("dxy", "d3", vol_norm)
+        flags = [f for f in (f1, f2, f3) if f]
+        overflow_flag = "MULTI" if len(flags) >= 2 else (flags[0] if flags else None)
+
         stats = state.get("stats", {})
         return DXYStateGuidance(
             state_key=matched_key,
@@ -194,6 +210,10 @@ class DXYLookupAdapter:
             zz50=_make_scale(state["zz50"]),
             zz75=_make_scale(state["zz75"]),
             zigzag_kinematic=state.get("zigzag_kinematic"),
+            sigma_depth_d1=d1_depth,
+            sigma_depth_d2=d2_depth,
+            sigma_depth_d3=d3_depth,
+            overflow_flag=overflow_flag,
         )
 
 

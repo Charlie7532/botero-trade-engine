@@ -18,7 +18,7 @@ Features (6 per model — SHAP-selected from Sprint 2):
   TECHO: kf_rsi_pred_val, kf_price_filt_vel, kf_tension_pred_val,
          kf_conj_filt_vel, rsi_value, sigma_tide
 
-Output: backend/models/sentinel_piso_v1.pkl, sentinel_techo_v1.pkl
+Output: data/models/sentinel_piso_v1.pkl, sentinel_techo_v1.pkl
 
 Usage:
     PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scripts/train_sentinel_models.py

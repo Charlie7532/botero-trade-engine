@@ -4,6 +4,8 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
+from backend.modules.entry_decision.domain.rules.sigma_overflow import validate_overflow
+
 FACT_STORE_PATH = Path(__file__).parent / "skew_fact_store.json"
 
 
@@ -33,6 +35,10 @@ class SkewStateGuidance:
     zz25: ScaleGuidance
     zz50: ScaleGuidance
     zz75: ScaleGuidance
+    sigma_depth_d1: Optional[float] = None
+    sigma_depth_d2: Optional[float] = None
+    sigma_depth_d3: Optional[float] = None
+    overflow_flag: Optional[str] = None  # "UPPER"|"LOWER"|"MULTI"|None
 
     @property
     def bin(self) -> str:
@@ -65,6 +71,10 @@ class SkewStateGuidance:
             "primary_ev_net": self.zz50.ev_net,
             "primary_e_days": self.zz50.e_days,
             "primary_capital_velocity": self.zz50.ev_per_day,
+            "sigma_depth_d1": self.sigma_depth_d1,
+            "sigma_depth_d2": self.sigma_depth_d2,
+            "sigma_depth_d3": self.sigma_depth_d3,
+            "overflow_flag": self.overflow_flag,
         }
 
 
@@ -74,9 +84,9 @@ class SkewLookupAdapter:
             self._data = json.load(f)
 
         doc = self._data.get("_documentation", {})
-        self.edges_d1 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d1", [112.8, 116.81, 119.87, 123.84, 136.11])
-        self.edges_d2 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d2", [-3.4000000000000057, -1.0999999999999943, 1.1800000000000068, 3.4689999999999963])
-        self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d3", [0.33400162045233284, 0.509189081078614, 0.8008205073981266])
+        self.edges_d1 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d1", [114.67, 119.99, 130.28, 144.48, 159.31])
+        self.edges_d2 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d2", [-11.62, -4.56, 4.57, 11.36])
+        self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d3", [0.0169, 0.1233, 1.0492, 1.8934])
         self.labels_d1 = doc.get("dimension_thresholds_definition", {}).get("skew_labels_d1", ['LOW_TAIL_RISK', 'NORMAL_TAIL_RISK', 'ELEVATED_TAIL_RISK', 'HIGH_TAIL_RISK', 'TAIL_PARANOIA', 'BLACK_SWAN_PARANOIA'])
         self.labels_d2 = doc.get("dimension_thresholds_definition", {}).get("skew_labels_d2", ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D'])
         self.labels_d3 = doc.get("dimension_thresholds_definition", {}).get("skew_labels_d3", ['VOL_EXTREME_SQUEEZE', 'VOL_MODERATE_COMPRESSION', 'VOL_NEUTRAL_BASELINE', 'VOL_ACCELERATING_EXPANSION', 'VOL_PEAK_DECELERATION'])
@@ -153,6 +163,12 @@ class SkewLookupAdapter:
                 ev_per_day=d["ev_per_day"], rr_asymmetry=d["rr_asymmetry"]
             )
 
+        d1_depth, f1 = validate_overflow("skew", "d1", val)
+        d2_depth, f2 = validate_overflow("skew", "d2", d3_speed)
+        d3_depth, f3 = validate_overflow("skew", "d3", vol_norm)
+        flags = [f for f in (f1, f2, f3) if f]
+        overflow_flag = "MULTI" if len(flags) >= 2 else (flags[0] if flags else None)
+
         stats = state.get("stats", {})
         return SkewStateGuidance(
             state_key=matched_key,
@@ -166,7 +182,11 @@ class SkewLookupAdapter:
             operational_guidance=state.get("operational_guidance", "STK_HOLD_STABLE"),
             zz25=_make_scale(state["zz25"]),
             zz50=_make_scale(state["zz50"]),
-            zz75=_make_scale(state["zz75"])
+            zz75=_make_scale(state["zz75"]),
+            sigma_depth_d1=d1_depth,
+            sigma_depth_d2=d2_depth,
+            sigma_depth_d3=d3_depth,
+            overflow_flag=overflow_flag,
         )
 
 

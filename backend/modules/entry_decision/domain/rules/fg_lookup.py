@@ -4,6 +4,8 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
+from backend.modules.entry_decision.domain.rules.sigma_overflow import validate_overflow
+
 FACT_STORE_PATH = Path(__file__).parent / "fg_fact_store.json"
 
 
@@ -33,6 +35,10 @@ class FGStateGuidance:
     zz25: ScaleGuidance
     zz50: ScaleGuidance
     zz75: ScaleGuidance
+    sigma_depth_d1: Optional[float] = None
+    sigma_depth_d2: Optional[float] = None
+    sigma_depth_d3: Optional[float] = None
+    overflow_flag: Optional[str] = None  # "UPPER"|"LOWER"|"MULTI"|None
 
     @property
     def sentiment_bin(self) -> str:
@@ -69,6 +75,10 @@ class FGStateGuidance:
             "primary_ev_net": self.zz50.ev_net,
             "primary_e_days": self.zz50.e_days,
             "primary_capital_velocity": self.zz50.ev_per_day,
+            "sigma_depth_d1": self.sigma_depth_d1,
+            "sigma_depth_d2": self.sigma_depth_d2,
+            "sigma_depth_d3": self.sigma_depth_d3,
+            "overflow_flag": self.overflow_flag,
         }
 
 
@@ -80,7 +90,7 @@ class FGLookupAdapter:
         doc = self._data.get("_documentation", {})
         self.edges_d1 = doc.get("dimension_thresholds_definition", {}).get("fg_edges_d1", [24.57857142857143, 41.0, 50.45428571428572, 59.42857142857144, 71.14285714285715])
         self.edges_d2 = doc.get("dimension_thresholds_definition", {}).get("fg_edges_d2", [-8.270476190476192, -3.0, 3.051428571428613, 8.519999999999998])
-        self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("fg_edges_d3", [0.20429502413641673, 0.3491933862465682, 0.6007366512353014])
+        self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("fg_edges_d3", [0.0, 0.0704, 0.8709, 1.6138])
         self.labels_d1 = doc.get("dimension_thresholds_definition", {}).get("fg_labels_d1", ['EXTREME_FEAR', 'FEAR', 'NEUTRAL_FEAR', 'GREED', 'EUPHORIA', 'EXTREME_GREED'])
         self.labels_d2 = doc.get("dimension_thresholds_definition", {}).get("fg_labels_d2", ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D'])
         self.labels_d3 = doc.get("dimension_thresholds_definition", {}).get("fg_labels_d3", ['VOL_EXTREME_SQUEEZE', 'VOL_MODERATE_COMPRESSION', 'VOL_NEUTRAL_BASELINE', 'VOL_ACCELERATING_EXPANSION', 'VOL_PEAK_DECELERATION'])
@@ -157,6 +167,12 @@ class FGLookupAdapter:
                 ev_per_day=d["ev_per_day"], rr_asymmetry=d["rr_asymmetry"]
             )
 
+        d1_depth, f1 = validate_overflow("fg", "d1", val)
+        d2_depth, f2 = validate_overflow("fg", "d2", d3_speed)
+        d3_depth, f3 = validate_overflow("fg", "d3", vol_norm)
+        flags = [f for f in (f1, f2, f3) if f]
+        overflow_flag = "MULTI" if len(flags) >= 2 else (flags[0] if flags else None)
+
         stats = state.get("stats", {})
         return FGStateGuidance(
             state_key=matched_key,
@@ -170,7 +186,11 @@ class FGLookupAdapter:
             operational_guidance=state.get("operational_guidance", "STK_HOLD_STABLE"),
             zz25=_make_scale(state["zz25"]),
             zz50=_make_scale(state["zz50"]),
-            zz75=_make_scale(state["zz75"])
+            zz75=_make_scale(state["zz75"]),
+            sigma_depth_d1=d1_depth,
+            sigma_depth_d2=d2_depth,
+            sigma_depth_d3=d3_depth,
+            overflow_flag=overflow_flag,
         )
 
 

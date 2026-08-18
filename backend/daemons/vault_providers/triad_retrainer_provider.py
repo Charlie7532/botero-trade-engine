@@ -73,7 +73,7 @@ class TriadRetrainerProvider:
         try:
             # 1. Retrain S5 Price Triad
             res_s5 = subprocess.run(
-                [sys.executable, "/root/botero-trade/backend/scripts/train_s5_triad.py"],
+                [sys.executable, "/root/botero-trade/backend/scripts/trainers/train_s5_triad.py"],
                 cwd="/root/botero-trade",
                 capture_output=True,
                 text=True,
@@ -85,7 +85,7 @@ class TriadRetrainerProvider:
                 
             # 2. Retrain S5V Volume Triad
             res_s5v = subprocess.run(
-                [sys.executable, "/root/botero-trade/backend/scripts/train_s5v_triad.py"],
+                [sys.executable, "/root/botero-trade/backend/scripts/trainers/train_s5v_triad.py"],
                 cwd="/root/botero-trade",
                 capture_output=True,
                 text=True,

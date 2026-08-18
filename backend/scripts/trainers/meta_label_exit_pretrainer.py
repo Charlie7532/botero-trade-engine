@@ -525,9 +525,9 @@ if __name__ == "__main__":
 
     p("EXIT PRE-TRAINER COMPLETE")
     print(f"  Total time: {elapsed:.1f}s ({elapsed/60:.1f} min)")
-    print(f"  Model: backend/models/meta_label_exit_v1.pkl")
-    print(f"  Config: backend/models/meta_label_exit_config.json")
-    print(f"  Profiles: backend/models/exit_profiles.json")
+    print(f"  Model: data/models/meta_label_exit_v1.pkl")
+    print(f"  Config: data/models/meta_label_exit_config.json")
+    print(f"  Profiles: data/models/exit_profiles.json")
     print(f"  Threshold: P(trim) ≥ {best_threshold:.2f}")
     print(f"\n  What this calibrated:")
     print(f"    ✅ Global exit feature importance → what predicts successful trims")

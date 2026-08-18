@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-08-12T14:25:24.283370+00:00",
+  "generated_at": "2026-08-16T01:38:03.257624+00:00",
   "generated_by": "backend/scripts/train_s5_triad.py",
   "_metadata": {
     "purpose": "Modificador relativo para S5 Price Breadth. Mide la diferencia simple FI_sector - FI_spy (en puntos porcentuales). Si un sector tiene m\u00e1s stocks arriba de su MA50 que el SPY, se le da un boost al P_bot.",
@@ -36,40 +36,40 @@
   ],
   "bins": {
     "<<": {
-      "n": 3315,
-      "P_bot_2_5": 0.2902,
-      "P_top_2_5": 0.156,
-      "P_bot_5_0": 0.14,
+      "n": 3316,
+      "P_bot_2_5": 0.2901,
+      "P_top_2_5": 0.1559,
+      "P_bot_5_0": 0.1399,
       "P_top_5_0": 0.0443,
       "P_bot_7_5": 0.0811,
       "P_top_7_5": 0.0139,
-      "bot_factor": 1.872,
+      "bot_factor": 1.87,
       "top_factor": 0.589
     },
     "<": {
-      "n": 14657,
-      "P_bot_2_5": 0.2365,
+      "n": 14659,
+      "P_bot_2_5": 0.2364,
       "P_top_2_5": 0.1647,
-      "P_bot_5_0": 0.1132,
-      "P_top_5_0": 0.0519,
+      "P_bot_5_0": 0.1134,
+      "P_top_5_0": 0.0518,
       "P_bot_7_5": 0.0624,
       "P_top_7_5": 0.0204,
-      "bot_factor": 1.513,
-      "top_factor": 0.69
+      "bot_factor": 1.516,
+      "top_factor": 0.689
     },
     "~": {
-      "n": 38470,
+      "n": 38475,
       "P_bot_2_5": 0.184,
       "P_top_2_5": 0.1945,
-      "P_bot_5_0": 0.0747,
+      "P_bot_5_0": 0.0746,
       "P_top_5_0": 0.0821,
       "P_bot_7_5": 0.0401,
       "P_top_7_5": 0.0437,
-      "bot_factor": 0.999,
+      "bot_factor": 0.997,
       "top_factor": 1.092
     },
     ">": {
-      "n": 15064,
+      "n": 15067,
       "P_bot_2_5": 0.145,
       "P_top_2_5": 0.2094,
       "P_bot_5_0": 0.0402,

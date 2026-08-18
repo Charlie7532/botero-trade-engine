@@ -68,9 +68,9 @@ class SyntheticIndicatorsProvider:
             if hyg is None or lqd is None or len(hyg) == 0 or len(lqd) == 0:
                 return {"status": "error", "reason": "no_data"}
 
-            hyg_last = hyg.sort_index().iloc[-1]["close"]
-            lqd_last = lqd.sort_index().iloc[-1]["close"]
-            credit_ratio = hyg_last / lqd_last
+            hyg_last = float(hyg.sort_index().iloc[-1]["close"])
+            lqd_last = float(lqd.sort_index().iloc[-1]["close"])
+            credit_ratio = float(hyg_last / lqd_last)
 
             now = datetime.now(UTC)
             store.upsert_ohlcv_bar(
@@ -118,9 +118,9 @@ class SyntheticIndicatorsProvider:
             if tnx is None or irx is None or len(tnx) == 0 or len(irx) == 0:
                 return {"status": "error", "reason": "no_data"}
 
-            tnx_last = tnx.sort_index().iloc[-1]["close"]
-            irx_last = irx.sort_index().iloc[-1]["close"]
-            yield_spread = tnx_last - irx_last
+            tnx_last = float(tnx.sort_index().iloc[-1]["close"])
+            irx_last = float(irx.sort_index().iloc[-1]["close"])
+            yield_spread = float(tnx_last - irx_last)
 
             now = datetime.now(UTC)
             store.upsert_ohlcv_bar(

@@ -25,16 +25,16 @@
         87.0
       ],
       "fg_edges_d2": [
-        -20.533362857142855,
+        -20.530431428571426,
         -8.0,
         8.0,
         17.0
       ],
       "fg_edges_d3": [
         0.0,
-        0.07044628817170485,
-        0.8669793695336577,
-        1.6106695211848452
+        0.07045967648478567,
+        0.8709043949979527,
+        1.6151261979643554
       ],
       "fg_labels_d1": [
         "EXTREME_FEAR",
@@ -63,8 +63,8 @@
       "bars": "market.ohlcv_bars (Neon Vault)",
       "zigzag_repository": "market.zigzag_legs (SPY)",
       "start_date": "2011-01-03",
-      "end_date": "2026-08-12",
-      "sample_size_days": 3875,
+      "end_date": "2026-08-14",
+      "sample_size_days": 3877,
       "years_covered": 15.38
     },
     "state_hierarchy": {
@@ -85,8 +85,8 @@
     "signal_interpretation_policy": "Clean Architecture Standard: pure domain rules iterate over states and emit universal 4D action taxonomy."
   },
   "station": "FG",
-  "sample_size": 3875,
-  "states_populated": 83,
+  "sample_size": 3877,
+  "states_populated": 82,
   "states": {
     "EUPHORIA__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION": {
       "n": 2,
@@ -3644,66 +3644,66 @@
       }
     },
     "FEAR__DECELERATING_DOWN_3D__VOL_ACCELERATING_EXPANSION": {
-      "n": 9,
+      "n": 10,
       "stats": {
         "min": 8.4,
         "max": 25.6286,
-        "mean": 17.6296,
-        "std": 6.3691
+        "mean": 17.7481,
+        "std": 6.0527
       },
       "divergence_regime": "TACTICAL_REBOUND_IN_BEAR",
       "operational_guidance": "STK_BUY_DIP_TACTICAL",
       "zz25": {
-        "n_raw": 9,
-        "p_bull": 0.5789,
-        "p_bear": 0.4211,
-        "e_ret_max": 0.005,
+        "n_raw": 10,
+        "p_bull": 0.6,
+        "p_bear": 0.4,
+        "e_ret_max": 0.0065,
         "e_ret_min": -0.022,
-        "ev_net": -0.001884,
+        "ev_net": -0.001038,
         "e_days": 1.0,
-        "ev_per_day": -0.001884,
-        "rr_asymmetry": 0.2288,
+        "ev_per_day": -0.001038,
+        "rr_asymmetry": 0.2938,
         "confidence_tier": "MODERATE"
       },
       "zz50": {
-        "n_raw": 9,
-        "p_bull": 0.5263,
-        "p_bear": 0.4737,
-        "e_ret_max": 0.0087,
+        "n_raw": 10,
+        "p_bull": 0.55,
+        "p_bear": 0.45,
+        "e_ret_max": 0.0131,
         "e_ret_min": -0.026,
-        "ev_net": -0.003184,
+        "ev_net": -0.001286,
         "e_days": 3.0,
-        "ev_per_day": -0.001061,
-        "rr_asymmetry": 0.3347,
+        "ev_per_day": -0.000429,
+        "rr_asymmetry": 0.5019,
         "confidence_tier": "MODERATE"
       },
       "zz75": {
-        "n_raw": 9,
-        "p_bull": 0.4211,
-        "p_bear": 0.5789,
-        "e_ret_max": 0.016,
+        "n_raw": 10,
+        "p_bull": 0.45,
+        "p_bear": 0.55,
+        "e_ret_max": 0.0214,
         "e_ret_min": -0.0149,
-        "ev_net": -0.002181,
+        "ev_net": -0.000183,
         "e_days": 5.0,
-        "ev_per_day": -0.000436,
-        "rr_asymmetry": 1.0733,
+        "ev_per_day": -3.7e-05,
+        "rr_asymmetry": 1.4385,
         "confidence_tier": "MODERATE"
       },
       "zigzag_kinematic": {
         "zz25": {
-          "n_pos": 1,
-          "n_neg": 0,
-          "p_bull": 0.5455,
-          "p_bear": 0.4545,
-          "e_ret_max": 2.7378,
-          "e_ret_min": -0.02,
-          "ev_net": 0.2489,
-          "e_days": 3.0,
-          "ftt_bull_days": 3.0,
-          "ftt_bear_days": 3.0,
-          "ev_per_day": 0.082964,
-          "rr_asymmetry": 136.8901,
-          "confidence_tier": "ANECDOTAL",
+          "n_pos": 2,
+          "n_neg": 1,
+          "p_bull": 0.5385,
+          "p_bear": 0.4615,
+          "e_ret_max": 2.7626,
+          "e_ret_min": -5.3621,
+          "ev_net": 0.0125,
+          "e_days": 1.0,
+          "ftt_bull_days": 2.0,
+          "ftt_bear_days": 1.0,
+          "ev_per_day": 0.012547,
+          "rr_asymmetry": 0.5152,
+          "confidence_tier": "LOW",
           "zigzag_pure_vault": true
         },
         "zz50": {
@@ -4049,103 +4049,6 @@
             "p_extreme_prev": 0.0667,
             "extreme_threshold_p90": 0.278084
           }
-        }
-      }
-    },
-    "FEAR__DECELERATING_DOWN_3D__VOL_PEAK_DECELERATION": {
-      "n": 1,
-      "stats": {
-        "min": 18.8143,
-        "max": 18.8143,
-        "mean": 18.8143,
-        "std": 0.0
-      },
-      "divergence_regime": "TACTICAL_REBOUND_IN_BEAR",
-      "operational_guidance": "STK_BUY_DIP_TACTICAL",
-      "zz25": {
-        "n_raw": 1,
-        "p_bull": 0.5455,
-        "p_bear": 0.4545,
-        "e_ret_max": 0.015,
-        "e_ret_min": -0.015,
-        "ev_net": 0.001368,
-        "e_days": 1.0,
-        "ev_per_day": 0.001368,
-        "rr_asymmetry": 1.0033,
-        "confidence_tier": "ANECDOTAL"
-      },
-      "zz50": {
-        "n_raw": 1,
-        "p_bull": 0.5455,
-        "p_bear": 0.4545,
-        "e_ret_max": 0.0348,
-        "e_ret_min": -0.015,
-        "ev_net": 0.003163,
-        "e_days": 3.0,
-        "ev_per_day": 0.001054,
-        "rr_asymmetry": 2.3194,
-        "confidence_tier": "ANECDOTAL"
-      },
-      "zz75": {
-        "n_raw": 1,
-        "p_bull": 0.5455,
-        "p_bear": 0.4545,
-        "e_ret_max": 0.0378,
-        "e_ret_min": -0.015,
-        "ev_net": 0.003434,
-        "e_days": 5.0,
-        "ev_per_day": 0.000687,
-        "rr_asymmetry": 2.5185,
-        "confidence_tier": "ANECDOTAL"
-      },
-      "zigzag_kinematic": {
-        "zz25": {
-          "n_pos": 1,
-          "n_neg": 1,
-          "p_bull": 0.5,
-          "p_bear": 0.5,
-          "e_ret_max": 2.7874,
-          "e_ret_min": -5.3621,
-          "ev_net": -0.2146,
-          "e_days": 1.0,
-          "ftt_bull_days": 1.0,
-          "ftt_bear_days": 1.0,
-          "ev_per_day": -0.214558,
-          "rr_asymmetry": 0.5198,
-          "confidence_tier": "ANECDOTAL",
-          "zigzag_pure_vault": true
-        },
-        "zz50": {
-          "n_pos": 0,
-          "n_neg": 0,
-          "p_bull": 0.5,
-          "p_bear": 0.5,
-          "e_ret_max": 0.02,
-          "e_ret_min": -0.02,
-          "ev_net": 0.0,
-          "e_days": 10.0,
-          "ftt_bull_days": 10.0,
-          "ftt_bear_days": 10.0,
-          "ev_per_day": 0.0,
-          "rr_asymmetry": 1.0,
-          "confidence_tier": "NONE",
-          "zigzag_pure_vault": true
-        },
-        "zz75": {
-          "n_pos": 0,
-          "n_neg": 0,
-          "p_bull": 0.5,
-          "p_bear": 0.5,
-          "e_ret_max": 0.02,
-          "e_ret_min": -0.02,
-          "ev_net": 0.0,
-          "e_days": 10.0,
-          "ftt_bull_days": 10.0,
-          "ftt_bear_days": 10.0,
-          "ev_per_day": 0.0,
-          "rr_asymmetry": 1.0,
-          "confidence_tier": "NONE",
-          "zigzag_pure_vault": true
         }
       }
     },
@@ -4699,49 +4602,49 @@
       }
     },
     "FEAR__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION": {
-      "n": 36,
+      "n": 37,
       "stats": {
         "min": 7.0,
         "max": 24.5429,
-        "mean": 15.3914,
-        "std": 4.9669
+        "mean": 15.3777,
+        "std": 4.9
       },
       "divergence_regime": "TACTICAL_REBOUND_IN_BEAR",
       "operational_guidance": "STK_BUY_DIP_TACTICAL",
       "zz25": {
-        "n_raw": 36,
-        "p_bull": 0.5217,
-        "p_bear": 0.4783,
-        "e_ret_max": 0.0113,
+        "n_raw": 37,
+        "p_bull": 0.5319,
+        "p_bear": 0.4681,
+        "e_ret_max": 0.0111,
         "e_ret_min": -0.0127,
-        "ev_net": -4.6e-05,
+        "ev_net": 0.000115,
         "e_days": 1.0,
-        "ev_per_day": -4.6e-05,
-        "rr_asymmetry": 0.886,
+        "ev_per_day": 0.000115,
+        "rr_asymmetry": 0.8713,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 36,
-        "p_bull": 0.5652,
-        "p_bear": 0.4348,
-        "e_ret_max": 0.0177,
+        "n_raw": 37,
+        "p_bull": 0.5745,
+        "p_bear": 0.4255,
+        "e_ret_max": 0.0175,
         "e_ret_min": -0.0212,
-        "ev_net": 0.001619,
+        "ev_net": 0.001866,
         "e_days": 3.0,
-        "ev_per_day": 0.00054,
-        "rr_asymmetry": 0.8336,
+        "ev_per_day": 0.000622,
+        "rr_asymmetry": 0.824,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 36,
-        "p_bull": 0.6522,
-        "p_bear": 0.3478,
-        "e_ret_max": 0.024,
+        "n_raw": 37,
+        "p_bull": 0.6596,
+        "p_bear": 0.3404,
+        "e_ret_max": 0.0246,
         "e_ret_min": -0.0273,
-        "ev_net": 0.006492,
+        "ev_net": 0.007194,
         "e_days": 5.0,
-        "ev_per_day": 0.001298,
-        "rr_asymmetry": 0.8777,
+        "ev_per_day": 0.001439,
+        "rr_asymmetry": 0.8995,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -5375,49 +5278,49 @@
       }
     },
     "FEAR__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION": {
-      "n": 4,
+      "n": 3,
       "stats": {
         "min": 8.0,
         "max": 21.8571,
-        "mean": 14.4357,
-        "std": 4.9689
+        "mean": 14.2857,
+        "std": 5.7297
       },
       "divergence_regime": "TACTICAL_REBOUND_IN_BEAR",
       "operational_guidance": "STK_BUY_DIP_TACTICAL",
       "zz25": {
-        "n_raw": 4,
-        "p_bull": 0.5714,
-        "p_bear": 0.4286,
-        "e_ret_max": 0.0149,
+        "n_raw": 3,
+        "p_bull": 0.5385,
+        "p_bear": 0.4615,
+        "e_ret_max": 0.0186,
         "e_ret_min": -0.0311,
-        "ev_net": 0.000971,
+        "ev_net": 0.000466,
         "e_days": 1.0,
-        "ev_per_day": 0.000971,
-        "rr_asymmetry": 0.4791,
+        "ev_per_day": 0.000466,
+        "rr_asymmetry": 0.5975,
         "confidence_tier": "LOW"
       },
       "zz50": {
-        "n_raw": 4,
-        "p_bull": 0.5714,
-        "p_bear": 0.4286,
-        "e_ret_max": 0.0328,
+        "n_raw": 3,
+        "p_bull": 0.5385,
+        "p_bear": 0.4615,
+        "e_ret_max": 0.0426,
         "e_ret_min": -0.0819,
-        "ev_net": 0.001188,
+        "ev_net": 0.000263,
         "e_days": 3.0,
-        "ev_per_day": 0.000396,
-        "rr_asymmetry": 0.401,
+        "ev_per_day": 8.8e-05,
+        "rr_asymmetry": 0.5209,
         "confidence_tier": "LOW"
       },
       "zz75": {
-        "n_raw": 4,
-        "p_bull": 0.5714,
-        "p_bear": 0.4286,
-        "e_ret_max": 0.0515,
+        "n_raw": 3,
+        "p_bull": 0.5385,
+        "p_bear": 0.4615,
+        "e_ret_max": 0.0575,
         "e_ret_min": -0.023,
-        "ev_net": 0.009388,
+        "ev_net": 0.007074,
         "e_days": 5.0,
-        "ev_per_day": 0.001878,
-        "rr_asymmetry": 2.2346,
+        "ev_per_day": 0.001415,
+        "rr_asymmetry": 2.4954,
         "confidence_tier": "LOW"
       },
       "zigzag_kinematic": {
@@ -6576,15 +6479,15 @@
         "confidence_tier": "MODERATE"
       },
       "zz50": {
-        "n_raw": 6,
-        "p_bull": 0.5,
-        "p_bear": 0.5,
-        "e_ret_max": 0.0055,
+        "n_raw": 7,
+        "p_bull": 0.5294,
+        "p_bear": 0.4706,
+        "e_ret_max": 0.006,
         "e_ret_min": -0.0071,
-        "ev_net": -0.000289,
+        "ev_net": 0.000169,
         "e_days": 3.0,
-        "ev_per_day": -9.6e-05,
-        "rr_asymmetry": 0.7819,
+        "ev_per_day": 5.6e-05,
+        "rr_asymmetry": 0.8518,
         "confidence_tier": "MODERATE"
       },
       "zz75": {
@@ -6758,15 +6661,15 @@
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_HOLD_STABLE",
       "zz25": {
-        "n_raw": 36,
-        "p_bull": 0.5435,
-        "p_bear": 0.4565,
-        "e_ret_max": 0.0042,
+        "n_raw": 37,
+        "p_bull": 0.5532,
+        "p_bear": 0.4468,
+        "e_ret_max": 0.0044,
         "e_ret_min": -0.0038,
-        "ev_net": 0.000537,
+        "ev_net": 0.000675,
         "e_days": 1.0,
-        "ev_per_day": 0.000537,
-        "rr_asymmetry": 1.128,
+        "ev_per_day": 0.000675,
+        "rr_asymmetry": 1.1633,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
@@ -6845,49 +6748,49 @@
       }
     },
     "GREED__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION": {
-      "n": 104,
+      "n": 103,
       "stats": {
         "min": 47.0,
         "max": 72.0,
-        "mean": 62.8577,
-        "std": 6.2796
+        "mean": 62.828,
+        "std": 6.3028
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
       "zz25": {
-        "n_raw": 104,
-        "p_bull": 0.5,
-        "p_bear": 0.5,
+        "n_raw": 103,
+        "p_bull": 0.5044,
+        "p_bear": 0.4956,
         "e_ret_max": 0.0056,
-        "e_ret_min": -0.0061,
-        "ev_net": -0.000234,
+        "e_ret_min": -0.0062,
+        "ev_net": -0.000224,
         "e_days": 1.0,
-        "ev_per_day": -0.000234,
-        "rr_asymmetry": 0.9154,
+        "ev_per_day": -0.000224,
+        "rr_asymmetry": 0.9017,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 104,
-        "p_bull": 0.5351,
-        "p_bear": 0.4649,
+        "n_raw": 103,
+        "p_bull": 0.5398,
+        "p_bear": 0.4602,
         "e_ret_max": 0.0091,
-        "e_ret_min": -0.0106,
-        "ev_net": 1.7e-05,
+        "e_ret_min": -0.0107,
+        "ev_net": 7.8e-05,
         "e_days": 3.0,
-        "ev_per_day": 6e-06,
-        "rr_asymmetry": 0.8605,
+        "ev_per_day": 2.6e-05,
+        "rr_asymmetry": 0.854,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 104,
-        "p_bull": 0.4912,
-        "p_bear": 0.5088,
+        "n_raw": 103,
+        "p_bull": 0.4956,
+        "p_bear": 0.5044,
         "e_ret_max": 0.0137,
-        "e_ret_min": -0.0122,
-        "ev_net": 0.000479,
+        "e_ret_min": -0.0123,
+        "ev_net": 0.000546,
         "e_days": 5.0,
-        "ev_per_day": 9.6e-05,
-        "rr_asymmetry": 1.1271,
+        "ev_per_day": 0.000109,
+        "rr_asymmetry": 1.1182,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -6942,49 +6845,49 @@
       }
     },
     "GREED__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION": {
-      "n": 169,
+      "n": 170,
       "stats": {
         "min": 42.0,
         "max": 77.0,
-        "mean": 61.2731,
-        "std": 6.6912
+        "mean": 61.2806,
+        "std": 6.6722
       },
       "divergence_regime": "TACTICAL_REBOUND_IN_BEAR",
       "operational_guidance": "STK_BUY_DIP_TACTICAL",
       "zz25": {
-        "n_raw": 169,
-        "p_bull": 0.4972,
-        "p_bear": 0.5028,
+        "n_raw": 170,
+        "p_bull": 0.5,
+        "p_bear": 0.5,
         "e_ret_max": 0.0053,
         "e_ret_min": -0.006,
-        "ev_net": -0.000371,
+        "ev_net": -0.000337,
         "e_days": 1.0,
-        "ev_per_day": -0.000371,
-        "rr_asymmetry": 0.8807,
+        "ev_per_day": -0.000337,
+        "rr_asymmetry": 0.8816,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 169,
-        "p_bull": 0.5642,
-        "p_bear": 0.4358,
+        "n_raw": 170,
+        "p_bull": 0.5611,
+        "p_bear": 0.4389,
         "e_ret_max": 0.0082,
         "e_ret_min": -0.01,
-        "ev_net": 0.000333,
+        "ev_net": 0.000254,
         "e_days": 3.0,
-        "ev_per_day": 0.000111,
-        "rr_asymmetry": 0.8227,
+        "ev_per_day": 8.5e-05,
+        "rr_asymmetry": 0.8184,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 169,
-        "p_bull": 0.5754,
-        "p_bear": 0.4246,
+        "n_raw": 170,
+        "p_bull": 0.5722,
+        "p_bear": 0.4278,
         "e_ret_max": 0.0114,
         "e_ret_min": -0.0125,
-        "ev_net": 0.001316,
+        "ev_net": 0.001205,
         "e_days": 5.0,
-        "ev_per_day": 0.000263,
-        "rr_asymmetry": 0.9173,
+        "ev_per_day": 0.000241,
+        "rr_asymmetry": 0.911,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -7107,21 +7010,21 @@
       "stats": {
         "min": 39.0,
         "max": 77.0,
-        "mean": 61.5675,
-        "std": 6.6353
+        "mean": 61.5726,
+        "std": 6.6373
       },
       "divergence_regime": "TACTICAL_REBOUND_IN_BEAR",
       "operational_guidance": "STK_BUY_DIP_TACTICAL",
       "zz25": {
         "n_raw": 659,
-        "p_bull": 0.5516,
-        "p_bear": 0.4484,
+        "p_bull": 0.5501,
+        "p_bear": 0.4499,
         "e_ret_max": 0.0053,
         "e_ret_min": -0.0055,
-        "ev_net": 0.000512,
+        "ev_net": 0.000501,
         "e_days": 1.0,
-        "ev_per_day": 0.000512,
-        "rr_asymmetry": 0.9738,
+        "ev_per_day": 0.000501,
+        "rr_asymmetry": 0.976,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
@@ -7129,11 +7032,11 @@
         "p_bull": 0.5785,
         "p_bear": 0.4215,
         "e_ret_max": 0.0097,
-        "e_ret_min": -0.0109,
-        "ev_net": 0.001057,
+        "e_ret_min": -0.0108,
+        "ev_net": 0.001068,
         "e_days": 3.0,
-        "ev_per_day": 0.000352,
-        "rr_asymmetry": 0.8928,
+        "ev_per_day": 0.000356,
+        "rr_asymmetry": 0.8949,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
@@ -7141,11 +7044,11 @@
         "p_bull": 0.5845,
         "p_bear": 0.4155,
         "e_ret_max": 0.0129,
-        "e_ret_min": -0.0134,
-        "ev_net": 0.001987,
+        "e_ret_min": -0.0133,
+        "ev_net": 0.002004,
         "e_days": 5.0,
-        "ev_per_day": 0.000397,
-        "rr_asymmetry": 0.9625,
+        "ev_per_day": 0.000401,
+        "rr_asymmetry": 0.9656,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -7339,12 +7242,12 @@
       }
     },
     "GREED__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION": {
-      "n": 15,
+      "n": 16,
       "stats": {
         "min": 51.0,
         "max": 71.1429,
-        "mean": 61.1219,
-        "std": 5.733
+        "mean": 61.4732,
+        "std": 5.7153
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
@@ -7716,15 +7619,15 @@
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 162,
-        "p_bull": 0.6395,
-        "p_bear": 0.3605,
-        "e_ret_max": 0.0114,
+        "n_raw": 163,
+        "p_bull": 0.6416,
+        "p_bear": 0.3584,
+        "e_ret_max": 0.0115,
         "e_ret_min": -0.014,
-        "ev_net": 0.002281,
+        "ev_net": 0.002422,
         "e_days": 3.0,
-        "ev_per_day": 0.00076,
-        "rr_asymmetry": 0.8091,
+        "ev_per_day": 0.000807,
+        "rr_asymmetry": 0.8194,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
@@ -8201,15 +8104,15 @@
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 28,
-        "p_bull": 0.6316,
-        "p_bear": 0.3684,
-        "e_ret_max": 0.0148,
+        "n_raw": 29,
+        "p_bull": 0.641,
+        "p_bear": 0.359,
+        "e_ret_max": 0.0165,
         "e_ret_min": -0.0216,
-        "ev_net": 0.002301,
+        "ev_net": 0.003494,
         "e_days": 5.0,
-        "ev_per_day": 0.00046,
-        "rr_asymmetry": 0.6871,
+        "ev_per_day": 0.000699,
+        "rr_asymmetry": 0.7658,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -8468,25 +8371,25 @@
       }
     },
     "NEUTRAL_FEAR__DECELERATING_DOWN_3D__VOL_PEAK_DECELERATION": {
-      "n": 13,
+      "n": 14,
       "stats": {
-        "min": 33.1286,
+        "min": 27.45,
         "max": 47.9143,
-        "mean": 42.6,
-        "std": 3.7187
+        "mean": 41.5179,
+        "std": 5.2976
       },
       "divergence_regime": "TACTICAL_REBOUND_IN_BEAR",
       "operational_guidance": "STK_BUY_DIP_TACTICAL",
       "zz25": {
-        "n_raw": 13,
-        "p_bull": 0.3478,
-        "p_bear": 0.6522,
+        "n_raw": 14,
+        "p_bull": 0.3333,
+        "p_bear": 0.6667,
         "e_ret_max": 0.0067,
-        "e_ret_min": -0.0054,
-        "ev_net": -0.001481,
+        "e_ret_min": -0.0051,
+        "ev_net": -0.001502,
         "e_days": 1.0,
-        "ev_per_day": -0.001481,
-        "rr_asymmetry": 1.2377,
+        "ev_per_day": -0.001502,
+        "rr_asymmetry": 1.3135,
         "confidence_tier": "HIGH"
       },
       "zz50": {
@@ -9439,15 +9342,15 @@
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 119,
-        "p_bull": 0.5581,
-        "p_bear": 0.4419,
-        "e_ret_max": 0.0174,
+        "n_raw": 120,
+        "p_bull": 0.5615,
+        "p_bear": 0.4385,
+        "e_ret_max": 0.0177,
         "e_ret_min": -0.0186,
-        "ev_net": 0.001522,
+        "ev_net": 0.001812,
         "e_days": 5.0,
-        "ev_per_day": 0.000304,
-        "rr_asymmetry": 0.9337,
+        "ev_per_day": 0.000362,
+        "rr_asymmetry": 0.9511,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {

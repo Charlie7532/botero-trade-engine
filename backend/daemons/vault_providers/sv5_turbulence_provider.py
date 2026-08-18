@@ -53,9 +53,9 @@ class SV5TurbulenceProvider:
         try:
             from datetime import timedelta
 
-            # Load last 15 days of SV5TW bars (need 11 for 10 diffs + margin)
-            start_date = (datetime.now(UTC) - timedelta(days=20)).date()
-            bars = store.load_bars("SV5TW", "1d", start=start_date)
+            # Load full SV5TW history and take last 11 bars (need 10 diffs + 1 base)
+            # A calendar-day lookback can miss trading days during Vault gaps
+            bars = store.load_bars("SV5TW", "1d")
 
             if bars is None or len(bars) < _WINDOW + 1:
                 logger.warning(

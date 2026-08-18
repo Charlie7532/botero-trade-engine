@@ -4,6 +4,8 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
+from backend.modules.entry_decision.domain.rules.sigma_overflow import validate_overflow
+
 FACT_STORE_PATH = Path(__file__).parent / "sv5_turbulence_fact_store.json"
 
 
@@ -33,6 +35,10 @@ class SV5TurbulenceStateGuidance:
     zz25: ScaleGuidance
     zz50: ScaleGuidance
     zz75: ScaleGuidance
+    sigma_depth_d1: Optional[float] = None
+    sigma_depth_d2: Optional[float] = None
+    sigma_depth_d3: Optional[float] = None
+    overflow_flag: Optional[str] = None  # "UPPER"|"LOWER"|"MULTI"|None
 
     @property
     def bin(self) -> str:
@@ -65,6 +71,10 @@ class SV5TurbulenceStateGuidance:
             "primary_ev_net": self.zz50.ev_net,
             "primary_e_days": self.zz50.e_days,
             "primary_capital_velocity": self.zz50.ev_per_day,
+            "sigma_depth_d1": self.sigma_depth_d1,
+            "sigma_depth_d2": self.sigma_depth_d2,
+            "sigma_depth_d3": self.sigma_depth_d3,
+            "overflow_flag": self.overflow_flag,
         }
 
 
@@ -154,6 +164,12 @@ class SV5TurbulenceLookupAdapter:
                 ev_per_day=d["ev_per_day"], rr_asymmetry=d["rr_asymmetry"]
             )
 
+        d1_depth, f1 = validate_overflow("sv5_turbulence", "d1", val)
+        d2_depth, f2 = validate_overflow("sv5_turbulence", "d2", d3_speed)
+        d3_depth, f3 = validate_overflow("sv5_turbulence", "d3", vol_norm)
+        flags = [f for f in (f1, f2, f3) if f]
+        overflow_flag = "MULTI" if len(flags) >= 2 else (flags[0] if flags else None)
+
         stats = state.get("stats", {})
         return SV5TurbulenceStateGuidance(
             state_key=matched_key,
@@ -167,7 +183,11 @@ class SV5TurbulenceLookupAdapter:
             operational_guidance=state.get("operational_guidance", "STK_HOLD_STABLE"),
             zz25=_make_scale(state["zz25"]),
             zz50=_make_scale(state["zz50"]),
-            zz75=_make_scale(state["zz75"])
+            zz75=_make_scale(state["zz75"]),
+            sigma_depth_d1=d1_depth,
+            sigma_depth_d2=d2_depth,
+            sigma_depth_d3=d3_depth,
+            overflow_flag=overflow_flag,
         )
 
 

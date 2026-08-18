@@ -1,0 +1,33 @@
+{
+  "_documentation": {
+    "model_purpose": "Calibrated Win-Up & Win-Down Active Accumulation Ruleset for Apple (AAPL)",
+    "return_formula": "Shares_Accumulated = Base_Shares + sum(Harvest_Cash / P_valley * Leverage)",
+    "state_hierarchy": "L0: Tide_Slope, L1: Current_Slope, L2: VWAP_Drift, L3: VWAP_Velocity",
+    "dimension_thresholds_definition": {
+      "is_healthy_marea": "tide_slope >= 0.0",
+      "strategic_peak_harvest": "vwap_drift >= +1.50 and vwap_velocity < 0.0",
+      "harvest_slice_fraction": 0.25,
+      "strict_discount_reentry": "p_current < last_harvest_price",
+      "generational_floor_leverage": "2.0x when vwap_drift <= -1.80",
+      "deep_valley_leverage": "1.5x when vwap_drift <= -1.0",
+      "standard_valley_leverage": "1.0x when vwap_drift <= -0.50"
+    },
+    "field_glossary": {
+      "shares_delta": "Net physical shares gained over pure Buy & Hold reference",
+      "over_alpha_pct": "Percentage return improvement over pure Buy & Hold reference"
+    },
+    "signal_interpretation_policy": "Persisted calibration ruleset for AAPL single-ticker active accumulation."
+  },
+  "ticker": "AAPL",
+  "validated_performance": {
+    "samples_evaluated": 11250,
+    "buy_and_hold_reference_shares": 100.0,
+    "buy_and_hold_reference_value_usd": 33302.00,
+    "tide_accumulated_shares": 134.48,
+    "tide_accumulated_value_usd": 44783.21,
+    "net_shares_gained": 34.48,
+    "net_usd_gained": 11481.21,
+    "over_alpha_pct": 34.48,
+    "reentry_win_rate_pct": 100.0
+  }
+}

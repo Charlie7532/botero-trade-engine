@@ -1,7 +1,7 @@
 """
 HeadScorer — Infrastructure Implementation for Multi-Head ML Predictions
 ============================================================================
-Loads trained XGBoost models from backend/models/ and emits P(positive)
+Loads trained XGBoost models from data/models/ and emits P(positive)
 for each head. Converts a ChannelSnapshot into the feature vector
 that the models expect.
 

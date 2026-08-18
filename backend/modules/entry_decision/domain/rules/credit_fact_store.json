@@ -17,23 +17,23 @@
     "volatility_formula": "D3 = std(2d) / std(10d) — V1.1 standard",
     "dimension_thresholds_definition": {
       "credit_edges_d1": [
-        0.5257337997794351,
-        0.5798598851710296,
-        0.6204642657945265,
-        0.6761438560393446,
-        0.7313997260473375
+        0.5257619005311017,
+        0.5798699967378386,
+        0.620499641807841,
+        0.6764569534859075,
+        0.7314362752727139
       ],
       "credit_edges_d2": [
-        -0.0129721304369197,
-        -0.004445244795774928,
-        0.004611106865017829,
-        0.011945563785729672
+        -0.012972104658461346,
+        -0.004443310521714891,
+        0.004611081621589013,
+        0.01194252152971352
       ],
       "credit_edges_d3": [
-        0.017142212427312724,
-        0.12084363267044279,
-        0.9673699131956209,
-        1.622486621813566
+        0.017151864498964244,
+        0.12085866515045153,
+        0.9672946904287146,
+        1.622478061099371
       ],
       "credit_labels_d1": [
         "CREDIT_CRISIS",
@@ -62,9 +62,9 @@
       "bars": "market.ohlcv_bars (Neon Vault)",
       "zigzag_repository": "market.zigzag_legs (SPY)",
       "start_date": "2007-04-11",
-      "end_date": "2026-08-12",
-      "sample_size_days": 4866,
-      "years_covered": 19.31
+      "end_date": "2026-08-14",
+      "sample_size_days": 4868,
+      "years_covered": 19.32
     },
     "state_hierarchy": {
       "L0": "METAR Station Root",
@@ -84,7 +84,7 @@
     "signal_interpretation_policy": "Clean Architecture Standard: pure domain rules iterate over states and emit universal 4D action taxonomy."
   },
   "station": "CREDIT",
-  "sample_size": 4866,
+  "sample_size": 4868,
   "states_populated": 112,
   "states": {
     "CREDIT_CRISIS__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE": {
@@ -6630,15 +6630,15 @@
         "confidence_tier": "HIGH"
       },
       "zz50": {
-        "n_raw": 13,
-        "p_bull": 0.5217,
-        "p_bear": 0.4783,
-        "e_ret_max": 0.0199,
+        "n_raw": 14,
+        "p_bull": 0.5417,
+        "p_bear": 0.4583,
+        "e_ret_max": 0.0182,
         "e_ret_min": -0.0165,
-        "ev_net": 0.001766,
+        "ev_net": 0.001954,
         "e_days": 3.0,
-        "ev_per_day": 0.000589,
-        "rr_asymmetry": 1.2091,
+        "ev_per_day": 0.000651,
+        "rr_asymmetry": 1.1055,
         "confidence_tier": "HIGH"
       },
       "zz75": {
@@ -7977,15 +7977,15 @@
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 94,
-        "p_bull": 0.5577,
-        "p_bear": 0.4423,
+        "n_raw": 95,
+        "p_bull": 0.5619,
+        "p_bear": 0.4381,
         "e_ret_max": 0.0143,
         "e_ret_min": -0.0115,
-        "ev_net": 0.002742,
+        "ev_net": 0.002831,
         "e_days": 5.0,
-        "ev_per_day": 0.000548,
-        "rr_asymmetry": 1.2396,
+        "ev_per_day": 0.000566,
+        "rr_asymmetry": 1.2361,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -8223,27 +8223,27 @@
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 107,
-        "p_bull": 0.5385,
-        "p_bear": 0.4615,
-        "e_ret_max": 0.0115,
+        "n_raw": 108,
+        "p_bull": 0.5424,
+        "p_bear": 0.4576,
+        "e_ret_max": 0.0114,
         "e_ret_min": -0.0136,
-        "ev_net": 3e-06,
+        "ev_net": 6.6e-05,
         "e_days": 3.0,
-        "ev_per_day": 1e-06,
-        "rr_asymmetry": 0.8452,
+        "ev_per_day": 2.2e-05,
+        "rr_asymmetry": 0.8403,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 106,
-        "p_bull": 0.569,
-        "p_bear": 0.431,
-        "e_ret_max": 0.0143,
+        "n_raw": 107,
+        "p_bull": 0.5726,
+        "p_bear": 0.4274,
+        "e_ret_max": 0.0142,
         "e_ret_min": -0.018,
-        "ev_net": 0.000564,
+        "ev_net": 0.000593,
         "e_days": 5.0,
-        "ev_per_day": 0.000113,
-        "rr_asymmetry": 0.7973,
+        "ev_per_day": 0.000119,
+        "rr_asymmetry": 0.788,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -8448,25 +8448,25 @@
       }
     },
     "DEEP_CREDIT_EASE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE": {
-      "n": 518,
+      "n": 520,
       "stats": {
         "min": 0.6417,
-        "max": 0.7492,
-        "mean": 0.6923,
-        "std": 0.0321
+        "max": 0.7511,
+        "mean": 0.6925,
+        "std": 0.0323
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
       "zz25": {
-        "n_raw": 517,
-        "p_bull": 0.5237,
-        "p_bear": 0.4763,
+        "n_raw": 519,
+        "p_bull": 0.5236,
+        "p_bear": 0.4764,
         "e_ret_max": 0.0063,
         "e_ret_min": -0.007,
-        "ev_net": 5e-06,
+        "ev_net": 1.4e-05,
         "e_days": 1.0,
-        "ev_per_day": 5e-06,
-        "rr_asymmetry": 0.8979,
+        "ev_per_day": 1.4e-05,
+        "rr_asymmetry": 0.901,
         "confidence_tier": "ROBUST"
       },
       "zz50": {

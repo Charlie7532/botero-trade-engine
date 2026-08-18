@@ -17,23 +17,23 @@
     "volatility_formula": "D3 = std(2d) / std(10d) — V1.1 standard",
     "dimension_thresholds_definition": {
       "sv5_turbulence_edges_d1": [
-        2.2997902816146416,
-        3.639990273688219,
-        5.9737760187472855,
-        10.73616578036167,
-        17.336544129828958
+        2.2999225250132023,
+        3.640145296163689,
+        5.9743339870517325,
+        10.740366737760601,
+        17.382208080054916
       ],
       "sv5_turbulence_edges_d2": [
-        -5.968205533044786,
-        -1.5802211725301902,
-        1.623997164485653,
-        5.7309034042725955
+        -5.968048070012573,
+        -1.5801184336089722,
+        1.6271059159870584,
+        5.74934882830888
       ],
       "sv5_turbulence_edges_d3": [
-        0.0015395489858314108,
-        0.02258210134209079,
-        0.8256039226246987,
-        1.973555438336489
+        0.0015397045214538576,
+        0.022594578694058506,
+        0.8252605970584157,
+        1.9735481658933367
       ],
       "sv5_turbulence_labels_d1": [
         "QUIET_FLOW",
@@ -62,8 +62,8 @@
       "bars": "market.ohlcv_bars (Neon Vault)",
       "zigzag_repository": "market.zigzag_legs (SPY)",
       "start_date": "1999-01-19",
-      "end_date": "2026-08-03",
-      "sample_size_days": 6924,
+      "end_date": "2026-08-14",
+      "sample_size_days": 6926,
       "years_covered": 27.48
     },
     "state_hierarchy": {
@@ -84,7 +84,7 @@
     "signal_interpretation_policy": "Clean Architecture Standard: pure domain rules iterate over states and emit universal 4D action taxonomy."
   },
   "station": "SV5_TURBULENCE",
-  "sample_size": 6924,
+  "sample_size": 6926,
   "states_populated": 104,
   "states": {
     "CRISIS_TURBULENCE__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION": {
@@ -98,15 +98,15 @@
       "divergence_regime": "FULL_CONVERGENT_BEAR",
       "operational_guidance": "STK_BLOCK_CRISIS",
       "zz25": {
-        "n_raw": 30,
-        "p_bull": 0.525,
-        "p_bear": 0.475,
-        "e_ret_max": 0.0059,
+        "n_raw": 31,
+        "p_bull": 0.5366,
+        "p_bear": 0.4634,
+        "e_ret_max": 0.0067,
         "e_ret_min": -0.0084,
-        "ev_net": -0.000592,
+        "ev_net": -0.000102,
         "e_days": 1.0,
-        "ev_per_day": -0.000592,
-        "rr_asymmetry": 0.6986,
+        "ev_per_day": -0.000102,
+        "rr_asymmetry": 0.7942,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
@@ -379,82 +379,82 @@
       }
     },
     "CRISIS_TURBULENCE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
-      "n": 67,
+      "n": 65,
       "stats": {
         "min": 12.0825,
         "max": 24.3373,
-        "mean": 16.8687,
-        "std": 2.5474
+        "mean": 16.9432,
+        "std": 2.5469
       },
       "divergence_regime": "FULL_CONVERGENT_BEAR",
       "operational_guidance": "STK_BLOCK_CRISIS",
       "zz25": {
-        "n_raw": 67,
-        "p_bull": 0.5844,
-        "p_bear": 0.4156,
-        "e_ret_max": 0.0064,
+        "n_raw": 65,
+        "p_bull": 0.5733,
+        "p_bear": 0.4267,
+        "e_ret_max": 0.0063,
         "e_ret_min": -0.0083,
-        "ev_net": 0.000537,
+        "ev_net": 0.000286,
         "e_days": 1.0,
-        "ev_per_day": 0.000537,
-        "rr_asymmetry": 0.7742,
+        "ev_per_day": 0.000286,
+        "rr_asymmetry": 0.7519,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 67,
-        "p_bull": 0.6494,
-        "p_bear": 0.3506,
-        "e_ret_max": 0.0161,
+        "n_raw": 65,
+        "p_bull": 0.64,
+        "p_bear": 0.36,
+        "e_ret_max": 0.0157,
         "e_ret_min": -0.0205,
-        "ev_net": 0.003527,
+        "ev_net": 0.003015,
         "e_days": 3.0,
-        "ev_per_day": 0.001176,
-        "rr_asymmetry": 0.7834,
+        "ev_per_day": 0.001005,
+        "rr_asymmetry": 0.7682,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 67,
-        "p_bull": 0.6364,
-        "p_bear": 0.3636,
+        "n_raw": 65,
+        "p_bull": 0.6267,
+        "p_bear": 0.3733,
         "e_ret_max": 0.0174,
         "e_ret_min": -0.0404,
-        "ev_net": -0.002112,
+        "ev_net": -0.002633,
         "e_days": 5.0,
-        "ev_per_day": -0.000422,
-        "rr_asymmetry": 0.4313,
+        "ev_per_day": -0.000527,
+        "rr_asymmetry": 0.4314,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
         "zz25": {
-          "n_pos": 12,
+          "n_pos": 11,
           "n_neg": 8,
-          "p_bull": 0.5667,
-          "p_bear": 0.4333,
-          "e_ret_max": 6.6719,
+          "p_bull": 0.5517,
+          "p_bear": 0.4483,
+          "e_ret_max": 6.939,
           "e_ret_min": -4.7506,
-          "ev_net": 1.4019,
-          "e_days": 2.5,
-          "ftt_bull_days": 2.5,
+          "ev_net": 1.3215,
+          "e_days": 2.0,
+          "ftt_bull_days": 2.0,
           "ftt_bear_days": 2.5,
-          "ev_per_day": 0.560769,
-          "rr_asymmetry": 1.4044,
+          "ev_per_day": 0.660759,
+          "rr_asymmetry": 1.4606,
           "confidence_tier": "HIGH",
           "zigzag_pure_vault": true,
           "structural_momentum": {
             "up_legs": {
-              "n_measured": 12,
-              "p_continuation": 0.4545,
-              "ev_structural_pct": 0.5415,
-              "mean_accum_ret": 0.9927,
-              "median_accum_ret": -0.1168,
+              "n_measured": 11,
+              "p_continuation": 0.4762,
+              "ev_structural_pct": 0.5746,
+              "mean_accum_ret": 1.0969,
+              "median_accum_ret": -0.08,
               "terciles_pct": {
                 "t1_weak": -3.5944,
-                "t2_neutral": 0.4136,
+                "t2_neutral": 0.6026,
                 "t3_strong": 6.159
               },
               "accum_edges": [
-                -0.3645,
-                2.1343
+                -0.5693,
+                2.2212
               ]
             },
             "down_legs": {
@@ -475,33 +475,33 @@
             }
           },
           "prev_leg_domino": {
-            "n_measured": 20,
-            "mean_prev_return": 0.057584,
-            "median_prev_return": 0.057696,
-            "mean_prev_duration": 5.0,
-            "p_negative_prev": 0.5667,
-            "p_extreme_prev": 0.1333,
+            "n_measured": 19,
+            "mean_prev_return": 0.057285,
+            "median_prev_return": 0.054867,
+            "mean_prev_duration": 4.3,
+            "p_negative_prev": 0.5517,
+            "p_extreme_prev": 0.1379,
             "extreme_threshold_p90": 0.085406,
             "terciles_domino": {
               "t1_small": {
-                "n": 7,
-                "mean_abs_return": 0.037006,
-                "cascade_rate": 0.2857
+                "n": 6,
+                "mean_abs_return": 0.036306,
+                "cascade_rate": 0.3333
               },
               "t2_medium": {
-                "n": 6,
-                "mean_abs_return": 0.05837,
-                "cascade_rate": 0.5
+                "n": 7,
+                "mean_abs_return": 0.056434,
+                "cascade_rate": 0.5714
               },
               "t3_large": {
-                "n": 7,
-                "mean_abs_return": 0.083742,
-                "cascade_rate": 0.7143
+                "n": 6,
+                "mean_abs_return": 0.08605,
+                "cascade_rate": 0.6667
               }
             },
             "tercile_edges": [
-              0.044545,
-              0.06869
+              0.041203,
+              0.069895
             ]
           }
         },
@@ -1359,25 +1359,25 @@
       }
     },
     "CRISIS_TURBULENCE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE": {
-      "n": 30,
+      "n": 32,
       "stats": {
         "min": 13.1505,
-        "max": 22.4093,
-        "mean": 16.852,
-        "std": 2.576
+        "max": 22.9668,
+        "mean": 17.2256,
+        "std": 2.8837
       },
       "divergence_regime": "FULL_CONVERGENT_BEAR",
       "operational_guidance": "STK_BLOCK_CRISIS",
       "zz25": {
-        "n_raw": 30,
-        "p_bull": 0.5,
-        "p_bear": 0.5,
-        "e_ret_max": 0.0136,
+        "n_raw": 31,
+        "p_bull": 0.5122,
+        "p_bear": 0.4878,
+        "e_ret_max": 0.0131,
         "e_ret_min": -0.012,
-        "ev_net": 0.00063,
+        "ev_net": 0.000738,
         "e_days": 1.0,
-        "ev_per_day": 0.00063,
-        "rr_asymmetry": 1.1405,
+        "ev_per_day": 0.000738,
+        "rr_asymmetry": 1.0957,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
@@ -2058,82 +2058,82 @@
       }
     },
     "CRISIS_TURBULENCE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE": {
-      "n": 122,
+      "n": 124,
       "stats": {
         "min": 10.1263,
         "max": 24.4754,
-        "mean": 16.3882,
-        "std": 2.9471
+        "mean": 16.3569,
+        "std": 2.9349
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
       "zz25": {
-        "n_raw": 122,
-        "p_bull": 0.5,
-        "p_bear": 0.5,
-        "e_ret_max": 0.0075,
+        "n_raw": 124,
+        "p_bull": 0.5075,
+        "p_bear": 0.4925,
+        "e_ret_max": 0.0076,
         "e_ret_min": -0.0133,
-        "ev_net": -0.002704,
+        "ev_net": -0.002515,
         "e_days": 1.0,
-        "ev_per_day": -0.002704,
-        "rr_asymmetry": 0.5615,
+        "ev_per_day": -0.002515,
+        "rr_asymmetry": 0.5674,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 122,
-        "p_bull": 0.5606,
-        "p_bear": 0.4394,
-        "e_ret_max": 0.0127,
+        "n_raw": 124,
+        "p_bull": 0.5672,
+        "p_bear": 0.4328,
+        "e_ret_max": 0.013,
         "e_ret_min": -0.0254,
-        "ev_net": -0.00356,
+        "ev_net": -0.003167,
         "e_days": 3.0,
-        "ev_per_day": -0.001187,
-        "rr_asymmetry": 0.4995,
+        "ev_per_day": -0.001056,
+        "rr_asymmetry": 0.5108,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 122,
-        "p_bull": 0.5833,
-        "p_bear": 0.4167,
-        "e_ret_max": 0.0157,
+        "n_raw": 124,
+        "p_bull": 0.5896,
+        "p_bear": 0.4104,
+        "e_ret_max": 0.0158,
         "e_ret_min": -0.0328,
-        "ev_net": -0.00384,
+        "ev_net": -0.003523,
         "e_days": 5.0,
-        "ev_per_day": -0.000768,
-        "rr_asymmetry": 0.4798,
+        "ev_per_day": -0.000705,
+        "rr_asymmetry": 0.4812,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
         "zz25": {
-          "n_pos": 15,
+          "n_pos": 16,
           "n_neg": 17,
-          "p_bull": 0.4762,
-          "p_bear": 0.5238,
-          "e_ret_max": 4.9018,
+          "p_bull": 0.4884,
+          "p_bear": 0.5116,
+          "e_ret_max": 4.8288,
           "e_ret_min": -6.4973,
-          "ev_net": -0.8792,
+          "ev_net": -0.772,
           "e_days": 2.0,
           "ftt_bull_days": 2.0,
           "ftt_bear_days": 4.0,
-          "ev_per_day": -0.439615,
-          "rr_asymmetry": 0.7544,
+          "ev_per_day": -0.385976,
+          "rr_asymmetry": 0.7432,
           "confidence_tier": "ROBUST",
           "zigzag_pure_vault": true,
           "structural_momentum": {
             "up_legs": {
-              "n_measured": 15,
-              "p_continuation": 0.4,
-              "ev_structural_pct": -0.944,
-              "mean_accum_ret": -1.5734,
-              "median_accum_ret": -1.087,
+              "n_measured": 16,
+              "p_continuation": 0.3846,
+              "ev_structural_pct": -0.9136,
+              "mean_accum_ret": -1.4846,
+              "median_accum_ret": -0.9528,
               "terciles_pct": {
                 "t1_weak": -5.9461,
-                "t2_neutral": -1.0798,
+                "t2_neutral": -0.9254,
                 "t3_strong": 2.3058
               },
               "accum_edges": [
-                -2.2402,
-                -0.2239
+                -1.9965,
+                -0.1533
               ]
             },
             "down_legs": {
@@ -2154,12 +2154,12 @@
             }
           },
           "prev_leg_domino": {
-            "n_measured": 32,
-            "mean_prev_return": 0.06013,
-            "median_prev_return": 0.052502,
-            "mean_prev_duration": 3.5,
-            "p_negative_prev": 0.381,
-            "p_extreme_prev": 0.1429,
+            "n_measured": 33,
+            "mean_prev_return": 0.060273,
+            "median_prev_return": 0.052608,
+            "mean_prev_duration": 4.0,
+            "p_negative_prev": 0.3953,
+            "p_extreme_prev": 0.1395,
             "extreme_threshold_p90": 0.085406,
             "terciles_domino": {
               "t1_small": {
@@ -2168,19 +2168,19 @@
                 "cascade_rate": 0.3636
               },
               "t2_medium": {
-                "n": 10,
-                "mean_abs_return": 0.052694,
-                "cascade_rate": 0.6
+                "n": 11,
+                "mean_abs_return": 0.053495,
+                "cascade_rate": 0.5455
               },
               "t3_large": {
                 "n": 11,
-                "mean_abs_return": 0.095653,
+                "mean_abs_return": 0.096086,
                 "cascade_rate": 0.7273
               }
             },
             "tercile_edges": [
-              0.044961,
-              0.06103
+              0.04538,
+              0.061732
             ]
           }
         },
@@ -2487,49 +2487,49 @@
       }
     },
     "ELEVATED_TURBULENCE__ACCELERATING_UP_3D__VOL_EXTREME_SQUEEZE": {
-      "n": 6,
+      "n": 7,
       "stats": {
         "min": 8.9504,
         "max": 13.6557,
-        "mean": 11.8727,
-        "std": 1.5269
+        "mean": 12.0003,
+        "std": 1.4478
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_HOLD_STABLE",
       "zz25": {
-        "n_raw": 6,
-        "p_bull": 0.4375,
-        "p_bear": 0.5625,
-        "e_ret_max": 0.0146,
+        "n_raw": 7,
+        "p_bull": 0.4706,
+        "p_bear": 0.5294,
+        "e_ret_max": 0.0117,
         "e_ret_min": -0.0066,
-        "ev_net": 0.000169,
+        "ev_net": 0.000495,
         "e_days": 1.0,
-        "ev_per_day": 0.000169,
-        "rr_asymmetry": 2.204,
+        "ev_per_day": 0.000495,
+        "rr_asymmetry": 1.7556,
         "confidence_tier": "MODERATE"
       },
       "zz50": {
-        "n_raw": 6,
-        "p_bull": 0.5625,
-        "p_bear": 0.4375,
-        "e_ret_max": 0.0135,
+        "n_raw": 7,
+        "p_bull": 0.5882,
+        "p_bear": 0.4118,
+        "e_ret_max": 0.0109,
         "e_ret_min": -0.0105,
-        "ev_net": 0.002053,
+        "ev_net": 0.001966,
         "e_days": 3.0,
-        "ev_per_day": 0.000684,
-        "rr_asymmetry": 1.2822,
+        "ev_per_day": 0.000655,
+        "rr_asymmetry": 1.0367,
         "confidence_tier": "MODERATE"
       },
       "zz75": {
-        "n_raw": 6,
-        "p_bull": 0.625,
-        "p_bear": 0.375,
-        "e_ret_max": 0.0131,
+        "n_raw": 7,
+        "p_bull": 0.6471,
+        "p_bear": 0.3529,
+        "e_ret_max": 0.0128,
         "e_ret_min": -0.0276,
-        "ev_net": 0.002357,
+        "ev_net": 0.00291,
         "e_days": 5.0,
-        "ev_per_day": 0.000471,
-        "rr_asymmetry": 0.4732,
+        "ev_per_day": 0.000582,
+        "rr_asymmetry": 0.4653,
         "confidence_tier": "MODERATE"
       },
       "zigzag_kinematic": {
@@ -2788,49 +2788,49 @@
       }
     },
     "ELEVATED_TURBULENCE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
-      "n": 172,
+      "n": 173,
       "stats": {
         "min": 7.7497,
         "max": 14.9579,
-        "mean": 10.9352,
-        "std": 1.7532
+        "mean": 10.9494,
+        "std": 1.758
       },
       "divergence_regime": "FULL_CONVERGENT_BEAR",
       "operational_guidance": "STK_BLOCK_CRISIS",
       "zz25": {
-        "n_raw": 172,
-        "p_bull": 0.4835,
-        "p_bear": 0.5165,
+        "n_raw": 173,
+        "p_bull": 0.4809,
+        "p_bear": 0.5191,
         "e_ret_max": 0.0078,
-        "e_ret_min": -0.009,
-        "ev_net": -0.000808,
+        "e_ret_min": -0.0089,
+        "ev_net": -0.000805,
         "e_days": 1.0,
-        "ev_per_day": -0.000808,
-        "rr_asymmetry": 0.863,
+        "ev_per_day": -0.000805,
+        "rr_asymmetry": 0.8727,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 171,
-        "p_bull": 0.5359,
-        "p_bear": 0.4641,
-        "e_ret_max": 0.0138,
-        "e_ret_min": -0.0146,
-        "ev_net": 0.000833,
+        "n_raw": 173,
+        "p_bull": 0.5355,
+        "p_bear": 0.4645,
+        "e_ret_max": 0.0141,
+        "e_ret_min": -0.0144,
+        "ev_net": 0.001023,
         "e_days": 3.0,
-        "ev_per_day": 0.000278,
-        "rr_asymmetry": 0.9495,
+        "ev_per_day": 0.000341,
+        "rr_asymmetry": 0.9781,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 171,
-        "p_bull": 0.6133,
-        "p_bear": 0.3867,
+        "n_raw": 172,
+        "p_bull": 0.6099,
+        "p_bear": 0.3901,
         "e_ret_max": 0.0184,
-        "e_ret_min": -0.0201,
-        "ev_net": 0.003559,
+        "e_ret_min": -0.0199,
+        "ev_net": 0.003495,
         "e_days": 5.0,
-        "ev_per_day": 0.000712,
-        "rr_asymmetry": 0.9161,
+        "ev_per_day": 0.000699,
+        "rr_asymmetry": 0.9245,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -4300,49 +4300,49 @@
       }
     },
     "ELEVATED_TURBULENCE__FAST_SPIKE_3D__VOL_EXTREME_SQUEEZE": {
-      "n": 2,
+      "n": 1,
       "stats": {
-        "min": 12.766,
+        "min": 13.8661,
         "max": 13.8661,
-        "mean": 13.3161,
-        "std": 0.55
+        "mean": 13.8661,
+        "std": 0.0
       },
       "divergence_regime": "FULL_CONVERGENT_BEAR",
       "operational_guidance": "STK_BLOCK_CRISIS",
       "zz25": {
-        "n_raw": 2,
-        "p_bull": 0.5,
-        "p_bear": 0.5,
-        "e_ret_max": 0.0057,
+        "n_raw": 1,
+        "p_bull": 0.4545,
+        "p_bear": 0.5455,
+        "e_ret_max": 0.015,
         "e_ret_min": -0.0026,
-        "ev_net": 0.000262,
+        "ev_net": -0.000232,
         "e_days": 1.0,
-        "ev_per_day": 0.000262,
-        "rr_asymmetry": 2.2339,
+        "ev_per_day": -0.000232,
+        "rr_asymmetry": 5.876,
         "confidence_tier": "ANECDOTAL"
       },
       "zz50": {
-        "n_raw": 2,
-        "p_bull": 0.5,
-        "p_bear": 0.5,
-        "e_ret_max": 0.0006,
+        "n_raw": 1,
+        "p_bull": 0.4545,
+        "p_bear": 0.5455,
+        "e_ret_max": 0.015,
         "e_ret_min": -0.0042,
-        "ev_net": -0.0003,
+        "ev_net": -0.000379,
         "e_days": 3.0,
-        "ev_per_day": -0.0001,
-        "rr_asymmetry": 0.1375,
+        "ev_per_day": -0.000126,
+        "rr_asymmetry": 3.5952,
         "confidence_tier": "ANECDOTAL"
       },
       "zz75": {
-        "n_raw": 2,
-        "p_bull": 0.5833,
-        "p_bear": 0.4167,
-        "e_ret_max": 0.009,
+        "n_raw": 1,
+        "p_bull": 0.5455,
+        "p_bear": 0.4545,
+        "e_ret_max": 0.0063,
         "e_ret_min": -0.015,
-        "ev_net": 0.001506,
+        "ev_net": 0.000574,
         "e_days": 5.0,
-        "ev_per_day": 0.000301,
-        "rr_asymmetry": 0.6024,
+        "ev_per_day": 0.000115,
+        "rr_asymmetry": 0.4209,
         "confidence_tier": "ANECDOTAL"
       },
       "zigzag_kinematic": {
@@ -4494,49 +4494,49 @@
       }
     },
     "ELEVATED_TURBULENCE__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE": {
-      "n": 30,
+      "n": 29,
       "stats": {
         "min": 9.3588,
         "max": 15.6598,
-        "mean": 12.5644,
-        "std": 1.4867
+        "mean": 12.5359,
+        "std": 1.5041
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
       "zz25": {
-        "n_raw": 30,
-        "p_bull": 0.4,
-        "p_bear": 0.6,
+        "n_raw": 29,
+        "p_bull": 0.4103,
+        "p_bear": 0.5897,
         "e_ret_max": 0.0094,
-        "e_ret_min": -0.0099,
-        "ev_net": -0.002102,
+        "e_ret_min": -0.0104,
+        "ev_net": -0.002152,
         "e_days": 1.0,
-        "ev_per_day": -0.002102,
-        "rr_asymmetry": 0.9539,
+        "ev_per_day": -0.002152,
+        "rr_asymmetry": 0.9044,
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 30,
-        "p_bull": 0.425,
-        "p_bear": 0.575,
+        "n_raw": 29,
+        "p_bull": 0.4359,
+        "p_bear": 0.5641,
         "e_ret_max": 0.0219,
-        "e_ret_min": -0.0186,
-        "ev_net": -0.001804,
+        "e_ret_min": -0.0194,
+        "ev_net": -0.001722,
         "e_days": 3.0,
-        "ev_per_day": -0.000601,
-        "rr_asymmetry": 1.1768,
+        "ev_per_day": -0.000574,
+        "rr_asymmetry": 1.1284,
         "confidence_tier": "ROBUST"
       },
       "zz75": {
-        "n_raw": 28,
-        "p_bull": 0.4211,
-        "p_bear": 0.5789,
-        "e_ret_max": 0.0255,
-        "e_ret_min": -0.0234,
-        "ev_net": -0.003092,
+        "n_raw": 29,
+        "p_bull": 0.4615,
+        "p_bear": 0.5385,
+        "e_ret_max": 0.0288,
+        "e_ret_min": -0.0243,
+        "ev_net": -0.000397,
         "e_days": 5.0,
-        "ev_per_day": -0.000618,
-        "rr_asymmetry": 1.0888,
+        "ev_per_day": -7.9e-05,
+        "rr_asymmetry": 1.1819,
         "confidence_tier": "ROBUST"
       },
       "zigzag_kinematic": {
@@ -5108,15 +5108,15 @@
         "confidence_tier": "ROBUST"
       },
       "zz50": {
-        "n_raw": 450,
-        "p_bull": 0.6109,
-        "p_bear": 0.3891,
-        "e_ret_max": 0.013,
+        "n_raw": 451,
+        "p_bull": 0.6117,
+        "p_bear": 0.3883,
+        "e_ret_max": 0.0131,
         "e_ret_min": -0.0157,
-        "ev_net": 0.001866,
+        "ev_net": 0.001947,
         "e_days": 3.0,
-        "ev_per_day": 0.000622,
-        "rr_asymmetry": 0.8282,
+        "ev_per_day": 0.000649,
+        "rr_asymmetry": 0.8342,
         "confidence_tier": "ROBUST"
       },
       "zz75": {

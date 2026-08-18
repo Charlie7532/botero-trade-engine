@@ -1,0 +1,95 @@
+{
+  "_metadata": {
+    "model": "S5 (Price Breadth) \u00d7 SV5 (Volume Breadth) Empirical Quadrant Calibration",
+    "tickers": {
+      "price_breadth": "S5TW",
+      "volume_breadth": "SV5TW"
+    },
+    "velocity_formula": "diff(3)",
+    "n_total_pivots": 1377,
+    "date_range": "1999-01-08 to 2026-07-15",
+    "bootstrap_iterations": 2000
+  },
+  "quadrants": {
+    "S5_UP_SV5_UP": {
+      "quadrant": "S5_UP_SV5_UP",
+      "p_bear": 0.678,
+      "p_bull": 0.322,
+      "ci95_bear": [
+        0.6254,
+        0.7276
+      ],
+      "ci95_bull": [
+        0.2724,
+        0.3746
+      ],
+      "p_cascade": 0.517,
+      "ci95_cascade": [
+        0.4613,
+        0.5728
+      ],
+      "mean_return_pct": -1.2612,
+      "n_samples": 323
+    },
+    "S5_UP_SV5_DOWN": {
+      "quadrant": "S5_UP_SV5_DOWN",
+      "p_bear": 0.6826,
+      "p_bull": 0.3174,
+      "ci95_bear": [
+        0.628,
+        0.7338
+      ],
+      "ci95_bull": [
+        0.2662,
+        0.372
+      ],
+      "p_cascade": 0.5154,
+      "ci95_cascade": [
+        0.4608,
+        0.5734
+      ],
+      "mean_return_pct": -1.5034,
+      "n_samples": 293
+    },
+    "S5_DOWN_SV5_UP": {
+      "quadrant": "S5_DOWN_SV5_UP",
+      "p_bear": 0.3753,
+      "p_bull": 0.6247,
+      "ci95_bear": [
+        0.3312,
+        0.4214
+      ],
+      "ci95_bull": [
+        0.5786,
+        0.6688
+      ],
+      "p_cascade": 0.522,
+      "ci95_cascade": [
+        0.4779,
+        0.5661
+      ],
+      "mean_return_pct": 1.4366,
+      "n_samples": 477
+    },
+    "S5_DOWN_SV5_DOWN": {
+      "quadrant": "S5_DOWN_SV5_DOWN",
+      "p_bear": 0.3204,
+      "p_bull": 0.6796,
+      "ci95_bear": [
+        0.2676,
+        0.3733
+      ],
+      "ci95_bull": [
+        0.6267,
+        0.7324
+      ],
+      "p_cascade": 0.5,
+      "ci95_cascade": [
+        0.4437,
+        0.5599
+      ],
+      "mean_return_pct": 2.024,
+      "n_samples": 284
+    }
+  }
+}

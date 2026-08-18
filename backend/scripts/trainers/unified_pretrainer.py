@@ -712,7 +712,7 @@ def main():
     print(f"  DSR: {dsr:.3f}")
     print(f"  Entry threshold: P(win) ≥ {entry_thr:.2f}")
     print(f"  Exit threshold:  P(win) ≥ {exit_thr:.2f}")
-    print(f"  Model: backend/models/unified_pretrainer_v1.pkl")
+    print(f"  Model: data/models/unified_pretrainer_v1.pkl")
     if importance_df is not None:
         top5 = importance_df.head(5)['feature'].tolist()
         print(f"  Top 5 features: {', '.join(top5)}")

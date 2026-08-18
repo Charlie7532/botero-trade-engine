@@ -2,33 +2,7 @@
   "_documentation": {
     "model_purpose": "Cascade Conviction Z-Score Calibration & Asymmetric Tercile Edges",
     "sample_size_pivots": 1589,
-    "updated_at": "2026-08-13T17:30:47Z"
-  },
-  "d1_bear_5": {
-    "mean": 0.3299,
-    "std": 0.2856
-  },
-  "domino_zz25": {
-    "mean": 0.0532,
-    "std": 0.035
-  },
-  "domino_zz50": {
-    "mean": 0.1003,
-    "std": 0.0643
-  },
-  "tercile_edges": [
-    -0.356,
-    0.175
-  ],
-  "baseline_ic_in_sample": {
-    "cascade_50": 0.4155,
-    "cascade_75": 0.3465,
-    "cascade_50to75": 0.4113
-  },
-  "baseline_ic_oos": {
-    "cascade_50": 0.3245,
-    "cascade_75": 0.2634,
-    "cascade_50to75": 0.3388
+    "updated_at": "2026-08-16T16:29:22Z"
   },
   "type_mask": {
     "MIN": {
@@ -36,6 +10,8 @@
       "w_dom": 0.34,
       "w_bear_c75": 0.5,
       "w_dom_c75": 0.5,
+      "w_bear_50to75": 0.15,
+      "w_dom_50to75": 0.85,
       "stations": [
         "vix",
         "bsi",
@@ -49,6 +25,8 @@
       "w_dom": 0.34,
       "w_bear_c75": 0.5,
       "w_dom_c75": 0.5,
+      "w_bear_50to75": 0.15,
+      "w_dom_50to75": 0.85,
       "stations": [
         "vix",
         "bsi",
@@ -57,6 +35,32 @@
       ]
     }
   },
+  "d1_bear_5": {
+    "mean": 0.41,
+    "std": 0.3206
+  },
+  "domino_zz25": {
+    "mean": 0.0532,
+    "std": 0.035
+  },
+  "domino_zz50": {
+    "mean": 0.1003,
+    "std": 0.0643
+  },
+  "tercile_edges": [
+    -0.387,
+    0.302
+  ],
+  "baseline_ic_in_sample": {
+    "cascade_50": 0.4155,
+    "cascade_75": 0.3463,
+    "cascade_50to75": 0.4113
+  },
+  "baseline_ic_oos": {
+    "cascade_50": 0.3245,
+    "cascade_75": 0.2596,
+    "cascade_50to75": 0.3388
+  },
   "decay_threshold": 0.1,
-  "last_checked": "2026-08-14T11:36:56Z"
+  "last_checked": "2026-08-17T05:36:03Z"
 }

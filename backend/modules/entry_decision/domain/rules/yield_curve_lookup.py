@@ -4,6 +4,8 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
+from backend.modules.entry_decision.domain.rules.sigma_overflow import validate_overflow
+
 FACT_STORE_PATH = Path(__file__).parent / "yield_curve_fact_store.json"
 
 
@@ -33,6 +35,10 @@ class YieldCurveStateGuidance:
     zz25: ScaleGuidance
     zz50: ScaleGuidance
     zz75: ScaleGuidance
+    sigma_depth_d1: Optional[float] = None
+    sigma_depth_d2: Optional[float] = None
+    sigma_depth_d3: Optional[float] = None
+    overflow_flag: Optional[str] = None  # "UPPER"|"LOWER"|"MULTI"|None
 
     @property
     def bin(self) -> str:
@@ -65,6 +71,10 @@ class YieldCurveStateGuidance:
             "primary_ev_net": self.zz50.ev_net,
             "primary_e_days": self.zz50.e_days,
             "primary_capital_velocity": self.zz50.ev_per_day,
+            "sigma_depth_d1": self.sigma_depth_d1,
+            "sigma_depth_d2": self.sigma_depth_d2,
+            "sigma_depth_d3": self.sigma_depth_d3,
+            "overflow_flag": self.overflow_flag,
         }
 
 
@@ -76,7 +86,7 @@ class YieldCurveLookupAdapter:
         doc = self._data.get("_documentation", {})
         self.edges_d1 = doc.get("dimension_thresholds_definition", {}).get("yield_curve_edges_d1", [0.12130016021728475, 0.7999999850690365, 1.404998771118164, 1.9799997711181643, 2.7977000292301164])
         self.edges_d2 = doc.get("dimension_thresholds_definition", {}).get("yield_curve_edges_d2", [-0.10500000043511387, -0.03600007109642025, 0.030000203609466113, 0.10400000894069661])
-        self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("yield_curve_edges_d3", [0.2593793499316911, 0.4006332590889206, 0.6401737048164446])
+        self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("yield_curve_edges_d3", [0.0144, 0.1142, 0.9057, 1.6209])
         self.labels_d1 = doc.get("dimension_thresholds_definition", {}).get("yield_curve_labels_d1", ['DEEP_INVERSION', 'MODERATE_INVERSION', 'FLAT_CURVE', 'NORMAL_CURVE', 'STEEPNING_CURVE', 'EXTREME_STEEPNING'])
         self.labels_d2 = doc.get("dimension_thresholds_definition", {}).get("yield_curve_labels_d2", ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D'])
         self.labels_d3 = doc.get("dimension_thresholds_definition", {}).get("yield_curve_labels_d3", ['VOL_EXTREME_SQUEEZE', 'VOL_MODERATE_COMPRESSION', 'VOL_NEUTRAL_BASELINE', 'VOL_ACCELERATING_EXPANSION', 'VOL_PEAK_DECELERATION'])
@@ -153,6 +163,12 @@ class YieldCurveLookupAdapter:
                 ev_per_day=d["ev_per_day"], rr_asymmetry=d["rr_asymmetry"]
             )
 
+        d1_depth, f1 = validate_overflow("yield_curve", "d1", val)
+        d2_depth, f2 = validate_overflow("yield_curve", "d2", d3_speed)
+        d3_depth, f3 = validate_overflow("yield_curve", "d3", vol_norm)
+        flags = [f for f in (f1, f2, f3) if f]
+        overflow_flag = "MULTI" if len(flags) >= 2 else (flags[0] if flags else None)
+
         stats = state.get("stats", {})
         return YieldCurveStateGuidance(
             state_key=matched_key,
@@ -166,7 +182,11 @@ class YieldCurveLookupAdapter:
             operational_guidance=state.get("operational_guidance", "STK_HOLD_STABLE"),
             zz25=_make_scale(state["zz25"]),
             zz50=_make_scale(state["zz50"]),
-            zz75=_make_scale(state["zz75"])
+            zz75=_make_scale(state["zz75"]),
+            sigma_depth_d1=d1_depth,
+            sigma_depth_d2=d2_depth,
+            sigma_depth_d3=d3_depth,
+            overflow_flag=overflow_flag,
         )
 
 

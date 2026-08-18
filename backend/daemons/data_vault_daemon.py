@@ -386,6 +386,9 @@ def vault_fred_macro(store: TimescaleDataStore) -> dict:
             ("FEDFUNDS", "fed_funds_rate"),
             ("DGS10", "treasury_10y"),
             ("DGS2", "treasury_2y"),
+            ("DTB3", "treasury_3m"),
+            ("DFII10", "tips_10y_real_yield"),
+            ("DFII5", "tips_5y_real_yield"),
             ("T10Y2Y", "yield_spread"),
             ("CPIAUCSL", "cpi_yoy"),
             ("UNRATE", "unemployment_rate"),
@@ -393,18 +396,45 @@ def vault_fred_macro(store: TimescaleDataStore) -> dict:
             ("WM2NS", "m2_money_supply"),
         ]
 
+        # Daily series to persist as OHLCV indicators
+        daily_yield_series = {"DGS2", "DGS10", "DTB3", "DFII10", "DFII5"}
+
         if fred_client:
             for series_id, field_name in priority_series:
                 try:
                     data = fred_client.get_series(series_id, observation_start="2024-01-01")
                     if data is not None and len(data) > 0:
-                        latest = float(data.dropna().iloc[-1])
+                        clean_data = data.dropna()
+                        latest = float(clean_data.iloc[-1])
                         fred_data[field_name] = latest
                         stats["series"] += 1
                         # Store previous value for trend calculation
-                        if len(data.dropna()) >= 5:
-                            prev = float(data.dropna().iloc[-5])
+                        if len(clean_data) >= 5:
+                            prev = float(clean_data.iloc[-5])
                             fred_data[f"{field_name}_prev"] = prev
+
+                        # Persist recent bars into market.ohlcv_bars if it's a tracked indicator
+                        if series_id in daily_yield_series:
+                            recent_points = clean_data.tail(10)
+                            for ts, val in recent_points.items():
+                                v = float(val)
+                                store.upsert_ohlcv_bar(
+                                    ticker=series_id,
+                                    timeframe="1d",
+                                    time=ts,
+                                    open=v, high=v, low=v, close=v, volume=0
+                                )
+                        elif series_id == "CPIAUCSL":
+                            recent_points = clean_data.tail(3)
+                            for ts, val in recent_points.items():
+                                v = float(val)
+                                for cpi_ticker in ["CPI", "CPIAUCSL"]:
+                                    store.upsert_ohlcv_bar(
+                                        ticker=cpi_ticker,
+                                        timeframe="1d",
+                                        time=ts,
+                                        open=v, high=v, low=v, close=v, volume=0
+                                    )
                 except Exception as e:
                     logger.debug(f"  FRED {series_id}: {e}")
 
@@ -2243,7 +2273,28 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"SV5_TURBULENCE vault failed (non-critical): {e}")
         results["sv5_turbulence"] = {"status": "error", "error": str(e)}
 
-    # Credit Stress METAR transitions (needs HYG/LQD from ohlcv)
+    # ── Tier 3b-oct: Synthetic Indicators — CREDIT_RATIO, YIELD_SPREAD, ROTATION_INDEX ──
+    # MANDATORY: Computes derived OHLCV bars from subyacentes (HYG/LQD, TNX/IRX, XLY/XLP/XLK/XLU).
+    # MUST run AFTER ohlcv (Tier 3) and BEFORE Credit/Yield/Rotation METAR providers.
+    try:
+        from backend.daemons.vault_providers.synthetic_indicators_provider import SyntheticIndicatorsProvider
+        results["synthetic_indicators"] = SyntheticIndicatorsProvider().run_full(store)
+        synth_status = results["synthetic_indicators"]
+        if synth_status.get("status") == "error":
+            logger.error(f"🚨 CRITICAL: Synthetic indicators FAILED — METAR stations will use stale data! Detail: {synth_status}")
+    except Exception as e:
+        logger.error(f"🚨 CRITICAL: Synthetic indicators provider crashed: {e}")
+        results["synthetic_indicators"] = {"status": "error", "error": str(e)}
+
+    # DXY METAR transitions (needs DXY from ohlcv)
+    try:
+        from backend.daemons.vault_providers.dxy_provider import DXYProvider
+        results["dxy_metar"] = DXYProvider().run_full(store)
+    except Exception as e:
+        logger.warning(f"DXY METAR vault failed (non-critical): {e}")
+        results["dxy_metar"] = {"status": "error", "error": str(e)}
+
+    # Credit Stress METAR transitions (needs CREDIT_RATIO from synthetic_indicators)
     try:
         from backend.daemons.vault_providers.credit_provider import CreditProvider
         results["credit_metar"] = CreditProvider().run_full(store)

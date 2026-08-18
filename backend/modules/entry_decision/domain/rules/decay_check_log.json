@@ -9,10 +9,34 @@
   },
   {
     "date": "2026-08-14",
-    "c50_ic": 0.4173,
-    "c75_ic": 0.3465,
-    "c50to75_ic": 0.4001,
-    "degradation_pct": 0.0272,
+    "c50_ic": 0.4298,
+    "c75_ic": 0.3589,
+    "c50to75_ic": 0.4025,
+    "degradation_pct": 0.0214,
+    "alert": false
+  },
+  {
+    "date": "2026-08-15",
+    "c50_ic": 0.4139,
+    "c75_ic": 0.3428,
+    "c50to75_ic": 0.4019,
+    "degradation_pct": 0.0403,
+    "alert": false
+  },
+  {
+    "date": "2026-08-16",
+    "c50_ic": 0.4147,
+    "c75_ic": 0.3402,
+    "c50to75_ic": 0.4014,
+    "degradation_pct": 0.024,
+    "alert": false
+  },
+  {
+    "date": "2026-08-17",
+    "c50_ic": 0.4087,
+    "c75_ic": 0.3354,
+    "c50to75_ic": 0.4029,
+    "degradation_pct": 0.0313,
     "alert": false
   }
 ]

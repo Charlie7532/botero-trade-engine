@@ -290,9 +290,9 @@ def main():
         
     print("-" * 108)
     
-    # Save output to scratch directory
-    os.makedirs("/root/botero-trade/backend/scratch", exist_ok=True)
-    out_file = "/root/botero-trade/backend/scratch/quality_swing_benchmark_results.json"
+    # Save output to data/research directory
+    os.makedirs("/root/botero-trade/data/research/quality_swing", exist_ok=True)
+    out_file = "/root/botero-trade/data/research/quality_swing/quality_swing_benchmark_results.json"
     with open(out_file, "w") as f:
         json.dump(results, f, indent=2)
         

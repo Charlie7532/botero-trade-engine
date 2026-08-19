@@ -194,7 +194,7 @@ def main():
     print("="*115)
     
     # ── TABLA 2: BENCHMARK 2 ATRIBUCIÓN POR SEÑAL Y TAXONOMÍA UNIVERSAL ──
-    baseline_sig_file = ROOT / "backend/scratch/rc_tide_signal_effectiveness_baseline.json"
+    baseline_sig_file = ROOT / "data/research/quality_swing/rc_tide_signal_effectiveness_baseline.json"
     with open(baseline_sig_file) as f:
         baseline_sig_data = json.load(f)
         

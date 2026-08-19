@@ -19,7 +19,7 @@ logger = logging.getLogger("AuditTideSignalEffectiveness")
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DERIVED_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_tide_derived.json"
-CACHE_PATH = ROOT / "backend/scratch/cache/snapshots_ohlcv_cache.parquet"
+CACHE_PATH = ROOT / "data/cache/snapshots_ohlcv_cache.parquet"
 
 
 def main():
@@ -102,7 +102,7 @@ def main():
         
     print("="*115)
     
-    out_json = ROOT / "backend/scratch/rc_tide_signal_effectiveness_baseline.json"
+    out_json = ROOT / "data/research/quality_swing/rc_tide_signal_effectiveness_baseline.json"
     df_stats.to_json(out_json, orient="records", indent=2)
     logger.info(f"Resultados guardados en {out_json}")
 

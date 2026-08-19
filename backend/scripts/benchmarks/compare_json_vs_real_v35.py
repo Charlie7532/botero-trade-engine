@@ -170,7 +170,7 @@ def run_real_v35_sim(price_pivot, mkt_breadth, sec_ind_pivot):
     return pd.DataFrame(yearly_rows).set_index("year")
 
 def main():
-    json_path = "/root/botero-trade/scratch/final_tables.json"
+    json_path = "/root/botero-trade/data/research/misc/final_tables.json"
     with open(json_path, "r") as f:
         json_data = json.load(f)
         

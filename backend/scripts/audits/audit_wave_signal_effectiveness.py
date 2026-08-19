@@ -19,7 +19,7 @@ logger = logging.getLogger("AuditWaveSignalEffectiveness")
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DERIVED_PATH = ROOT / "backend/modules/quality_swing/domain/rules/rc_wave_derived.json"
-CACHE_PATH = ROOT / "backend/scratch/cache/snapshots_ohlcv_cache.parquet"
+CACHE_PATH = ROOT / "data/cache/snapshots_ohlcv_cache.parquet"
 
 
 def main():
@@ -51,8 +51,8 @@ def main():
         print(f"{sig:<25} | {cnt:<30,d} | {'🟢 Reversión Suelo' if 'BOTTOM' in sig else ('🔴 Reversión Techo' if 'TOP' in sig else '⚪ Continuación/Neutral')}")
     print("="*85)
     
-    # Guardar resumen en scratch JSON
-    out_json = ROOT / "backend/scratch/rc_wave_signal_effectiveness_baseline.json"
+    # Guardar resumen en data/research JSON
+    out_json = ROOT / "data/research/quality_swing/rc_wave_signal_effectiveness_baseline.json"
     with open(out_json, "w") as f:
         json.dump({"version": derived_data.get("version", "v1"), "signal_counts": signal_counts}, f, indent=2)
     logger.info(f"Resumen guardado en {out_json}")

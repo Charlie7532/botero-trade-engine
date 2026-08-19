@@ -10,7 +10,7 @@ Phase 4: Cross-reference + dictamen
 
 Usage:
     nohup python backend/scripts/feature_optimizer.py > /dev/null 2>&1 &
-    tail -f backend/scratch/optimization_results/progress.log
+    tail -f data/research/quality_swing/optimization_results/progress.log
 """
 import sys
 import gc
@@ -47,7 +47,7 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 from backend.modules.shared.infrastructure.ticker_profile_store import TickerProfileStore
 
 MODELS_DIR = root / "data" / "models"
-RESULTS_DIR = root / "backend" / "scratch" / "optimization_results"
+RESULTS_DIR = root / "data" / "research" / "quality_swing" / "optimization_results"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 LOG_FILE = RESULTS_DIR / "progress.log"
 

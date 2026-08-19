@@ -1,6 +1,6 @@
 # S5×SV5 Matrix — Validación Empírica
 
-**Fecha:** 2026-08-16 · **Script:** `scratch/s5_sv5_matrix.py` · **JSON:** `scratch/s5_sv5_matrix_results.json`
+**Fecha:** 2026-08-16 · **Script:** `research/04_conjuncion_multi_estacion/s5_sv5_matrix.py` · **JSON:** `data/research/conjunctions/s5_sv5_matrix_results.json`
 
 **Qué se midió:** SPY zz25 pivotes (N=1,590 total, 1,377 con datos S5TW+SV5TW, rango 1999-01 → 2026-07).
 SV5TW arranca en 1999, por lo que los ~213 pivotes previos quedan fuera.

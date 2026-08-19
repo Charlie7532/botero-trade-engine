@@ -187,6 +187,6 @@ CONCLUSIONES CLAVE
    → Posible bug en la calibración de los fact stores VIX/FG.
 
 Archivos generados:
-  scratch/recalibrado_d2d3.py           — script completo
-  scratch/recalibrado_d2d3_output.txt   — output completo (454 líneas)
+  research/02_cascade_conviction/recalibrado_d2d3.py           — script completo
+  data/research/misc/recalibrado_d2d3_output.txt   — output completo (454 líneas)
 ================================================================================

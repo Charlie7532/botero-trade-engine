@@ -1,7 +1,7 @@
 # VIX×S5×SV5 — Matriz Triple: ¿SV5 agrega una tercera dimensión?
 
-**Auditado 2026-08-16 · Script `scratch/s5_vix_sv5_triple.py` (+ `scratch/s5_vix_sv5_horizons.py`)**
-**Resultados: `scratch/s5_vix_sv5_triple_results.json`**
+**Auditado 2026-08-16 · Script `research/04_conjuncion_multi_estacion/s5_vix_sv5_triple.py` (+ `research/04_conjuncion_multi_estacion/s5_vix_sv5_horizons.py`)**
+**Resultados: `data/research/conjunctions/s5_vix_sv5_triple_results.json`**
 
 ## Pregunta
 

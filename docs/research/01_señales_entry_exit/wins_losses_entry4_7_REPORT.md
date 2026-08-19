@@ -247,6 +247,6 @@
 ---
 
 **Archivos generados:**
-- `/root/botero-trade/scratch/wins_losses_sv5t_vix_bsi_credit.py` — script de análisis
-- `/root/botero-trade/scratch/wins_losses_entry4_7_report.json` — datos completos JSON
-- `/root/botero-trade/scratch/wins_losses_entry4_7_results.json` — resultados iniciales
+- `/root/botero-trade/research/01_señales_entry_exit/wins_losses_sv5t_vix_bsi_credit.py` — script de análisis
+- `/root/botero-trade/research/01_señales_entry_exit/wins_losses_entry47_v2_report.json` — datos completos JSON
+- `/root/botero-trade/research/01_señales_entry_exit/wins_losses_entry47_v2_results.json` — resultados iniciales

@@ -1,6 +1,6 @@
 # Divergencia VIX×S5 — sentir vs hacer
 
-**Fecha:** 2026-08-16 · **Script:** `scratch/s5_vix_divergencia.py` · **JSON:** `scratch/s5_vix_divergencia_results.json`
+**Fecha:** 2026-08-16 · **Script:** `research/04_conjuncion_multi_estacion/s5_vix_divergencia.py` · **JSON:** `data/research/conjunctions/s5_vix_divergencia_results.json`
 
 **Qué se midió:** 1,590 pivotes zz25 de SPY; 1,376 con datos VIX+S5TW+SV5TW alineados (1999-01 → 2026-07).
 Todo con CI95 bootstrap (3,000 iteraciones). Wins y losses SIEMPRE separados.

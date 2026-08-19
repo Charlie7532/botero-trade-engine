@@ -230,7 +230,7 @@ PBO=28.6%, walk-forward OOS +0.302 (26/28 folds positivos, 92.9%), bootstrap CI 
 | Familias refutadas, SV5T ortogonal | Alta | clustering + PCA |
 | IC +0.414 no-overfit pero PBO 28.6% | Alta/Moderada | walk-forward 92.9% +, CI [+0.37,+0.46] |
 
-## Artefactos generados (scratch/)
+## Artefactos generados (research/)
 
 - `quantitative_audit_lopez_de_prado.py` — pipeline completo (6 análisis)
 - `quants_obs.pkl` — dataset extraído (1,590 × 141 features)

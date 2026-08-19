@@ -1,8 +1,8 @@
 # Tests para Bug 1: Anticipación Temporal
 
 **Proyecto:** Botero Trade  
-**Archivo bajo prueba:** `scratch/medir_senal.py` (líneas 507-529)  
-**Suite de tests:** `scratch/test_anticipacion_temporal.py`  
+**Archivo bajo prueba:** `research/01_señales_entry_exit/medir_senal.py` (líneas 507-529)  
+**Suite de tests:** `research/11_experimental_engines/test_anticipacion_temporal.py`  
 **Fecha:** 2026-08-18
 
 ---
@@ -182,7 +182,7 @@ def calcular_anticipacion_temporal(spy, señal, df):
 ### Paso 1: Ejecutar tests unitarios
 ```bash
 cd /root/botero-trade
-PYTHONPATH=/root/botero-trade backend/.venv/bin/python scratch/test_anticipacion_temporal.py
+PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/11_experimental_engines/test_anticipacion_temporal.py
 ```
 **Criterio de pase:** 5/5 tests exitosos
 
@@ -229,8 +229,8 @@ from scratch.medir_senal import cargar_datos, SEÑALES
 
 ## 9. Archivos Generados
 
-- `scratch/test_anticipacion_temporal.py` — Suite de tests completa
-- `scratch/docs/TESTS_BUG1_ANTICIPACION_TEMPORAL.md` — Este documento
+- `research/11_experimental_engines/test_anticipacion_temporal.py` — Suite de tests completa
+- `docs/research/TESTS_BUG1_ANTICIPACION_TEMPORAL.md` — Este documento
 
 ---
 

@@ -1,7 +1,7 @@
 # D3 (Volatilidad = std(2d)/std(10d)) — Informe Completo por Estación
 ## Botero Trade · Experto en D3 · 2026-08-15
 
-**Scripts generadores:** `scratch/d3_experto.py` (cómputo) + `scratch/d3_mecanismo.py` (mecanismo)
+**Scripts generadores:** `research/02_cascade_conviction/d3_experto.py` (cómputo) + `research/02_cascade_conviction/d3_mecanismo.py` (mecanismo)
 **Muestra:** 1,589 pivotes SPY zz25. cascade_50 rate = 50.5%, cascade_75 rate = 26.7%.
 
 ---
@@ -225,4 +225,4 @@ D3 = std(2d)/std(10d) = "¿se movió el indicador más de lo normal en los últi
 
 ---
 
-*Scripts en `scratch/d3_experto.py` y `scratch/d3_mecanismo.py`. Datos: TimescaleDB, 1,589 pivotes SPY zz25.*
+*Scripts en `research/02_cascade_conviction/d3_experto.py` y `research/02_cascade_conviction/d3_mecanismo.py`. Datos: TimescaleDB, 1,589 pivotes SPY zz25.*

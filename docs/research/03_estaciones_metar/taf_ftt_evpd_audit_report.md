@@ -39,7 +39,7 @@ Semántica (de `v3_fact_table_engine.py` líneas 167-176):
 
 ## 5. Señal predictiva sobre SPY forward (ρ, T-stat)
 
-Dataset: `scratch/quants_obs.pkl` (1,590 pivotes SPY zz25, state_keys generados con los adapters de producción). Target = pierna zz25 que nace en el pivote. Spearman ρ con T-stat.
+Dataset: `data/research/pivots/quants_obs.pkl` (1,590 pivotes SPY zz25, state_keys generados con los adapters de producción). Target = pierna zz25 que nace en el pivote. Spearman ρ con T-stat.
 
 **Composite (media 11 estaciones):**
 

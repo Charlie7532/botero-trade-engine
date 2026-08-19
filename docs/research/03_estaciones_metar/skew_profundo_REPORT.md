@@ -1,6 +1,6 @@
 # SKEW PROFUNDO — capa de riesgo de cola
 
-**Fecha:** 2026-08-16 · **Script:** `scratch/skew_profundo.py` (+ `skew_profundo_supp.py`)
+**Fecha:** 2026-08-16 · **Script:** `research/03_estaciones_metar/skew_profundo.py` (+ `skew_profundo_supp.py`)
 **Datos:** SPY∩SKEW∩VIX = 8,424 barras (1993-01-29 → 2026-08-14)
 **Método:** cuartiles P15/P85, forward 20/40/60d, CI95 bootstrap 2000 (seed 42), wins/losses separados.
 **Percentiles:** SKEW P15=113.3, P85=137.1 · VIX P15=12.7, P85=26.1

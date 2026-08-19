@@ -1,8 +1,8 @@
 # CONJUNCIÓN DE-RISKING — Veredicto Final
 ## secuencia (fase) + cascade (dirección) + σ-overflow (colas)
 
-**Script:** `scratch/conjuncion_derisking.py`  
-**JSON:** `scratch/conjuncion_derisking_report.json`  
+**Script:** `research/04_conjuncion_multi_estacion/conjuncion_derisking.py`  
+**JSON:** `data/research/conjunctions/conjuncion_derisking_report.json`  
 **Intérprete:** `PYTHONPATH=/root/botero-trade backend/.venv/bin/python`
 
 ---

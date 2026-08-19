@@ -5,7 +5,7 @@
     "input": "data/research/pivots/quants_obs.pkl",
     "backup": "/root/botero-trade/data/research/pivots/quants_obs.pkl.bak",
     "backup_bytes": 2529901,
-    "report": "/root/botero-trade/scratch/regenerar_quants_obs_report.json",
+    "report": "data/research/misc/regenerar_quants_obs_report.json",
     "n_rows": 1590,
     "n_columns": 141,
     "stations": [

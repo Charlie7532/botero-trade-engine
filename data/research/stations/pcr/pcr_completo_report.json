@@ -1,6 +1,6 @@
 {
   "meta": {
-    "script": "scratch/pcr_completo.py",
+    "script": "research/03_estaciones_metar/pcr_completo.py",
     "ticker": "CBOE_PCR",
     "adapter": "PCRLookupAdapter.lookup_pcr_guidance",
     "extreme_d1": "EXTREME_PUT_PANIC",

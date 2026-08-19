@@ -33,8 +33,8 @@ log("  FASE H: MODELOS SEPARADOS — BOTTOMS vs TOPS")
 log("═" * 100)
 
 # ── 0. Load ──
-df = pd.read_pickle("backend/scratch/sprint2_redo_lake_v21.pkl")
-with open("backend/scratch/sprint2_redo_phase_c_v21.pkl", "rb") as f:
+df = pd.read_pickle("data/research/feature_lake/sprint2_redo_lake_v21.pkl")
+with open("data/research/feature_lake/sprint2_redo_phase_c_v21.pkl", "rb") as f:
     pc = pickle.load(f)
 
 top_features = pc["top_features_used"]
@@ -520,10 +520,10 @@ results = {
     "spearman_rho": rho if res_piso_a["mean_abs_shap"] is not None else None,
 }
 
-with open("backend/scratch/sprint2_redo_phase_h_separated.pkl", "wb") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_h_separated.pkl", "wb") as f:
     pickle.dump(results, f)
 
-with open("backend/scratch/sprint2_redo_phase_h_separated.log", "w") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_h_separated.log", "w") as f:
     f.write("\n".join(LOG))
 
 log(f"\n  ✅ Saved: sprint2_redo_phase_h_separated.pkl + .log")

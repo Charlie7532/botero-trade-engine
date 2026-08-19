@@ -26,10 +26,10 @@ Reads from Vault (engine.channel_snapshots + engine.zigzag_points).
 Pure data extraction + counting. No signal classification (that's in generate_ev_derived.py).
 
 Usage:
-  PYTHONPATH=. backend/.venv/bin/python backend/scratch/train_ev_table.py
+  PYTHONPATH=. backend/.venv/bin/python research/07_quality_swing_forensics/train_ev_table.py
 
   # Background:
-  nohup bash -c 'PYTHONPATH=. backend/.venv/bin/python backend/scratch/train_ev_table.py' \
+  nohup bash -c 'PYTHONPATH=. backend/.venv/bin/python research/07_quality_swing_forensics/train_ev_table.py' \
     > /tmp/train_ev.log 2>&1 &
 """
 import os, sys, json, time, math, logging, bisect

@@ -36,7 +36,7 @@ def bootstrap_proportion(wins, n_iter=2000, seed=42):
 PROJECT_ROOT = Path('/root/botero-trade')
 sys.path.insert(0, str(PROJECT_ROOT / 'backend'))
 
-df = pd.read_pickle(PROJECT_ROOT / 'scratch/quants_obs.pkl')
+df = pd.read_pickle(PROJECT_ROOT / 'data/research/pivots/quants_obs.pkl')
 df['next_leg_return'] = df['prev_leg_return'].shift(-1)
 
 # Win condition
@@ -317,7 +317,7 @@ def ser(obj):
     if isinstance(obj, tuple): return [ser(x) for x in obj]
     return obj
 
-out = PROJECT_ROOT / 'scratch/wins_losses_entry4_7_report.json'
+out = PROJECT_ROOT / 'data/research/signals/wins_losses_entry4_7_report.json'
 with open(out, 'w') as f:
     json.dump(ser(all_results), f, indent=2, default=str)
 

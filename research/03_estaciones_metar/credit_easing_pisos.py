@@ -13,7 +13,7 @@ MÉTODO:
   4. Medir forward SPY después del piso para cada grupo con CI95 bootstrap 3000
   5. Veredicto: ¿condición necesaria? ¿condición suficiente?
 
-DATOS: scratch/quants_obs.pkl (1,590 pivotes SPY zz25, 1993-2026)
+DATOS: data/research/pivots/quants_obs.pkl (1,590 pivotes SPY zz25, 1993-2026)
 
 REGLAS: DATO MATA RELATO. CI95 + N. WINS/LOSSES SEPARADOS. ANTI-ADULACIÓN.
 """
@@ -66,7 +66,7 @@ print("  CREDIT EASING PISOS — Test de hipótesis")
 print("  'sin crédito la caída no tiene fondo'")
 print("=" * 80)
 
-df = pd.read_pickle('scratch/quants_obs.pkl')
+df = pd.read_pickle('data/research/pivots/quants_obs.pkl')
 print(f"\nCargados {len(df)} pivotes zz25 ({df['pivot_date'].min()} → {df['pivot_date'].max()})")
 
 # Convertir pivot_date a datetime si no lo es
@@ -551,8 +551,8 @@ def clean_nan(obj):
 
 report_clean = clean_nan(report)
 
-with open('scratch/credit_easing_pisos_report.json', 'w') as f:
+with open('data/research/stations/credit_easing_pisos_report.json', 'w') as f:
     json.dump(report_clean, f, indent=2, ensure_ascii=False, default=str)
 
-print(f"\n✅ Reporte guardado: scratch/credit_easing_pisos_report.json")
+print(f"\n✅ Reporte guardado: data/research/credit_easing_pisos_report.json")
 print("DONE.")

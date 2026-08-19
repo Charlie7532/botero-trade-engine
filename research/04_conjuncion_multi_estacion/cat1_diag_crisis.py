@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import importlib.util
 
-spec = importlib.util.spec_from_file_location("cat1", "/root/botero-trade/scratch/cat1_economia.py")
+spec = importlib.util.spec_from_file_location("cat1", "/root/botero-trade/research/04_conjuncion_multi_estacion/cat1_economia.py")
 cat1 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cat1)
 

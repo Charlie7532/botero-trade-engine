@@ -752,7 +752,7 @@ def main():
         "grade_a": grade_a_results,
         "cat2_protection_index_last": float(last_cat2),
     }
-    out_path = ROOT / "scratch" / "cat2_sentimiento_report.json"
+    out_path = ROOT / "data/research" / "cat2_sentimiento_report.json"
     with open(out_path, "w") as f:
         json.dump(report, f, indent=2, default=str)
     print(f"\n{'=' * 80}")

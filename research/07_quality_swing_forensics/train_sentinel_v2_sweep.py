@@ -6,7 +6,7 @@ Tests DEDUP_PROXIMITY = 1, 2, 3 with and without ambiguous bar exclusion.
 Finds the configuration that maximizes AUC while minimizing ambiguity.
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/train_sentinel_v2_sweep.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/train_sentinel_v2_sweep.py
 """
 import os, sys, time, pickle
 from pathlib import Path

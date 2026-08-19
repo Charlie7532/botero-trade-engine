@@ -12,7 +12,7 @@ classifies by:
 This reveals WHAT XGBoost sees at each structural turn, per regime.
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/forensic_egii_breakpoints.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/forensic_egii_breakpoints.py
 """
 import sys, os, warnings
 from pathlib import Path

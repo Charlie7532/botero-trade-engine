@@ -249,9 +249,9 @@ def main():
         out["partA"][code] = {k: {"rho": v[0], "p": v[1], "N": v[2]} for k, v in row.items()}
     for code, row in results_b.items():
         out["partB"][code] = {k: {"rho": v[0], "p": v[1], "N": v[2]} for k, v in row.items()}
-    with open(ROOT / "scratch" / "d2_significado_results.json", "w") as f:
+    with open(ROOT / "data/research" / "d2_significado_results.json", "w") as f:
         json.dump(out, f, indent=2, default=str)
-    print("\n[guardado] scratch/d2_significado_results.json")
+    print("\n[guardado] data/research/cascade/d2_significado_results.json")
 
 
 if __name__ == "__main__":

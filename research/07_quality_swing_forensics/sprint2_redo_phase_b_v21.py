@@ -37,7 +37,7 @@ Output:
   - sprint2_redo_phase_b_v21.log (full forensic log)
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/sprint2_redo_phase_b_v21.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/sprint2_redo_phase_b_v21.py
 """
 import sys
 import os
@@ -60,7 +60,7 @@ sys.path.insert(0, str(root))
 # ═══════════════════════════════════════════════════════════════
 # CONSTANTS
 # ═══════════════════════════════════════════════════════════════
-OUT_DIR = root / "backend" / "scratch"
+OUT_DIR = root / "data" / "research" / "quality_swing"
 LAKE_PKL = OUT_DIR / "sprint2_redo_lake_v21.pkl"
 LOG_FILE = OUT_DIR / "sprint2_redo_phase_b_v21.log"
 REPORT_PKL = OUT_DIR / "sprint2_redo_phase_b_v21.pkl"

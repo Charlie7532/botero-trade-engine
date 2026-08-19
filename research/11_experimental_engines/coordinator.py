@@ -649,8 +649,8 @@ def main():
         },
         "grade_a": grade_a,
     }
-    json.dump(out, open(ROOT / "scratch" / "coordinator_report.json", "w"), indent=2, default=str)
-    print(f"\n  Reporte JSON → scratch/coordinator_report.json")
+    json.dump(out, open(ROOT / "data/research" / "coordinator_report.json", "w"), indent=2, default=str)
+    print(f"\n  Reporte JSON → data/research/coordinator_report.json")
 
     store.close()
 

@@ -982,7 +982,7 @@ def ser(obj):
 
 report = {
     "meta": {
-        "script": "scratch/pcr_completo.py",
+        "script": "research/03_estaciones_metar/pcr_completo.py",
         "ticker": "CBOE_PCR",
         "adapter": "PCRLookupAdapter.lookup_pcr_guidance",
         "extreme_d1": extreme_d1,
@@ -1041,7 +1041,7 @@ report = {
     },
 }
 
-out_path = ROOT / "scratch/pcr_completo_report.json"
+out_path = ROOT / "data/research/stations/pcr_completo_report.json"
 with open(out_path, "w") as f:
     json.dump(ser(report), f, indent=2, default=str)
 

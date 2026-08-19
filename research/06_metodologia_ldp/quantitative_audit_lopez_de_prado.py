@@ -44,7 +44,7 @@ from backend.modules.entry_decision.domain.rules.dxy_lookup import DXYLookupAdap
 
 RULES_DIR = ROOT / "backend/modules/entry_decision/domain/rules"
 CALIBRATION_FILE = RULES_DIR / "cascade_calibration.json"
-OBS_PKL = ROOT / "scratch/quants_obs.pkl"
+OBS_PKL = ROOT / "data/research/pivots/quants_obs.pkl"
 
 STATION_CONFIG = {
     "vix":            {"ticker": "VIX",            "adapter_cls": VIXLookupAdapter,            "method": "lookup_vix_guidance"},
@@ -1078,8 +1078,8 @@ if __name__ == "__main__":
     findings = run_synthesis(df, mi_results, corr_matrix)
     
     # Save MI results
-    mi_results.to_csv("/root/botero-trade/scratch/mi_results.csv", index=False)
+    mi_results.to_csv("/root/botero-trade/data/research/mi_results.csv", index=False)
     
     print("\n" + "═" * 80)
-    print(" AUDITORÍA COMPLETA. Resultados guardados en scratch/")
+    print(" AUDITORÍA COMPLETA. Resultados guardados en data/research/")
     print("═" * 80)

@@ -21,8 +21,8 @@ MÉTODO (entrada HONESTA en barra de señal + variante D2 flip):
 7. Veredicto: ¿el D2 flip convierte la señal SHORT en operable con menos wipeouts?
 8. Compara contra baseline SPY.
 
-Intérprete: PYTHONPATH=/root/botero-trade backend/.venv/bin/python scratch/timing_derisking.py
-Salida: consola + scratch/timing_derisking_report.json
+Intérprete: PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/timing_derisking.py
+Salida: consola + data/research/timing_derisking_report.json
 """
 
 import sys
@@ -905,7 +905,7 @@ def main():
             print(f"  {st:<20} {cnt:>4} veces primera")
 
     # 10. Persistir JSON
-    out = ROOT / "scratch" / "timing_derisking_report.json"
+    out = ROOT / "data/research" / "timing_derisking_report.json"
     with open(out, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, default=str, ensure_ascii=False)
     print(f"\nJSON → {out}")
@@ -986,7 +986,7 @@ def write_markdown(report):
     L.append("5. Regla operativa: ENTRAR el short SOLO si VIX D2>0; NO ENTRAR si VIX D2<0. La secuencia ya es OP-SHORT sin timing, "
              "pero el filtro VIX D2 building la fortalece 2-3× y elimina wipeouts.\n")
 
-    path = ROOT / "scratch" / "timing_derisking_REPORT.md"
+    path = ROOT / "data/research" / "timing_derisking_REPORT.md"
     path.write_text("\n".join(L), encoding="utf-8")
     return str(path)
 

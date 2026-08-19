@@ -33,8 +33,8 @@ log("═" * 100)
 
 # ── 1. Load data ──
 log("\n=== 1. CARGA DE DATOS ===")
-df = pd.read_pickle("backend/scratch/sprint2_redo_lake_v21.pkl")
-with open("backend/scratch/sprint2_redo_phase_c_v21.pkl", "rb") as f:
+df = pd.read_pickle("data/research/feature_lake/sprint2_redo_lake_v21.pkl")
+with open("data/research/feature_lake/sprint2_redo_phase_c_v21.pkl", "rb") as f:
     pc = pickle.load(f)
 
 top_features = pc["top_features_used"]
@@ -325,10 +325,10 @@ results = {
     "top_features": top_features,
 }
 
-with open("backend/scratch/sprint2_redo_phase_d_shap.pkl", "wb") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_d_shap.pkl", "wb") as f:
     pickle.dump(results, f)
 
-with open("backend/scratch/sprint2_redo_phase_d_shap.log", "w") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_d_shap.log", "w") as f:
     f.write("\n".join(LOG))
 
 log(f"\n  ✅ Saved: sprint2_redo_phase_d_shap.pkl + .log")

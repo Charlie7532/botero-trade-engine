@@ -16,7 +16,7 @@ Pass criteria:
   - LIFT > 1.0 for all archetypes at ALARMA+
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/sprint2_signal_replay.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/sprint2_signal_replay.py
 """
 import os
 import sys

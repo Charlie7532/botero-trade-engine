@@ -730,7 +730,7 @@ def ser(obj):
         return [ser(x) for x in obj]
     return obj
 
-out_path = ROOT / "scratch/wins_losses_entry47_v2_report.json"
+out_path = ROOT / "data/research/misc/wins_losses_entry47_v2_report.json"
 with open(out_path, "w") as f:
     json.dump(ser(all_results), f, indent=2, default=str)
 

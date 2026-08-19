@@ -35,10 +35,10 @@ log("  FASE I: AUDITORÍA DE CONEXIÓN RC ↔ KALMAN")
 log("═" * 100)
 
 # ── 0. Load data ──
-df = pd.read_pickle("backend/scratch/sprint2_redo_lake_v21.pkl")
-with open("backend/scratch/sprint2_redo_phase_c_v21.pkl", "rb") as f:
+df = pd.read_pickle("data/research/feature_lake/sprint2_redo_lake_v21.pkl")
+with open("data/research/feature_lake/sprint2_redo_phase_c_v21.pkl", "rb") as f:
     pc = pickle.load(f)
-with open("backend/scratch/sprint2_redo_phase_h_separated.pkl", "rb") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_h_separated.pkl", "rb") as f:
     ph = pickle.load(f)
 
 top_features = pc["top_features_used"]
@@ -506,10 +506,10 @@ results = {
     "delta_techo": delta_techo,
 }
 
-with open("backend/scratch/sprint2_fase_i_results.pkl", "wb") as f:
+with open("data/research/feature_lake/sprint2_fase_i_results.pkl", "wb") as f:
     pickle.dump(results, f)
 
-with open("backend/scratch/sprint2_fase_i_rc_kalman_audit.log", "w") as f:
+with open("data/research/feature_lake/sprint2_fase_i_rc_kalman_audit.log", "w") as f:
     f.write("\n".join(LOG))
 
 log(f"\n  ✅ Saved: sprint2_fase_i_results.pkl + .log")

@@ -15,7 +15,7 @@ Esta Fase 2 mide:
   5. COMBINED GATE: vwap_sigma_tide + d_sigma_wave combinados
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/audit_vwap_phase2.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/audit_vwap_phase2.py
 """
 import sys, os, warnings
 from pathlib import Path

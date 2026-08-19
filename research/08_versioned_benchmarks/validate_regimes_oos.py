@@ -29,9 +29,9 @@ Categorías (mapeo exacto del task):
 3 escalas zigzag (zz25/zz50/zz75). Bootstrap CI95 3000.
 
 Uso:
-  PYTHONPATH=/root/botero-trade backend/.venv/bin/python scratch/validate_regimes_oos.py
-Salida: consola + scratch/validate_regimes_oos_report.json
-                       + scratch/validate_regimes_oos_REPORT.md
+  PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/validate_regimes_oos.py
+Salida: consola + data/research/validate_regimes_oos_report.json
+                       + docs/research/08_versioned_benchmarks/validate_regimes_oos_REPORT.md
 """
 
 import sys
@@ -500,12 +500,12 @@ def main():
             print(f"{'':>6}{'':>22}{'':>3} | {'':>4} {'':>8} {'':>8} {'':>8} | comp: {dict(types)}")
 
     # 7. Persistir JSON + Markdown
-    json_path = ROOT / "scratch" / "validate_regimes_oos_report.json"
+    json_path = ROOT / "data/research" / "validate_regimes_oos_report.json"
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, default=str)
     print(f"\nJSON → {json_path}")
 
-    md_path = ROOT / "scratch" / "validate_regimes_oos_REPORT.md"
+    md_path = ROOT / "data/research" / "validate_regimes_oos_REPORT.md"
     write_markdown(md_path, report, verdict_rows)
     print(f"Markdown → {md_path}")
 

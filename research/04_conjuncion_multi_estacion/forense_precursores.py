@@ -18,7 +18,7 @@ import numpy as np
 from collections import defaultdict
 
 # Import signals
-from scratch.medir_senal import SEÑALES, cargar_datos
+from research._lib.research_paths import ROOT; import sys; sys.path.insert(0, str(ROOT)); from research.señales_entry_exit.medir_senal import SEÑALES, cargar_datos
 
 STATIONS = ['vix', 'vvix', 'pcr', 'fg', 'sv5_turbulence', 'skew',
             'credit', 'yield_curve', 'rotation', 'bsi', 'dxy']

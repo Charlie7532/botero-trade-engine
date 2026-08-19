@@ -632,7 +632,7 @@ def safe(v):
 
 output = {
     "meta": {
-        "script": "scratch/s5_vix_divergencia.py",
+        "script": "research/04_conjuncion_multi_estacion/s5_vix_divergencia.py",
         "description": "Divergencia VIX×S5 — sentir vs hacer. 4 regímenes medidos a 3 escalas zigzag + 4 horizontes fijos.",
         "regime_window": f"diff({REGIME_WINDOW})",
         "VIX_definition": "diff(5) of VIX close",
@@ -720,7 +720,7 @@ for regime in REGIMES:
         "delta_pct_pp": (d3_n / len(df3) - d5_n / len(df)) * 100,
     }
 
-json_path = Path("/root/botero-trade/scratch/s5_vix_divergencia_results.json")
+json_path = Path("/root/botero-trade/data/research/s5_vix_divergencia_results.json")
 with open(json_path, "w") as f:
     json.dump(output, f, indent=2)
 

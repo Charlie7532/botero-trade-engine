@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-REGENERAR COLUMNAS ROTAS DE scratch/quants_obs.pkl
+REGENERAR COLUMNAS ROTAS DE data/research/pivots/quants_obs.pkl
 ===================================================
 P0 — Cirugía mínima sobre quants_obs.pkl (1,590 pivotes SPY zz25, 1993-2026).
 
@@ -16,16 +16,16 @@ ALCANCE (PROHIBIDO tocar cualquier otra cosa):
   en las 17 filas con state_key obsoleto.
 - NO se recomputa cascade, prev_leg_return, ni ninguna otra columna.
 - NO cambia el número de filas (1,590) ni el orden de filas.
-- Respaldo byte-a-byte previo a scratch/quants_obs.pkl.bak.
+- Respaldo byte-a-byte previo a data/research/pivots/quants_obs.pkl.bak.
 
 Intérprete:
   cd /root/botero-trade && PYTHONPATH=/root/botero-trade \
-    backend/.venv/bin/python scratch/regenerar_quants_obs.py
+    backend/.venv/bin/python research/regenerar_quants_obs.py
 
 Salidas:
-  - scratch/quants_obs.pkl         (regenerado)
-  - scratch/quants_obs.pkl.bak     (respaldo byte-a-byte del original)
-  - scratch/regenerar_quants_obs_report.json
+  - data/research/pivots/quants_obs.pkl         (regenerado)
+  - data/research/pivots/quants_obs.pkl.bak     (respaldo byte-a-byte del original)
+  - data/research/misc/regenerar_quants_obs_report.json
 """
 
 import hashlib
@@ -39,7 +39,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path("/root/botero-trade")
-SCRATCH = ROOT / "scratch"
+SCRATCH = ROOT / "data/research"
 FS_DIR = ROOT / "backend/modules/entry_decision/domain/rules"
 
 PKL = SCRATCH / "quants_obs.pkl"

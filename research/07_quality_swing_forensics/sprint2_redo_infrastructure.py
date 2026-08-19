@@ -23,7 +23,7 @@ Constantes fijas (INMUTABLES entre sprints):
   PROXIMITY_WINDOW para dedup = 3 barras
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/sprint2_redo_infrastructure.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/sprint2_redo_infrastructure.py
 """
 import sys, os, warnings, pickle, hashlib, time, bisect
 from pathlib import Path
@@ -51,7 +51,7 @@ Z_THRESHOLD = 2.0
 MAX_MATCH_DAYS = 3         # zigzag timestamp must be within 3 days of feature bar
 OFFSETS = list(range(-10, 6))  # t-10 .. t+5
 DEDUP_PROXIMITY = 3        # bars for dedup assignment
-OUT_DIR = root / "backend" / "scratch"
+OUT_DIR = root / "data" / "research" / "quality_swing"
 LAKE_PKL = OUT_DIR / "sprint2_redo_lake.pkl"
 LOG_FILE = OUT_DIR / "sprint2_redo_infrastructure.log"
 

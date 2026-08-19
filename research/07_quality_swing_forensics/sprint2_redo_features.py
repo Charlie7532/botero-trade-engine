@@ -25,7 +25,7 @@ Output:
   - sprint2_redo_features_report.pkl (structured data for Phase C)
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/sprint2_redo_features.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/sprint2_redo_features.py
 """
 import sys, os, warnings, pickle, time, bisect, json
 from pathlib import Path
@@ -52,7 +52,7 @@ from feature_optimizer import expand_feature_lake
 # ═══════════════════════════════════════════════════════════════
 Z_THRESHOLD = 2.0
 DEDUP_PROXIMITY = 3
-OUT_DIR = root / "backend" / "scratch"
+OUT_DIR = root / "data" / "research" / "quality_swing"
 LAKE_PKL = OUT_DIR / "sprint2_redo_lake.pkl"
 LOG_FILE = OUT_DIR / "sprint2_redo_features.log"
 REPORT_PKL = OUT_DIR / "sprint2_redo_features_report.pkl"

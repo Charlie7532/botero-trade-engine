@@ -33,8 +33,8 @@ log("═" * 100)
 
 # ── 1. Load ──
 log("\n=== 1. CARGA ===")
-df = pd.read_pickle("backend/scratch/sprint2_redo_lake_v21.pkl")
-with open("backend/scratch/sprint2_redo_phase_d_shap.pkl", "rb") as f:
+df = pd.read_pickle("data/research/feature_lake/sprint2_redo_lake_v21.pkl")
+with open("data/research/feature_lake/sprint2_redo_phase_d_shap.pkl", "rb") as f:
     phase_d = pickle.load(f)
 
 model = phase_d["model"]
@@ -182,10 +182,10 @@ results = {
     "top_features": top_features,
 }
 
-with open("backend/scratch/sprint2_redo_phase_e_permutation.pkl", "wb") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_e_permutation.pkl", "wb") as f:
     pickle.dump(results, f)
 
-with open("backend/scratch/sprint2_redo_phase_e_permutation.log", "w") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_e_permutation.log", "w") as f:
     f.write("\n".join(LOG))
 
 log(f"\n  ✅ Saved: sprint2_redo_phase_e_permutation.pkl + .log")

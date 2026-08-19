@@ -16,7 +16,7 @@ Cruza los ML heads entrenados (long_entry, zz_bottom_detector, short_entry,
 zz_top_detector) contra los zigzag breakpoints para medir eficacia real.
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/audit_gate_precision.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/audit_gate_precision.py
 """
 import sys, os, warnings, pickle, json
 from pathlib import Path

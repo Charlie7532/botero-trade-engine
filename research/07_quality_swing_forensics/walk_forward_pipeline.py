@@ -19,7 +19,7 @@ For walk-forward, we:
   3. Evaluate: for each state, what signal does each JSON give? Does it match reality?
 
 Usage:
-  PYTHONPATH=. backend/.venv/bin/python backend/scratch/walk_forward_pipeline.py
+  PYTHONPATH=. backend/.venv/bin/python research/07_quality_swing_forensics/walk_forward_pipeline.py
 """
 import os, sys, json, time, math, bisect, tempfile
 from pathlib import Path

@@ -15,7 +15,7 @@ breakpoint forensic findings. It answers the Architect's questions:
   8. Proposed gate architecture — evidence-based
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/audit_vwap_verification.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/audit_vwap_verification.py
 """
 import sys, os, warnings
 from pathlib import Path

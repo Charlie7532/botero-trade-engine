@@ -470,7 +470,7 @@ report = {
     "conjunction_dates": [str(s["date"].date()) for s in signals_both],
 }
 
-out = ROOT / "scratch/bsi_sv5t_conjuncion_report.json"
+out = ROOT / "data/research/stations/bsi_sv5t_conjuncion_report.json"
 with open(out, "w") as f:
     json.dump(ser(report), f, indent=2, default=str)
 print(f"\n\nReporte guardado en: {out}")

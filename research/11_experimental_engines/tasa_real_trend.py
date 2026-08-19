@@ -39,7 +39,7 @@ MÉTODO
 
 REGLA: DATO MATA RELATO. CI95 + N mínimo 20. ANTI-ADULACIÓN.
 
-ENTREGABLE: scratch/tasa_real_trend_report.json
+ENTREGABLE: data/research/tasa_real_trend_report.json
 """
 
 import json

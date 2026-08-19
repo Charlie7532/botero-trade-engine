@@ -22,7 +22,7 @@ Validation: 80/20 train/test temporal split (PurgedKFold compliant).
 Output: hit rate, LIFT, equity curve per archetype.
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/sentinel_walkforward_backtest.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/sentinel_walkforward_backtest.py
 """
 import os
 import sys

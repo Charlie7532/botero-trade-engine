@@ -564,10 +564,10 @@ def main():
             } for ticker, station in SENSORS.items()
         },
     }
-    json.dump(out, open(ROOT / "scratch" / "cat1_economia_results.json", "w"), indent=2, default=str)
+    json.dump(out, open(ROOT / "data/research" / "cat1_economia_results.json", "w"), indent=2, default=str)
 
     print("\n═" * 78)
-    print("CAT 1 COMPLETADO — resultados en scratch/cat1_economia_results.json")
+    print("CAT 1 COMPLETADO — resultados en data/research/cat1_economia_results.json")
     print("═" * 78)
 
 

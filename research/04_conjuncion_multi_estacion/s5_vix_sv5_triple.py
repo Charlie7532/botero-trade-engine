@@ -537,7 +537,7 @@ for regime_label in REGIME.values():
 
 output = {
     "meta": {
-        "script": "scratch/s5_vix_sv5_triple.py",
+        "script": "research/04_conjuncion_multi_estacion/s5_vix_sv5_triple.py",
         "description": "VIX×S5×SV5 triple matrix — does SV5 (volume breadth) add a 3rd discriminative dimension?",
         "axes": {
             "VIX": "diff(3) of VIX (fear velocity)",
@@ -563,7 +563,7 @@ def _json_safe(o):
         return None
     return str(o)
 
-json_path = Path("/root/botero-trade/scratch/s5_vix_sv5_triple_results.json")
+json_path = Path("/root/botero-trade/data/research/s5_vix_sv5_triple_results.json")
 with open(json_path, "w") as f:
     json.dump(output, f, indent=2, default=_json_safe)
 

@@ -27,7 +27,7 @@ Output:
   - sprint2_redo_infrastructure_v21.log
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/sprint2_redo_infrastructure_v21.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/sprint2_redo_infrastructure_v21.py
 """
 import sys
 import os
@@ -55,7 +55,7 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 # ═══════════════════════════════════════════════════════════════
 # CONSTANTS
 # ═══════════════════════════════════════════════════════════════
-OUT_DIR = root / "backend" / "scratch"
+OUT_DIR = root / "data" / "research" / "quality_swing"
 LOG_FILE = OUT_DIR / "sprint2_redo_infrastructure_v21.log"
 LAKE_PKL = OUT_DIR / "sprint2_redo_lake_v21.pkl"
 LAKE_CSV = OUT_DIR / "sprint2_redo_lake_v21.csv"

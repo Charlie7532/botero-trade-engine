@@ -42,9 +42,9 @@ ADVERTENCIAS ESTRUCTURALES DOCUMENTADAS (dato mata relato)
    reversión es el horizonte 5/10/20 DÍAS (múltiples piernas, dirección libre).
 
 Intérprete:
-  cd /root/botero-trade && PYTHONPATH=/root/botero-trade backend/.venv/bin/python scratch/distortion_test.py
+  cd /root/botero-trade && PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/distortion_test.py
 Salida:
-  consola + scratch/distortion_test_report.json
+  consola + data/research/distortion_test_report.json
 """
 
 import json
@@ -54,8 +54,8 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path("/root/botero-trade")
-DATA = ROOT / "scratch/quants_obs.pkl"
-OUT = ROOT / "scratch/distortion_test_report.json"
+DATA = ROOT / "data/research/pivots/quants_obs.pkl"
+OUT = ROOT / "data/research/misc/distortion_test_report.json"
 
 N_BOOT = 3000
 BOOT_SEED = 42

@@ -405,7 +405,7 @@ for row in table:
 # Save JSON
 output = {
     "meta": {
-        "script": "scratch/s5_sv5_matrix.py",
+        "script": "research/04_conjuncion_multi_estacion/s5_sv5_matrix.py",
         "description": "S5×SV5 matrix validation — SPY zz25 pivots",
         "S5_definition": "diff(3) of S5TW (% stocks above 20-DMA)",
         "SV5_definition": "diff(3) of SV5TW (% stocks with expanding volume)",
@@ -445,7 +445,7 @@ for q in quadrants:
     }
     output["quadrant_probabilities"][q] = r["pct"]
 
-json_path = Path("/root/botero-trade/scratch/s5_sv5_matrix_results.json")
+json_path = Path("/root/botero-trade/data/research/s5_sv5_matrix_results.json")
 with open(json_path, "w") as f:
     json.dump(output, f, indent=2, default=lambda x: float(x) if isinstance(x, (np.floating,)) else str(x))
 

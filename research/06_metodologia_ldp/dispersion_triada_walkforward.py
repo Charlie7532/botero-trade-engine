@@ -36,8 +36,8 @@ ADVERTENCIAS ESTRUCTURALES DOCUMENTADAS:
 - SKEW fact store fue re-entrenado (corte 2011-02-01): 6 state_keys de quants_obs
   ya no existen en skew_fact_store.json → 17 filas NaN. Documentado, no inventado.
 
-Intérprete: cd /root/botero-trade && PYTHONPATH=/root/botero-trade backend/.venv/bin/python scratch/dispersion_triada_walkforward.py
-Salida: consola + scratch/dispersion_triada_walkforward_report.json
+Intérprete: cd /root/botero-trade && PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/06_metodologia_ldp/dispersion_triada_walkforward.py
+Salida: consola + data/research/dispersion_triada_walkforward_report.json
 """
 
 import json
@@ -399,7 +399,7 @@ def main():
 
     # ── PASO 1: cargar ──
     print("\n[PASO 1] Cargando quants_obs.pkl + 11 fact stores ...")
-    df = pd.read_pickle(ROOT / "scratch/quants_obs.pkl").reset_index(drop=True)
+    df = pd.read_pickle(ROOT / "data/research/pivots/quants_obs.pkl").reset_index(drop=True)
     df["_dt"] = pd.to_datetime(df["pivot_date"])
     df = df.sort_values("_dt").reset_index(drop=True)
     dates = df["pivot_date"].values
@@ -501,7 +501,7 @@ def main():
     report = {
         "meta": {
             "script": "dispersion_triada_walkforward.py",
-            "data_source": "scratch/quants_obs.pkl + 11 fact stores JSON (zigzag_kinematic)",
+            "data_source": "data/research/pivots/quants_obs.pkl + 11 fact stores JSON (zigzag_kinematic)",
             "n_pivots": n,
             "date_range": [str(dates[0]), str(dates[-1])],
             "stations": STATIONS,
@@ -530,7 +530,7 @@ def main():
         "verdict": verdict,
     }
 
-    out_path = ROOT / "scratch/dispersion_triada_walkforward_report.json"
+    out_path = ROOT / "data/research/ldp_methodology/dispersion_triada_walkforward_report.json"
     with open(out_path, "w") as f:
         json.dump(report, f, indent=2, default=str)
     print(f"\n  Reporte guardado en: {out_path}")

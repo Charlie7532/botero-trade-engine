@@ -28,7 +28,7 @@ Categorías (7 tickers — mapeo conforme station-ticker-mapping):
 SIGMET con TRAYECTORIA (D2 streak≥3 + D3 compresión streak≥3 + D1 acercándose
 al extremo), misma lógica del prototipo `metar_skeleton.py` / `secuencias_classifier.py`.
 
-Salida: reporte por consola + JSON en scratch/validate_cuchillo_cayendo_report.json
+Salida: reporte por consola + JSON en data/research/validate_cuchillo_cayendo_report.json
 """
 
 import sys
@@ -576,7 +576,7 @@ def main():
     store.close()
 
     # Serializar reporte (limpiar no-JSON)
-    out = "/root/botero-trade/scratch/validate_cuchillo_cayendo_report.json"
+    out = "/root/botero-trade/data/research/validate_cuchillo_cayendo_report.json"
     def clean(obj):
         if isinstance(obj, dict):
             return {str(k): clean(v) for k, v in obj.items()}

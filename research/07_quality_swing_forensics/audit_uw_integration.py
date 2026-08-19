@@ -6,7 +6,7 @@ Tests that each department can:
 2. Read UW data from the Vault
 3. Produce output containing the new UW-enriched fields
 
-Run: PYTHONPATH=.. .venv/bin/python scratch/audit_uw_integration.py
+Run: PYTHONPATH=.. .venv/bin/python research/audit_uw_integration.py
 """
 import sys
 import traceback

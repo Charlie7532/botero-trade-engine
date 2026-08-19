@@ -28,12 +28,12 @@ log("  ESTADÍSTICAS DE DETALLE POR ARQUETIPO — UTILIDAD PRÁCTICA")
 log("═" * 100)
 
 # ── Load ──
-df = pd.read_pickle("backend/scratch/sprint2_redo_lake_v21.pkl")
-with open("backend/scratch/sprint2_redo_phase_c_v21.pkl", "rb") as f:
+df = pd.read_pickle("data/research/feature_lake/sprint2_redo_lake_v21.pkl")
+with open("data/research/feature_lake/sprint2_redo_phase_c_v21.pkl", "rb") as f:
     pc = pickle.load(f)
-with open("backend/scratch/sprint2_redo_phase_h_separated.pkl", "rb") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_h_separated.pkl", "rb") as f:
     ph = pickle.load(f)
-with open("backend/scratch/sprint2_fase_j_results.pkl", "rb") as f:
+with open("data/research/feature_lake/sprint2_fase_j_results.pkl", "rb") as f:
     pj = pickle.load(f)
 
 top_features = pc["top_features_used"]
@@ -425,7 +425,7 @@ log(f"""
 
 log(f"\n  Tiempo total: {time.time()-t0:.1f}s")
 
-with open("backend/scratch/sprint2_estadisticas_detalle.log", "w") as f:
+with open("data/research/feature_lake/sprint2_estadisticas_detalle.log", "w") as f:
     f.write("\n".join(LOG))
 
 log(f"\n  ✅ Saved: sprint2_estadisticas_detalle.log")

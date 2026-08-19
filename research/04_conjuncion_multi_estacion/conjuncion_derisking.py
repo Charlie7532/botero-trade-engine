@@ -26,8 +26,8 @@ MÉTODO (entrada HONESTA en barra de señal, NO pivote):
 6. Veredicto: ¿la conjunción mejora el edge SHORT? ¿triple confirmación CI95 sin cruzar 0?
 7. Baseline SPY = TODOS los días en la ventana elegible.
 
-Intérprete: PYTHONPATH=/root/botero-trade backend/.venv/bin/python scratch/conjuncion_derisking.py
-Salida: consola + scratch/conjuncion_derisking_report.json
+Intérprete: PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/conjuncion_derisking.py
+Salida: consola + data/research/conjuncion_derisking_report.json
 """
 
 import sys
@@ -759,7 +759,7 @@ def main():
                   f"CI95_20_todo-neg={ci20_neg}  CI95_40_todo-neg={ci40_neg}  → {verdict}")
 
     # 9. Persistir JSON
-    out = ROOT / "scratch" / "conjuncion_derisking_report.json"
+    out = ROOT / "data/research" / "conjuncion_derisking_report.json"
     with open(out, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, default=str)
     print(f"\nJSON → {out}")

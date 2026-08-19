@@ -25,7 +25,7 @@ MÉTODO
 
 REGLA: DATO MATA RELATO. CI95 + N mínimo 20. Presentar distribución WINS/LOSSES, no solo media.
 
-ENTREGABLE: scratch/yield_short_end_trend_report.json
+ENTREGABLE: data/research/yield_short_end_trend_report.json
 """
 
 import json

@@ -11,7 +11,7 @@ Changes from v1:
   - Everything else identical: features, XGB params, PurgedKFold
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/train_sentinel_v2.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/train_sentinel_v2.py
 """
 import os, sys, time, pickle
 from pathlib import Path

@@ -14,7 +14,7 @@ ninguna señal se mida "a mano" otra vez. Cada señal se evalúa con el MISMO m�
   7. Salida PROBABILÍSTICA (no absolutos).
 
 Uso:
-  PYTHONPATH=/root/botero-trade backend/.venv/bin/python scratch/medir_senal.py \
+  PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/01_señales_entry_exit/medir_senal.py \
       --señal credit_easing_k1 --horizontes 5,10,20,60 --seed 42 --bootstrap 3000
 
 Determinista: mismo input → mismo output. Sin LLM, sin interpretación.
@@ -28,9 +28,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent.parent if "__file__" in locals() else Path("/root/botero-trade")
-SCRATCH = ROOT / "scratch"
-OBS_PKL = SCRATCH / "quants_obs.pkl"
+ROOT = Path(__file__).resolve().parent.parent.parent if "__file__" in locals() else Path("/root/botero-trade")
+SCRATCH = ROOT / "data/research"
+OBS_PKL = ROOT / "data/research/pivots/quants_obs.pkl"
+if not OBS_PKL.exists():
+    OBS_PKL = ROOT / "data/research/pivots/quants_obs.pkl"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. CARGA DE DATOS

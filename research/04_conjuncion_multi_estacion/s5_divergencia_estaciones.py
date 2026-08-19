@@ -483,7 +483,7 @@ def ser(obj):
 
 report = {
     "meta": {
-        "script": "scratch/s5_divergencia_estaciones.py",
+        "script": "research/04_conjuncion_multi_estacion/s5_divergencia_estaciones.py",
         "description": "Estudio de divergencia S5 (S5TW) × 10 estaciones",
         "S5_definition": "S5TW = price breadth (% stocks > 20-DMA); direction = sign(diff(3))",
         "divergence_definition": "sign(D2 S5) != sign(D2 station)",
@@ -494,7 +494,7 @@ report = {
     "stations": all_results,
 }
 
-out = ROOT / "scratch/s5_divergencia_estaciones.json"
+out = ROOT / "data/research/conjunctions/s5_divergencia_estaciones.json"
 with open(out, "w") as f:
     json.dump(ser(report), f, indent=2, default=str)
 

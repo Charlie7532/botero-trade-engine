@@ -851,7 +851,7 @@ print(f"""
   confirmación en la zona neutral: small caps en miedo = sub-reacción (no comprar
   aún); small caps en euforia = continuación (mantener/entrar).
 
-  Archivo: scratch/fg_mejorado.py · {datetime.now().strftime('%Y-%m-%d %H:%M')}
+  Archivo: research/03_estaciones_metar/fg_mejorado.py · {datetime.now().strftime('%Y-%m-%d %H:%M')}
   Datos: market.ohlcv_bars (Neon PostgreSQL) via TimescaleDataStore
   Venv: backend/.venv · PYTHONPATH=/root/botero-trade
 """)

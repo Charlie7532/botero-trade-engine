@@ -13,7 +13,7 @@ MÉTODO (replica decay_check_cascade_conviction.py):
 4. 26 folds expanding window, refit de μ/σ en cada fold sobre training data.
 5. Reporta: IC medio (Spearman), % folds positivos, CI95 bootstrap.
 
-Script: scratch/walkforward_trailing.py
+Script: research/07_quality_swing_forensics/walkforward_trailing.py
 NO modifica código de producción.
 """
 import sys

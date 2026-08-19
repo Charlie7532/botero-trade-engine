@@ -11,7 +11,7 @@ For each variant, computes zigzag at 3%, 5%, 7% for all 17 tickers.
 Reports: point counts, location divergence, and examples.
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/zigzag_audit_canonical.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/zigzag_audit_canonical.py
 """
 import os, sys, time
 from pathlib import Path

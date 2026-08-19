@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
-OUT_DIR = root_dir / "backend" / "scratch"
+OUT_DIR = root_dir / "data" / "research" / "quality_swing"
 CSV_PATH = OUT_DIR / "sprint1_classified_points.csv"
 
 def classify_swing_magnitude(r):

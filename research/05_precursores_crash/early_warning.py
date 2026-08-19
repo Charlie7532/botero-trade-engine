@@ -619,9 +619,9 @@ print("  EXPORTANDO DATOS...")
 print("═" * 70)
 
 # Save window data
-df_win.to_parquet("/root/botero-trade/scratch/early_warning_windows.parquet")
-ep_agg.to_parquet("/root/botero-trade/scratch/early_warning_episodes.parquet")
-df_all.to_parquet("/root/botero-trade/scratch/early_warning_all_pivots.parquet")
+df_win.to_parquet("/root/botero-trade/data/research/early_warning_windows.parquet")
+ep_agg.to_parquet("/root/botero-trade/data/research/early_warning_episodes.parquet")
+df_all.to_parquet("/root/botero-trade/data/research/early_warning_all_pivots.parquet")
 
 print("  → early_warning_windows.parquet (barras en ventana)")
 print("  → early_warning_episodes.parquet (agregado por episodio)")

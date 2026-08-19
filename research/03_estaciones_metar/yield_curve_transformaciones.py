@@ -25,7 +25,7 @@ PASO 6 — Análisis de drawdowns para la ganadora (cruces/inversiones, forward 
 
 REGLA: DATO MATA RELATO. CI95 + N. ANTI-ADULACIÓN.
 
-ENTREGABLE: scratch/yield_curve_transformaciones_report.json
+ENTREGABLE: data/research/yield_curve_transformaciones_report.json
 """
 
 import json

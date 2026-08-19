@@ -34,10 +34,10 @@ log("  FASE J: SEGMENTACIÓN POR ARQUETIPOS — HL vs LL / HH vs LH")
 log("═" * 100)
 
 # ── 0. Load data ──
-df = pd.read_pickle("backend/scratch/sprint2_redo_lake_v21.pkl")
-with open("backend/scratch/sprint2_redo_phase_c_v21.pkl", "rb") as f:
+df = pd.read_pickle("data/research/feature_lake/sprint2_redo_lake_v21.pkl")
+with open("data/research/feature_lake/sprint2_redo_phase_c_v21.pkl", "rb") as f:
     pc = pickle.load(f)
-with open("backend/scratch/sprint2_redo_phase_h_separated.pkl", "rb") as f:
+with open("data/research/feature_lake/sprint2_redo_phase_h_separated.pkl", "rb") as f:
     ph = pickle.load(f)
 
 top_features = pc["top_features_used"]
@@ -543,10 +543,10 @@ results = {
     "all_feature_names": all_feature_names,
 }
 
-with open("backend/scratch/sprint2_fase_j_results.pkl", "wb") as f:
+with open("data/research/feature_lake/sprint2_fase_j_results.pkl", "wb") as f:
     pickle.dump(results, f)
 
-with open("backend/scratch/sprint2_fase_j_arquetipos.log", "w") as f:
+with open("data/research/feature_lake/sprint2_fase_j_arquetipos.log", "w") as f:
     f.write("\n".join(LOG))
 
 log(f"\n  ✅ Saved: sprint2_fase_j_results.pkl + .log")

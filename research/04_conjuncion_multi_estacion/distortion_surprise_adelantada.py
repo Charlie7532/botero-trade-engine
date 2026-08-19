@@ -36,9 +36,9 @@ ADVERTENCIAS ESTRUCTURALES:
      agrega con nansum/nanmean; se registra n_valid_stations para auditar cobertura.
 
 Intérprete:
-  cd /root/botero-trade && PYTHONPATH=/root/botero-trade backend/.venv/bin/python scratch/distortion_surprise_adelantada.py
+  cd /root/botero-trade && PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/04_conjuncion_multi_estacion/distortion_surprise_adelantada.py
 Salida:
-  consola + scratch/distortion_surprise_adelantada_report.json
+  consola + data/research/distortion_surprise_adelantada_report.json
 """
 
 import json
@@ -50,7 +50,7 @@ import pandas as pd
 from scipy.stats import rankdata, spearmanr
 
 ROOT = Path("/root/botero-trade")
-SCRATCH = ROOT / "scratch"
+SCRATCH = ROOT / "data/research"
 FACT_DIR = ROOT / "backend/modules/entry_decision/domain/rules"
 QUANTS = SCRATCH / "quants_obs.pkl"
 OUT = SCRATCH / "distortion_surprise_adelantada_report.json"

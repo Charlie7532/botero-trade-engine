@@ -19,7 +19,7 @@ MÉTODO:
   5. Análisis de redundancia: solapamiento régimen↔señal + descomposición condicional
      (¿la permutación discrimina DENTRO de cada señal GRADE A?).
 
-Salida: consola + JSON en scratch/validate_proteccion_lidera_report.json
+Salida: consola + JSON en data/research/validate_proteccion_lidera_report.json
 """
 
 import sys, json
@@ -570,7 +570,7 @@ def main():
     print(f"      zz25, 6.2% zz50, 6.8% zz75). Suficiente para un régimen táctico.")
 
     # 9. Guardar JSON
-    out_path = ROOT / "scratch" / "validate_proteccion_lidera_report.json"
+    out_path = ROOT / "data/research" / "validate_proteccion_lidera_report.json"
     with open(out_path, "w") as f:
         json.dump(report, f, indent=2, default=str)
     print(f"\n{'═' * 78}\nReporte JSON: {out_path}\n{'═' * 78}")

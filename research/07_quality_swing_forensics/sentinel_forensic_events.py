@@ -17,7 +17,7 @@ An EVENT is NOT a single bar — it's the entire burst of high-probability bars.
 This matches reality: the model fires ~6-7 bars around each turn point.
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/sentinel_forensic_events.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/sentinel_forensic_events.py
 """
 import os
 import sys

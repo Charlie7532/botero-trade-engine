@@ -453,7 +453,7 @@ for level in range(1, 4):
         print(f"  {label}: Δμ = {delta:+.2f}%  ({delta_pct:+.1f}% rel)  {sig}  N={r['n']}")
 
 # ── SAVE JSON ──
-output_path = "/root/botero-trade/scratch/conjuncion_macro_results.json"
+output_path = "/root/botero-trade/data/research/conjuncion_macro_results.json"
 output = {
     "metadata": {
         "script": "conjuncion_macro.py",

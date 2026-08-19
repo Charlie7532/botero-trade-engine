@@ -217,7 +217,7 @@ def main():
            "cascade_75_rate": float(df["c75"].mean()),
            "per_station": {k: {kk: (None if (isinstance(vv, float) and np.isnan(vv)) else vv)
                                for kk, vv in v.items()} for k, v in results.items()}}
-    outpath = Path("/root/botero-trade/scratch/d3_results.json")
+    outpath = Path("/root/botero-trade/data/research/d3_results.json")
     with open(outpath, "w") as f:
         json.dump(out, f, indent=2, default=str)
     print(f"\n  💾 Resultados guardados en {outpath}")

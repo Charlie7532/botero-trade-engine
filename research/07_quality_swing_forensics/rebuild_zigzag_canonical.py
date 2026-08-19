@@ -10,7 +10,7 @@ Tickers: All 17 training tickers
 Algorithm: Canonical (High for peaks, Low for valleys, no backtrack)
 
 Usage:
-    PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scratch/rebuild_zigzag_canonical.py
+    PYTHONPATH=/root/botero-trade backend/.venv/bin/python research/07_quality_swing_forensics/rebuild_zigzag_canonical.py
 """
 import os, sys, time
 from pathlib import Path

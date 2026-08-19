@@ -19,7 +19,7 @@ MÉTODO:
   5. Caso 2022-2024 con cronología detallada
   6. Veredicto con NUESTRA definición (drawdown, no recesión NBER)
 
-ENTREGABLE: scratch/yield_curve_recesion_report.json
+ENTREGABLE: data/research/yield_curve_recesion_report.json
 """
 
 import sys
@@ -607,7 +607,7 @@ report = {
 }
 
 # Write report
-report_path = ROOT / "scratch" / "yield_curve_recesion_report.json"
+report_path = ROOT / "data/research" / "yield_curve_recesion_report.json"
 with open(report_path, 'w') as f:
     json.dump(report, f, indent=2, default=str, ensure_ascii=False)
 

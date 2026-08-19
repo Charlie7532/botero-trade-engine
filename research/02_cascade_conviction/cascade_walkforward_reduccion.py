@@ -59,7 +59,7 @@ BOOT_ITER = 3000
 
 # ── Config ──────────────────────────────────────────────────────────────────
 PROJECT_DIR = Path("/root/botero-trade")
-SCRATCH = PROJECT_DIR / "scratch"
+SCRATCH = PROJECT_DIR / "data/research"
 CALIBRATION_PATH = PROJECT_DIR / "backend/modules/entry_decision/domain/rules/cascade_calibration.json"
 QUANTS_PATH = SCRATCH / "quants_obs.pkl"
 
@@ -436,7 +436,7 @@ report = {
     "_meta": {
         "task": "cascade_walkforward_reduccion",
         "question": "¿La reducción del Grupo A (5 estaciones → vix+bsi y variantes) sobrevive OOS, o es overfitting in-sample?",
-        "data": "scratch/quants_obs.pkl (1,590 pivotes zz25)",
+        "data": "data/research/pivots/quants_obs.pkl (1,590 pivotes zz25)",
         "formula": "cascade_conviction = 0.66*(d1_bear_5-0.41)/0.3206 + 0.34*(abs_prev_leg_return-0.0532)/0.035",
         "counting": "FRACCIONAL, type-mask MIN/MAX (fg MIN-only)",
         "metric": "Spearman IC vs cascade_50",

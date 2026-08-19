@@ -23,7 +23,7 @@ np.random.seed(42)
 
 # ── Config ──────────────────────────────────────────────────────────────────
 PROJECT_DIR = Path("/root/botero-trade")
-SCRATCH = PROJECT_DIR / "scratch"
+SCRATCH = PROJECT_DIR / "data/research"
 FACT_DIR = PROJECT_DIR / "backend/modules/entry_decision/domain/rules"
 QUANTS_PATH = SCRATCH / "quants_obs.pkl"
 

@@ -19,7 +19,7 @@ GRID SEARCH:
   - Para cada w, IC IS (Spearman) sobre todos los pivotes (μ/σ full-sample).
   - Walk-forward OOS (26 folds expanding window) con el w óptimo (μ/σ refit por fold).
 
-Script: scratch/recalibrar_cascade_trailing.py
+Script: research/02_cascade_conviction/recalibrar_cascade_trailing.py
 NO modifica código de producción.
 """
 import sys

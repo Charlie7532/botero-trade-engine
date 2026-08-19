@@ -284,7 +284,7 @@ def boot_gap(arr_a, arr_b, ci=95, n_boot=N_BOOT, seed=BOOT_SEED):
 
 
 full_report = {"meta": {
-    "script": "scratch/s5_vix_d2d3.py",
+    "script": "research/04_conjuncion_multi_estacion/s5_vix_d2d3.py",
     "vix_level_p33": float(vix_p33), "vix_level_p66": float(vix_p66),
     "vix_d3_p33": float(vix_d3_p33), "vix_d3_p66": float(vix_d3_p66),
     "s5_collapse_pp": S5_COLLAPSE, "s5_recover_pp": S5_RECOVER,
@@ -377,7 +377,7 @@ for rkey in [r["key"] for r in REGIMES]:
 
 # ── Guardar JSON ──────────────────────────────────────────────────────────────
 
-out_path = Path("/root/botero-trade/scratch/s5_vix_d2d3_report.json")
+out_path = Path("/root/botero-trade/data/research/s5_vix_d2d3_report.json")
 with open(out_path, "w") as f:
     json.dump(full_report, f, indent=2, default=lambda x: float(x) if isinstance(x, (np.floating, np.integer)) else str(x))
 

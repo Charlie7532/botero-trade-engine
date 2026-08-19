@@ -19,7 +19,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 ROOT = Path("/root/botero-trade")
-OBS_PKL = ROOT / "scratch/quants_obs.pkl"
+OBS_PKL = ROOT / "data/research/pivots/quants_obs.pkl"
 
 ALL_STATIONS = ["vix","vvix","pcr","fg","sv5_turbulence","skew","credit","yield_curve","rotation","bsi","dxy"]
 GRUPO_A = ["vix","bsi","fg","credit","rotation"]
@@ -202,6 +202,6 @@ out = {
     "models": [(s, float(wb), float(wd), st) for s, wb, wd, st in models],
 }
 import json
-with open(ROOT / "scratch/pbo_results.json", "w") as f:
+with open(ROOT / "data/research/ldp_methodology/pbo_results.json", "w") as f:
     json.dump(out, f, indent=2, default=str)
-print(f"\n  Guardado en scratch/pbo_results.json")
+print(f"\n  Guardado en data/research/pbo_results.json")

@@ -11,7 +11,7 @@ import pandas as pd
 from scipy.stats import spearmanr, chi2_contingency
 
 ROOT = Path("/root/botero-trade")
-OBS_PKL = ROOT / "scratch/quants_obs.pkl"
+OBS_PKL = ROOT / "data/research/pivots/quants_obs.pkl"
 
 with open(OBS_PKL, 'rb') as f:
     df = pickle.load(f)
@@ -149,5 +149,5 @@ for out_name in outcomes:
         print(f"    Ninguna — la info significativa es mayormente monotónica (capturada por ρ).")
 
 # Save
-pd.DataFrame(results).to_csv(ROOT / "scratch/mi_permutation_results.csv", index=False)
-print("\n  Guardado en scratch/mi_permutation_results.csv")
+pd.DataFrame(results).to_csv(ROOT / "data/research/ldp_methodology/mi_permutation_results.csv", index=False)
+print("\n  Guardado en data/research/mi_permutation_results.csv")

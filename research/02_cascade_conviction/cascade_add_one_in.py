@@ -18,7 +18,7 @@ Configuraciones (type-mask: FG es MIN-only, se mantiene FIJA en las 4):
     plus_dxy          añade dxy       a MIN y MAX
     plus_both         añade ambas     a MIN y MAX
 
-DATOS: scratch/quants_obs.pkl (1,590 pivotes zz25). CI95 bootstrap 3000 (seed 42), ΔIC pareado.
+DATOS: data/research/pivots/quants_obs.pkl (1,590 pivotes zz25). CI95 bootstrap 3000 (seed 42), ΔIC pareado.
 """
 import json
 import numpy as np
@@ -26,9 +26,9 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 BASE = "/root/botero-trade"
-PKL = f"{BASE}/scratch/quants_obs.pkl"
+PKL = f"{BASE}/data/research/pivots/quants_obs.pkl"
 CAL = f"{BASE}/backend/modules/entry_decision/domain/rules/cascade_calibration.json"
-OUT = f"{BASE}/scratch/cascade_add_one_in_report.json"
+OUT = f"{BASE}/data/research/cascade/cascade_add_one_in_report.json"
 
 RNG_SEED = 42
 N_BOOT = 3000
@@ -210,7 +210,7 @@ def main():
         "_meta": {
             "task": "cascade_add_one_in",
             "question": "¿AÑADIR yield_curve y dxy al Grupo A mejora el IC del cascade_conviction vs cascade_50?",
-            "data": "scratch/quants_obs.pkl (1,590 pivotes zz25)",
+            "data": "data/research/pivots/quants_obs.pkl (1,590 pivotes zz25)",
             "formula": "cascade_conviction = 0.66*(d1_bear_5-0.41)/0.3206 + 0.34*(abs_prev_leg_return-0.0532)/0.035",
             "weights": {"w_bear": 0.66, "w_dom": 0.34},
             "calibration": {"d1_bear_5_mean": 0.41, "d1_bear_5_std": 0.3206, "domino_zz25_mean": 0.0532, "domino_zz25_std": 0.035},

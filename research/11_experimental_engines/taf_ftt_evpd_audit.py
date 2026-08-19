@@ -3,7 +3,7 @@
 TAF AUDIT — ftt_days & ev_per_day predictive signal on SPY forward.
 Layer 1 audit. Read-only. No code modification.
 
-Uses the pre-built scratch/quants_obs.pkl (1,590 SPY zz25 pivots, generated with the
+Uses the pre-built data/research/pivots/quants_obs.pkl (1,590 SPY zz25 pivots, generated with the
 PRODUCTION LookupAdapters -> state_key matches fact stores exactly) and joins each
 pivot's per-station state_key against zigzag_kinematic.{zz25,zz50,zz75} in the fact
 stores to extract ftt_bull_days / ftt_bear_days / ev_per_day.
@@ -51,7 +51,7 @@ for code in TAF_STATIONS:
     fact[code] = lookup
 
 # ── Load pivot observations ────────────────────────────────────────────────
-obs = pd.read_pickle(ROOT / 'scratch/quants_obs.pkl')
+obs = pd.read_pickle(ROOT / 'data/research/pivots/quants_obs.pkl')
 obs = obs.reset_index(drop=True)
 N = len(obs)
 print(f"pivots: {N}")

@@ -182,8 +182,8 @@ def main():
         p_lvl, _ = pval(lvl, df_obs["leg_bear"])
         print(f"{code:<10} {r_leg:>+16.4f} {p_leg:>8.2g} | {r_next:>+16.4f} {p_next:>8.2g} | {r_lvl:>+16.4f} {p_lvl:>8.2g}")
 
-    df_obs.to_pickle("/root/botero-trade/scratch/d2_direction_obs.pkl")
-    print(f"\n💾 saved {len(df_obs)} obs to scratch/d2_direction_obs.pkl")
+    df_obs.to_pickle("/root/botero-trade/data/research/d2_direction_obs.pkl")
+    print(f"\n💾 saved to data/research/pivots/d2_direction_obs.pkl")
 
 
 if __name__ == "__main__":

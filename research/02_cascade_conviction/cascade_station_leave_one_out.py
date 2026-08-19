@@ -35,7 +35,7 @@ RNG = np.random.RandomState(42)
 
 # ── Config ──────────────────────────────────────────────────────────────────
 PROJECT_DIR = Path("/root/botero-trade")
-SCRATCH = PROJECT_DIR / "scratch"
+SCRATCH = PROJECT_DIR / "data/research"
 CALIBRATION_PATH = PROJECT_DIR / "backend/modules/entry_decision/domain/rules/cascade_calibration.json"
 QUANTS_PATH = SCRATCH / "quants_obs.pkl"
 

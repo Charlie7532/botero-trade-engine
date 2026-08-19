@@ -13,7 +13,7 @@ import os
 import sys
 from pathlib import Path
 
-# ── Standard project env loading (matches all other scratch scripts) ──
+# ── Standard project env loading (matches all other research scripts) ──
 root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(root))
 from dotenv import load_dotenv

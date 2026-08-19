@@ -34,7 +34,7 @@ from feature_optimizer import expand_feature_lake
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.shared.infrastructure.ticker_profile_store import TickerProfileStore
 
-OUT_DIR = root / "backend" / "scratch" / "zigzag_forensics"
+OUT_DIR = root / "data" / "research" / "quality_swing" / "zigzag_forensics"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 

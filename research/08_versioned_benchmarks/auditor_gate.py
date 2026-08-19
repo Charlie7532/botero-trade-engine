@@ -18,7 +18,7 @@ Checks por señal:
 
 Veredicto por señal:  ✅ (número clave) / 🚨 (detalle) / 🤫 (sigue corriendo)
 
-Uso:  backend/.venv/bin/python scratch/auditor_gate.py
+Uso:  backend/.venv/bin/python research/auditor_gate.py
 """
 
 import json
@@ -28,7 +28,7 @@ from pathlib import Path
 from datetime import datetime
 
 ROOT = Path("/root/botero-trade")
-SCRATCH = ROOT / "scratch"
+SCRATCH = ROOT / "data/research"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. DETECCIÓN DE SALIDAS DISPONIBLES

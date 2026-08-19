@@ -1,6 +1,6 @@
 {
   "meta": {
-    "script": "scratch/s5_sv5_matrix.py",
+    "script": "research/04_conjuncion_multi_estacion/s5_sv5_matrix.py",
     "description": "S5\u00d7SV5 matrix validation \u2014 SPY zz25 pivots",
     "S5_definition": "diff(3) of S5TW (% stocks above 20-DMA)",
     "SV5_definition": "diff(3) of SV5TW (% stocks with expanding volume)",

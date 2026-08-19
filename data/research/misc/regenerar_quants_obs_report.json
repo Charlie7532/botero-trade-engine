@@ -2,8 +2,8 @@
   "meta": {
     "script": "regenerar_quants_obs.py",
     "run_utc": "2026-08-17T15:50:19.287460+00:00",
-    "input": "/root/botero-trade/scratch/quants_obs.pkl",
-    "backup": "/root/botero-trade/scratch/quants_obs.pkl.bak",
+    "input": "data/research/pivots/quants_obs.pkl",
+    "backup": "/root/botero-trade/data/research/pivots/quants_obs.pkl.bak",
     "backup_bytes": 2529901,
     "report": "/root/botero-trade/scratch/regenerar_quants_obs_report.json",
     "n_rows": 1590,

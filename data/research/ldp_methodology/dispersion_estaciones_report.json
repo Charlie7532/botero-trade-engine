@@ -1,7 +1,7 @@
 {
   "meta": {
     "script": "dispersion_estaciones.py",
-    "data_source": "scratch/quants_obs.pkl",
+    "data_source": "data/research/pivots/quants_obs.pkl",
     "n_pivots": 1590,
     "date_range": [
       "1993-01-29",

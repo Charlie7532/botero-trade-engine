@@ -2,7 +2,7 @@
   "_meta": {
     "task": "cascade_add_one_in",
     "question": "¿AÑADIR yield_curve y dxy al Grupo A mejora el IC del cascade_conviction vs cascade_50?",
-    "data": "scratch/quants_obs.pkl (1,590 pivotes zz25)",
+    "data": "data/research/pivots/quants_obs.pkl (1,590 pivotes zz25)",
     "formula": "cascade_conviction = 0.66*(d1_bear_5-0.41)/0.3206 + 0.34*(abs_prev_leg_return-0.0532)/0.035",
     "weights": {
       "w_bear": 0.66,

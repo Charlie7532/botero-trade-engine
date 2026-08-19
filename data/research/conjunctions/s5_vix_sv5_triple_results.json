@@ -1,6 +1,6 @@
 {
   "meta": {
-    "script": "scratch/s5_vix_sv5_triple.py",
+    "script": "research/04_conjuncion_multi_estacion/s5_vix_sv5_triple.py",
     "description": "VIX\u00d7S5\u00d7SV5 triple matrix \u2014 does SV5 (volume breadth) add a 3rd discriminative dimension?",
     "axes": {
       "VIX": "diff(3) of VIX (fear velocity)",

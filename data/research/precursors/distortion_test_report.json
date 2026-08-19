@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Distorsión (surprise alpha): momentum vs reversión",
-    "data_file": "/root/botero-trade/scratch/quants_obs.pkl",
+    "data_file": "data/research/pivots/quants_obs.pkl",
     "n_pivots": 1590,
     "date_range": [
       "1993-01-29",

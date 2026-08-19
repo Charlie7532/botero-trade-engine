@@ -1,7 +1,7 @@
 {
   "meta": {
     "descripcion": "Periodo natural (half-life autocorrelación) de estaciones CAT1 y poder predictivo de su pendiente en ventana natural sobre la tendencia de SPY.",
-    "fuente": "/root/botero-trade/scratch/quants_obs.pkl",
+    "fuente": "data/research/pivots/quants_obs.pkl",
     "n_pivotes": 1590,
     "rango_fechas": [
       "1993-01-29",

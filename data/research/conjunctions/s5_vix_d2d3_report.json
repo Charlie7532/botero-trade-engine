@@ -1,6 +1,6 @@
 {
   "meta": {
-    "script": "scratch/s5_vix_d2d3.py",
+    "script": "research/04_conjuncion_multi_estacion/s5_vix_d2d3.py",
     "vix_level_p33": 14.97,
     "vix_level_p66": 20.78999,
     "vix_d3_p33": 0.2549590441430519,

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "script": "scratch/s5_vix_divergencia.py",
+    "script": "research/04_conjuncion_multi_estacion/s5_vix_divergencia.py",
     "description": "Divergencia VIX\u00d7S5 \u2014 sentir vs hacer. 4 reg\u00edmenes medidos a 3 escalas zigzag + 4 horizontes fijos.",
     "regime_window": "diff(5)",
     "VIX_definition": "diff(5) of VIX close",

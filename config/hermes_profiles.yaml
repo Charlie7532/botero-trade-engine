@@ -1,0 +1,42 @@
+# ==============================================================================
+# config/hermes_profiles.yaml — Arquitectura de Perfiles de Hermes (Botero Trade)
+# ==============================================================================
+version: "1.0"
+pipeline: "quantitative_research_and_falsification"
+
+profiles:
+  default:
+    model: "openrouter/deepseek/deepseek-v4-flash"
+    fallback: "openrouter/deepseek/deepseek-chat"
+    role: "Router & Dispatcher"
+    temperature: 0.1
+    max_tokens: 200
+    description: "Clasificar solicitudes, monitorear estado del sistema y despachar tareas a worker y auditor de forma atómica."
+
+  worker:
+    model: "openrouter/qwen/qwen-2.5-coder-32b"
+    fallback: "openrouter/qwen/qwen3.8-max"
+    role: "Quantitative Coder & Execution Engine"
+    temperature: 0.2
+    worktree: "isolated"
+    description: "Escribir y ejecutar scripts en Python para modelado cuantitativo leyendo del Vault. Restricción: Compilar trade logs en {worktree}/artifacts/backtest_results.json sin interpretaciones en prosa."
+
+  pre-audit:
+    engine: "local_script"
+    cost: "$0.00"
+    role: "Statistical Gatekeeper & Anti-Leakage Filter"
+    entrypoint: "hermes_gates/pre_audit.py"
+    description: "Evaluar aserciones de lookahead bias, DSR (López de Prado), PBO con embargo adaptativo y tests estadísticos. Si falla aborta con código 1; si aprueba genera pre_audit_summary.json con código 0."
+
+  auditor:
+    model: "openrouter/moonshotai/kimi-k3"
+    role: "Scientific Falsifier & Epistemological Auditor"
+    temperature: 0.2
+    max_tokens: 1500
+    description: "Recibir exclusivamente pre_audit_summary.json. No recalcular matemática. Evaluar plausibilidad microestructural, sesgos de selección, robustez frente a regímenes y emitir Confidence Card [APROBADO / RECHAZADO / CUARENTENA]."
+
+  security:
+    model: "anthropic/claude-sonnet-5"
+    role: "Infrastructure & Security Guardian"
+    temperature: 0.1
+    description: "Inamovible por infraestructura. Análisis estricto de vectores de ataque, credenciales y sanitización."

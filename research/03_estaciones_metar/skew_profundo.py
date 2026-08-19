@@ -807,9 +807,9 @@ output = {
     } for ep in dd_episodes],
 }
 
-with open(Path(ROOT) / "data/research" / "skew_profundo_results.json", "w") as f:
+with open(Path(ROOT) / "data/research/stations/skew_profundo_results.json", "w") as f:
     json.dump(output, f, indent=2, default=str)
 
 print(f"\n\n{'═'*80}")
-print(f"  RESULTADOS GUARDADOS en data/research/skew_profundo_results.json")
+print(f"  RESULTADOS GUARDADOS en data/research/stations/skew_profundo_results.json")
 print(f"{'═'*80}")

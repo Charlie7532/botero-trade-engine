@@ -1078,7 +1078,7 @@ if __name__ == "__main__":
     findings = run_synthesis(df, mi_results, corr_matrix)
     
     # Save MI results
-    mi_results.to_csv("/root/botero-trade/data/research/mi_results.csv", index=False)
+    mi_results.to_csv("/root/botero-trade/data/research/ldp_methodology/mi_results.csv", index=False)
     
     print("\n" + "═" * 80)
     print(" AUDITORÍA COMPLETA. Resultados guardados en data/research/")

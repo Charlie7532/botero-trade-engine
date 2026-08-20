@@ -17,8 +17,15 @@ import pandas as pd
 import numpy as np
 from collections import defaultdict
 
-# Import signals
-from research._lib.research_paths import ROOT; import sys; sys.path.insert(0, str(ROOT)); from research.señales_entry_exit.medir_senal import SEÑALES, cargar_datos
+# Import signals — directory starts with '01_', can't use normal import
+import importlib.util
+from research._lib.research_paths import ROOT
+_spec = importlib.util.spec_from_file_location(
+    "medir_senal", ROOT / "research" / "01_señales_entry_exit" / "medir_senal.py"
+)
+_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+SEÑALES, cargar_datos = _mod.SEÑALES, _mod.cargar_datos
 
 STATIONS = ['vix', 'vvix', 'pcr', 'fg', 'sv5_turbulence', 'skew',
             'credit', 'yield_curve', 'rotation', 'bsi', 'dxy']

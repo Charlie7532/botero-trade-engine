@@ -1,0 +1,137 @@
+{
+  "fecha": "2026-08-22 17:20:10.908499",
+  "metodo": "walk-forward anclado: celda elegida en train, medida en test; baseline por período de test",
+  "bloque_test_dias": 1095,
+  "min_train_dias": 1825,
+  "n_min_train": 10,
+  "resultados": {
+    "pcr_put_panic": {
+      "in_sample_mejor_celda": "zz75|BAJA",
+      "in_sample_fav_neto": 4.04,
+      "in_sample_n": 28,
+      "folds_con_test": 4,
+      "oos_edge_medio_pct": 2.56,
+      "oos_edges_pct": [
+        2.05,
+        7.51,
+        4.29,
+        -3.6
+      ],
+      "folds_positivos": 3,
+      "decay_oos_vs_is": 0.63,
+      "sign_test_p": 0.3125
+    },
+    "credit_stress": {
+      "in_sample_mejor_celda": "zz75|ALZA",
+      "in_sample_fav_neto": 3.42,
+      "in_sample_n": 101,
+      "folds_con_test": 4,
+      "oos_edge_medio_pct": 1.43,
+      "oos_edges_pct": [
+        4.52,
+        -4.87,
+        4.08,
+        1.97
+      ],
+      "folds_positivos": 3,
+      "decay_oos_vs_is": 0.42,
+      "sign_test_p": 0.3125
+    },
+    "capitulacion": {
+      "in_sample_mejor_celda": "zz25|BAJA",
+      "in_sample_fav_neto": 3.4,
+      "in_sample_n": 28,
+      "folds_con_test": 2,
+      "oos_edge_medio_pct": 2.64,
+      "oos_edges_pct": [
+        3.09,
+        2.18
+      ],
+      "folds_positivos": 2,
+      "decay_oos_vs_is": 0.77,
+      "sign_test_p": null
+    },
+    "panico_total": {
+      "in_sample_mejor_celda": "zz75|BAJA",
+      "in_sample_fav_neto": 3.16,
+      "in_sample_n": 18,
+      "folds_con_test": 2,
+      "oos_edge_medio_pct": 1.25,
+      "oos_edges_pct": [
+        -0.54,
+        3.04
+      ],
+      "folds_positivos": 1,
+      "decay_oos_vs_is": 0.39,
+      "sign_test_p": null
+    },
+    "vvix_entry": {
+      "in_sample_mejor_celda": "zz75|ALZA",
+      "in_sample_fav_neto": 3.11,
+      "in_sample_n": 45,
+      "folds_con_test": 3,
+      "oos_edge_medio_pct": 2.08,
+      "oos_edges_pct": [
+        9.06,
+        -5.16,
+        2.35
+      ],
+      "folds_positivos": 2,
+      "decay_oos_vs_is": 0.67,
+      "sign_test_p": null
+    },
+    "bsi_washed_out": {
+      "in_sample_mejor_celda": "zz25|BAJA",
+      "in_sample_fav_neto": 1.73,
+      "in_sample_n": 65,
+      "folds_con_test": 6,
+      "oos_edge_medio_pct": 0.99,
+      "oos_edges_pct": [
+        0.35,
+        0.73,
+        8.01,
+        1.24,
+        -5.9,
+        1.51
+      ],
+      "folds_positivos": 5,
+      "decay_oos_vs_is": 0.57,
+      "sign_test_p": 0.1094
+    },
+    "breadth_contraction_exit": {
+      "in_sample_mejor_celda": "zz75|ALZA",
+      "in_sample_fav_neto": 0.84,
+      "in_sample_n": 709,
+      "folds_con_test": 10,
+      "oos_edge_medio_pct": 0.17,
+      "oos_edges_pct": [
+        -2.19,
+        -0.85,
+        -0.79,
+        -1.24,
+        -2.34,
+        2.79,
+        0.17,
+        0.44,
+        2.43,
+        3.24
+      ],
+      "folds_positivos": 5,
+      "decay_oos_vs_is": 0.2,
+      "sign_test_p": 0.623
+    },
+    "skew_paranoia_exit": {
+      "in_sample_mejor_celda": "zz75|ALZA",
+      "in_sample_fav_neto": 2.84,
+      "in_sample_n": 16,
+      "folds_con_test": 1,
+      "oos_edge_medio_pct": 2.4,
+      "oos_edges_pct": [
+        2.4
+      ],
+      "folds_positivos": 1,
+      "decay_oos_vs_is": 0.85,
+      "sign_test_p": null
+    }
+  }
+}

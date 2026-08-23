@@ -1,0 +1,712 @@
+{
+ "fecha": "2026-08-23",
+ "builder": "generate_quants_obs.py (producción)",
+ "principio": "fidelidad como detector, no como meta",
+ "columnas": [
+  {
+   "columna": "pivot_date",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pivot_year",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pivot_decade",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pivot_type",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "leg_bear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "next_bear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "cascade_50",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "cascade_75",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "abs_prev_leg_return",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "prev_leg_return",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "prev_leg_duration",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "duration_bars",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "daily_return_pct",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vix_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vix_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vix_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vix_sk",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vix_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vix_zk_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vix_zk_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vix_zz25_pbull",
+   "match": 0.939,
+   "categoria": "C"
+  },
+  {
+   "columna": "vix_zz25_pbear",
+   "match": 0.939,
+   "categoria": "C"
+  },
+  {
+   "columna": "vix_ev_net",
+   "match": 0.9264,
+   "categoria": "C"
+  },
+  {
+   "columna": "vix_n",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vvix_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vvix_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vvix_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vvix_sk",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vvix_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vvix_zk_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vvix_n",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_sk",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_zk_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_n",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "fg_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "fg_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "fg_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "fg_sk",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "fg_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "fg_zk_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "fg_n",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "sv5_turbulence_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "sv5_turbulence_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "sv5_turbulence_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "sv5_turbulence_sk",
+   "match": 0.9994,
+   "categoria": "B"
+  },
+  {
+   "columna": "sv5_turbulence_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "sv5_turbulence_zk_pbull",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "sv5_turbulence_n",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "skew_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "skew_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "skew_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "skew_sk",
+   "match": 0.1333,
+   "categoria": "A"
+  },
+  {
+   "columna": "skew_d1_vote",
+   "match": 0.6635,
+   "categoria": "A"
+  },
+  {
+   "columna": "skew_zk_pbull",
+   "match": 0.0346,
+   "categoria": "A"
+  },
+  {
+   "columna": "skew_zk_pbear",
+   "match": 0.0346,
+   "categoria": "A"
+  },
+  {
+   "columna": "skew_zz25_pbull",
+   "match": 0.0107,
+   "categoria": "A"
+  },
+  {
+   "columna": "skew_zz25_pbear",
+   "match": 0.0107,
+   "categoria": "A"
+  },
+  {
+   "columna": "skew_ev_net",
+   "match": 0.0044,
+   "categoria": "A"
+  },
+  {
+   "columna": "skew_n",
+   "match": 0.134,
+   "categoria": "A"
+  },
+  {
+   "columna": "credit_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "credit_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "credit_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "credit_sk",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "credit_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "credit_zk_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "credit_n",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "yield_curve_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "yield_curve_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "yield_curve_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "yield_curve_sk",
+   "match": 0.9994,
+   "categoria": "B"
+  },
+  {
+   "columna": "yield_curve_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "yield_curve_zk_pbull",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "yield_curve_zk_pbear",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "yield_curve_zz25_pbull",
+   "match": 0.856,
+   "categoria": "C"
+  },
+  {
+   "columna": "yield_curve_zz25_pbear",
+   "match": 0.856,
+   "categoria": "C"
+  },
+  {
+   "columna": "yield_curve_ev_net",
+   "match": 0.856,
+   "categoria": "C"
+  },
+  {
+   "columna": "yield_curve_n",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "rotation_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "rotation_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "rotation_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "rotation_sk",
+   "match": 0.9994,
+   "categoria": "B"
+  },
+  {
+   "columna": "rotation_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "rotation_zk_pbull",
+   "match": 0.9698,
+   "categoria": "B"
+  },
+  {
+   "columna": "rotation_n",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "bsi_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "bsi_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "bsi_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "bsi_sk",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "bsi_d1_vote",
+   "match": 0.7308,
+   "categoria": "A"
+  },
+  {
+   "columna": "bsi_zk_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "bsi_zk_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "bsi_zz25_pbull",
+   "match": 0.9824,
+   "categoria": "C"
+  },
+  {
+   "columna": "bsi_zz25_pbear",
+   "match": 0.9824,
+   "categoria": "C"
+  },
+  {
+   "columna": "bsi_ev_net",
+   "match": 0.9824,
+   "categoria": "C"
+  },
+  {
+   "columna": "bsi_n",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_val",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_vel",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_vol",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_sk",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_d1_vote",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_zk_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_zk_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_zz25_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_zz25_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_ev_net",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "dxy_n",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "d1_bear_5",
+   "match": 0.7308,
+   "categoria": "A"
+  },
+  {
+   "columna": "mean_zk_pbull_A",
+   "match": 0.9698,
+   "categoria": "B"
+  },
+  {
+   "columna": "mean_zk_pbull_11",
+   "match": 0.0346,
+   "categoria": "B"
+  },
+  {
+   "columna": "rotation_zk_pbear",
+   "match": 0.9698,
+   "categoria": "B"
+  },
+  {
+   "columna": "rotation_zz25_pbull",
+   "match": 0.8245,
+   "categoria": "C"
+  },
+  {
+   "columna": "rotation_zz25_pbear",
+   "match": 0.8245,
+   "categoria": "C"
+  },
+  {
+   "columna": "rotation_ev_net",
+   "match": 0.8245,
+   "categoria": "C"
+  },
+  {
+   "columna": "sv5_turbulence_zk_pbear",
+   "match": 0.9994,
+   "categoria": "OK"
+  },
+  {
+   "columna": "sv5_turbulence_zz25_pbull",
+   "match": 0.9629,
+   "categoria": "C"
+  },
+  {
+   "columna": "sv5_turbulence_zz25_pbear",
+   "match": 0.9629,
+   "categoria": "C"
+  },
+  {
+   "columna": "sv5_turbulence_ev_net",
+   "match": 0.9629,
+   "categoria": "C"
+  },
+  {
+   "columna": "vvix_zk_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "vvix_zz25_pbull",
+   "match": 0.7981,
+   "categoria": "C"
+  },
+  {
+   "columna": "vvix_zz25_pbear",
+   "match": 0.7981,
+   "categoria": "C"
+  },
+  {
+   "columna": "vvix_ev_net",
+   "match": 0.7981,
+   "categoria": "C"
+  },
+  {
+   "columna": "pcr_zk_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_zz25_pbull",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_zz25_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "pcr_ev_net",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "credit_zk_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "credit_zz25_pbull",
+   "match": 0.9969,
+   "categoria": "C"
+  },
+  {
+   "columna": "credit_zz25_pbear",
+   "match": 0.9969,
+   "categoria": "C"
+  },
+  {
+   "columna": "credit_ev_net",
+   "match": 0.9969,
+   "categoria": "C"
+  },
+  {
+   "columna": "fg_zk_pbear",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "fg_zz25_pbull",
+   "match": 0.9522,
+   "categoria": "C"
+  },
+  {
+   "columna": "fg_zz25_pbear",
+   "match": 0.9522,
+   "categoria": "C"
+  },
+  {
+   "columna": "fg_ev_net",
+   "match": 0.9522,
+   "categoria": "C"
+  },
+  {
+   "columna": "z_bear",
+   "match": 0.0,
+   "categoria": "A"
+  },
+  {
+   "columna": "z_dom",
+   "match": 1.0,
+   "categoria": "OK"
+  },
+  {
+   "columna": "cascade_conviction",
+   "match": 0.0006,
+   "categoria": "A"
+  },
+  {
+   "columna": "next_leg_direction",
+   "match": 1.0,
+   "categoria": "OK"
+  }
+ ]
+}

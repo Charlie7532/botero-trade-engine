@@ -1,0 +1,220 @@
+{
+ "fecha": "2026-08-23",
+ "protocolo": "fact_store_v3 §3.3 paso 4",
+ "diamantes": {
+  "panico_total": [
+   {
+    "fecha": "2021-01-28",
+    "pivot_type": "MAX",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_ACCELERATING_EXPANSION",
+    "duracion_dias": 1,
+    "retorno_pierna_pct": -2.0,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2021-12-01",
+    "pivot_type": "MIN",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 1,
+    "retorno_pierna_pct": 1.53,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2021-12-01",
+    "pivot_type": "MAX",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 2,
+    "retorno_pierna_pct": 0.65,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2021-12-03",
+    "pivot_type": "MIN",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 13,
+    "retorno_pierna_pct": 2.87,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2024-08-05",
+    "pivot_type": "MIN",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 2,
+    "retorno_pierna_pct": 0.25,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2024-08-07",
+    "pivot_type": "MAX",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_MODERATE_COMPRESSION",
+    "duracion_dias": 1,
+    "retorno_pierna_pct": 2.31,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2024-08-07",
+    "pivot_type": "MIN",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_MODERATE_COMPRESSION",
+    "duracion_dias": 23,
+    "retorno_pierna_pct": 8.68,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2025-03-10",
+    "pivot_type": "MIN",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 1,
+    "retorno_pierna_pct": -0.83,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2025-03-10",
+    "pivot_type": "MAX",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 3,
+    "retorno_pierna_pct": -1.63,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2025-11-20",
+    "pivot_type": "MIN",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 1,
+    "retorno_pierna_pct": 1.0,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2025-11-20",
+    "pivot_type": "MAX",
+    "vix_d1": "ELEVATED_PANIC",
+    "skew_d1": "TAIL_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 1,
+    "retorno_pierna_pct": 1.0,
+    "en_crisis_3sigma": true
+   }
+  ],
+  "skew_paranoia_exit": [
+   {
+    "fecha": "2021-06-15",
+    "pivot_type": "MAX",
+    "vix_d1": "MODERATE_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_MODERATE_COMPRESSION",
+    "duracion_dias": 3,
+    "retorno_pierna_pct": -2.25,
+    "en_crisis_3sigma": false
+   },
+   {
+    "fecha": "2024-02-13",
+    "pivot_type": "MIN",
+    "vix_d1": "MODERATE_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_PEAK_DECELERATION",
+    "duracion_dias": 44,
+    "retorno_pierna_pct": 5.87,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2024-10-17",
+    "pivot_type": "MAX",
+    "vix_d1": "HIGH_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 18,
+    "retorno_pierna_pct": -2.15,
+    "en_crisis_3sigma": false
+   },
+   {
+    "fecha": "2024-12-06",
+    "pivot_type": "MAX",
+    "vix_d1": "MODERATE_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 14,
+    "retorno_pierna_pct": -2.74,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2024-12-20",
+    "pivot_type": "MIN",
+    "vix_d1": "HIGH_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 6,
+    "retorno_pierna_pct": 1.72,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2024-12-26",
+    "pivot_type": "MAX",
+    "vix_d1": "MODERATE_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 7,
+    "retorno_pierna_pct": -2.78,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2025-01-13",
+    "pivot_type": "MIN",
+    "vix_d1": "HIGH_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_PEAK_DECELERATION",
+    "duracion_dias": 11,
+    "retorno_pierna_pct": 4.57,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2025-01-24",
+    "pivot_type": "MAX",
+    "vix_d1": "MODERATE_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 3,
+    "retorno_pierna_pct": -1.41,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2025-01-27",
+    "pivot_type": "MIN",
+    "vix_d1": "HIGH_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 4,
+    "retorno_pierna_pct": 0.41,
+    "en_crisis_3sigma": true
+   },
+   {
+    "fecha": "2025-02-19",
+    "pivot_type": "MAX",
+    "vix_d1": "MODERATE_VOL",
+    "skew_d1": "BLACK_SWAN_PARANOIA",
+    "skew_d3": "VOL_NEUTRAL_BASELINE",
+    "duracion_dias": 12,
+    "retorno_pierna_pct": -4.76,
+    "en_crisis_3sigma": true
+   }
+  ]
+ }
+}

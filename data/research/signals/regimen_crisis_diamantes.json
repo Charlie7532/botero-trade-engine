@@ -1,0 +1,1457 @@
+{
+  "fecha_generacion": "2026-08-22 16:12:00.430192",
+  "config": {
+    "umbral_entrada": 3.0,
+    "umbral_deterioro": 2.0,
+    "um_diamante": 21,
+    "estaciones_reversivas": [
+      "vix",
+      "vvix",
+      "skew",
+      "credit"
+    ],
+    "modelo": "máquina de estados: inicio=overflow ±3σ, fin=deterioro bajo 2σ o transición por overflow nuevo"
+  },
+  "total_overflows": 952,
+  "taxonomia": {
+    "OVERFLOW_MULTI": 512,
+    "OVERFLOW_MODERADO": 359,
+    "OVERFLOW_EXTREMO": 81
+  },
+  "por_direccion": {
+    "UPPER": 724,
+    "LOWER": 228
+  },
+  "por_estacion": {
+    "vix": 278,
+    "credit": 106,
+    "vvix": 104,
+    "sv5_turbulence": 95,
+    "bsi": 87,
+    "skew": 63,
+    "rotation": 61,
+    "yield_curve": 59,
+    "dxy": 42,
+    "pcr": 38,
+    "fg": 19
+  },
+  "regimen": {
+    "n_episodios": 79,
+    "duracion_media_dias": 26.1,
+    "duracion_mediana_dias": 13.0,
+    "duracion_p95_dias": 74.1,
+    "pct_tiempo_en_crisis": 0.169,
+    "episodios": [
+      {
+        "inicio": "1993-07-06",
+        "fin_real": "1993-07-15",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "1993-10-15",
+        "fin_real": "1993-10-28",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "1994-03-31",
+        "fin_real": "1994-04-13",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "1994-08-29",
+        "fin_real": "1994-09-11",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "1994-12-09",
+        "fin_real": "1994-12-18",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "1995-03-29",
+        "fin_real": "1995-04-07",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "1996-01-10",
+        "fin_real": "1996-01-23",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "1996-03-08",
+        "fin_real": "1996-03-17",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "1997-09-05",
+        "fin_real": "1997-09-14",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "1997-10-28",
+        "fin_real": "1997-11-11",
+        "duracion": 14,
+        "iniciador": "vix",
+        "estaciones": [
+          "skew",
+          "vix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "1998-01-09",
+        "fin_real": "1998-01-25",
+        "duracion": 16,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "1998-04-27",
+        "fin_real": "1998-05-17",
+        "duracion": 20,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "1998-08-04",
+        "fin_real": "1998-08-13",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "1998-08-31",
+        "fin_real": "1998-09-25",
+        "duracion": 25,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 7
+      },
+      {
+        "inicio": "1998-10-05",
+        "fin_real": "1998-11-03",
+        "duracion": 29,
+        "iniciador": "vix",
+        "estaciones": [
+          "skew",
+          "vix"
+        ],
+        "n_overflows": 4
+      },
+      {
+        "inicio": "1999-06-30",
+        "fin_real": "1999-07-13",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2001-09-17",
+        "fin_real": "2001-09-30",
+        "duracion": 13,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 5
+      },
+      {
+        "inicio": "2001-12-05",
+        "fin_real": "2001-12-18",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2002-01-29",
+        "fin_real": "2002-02-11",
+        "duracion": 13,
+        "iniciador": "vix",
+        "estaciones": [
+          "skew",
+          "vix"
+        ],
+        "n_overflows": 4
+      },
+      {
+        "inicio": "2002-07-29",
+        "fin_real": "2002-08-17",
+        "duracion": 19,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 6
+      },
+      {
+        "inicio": "2006-03-16",
+        "fin_real": "2006-03-29",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew",
+          "vvix"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2006-05-24",
+        "fin_real": "2006-06-01",
+        "duracion": 8,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2007-08-16",
+        "fin_real": "2007-08-30",
+        "duracion": 14,
+        "iniciador": "vvix",
+        "estaciones": [
+          "skew",
+          "vvix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "2007-09-18",
+        "fin_real": "2007-10-31",
+        "duracion": 43,
+        "iniciador": "vix",
+        "estaciones": [
+          "credit",
+          "skew",
+          "vix"
+        ],
+        "n_overflows": 5
+      },
+      {
+        "inicio": "2008-01-09",
+        "fin_real": "2008-01-28",
+        "duracion": 19,
+        "iniciador": "vvix",
+        "estaciones": [
+          "skew",
+          "vvix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "2008-02-01",
+        "fin_real": "2008-02-14",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2008-02-15",
+        "fin_real": "2008-02-23",
+        "duracion": 8,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2008-06-26",
+        "fin_real": "2008-07-05",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2008-09-11",
+        "fin_real": "2009-05-14",
+        "duracion": 245,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit",
+          "skew",
+          "vix"
+        ],
+        "n_overflows": 199
+      },
+      {
+        "inicio": "2009-05-15",
+        "fin_real": "2009-06-26",
+        "duracion": 42,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2009-07-15",
+        "fin_real": "2009-09-28",
+        "duracion": 75,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit",
+          "vix"
+        ],
+        "n_overflows": 4
+      },
+      {
+        "inicio": "2010-05-06",
+        "fin_real": "2010-05-16",
+        "duracion": 10,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 6
+      },
+      {
+        "inicio": "2010-05-25",
+        "fin_real": "2010-06-05",
+        "duracion": 11,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2010-08-09",
+        "fin_real": "2010-08-22",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2010-11-16",
+        "fin_real": "2010-12-28",
+        "duracion": 42,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2011-03-16",
+        "fin_real": "2011-03-25",
+        "duracion": 9,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2011-08-04",
+        "fin_real": "2012-01-11",
+        "duracion": 160,
+        "iniciador": "vix",
+        "estaciones": [
+          "credit",
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 32
+      },
+      {
+        "inicio": "2012-06-01",
+        "fin_real": "2012-07-13",
+        "duracion": 42,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2012-12-19",
+        "fin_real": "2012-12-28",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2014-09-19",
+        "fin_real": "2014-10-02",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2014-10-15",
+        "fin_real": "2014-10-28",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 4
+      },
+      {
+        "inicio": "2015-08-21",
+        "fin_real": "2015-09-17",
+        "duracion": 27,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew",
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 14
+      },
+      {
+        "inicio": "2015-10-02",
+        "fin_real": "2015-10-15",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2015-11-16",
+        "fin_real": "2015-11-29",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2015-12-03",
+        "fin_real": "2016-01-15",
+        "duracion": 43,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit",
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "2016-06-23",
+        "fin_real": "2016-07-01",
+        "duracion": 8,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2017-03-01",
+        "fin_real": "2017-04-12",
+        "duracion": 42,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2017-08-08",
+        "fin_real": "2017-08-17",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2017-08-21",
+        "fin_real": "2017-09-03",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2018-02-05",
+        "fin_real": "2018-04-13",
+        "duracion": 67,
+        "iniciador": "vix",
+        "estaciones": [
+          "credit",
+          "skew",
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 18
+      },
+      {
+        "inicio": "2018-04-18",
+        "fin_real": "2018-05-01",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2018-10-10",
+        "fin_real": "2018-10-20",
+        "duracion": 10,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 6
+      },
+      {
+        "inicio": "2019-08-05",
+        "fin_real": "2019-08-14",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2019-12-03",
+        "fin_real": "2020-01-14",
+        "duracion": 42,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2020-02-25",
+        "fin_real": "2020-08-24",
+        "duracion": 181,
+        "iniciador": "vix",
+        "estaciones": [
+          "credit",
+          "skew",
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 95
+      },
+      {
+        "inicio": "2020-10-29",
+        "fin_real": "2020-11-07",
+        "duracion": 9,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "2021-01-04",
+        "fin_real": "2021-01-12",
+        "duracion": 8,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2021-01-27",
+        "fin_real": "2021-02-07",
+        "duracion": 11,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 6
+      },
+      {
+        "inicio": "2021-05-12",
+        "fin_real": "2021-05-21",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "2021-09-20",
+        "fin_real": "2021-11-04",
+        "duracion": 45,
+        "iniciador": "vvix",
+        "estaciones": [
+          "credit",
+          "vvix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "2021-12-01",
+        "fin_real": "2021-12-11",
+        "duracion": 10,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "2022-01-24",
+        "fin_real": "2022-02-03",
+        "duracion": 10,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 4
+      },
+      {
+        "inicio": "2022-02-14",
+        "fin_real": "2022-02-23",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2022-05-04",
+        "fin_real": "2022-05-13",
+        "duracion": 9,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2022-06-15",
+        "fin_real": "2022-06-28",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2022-08-26",
+        "fin_real": "2022-10-07",
+        "duracion": 42,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2023-03-09",
+        "fin_real": "2023-03-21",
+        "duracion": 12,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 3
+      },
+      {
+        "inicio": "2023-04-18",
+        "fin_real": "2023-04-26",
+        "duracion": 8,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vvix"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2023-07-27",
+        "fin_real": "2023-08-05",
+        "duracion": 9,
+        "iniciador": "vvix",
+        "estaciones": [
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2024-02-13",
+        "fin_real": "2024-02-26",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 2
+      },
+      {
+        "inicio": "2024-08-05",
+        "fin_real": "2024-08-16",
+        "duracion": 11,
+        "iniciador": "vix",
+        "estaciones": [
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 5
+      },
+      {
+        "inicio": "2024-12-06",
+        "fin_real": "2024-12-19",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2024-12-26",
+        "fin_real": "2025-02-09",
+        "duracion": 45,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 5
+      },
+      {
+        "inicio": "2025-02-19",
+        "fin_real": "2025-03-04",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2025-03-10",
+        "fin_real": "2025-05-23",
+        "duracion": 74,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit",
+          "skew",
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 24
+      },
+      {
+        "inicio": "2025-10-10",
+        "fin_real": "2025-10-23",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew",
+          "vix",
+          "vvix"
+        ],
+        "n_overflows": 6
+      },
+      {
+        "inicio": "2025-11-12",
+        "fin_real": "2025-11-25",
+        "duracion": 13,
+        "iniciador": "skew",
+        "estaciones": [
+          "skew"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2026-02-05",
+        "fin_real": "2026-03-19",
+        "duracion": 42,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit"
+        ],
+        "n_overflows": 1
+      },
+      {
+        "inicio": "2026-03-30",
+        "fin_real": "2026-05-11",
+        "duracion": 42,
+        "iniciador": "credit",
+        "estaciones": [
+          "credit"
+        ],
+        "n_overflows": 1
+      }
+    ]
+  },
+  "diamantes": [
+    {
+      "tipo": "vix|d1|UPPER",
+      "n": 139,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 1.0,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 139,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 85,
+        "OVERFLOW_MODERADO": 35,
+        "OVERFLOW_EXTREMO": 19
+      }
+    },
+    {
+      "tipo": "vix|d2|UPPER",
+      "n": 77,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.948,
+      "señal_ancla": "bsi_washed_out",
+      "ancla_n": 61,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 52,
+        "OVERFLOW_MODERADO": 13,
+        "OVERFLOW_EXTREMO": 12
+      }
+    },
+    {
+      "tipo": "vvix|d1|UPPER",
+      "n": 52,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 1.0,
+      "señal_ancla": "vvix_entry",
+      "ancla_n": 52,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 37,
+        "OVERFLOW_MODERADO": 14,
+        "OVERFLOW_EXTREMO": 1
+      }
+    },
+    {
+      "tipo": "vix|d2|LOWER",
+      "n": 43,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.837,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 25,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 26,
+        "OVERFLOW_MODERADO": 17
+      }
+    },
+    {
+      "tipo": "skew|d3|UPPER",
+      "n": 41,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.659,
+      "señal_ancla": "bsi_washed_out",
+      "ancla_n": 13,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 19,
+        "OVERFLOW_MULTI": 19,
+        "OVERFLOW_EXTREMO": 3
+      }
+    },
+    {
+      "tipo": "sv5_turbulence|d3|UPPER",
+      "n": 41,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.537,
+      "señal_ancla": "credit_stress",
+      "ancla_n": 8,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 28,
+        "OVERFLOW_MULTI": 11,
+        "OVERFLOW_EXTREMO": 2
+      }
+    },
+    {
+      "tipo": "credit|d2|LOWER",
+      "n": 37,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 1.0,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 32,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 32,
+        "OVERFLOW_MODERADO": 5
+      }
+    },
+    {
+      "tipo": "vvix|d2|UPPER",
+      "n": 34,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.941,
+      "señal_ancla": "vvix_entry",
+      "ancla_n": 30,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 24,
+        "OVERFLOW_MODERADO": 9,
+        "OVERFLOW_EXTREMO": 1
+      }
+    },
+    {
+      "tipo": "bsi|d3|UPPER",
+      "n": 31,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.548,
+      "señal_ancla": "credit_stress",
+      "ancla_n": 9,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 16,
+        "OVERFLOW_MULTI": 11,
+        "OVERFLOW_EXTREMO": 4
+      }
+    },
+    {
+      "tipo": "credit|d2|UPPER",
+      "n": 31,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.806,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 20,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 19,
+        "OVERFLOW_MODERADO": 9,
+        "OVERFLOW_EXTREMO": 3
+      }
+    },
+    {
+      "tipo": "bsi|d2|LOWER",
+      "n": 29,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.897,
+      "señal_ancla": "bsi_washed_out",
+      "ancla_n": 14,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 15,
+        "OVERFLOW_MODERADO": 14
+      }
+    },
+    {
+      "tipo": "bsi|d2|UPPER",
+      "n": 27,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.481,
+      "señal_ancla": "credit_stress",
+      "ancla_n": 11,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 16,
+        "OVERFLOW_MULTI": 7,
+        "OVERFLOW_EXTREMO": 4
+      }
+    },
+    {
+      "tipo": "yield_curve|d2|UPPER",
+      "n": 26,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.769,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 14,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 14,
+        "OVERFLOW_EXTREMO": 7,
+        "OVERFLOW_MODERADO": 5
+      }
+    },
+    {
+      "tipo": "rotation|d2|LOWER",
+      "n": 25,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.88,
+      "señal_ancla": "pcr_put_panic",
+      "ancla_n": 14,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 13,
+        "OVERFLOW_MULTI": 12
+      }
+    },
+    {
+      "tipo": "yield_curve|d3|UPPER",
+      "n": 21,
+      "tier": "ROBUST",
+      "diamante": false,
+      "contenido_pct": 0.429,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 3,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 11,
+        "OVERFLOW_EXTREMO": 5,
+        "OVERFLOW_MULTI": 5
+      }
+    },
+    {
+      "tipo": "credit|d3|UPPER",
+      "n": 20,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.5,
+      "señal_ancla": "pcr_put_panic",
+      "ancla_n": 4,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 9,
+        "OVERFLOW_MULTI": 8,
+        "OVERFLOW_EXTREMO": 3
+      }
+    },
+    {
+      "tipo": "sv5_turbulence|d1|UPPER",
+      "n": 20,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.55,
+      "señal_ancla": "panico_total",
+      "ancla_n": 8,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 13,
+        "OVERFLOW_MODERADO": 6,
+        "OVERFLOW_EXTREMO": 1
+      }
+    },
+    {
+      "tipo": "sv5_turbulence|d2|UPPER",
+      "n": 20,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.8,
+      "señal_ancla": "bsi_washed_out",
+      "ancla_n": 10,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 10,
+        "OVERFLOW_MULTI": 9,
+        "OVERFLOW_EXTREMO": 1
+      }
+    },
+    {
+      "tipo": "dxy|d3|UPPER",
+      "n": 19,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.474,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 4,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 14,
+        "OVERFLOW_MULTI": 3,
+        "OVERFLOW_EXTREMO": 2
+      }
+    },
+    {
+      "tipo": "vix|d3|UPPER",
+      "n": 19,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.526,
+      "señal_ancla": "euforia",
+      "ancla_n": 2,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 14,
+        "OVERFLOW_MULTI": 4,
+        "OVERFLOW_EXTREMO": 1
+      }
+    },
+    {
+      "tipo": "credit|d1|LOWER",
+      "n": 18,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 1.0,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 18,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 10,
+        "OVERFLOW_MULTI": 8
+      }
+    },
+    {
+      "tipo": "pcr|d1|UPPER",
+      "n": 18,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 1.0,
+      "señal_ancla": "pcr_put_panic",
+      "ancla_n": 18,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 12,
+        "OVERFLOW_MODERADO": 4,
+        "OVERFLOW_EXTREMO": 2
+      }
+    },
+    {
+      "tipo": "dxy|d2|LOWER",
+      "n": 17,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.882,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 15,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 14,
+        "OVERFLOW_MODERADO": 3
+      }
+    },
+    {
+      "tipo": "vvix|d3|UPPER",
+      "n": 16,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.625,
+      "señal_ancla": "credit_stress",
+      "ancla_n": 6,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 10,
+        "OVERFLOW_MULTI": 5,
+        "OVERFLOW_EXTREMO": 1
+      }
+    },
+    {
+      "tipo": "rotation|d2|UPPER",
+      "n": 15,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.667,
+      "señal_ancla": "credit_stress",
+      "ancla_n": 8,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 8,
+        "OVERFLOW_MODERADO": 7
+      }
+    },
+    {
+      "tipo": "rotation|d3|UPPER",
+      "n": 15,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.333,
+      "señal_ancla": "bsi_washed_out",
+      "ancla_n": 3,
+      "taxonomias": {
+        "OVERFLOW_EXTREMO": 7,
+        "OVERFLOW_MODERADO": 5,
+        "OVERFLOW_MULTI": 3
+      }
+    },
+    {
+      "tipo": "sv5_turbulence|d2|LOWER",
+      "n": 14,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.429,
+      "señal_ancla": "credit_stress",
+      "ancla_n": 4,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 9,
+        "OVERFLOW_MULTI": 5
+      }
+    },
+    {
+      "tipo": "yield_curve|d2|LOWER",
+      "n": 12,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.667,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 8,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 10,
+        "OVERFLOW_MODERADO": 2
+      }
+    },
+    {
+      "tipo": "fg|d3|UPPER",
+      "n": 11,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 0.636,
+      "señal_ancla": "fg_extreme_greed",
+      "ancla_n": 4,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 6,
+        "OVERFLOW_MULTI": 3,
+        "OVERFLOW_EXTREMO": 2
+      }
+    },
+    {
+      "tipo": "pcr|d2|UPPER",
+      "n": 11,
+      "tier": "HIGH",
+      "diamante": true,
+      "contenido_pct": 1.0,
+      "señal_ancla": "pcr_put_panic",
+      "ancla_n": 11,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 9,
+        "OVERFLOW_MODERADO": 2
+      }
+    },
+    {
+      "tipo": "skew|d2|LOWER",
+      "n": 10,
+      "tier": "MODERATE",
+      "diamante": true,
+      "contenido_pct": 0.4,
+      "señal_ancla": "fg_extreme_fear",
+      "ancla_n": 4,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 6,
+        "OVERFLOW_MODERADO": 4
+      }
+    },
+    {
+      "tipo": "fg|d2|LOWER",
+      "n": 8,
+      "tier": "MODERATE",
+      "diamante": true,
+      "contenido_pct": 0.75,
+      "señal_ancla": "bsi_washed_out",
+      "ancla_n": 5,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 6,
+        "OVERFLOW_MODERADO": 2
+      }
+    },
+    {
+      "tipo": "pcr|d2|LOWER",
+      "n": 7,
+      "tier": "MODERATE",
+      "diamante": true,
+      "contenido_pct": 0.857,
+      "señal_ancla": "vix_crisis_spike",
+      "ancla_n": 4,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 4,
+        "OVERFLOW_MULTI": 3
+      }
+    },
+    {
+      "tipo": "skew|d1|UPPER",
+      "n": 7,
+      "tier": "MODERATE",
+      "diamante": true,
+      "contenido_pct": 1.0,
+      "señal_ancla": "skew_paranoia_exit",
+      "ancla_n": 7,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 6,
+        "OVERFLOW_MULTI": 1
+      }
+    },
+    {
+      "tipo": "dxy|d2|UPPER",
+      "n": 6,
+      "tier": "MODERATE",
+      "diamante": true,
+      "contenido_pct": 0.833,
+      "señal_ancla": "bsi_washed_out",
+      "ancla_n": 4,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 3,
+        "OVERFLOW_MULTI": 3
+      }
+    },
+    {
+      "tipo": "rotation|d1|LOWER",
+      "n": 6,
+      "tier": "MODERATE",
+      "diamante": true,
+      "contenido_pct": 1.0,
+      "señal_ancla": "bsi_washed_out",
+      "ancla_n": 3,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 5,
+        "OVERFLOW_MODERADO": 1
+      }
+    },
+    {
+      "tipo": "skew|d2|UPPER",
+      "n": 5,
+      "tier": "LOW",
+      "diamante": true,
+      "contenido_pct": 1.0,
+      "señal_ancla": "stealth_tail_hedging",
+      "ancla_n": 3,
+      "taxonomias": {
+        "OVERFLOW_MODERADO": 3,
+        "OVERFLOW_MULTI": 2
+      }
+    },
+    {
+      "tipo": "pcr|d3|UPPER",
+      "n": 2,
+      "tier": "ANECDOTAL",
+      "diamante": true,
+      "contenido_pct": 0.0,
+      "señal_ancla": null,
+      "ancla_n": 0,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 1,
+        "OVERFLOW_MODERADO": 1
+      }
+    },
+    {
+      "tipo": "vvix|d1|LOWER",
+      "n": 1,
+      "tier": "ANECDOTAL",
+      "diamante": true,
+      "contenido_pct": 1.0,
+      "señal_ancla": "euforia",
+      "ancla_n": 1,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 1
+      }
+    },
+    {
+      "tipo": "vvix|d2|LOWER",
+      "n": 1,
+      "tier": "ANECDOTAL",
+      "diamante": true,
+      "contenido_pct": 0.0,
+      "señal_ancla": null,
+      "ancla_n": 0,
+      "taxonomias": {
+        "OVERFLOW_MULTI": 1
+      }
+    }
+  ],
+  "contencion_por_señal": {
+    "vix_crisis_spike": 457,
+    "bsi_washed_out": 366,
+    "credit_stress": 319,
+    "capitulacion": 293,
+    "vvix_entry": 272,
+    "pcr_put_panic": 227,
+    "fg_extreme_fear": 144,
+    "panico_total": 100,
+    "fg_extreme_greed": 19,
+    "stealth_tail_hedging": 18,
+    "skew_paranoia_exit": 15,
+    "euforia": 10,
+    "dxy_bearish": 7,
+    "cascade_reversal": 0
+  },
+  "overflows_no_contenidos": 198,
+  "pct_no_contenidos": 0.208,
+  "no_contenidos_por_dimension": {
+    "d3": 110,
+    "d2": 79,
+    "d1": 9
+  },
+  "no_contenidos_por_estacion": {
+    "sv5_turbulence": 40,
+    "bsi": 31,
+    "yield_curve": 22,
+    "skew": 20,
+    "vix": 20,
+    "rotation": 18,
+    "credit": 16,
+    "dxy": 13,
+    "vvix": 9,
+    "fg": 6,
+    "pcr": 3
+  },
+  "contencion_por_tipo": {
+    "CROSS_FAMILIA": 655,
+    "NO_CONTENIDO": 198,
+    "TAUTOLOGICA": 64,
+    "INTRA_FAMILIA": 35
+  },
+  "pct_contencion_genuina": 0.688,
+  "punto_ciego_d3_genuino": 262
+}

@@ -1,0 +1,17 @@
+{
+  "fecha": "2026-08-22",
+  "componente": "P2.7 señales D3 candidatas + break test GFC",
+  "metodo": "6 candidatas D3 (z>3 en dimensión inestabilidad) evaluadas con el evaluador vela a vela (first-passage, baseline por celda, p binomial). Las marginales pasaron el break test GFC 2009-03-09.",
+  "fire_rates": {"d3_turb": "2.5%", "d3_bsi": "1.9%", "d3_skew": "2.5%", "d3_yield": "1.3%", "d3_multi": "1.5%", "d3_extremo": "2.4%"},
+  "resultado_evaluacion": "0 significativas (p<0.05), 2 marginales (p<0.10), 72 celdas evaluadas",
+  "break_test": {
+    "d3_bsi_max": {"pre": "+2.30% n=4", "post": "+4.05% n=7", "veredicto": "ROBUSTA (mejora post)"},
+    "d3_bsi_max25": {"pre": "+0.34% n=4", "post": "+1.91% n=7", "veredicto": "ROBUSTA"},
+    "d3_yield_min": {"pre": "+3.43% n=5", "post": "+3.74% n=6", "veredicto": "ROBUSTA"},
+    "d3_yield_min50": {"pre": "+1.56% n=5", "post": "+2.68% n=6", "veredicto": "ROBUSTA"},
+    "d3_extremo_min": {"pre": "+4.57% n=7", "post": "-0.19% n=14", "veredicto": "RELIQUIA pre-quiebre (atrapada por el test, patrón credit_ease_exit)"}
+  },
+  "advertencia": "Muestras DIAMANTE (N=4-14 por período, tier LOW/MODERATE). Fisher del break sin potencia (p=0.36-1.0). Ninguna alcanza significancia operativa. Son candidatas de investigación con dirección consistente, NO señales de catálogo.",
+  "conclusion": "El punto ciego D3 es real pero el edge es débil y raro. d3_bsi (breadth inestable) y d3_yield (curva inestable) sobreviven al quiebre con dirección consistente; d3_extremo es reliquia. No promover al catálogo todavía.",
+  "scripts": ["scratch/senales_d3_candidatas.py", "scratch/d3_break_test.py"]
+}

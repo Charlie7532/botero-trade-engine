@@ -1,0 +1,494 @@
+{
+  "euforia": {
+    "señal": "euforia",
+    "blanco": "MAX",
+    "n_disparos": 41,
+    "perfil_3d_régimen": {
+      "zz25|ALZA": {
+        "n": 26,
+        "n_eff": 23,
+        "fav_bruto": 0.0501,
+        "baseline": 0.0507,
+        "fav_neto": -0.0005,
+        "fav_neto_p5": -0.0335,
+        "fav_neto_p95": 0.0574,
+        "hit_rate": 1.0,
+        "rr": 75.21,
+        "mae_medio": 0.0007,
+        "mfe_medio": 0.0501
+      },
+      "zz25|BAJA": {
+        "n": 13,
+        "n_eff": 8,
+        "fav_bruto": -0.0581,
+        "baseline": -0.0473,
+        "fav_neto": -0.0108,
+        "fav_neto_p5": -0.1451,
+        "fav_neto_p95": 0.0462,
+        "hit_rate": 0.0,
+        "rr": 0.15,
+        "mae_medio": 0.0581,
+        "mfe_medio": 0.0086
+      },
+      "zz50|ALZA": {
+        "n": 13,
+        "n_eff": 10,
+        "fav_bruto": 0.0741,
+        "baseline": 0.0768,
+        "fav_neto": -0.0027,
+        "fav_neto_p5": -0.029,
+        "fav_neto_p95": 0.0371,
+        "hit_rate": 1.0,
+        "rr": 393.03,
+        "mae_medio": 0.0002,
+        "mfe_medio": 0.0741
+      },
+      "zz50|BAJA": {
+        "n": 26,
+        "n_eff": 11,
+        "fav_bruto": -0.0824,
+        "baseline": -0.0749,
+        "fav_neto": -0.0074,
+        "fav_neto_p5": -0.2133,
+        "fav_neto_p95": 0.0733,
+        "hit_rate": 0.0,
+        "rr": 0.24,
+        "mae_medio": 0.0824,
+        "mfe_medio": 0.0199
+      },
+      "zz75|ALZA": {
+        "n": 5,
+        "n_eff": 4,
+        "fav_bruto": 0.1208,
+        "baseline": 0.1018,
+        "fav_neto": 0.019,
+        "fav_neto_p5": -0.0241,
+        "fav_neto_p95": 0.0834,
+        "hit_rate": 1.0,
+        "rr": 1413.07,
+        "mae_medio": 0.0001,
+        "mfe_medio": 0.1208
+      },
+      "zz75|BAJA": {
+        "n": 31,
+        "n_eff": 7,
+        "fav_bruto": -0.1402,
+        "baseline": -0.1349,
+        "fav_neto": -0.0053,
+        "fav_neto_p5": -0.2568,
+        "fav_neto_p95": 0.1209,
+        "hit_rate": 0.0,
+        "rr": 0.23,
+        "mae_medio": 0.1402,
+        "mfe_medio": 0.0326
+      }
+    },
+    "sorpresas": [
+      {
+        "fecha": "1993-01-29 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000115,
+        "realidad": 0.024182242889007555,
+        "sorpresa": 0.024067242889007554
+      },
+      {
+        "fecha": "1993-02-11 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "esperanza_ev": 0.000333,
+        "realidad": -0.03407479350197799,
+        "sorpresa": -0.03440779350197799
+      },
+      {
+        "fecha": "1993-09-01 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "esperanza_ev": 0.000333,
+        "realidad": -0.02620967741935484,
+        "sorpresa": -0.02654267741935484
+      },
+      {
+        "fecha": "1993-10-15 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+        "esperanza_ev": -0.000332,
+        "realidad": -0.025896414342629483,
+        "sorpresa": -0.025564414342629484
+      },
+      {
+        "fecha": "1994-01-31 00:00:00",
+        "estado": "DEEP_COMPLACENCY__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000352,
+        "realidad": 0.0012961762799740765,
+        "sorpresa": 0.0009441762799740765
+      },
+      {
+        "fecha": "1994-06-15 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+        "esperanza_ev": -0.000332,
+        "realidad": -0.049224544841537425,
+        "sorpresa": -0.048892544841537426
+      },
+      {
+        "fecha": "1994-08-29 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "esperanza_ev": 0.000333,
+        "realidad": 0.002622950819672131,
+        "sorpresa": 0.002289950819672131
+      },
+      {
+        "fecha": "1995-03-29 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_PEAK_DECELERATION",
+        "esperanza_ev": 0.001163,
+        "realidad": 0.24240545567265964,
+        "sorpresa": 0.24124245567265964
+      },
+      {
+        "fecha": "1995-07-17 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000115,
+        "realidad": 0.11117281829090711,
+        "sorpresa": 0.1110578182909071
+      },
+      {
+        "fecha": "1995-12-14 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000115,
+        "realidad": -0.024880544850910846,
+        "sorpresa": -0.024995544850910847
+      }
+    ],
+    "sorpresa_media": -0.0137,
+    "forensia_F3": {
+      "disparos_fallidos": 14,
+      "falla_de_lectura": 13,
+      "impredecible": 1,
+      "techo_mejora": 0.93
+    }
+  },
+  "bsi_recovery": {
+    "señal": "bsi_recovery",
+    "blanco": "MAX",
+    "n_disparos": 481,
+    "perfil_3d_régimen": {
+      "zz25|ALZA": {
+        "n": 223,
+        "n_eff": 173,
+        "fav_bruto": 0.0537,
+        "baseline": 0.0507,
+        "fav_neto": 0.003,
+        "fav_neto_p5": -0.0305,
+        "fav_neto_p95": 0.0595,
+        "hit_rate": 1.0,
+        "rr": 71.29,
+        "mae_medio": 0.0008,
+        "mfe_medio": 0.0537
+      },
+      "zz25|BAJA": {
+        "n": 256,
+        "n_eff": 107,
+        "fav_bruto": -0.0419,
+        "baseline": -0.0473,
+        "fav_neto": 0.0054,
+        "fav_neto_p5": -0.0535,
+        "fav_neto_p95": 0.0447,
+        "hit_rate": 0.0,
+        "rr": 0.14,
+        "mae_medio": 0.0419,
+        "mfe_medio": 0.0057
+      },
+      "zz50|ALZA": {
+        "n": 152,
+        "n_eff": 82,
+        "fav_bruto": 0.0881,
+        "baseline": 0.0768,
+        "fav_neto": 0.0113,
+        "fav_neto_p5": -0.0325,
+        "fav_neto_p95": 0.102,
+        "hit_rate": 1.0,
+        "rr": 36.55,
+        "mae_medio": 0.0024,
+        "mfe_medio": 0.0881
+      },
+      "zz50|BAJA": {
+        "n": 321,
+        "n_eff": 73,
+        "fav_bruto": -0.0672,
+        "baseline": -0.0749,
+        "fav_neto": 0.0077,
+        "fav_neto_p5": -0.1211,
+        "fav_neto_p95": 0.071,
+        "hit_rate": 0.0,
+        "rr": 0.21,
+        "mae_medio": 0.0672,
+        "mfe_medio": 0.014
+      },
+      "zz75|ALZA": {
+        "n": 120,
+        "n_eff": 44,
+        "fav_bruto": 0.1179,
+        "baseline": 0.1018,
+        "fav_neto": 0.0161,
+        "fav_neto_p5": -0.046,
+        "fav_neto_p95": 0.1473,
+        "hit_rate": 1.0,
+        "rr": 30.85,
+        "mae_medio": 0.0038,
+        "mfe_medio": 0.1179
+      },
+      "zz75|BAJA": {
+        "n": 346,
+        "n_eff": 45,
+        "fav_bruto": -0.1327,
+        "baseline": -0.1349,
+        "fav_neto": 0.0022,
+        "fav_neto_p5": -0.2716,
+        "fav_neto_p95": 0.1277,
+        "hit_rate": 0.0,
+        "rr": 0.17,
+        "mae_medio": 0.1327,
+        "mfe_medio": 0.0225
+      }
+    },
+    "sorpresas": [
+      {
+        "fecha": "1993-01-29 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000115,
+        "realidad": 0.024182242889007555,
+        "sorpresa": 0.024067242889007554
+      },
+      {
+        "fecha": "1993-02-11 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "esperanza_ev": 0.000333,
+        "realidad": -0.03407479350197799,
+        "sorpresa": -0.03440779350197799
+      },
+      {
+        "fecha": "1993-03-11 00:00:00",
+        "estado": "MODERATE_VOL__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000541,
+        "realidad": -0.047325102880658436,
+        "sorpresa": -0.047866102880658436
+      },
+      {
+        "fecha": "1993-05-19 00:00:00",
+        "estado": "MODERATE_VOL__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000788,
+        "realidad": 0.013879250520471894,
+        "sorpresa": 0.013091250520471893
+      },
+      {
+        "fecha": "1993-05-19 00:00:00",
+        "estado": "MODERATE_VOL__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000788,
+        "realidad": 0.013879250520471894,
+        "sorpresa": 0.013091250520471893
+      },
+      {
+        "fecha": "1993-06-01 00:00:00",
+        "estado": "MODERATE_VOL__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000788,
+        "realidad": -0.03148528405201916,
+        "sorpresa": -0.03227328405201916
+      },
+      {
+        "fecha": "1993-09-01 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION",
+        "esperanza_ev": 0.000333,
+        "realidad": -0.02620967741935484,
+        "sorpresa": -0.02654267741935484
+      },
+      {
+        "fecha": "1993-10-15 00:00:00",
+        "estado": "LOW_VOL__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+        "esperanza_ev": -0.000332,
+        "realidad": -0.025896414342629483,
+        "sorpresa": -0.025564414342629484
+      },
+      {
+        "fecha": "1994-01-31 00:00:00",
+        "estado": "DEEP_COMPLACENCY__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000352,
+        "realidad": 0.0012961762799740765,
+        "sorpresa": 0.0009441762799740765
+      },
+      {
+        "fecha": "1994-03-17 00:00:00",
+        "estado": "MODERATE_VOL__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000541,
+        "realidad": -0.07076719576719577,
+        "sorpresa": -0.07130819576719577
+      }
+    ],
+    "sorpresa_media": -0.0029,
+    "forensia_F3": {
+      "disparos_fallidos": 257,
+      "falla_de_lectura": 19,
+      "impredecible": 238,
+      "techo_mejora": 0.07
+    }
+  },
+  "pcr_put_panic": {
+    "señal": "pcr_put_panic",
+    "blanco": "MIN",
+    "n_disparos": 70,
+    "perfil_3d_régimen": {
+      "zz25|ALZA": {
+        "n": 36,
+        "n_eff": 17,
+        "fav_bruto": -0.0338,
+        "baseline": -0.0404,
+        "fav_neto": 0.0066,
+        "fav_neto_p5": -0.0334,
+        "fav_neto_p95": 0.0371,
+        "hit_rate": 0.0,
+        "rr": 0.06,
+        "mae_medio": -0.0338,
+        "mfe_medio": 0.002
+      },
+      "zz25|BAJA": {
+        "n": 34,
+        "n_eff": 26,
+        "fav_bruto": 0.0738,
+        "baseline": 0.0639,
+        "fav_neto": 0.0099,
+        "fav_neto_p5": -0.0359,
+        "fav_neto_p95": 0.1301,
+        "hit_rate": 1.0,
+        "rr": 211.09,
+        "mae_medio": -0.0003,
+        "mfe_medio": 0.0738
+      },
+      "zz50|ALZA": {
+        "n": 43,
+        "n_eff": 18,
+        "fav_bruto": -0.0438,
+        "baseline": -0.0617,
+        "fav_neto": 0.0179,
+        "fav_neto_p5": -0.0206,
+        "fav_neto_p95": 0.0592,
+        "hit_rate": 0.0,
+        "rr": 0.22,
+        "mae_medio": -0.0438,
+        "mfe_medio": 0.0095
+      },
+      "zz50|BAJA": {
+        "n": 27,
+        "n_eff": 18,
+        "fav_bruto": 0.1065,
+        "baseline": 0.0993,
+        "fav_neto": 0.0072,
+        "fav_neto_p5": -0.0669,
+        "fav_neto_p95": 0.1017,
+        "hit_rate": 1.0,
+        "rr": 41.15,
+        "mae_medio": -0.0026,
+        "mfe_medio": 0.1065
+      },
+      "zz75|ALZA": {
+        "n": 42,
+        "n_eff": 14,
+        "fav_bruto": -0.0841,
+        "baseline": -0.0854,
+        "fav_neto": 0.0013,
+        "fav_neto_p5": -0.121,
+        "fav_neto_p95": 0.0829,
+        "hit_rate": 0.0,
+        "rr": 0.23,
+        "mae_medio": -0.0841,
+        "mfe_medio": 0.0193
+      },
+      "zz75|BAJA": {
+        "n": 28,
+        "n_eff": 13,
+        "fav_bruto": 0.1467,
+        "baseline": 0.1607,
+        "fav_neto": -0.014,
+        "fav_neto_p5": -0.1145,
+        "fav_neto_p95": 0.2212,
+        "hit_rate": 1.0,
+        "rr": 17.38,
+        "mae_medio": -0.0084,
+        "mfe_medio": 0.1467
+      }
+    },
+    "sorpresas": [
+      {
+        "fecha": "2007-03-14 00:00:00",
+        "estado": "MODERATE_VOL__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.000206,
+        "realidad": 0.10640443710511198,
+        "sorpresa": 0.10619843710511198
+      },
+      {
+        "fecha": "2007-07-26 00:00:00",
+        "estado": "HIGH_VOL__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION",
+        "esperanza_ev": 0.000265,
+        "realidad": -0.028509660856640986,
+        "sorpresa": -0.028774660856640988
+      },
+      {
+        "fecha": "2007-07-26 00:00:00",
+        "estado": "HIGH_VOL__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION",
+        "esperanza_ev": 0.000265,
+        "realidad": -0.028509660856640986,
+        "sorpresa": -0.028774660856640988
+      },
+      {
+        "fecha": "2007-08-01 00:00:00",
+        "estado": "HIGH_VOL__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+        "esperanza_ev": -0.000609,
+        "realidad": -0.017960733316993275,
+        "sorpresa": -0.017351733316993277
+      },
+      {
+        "fecha": "2007-08-15 00:00:00",
+        "estado": "ELEVATED_PANIC__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.001037,
+        "realidad": 0.051687539115679346,
+        "sorpresa": 0.05065053911567934
+      },
+      {
+        "fecha": "2007-08-15 00:00:00",
+        "estado": "ELEVATED_PANIC__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.001037,
+        "realidad": 0.051687539115679346,
+        "sorpresa": 0.05065053911567934
+      },
+      {
+        "fecha": "2007-08-16 00:00:00",
+        "estado": "ELEVATED_PANIC__ACCELERATING_UP_3D__VOL_MODERATE_COMPRESSION",
+        "esperanza_ev": 0.002609,
+        "realidad": 0.0438422910737305,
+        "sorpresa": 0.0412332910737305
+      },
+      {
+        "fecha": "2008-01-08 00:00:00",
+        "estado": "HIGH_VOL__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.001471,
+        "realidad": -0.05895903822618961,
+        "sorpresa": -0.06043003822618961
+      },
+      {
+        "fecha": "2008-01-08 00:00:00",
+        "estado": "HIGH_VOL__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+        "esperanza_ev": 0.001471,
+        "realidad": -0.05895903822618961,
+        "sorpresa": -0.06043003822618961
+      },
+      {
+        "fecha": "2008-01-17 00:00:00",
+        "estado": "ELEVATED_PANIC__FAST_SPIKE_3D__VOL_PEAK_DECELERATION",
+        "esperanza_ev": 0.002623,
+        "realidad": -0.02031020162708552,
+        "sorpresa": -0.02293320162708552
+      }
+    ],
+    "sorpresa_media": 0.0169,
+    "forensia_F3": {
+      "disparos_fallidos": 36,
+      "falla_de_lectura": 6,
+      "impredecible": 30,
+      "techo_mejora": 0.17
+    }
+  }
+}

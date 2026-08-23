@@ -1,0 +1,24 @@
+{
+  "fecha": "2026-08-22",
+  "componente": "P1.5 walk-forward detector de crisis (auditoría) — ACTUALIZADO con serie real credit",
+  "metodo": "calibración fija (STATION_MU_SIGMA, toda la historia) vs ventana expansiva recalibrada anual (solo datos pasados, min 2 años train)",
+  "estaciones_diarias": {"vix": 9241, "vvix": 5088, "skew": 9213, "dxy": 14075, "credit": 4864},
+  "correccion": "credit corregida: CREDIT_RATIO en el Vault ES la serie real (μ=0.6241 σ=0.0503 = idéntica a STATION_MU_SIGMA). El intento previo con HYG era proxy inválido (deriva 1358σ).",
+  "correlacion_fija_vs_wf": {"vix": 0.822, "vvix": 0.766, "skew": 0.360, "dxy": 0.814, "credit": 0.540},
+  "tasa_deteccion_pct": {
+    "fija": {"vix": 4.17, "vvix": 3.69, "skew": 2.78, "dxy": 4.09, "credit": 3.08},
+    "walkforward": {"vix": 5.23, "vvix": 4.68, "skew": 9.28, "dxy": 4.22, "credit": 1.23}
+  },
+  "crisis_detectadas_fija_vs_wf": {
+    "GFC_2007_09": {"vix": "115/117", "dxy": "13/13", "credit": "65/0"},
+    "Pandemia_2020": {"vix": "34/34", "vvix": "19/30", "skew": "4/4", "dxy": "4/4", "credit": "9/9"}
+  },
+  "deriva_no_estacionariedad": {
+    "skew_d1_mu": "+0.73σ (estación más no-estacionaria)",
+    "credit_d1_mu": "+1.03σ (nivel del spread subió post-2020)",
+    "dxy_d1_sigma": "ratio 0.37",
+    "vix_d1_sigma": "ratio 0.66"
+  },
+  "conclusion": "Robustas bajo walk-forward: vix (0.82), vvix (0.77), dxy (0.81). Rota: skew (0.36, deriva +0.73σ). Credit intermedia (0.54): pierde la detección GFC bajo ventana expansiva (65→0) porque la expansión rápida del spread GFC recalibra μ/σ hacia arriba en plena crisis; detecta bien pandemia (9/9). Candidata a recalibración o ventana más corta.",
+  "script": "scratch/walkforward_detector_crisis.py"
+}

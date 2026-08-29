@@ -8,7 +8,7 @@ que se mide el edge real de todas las señales de entry/exit del sistema.
 
 DOCUMENTACIÓN DE REFERENCIA COMPLETA:
   backend/scripts/generators/QUANTS_OBS_GENERATOR.md
-  (léala ANTES de modificar este archivo: contiene el esquema de las 143
+  (léala ANTES de modificar este archivo: contiene el esquema de las 165
    columnas, las fórmulas, las 15 decisiones auditadas y los pitfalls)
 
 PROPÓSITO (principio rector):
@@ -16,7 +16,7 @@ PROPÓSITO (principio rector):
   REPRODUCIBLE. La fidelidad a artefactos históricos es un detector de
   divergencias, nunca la meta.
 
-QUÉ CONSTRUYE (1,590+ pivotes × 143 columnas):
+QUÉ CONSTRUYE (1,590+ pivotes × 165 columnas):
   1. Pivotes: ZigzagLegRepository (SPY zz25) — la columna vertebral.
      Cualquier desalineación aquí rompe TODO el sistema de señales.
   2. Columnas zigzag: leg_bear, next_bear, cascade_50/75 (proximidad ±3 días
@@ -27,6 +27,9 @@ QUÉ CONSTRUYE (1,590+ pivotes × 143 columnas):
      _vol (std2/std10), _sk (state_key del LookupAdapter de producción),
      _n, _d1_vote, _zk_pbull/_zk_pbear (bloque zigzag_kinematic.zz25 del
      fact store), _zz25_pbull/_zz25_pbear/_ev_net (bloque plano zz25).
+  3b. Precursores (11×2=22 columnas nuevas): _sk_t1 y _sk_t2 por estación.
+     Vector D1__D2__D3 completo 1 y 2 días de trading ANTES del pivote.
+     Permite análisis de señales antecesoras y transiciones de estado pre-pivote.
   4. Derivadas cascade: d1_bear_5 (fracción de votos bearish del Grupo A),
      n_stations_a, mean_zk_pbull_A/11, z_bear, z_dom, cascade_conviction,
      cascade_conviction_50.
@@ -37,7 +40,7 @@ CÓMO EJECUTAR:
   Opciones: --dry-run (construye y verifica sin escribir el pickle oficial)
 
 QUÉ VERIFICA ANTES DE GUARDAR (compuertas):
-  1. Esquema: 143 columnas, todas las críticas presentes.
+  1. Esquema: 165 columnas, todas las críticas presentes.
   2. Integridad de pivotes: fechas/tipos idénticos al repo de producción.
   3. State keys sin huérfanos: cada _sk existe en su fact store.
   4. Propósito: las 28 señales del arnés disparan (ninguna inerte).
@@ -289,6 +292,78 @@ def main():
         print(f"    {code}: {df[f'{code}_sk'].notna().sum()} state_keys "
               f"({time.time()-t0:.1f}s)")
     print(f"[5] state_keys completados ({time.time()-t0:.1f}s)")
+
+    # ── 5b. Precursor state_keys: t-1 y t-2 (días de trading antes del pivote) ──
+    # Para análisis de señales antecesoras: ¿qué vector D1__D2__D3 estaba activo
+    # 1 y 2 días de trading ANTES de que se formara el pivote?
+    # Usa el calendario de trading de SPY para encontrar días hábiles reales.
+    spy_bars = store.load_bars("SPY", "1d")
+    spy_trading_dates = pd.to_datetime(spy_bars.index).tz_localize(None).normalize()
+    spy_trading_dates_sorted = spy_trading_dates.sort_values()
+
+    def _find_prior_trading_date(pivot_dt, offset):
+        """Encuentra el día de trading N posiciones antes de pivot_dt.
+        offset=1 → 1 día de trading antes, offset=2 → 2 días antes."""
+        pos = spy_trading_dates_sorted.searchsorted(pivot_dt)
+        target = pos - offset
+        if target < 0:
+            return None
+        return spy_trading_dates_sorted[target]
+
+    # Pre-construir series vel/vol por estación (reutilizando las del paso 4)
+    vel_series = {}
+    vol_series = {}
+    for code in STATIONS:
+        if code not in series:
+            continue
+        s = series[code]
+        vel_series[code] = s.diff(3).fillna(0.0)
+        vol_series[code] = (s.rolling(2).std() / s.rolling(10).std().replace(0, np.nan)).fillna(1.0)
+
+    pivot_dates_norm = pd.to_datetime(df["pivot_date"]).dt.normalize()
+    for offset_label, offset_n in [("t1", 1), ("t2", 2)]:
+        # Encontrar las fechas de trading previas para cada pivote
+        prior_dates = [_find_prior_trading_date(dt, offset_n) for dt in pivot_dates_norm]
+
+        for code in STATIONS:
+            if code not in series:
+                df[f"{code}_sk_{offset_label}"] = None
+                continue
+
+            s = series[code]
+            vel = vel_series[code]
+            vol = vol_series[code]
+            idx_set = set(s.index)
+            method = STATION_CONFIG[code]["method"]
+            adapter = adapters[code]
+
+            sk_list = []
+            for prior_dt in prior_dates:
+                if prior_dt is None or prior_dt not in idx_set:
+                    sk_list.append(None)
+                    continue
+                val = float(s.loc[prior_dt])
+                v2 = float(vel.loc[prior_dt]) if prior_dt in vel.index else 0.0
+                v3 = float(vol.loc[prior_dt]) if prior_dt in vol.index else 1.0
+                if pd.isna(val):
+                    sk_list.append(None)
+                    continue
+                if pd.isna(v2): v2 = 0.0
+                if pd.isna(v3): v3 = 1.0
+                try:
+                    g = getattr(adapter, method)(val=val, d3_speed=v2,
+                                                 vol_norm=v3, vol_d3=v3)
+                    sk_list.append(g.state_key if g else None)
+                except Exception:
+                    sk_list.append(None)
+
+            df[f"{code}_sk_{offset_label}"] = sk_list
+
+        n_new = sum(1 for c in df.columns if c.endswith(f"_sk_{offset_label}"))
+        n_filled = sum(df[f"{STATIONS[0]}_sk_{offset_label}"].notna()) if STATIONS[0] in series else 0
+        print(f"    precursor {offset_label}: {n_new} columnas, "
+              f"{n_filled}/{len(df)} con dato ({time.time()-t0:.1f}s)")
+    print(f"[5b] precursores t-1/t-2 completados ({time.time()-t0:.1f}s)")
 
     # ── 6. Derivadas del cascade ──
     # Todas las constantes de normalización se leen del cascade_calibration.json

@@ -1,0 +1,62 @@
+{
+  "cambios_aplicados": [
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5"
+  ],
+  "verificacion": {
+    "compila": true,
+    "regresion_cero": true,
+    "lift_presente": true,
+    "random_state_count": 0,
+    "senales_retiradas_count": 6
+  },
+  "señales_retiradas": [
+    "defensive_rotation_divergence",
+    "sv5t_silent_distribution",
+    "regime_change_exit",
+    "credit_ease_exit",
+    "breadth_contraction_exit",
+    "vix_complacency_exit"
+  ],
+  "detalles_senales_retiradas": {
+    "defensive_rotation_divergence": {
+      "razon": "lift=0.828x < 1.0 (anti-señal)",
+      "docstring_actualizado": true,
+      "validacion": "RETIRADA (lift<1.0 — 20-Ago-2026 Opus PC1)"
+    },
+    "sv5t_silent_distribution": {
+      "razon": "lift=0.840x < 1.0 (anti-señal)",
+      "docstring_actualizado": true,
+      "validacion": "RETIRADA (lift<1.0 — 20-Ago-2026 Opus PC1)"
+    },
+    "regime_change_exit": {
+      "razon": "lift=0.789x < 1.0 (anti-señal)",
+      "docstring_actualizado": true,
+      "validacion": "RETIRADA (lift<1.0 — 20-Ago-2026 Opus PC1)"
+    },
+    "credit_ease_exit": {
+      "razon": "lift=0.954x < 1.0 y fire_rate=51.6% (régimen)",
+      "docstring_actualizado": true,
+      "validacion": "RETIRADA (lift<1.0 / fire rate 51.6% — 20-Ago-2026 Opus PC1/PC2)"
+    },
+    "breadth_contraction_exit": {
+      "razon": "fire_rate=87.7% (ruido puro de régimen)",
+      "docstring_actualizado": true,
+      "validacion": "RETIRADA (fire rate 87.7% — 20-Ago-2026 Opus PC2)"
+    },
+    "vix_complacency_exit": {
+      "razon": "duplicado 100% overlap con euforia",
+      "docstring_actualizado": true,
+      "validacion": "RETIRADA (duplicado 100% overlap con euforia — 20-Ago-2026 Opus PC3)"
+    }
+  },
+  "random_state_unificado": true,
+  "lift_vs_baseline_implementado": {
+    "formula": "lift = P(cae | señal) / P(cae | ¬señal) condicionado por pivot_type",
+    "seccion_json": "lift_vs_baseline",
+    "salida_stdout": true
+  }
+}

@@ -12,6 +12,7 @@ department: QUALITY
 layer: tool
 requires: [clean-architecture, operational-purpose, hypothesis-governance]
 modules: [entry_decision]
+references: [metar/d1_labels_canonical.md, metar/signal_rules.md, metar/anti_patterns.md, stations/rotation_intelligence.md]
 crewai_role: injected
 ---
 

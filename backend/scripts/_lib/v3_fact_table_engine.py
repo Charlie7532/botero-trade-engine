@@ -473,14 +473,24 @@ def build_v3_dual_layer_fact_store(
     calib_df = ind_df[pd.to_datetime(ind_df.index) >= pd.to_datetime("2011-02-01")] if station_name.lower() == "skew" else ind_df
 
     d1_edges_doc = [float(x) for x in calib_df["val"].quantile(PERCENTILES_D1_GAUSS)]
+    # FIX P0.1 (auditoría 22-Ago-2026): D2/D3 se binneaban contra cuantiles de TODA
+    # la historia (look-ahead: información del futuro filtrando hacia atrás).
+    # Corrección: expanding percentile rank, idéntico a D1 (zero look-ahead).
+    # Los edges globales se conservan SOLO como documentación de referencia.
     d2_edges = [float(x) for x in calib_df["d2_velocity"].dropna().quantile(PERCENTILES_D2_GAUSS)]
     d3_vol_edges = [float(x) for x in calib_df["vol_norm"].dropna().quantile(PERCENTILES_D3_GAUSS)]
+    d2_expanding_rank = ind_df["d2_velocity"].expanding(min_periods=252).rank(pct=True)
+    d3_expanding_rank = ind_df["vol_norm"].expanding(min_periods=252).rank(pct=True)
 
     ind_df["bin_d1"] = d1_expanding_rank.apply(
         lambda r: classify_value(r, PERCENTILES_D1_GAUSS, d1_labels) if pd.notna(r) else d1_labels[2]
     )
-    ind_df["bin_d2"] = ind_df["d2_velocity"].apply(lambda v: classify_value(v, d2_edges, LABELS_D2_STANDARD))
-    ind_df["bin_d3"] = ind_df["vol_norm"].apply(lambda v: classify_value(v, d3_vol_edges, LABELS_D3_STANDARD))
+    ind_df["bin_d2"] = d2_expanding_rank.apply(
+        lambda r: classify_value(r, PERCENTILES_D2_GAUSS, LABELS_D2_STANDARD) if pd.notna(r) else LABELS_D2_STANDARD[2]
+    )
+    ind_df["bin_d3"] = d3_expanding_rank.apply(
+        lambda r: classify_value(r, PERCENTILES_D3_GAUSS, LABELS_D3_STANDARD) if pd.notna(r) else LABELS_D3_STANDARD[2]
+    )
 
     if pivot_fn is not None:
         ind_df["pivot"] = pivot_fn(ind_df)

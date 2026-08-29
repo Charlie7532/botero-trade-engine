@@ -47,6 +47,10 @@ class MarketMETAR:
     primary_e_days: float
     primary_capital_velocity: float
     rr_asymmetry_ratio: float
+    sigma_depth_d1: Optional[float] = None
+    sigma_depth_d2: Optional[float] = None
+    sigma_depth_d3: Optional[float] = None
+    overflow_flag: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Returns full structured METAR payload as a dictionary."""
@@ -158,16 +162,9 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
             pivot = "STABLE_CONTINUATION"
 
         s_val = df_turb.iloc[:, -1] if 'close' not in df_turb.columns else df_turb['close']
-        vol_5d = s_val.rolling(5).std()
-        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
-        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
-        vol_norm = float(s_vol_norm.iloc[-1])
-        vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
-
-        s_val = df_turb.iloc[:, -1] if 'close' not in df_turb.columns else df_turb['close']
-        vol_5d = s_val.rolling(5).std()
-        vol_20d = s_val.rolling(20).std().replace(0, np.nan)
-        s_vol_norm = (vol_5d / vol_20d).fillna(1.0)
+        vol_2d = s_val.rolling(2).std()
+        vol_10d = s_val.rolling(10).std().replace(0, np.nan)
+        s_vol_norm = (vol_2d / vol_10d).fillna(1.0)
         vol_norm = float(s_vol_norm.iloc[-1])
         vol_d3 = float(vol_norm - float(s_vol_norm.iloc[-4])) if len(s_vol_norm) >= 4 else 0.0
 
@@ -213,7 +210,11 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
             primary_ev_net=vec["primary_ev_net"],
             primary_e_days=vec["primary_e_days"],
             primary_capital_velocity=vec["primary_capital_velocity"],
-            rr_asymmetry_ratio=guidance.zz50.rr_asymmetry
+            rr_asymmetry_ratio=guidance.zz50.rr_asymmetry,
+            sigma_depth_d1=guidance.sigma_depth_d1,
+            sigma_depth_d2=guidance.sigma_depth_d2,
+            sigma_depth_d3=guidance.sigma_depth_d3,
+            overflow_flag=guidance.overflow_flag,
         )
 
     finally:

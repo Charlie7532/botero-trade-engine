@@ -1,0 +1,218 @@
+{
+  "verificacion_codigo": {
+    "compila": true,
+    "funciones_auxiliares_aisladas": [
+      "_structural_momentum_filter",
+      "_prev_leg_context",
+      "_divergence_regime"
+    ],
+    "campos_presentes": [
+      "structural_momentum",
+      "prev_leg_context",
+      "divergence_regime"
+    ],
+    "valores_verificados": {
+      "credit_easing_k1": {
+        "p_hl": 0.571,
+        "pct_extreme": 0.036,
+        "divergence_regime": "FULL_CONVERGENT_BULL",
+        "zz25_wr": 0.9375
+      },
+      "bsi_recovery": {
+        "p_hl": 0.776,
+        "p_hh": 0.762,
+        "pct_extreme": 0.125,
+        "divergence_regime": "FULL_CONVERGENT_BEAR",
+        "zz25_wr": 0.2765
+      }
+    },
+    "bugs_detectados": [
+      {
+        "bug": "RandomState vs default_rng",
+        "lineas": [1060, 1087],
+        "severidad": "BAJA",
+        "descripcion": "Inconsistencia de generador RNG entre _bootstrap_ci (L466) y bootstrap D2/D3"
+      },
+      {
+        "bug": "OBS_PKL redundante",
+        "lineas": [34, 35],
+        "severidad": "BAJA",
+        "descripcion": "Fallback apunta al mismo path sin efecto"
+      },
+      {
+        "bug": "Inline import datetime",
+        "linea": 1159,
+        "severidad": "BAJA",
+        "descripcion": "Import dentro de función loop medir()"
+      }
+    ]
+  },
+  "señales_retirar": [
+    {
+      "nombre": "breadth_contraction_exit",
+      "razon": "fire_rate>50%",
+      "datos": {
+        "fire_rate": 0.877,
+        "n_total": 1394,
+        "status": "PROPOSED",
+        "diagnostico": "Dispara el 88% de los pivotes; no contiene información discriminante (ruido puro de régimen)."
+      }
+    },
+    {
+      "nombre": "credit_ease_exit",
+      "razon": "fire_rate>50%",
+      "datos": {
+        "fire_rate": 0.516,
+        "n_total": 820,
+        "status": "PROPOSED",
+        "diagnostico": "Dispara el 52% del tiempo por persistencia del estado D1."
+      }
+    },
+    {
+      "nombre": "defensive_rotation_divergence",
+      "razon": "lift<1.0",
+      "datos": {
+        "lift": 0.828,
+        "p_cae": 0.690,
+        "n_max": 197,
+        "status": "PROPOSED",
+        "diagnostico": "Anti-señal en techos MAX: el mercado cae menos (69%) que la tasa base (83.4%)."
+      }
+    },
+    {
+      "nombre": "sv5t_silent_distribution",
+      "razon": "lift<1.0",
+      "datos": {
+        "lift": 0.840,
+        "p_cae": 0.700,
+        "n_max": 20,
+        "status": "PROPOSED",
+        "diagnostico": "Anti-señal en techos MAX: tasa de acierto 70% vs base 83.4%."
+      }
+    },
+    {
+      "nombre": "regime_change_exit",
+      "razon": "lift<1.0",
+      "datos": {
+        "lift": 0.789,
+        "p_cae": 0.658,
+        "n_max": 114,
+        "status": "PROPOSED",
+        "diagnostico": "Anti-señal en techos MAX: condicion compuesta excesiva con lift 0.789x."
+      }
+    },
+    {
+      "nombre": "vix_complacency_exit",
+      "razon": "duplicado",
+      "datos": {
+        "duplicado_de": "euforia",
+        "overlap": 1.0,
+        "n": 35,
+        "status": "PROPOSED",
+        "diagnostico": "100% de solapamiento con la señal validada euforia (mismo filtro D1 VIX complaciente)."
+      }
+    }
+  ],
+  "señales_medir_prioritario": [
+    {
+      "nombre": "bsi_recovery",
+      "prioridad": "P1",
+      "razon": "Señal EXIT de amplio universo con N=346 en MAX, WR de caída=92.2%, Lift=1.106x y CI95 sin cruzar cero."
+    },
+    {
+      "nombre": "stealth_tail_hedging",
+      "prioridad": "P1",
+      "razon": "Señal EXIT diamante con N=20, WR de caída=100.0%, Lift=1.199x y Fwd=-4.45%."
+    },
+    {
+      "nombre": "skew_paranoia_exit",
+      "prioridad": "P1",
+      "razon": "Señal EXIT con N=14 en MAX, WR de caída=92.9%, Lift=1.114x."
+    },
+    {
+      "nombre": "dxy_spike_exit",
+      "prioridad": "P2",
+      "razon": "Señal EXIT con N=19 en MAX, WR de caída=89.5%, Lift=1.073x."
+    },
+    {
+      "nombre": "credit_equity_divergence",
+      "prioridad": "P2",
+      "razon": "Señal EXIT de velocidad con N=120 en MAX, WR de caída=85.8%, Lift=1.029x."
+    }
+  ],
+  "plan_culminacion": [
+    {
+      "prioridad": "P1",
+      "item": "Incorporar métrica oficial LIFT vs Base Rate en medir_senal.py",
+      "esfuerzo": "1 hora",
+      "depende_de": "Ninguna",
+      "entregable": "medir_senal.py actualizado con campo lift_vs_base_rate en JSON y stdout"
+    },
+    {
+      "prioridad": "P1",
+      "item": "Depuración del registro de señales (retirar 4 anti-señales, 2 de régimen y 1 duplicada)",
+      "esfuerzo": "1 hora",
+      "depende_de": "medir_senal.py",
+      "entregable": "Registro SEÑALES depurado a señales estadísticamente válidas (LIFT ≥ 1.05x)"
+    },
+    {
+      "prioridad": "P1",
+      "item": "Limpieza de código y unificación de generador RNG a default_rng",
+      "esfuerzo": "30 min",
+      "depende_de": "Ninguna",
+      "entregable": "medir_senal.py limpio de imports inline, redundancia OBS_PKL y RNG uniforme"
+    },
+    {
+      "prioridad": "P2",
+      "item": "Validación Walk-Forward (OOS 2016-2026) para las TOP 3 ENTRY y TOP 3 EXIT",
+      "esfuerzo": "3 horas",
+      "depende_de": "Depuración del registro",
+      "entregable": "Reporte de validación OOS sin sesgo de look-ahead"
+    },
+    {
+      "prioridad": "P2",
+      "item": "Resolución de brecha METAR/SIGMET: Exposición de sigma_depth en broadcasts",
+      "esfuerzo": "2 horas",
+      "depende_de": "fact_store_v3 §17",
+      "entregable": "Actualización de servicios METAR para incluir sigma_depth (>±3σ)"
+    },
+    {
+      "prioridad": "P3",
+      "item": "Medición sistemática de señales PROPOSED restantes con arnés enriquecido",
+      "esfuerzo": "2 horas",
+      "depende_de": "medir_senal.py con LIFT",
+      "entregable": "JSONs de medición en data/research/ para todas las señales depuradas"
+    },
+    {
+      "prioridad": "P3",
+      "item": "Actualización de GUIA_EMPLEO.md y ARBOLES_DECISION.md con tablas depuradas",
+      "esfuerzo": "1 hora",
+      "depende_de": "Depuración de señales",
+      "entregable": "Documentación operacional sincronizada con las señales finales"
+    },
+    {
+      "prioridad": "P3",
+      "item": "Sincronización y commit unificado del pipeline de señales en git",
+      "esfuerzo": "30 min",
+      "depende_de": "Aprobación de usuario",
+      "entregable": "Commit limpio con todos los módulos y reportes validados"
+    }
+  ],
+  "brechas": [
+    {
+      "gap": "Ausencia de sigma_depth en broadcast METAR diario",
+      "severidad": "MEDIA",
+      "accion": "Exponer sigma_depth en los endpoints METAR para diferenciar colas de +2.1σ vs +11σ (SIGMET §17.4)."
+    },
+    {
+      "gap": "Ausencia de métrica nativa LIFT en medir_senal.py",
+      "severidad": "ALTA",
+      "accion": "Agregar cálculo explícito de lift_vs_base_rate condicionado a pivot_type en rep['activa']."
+    },
+    {
+      "gap": "Señales PROPOSED activas sin filtro de significancia estadística",
+      "severidad": "MEDIA",
+      "accion": "Establecer umbral estricto: señales con lift < 1.05x o fire_rate > 35% no se promueven a producción."
+    }
+  ]
+}

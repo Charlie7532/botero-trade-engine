@@ -6,15 +6,15 @@ from pydantic import BaseModel
 from backend.modules.execution.domain.entities.order_models import Broker
 from backend.api.factories.execution_factory import build_broker_registry
 from backend.modules.shared.use_cases import fetch_market_data
+from typing import Any
 from backend.modules.simulation.infrastructure.backtest_runner import run_backtest
-from backend._legacy.backtrader.base_strategy import BaseStrategy
 
 router = APIRouter(prefix="/strategy", tags=["Strategy"])
 
 _brokers = build_broker_registry()
 
 # Registry of available strategies — add new strategies here
-_strategy_registry: dict[str, type[BaseStrategy]] = {}
+_strategy_registry: dict[str, Any] = {}
 
 
 class BacktestRequest(BaseModel):

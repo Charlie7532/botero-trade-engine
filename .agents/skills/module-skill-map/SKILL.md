@@ -99,3 +99,22 @@ When creating a new module, add it to this map and assign the appropriate skills
 | `volume_intelligence` | Volume Profile analysis (POC, VAH, VAL, shapes), volume dynamics tracking | `analyze_volume_profile`, `track_volume_dynamics` |
 | `market_health` | 6-dimensional market health convergence + F&G contrarian signal. Persist-then-Read via daemon. | `compute_market_health` |
 | `volatility_regime` | Vol regime classification (COMPLACENT/NORMAL/ELEVATED/CRISIS for Quality; STALK/STRIKE/HARVEST/RETREAT for Speculative) | `classify_quality_regime`, `classify_speculative_regime` |
+
+---
+
+## Module → Reference Loading Matrix
+
+When a module is activated, the agent MUST load the listed references from `.agents/references/`. See [`reference_loading_policy.md`](file:///root/botero-trade/.agents/rules/reference_loading_policy.md) for the full policy.
+
+| Module | Always Load | Conditional Load |
+|---|---|---|
+| `entry_decision` | `metar/anti_patterns.md`, `metar/d1_labels_canonical.md` | `metar/signal_rules.md` (if evaluating signals), `metar/overflow_taxonomy.md` (if handling crisis) |
+| `market_health` | `metar/anti_patterns.md`, `metar/d1_labels_canonical.md`, `metar/interactions.md` | — |
+| `volatility_regime` | `metar/overflow_taxonomy.md`, `metar/anti_patterns.md` | `stations/vix_intelligence.md`, `stations/vvix_intelligence.md` |
+| `simulation` | `metar/signal_rules.md` | `metar/fact_store_guide.md` (if reading fact store JSON) |
+| `portfolio_management` | — | `vault/data_registry.md` (if querying Vault) |
+| `execution` | — | `metar/overflow_taxonomy.md` (if circuit breaker logic) |
+| `shared` | — | — |
+
+**Rule:** `metar/fact_store_v3_architecture.md` (70KB monolith) is NEVER auto-loaded. Use modular files. If insufficient, use `view_file` with specific line ranges.
+

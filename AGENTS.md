@@ -238,7 +238,7 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     )
     ```
 
-    **Vault Data Registry** — organized by indicator family. Full reference: [vault_data_registry.md](file:///root/botero-trade/.agents/references/vault_data_registry.md).
+    **Vault Data Registry** — organized by indicator family. Full reference: [vault_data_registry.md](file:///root/botero-trade/.agents/references/vault/data_registry.md).
 
     **Storage Convention:** All time-series data lives in `market.ohlcv_bars`. For single-value indicators: `open=high=low=close=value, volume=0`. For breadth indicators: `volume=n_constituents`. Timestamps are midnight UTC (`00:00:00+00`), enforced by `TimescaleDataStore`. `market.ticker_metadata` classifies each ticker (`sector`, `industry`=`STOCK`|`ETF`|`INDICATOR`, `market_cap_bucket`).
 
@@ -306,7 +306,7 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     - **`SIGMET` (Severe Weather Hazard Bulletins):** Issued ONLY when a station breaches extreme hazard thresholds (VIX $\ge 28$, SKEW $\ge 145$, SV5_Turbulence surge, Yield Curve inversion, Extreme Fear capitulation). Returns `status: CLEAR` with empty list `[]` when no severe market weather is present. Endpoint: `/api/sigmet/active`.
     - **`NOTAM` (Operational Disruption Bulletins):** Reserved strictly for infrastructure outages, Neon Vault pipeline staleness, broker API connectivity failures, FOMC blackout periods, or Macro Circuit Breaker halts. Endpoint: `/api/notam/incidents`.
 
-24. **Gaussian Sigma Scale Calibration Standard.** All indicator dimensional classification (D1 Magnitude, D2 Velocity, D3 Station Volatility) MUST use Gaussian Normal Distribution σ-percentile edges applied to the **full historical population** of each indicator in the Neon Vault. **Full policy in [gaussian_scale_calibration_policy.md](file:///root/botero-trade/.agents/references/gaussian_scale_calibration_policy.md).**
+24. **Gaussian Sigma Scale Calibration Standard.** All indicator dimensional classification (D1 Magnitude, D2 Velocity, D3 Station Volatility) MUST use Gaussian Normal Distribution σ-percentile edges applied to the **full historical population** of each indicator in the Neon Vault. **Full policy in [gaussian_scale_calibration_policy.md](file:///root/botero-trade/.agents/references/metar/gaussian_scale_policy.md).**
     - **D1 (6 bines, 5 edges):** Percentiles `[0.0228, 0.1587, 0.5000, 0.8413, 0.9772]` → `[-2σ, -1σ, μ, +1σ, +2σ]`.
     - **D2 (5 bines, 4 edges):** Percentiles `[0.0228, 0.1587, 0.8413, 0.9772]` → `[-2σ, -1σ, +1σ, +2σ]`. Labels: `FAST_CRUSH_3D | DECELERATING_DOWN_3D | STABLE_CONTINUATION_3D | ACCELERATING_UP_3D | FAST_SPIKE_3D`.
     - **D3 (5 bines, 4 edges):** Same percentiles as D2. Labels: `VOL_EXTREME_SQUEEZE | VOL_MODERATE_COMPRESSION | VOL_NEUTRAL_BASELINE | VOL_ACCELERATING_EXPANSION | VOL_PEAK_DECELERATION`.
@@ -321,6 +321,9 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     - If the Vault has not yet ingested today's intraday / session close data for market tickers (`SPY`, `HYG`, `LQD`, `S5TW`, `CREDIT_RATIO`, `VIX`), force an immediate data refresh into `market.ohlcv_bars` and recompute synthetic indicators.
     - Evaluate and return the METAR Convergence Report using **today's exact date**.
 
-
-
+26. **Zero Simplification Bias — Complete and Correct Over Convenient.** AI agents MUST NEVER reduce scope, merge modules, flatten architectures, or propose "simpler" alternatives that degrade the mathematical precision, domain-specific physics, or information density of the solution. Specifically:
+    - **No scope reduction disguised as optimization.** If 10 components each have domain-specific logic, upgrading all 10 individually is the correct path — not merging them into 1 generic script to "save code." Code duplication is preferable to domain knowledge destruction.
+    - **No sycophantic reversals.** If the user challenges a recommendation, the agent MUST either (a) defend the recommendation with evidence, or (b) present the honest tradeoff matrix with all paths and their costs — NOT instantly agree and flip 180° without substance. Intellectual honesty > user appeasement.
+    - **No premature generalization.** Each METAR station, trading module, or domain classifier has its own physics. Two modules that "look similar" may encode fundamentally different market mechanics. Always audit the actual domain logic before proposing consolidation.
+    - **The test:** Would a senior quant say "this shortcut loses information"? If yes, take the longer path.
 

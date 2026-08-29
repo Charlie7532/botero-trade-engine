@@ -33,6 +33,12 @@ class GuruFocusMCPBridge:
         self._session = requests.Session()
         self._session.headers.update({"Accept": "application/json"})
 
+    def _sanitize_msg(self, text: str) -> str:
+        """Redact sensitive token from log messages/URLs."""
+        if self._token and self._token in text:
+            return text.replace(self._token, "[REDACTED]")
+        return text
+
     def _get(self, endpoint: str, params: Optional[dict] = None) -> Optional[dict]:
         """Make a GET request to the GuruFocus API."""
         if not self._token:
@@ -40,12 +46,23 @@ class GuruFocusMCPBridge:
         url = f"{BASE_URL}/{self._token}/{endpoint}"
         try:
             resp = self._session.get(url, params=params, timeout=30)
+            if resp.status_code == 429:
+                logger.warning(f"GuruFocus rate limit (429) hit on endpoint: {endpoint} — backing off")
+                time.sleep(RATE_LIMIT_DELAY * 2)
+                return None
             resp.raise_for_status()
             data = resp.json()
             time.sleep(RATE_LIMIT_DELAY)
             return data
+        except requests.HTTPError as e:
+            if e.response is not None and e.response.status_code == 429:
+                logger.warning(f"GuruFocus rate limit (429) hit on endpoint: {endpoint}")
+                time.sleep(RATE_LIMIT_DELAY * 2)
+            else:
+                logger.warning(f"GuruFocus API error ({endpoint}): {self._sanitize_msg(str(e))}")
+            return None
         except requests.RequestException as e:
-            logger.warning(f"GuruFocus API error ({endpoint}): {e}")
+            logger.warning(f"GuruFocus API error ({endpoint}): {self._sanitize_msg(str(e))}")
             return None
 
     # ── Stock-level endpoints ─────────────────────────────

@@ -41,12 +41,11 @@ with project-specific configuration for the Botero Trade monorepo.
 
 | Metric | Value |
 |---|---|
-| Nodes | 8,205 |
-| Edges | 20,195 |
-| Communities | 1,019 |
-| Files indexed | 977 |
-| Words | ~980K |
-| Last updated | 2026-07-24 |
+| Nodes | 14,030 |
+| Edges | 23,828 |
+| Communities | 924 |
+| Files indexed | 1,625 |
+| Last updated | 2026-08-19 |
 
 ## Outputs
 

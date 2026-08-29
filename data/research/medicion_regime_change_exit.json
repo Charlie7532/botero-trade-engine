@@ -104,14 +104,14 @@
     },
     "cascade_50": {
       "rate_activa": 0.6387434554973822,
-      "rate_baseline": 0.463960231980116,
-      "delta": 0.17478322351726622,
+      "rate_baseline": 0.4647887323943662,
+      "delta": 0.17395472310301602,
       "n": 382
     },
     "cascade_75": {
       "rate_activa": 0.4214659685863874,
-      "rate_baseline": 0.2195526097763049,
-      "delta": 0.20191335881008252,
+      "rate_baseline": 0.2203811101905551,
+      "delta": 0.20108485839583232,
       "n": 382
     },
     "duracion_bars": {
@@ -179,26 +179,68 @@
     }
   },
   "desglose_d2d3": null,
-  "estabilidad_decada": {
-    "1990": {
+  "estabilidad_ciclo": {
+    "1_DotCom_Expansion": {
       "n": 0,
       "mean": null,
-      "wr": null
+      "wr": null,
+      "rango": "1993-2000"
     },
-    "2000": {
-      "n": 178,
-      "mean": 0.006475,
-      "wr": 0.5843
+    "2_DotCom_Crash": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2000-2003"
     },
-    "2010": {
-      "n": 119,
-      "mean": 0.024327,
-      "wr": 0.6807
+    "3_Credit_Housing": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2003-2007"
     },
-    "2020": {
-      "n": 85,
-      "mean": 0.011414,
-      "wr": 0.5882
+    "4_GFC": {
+      "n": 122,
+      "mean": 0.005365,
+      "wr": 0.582,
+      "rango": "2007-2009"
+    },
+    "5_QE_ZIRP": {
+      "n": 175,
+      "mean": 0.019388,
+      "wr": 0.6514,
+      "rango": "2009-2020"
+    },
+    "6_COVID_Injection": {
+      "n": 78,
+      "mean": 0.01189,
+      "wr": 0.5897,
+      "rango": "2020-2022"
+    },
+    "7_QT_PostQE": {
+      "n": 7,
+      "mean": 0.006121,
+      "wr": 0.5714,
+      "rango": "2022-2027"
+    }
+  },
+  "estabilidad_macro_era": {
+    "Pre_QE": {
+      "n": 122,
+      "mean": 0.005365,
+      "wr": 0.582,
+      "rango": "1993-2009"
+    },
+    "QE_Era": {
+      "n": 253,
+      "mean": 0.017076,
+      "wr": 0.6324,
+      "rango": "2009-2022"
+    },
+    "Post_QE": {
+      "n": 7,
+      "mean": 0.006121,
+      "wr": 0.5714,
+      "rango": "2022-2027"
     }
   },
   "punteria": {
@@ -262,12 +304,16 @@
           "pct_crashes": 100.0
         },
         "sorpresa_total": {
-          "n_crashes_con_senal": 145,
-          "pct_crashes": 63.9
+          "n_crashes_con_senal": 142,
+          "pct_crashes": 62.6
         },
         "sub_reaccion": {
           "n_crashes_con_senal": 123,
           "pct_crashes": 54.2
+        },
+        "defensive_rotation_divergence": {
+          "n_crashes_con_senal": 96,
+          "pct_crashes": 42.3
         },
         "credit_stress": {
           "n_crashes_con_senal": 92,
@@ -289,6 +335,10 @@
           "n_crashes_con_senal": 59,
           "pct_crashes": 26.0
         },
+        "credit_equity_divergence": {
+          "n_crashes_con_senal": 59,
+          "pct_crashes": 26.0
+        },
         "pcr_put_panic": {
           "n_crashes_con_senal": 50,
           "pct_crashes": 22.0
@@ -306,20 +356,20 @@
           "pct_crashes": 19.4
         },
         "bsi_recovery": {
-          "n_crashes_con_senal": 25,
-          "pct_crashes": 11.0
+          "n_crashes_con_senal": 28,
+          "pct_crashes": 12.3
         },
         "fg_extreme_fear": {
           "n_crashes_con_senal": 18,
           "pct_crashes": 7.9
         },
         "panico_total": {
-          "n_crashes_con_senal": 15,
-          "pct_crashes": 6.6
+          "n_crashes_con_senal": 5,
+          "pct_crashes": 2.2
         },
-        "skew_paranoia_exit": {
-          "n_crashes_con_senal": 4,
-          "pct_crashes": 1.8
+        "sv5t_silent_distribution": {
+          "n_crashes_con_senal": 3,
+          "pct_crashes": 1.3
         }
       }
     },
@@ -340,8 +390,12 @@
           "pct_crashes": 100.0
         },
         "sorpresa_total": {
-          "n_crashes_con_senal": 101,
-          "pct_crashes": 74.3
+          "n_crashes_con_senal": 104,
+          "pct_crashes": 76.5
+        },
+        "defensive_rotation_divergence": {
+          "n_crashes_con_senal": 73,
+          "pct_crashes": 53.7
         },
         "credit_stress": {
           "n_crashes_con_senal": 68,
@@ -367,6 +421,10 @@
           "n_crashes_con_senal": 46,
           "pct_crashes": 33.8
         },
+        "credit_equity_divergence": {
+          "n_crashes_con_senal": 46,
+          "pct_crashes": 33.8
+        },
         "capitulacion": {
           "n_crashes_con_senal": 39,
           "pct_crashes": 28.7
@@ -384,16 +442,12 @@
           "pct_crashes": 24.3
         },
         "bsi_recovery": {
-          "n_crashes_con_senal": 18,
-          "pct_crashes": 13.2
+          "n_crashes_con_senal": 21,
+          "pct_crashes": 15.4
         },
         "fg_extreme_fear": {
           "n_crashes_con_senal": 16,
           "pct_crashes": 11.8
-        },
-        "panico_total": {
-          "n_crashes_con_senal": 7,
-          "pct_crashes": 5.1
         }
       }
     },
@@ -414,8 +468,12 @@
           "pct_crashes": 100.0
         },
         "sorpresa_total": {
-          "n_crashes_con_senal": 69,
-          "pct_crashes": 84.1
+          "n_crashes_con_senal": 70,
+          "pct_crashes": 85.4
+        },
+        "defensive_rotation_divergence": {
+          "n_crashes_con_senal": 52,
+          "pct_crashes": 63.4
         },
         "bsi_washed_out": {
           "n_crashes_con_senal": 46,
@@ -453,6 +511,10 @@
           "n_crashes_con_senal": 30,
           "pct_crashes": 36.6
         },
+        "credit_equity_divergence": {
+          "n_crashes_con_senal": 27,
+          "pct_crashes": 32.9
+        },
         "vvix_entry": {
           "n_crashes_con_senal": 24,
           "pct_crashes": 29.3
@@ -462,17 +524,93 @@
           "pct_crashes": 15.9
         },
         "bsi_recovery": {
-          "n_crashes_con_senal": 10,
-          "pct_crashes": 12.2
-        },
-        "panico_total": {
-          "n_crashes_con_senal": 4,
-          "pct_crashes": 4.9
+          "n_crashes_con_senal": 12,
+          "pct_crashes": 14.6
         }
       }
     }
   },
   "spearman": null,
+  "structural_momentum": {
+    "entry": {
+      "n_hl": 111,
+      "n_ll": 122,
+      "n_total": 233,
+      "p_hl": 0.476,
+      "metodo": "precio SPY en pivotes MIN consecutivos",
+      "interpretacion": "HL = comprable. LL = TRAMPA (estructura bajista). p_hl y p_bull son ejes ORTOGONALES (r=0.015)."
+    },
+    "exit": {
+      "n_lh": 102,
+      "n_hh": 47,
+      "n_total": 149,
+      "p_hh": 0.315,
+      "metodo": "precio SPY en pivotes MAX consecutivos",
+      "interpretacion": "HH cae 90.2% de las veces (33años SPY N=429). AMPLIFICAR EXIT en HH. LH cae 75.3% (N=364)."
+    }
+  },
+  "prev_leg_context": {
+    "p90_threshold_abs_return": 0.0854,
+    "n_extreme_prev_leg": 51,
+    "n_normal_prev_leg": 331,
+    "pct_extreme": 0.134,
+    "umbral_operativo": ">20% o >30% (el >50% es inalcanzable en VIX fact store)",
+    "interpretacion": "pct_extreme alto = señal activada post-crash. Edge amplificado.",
+    "forward_extreme_prev": {
+      "n": 51,
+      "mean": 0.0188,
+      "win_rate": 0.627
+    },
+    "forward_normal_prev": {
+      "n": 331,
+      "mean": 0.0123,
+      "win_rate": 0.613
+    }
+  },
+  "divergence_regime": {
+    "regime": "FULL_CONVERGENT_BULL",
+    "interpretacion": "Las 3 escalas confirman: señal ALCISTA en retracción, corrección y depresión.",
+    "zz25_wr": 0.6152,
+    "cascade_50_rate": 0.6387,
+    "cascade_75_rate": 0.4215,
+    "fuente": "CONCEPTO DERIVADO — el fact store NO tiene este campo nativo."
+  },
+  "lift_vs_baseline": {
+    "MIN": {
+      "n_activa": 233,
+      "n_no_activa": 562,
+      "pct_cae_activa": 21.0,
+      "pct_cae_no_activa": 14.8,
+      "lift": 1.424,
+      "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
+    },
+    "MAX": {
+      "n_activa": 149,
+      "n_no_activa": 645,
+      "pct_cae_activa": 65.8,
+      "pct_cae_no_activa": 87.4,
+      "lift": 0.752,
+      "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
+    }
+  },
+  "ficha_credibilidad": {
+    "grade": "RETIRADA (lift<1.0 — 20-Ago-2026 Opus PC1)",
+    "n_total": 382,
+    "win_rate": 0.6152,
+    "baseline_wr": 0.464,
+    "baseline_type": "ALL",
+    "lift": 1.3259,
+    "p_value_fisher": 0.0,
+    "ci95_bootstrap": {
+      "ci_lo": 0.006473430239932592,
+      "ci_hi": 0.019812070993653338,
+      "n": 382
+    },
+    "dsr_pvalue": null,
+    "diamante": null,
+    "structural_break": false,
+    "accion_recomendada": "RETIRADA"
+  },
   "meta": {
     "seed": 42,
     "bootstrap": 3000,

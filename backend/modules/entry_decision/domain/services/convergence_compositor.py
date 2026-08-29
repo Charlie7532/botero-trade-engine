@@ -319,11 +319,12 @@ class ConvergenceCompositor:
 
         # ── Channel 3: D1 Directional Votes ──────────────────────────
         n_bullish_vote, n_bearish_vote, n_neutral_vote = 0, 0, 0
-        grupo_a_predictors = {"vix", "bsi", "fg", "credit", "rotation"}
         n_grupo_a_bearish = 0
         n_grupo_a_active = 0
 
         station_summaries = {}
+        grupo_a_votes = {}
+
         for code, data in results.items():
             w = STATION_WEIGHTS.get(code, 1.0)
             sf = SCALE_FACTORS.get(code, {"zz25": 1.0, "zz50": 1.0, "zz75": 1.0})
@@ -357,68 +358,38 @@ class ConvergenceCompositor:
             # Channel 2: Rarity
             ra = rarity_amplifier(n)
             rarity_numerator += ra * w
+            rarity_denominator += rf
+            if ra > 1.0:
+                extreme_stations.append(code)
 
-        grupo_a_votes = {}
-
-        for name, metar in results.items():
-            st_key = metar.get("state_key", "")
-            data = metar.get("data", {})
-
-            # D1 vote
-            vote = d1_directional_vote(st_key)
+            # Channel 3: D1 Directional Votes
+            vote = d1_directional_vote(state_key)
             if vote > 0:
                 n_bullish_vote += 1
             elif vote < 0:
                 n_bearish_vote += 1
 
-            if name in GRUPO_A_PREDICTORS:
+            if code in GRUPO_A_PREDICTORS:
                 n_grupo_a_active += 1
-                grupo_a_votes[name] = vote
+                grupo_a_votes[code] = vote
                 if vote < 0:
                     n_grupo_a_bearish += 1
 
-            # Rarity score component
-            rf = metar.get("reliability_factor", 0.5)
-            ra = metar.get("rarity_amplifier", 1.0)
-            if ra > 1.0:
-                extreme_stations.append(name)
-                rarity_numerator += rf * (ra - 1.0)
-            rarity_denominator += rf
-
-            # EV weights
-            n = data.get("n_raw", 0)
-            ew_1d = float(data.get("ev_weight_1d", 0.0))
-            ew_5d = float(data.get("ev_weight_5d", 0.0))
-
-            ev_1d = float(data.get("ev_net_1d", 0.0))
-            ev_5d = float(data.get("ev_net_5d", 0.0))
-
-            if n >= 10:
-                ev_contributing += 1
-                ev1_list.append(ev_1d)
-                ev5_list.append(ev_5d)
-                ev_weights_1d.append(ew_1d)
-                ev_weights_5d.append(ew_5d)
-
-            # Legacy directional counters
-            if ev_1d > 0: n_bull_1d += 1
-            if ev_5d > 0: n_bull_5d += 1
-
-            # Guidance flags
-            guidance = metar.get("action_code", "")
-            if guidance == "STK_BUY_DIP_TACTICAL":
-                n_buy_dip += 1
-
-            # Station summary for report
-            sf = metar.get("scale_factors", {"zz25": 1.0, "zz75": 1.0})
-            station_summaries[name] = {
-                "state_key": st_key,
-                "action_code": guidance,
+            # Station summary for report (using real values, not phantom defaults)
+            d1_bin = state_key.split("__")[0] if state_key and "__" in state_key else state_key
+            station_summaries[code] = {
+                "state_key": state_key,
+                "d1_bin": d1_bin,
+                "operational_guidance": guidance,
+                "action_code": data.get("action_code", ""),
                 "n_samples": n,
-                "reliability_factor": rf,
-                "rarity_amplifier": ra,
+                "reliability_factor": round(rf, 4),
+                "rarity_amplifier": round(ra, 4),
+                "ev_1d": round(ev1, 6),
+                "ev_5d": round(ev5, 6),
                 "ev_weight_1d": round(ew_1d, 3),
                 "ev_weight_5d": round(ew_5d, 3),
+                "d1_vote": vote,
                 "scale_factor_zz25": sf.get("zz25", 1.0),
                 "scale_factor_zz75": sf.get("zz75", 1.0),
                 "divergence_regime": data.get("divergence_regime"),

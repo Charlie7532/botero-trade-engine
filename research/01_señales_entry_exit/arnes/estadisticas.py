@@ -86,3 +86,35 @@ def _lift_vs_baseline(señal, fwd, df):
             "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
         }
     return lifts
+
+
+def _clopper_pearson_ci(n_successes: int, n_total: int, alpha: float = 0.05):
+    """Exact Clopper-Pearson CI95 for binomial proportion.
+    Required by Diamond Protocol §3.3 for signals with N < 21."""
+    from scipy.stats import beta as beta_dist
+    if n_total == 0:
+        return {"ci_lo": None, "ci_hi": None, "n": 0, "p_raw": None}
+    p_raw = n_successes / n_total
+    ci_lo = beta_dist.ppf(alpha / 2, n_successes, n_total - n_successes + 1) if n_successes > 0 else 0.0
+    ci_hi = beta_dist.ppf(1 - alpha / 2, n_successes + 1, n_total - n_successes) if n_successes < n_total else 1.0
+    return {
+        "p_raw": round(p_raw, 4),
+        "ci_lo": round(float(ci_lo), 4),
+        "ci_hi": round(float(ci_hi), 4),
+        "n": int(n_total),
+        "es_diamante": n_total < 21,
+        "ci_direccional": ci_lo > 0.5 or ci_hi < 0.5,
+    }
+
+
+def _fisher_pvalue(n_wins_signal, n_total_signal, n_wins_baseline, n_total_baseline):
+    """Fisher exact test: is the signal's WR significantly different from baseline?"""
+    from scipy.stats import fisher_exact
+    if n_total_signal == 0 or n_total_baseline == 0:
+        return None
+    a = n_wins_signal
+    b = n_total_signal - n_wins_signal
+    c = n_wins_baseline
+    d = n_total_baseline - n_wins_baseline
+    _, p = fisher_exact([[a, b], [c, d]], alternative='two-sided')
+    return round(float(p), 6)

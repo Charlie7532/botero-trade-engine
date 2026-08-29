@@ -104,14 +104,14 @@
     },
     "cascade_50": {
       "rate_activa": 0.4146341463414634,
-      "rate_baseline": 0.5083979328165374,
-      "delta": -0.09376378647507405,
+      "rate_baseline": 0.5090439276485789,
+      "delta": -0.09440978130711547,
       "n": 41
     },
     "cascade_75": {
       "rate_activa": 0.17073170731707318,
-      "rate_baseline": 0.270671834625323,
-      "delta": -0.09994012730824983,
+      "rate_baseline": 0.2713178294573643,
+      "delta": -0.10058612214029114,
       "n": 41
     },
     "duracion_bars": {
@@ -215,8 +215,8 @@
       "d3_ci95": {
         "best": "VOL_NEUTRAL_BASELINE",
         "worst": "VOL_ACCELERATING_EXPANSION",
-        "ci_lo": 0.011404,
-        "ci_hi": 0.050154,
+        "ci_lo": 0.01105,
+        "ci_hi": 0.049957,
         "significativo": true
       }
     },
@@ -287,8 +287,8 @@
       "d2_ci95": {
         "best": "ACCELERATING_UP_3D",
         "worst": "STABLE_CONTINUATION_3D",
-        "ci_lo": -0.012985,
-        "ci_hi": 0.063171,
+        "ci_lo": -0.012587,
+        "ci_hi": 0.06294,
         "significativo": false
       },
       "d3_station_vol": {
@@ -308,8 +308,8 @@
       "d3_ci95": {
         "best": "VOL_ACCELERATING_EXPANSION",
         "worst": "VOL_NEUTRAL_BASELINE",
-        "ci_lo": -0.019471,
-        "ci_hi": 0.049555,
+        "ci_lo": -0.019391,
+        "ci_hi": 0.049607,
         "significativo": false
       }
     },
@@ -334,8 +334,8 @@
       "d2_ci95": {
         "best": "DECELERATING_DOWN_3D",
         "worst": "STABLE_CONTINUATION_3D",
-        "ci_lo": -0.033454,
-        "ci_hi": 0.037748,
+        "ci_lo": -0.032323,
+        "ci_hi": 0.037337,
         "significativo": false
       },
       "d3_station_vol": {
@@ -349,26 +349,68 @@
       "d3_ci95": null
     }
   },
-  "estabilidad_decada": {
-    "1990": {
+  "estabilidad_ciclo": {
+    "1_DotCom_Expansion": {
       "n": 10,
       "mean": -0.036436,
-      "wr": 0.1
+      "wr": 0.1,
+      "rango": "1993-2000"
     },
-    "2000": {
-      "n": 14,
-      "mean": -0.01878,
-      "wr": 0.2857
-    },
-    "2010": {
-      "n": 17,
-      "mean": -0.035188,
-      "wr": 0.0588
-    },
-    "2020": {
+    "2_DotCom_Crash": {
       "n": 0,
       "mean": null,
-      "wr": null
+      "wr": null,
+      "rango": "2000-2003"
+    },
+    "3_Credit_Housing": {
+      "n": 13,
+      "mean": -0.015449,
+      "wr": 0.3077,
+      "rango": "2003-2007"
+    },
+    "4_GFC": {
+      "n": 1,
+      "mean": null,
+      "wr": null,
+      "rango": "2007-2009"
+    },
+    "5_QE_ZIRP": {
+      "n": 17,
+      "mean": -0.035188,
+      "wr": 0.0588,
+      "rango": "2009-2020"
+    },
+    "6_COVID_Injection": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2020-2022"
+    },
+    "7_QT_PostQE": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2022-2027"
+    }
+  },
+  "estabilidad_macro_era": {
+    "Pre_QE": {
+      "n": 24,
+      "mean": -0.026137,
+      "wr": 0.2083,
+      "rango": "1993-2009"
+    },
+    "QE_Era": {
+      "n": 17,
+      "mean": -0.035188,
+      "wr": 0.0588,
+      "rango": "2009-2022"
+    },
+    "Post_QE": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2022-2027"
     }
   },
   "punteria": {
@@ -430,11 +472,95 @@
         "breadth_contraction_exit": {
           "n_crashes_con_senal": 5,
           "pct_crashes": 100.0
+        },
+        "cascade_reversal": {
+          "n_crashes_con_senal": 4,
+          "pct_crashes": 80.0
         }
       }
     }
   },
   "spearman": null,
+  "structural_momentum": {
+    "entry": {
+      "n_hl": 5,
+      "n_ll": 0,
+      "n_total": 5,
+      "p_hl": 1.0,
+      "metodo": "precio SPY en pivotes MIN consecutivos",
+      "interpretacion": "HL = comprable. LL = TRAMPA (estructura bajista). p_hl y p_bull son ejes ORTOGONALES (r=0.015)."
+    },
+    "exit": {
+      "n_lh": 4,
+      "n_hh": 30,
+      "n_total": 34,
+      "p_hh": 0.882,
+      "metodo": "precio SPY en pivotes MAX consecutivos",
+      "interpretacion": "HH cae 90.2% de las veces (33años SPY N=429). AMPLIFICAR EXIT en HH. LH cae 75.3% (N=364)."
+    }
+  },
+  "prev_leg_context": {
+    "p90_threshold_abs_return": 0.0854,
+    "n_extreme_prev_leg": 17,
+    "n_normal_prev_leg": 23,
+    "pct_extreme": 0.425,
+    "umbral_operativo": ">20% o >30% (el >50% es inalcanzable en VIX fact store)",
+    "interpretacion": "pct_extreme alto = señal activada post-crash. Edge amplificado.",
+    "forward_extreme_prev": {
+      "n": 17,
+      "mean": -0.0444,
+      "win_rate": 0.0
+    },
+    "forward_normal_prev": {
+      "n": 23,
+      "mean": -0.0216,
+      "win_rate": 0.217
+    }
+  },
+  "divergence_regime": {
+    "regime": "FULL_CONVERGENT_BEAR",
+    "interpretacion": "Las 3 escalas confirman: señal BAJISTA en todas las dimensiones.",
+    "zz25_wr": 0.1463,
+    "cascade_50_rate": 0.4146,
+    "cascade_75_rate": 0.1707,
+    "fuente": "CONCEPTO DERIVADO — el fact store NO tiene este campo nativo."
+  },
+  "lift_vs_baseline": {
+    "MIN": {
+      "n_activa": 6,
+      "n_no_activa": 789,
+      "pct_cae_activa": 0.0,
+      "pct_cae_no_activa": 16.7,
+      "lift": 0.0,
+      "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
+    },
+    "MAX": {
+      "n_activa": 35,
+      "n_no_activa": 759,
+      "pct_cae_activa": 100.0,
+      "pct_cae_no_activa": 82.6,
+      "lift": 1.211,
+      "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
+    }
+  },
+  "ficha_credibilidad": {
+    "grade": "RETIRADA (duplicado 100% overlap con euforia — 20-Ago-2026 Opus PC3)",
+    "n_total": 41,
+    "win_rate": 0.1463,
+    "baseline_wr": 0.5097,
+    "baseline_type": "ALL",
+    "lift": 0.2871,
+    "p_value_fisher": 2e-06,
+    "ci95_bootstrap": {
+      "ci_lo": -0.03983455340200146,
+      "ci_hi": -0.01812331202213759,
+      "n": 41
+    },
+    "dsr_pvalue": null,
+    "diamante": null,
+    "structural_break": false,
+    "accion_recomendada": "RETIRADA"
+  },
   "meta": {
     "seed": 42,
     "bootstrap": 3000,

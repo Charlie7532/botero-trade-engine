@@ -29,14 +29,19 @@ def obs():
     return pd.read_pickle(PKL).reset_index(drop=True)
 
 
-def test_esquema_143_columnas(obs):
-    """Esquema auditado: 1,590 pivotes × 143 columnas (incluye n_stations_a y
-    cascade_conviction_50, añadidas por el builder v8)."""
-    assert obs.shape == (1590, 143), f"esquema inesperado: {obs.shape}"
+def test_esquema_165_columnas(obs):
+    """Esquema auditado: 1,590 pivotes × 165 columnas (v9: 143 base + 22 precursores
+    _sk_t1/_sk_t2 por estación, añadidos el 28-Ago-2026)."""
+    assert obs.shape == (1590, 165), f"esquema inesperado: {obs.shape}"
     for col in ("pivot_date", "pivot_type", "cascade_conviction_50",
                 "n_stations_a", "duration_bars", "daily_return_pct",
                 "d1_bear_5", "z_bear", "z_dom", "cascade_conviction"):
         assert col in obs.columns, f"falta columna crítica: {col}"
+    # Precursor columns (22 = 11 stations × 2 offsets)
+    for station in STATIONS:
+        for offset in ("t1", "t2"):
+            col_name = f"{station}_sk_{offset}"
+            assert col_name in obs.columns, f"falta columna precursora: {col_name}"
 
 
 def test_pivotes_zigzag_oficial(obs):

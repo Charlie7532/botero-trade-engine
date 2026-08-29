@@ -12,6 +12,7 @@ department: SERVICE
 layer: persona
 requires: [operational-purpose, clean-architecture]
 modules: [volatility_regime, simulation, entry_decision, execution]
+references: [metar/overflow_taxonomy.md, metar/anti_patterns.md, stations/vix_intelligence.md, stations/vvix_intelligence.md]
 mcp_servers: [yahoo-finance, fred]
 crewai_role: agent
 ---

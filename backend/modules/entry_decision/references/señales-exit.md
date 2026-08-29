@@ -171,3 +171,27 @@ Una señal de EXIT se considerará apta para integración en el motor de decisi�
 2. **Auditoría Estadística y Bootstrap:** Validación de significancia mediante intervalos de confianza CI95 (3,000 iteraciones con reemplazo).
 3. **Selección de la Cesta Defensiva:** Homologación de las 3 a 4 señales con mayor Edge Defensivo y menor correlación mutua.
 4. **Integración en Clean Architecture:** Mapeo de salidas dentro de `backend/modules/entry_decision/domain/` y `backend/modules/execution/` conforme a la taxonomía universal `STK_TRIM_TACTICAL` y `STK_DISTRIBUTE_DECAY`.
+
+---
+
+## 7. Resultados de Validación de Señales de Techo por Silencio y Contradicción (19-Ago-2026)
+
+### 7.1 Métricas de las Nuevas Señales Homologadas
+
+| Señal | $N$ | Edge Ofensivo | Win Rate (Alcista) | CI95 Bootstrap (3000 iter) | Veredicto |
+|---|---:|---:|---:|---|:---:|
+| **`credit_equity_divergence`** (Techo MAX + Credit D2 accel up) | **120** | **-3.15%** | **14.2%** (85.8% caídas) | **[-4.06%, -2.10%]** ✅ | 🏆 **EXIT GRADO A (Super Señal de Techo)** |
+| **`defensive_rotation_divergence`** (Techo MAX + Rotación D2 crush) | **197** | **-2.36%** | **31.0%** (69.0% caídas) | **[-3.20%, -1.50%]** ✅ | 🏆 **EXIT GRADO A** |
+| **`sv5t_silent_distribution`** (Techo MAX + SV5T Silencio / Low Turb) | **20** | **-2.25%** | **30.0%** (70.0% caídas) | **[-4.05%, -0.39%]** ✅ | 🏆 **EXIT GRADO A** |
+| `stealth_tail_hedging` (VIX low + SKEW vol expand) | 31 | -0.65% | 35.5% | [-2.59%, +1.29%] ❌ | ⚠️ Marginal |
+
+### 7.2 Impacto en la Cobertura Total de Techos (Sistema Protector V2)
+
+| Capa del Sistema | Escala $zz_{25}$ ($\ge 2.5\%$, $N=662$) | Escala $zz_{50}$ ($\ge 5.0\%$, $N=325$) | Escala $zz_{75}$ ($\ge 7.5\%$, $N=161$) |
+|---|:---:|:---:|:---:|
+| **1. Exit Anteriores (`bsi_recovery`, `euforia`)** | 234 detectadas (35.3%) | 101 detectadas (31.1%) | 47 detectadas (29.2%) |
+| **2. Nuevas Señales (Silencio SV5T + Contradicciones)** | 206 detectadas (31.1%) | 109 detectadas (33.5%) | 61 detectadas (37.9%) |
+| **TOTAL SEÑALES DE EXIT PURAS (1 + 2)** | **379 detectadas (57.3%)** | **181 detectadas (55.7%)** | **96 detectadas (59.6%)** |
+| **NUEVO SISTEMA PROTECTOR TOTAL V2 (Exit + Macro)** | **486 detectadas (73.4%)** | **227 detectadas (69.8%)** | **118 detectadas (73.3%)** |
+
+> **Hallazgo Crítico:** Las señales puras de salida aumentaron su captura de techos severos ($zz_{75}$) de **29.2% a 59.6%** (más del doble). El peor drawdown en las caídas severas no detectadas se redujo de **-14.15% a -9.99%**, eliminando todas las caídas catastróficas $> -10\%$.

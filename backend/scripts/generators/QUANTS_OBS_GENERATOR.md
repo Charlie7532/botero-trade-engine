@@ -1,10 +1,9 @@
 # `quants_obs.pkl` — Generador Oficial y Tabla de Observación Canónica
 
-**Versión:** 23-Ago-2026 (builder v8 promovido a producción)
+**Versión:** 28-Ago-2026 (builder v9 — precursores t-1/t-2 añadidos)
 **Generador:** `backend/scripts/generators/generate_quants_obs.py`
 **Tests:** `backend/tests/test_quants_obs_builder.py` (7 tests de regresión)
-**Artefacto:** `data/research/pivots/quants_obs.pkl` (1,590 pivotes × 143 columnas)
-**Hash de referencia:** `59fe36d0359f7523ff86039a8446f92e` (verificado determinista ×3)
+**Artefacto:** `data/research/pivots/quants_obs.pkl` (1,590 pivotes × 165 columnas)
 
 ---
 
@@ -52,9 +51,10 @@ cd /root/botero-trade && PYTHONPATH=/root/botero-trade \
   backend/.venv/bin/python -m pytest backend/tests/test_quants_obs_builder.py -v
 ```
 Si un test falla, la cadena está rota: detener el trabajo sobre señales hasta
-diagnosticar. Los tests congelan: esquema 143 columnas, pivotes idénticos al
-repo oficial, state_keys sin huérfanos, cascade_reversal no inerte (~240
-disparos), z_bear consistente con el cal-file, diamantes no degradados.
+diagnosticar. Los tests congelan: esquema 165 columnas (143 base + 22 precursores
+`_sk_t1`/`_sk_t2`), pivotes idénticos al repo oficial, state_keys sin huérfanos,
+cascade_reversal no inerte (~240 disparos), z_bear consistente con el cal-file,
+diamantes no degradados.
 
 ### Cuándo regenerar
 Cuando el zigzag confirme pivotes nuevos (la tabla crece), cuando cambien los

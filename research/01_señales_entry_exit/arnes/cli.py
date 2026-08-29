@@ -121,14 +121,36 @@ def main():
                     ci_tag = f" CI95=[{d3_ci['ci_lo']:+.4f},{d3_ci['ci_hi']:+.4f}] {'✅' if d3_ci['significativo'] else '❌'}"
                 print(f"  D3 {station} [{info['d1_dominante']}]: best={best_d3[0]} ({best_d3[1]['mean']:+.4f} WR={best_d3[1]['wr']:.0%} N={best_d3[1]['n']}) | worst={worst_d3[0]} ({worst_d3[1]['mean']:+.4f} WR={worst_d3[1]['wr']:.0%} N={worst_d3[1]['n']}){ci_tag}")
 
-    # Estabilidad por década
-    if "estabilidad_decada" in rep and rep["estabilidad_decada"]:
+    # Estabilidad por Ciclo de Mercado
+    if "estabilidad_ciclo" in rep and rep["estabilidad_ciclo"]:
         parts = []
-        for dec, vals in sorted(rep["estabilidad_decada"].items()):
+        for cycle, vals in rep["estabilidad_ciclo"].items():
             if vals.get("mean") is not None:
-                parts.append(f"{dec}s={vals['mean']:+.4f} WR={vals['wr']:.0%} N={vals['n']}")
+                parts.append(f"{cycle}={vals['mean']:+.4f} WR={vals['wr']:.0%} N={vals['n']}")
         if parts:
-            print(f"  Estabilidad: {' | '.join(parts)}")
+            print(f"  Estabilidad por ciclo: {' | '.join(parts)}")
+    # Macro-eras
+    if "estabilidad_macro_era" in rep and rep["estabilidad_macro_era"]:
+        parts = []
+        for era, vals in rep["estabilidad_macro_era"].items():
+            if vals.get("mean") is not None:
+                parts.append(f"{era}={vals['mean']:+.4f} WR={vals['wr']:.0%} N={vals['n']}")
+        if parts:
+            print(f"  Macro-eras: {' | '.join(parts)}")
+    # Ficha de credibilidad
+    if "ficha_credibilidad" in rep:
+        fc = rep["ficha_credibilidad"]
+        print(f"  ── FICHA CREDIBILIDAD ──")
+        print(f"  Grade: {fc['grade'][:60]}")
+        print(f"  WR={fc['win_rate']:.1%} vs BL({fc['baseline_type']})={fc['baseline_wr']:.1%} → LIFT={fc['lift']}")
+        print(f"  p-value Fisher: {fc['p_value_fisher']}")
+        if fc.get('dsr_pvalue'):
+            print(f"  DSR p-value: {fc['dsr_pvalue']}")
+        if fc.get('diamante'):
+            d = fc['diamante']
+            print(f"  💎 DIAMANTE: p_raw={d['p_raw']} CI95=[{d['ci_lo']}, {d['ci_hi']}] direccional={d['ci_direccional']}")
+        print(f"  Structural break: {fc['structural_break']}")
+        print(f"  ▶ ACCIÓN: {fc['accion_recomendada']}")
 
     if "costo_tarde" in rep and rep["costo_tarde"].get("costo_medio") is not None:
         print(f"  Costo retraso k=1d: {rep['costo_tarde']['costo_medio']:+.4f} (N={rep['costo_tarde']['n']})")

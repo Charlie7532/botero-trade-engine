@@ -104,14 +104,14 @@
     },
     "cascade_50": {
       "rate_activa": 0.5536585365853659,
-      "rate_baseline": 0.45513654096228867,
-      "delta": 0.09852199562307723,
+      "rate_baseline": 0.4564369310793238,
+      "delta": 0.09722160550604209,
       "n": 820
     },
     "cascade_75": {
       "rate_activa": 0.3378048780487805,
-      "rate_baseline": 0.19375812743823148,
-      "delta": 0.14404675061054903,
+      "rate_baseline": 0.19505851755526657,
+      "delta": 0.14274636049351394,
       "n": 820
     },
     "duracion_bars": {
@@ -179,26 +179,68 @@
     }
   },
   "desglose_d2d3": null,
-  "estabilidad_decada": {
-    "1990": {
+  "estabilidad_ciclo": {
+    "1_DotCom_Expansion": {
       "n": 0,
       "mean": null,
-      "wr": null
+      "wr": null,
+      "rango": "1993-2000"
     },
-    "2000": {
-      "n": 296,
-      "mean": 0.001055,
-      "wr": 0.5
+    "2_DotCom_Crash": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2000-2003"
     },
-    "2010": {
-      "n": 308,
-      "mean": 0.005205,
-      "wr": 0.5
+    "3_Credit_Housing": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2003-2007"
     },
-    "2020": {
-      "n": 216,
-      "mean": 0.003057,
-      "wr": 0.5
+    "4_GFC": {
+      "n": 188,
+      "mean": -0.000587,
+      "wr": 0.5,
+      "rango": "2007-2009"
+    },
+    "5_QE_ZIRP": {
+      "n": 416,
+      "mean": 0.00487,
+      "wr": 0.5,
+      "rango": "2009-2020"
+    },
+    "6_COVID_Injection": {
+      "n": 108,
+      "mean": 0.005661,
+      "wr": 0.5,
+      "rango": "2020-2022"
+    },
+    "7_QT_PostQE": {
+      "n": 108,
+      "mean": 0.000454,
+      "wr": 0.5,
+      "rango": "2022-2027"
+    }
+  },
+  "estabilidad_macro_era": {
+    "Pre_QE": {
+      "n": 188,
+      "mean": -0.000587,
+      "wr": 0.5,
+      "rango": "1993-2009"
+    },
+    "QE_Era": {
+      "n": 524,
+      "mean": 0.005033,
+      "wr": 0.5,
+      "rango": "2009-2022"
+    },
+    "Post_QE": {
+      "n": 108,
+      "mean": 0.000454,
+      "wr": 0.5,
+      "rango": "2022-2027"
     }
   },
   "punteria": {
@@ -262,12 +304,16 @@
           "pct_crashes": 57.9
         },
         "sorpresa_total": {
-          "n_crashes_con_senal": 233,
-          "pct_crashes": 57.0
+          "n_crashes_con_senal": 230,
+          "pct_crashes": 56.2
         },
         "sub_reaccion": {
           "n_crashes_con_senal": 219,
           "pct_crashes": 53.5
+        },
+        "defensive_rotation_divergence": {
+          "n_crashes_con_senal": 157,
+          "pct_crashes": 38.4
         },
         "credit_stress": {
           "n_crashes_con_senal": 118,
@@ -281,9 +327,17 @@
           "n_crashes_con_senal": 117,
           "pct_crashes": 28.6
         },
+        "credit_equity_divergence": {
+          "n_crashes_con_senal": 108,
+          "pct_crashes": 26.4
+        },
         "bsi_washed_out": {
           "n_crashes_con_senal": 97,
           "pct_crashes": 23.7
+        },
+        "bsi_recovery": {
+          "n_crashes_con_senal": 91,
+          "pct_crashes": 22.2
         },
         "vix_crisis_spike": {
           "n_crashes_con_senal": 83,
@@ -297,10 +351,6 @@
           "n_crashes_con_senal": 71,
           "pct_crashes": 17.4
         },
-        "bsi_recovery": {
-          "n_crashes_con_senal": 66,
-          "pct_crashes": 16.1
-        },
         "vvix_entry": {
           "n_crashes_con_senal": 59,
           "pct_crashes": 14.4
@@ -309,21 +359,29 @@
           "n_crashes_con_senal": 57,
           "pct_crashes": 13.9
         },
+        "cascade_reversal": {
+          "n_crashes_con_senal": 41,
+          "pct_crashes": 10.0
+        },
         "fg_extreme_fear": {
           "n_crashes_con_senal": 34,
           "pct_crashes": 8.3
         },
-        "panico_total": {
-          "n_crashes_con_senal": 22,
-          "pct_crashes": 5.4
+        "sv5t_silent_distribution": {
+          "n_crashes_con_senal": 8,
+          "pct_crashes": 2.0
         },
         "fg_extreme_greed": {
           "n_crashes_con_senal": 7,
           "pct_crashes": 1.7
         },
-        "skew_paranoia_exit": {
-          "n_crashes_con_senal": 4,
-          "pct_crashes": 1.0
+        "stealth_tail_hedging": {
+          "n_crashes_con_senal": 7,
+          "pct_crashes": 1.7
+        },
+        "panico_total": {
+          "n_crashes_con_senal": 5,
+          "pct_crashes": 1.2
         }
       }
     },
@@ -340,12 +398,16 @@
           "pct_crashes": 94.8
         },
         "sorpresa_total": {
-          "n_crashes_con_senal": 153,
-          "pct_crashes": 72.2
+          "n_crashes_con_senal": 155,
+          "pct_crashes": 73.1
         },
         "regime_change_exit": {
           "n_crashes_con_senal": 144,
           "pct_crashes": 67.9
+        },
+        "defensive_rotation_divergence": {
+          "n_crashes_con_senal": 109,
+          "pct_crashes": 51.4
         },
         "sub_reaccion": {
           "n_crashes_con_senal": 99,
@@ -367,9 +429,17 @@
           "n_crashes_con_senal": 77,
           "pct_crashes": 36.3
         },
+        "credit_equity_divergence": {
+          "n_crashes_con_senal": 77,
+          "pct_crashes": 36.3
+        },
         "bsi_washed_out": {
           "n_crashes_con_senal": 69,
           "pct_crashes": 32.5
+        },
+        "bsi_recovery": {
+          "n_crashes_con_senal": 53,
+          "pct_crashes": 25.0
         },
         "pcr_put_panic": {
           "n_crashes_con_senal": 44,
@@ -387,19 +457,23 @@
           "n_crashes_con_senal": 41,
           "pct_crashes": 19.3
         },
-        "bsi_recovery": {
-          "n_crashes_con_senal": 41,
-          "pct_crashes": 19.3
-        },
         "fg_extreme_fear": {
           "n_crashes_con_senal": 21,
           "pct_crashes": 9.9
         },
-        "panico_total": {
-          "n_crashes_con_senal": 13,
-          "pct_crashes": 6.1
+        "cascade_reversal": {
+          "n_crashes_con_senal": 6,
+          "pct_crashes": 2.8
+        },
+        "sv5t_silent_distribution": {
+          "n_crashes_con_senal": 5,
+          "pct_crashes": 2.4
         },
         "fg_extreme_greed": {
+          "n_crashes_con_senal": 4,
+          "pct_crashes": 1.9
+        },
+        "stealth_tail_hedging": {
           "n_crashes_con_senal": 4,
           "pct_crashes": 1.9
         }
@@ -418,12 +492,16 @@
           "pct_crashes": 95.9
         },
         "sorpresa_total": {
-          "n_crashes_con_senal": 95,
-          "pct_crashes": 78.5
+          "n_crashes_con_senal": 94,
+          "pct_crashes": 77.7
         },
         "regime_change_exit": {
           "n_crashes_con_senal": 89,
           "pct_crashes": 73.6
+        },
+        "defensive_rotation_divergence": {
+          "n_crashes_con_senal": 76,
+          "pct_crashes": 62.8
         },
         "bsi_washed_out": {
           "n_crashes_con_senal": 54,
@@ -449,6 +527,10 @@
           "n_crashes_con_senal": 45,
           "pct_crashes": 37.2
         },
+        "credit_equity_divergence": {
+          "n_crashes_con_senal": 44,
+          "pct_crashes": 36.4
+        },
         "pcr_put_panic": {
           "n_crashes_con_senal": 37,
           "pct_crashes": 30.6
@@ -461,30 +543,118 @@
           "n_crashes_con_senal": 35,
           "pct_crashes": 28.9
         },
+        "bsi_recovery": {
+          "n_crashes_con_senal": 29,
+          "pct_crashes": 24.0
+        },
         "vvix_entry": {
           "n_crashes_con_senal": 25,
           "pct_crashes": 20.7
-        },
-        "bsi_recovery": {
-          "n_crashes_con_senal": 23,
-          "pct_crashes": 19.0
         },
         "fg_extreme_fear": {
           "n_crashes_con_senal": 17,
           "pct_crashes": 14.0
         },
-        "panico_total": {
-          "n_crashes_con_senal": 5,
-          "pct_crashes": 4.1
+        "cascade_reversal": {
+          "n_crashes_con_senal": 6,
+          "pct_crashes": 5.0
         },
         "fg_extreme_greed": {
           "n_crashes_con_senal": 4,
           "pct_crashes": 3.3
+        },
+        "sv5t_silent_distribution": {
+          "n_crashes_con_senal": 4,
+          "pct_crashes": 3.3
+        },
+        "stealth_tail_hedging": {
+          "n_crashes_con_senal": 3,
+          "pct_crashes": 2.5
         }
       }
     }
   },
   "spearman": null,
+  "structural_momentum": {
+    "entry": {
+      "n_hl": 222,
+      "n_ll": 188,
+      "n_total": 410,
+      "p_hl": 0.541,
+      "metodo": "precio SPY en pivotes MIN consecutivos",
+      "interpretacion": "HL = comprable. LL = TRAMPA (estructura bajista). p_hl y p_bull son ejes ORTOGONALES (r=0.015)."
+    },
+    "exit": {
+      "n_lh": 187,
+      "n_hh": 223,
+      "n_total": 410,
+      "p_hh": 0.544,
+      "metodo": "precio SPY en pivotes MAX consecutivos",
+      "interpretacion": "HH cae 90.2% de las veces (33años SPY N=429). AMPLIFICAR EXIT en HH. LH cae 75.3% (N=364)."
+    }
+  },
+  "prev_leg_context": {
+    "p90_threshold_abs_return": 0.0854,
+    "n_extreme_prev_leg": 93,
+    "n_normal_prev_leg": 727,
+    "pct_extreme": 0.113,
+    "umbral_operativo": ">20% o >30% (el >50% es inalcanzable en VIX fact store)",
+    "interpretacion": "pct_extreme alto = señal activada post-crash. Edge amplificado.",
+    "forward_extreme_prev": {
+      "n": 93,
+      "mean": -0.0049,
+      "win_rate": 0.387
+    },
+    "forward_normal_prev": {
+      "n": 727,
+      "mean": 0.0042,
+      "win_rate": 0.514
+    }
+  },
+  "divergence_regime": {
+    "regime": "MIXED_HORIZON_TRANSITION",
+    "interpretacion": "Las escalas no convergen — transición entre regímenes.",
+    "zz25_wr": 0.5,
+    "cascade_50_rate": 0.5537,
+    "cascade_75_rate": 0.3378,
+    "fuente": "CONCEPTO DERIVADO — el fact store NO tiene este campo nativo."
+  },
+  "lift_vs_baseline": {
+    "MAX": {
+      "n_activa": 410,
+      "n_no_activa": 384,
+      "pct_cae_activa": 79.5,
+      "pct_cae_no_activa": 87.5,
+      "lift": 0.909,
+      "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
+    },
+    "MIN": {
+      "n_activa": 410,
+      "n_no_activa": 385,
+      "pct_cae_activa": 20.5,
+      "pct_cae_no_activa": 12.5,
+      "lift": 1.643,
+      "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
+    }
+  },
+  "ficha_credibilidad": {
+    "grade": "RE-RETIRADA (structural break 22-Ago: +6.99% PRE-2009 → −2.84% POST, p=0.0000 Fisher. Reliquia de era pre-QE. Rescate v6 invalidado)",
+    "n_total": 820,
+    "win_rate": 0.5,
+    "baseline_wr": 0.5007,
+    "baseline_type": "ALL",
+    "lift": 0.9987,
+    "p_value_fisher": 1.0,
+    "ci95_bootstrap": {
+      "ci_lo": -0.0012084105203467885,
+      "ci_hi": 0.007277076124049498,
+      "n": 820
+    },
+    "dsr_pvalue": null,
+    "diamante": null,
+    "structural_break": false,
+    "accion_recomendada": "RETIRADA"
+  },
   "meta": {
     "seed": 42,
     "bootstrap": 3000,

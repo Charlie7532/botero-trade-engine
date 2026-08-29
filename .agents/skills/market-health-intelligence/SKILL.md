@@ -12,6 +12,7 @@ department: SERVICE
 layer: tool
 requires: [clean-architecture, operational-purpose, hypothesis-governance]
 modules: [market_health]
+references: [metar/d1_labels_canonical.md, metar/interactions.md, metar/anti_patterns.md]
 mcp_servers: [fred, yahoo-finance]
 crewai_role: injected
 ---

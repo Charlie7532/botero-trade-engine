@@ -1,0 +1,444 @@
+{
+  "señal": "skew_paranoia_exit",
+  "forward": "next_leg",
+  "n_total": 1590,
+  "activa": {
+    "dist": {
+      "n": 10,
+      "mean": -0.002633938483422493,
+      "median": -0.025857750407770663,
+      "p5": -0.05069884193500809,
+      "p25": -0.03513761558800213,
+      "p75": 0.034289419755816175,
+      "p95": 0.06570093236069219,
+      "std": 0.0438910100736395
+    },
+    "wl": {
+      "win_rate": 0.4,
+      "n_wins": 4,
+      "n_losses": 6,
+      "mean_win": 0.04838686799645442,
+      "mean_loss": -0.0366478094700071,
+      "profit_factor": 0.8802139190348184
+    },
+    "ci_mean": {
+      "ci_lo": null,
+      "ci_hi": null,
+      "n": 10,
+      "nota": "N<20"
+    }
+  },
+  "baseline": {
+    "dist": {
+      "n": 1579,
+      "mean": 0.004107317827354279,
+      "median": 0.025118035882908396,
+      "p5": -0.07672544115758424,
+      "p25": -0.04475468760957463,
+      "p75": 0.047289512113139365,
+      "p95": 0.09305242532528207,
+      "std": 0.06364972711906794
+    },
+    "wl": {
+      "win_rate": 0.5009499683343889,
+      "n_wins": 791,
+      "n_losses": 788,
+      "mean_win": 0.057281338318897236,
+      "mean_loss": -0.04926914182849659,
+      "profit_factor": 1.1670472093904611
+    }
+  },
+  "baseline_pivot_type": "ALL",
+  "delta_media": -0.006741256310776772,
+  "timing_temprano": {
+    "estadistica": {
+      "n": 10,
+      "mean": -0.02450110139442625,
+      "median": -0.022482689360013408,
+      "p5": -0.04955454735014811,
+      "p25": -0.03219955841787067,
+      "p75": -0.012122213846958909,
+      "p95": -0.007297079664582098,
+      "std": 0.014850768704229309
+    }
+  },
+  "costo_tarde": {
+    "n": 10,
+    "costo_medio": -0.001067443069374206,
+    "p50": -0.0013921659575522826,
+    "p5": -0.012516910020909927,
+    "p95": 0.008864738320524757
+  },
+  "sensibilidad": [
+    {
+      "k": 0,
+      "n": 10,
+      "mean": null
+    },
+    {
+      "k": 1,
+      "n": 10,
+      "mean": null
+    },
+    {
+      "k": 2,
+      "n": 9,
+      "mean": null
+    },
+    {
+      "k": 3,
+      "n": 9,
+      "mean": null
+    },
+    {
+      "k": 5,
+      "n": 5,
+      "mean": null
+    }
+  ],
+  "triada": {
+    "zz25": {
+      "mean": -0.002633938483422493,
+      "median": -0.025857750407770663,
+      "win_rate": 0.4,
+      "n": 10
+    },
+    "cascade_50": {
+      "rate_activa": 0.3,
+      "rate_baseline": 0.5079164027865738,
+      "delta": -0.2079164027865738,
+      "n": 10
+    },
+    "cascade_75": {
+      "rate_activa": 0.1,
+      "rate_baseline": 0.26979100696643443,
+      "delta": -0.16979100696643443,
+      "n": 10
+    },
+    "duracion_bars": {
+      "mean": 12.2,
+      "median": 9.0,
+      "baseline_mean": 7.8112729575680815,
+      "n": 10
+    }
+  },
+  "duracion_desglose": {
+    "mediana_bars": 9.0,
+    "cortas": {
+      "n": 5,
+      "fwd_mean": -0.005061,
+      "wr": 0.4
+    },
+    "largas": {
+      "n": 5,
+      "fwd_mean": -0.000207,
+      "wr": 0.4
+    },
+    "delta": -0.004853
+  },
+  "anticipacion_zigzag": {
+    "mean_dias": 134.5,
+    "median_dias": 16.0,
+    "p5_dias": 1.35,
+    "p25_dias": 7.25,
+    "p75_dias": 43.25,
+    "p95_dias": 646.3,
+    "n_total": 10,
+    "n_anticipados": 9,
+    "pct_anticipados": 90.0
+  },
+  "capture_ratio": {
+    "ratio": -0.0579,
+    "fwd_mean": -0.002634,
+    "abs_leg_mean": 0.045525,
+    "n": 10,
+    "por_pivot_type": {
+      "MAX": {
+        "ratio": -0.6945,
+        "fwd_mean": -0.036648,
+        "abs_leg_mean": 0.052766,
+        "n": 6
+      }
+    }
+  },
+  "drawdown_anticipacion": {
+    "entrada_temprana": {
+      "n": 4,
+      "forward_mean": -3.220289085253958e-06,
+      "mae_medio": -0.020448786804581672
+    },
+    "salida_tardia": {
+      "n": 4,
+      "forward_mean": 0.006512913860165448,
+      "mae_medio": -0.023473434906926154
+    }
+  },
+  "desglose_d2d3": {
+    "skew": {
+      "d1_dominante": "BLACK_SWAN_PARANOIA",
+      "d1_pct": 100.0,
+      "n_d1": 10,
+      "d2_velocity": {
+        "FAST_SPIKE_3D": {
+          "n": 5,
+          "mean": 0.001743,
+          "wr": 0.4,
+          "tag": "UNFAVORABLE"
+        }
+      },
+      "d2_ci95": null,
+      "d3_station_vol": {
+        "VOL_NEUTRAL_BASELINE": {
+          "n": 7,
+          "mean": -0.018815,
+          "wr": 0.2857,
+          "tag": "UNFAVORABLE"
+        }
+      },
+      "d3_ci95": null
+    },
+    "credit": {
+      "d1_dominante": "CREDIT_EASE",
+      "d1_pct": 70.0,
+      "n_d1": 7,
+      "d2_velocity": {
+        "STABLE_CONTINUATION_3D": {
+          "n": 6,
+          "mean": -0.012223,
+          "wr": 0.3333,
+          "tag": "UNFAVORABLE"
+        }
+      },
+      "d2_ci95": null,
+      "d3_station_vol": {},
+      "d3_ci95": null
+    },
+    "yield_curve": {
+      "d1_dominante": "FLAT_CURVE",
+      "d1_pct": 60.0,
+      "n_d1": 6,
+      "d2_velocity": {},
+      "d2_ci95": null,
+      "d3_station_vol": {
+        "VOL_NEUTRAL_BASELINE": {
+          "n": 5,
+          "mean": 0.006728,
+          "wr": 0.6,
+          "tag": "FAVORABLE"
+        }
+      },
+      "d3_ci95": null
+    }
+  },
+  "estabilidad_ciclo": {
+    "1_DotCom_Expansion": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "1993-2000"
+    },
+    "2_DotCom_Crash": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2000-2003"
+    },
+    "3_Credit_Housing": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2003-2007"
+    },
+    "4_GFC": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2007-2009"
+    },
+    "5_QE_ZIRP": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "2009-2020"
+    },
+    "6_COVID_Injection": {
+      "n": 1,
+      "mean": null,
+      "wr": null,
+      "rango": "2020-2022"
+    },
+    "7_QT_PostQE": {
+      "n": 9,
+      "mean": -0.000117,
+      "wr": 0.4444,
+      "rango": "2022-2027"
+    }
+  },
+  "estabilidad_macro_era": {
+    "Pre_QE": {
+      "n": 0,
+      "mean": null,
+      "wr": null,
+      "rango": "1993-2009"
+    },
+    "QE_Era": {
+      "n": 1,
+      "mean": null,
+      "wr": null,
+      "rango": "2009-2022"
+    },
+    "Post_QE": {
+      "n": 9,
+      "mean": -0.000117,
+      "wr": 0.4444,
+      "rango": "2022-2027"
+    }
+  },
+  "punteria": {
+    "zz25": {
+      "n": 10,
+      "forward_mean": -0.002633938483422493,
+      "win_rate": 0.4,
+      "capture_ratio": -0.10535753933689972,
+      "mae_medio": -0.02450110139442625
+    }
+  },
+  "offset_entrada": {
+    "-1": {
+      "n": 10,
+      "forward_mean": 0.008543538555514995,
+      "win_rate": 0.6,
+      "capture_ratio": 0.18766580439827749
+    },
+    "+0": {
+      "n": 10,
+      "forward_mean": -0.002633938483422493,
+      "win_rate": 0.4,
+      "capture_ratio": -0.05785661070236318
+    },
+    "+1": {
+      "n": 10,
+      "forward_mean": 0.017794173585336193,
+      "win_rate": 0.6,
+      "capture_ratio": 0.3908635605488182
+    }
+  },
+  "lookback_crash": {
+    "zz25": {
+      "n_crashes": 4,
+      "ventana_dias": 3,
+      "señales": {
+        "skew_paranoia_exit": {
+          "n_crashes_con_senal": 4,
+          "pct_crashes": 100.0
+        },
+        "credit_easing_k1": {
+          "n_crashes_con_senal": 3,
+          "pct_crashes": 75.0
+        },
+        "sub_reaccion": {
+          "n_crashes_con_senal": 3,
+          "pct_crashes": 75.0
+        },
+        "cascade_reversal": {
+          "n_crashes_con_senal": 3,
+          "pct_crashes": 75.0
+        },
+        "breadth_contraction_exit": {
+          "n_crashes_con_senal": 3,
+          "pct_crashes": 75.0
+        }
+      }
+    },
+    "zz50": {
+      "n_crashes": 1,
+      "ventana_dias": 3,
+      "señales": {}
+    }
+  },
+  "spearman": null,
+  "structural_momentum": {
+    "entry": {
+      "n_hl": 0,
+      "n_ll": 3,
+      "n_total": 3,
+      "p_hl": 0.0,
+      "metodo": "heurística prev_leg_return (fallback)",
+      "interpretacion": "HL = comprable. LL = TRAMPA (estructura bajista). p_hl y p_bull son ejes ORTOGONALES (r=0.015)."
+    },
+    "exit": {
+      "n_lh": 1,
+      "n_hh": 5,
+      "n_total": 6,
+      "p_hh": 0.833,
+      "metodo": "precio SPY en pivotes MAX consecutivos",
+      "interpretacion": "HH cae 90.2% de las veces (33años SPY N=429). AMPLIFICAR EXIT en HH. LH cae 75.3% (N=364)."
+    }
+  },
+  "prev_leg_context": {
+    "p90_threshold_abs_return": 0.0854,
+    "n_extreme_prev_leg": 1,
+    "n_normal_prev_leg": 9,
+    "pct_extreme": 0.1,
+    "umbral_operativo": ">20% o >30% (el >50% es inalcanzable en VIX fact store)",
+    "interpretacion": "pct_extreme alto = señal activada post-crash. Edge amplificado."
+  },
+  "divergence_regime": {
+    "regime": "FULL_CONVERGENT_BEAR",
+    "interpretacion": "Las 3 escalas confirman: señal BAJISTA en todas las dimensiones.",
+    "zz25_wr": 0.4,
+    "cascade_50_rate": 0.3,
+    "cascade_75_rate": 0.1,
+    "fuente": "CONCEPTO DERIVADO — el fact store NO tiene este campo nativo."
+  },
+  "lift_vs_baseline": {
+    "MAX": {
+      "n_activa": 6,
+      "n_no_activa": 788,
+      "pct_cae_activa": 100.0,
+      "pct_cae_no_activa": 83.2,
+      "lift": 1.201,
+      "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
+    },
+    "MIN": {
+      "n_activa": 4,
+      "n_no_activa": 791,
+      "pct_cae_activa": 0.0,
+      "pct_cae_no_activa": 16.7,
+      "lift": 0.0,
+      "interpretacion": ">1.0=señal real, <1.0=anti-señal, ≈1.0=ruido"
+    }
+  },
+  "ficha_credibilidad": {
+    "grade": "RESCATADA (v6: +2.84% neto, p=0.091, N=16, INDEP=71% — método first-passage)",
+    "n_total": 10,
+    "win_rate": 0.4,
+    "baseline_wr": 0.5009,
+    "baseline_type": "ALL",
+    "lift": 0.7985,
+    "p_value_fisher": 0.547403,
+    "ci95_bootstrap": {
+      "ci_lo": null,
+      "ci_hi": null,
+      "n": 10,
+      "nota": "N<20"
+    },
+    "dsr_pvalue": null,
+    "diamante": {
+      "p_raw": 0.4,
+      "ci_lo": 0.1216,
+      "ci_hi": 0.7376,
+      "n": 10,
+      "es_diamante": true,
+      "ci_direccional": "False"
+    },
+    "structural_break": false,
+    "accion_recomendada": "PRODUCCIÓN_DIAMANTE"
+  },
+  "meta": {
+    "seed": 42,
+    "bootstrap": 3000,
+    "determinista": true,
+    "sin_agentes": true
+  }
+}

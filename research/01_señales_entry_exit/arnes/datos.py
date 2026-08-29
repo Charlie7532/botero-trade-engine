@@ -20,6 +20,18 @@ def cargar_datos():
     df = pd.read_pickle(OBS_PKL).reset_index(drop=True)
     df["pivot_date"] = pd.to_datetime(df["pivot_date"])
 
+    # ── Fase 1 V7: Deduplicación geométrica determinista ──────────────
+    # Cuando un pivot_date aparece dos veces (end de pierna anterior +
+    # start de pierna nueva), conservamos MIN preferente (start de ciclo
+    # alcista). Sort: MIN < MAX alfabéticamente → keep='first'.
+    n_before = len(df)
+    df = df.sort_values(["pivot_date", "pivot_type"], ascending=[True, True])
+    df = df.drop_duplicates(subset=["pivot_date"], keep="first")
+    df = df.reset_index(drop=True)
+    n_after = len(df)
+    if n_before != n_after:
+        print(f"[DEDUP] {n_before} → {n_after} pivotes ({n_before - n_after} duplicados removidos)")
+
     try:
         from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
         store = TimescaleDataStore()

@@ -144,7 +144,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     # 1. Station VIX: Crisis Panic Spike (VIX >= 28.0)
     try:
         vix_metar = get_vix_market_metar(as_of_date=as_of_date)
-        if vix_metar.vix_index_value >= 28.0 or vix_metar.action_code == "MKT_MACRO_CIRCUIT_BREAKER":
+        if vix_metar.vix_index_value >= 28.0 or vix_metar.operational_guidance == "MKT_MACRO_CIRCUIT_BREAKER":
             sigmets.append(
                 MarketSIGMET(
                     sigmet_id=f"SIGMET-VIX-{vix_metar.as_of_date.replace('-','')}-001",
@@ -194,7 +194,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     # 3. Station PCR: Put Option Panic Squeeze (PCR >= 1.20)
     try:
         pcr_metar = get_pcr_market_metar(as_of_date=as_of_date)
-        if pcr_metar.pcr_ratio_value >= 1.20:
+        if pcr_metar.pcr_index_value >= 1.20:
             sigmets.append(
                 MarketSIGMET(
                     sigmet_id=f"SIGMET-PCR-{pcr_metar.as_of_date.replace('-','')}-001",
@@ -204,10 +204,10 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     severity="WARNING",
                     station="PCR",
                     title="CBOE Put/Call Ratio Extreme Panic (>= 1.20)",
-                    description=f"PCR ratio ({pcr_metar.pcr_ratio_value:.2f}) shows extreme retail/institutional put buying.",
+                    description=f"PCR ratio ({pcr_metar.pcr_index_value:.2f}) shows extreme retail/institutional put buying.",
                     operational_action="STK_HOLD_STABLE",
                     is_active=True,
-                    telemetry_snapshot={"pcr": pcr_metar.pcr_ratio_value, "pcr_d3": pcr_metar.pcr_velocity_3d}
+                    telemetry_snapshot={"pcr": pcr_metar.pcr_index_value, "pcr_d3": pcr_metar.pcr_velocity_3d}
                 )
             )
         ovf = _check_overflow_sigmet("PCR", pcr_metar, now_str)
@@ -219,7 +219,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     # 4. Station FG: Extreme Retail Fear Capitulation (FG <= 15.0)
     try:
         fg_metar = get_fg_market_metar(as_of_date=as_of_date)
-        if fg_metar.fear_greed_score <= 15.0:
+        if fg_metar.fg_index_value <= 15.0:
             sigmets.append(
                 MarketSIGMET(
                     sigmet_id=f"SIGMET-FG-{fg_metar.as_of_date.replace('-','')}-001",
@@ -229,10 +229,10 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     severity="WARNING",
                     station="FG",
                     title="CNN Fear & Greed Extreme Capitulation (<= 15.0)",
-                    description=f"Fear & Greed score ({fg_metar.fear_greed_score:.1f}) indicates extreme market sentiment capitulation.",
+                    description=f"Fear & Greed score ({fg_metar.fg_index_value:.1f}) indicates extreme market sentiment capitulation.",
                     operational_action="STK_BUY_DIP_TACTICAL",
                     is_active=True,
-                    telemetry_snapshot={"fg": fg_metar.fear_greed_score, "fg_d3": fg_metar.fear_greed_velocity_3d}
+                    telemetry_snapshot={"fg": fg_metar.fg_index_value, "fg_d3": fg_metar.fg_velocity_3d}
                 )
             )
         ovf = _check_overflow_sigmet("FG", fg_metar, now_str)
@@ -244,7 +244,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     # 5. Station SV5_TURBULENCE: Institutional Volume Turbulence Surge (>= 10.0)
     try:
         turb_metar = get_sv5_turbulence_market_metar(as_of_date=as_of_date)
-        if turb_metar.turbulence_value >= 10.0:
+        if turb_metar.turbulence_index_value >= 10.0:
             sigmets.append(
                 MarketSIGMET(
                     sigmet_id=f"SIGMET-TURB-{turb_metar.as_of_date.replace('-','')}-001",
@@ -254,10 +254,10 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     severity="CRITICAL",
                     station="SV5_TURBULENCE",
                     title="Institutional Volume Turbulence Crisis (>= 10.0)",
-                    description=f"Volume turbulence ({turb_metar.turbulence_value:.2f}) in HIGH/CRISIS territory (>= 10.0). Institutional participation is erratic.",
+                    description=f"Volume turbulence ({turb_metar.turbulence_index_value:.2f}) in HIGH/CRISIS territory (>= 10.0). Institutional participation is erratic.",
                     operational_action="STK_BLOCK_CRISIS",
                     is_active=True,
-                    telemetry_snapshot={"turbulence": turb_metar.turbulence_value, "turbulence_d3": turb_metar.turbulence_velocity_3d}
+                    telemetry_snapshot={"turbulence": turb_metar.turbulence_index_value, "turbulence_d3": turb_metar.turbulence_velocity_3d}
                 )
             )
         ovf = _check_overflow_sigmet("SV5_TURBULENCE", turb_metar, now_str)
@@ -319,7 +319,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     # 8. Station YIELD CURVE: Deep Inversion Only (P05)
     try:
         yc_metar = get_yield_curve_market_metar(as_of_date=as_of_date)
-        if yc_metar.yield_spread_value < -0.624:
+        if yc_metar.spread_value < -0.624:
             sigmets.append(
                 MarketSIGMET(
                     sigmet_id=f"SIGMET-CURVE-{yc_metar.as_of_date.replace('-','')}-001",
@@ -329,10 +329,10 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     severity="CRITICAL",
                     station="YIELD_CURVE",
                     title="Deep Yield Curve Inversion (P05 — Bottom 5%)",
-                    description=f"Yield curve spread ({yc_metar.yield_spread_value:+.4f}%) in DEEP_INVERSION (< -0.624, P05). Severe macro recession signal.",
+                    description=f"Yield curve spread ({yc_metar.spread_value:+.4f}%) in DEEP_INVERSION (< -0.624, P05). Severe macro recession signal.",
                     operational_action="STK_TRIM_TACTICAL",
                     is_active=True,
-                    telemetry_snapshot={"spread": yc_metar.yield_spread_value}
+                    telemetry_snapshot={"spread": yc_metar.spread_value}
                 )
             )
         ovf = _check_overflow_sigmet("YIELD_CURVE", yc_metar, now_str)

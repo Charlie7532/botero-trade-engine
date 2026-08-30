@@ -40,19 +40,19 @@
 
 ## 3. Anomalías Empíricas Validadas (N ≥ 20)
 
-### 🚨 Anomalía Empírica 1: `CRISIS_TURBULENCE__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION`
+### 🚨 Anomalía Empírica 1: `EXTREME_TURBULENT__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION`
 - **Condición**: Estado empírico en Vault con N=50 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 62.3\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = +0.403\%$.
 - **Régimen**: `FULL_CONVERGENT_BULL` → `STK_BLOCK_CRISIS`.
 
-### 🚨 Anomalía Empírica 2: `LOW_TURBULENCE__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION`
+### 🚨 Anomalía Empírica 2: `CALM__STABLE_CONTINUATION_3D__VOL_ACCELERATING_EXPANSION`
 - **Condición**: Estado empírico en Vault con N=36 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 39.9\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = -0.334\%$.
 - **Régimen**: `FULL_CONVERGENT_BEAR` → `STK_TRIM_TACTICAL`.
 
-### 🚨 Anomalía Empírica 3: `HIGH_TURBULENCE__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION`
+### 🚨 Anomalía Empírica 3: `NEUTRAL_TURBULENT__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION`
 - **Condición**: Estado empírico en Vault con N=78 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 58.4\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = +0.273\%$.

@@ -66,12 +66,12 @@ backend/modules/entry_decision/domain/rules/{station}_fact_store.json
 Cada estación METAR produce **tres vectores** simultáneos, uno por cada escala ZigZag:
 
 ```
-DÍA T (ejemplo: VIX en CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCEL):
+DÍA T (ejemplo: VIX en EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCEL):
   zz25 → p_bull=0.30, ev=-0.015, e_days=4     ← pullback táctico
   zz50 → p_bull=0.35, ev=-0.032, e_days=12    ← corrección
   zz75 → p_bull=0.42, ev=-0.051, e_days=35    ← movimiento estructural
 
-DÍA T+1 (VIX baja → pasa a ELEVATED_PANIC__DECEL_DOWN_3D__VOL_NEUTRAL):
+DÍA T+1 (VIX baja → pasa a PANIC__DECEL_DOWN_3D__VOL_NEUTRAL):
   zz25 → p_bull=0.48, ev=-0.003, e_days=3     ← perdió fuerza táctica
   zz50 → p_bull=0.40, ev=-0.018, e_days=10    ← aún bearish intermedio
   zz75 → p_bull=0.38, ev=-0.045, e_days=30    ← sigue bearish estructural
@@ -181,8 +181,8 @@ Día 12: Acumulado -8.1% → ZZ25: misma pierna continúa          ✓
 **¿Por qué son diamantes?**
 
 Los eventos más importantes del mercado son inherentemente raros:
-- VIX CRISIS_SPIKE solo ocurre ~5% del tiempo
-- La combinación CRISIS_SPIKE + FAST_SPIKE_3D + VOL_PEAK_DECELERATION puede tener N=3 en 26 años
+- VIX EXTREME_PANIC solo ocurre ~5% del tiempo
+- La combinación EXTREME_PANIC + FAST_SPIKE_3D + VOL_PEAK_DECELERATION puede tener N=3 en 26 años
 - Pero esos 3 eventos incluyen 2008, 2020, y otro crash — son los momentos donde más capital se gana o se pierde
 
 **Protocolo para Diamantes:**
@@ -205,7 +205,7 @@ Los eventos más importantes del mercado son inherentemente raros:
 
 **Ejemplo de diamante:**
 ```
-VIX: CRISIS_SPIKE__FAST_SPIKE_3D__VOL_PEAK_DECELERATION
+VIX: EXTREME_PANIC__FAST_SPIKE_3D__VOL_PEAK_DECELERATION
   N = 3 (tier = LOW)
   zigzag_kinematic.zz75: n_pos=0, n_neg=3 → p_bull_raw=0.000, p_bull_bayesian=0.385
   
@@ -215,7 +215,7 @@ VIX: CRISIS_SPIKE__FAST_SPIKE_3D__VOL_PEAK_DECELERATION
     - COVID crash (2020): SPY -34%
     - [otro evento extremo]
   
-  Este diamante vale más que 1000 observaciones de MODERATE_VOL__STABLE__NEUTRAL.
+  Este diamante vale más que 1000 observaciones de NEUTRAL_CALM__STABLE__NEUTRAL.
   Se analiza cualitativamente, no se descarta por N bajo.
 ```
 
@@ -223,7 +223,7 @@ VIX: CRISIS_SPIKE__FAST_SPIKE_3D__VOL_PEAK_DECELERATION
 
 ## 4. Las Tres Dimensiones (D1×D2×D3)
 
-Cada estado es un `state_key` con formato `D1__D2__D3`. Ejemplo: `CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`.
+Cada estado es un `state_key` con formato `D1__D2__D3`. Ejemplo: `EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`.
 
 ### 4.1 El Vector de Datos Crudo
 
@@ -253,25 +253,25 @@ vol = std(series[t-1:t+1]) / std(series[t-9:t+1])  # D3: std(2d) / std(10d)
 rank = series[:t].rank(pct=True).iloc[-1]  # Percentil expandible hasta HOY
 # Luego se clasifica usando bordes Gaussianos σ sobre el rank:
 bins = [0.0228, 0.1587, 0.5000, 0.8413, 0.9772]  # -2σ, -1σ, μ, +1σ, +2σ
-# Si rank < 0.0228 → Bin 0 (extremo inferior, ej. DEEP_COMPLACENCY)
-# Si rank > 0.9772 → Bin 5 (extremo superior, ej. CRISIS_SPIKE)
+# Si rank < 0.0228 → Bin 0 (extremo inferior, ej. EXTREME_COMPLACENCY)
+# Si rank > 0.9772 → Bin 5 (extremo superior, ej. EXTREME_PANIC)
 ```
 
 **Labels D1:** Específicos por estación. 6 bines = 6 nombres descriptivos:
 
 | Estación | Bin 0 (< −2σ) | Bin 1 | Bin 2 | Bin 3 | Bin 4 | Bin 5 (> +2σ) |
 |---|---|---|---|---|---|---|
-| **VIX** | DEEP_COMPLACENCY | LOW_VOL | MODERATE_VOL | HIGH_VOL | ELEVATED_PANIC | CRISIS_SPIKE |
+| **VIX** | EXTREME_COMPLACENCY | COMPLACENCY | NEUTRAL_CALM | NEUTRAL_ALERT | PANIC | EXTREME_PANIC |
 | **BSI** | BREADTH_WASHED_OUT | OVERSOLD_BREADTH | NEUTRAL_LOW_BREADTH | NEUTRAL_HIGH_BREADTH | EXPANSIVE_BREADTH | HYPER_EXPANSIVE_BREADTH |
-| **F&G** | EXTREME_FEAR | FEAR | NEUTRAL_FEAR | GREED | EXTREME_GREED | EUPHORIA |
-| **Credit** | CREDIT_CRISIS | CREDIT_STRESS | ELEVATED_CREDIT_STRESS | STABLE_CREDIT | CREDIT_EASE | DEEP_CREDIT_EASE |
-| **Rotation** | DEFENSIVE_CAPITULATION | DEFENSIVE | NEUTRAL_ROTATION | BALANCED | CYCLICAL_LEADERSHIP | AGGRESSIVE_ROTATION |
-| **PCR** | EXTREME_CALL_HEAVY | BULLISH_PCR | NEUTRAL_PCR | ELEVATED_PCR | HIGH_PUT_PANIC | EXTREME_PUT_PANIC |
-| **VVIX** | EXTREME_COMPLACENCY | LOW_VVIX | MODERATE_VVIX | HIGH_VVIX | ELEVATED_VVIX | EXTREME_VVIX |
-| **SV5 Turb** | QUIET_FLOW | LOW_TURBULENCE | MODERATE_TURBULENCE | HIGH_TURBULENCE | ELEVATED_TURBULENCE | CRISIS_TURBULENCE |
-| **SKEW** | LOW_TAIL_RISK | NORMAL_TAIL_RISK | ELEVATED_TAIL_RISK | HIGH_TAIL_RISK | TAIL_PARANOIA | BLACK_SWAN_PARANOIA |
+| **F&G** | EXTREME_FEAR | FEAR | NEUTRAL_FEAR | GREED | EXTREME_GREED | EXTREME_GREED |
+| **Credit** | EXTREME_STRESS | STRESS | ELEVATED_STRESS | NEUTRAL_LOOSE | EASE | DEEP_EASE |
+| **Rotation** | EXTREME_DEFENSIVE | DEFENSIVE | NEUTRAL_DEFENSIVE | NEUTRAL_OFFENSIVE | OFFENSIVE | EXTREME_OFFENSIVE |
+| **PCR** | EXTREME_CALL_EXTREME_GREED | CALL_EXTREME_GREED | NEUTRAL_CALL_BIAS | NEUTRAL_PUT_BIAS | PUT_PANIC | EXTREME_PUT_PANIC |
+| **VVIX** | EXTREME_COMPLACENCY | STABILITY | NEUTRAL_STABLE | NEUTRAL_UNSTABLE | INSTABILITY | EXTREME_INSTABILITY |
+| **SV5 Turb** | EXTREME_CALM | CALM | NEUTRAL_CALM | NEUTRAL_TURBULENT | TURBULENT | EXTREME_TURBULENT |
+| **SKEW** | EXTREME_CONFIDENCE | CONFIDENCE | NEUTRAL_CONFIDENT | NEUTRAL_PARANOID | PARANOIA | EXTREME_PARANOIA |
 | **Yield** | DEEP_INVERSION | MODERATE_INVERSION | FLAT_CURVE | NORMAL_CURVE | STEEPNING_CURVE | EXTREME_STEEPNING |
-| **DXY** | DEEP_DOLLAR_CRUSH | WEAK_DOLLAR | MODERATE_LOW_DOLLAR | MODERATE_HIGH_DOLLAR | ELEVATED_DOLLAR_STRESS | DOLLAR_SPIKE_CRISIS |
+| **DXY** | EXTREME_WEAKNESS | WEAKNESS | NEUTRAL_WEAK | NEUTRAL_STRONG | STRENGTH | EXTREME_STRENGTH |
 
 ### 4.3 D2 — Velocidad Cinemática (5 bines)
 
@@ -319,13 +319,13 @@ bins = [0.0228, 0.1587, 0.5000, 0.8413, 0.9772]  # -2σ, -1σ, μ, +1σ, +2σ
 ```
 Fecha: 2002-07-10 | Tipo: MIN | Cascade_50=1, Cascade_75=0
 
-VIX:      val=34.10  vel=+6.99   vol=1.12 → ELEVATED_PANIC__FAST_SPIKE_3D__VOL_ACCEL_EXPANSION
+VIX:      val=34.10  vel=+6.99   vol=1.12 → PANIC__FAST_SPIKE_3D__VOL_ACCEL_EXPANSION
 BSI:      val= 7.80  vel=-26.20  vol=0.55 → BREADTH_WASHED_OUT__DECEL_DOWN_3D__VOL_NEUTRAL
-SKEW:     val=108.79  vel=-7.55  vol=0.68 → LOW_TAIL_RISK__DECEL_DOWN_3D__VOL_NEUTRAL
-Rotation: val=-0.12   vel=-0.24  vol=0.13 → NEUTRAL_ROTATION__STABLE_3D__VOL_NEUTRAL
-SV5Turb:  val=11.17   vel=+3.05  vol=0.01 → ELEVATED_TURBULENCE__ACCEL_UP_3D__VOL_COMPRESSION
+SKEW:     val=108.79  vel=-7.55  vol=0.68 → EXTREME_CONFIDENCE__DECEL_DOWN_3D__VOL_NEUTRAL
+Rotation: val=-0.12   vel=-0.24  vol=0.13 → NEUTRAL_DEFENSIVE__STABLE_3D__VOL_NEUTRAL
+SV5Turb:  val=11.17   vel=+3.05  vol=0.01 → TURBULENT__ACCEL_UP_3D__VOL_COMPRESSION
 YieldCrv: val= 2.96   vel=-0.22  vol=1.03 → STEEPNING_CURVE__FAST_CRUSH_3D__VOL_ACCEL_EXPANSION
-DXY:      val=105.77  vel=-0.57  vol=0.30 → ELEVATED_DOLLAR_STRESS__STABLE_3D__VOL_NEUTRAL
+DXY:      val=105.77  vel=-0.57  vol=0.30 → STRENGTH__STABLE_3D__VOL_NEUTRAL
 ```
 
 **Lectura:** VIX en pánico con spike rápido + Breadth destruido + Turbulencia alta → PISO CLÁSICO con 4 estaciones convergiendo en señal de capitulación. El cascade_50=1 confirma que el movimiento táctico desbordó a corrección intermedia.
@@ -364,7 +364,7 @@ cascade_75 = int(any(
 
 ```json
 {
-  "CRISIS_SPIKE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
+  "EXTREME_PANIC__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
     "n": 78,                          // Días de mercado en este estado
     "stats": {                        // Estadísticas del valor del indicador
       "min": 16.61, "max": 46.67,
@@ -614,17 +614,17 @@ El engine emite una acción basada en EV compuesto ($0.3 \cdot EV_{1d} + 0.4 \cd
 
 | Estación | Ticker Vault | D1 Labels | N estados | Observaciones |
 |---|---|---|:---:|---|
-| **VIX** | `VIX` | DEEP_COMPLACENCY → CRISIS_SPIKE | 108 | Pivotes físicos: PANIC_SPIKE, VOL_CRUSH_REBOUND |
+| **VIX** | `VIX` | EXTREME_COMPLACENCY → EXTREME_PANIC | 108 | Pivotes físicos: PANIC_SPIKE, VOL_CRUSH_REBOUND |
 | **BSI** | `S5TW` (breadth 20d MA) | BREADTH_WASHED_OUT → HYPER_EXPANSIVE_BREADTH | 104 | % S&P500 sobre media 20 días |
-| **F&G** | `FG` | EXTREME_FEAR → EUPHORIA | 82 | CNN Fear & Greed, datos desde 2011 |
-| **Credit** | `CREDIT_RATIO` (HYG/LQD) | CREDIT_CRISIS → DEEP_CREDIT_EASE | 112 | Ratio sintético, proxy de estrés crediticio |
-| **Rotation** | `ROTATION_INDEX` | DEFENSIVE_CAPITULATION → AGGRESSIVE_ROTATION | 120 | z(XLY/XLP) + z(XLK/XLU) |
-| **SV5 Turb** | `SV5_TURBULENCE` | QUIET_FLOW → CRISIS_TURBULENCE | 104 | std(Δ_SV5TW, 10d) |
-| **SKEW** | `SKEW` | LOW_TAIL_RISK → BLACK_SWAN_PARANOIA | 98 | CBOE SKEW index (calibración post-2011) |
-| **PCR** | `CBOE_PCR` | EXTREME_CALL_HEAVY → EXTREME_PUT_PANIC | 103 | Put/Call Ratio |
-| **VVIX** | `VVIX` | EXTREME_COMPLACENCY → EXTREME_VVIX | 104 | Vol-de-vol |
+| **F&G** | `FG` | EXTREME_FEAR → EXTREME_GREED | 82 | CNN Fear & Greed, datos desde 2011 |
+| **Credit** | `CREDIT_RATIO` (HYG/LQD) | EXTREME_STRESS → DEEP_EASE | 112 | Ratio sintético, proxy de estrés crediticio |
+| **Rotation** | `ROTATION_INDEX` | EXTREME_DEFENSIVE → EXTREME_OFFENSIVE | 120 | z(XLY/XLP) + z(XLK/XLU) |
+| **SV5 Turb** | `SV5_TURBULENCE` | EXTREME_CALM → EXTREME_TURBULENT | 104 | std(Δ_SV5TW, 10d) |
+| **SKEW** | `SKEW` | EXTREME_CONFIDENCE → EXTREME_PARANOIA | 98 | CBOE SKEW index (calibración post-2011) |
+| **PCR** | `CBOE_PCR` | EXTREME_CALL_EXTREME_GREED → EXTREME_PUT_PANIC | 103 | Put/Call Ratio |
+| **VVIX** | `VVIX` | EXTREME_COMPLACENCY → EXTREME_INSTABILITY | 104 | Vol-de-vol |
 | **Yield Curve** | `YIELD_SPREAD` | DEEP_INVERSION → EXTREME_STEEPNING | 133 | TNX − IRX (10Y − 13W) |
-| **DXY** | `DXY` | DEEP_DOLLAR_CRUSH → DOLLAR_SPIKE_CRISIS | 128 | Índice del dólar |
+| **DXY** | `DXY` | EXTREME_WEAKNESS → EXTREME_STRENGTH | 128 | Índice del dólar |
 
 ---
 
@@ -777,7 +777,7 @@ universal = {k: v for k, v in precursor_counts.items() if len(v) >= 3}
 **Ejemplo real:**
 ```
 credit: ACCELERATING_UP_3D   → p_bull=0.35 (bearish)
-vix:    CRISIS_SPIKE          → p_bull=0.32 (bearish)
+vix:    EXTREME_PANIC          → p_bull=0.32 (bearish)
 bsi:    BREADTH_WASHED_OUT    → p_bull=0.28 (bearish)
 → 3/11 estaciones bearish independientes → ALERTA DE CRASH
 → Este patrón NO se detecta mirando los fact stores por separado.
@@ -1106,7 +1106,7 @@ El identificador único sigue el patrón: `SIGMET-OVERFLOW-{station}-{fecha}-{MU
 
 ### 17.4 Brecha de comunicación pendiente (lo que falta)
 
-**El nombre existe a nivel SIGMET, pero NO a nivel METAR.** El reporte diario de una estación muestra el label D1 (`CRISIS_SPIKE`) sin distinguir si el valor está a +2.1σ o a +11σ. La anomalía solo se comunica cuando el servicio SIGMET evalúa y emite el evento — la telemetría METAR de rutina no porta el `sigma_depth` de forma visible para el operador.
+**El nombre existe a nivel SIGMET, pero NO a nivel METAR.** El reporte diario de una estación muestra el label D1 (`EXTREME_PANIC`) sin distinguir si el valor está a +2.1σ o a +11σ. La anomalía solo se comunica cuando el servicio SIGMET evalúa y emite el evento — la telemetría METAR de rutina no porta el `sigma_depth` de forma visible para el operador.
 
 **Tratamiento correcto (protocolo):**
 1. La telemetría METAR de cada estación DEBE incluir `sigma_depth` y `overflow_flag` como campos visibles (ya están en el dataclass; falta exponerlos en el formato de reporte/broadcast).
@@ -1131,11 +1131,11 @@ Un SIGMET overflow es siempre un diamante estadístico (rareza 0.13% por observa
 
 | Fecha | Estación | Valor crudo | Label D1 asignado (clipped) |
 |-------|----------|-------------|------------------------------|
-| 2020-03-16 | VVIX | 207.59 | EXTREME_VVIX |
+| 2020-03-16 | VVIX | 207.59 | EXTREME_INSTABILITY |
 | 2010-02-05 | PCR | 2.872 | EXTREME_PUT_PANIC |
-| 2024-12 / 2025-02 | SKEW | 173.7–175.8 | BLACK_SWAN_PARANOIA |
-| 2026-06-26 | SV5 Turb | 26.307 | CRISIS_TURBULENCE |
-| 2002-01-31 | DXY | 120.28 | DOLLAR_SPIKE_CRISIS |
+| 2024-12 / 2025-02 | SKEW | 173.7–175.8 | EXTREME_PARANOIA |
+| 2026-06-26 | SV5 Turb | 26.307 | EXTREME_TURBULENT |
+| 2002-01-31 | DXY | 120.28 | EXTREME_STRENGTH |
 | 2008-10-15 | Yield | 3.811 | EXTREME_STEEPNING |
 | 2023-05-04 | Yield | −1.705 | DEEP_INVERSION |
 
@@ -1145,7 +1145,7 @@ Total por estación: VIX=4, BSI=3, Credit=2, SKEW=4, SV5=3, VVIX=3, PCR=3, DXY=3
 
 1. Los fact stores NO almacenan estados ±3σ — la anomalía vive en la capa SIGMET (`sigma_overflow.py`), que permanece como única fuente de verdad del overflow.
 2. `STATION_MU_SIGMA` es la referencia de calibración: si el motor recalibra los indicadores, esta tabla debe actualizarse en paralelo (riesgo de desincronización documentado).
-3. Todo estado en bin extremo (bin 0 o bin 5) debe verificarse con `validate_overflow()` antes de tratarse como estado normal. Un `CRISIS_SPIKE` a +2.1σ no es lo mismo que uno a +11σ.
+3. Todo estado en bin extremo (bin 0 o bin 5) debe verificarse con `validate_overflow()` antes de tratarse como estado normal. Un `EXTREME_PANIC` a +2.1σ no es lo mismo que uno a +11σ.
 4. La telemetría METAR debe exponer `sigma_depth`/`overflow_flag` (brecha pendiente, §17.4).
 5. Los SIGMETs overflow entran al inventario de eventos especiales como transiciones, con nombre oficial (`OVERFLOW_MULTI/EXTREMO/MODERADO`) y profundidad σ registrada.
 

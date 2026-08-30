@@ -40,19 +40,19 @@
 
 ## 3. Anomalías Empíricas Validadas (N ≥ 20)
 
-### 🚨 Anomalía Empírica 1: `EXTREME_VVIX__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE`
+### 🚨 Anomalía Empírica 1: `EXTREME_INSTABILITY__DECELERATING_DOWN_3D__VOL_NEUTRAL_BASELINE`
 - **Condición**: Estado empírico en Vault con N=20 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 61.2\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = +0.771\%$.
 - **Régimen**: `FULL_CONVERGENT_BULL` → `STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION`.
 
-### 🚨 Anomalía Empírica 2: `EXTREME_VVIX__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE`
+### 🚨 Anomalía Empírica 2: `EXTREME_INSTABILITY__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE`
 - **Condición**: Estado empírico en Vault con N=42 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 52.6\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = +0.573\%$.
 - **Régimen**: `FULL_CONVERGENT_BULL` → `STK_BUY_DIP_TACTICAL`.
 
-### 🚨 Anomalía Empírica 3: `EXTREME_VVIX__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE`
+### 🚨 Anomalía Empírica 3: `EXTREME_INSTABILITY__FAST_SPIKE_3D__VOL_NEUTRAL_BASELINE`
 - **Condición**: Estado empírico en Vault con N=36 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 59.5\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = +0.356\%$.

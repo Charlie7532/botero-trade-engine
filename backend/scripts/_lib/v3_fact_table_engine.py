@@ -346,10 +346,15 @@ def compute_domino_stats(
 
 
 def determine_guidance_and_regime(
-    zz25: dict, zz50: dict, zz75: dict, d1: str, n_state: int,
+    zz25: dict, zz50: dict, zz75: dict, d1_bin: int, n_state: int,
     pivot_name: Optional[str] = None, pivot_overrides: Optional[dict] = None
 ) -> Tuple[str, str]:
-    """Determine universal 4D action taxonomy and divergence regime with pivot overrides."""
+    """Determine universal 4D action taxonomy and divergence regime with pivot overrides.
+
+    Args:
+        d1_bin: Numeric D1 bin index (0=extreme negative, 5=extreme positive).
+                Bins 0 and 5 are ±2σ extremes.
+    """
     ev_1d = zz25["ev_net"]
     ev_3d = zz50["ev_net"]
     ev_5d = zz75["ev_net"]
@@ -368,7 +373,7 @@ def determine_guidance_and_regime(
     else:
         divergence_regime = "MIXED_HORIZON_TRANSITION"
 
-    if composite_ev <= -0.008 or pb_3d <= 0.42 or "CRISIS" in d1 or "SPIKE" in d1 or "PARANOIA" in d1:
+    if composite_ev <= -0.008 or pb_3d <= 0.42:
         guidance = "STK_BLOCK_CRISIS"
     elif composite_ev >= 0.008 and pb_3d >= 0.58 and n_state >= 10:
         guidance = "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION"
@@ -482,22 +487,34 @@ def build_v3_dual_layer_fact_store(
     d2_expanding_rank = ind_df["d2_velocity"].expanding(min_periods=252).rank(pct=True)
     d3_expanding_rank = ind_df["vol_norm"].expanding(min_periods=252).rank(pct=True)
 
-    ind_df["bin_d1"] = d1_expanding_rank.apply(
-        lambda r: classify_value(r, PERCENTILES_D1_GAUSS, d1_labels) if pd.notna(r) else d1_labels[2]
-    )
-    ind_df["bin_d2"] = d2_expanding_rank.apply(
-        lambda r: classify_value(r, PERCENTILES_D2_GAUSS, LABELS_D2_STANDARD) if pd.notna(r) else LABELS_D2_STANDARD[2]
-    )
-    ind_df["bin_d3"] = d3_expanding_rank.apply(
-        lambda r: classify_value(r, PERCENTILES_D3_GAUSS, LABELS_D3_STANDARD) if pd.notna(r) else LABELS_D3_STANDARD[2]
-    )
+    # Numeric bin indices (not label strings) — decouples semantics from keys
+    def _rank_to_bin(rank_val, percentiles):
+        if pd.isna(rank_val):
+            return -1  # NaN → invalid bin
+        for idx, p in enumerate(percentiles):
+            if rank_val < p:
+                return idx
+        return len(percentiles)
+
+    ind_df["bin_d1"] = d1_expanding_rank.apply(lambda r: _rank_to_bin(r, PERCENTILES_D1_GAUSS))
+    ind_df["bin_d2"] = d2_expanding_rank.apply(lambda r: _rank_to_bin(r, PERCENTILES_D2_GAUSS))
+    ind_df["bin_d3"] = d3_expanding_rank.apply(lambda r: _rank_to_bin(r, PERCENTILES_D3_GAUSS))
+
+    # Drop warmup rows where any bin is -1 (NaN rank during expanding window)
+    ind_df = ind_df[(ind_df["bin_d1"] >= 0) & (ind_df["bin_d2"] >= 0) & (ind_df["bin_d3"] >= 0)].copy()
+
+    # Also store label columns for debugging (not used in state_key)
+    ind_df["label_d1"] = ind_df["bin_d1"].apply(lambda b: d1_labels[b] if 0 <= b < len(d1_labels) else "UNKNOWN")
+    ind_df["label_d2"] = ind_df["bin_d2"].apply(lambda b: LABELS_D2_STANDARD[b] if 0 <= b < len(LABELS_D2_STANDARD) else "UNKNOWN")
+    ind_df["label_d3"] = ind_df["bin_d3"].apply(lambda b: LABELS_D3_STANDARD[b] if 0 <= b < len(LABELS_D3_STANDARD) else "UNKNOWN")
 
     if pivot_fn is not None:
         ind_df["pivot"] = pivot_fn(ind_df)
-        ind_df["state_key"] = ind_df["bin_d1"] + "__" + ind_df["bin_d2"] + "__" + ind_df["bin_d3"]
     else:
         ind_df["pivot"] = "STABLE_CONTINUATION"
-        ind_df["state_key"] = ind_df["bin_d1"] + "__" + ind_df["bin_d2"] + "__" + ind_df["bin_d3"]
+
+    # State key = numeric vector "D1__D2__D3"
+    ind_df["state_key"] = ind_df["bin_d1"].astype(str) + "__" + ind_df["bin_d2"].astype(str) + "__" + ind_df["bin_d3"].astype(str)
 
     ind_df["date_str"] = ind_df.index.astype(str)
 
@@ -591,6 +608,31 @@ def build_v3_dual_layer_fact_store(
             "d1_classification": "Expanding Window Percentile Rank (zero look-ahead bias), mapped to Gaussian sigma bins",
             "velocity_lookback_window": "3 trading days (72h fast response)",
             "volatility_formula": "D3 = std(2d) / std(10d) — V1.1 standard",
+            "taxonomy": {
+                "d1": {
+                    "dimension": "Magnitud Puntual",
+                    "n_bins": len(d1_labels),
+                    "gaussian_percentiles": list(PERCENTILES_D1_GAUSS),
+                    "value_edges": d1_edges_doc,
+                    "labels": d1_labels,
+                },
+                "d2": {
+                    "dimension": "Velocidad Cinemática 3d",
+                    "n_bins": len(LABELS_D2_STANDARD),
+                    "gaussian_percentiles": list(PERCENTILES_D2_GAUSS),
+                    "value_edges": d2_edges,
+                    "labels": LABELS_D2_STANDARD,
+                },
+                "d3": {
+                    "dimension": "Estabilidad Intra-Indicador (std 2d / std 10d)",
+                    "n_bins": len(LABELS_D3_STANDARD),
+                    "gaussian_percentiles": list(PERCENTILES_D3_GAUSS),
+                    "value_edges": d3_vol_edges,
+                    "labels": LABELS_D3_STANDARD,
+                },
+                "state_key_format": "D1_bin__D2_bin__D3_bin (e.g. '5__4__4' = taxonomy.d1.labels[5] + taxonomy.d2.labels[4] + taxonomy.d3.labels[4])",
+            },
+            # Legacy alias for backward compatibility during migration
             "dimension_thresholds_definition": {
                 f"{station_name.lower()}_edges_d1": d1_edges_doc,
                 f"{station_name.lower()}_edges_d2": d2_edges,

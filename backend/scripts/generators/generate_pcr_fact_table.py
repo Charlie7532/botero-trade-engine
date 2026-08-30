@@ -15,8 +15,8 @@ sys.path.insert(0, str(root_dir))
 
 from backend.scripts._lib.v3_fact_table_engine import build_v3_dual_layer_fact_store
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/pcr_fact_store.json"
-D1_LABELS = ["EXTREME_CALL_HEAVY", "BULLISH_PCR", "NEUTRAL_PCR", "ELEVATED_PCR", "HIGH_PUT_PANIC", "EXTREME_PUT_PANIC"]
+OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/pcr_fact_store.json"
+D1_LABELS = ["EXTREME_CALL_EUPHORIA", "CALL_EUPHORIA", "NEUTRAL_CALL_BIAS", "NEUTRAL_PUT_BIAS", "PUT_PANIC", "EXTREME_PUT_PANIC"]
 
 PCR_PIVOT_OVERRIDES = {
     "FALLING_KNIFE": {

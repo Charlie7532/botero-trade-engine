@@ -15,7 +15,7 @@ sys.path.insert(0, str(root_dir))
 
 from backend.scripts._lib.v3_fact_table_engine import build_v3_dual_layer_fact_store
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/yield_curve_fact_store.json"
+OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/yield_curve_fact_store.json"
 D1_LABELS = ["DEEP_INVERSION", "MODERATE_INVERSION", "FLAT_CURVE", "NORMAL_CURVE", "STEEPNING_CURVE", "EXTREME_STEEPNING"]
 
 YIELD_PIVOT_OVERRIDES = {

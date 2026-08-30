@@ -22,7 +22,7 @@ def test_pcr_guidance_lookup_valid():
     guidance = pcr_lookup.lookup_pcr_guidance(pcr_val=0.85, pcr_d3=-0.10)
     assert guidance is not None
     assert isinstance(guidance, PCRStateGuidance)
-    assert guidance.pcr_bin in ['EXTREME_CALL_HEAVY', 'BULLISH_PCR', 'NEUTRAL_PCR', 'ELEVATED_PCR', 'HIGH_PUT_PANIC', 'EXTREME_PUT_PANIC']
+    assert guidance.pcr_bin in ['EXTREME_CALL_EUPHORIA', 'CALL_EUPHORIA', 'NEUTRAL_CALL_BIAS', 'NEUTRAL_PUT_BIAS', 'PUT_PANIC', 'EXTREME_PUT_PANIC']
     assert guidance.velocity_vector in ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D']
     assert guidance.n > 0
 

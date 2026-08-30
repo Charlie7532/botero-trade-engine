@@ -294,7 +294,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     # 7. Station CREDIT STRESS: Corporate Credit Freeze
     try:
         credit_metar = get_credit_market_metar(as_of_date=as_of_date)
-        if credit_metar.credit_bin == "CREDIT_CRISIS" or credit_metar.credit_velocity_3d <= -0.0130:
+        if credit_metar.credit_bin == "EXTREME_STRESS" or credit_metar.credit_velocity_3d <= -0.0130:
             sigmets.append(
                 MarketSIGMET(
                     sigmet_id=f"SIGMET-CREDIT-{credit_metar.as_of_date.replace('-','')}-001",
@@ -304,7 +304,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     severity="CRITICAL",
                     station="CREDIT",
                     title="Corporate Credit Freeze (HYG/LQD Compression)",
-                    description=f"Credit ratio ({credit_metar.credit_ratio_value:.4f}) in CREDIT_CRISIS zone with deteriorating velocity (Δ3d = {credit_metar.credit_velocity_3d:+.4f}).",
+                    description=f"Credit ratio ({credit_metar.credit_ratio_value:.4f}) in EXTREME_STRESS zone with deteriorating velocity (Δ3d = {credit_metar.credit_velocity_3d:+.4f}).",
                     operational_action="STK_BLOCK_CRISIS",
                     is_active=True,
                     telemetry_snapshot={"credit_ratio": credit_metar.credit_ratio_value, "credit_d3": credit_metar.credit_velocity_3d}
@@ -394,7 +394,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     # 11. Station DXY: Dollar Spike Liquidity Crisis
     try:
         dxy_metar = get_dxy_market_metar(as_of_date=as_of_date)
-        if dxy_metar.dxy_bin == "DOLLAR_SPIKE_CRISIS":
+        if dxy_metar.dxy_bin == "EXTREME_STRENGTH":
             sigmets.append(
                 MarketSIGMET(
                     sigmet_id=f"SIGMET-DXY-{dxy_metar.as_of_date.replace('-','')}-001",
@@ -404,7 +404,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     severity="CRITICAL",
                     station="DXY",
                     title="Dollar Spike Liquidity Crisis (DXY σ+2 extreme)",
-                    description=f"Dollar Index ({dxy_metar.dxy_index_value:.2f}) in DOLLAR_SPIKE_CRISIS zone (σ+2). Flight-to-safety USD surge compresses equity valuations and EM capital flows.",
+                    description=f"Dollar Index ({dxy_metar.dxy_index_value:.2f}) in EXTREME_STRENGTH zone (σ+2). Flight-to-safety USD surge compresses equity valuations and EM capital flows.",
                     operational_action="STK_BLOCK_CRISIS",
                     is_active=True,
                     telemetry_snapshot={"dxy": dxy_metar.dxy_index_value, "dxy_d3": dxy_metar.dxy_velocity_3d}

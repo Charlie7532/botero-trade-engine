@@ -20,8 +20,8 @@ sys.path.insert(0, str(root_dir))
 
 from backend.scripts._lib.v3_fact_table_engine import build_v3_dual_layer_fact_store
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/vix_fact_store.json"
-D1_LABELS = ["DEEP_COMPLACENCY", "LOW_VOL", "MODERATE_VOL", "HIGH_VOL", "ELEVATED_PANIC", "CRISIS_SPIKE"]
+OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/vix_fact_store.json"
+D1_LABELS = ["EXTREME_COMPLACENCY", "COMPLACENCY", "NEUTRAL_CALM", "NEUTRAL_ALERT", "PANIC", "EXTREME_PANIC"]
 
 VIX_PIVOT_OVERRIDES = {
     "VOL_CRUSH_REBOUND": {

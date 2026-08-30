@@ -60,7 +60,7 @@ defensive_rotation_divergence       N=197 | %Cae=69.0% | Lift=0.828x ← PEOR
 > [!CAUTION]
 > Estas 2 señales tienen **lift < 1.0**: cuando disparan, el mercado cae MENOS que el promedio (70% vs 83.4%). Son **anti-señales** — seguirlas reduce la probabilidad de acertar vs no hacer nada. Deben ser retiradas o invertidas.
 
-**`defensive_rotation_divergence`** filtra por `D2=FAST_CRUSH_3D` o `D1=DEFENSIVE/DEFENSIVE_CAPITULATION` en MAX. Pero la rotación defensiva en un techo puede significar que el Smart Money ya se posicionó defensivamente ANTES de la caída, y el techo con rotación defensiva es menos peligroso que uno con rotación agresiva (donde todos están eufóricos).
+**`defensive_rotation_divergence`** filtra por `D2=FAST_CRUSH_3D` o `D1=DEFENSIVE/EXTREME_DEFENSIVE` en MAX. Pero la rotación defensiva en un techo puede significar que el Smart Money ya se posicionó defensivamente ANTES de la caída, y el techo con rotación defensiva es menos peligroso que uno con rotación agresiva (donde todos están eufóricos).
 
 **`sv5t_silent_distribution`** filtra `LOW_TURBULENCE + VOL_EXPANSION` en MAX. Pero baja turbulencia en un techo puede ser simplemente drift alcista normal, no distribución.
 
@@ -149,7 +149,7 @@ Debería estar al nivel del módulo. No es un bug funcional pero es un anti-patr
 | **fg_extreme_greed** | 25 | 92.0% | 1.103x | -3.32% | ✅ Buen lift, N marginal |
 
 > [!IMPORTANT]
-> **vix_complacency_exit** y **euforia** tienen N=35 IDÉNTICO y mismo lift. Es probable que sean la misma señal con nombres distintos (ambas filtran VIX en DEEP_COMPLACENCY/LOW_VOL). Verificar overlap — si es >90%, eliminar una.
+> **vix_complacency_exit** y **euforia** tienen N=35 IDÉNTICO y mismo lift. Es probable que sean la misma señal con nombres distintos (ambas filtran VIX en EXTREME_COMPLACENCY/LOW_VOL). Verificar overlap — si es >90%, eliminar una.
 
 ---
 

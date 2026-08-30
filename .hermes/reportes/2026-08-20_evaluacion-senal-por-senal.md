@@ -184,7 +184,7 @@ SEÑAL: vvix_entry
 ```
 SEÑAL: vix_crisis_spike
 ├─ Tipo: EXIT (techo / peligro)
-├─ ¿Qué detecta? VIX en CRISIS_SPIKE — pánico extremo en volatilidad
+├─ ¿Qué detecta? VIX en EXTREME_PANIC — pánico extremo en volatilidad
 ├─ Edge: +0.75% (forward medio — ¡positivo en señal EXIT!)
 │  → Atención: señal de PELIGRO pero forward es positivo. El mercado
 │  ya cayó antes de que la señal active. Es señal CONTRARIA de compra.
@@ -356,7 +356,7 @@ SEÑAL: bsi_recovery
 ```
 SEÑAL: dxy_bearish (idéntica a dxy_spike_exit)
 ├─ Tipo: ENTRY (piso)
-├─ ¿Qué detecta? DXY en DOLLAR_SPIKE_CRISIS — dólar en spike de crisis
+├─ ¿Qué detecta? DXY en EXTREME_STRENGTH — dólar en spike de crisis
 ├─ Edge: −0.04% (forward medio — esencialmente cero)
 ├─ Win Rate: 45.7% (16/35)
 ├─ Profit Factor: 0.99x
@@ -382,7 +382,7 @@ SEÑAL: dxy_bearish (idéntica a dxy_spike_exit)
 ```
 SEÑAL: skew_paranoia_exit
 ├─ Tipo: EXIT (techo)
-├─ ¿Qué detecta? SKEW en BLACK_SWAN_PARANOIA — colas gordas extremas
+├─ ¿Qué detecta? SKEW en EXTREME_PARANOIA — colas gordas extremas
 ├─ Edge: −0.38% (forward medio)
 ├─ Win Rate: 46.2% (12/26)
 ├─ Profit Factor: 0.84x

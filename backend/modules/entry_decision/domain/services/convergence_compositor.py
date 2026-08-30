@@ -123,32 +123,32 @@ SCALE_FACTORS = {
 # These bins carry directional meaning regardless of EV reliability.
 # Bearish D1 bins: market stress / panic / crisis
 D1_BEARISH_BINS = {
-    "CRISIS_SPIKE", "ELEVATED_PANIC",                          # VIX
-    "EXTREME_VVIX", "ELEVATED_VVIX",                           # VVIX
-    "EXTREME_PUT_PANIC", "HIGH_PUT_PANIC",                     # PCR
-    "EXTREME_FEAR", "FEAR",                                    # FG (FEAR synced from fact store)
-    "CRISIS_TURBULENCE", "ELEVATED_TURBULENCE",                # SV5
-    "BLACK_SWAN_PARANOIA", "TAIL_PARANOIA",                    # SKEW
-    "CREDIT_CRISIS", "CREDIT_STRESS", "ELEVATED_CREDIT_STRESS", # Credit
-    "DEEP_INVERSION", "MODERATE_INVERSION",                    # Yield Curve
-    "DEFENSIVE_CAPITULATION", "DEFENSIVE",                     # Rotation
-    "BREADTH_WASHED_OUT",                                    # BSI
-    "DOLLAR_SPIKE_CRISIS", "ELEVATED_DOLLAR_STRESS",           # DXY
+    "EXTREME_PANIC", "PANIC",                                      # VIX
+    "EXTREME_INSTABILITY", "INSTABILITY",                          # VVIX
+    "EXTREME_PUT_PANIC", "PUT_PANIC",                              # PCR
+    "EXTREME_FEAR", "FEAR",                                        # FG
+    "EXTREME_TURBULENT", "TURBULENT",                              # SV5
+    "EXTREME_PARANOIA", "PARANOIA",                                # SKEW
+    "EXTREME_STRESS", "STRESS",                                    # Credit
+    "DEEP_INVERSION", "MODERATE_INVERSION",                        # Yield Curve
+    "EXTREME_DEFENSIVE", "DEFENSIVE",                              # Rotation
+    "BREADTH_WASHED_OUT",                                          # BSI
+    "EXTREME_STRENGTH", "STRENGTH",                                # DXY (strong dollar = bearish equities)
 }
 
 # Bullish D1 bins: complacency / ease / euphoria
 D1_BULLISH_BINS = {
-    "DEEP_COMPLACENCY", "LOW_VOL",                             # VIX
-    "EXTREME_COMPLACENCY", "LOW_VVIX",                         # VVIX
-    "EXTREME_CALL_HEAVY", "BULLISH_PCR",                       # PCR
-    "EXTREME_GREED", "EUPHORIA",                               # FG
-    "QUIET_FLOW", "LOW_TURBULENCE",                            # SV5
-    "LOW_TAIL_RISK",                                           # SKEW
-    "DEEP_CREDIT_EASE", "CREDIT_EASE",                         # Credit
-    "EXTREME_STEEPNING", "STEEPNING_CURVE",                    # Yield Curve
-    "AGGRESSIVE_ROTATION", "CYCLICAL_LEADERSHIP",              # Rotation
-    "HYPER_EXPANSIVE_BREADTH", "EXPANSIVE_BREADTH",            # BSI
-    "DEEP_DOLLAR_CRUSH", "WEAK_DOLLAR",                        # DXY
+    "EXTREME_COMPLACENCY", "COMPLACENCY",                          # VIX
+    "EXTREME_STABILITY", "STABILITY",                              # VVIX
+    "EXTREME_CALL_EUPHORIA", "CALL_EUPHORIA",                      # PCR
+    "EXTREME_GREED", "GREED",                                      # FG
+    "EXTREME_CALM", "CALM",                                        # SV5
+    "EXTREME_CONFIDENCE", "CONFIDENCE",                            # SKEW
+    "EXTREME_EASE", "EASE",                                        # Credit
+    "EXTREME_STEEPNING", "STEEPNING_CURVE",                        # Yield Curve
+    "EXTREME_OFFENSIVE", "OFFENSIVE",                              # Rotation
+    "HYPER_EXPANSIVE_BREADTH", "EXPANSIVE_BREADTH",                # BSI
+    "EXTREME_WEAKNESS", "WEAKNESS",                                # DXY (weak dollar = bullish equities)
 }
 
 

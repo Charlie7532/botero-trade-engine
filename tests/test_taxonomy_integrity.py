@@ -6,7 +6,7 @@ sea consistente con la fuente canónica: los generadores de producción.
 
 Este test existe porque un agente AI inventó labels D1 para 9 de 11 estaciones
 en build_continuous_metar_lake.py (29-Ago-2026), incluyendo una inversión
-física del Credit que etiquetaba la GFC 2008 como "DEEP_CREDIT_EASE".
+física del Credit que etiquetaba la GFC 2008 como "EXTREME_EASE".
 
 Fuentes canónicas:
   - D1: backend/scripts/generators/generate_{station}_fact_table.py
@@ -26,16 +26,16 @@ ROOT = Path(__file__).resolve().parents[1]
 # If a generator changes, this dict MUST be updated in parallel.
 # ══════════════════════════════════════════════════════════════
 CANONICAL_D1_LABELS = {
-    "vix": ["DEEP_COMPLACENCY", "LOW_VOL", "MODERATE_VOL", "HIGH_VOL", "ELEVATED_PANIC", "CRISIS_SPIKE"],
-    "vvix": ["EXTREME_COMPLACENCY", "LOW_VVIX", "MODERATE_VVIX", "HIGH_VVIX", "ELEVATED_VVIX", "EXTREME_VVIX"],
-    "pcr": ["EXTREME_CALL_HEAVY", "BULLISH_PCR", "NEUTRAL_PCR", "ELEVATED_PCR", "HIGH_PUT_PANIC", "EXTREME_PUT_PANIC"],
-    "fg": ["EXTREME_FEAR", "FEAR", "NEUTRAL_FEAR", "GREED", "EXTREME_GREED", "EUPHORIA"],
-    "sv5_turbulence": ["QUIET_FLOW", "LOW_TURBULENCE", "MODERATE_TURBULENCE", "HIGH_TURBULENCE", "ELEVATED_TURBULENCE", "CRISIS_TURBULENCE"],
-    "skew": ["LOW_TAIL_RISK", "NORMAL_TAIL_RISK", "ELEVATED_TAIL_RISK", "HIGH_TAIL_RISK", "TAIL_PARANOIA", "BLACK_SWAN_PARANOIA"],
-    "credit": ["CREDIT_CRISIS", "CREDIT_STRESS", "ELEVATED_CREDIT_STRESS", "STABLE_CREDIT", "CREDIT_EASE", "DEEP_CREDIT_EASE"],
+    "vix": ["EXTREME_COMPLACENCY", "COMPLACENCY", "NEUTRAL_CALM", "NEUTRAL_ALERT", "PANIC", "EXTREME_PANIC"],
+    "vvix": ["EXTREME_STABILITY", "STABILITY", "NEUTRAL_STABLE", "NEUTRAL_UNSTABLE", "INSTABILITY", "EXTREME_INSTABILITY"],
+    "pcr": ["EXTREME_CALL_EUPHORIA", "CALL_EUPHORIA", "NEUTRAL_CALL_BIAS", "NEUTRAL_PUT_BIAS", "PUT_PANIC", "EXTREME_PUT_PANIC"],
+    "fg": ["EXTREME_FEAR", "FEAR", "NEUTRAL_FEAR", "NEUTRAL_GREED", "GREED", "EXTREME_GREED"],
+    "sv5_turbulence": ["EXTREME_CALM", "CALM", "NEUTRAL_CALM", "NEUTRAL_TURBULENT", "TURBULENT", "EXTREME_TURBULENT"],
+    "skew": ["EXTREME_CONFIDENCE", "CONFIDENCE", "NEUTRAL_CONFIDENT", "NEUTRAL_PARANOID", "PARANOIA", "EXTREME_PARANOIA"],
+    "credit": ["EXTREME_STRESS", "STRESS", "NEUTRAL_TIGHT", "NEUTRAL_LOOSE", "EASE", "EXTREME_EASE"],
     "yield_curve": ["DEEP_INVERSION", "MODERATE_INVERSION", "FLAT_CURVE", "NORMAL_CURVE", "STEEPNING_CURVE", "EXTREME_STEEPNING"],
-    "rotation": ["DEFENSIVE_CAPITULATION", "DEFENSIVE", "NEUTRAL_ROTATION", "BALANCED", "CYCLICAL_LEADERSHIP", "AGGRESSIVE_ROTATION"],
-    "dxy": ["DEEP_DOLLAR_CRUSH", "WEAK_DOLLAR", "MODERATE_LOW_DOLLAR", "MODERATE_HIGH_DOLLAR", "ELEVATED_DOLLAR_STRESS", "DOLLAR_SPIKE_CRISIS"],
+    "rotation": ["EXTREME_DEFENSIVE", "DEFENSIVE", "NEUTRAL_DEFENSIVE", "NEUTRAL_OFFENSIVE", "OFFENSIVE", "EXTREME_OFFENSIVE"],
+    "dxy": ["EXTREME_WEAKNESS", "WEAKNESS", "NEUTRAL_WEAK", "NEUTRAL_STRONG", "STRENGTH", "EXTREME_STRENGTH"],
     "bsi": ["BREADTH_WASHED_OUT", "OVERSOLD_BREADTH", "NEUTRAL_LOW_BREADTH", "NEUTRAL_HIGH_BREADTH", "EXPANSIVE_BREADTH", "HYPER_EXPANSIVE_BREADTH"],
 }
 
@@ -117,19 +117,21 @@ class TestFactStoreStateKeysUseCanonicalLabels:
         for state_key in fs.get("states", {}).keys():
             parts = state_key.split("__")
             assert len(parts) == 3, f"Malformed state_key: {state_key}"
-            d1, d2, d3 = parts
+            d1_str, d2_str, d3_str = parts
 
-            assert d1 in canonical_d1, (
-                f"Non-canonical D1 label '{d1}' in {station}_fact_store.json "
-                f"(valid: {sorted(canonical_d1)})"
+            # State keys are now numeric bin indices
+            d1 = int(d1_str)
+            d2 = int(d2_str)
+            d3 = int(d3_str)
+
+            assert 0 <= d1 <= 5, (
+                f"D1 bin index {d1} out of range [0,5] in {station}_fact_store.json key '{state_key}'"
             )
-            assert d2 in canonical_d2, (
-                f"Non-canonical D2 label '{d2}' in {station}_fact_store.json "
-                f"(valid: {sorted(canonical_d2)})"
+            assert 0 <= d2 <= 4, (
+                f"D2 bin index {d2} out of range [0,4] in {station}_fact_store.json key '{state_key}'"
             )
-            assert d3 in canonical_d3, (
-                f"Non-canonical D3 label '{d3}' in {station}_fact_store.json "
-                f"(valid: {sorted(canonical_d3)})"
+            assert 0 <= d3 <= 4, (
+                f"D3 bin index {d3} out of range [0,4] in {station}_fact_store.json key '{state_key}'"
             )
 
 
@@ -168,20 +170,20 @@ class TestCreditPhysicalDirection:
     """Guard against the Credit inversion bug (29-Aug-2026).
 
     CREDIT_RATIO = HYG/LQD. Low ratio = stress. High ratio = ease.
-    Bin 0 (lowest expanding rank) MUST map to CREDIT_CRISIS, not CREDIT_EASE.
+    Bin 0 (lowest expanding rank) MUST map to EXTREME_STRESS, not EXTREME_EASE.
     """
 
     def test_credit_bin_0_is_crisis(self):
-        """The first (lowest) D1 label for credit must be a crisis label."""
-        assert CANONICAL_D1_LABELS["credit"][0] == "CREDIT_CRISIS", (
-            "Credit Bin 0 must be CREDIT_CRISIS (lowest HYG/LQD = stress). "
+        """The first (lowest) D1 label for credit must be a stress label."""
+        assert CANONICAL_D1_LABELS["credit"][0] == "EXTREME_STRESS", (
+            "Credit Bin 0 must be EXTREME_STRESS (lowest HYG/LQD = stress). "
             "If this fails, Credit D1 labels are physically inverted."
         )
 
     def test_credit_bin_5_is_ease(self):
         """The last (highest) D1 label for credit must be an ease label."""
-        assert CANONICAL_D1_LABELS["credit"][5] == "DEEP_CREDIT_EASE", (
-            "Credit Bin 5 must be DEEP_CREDIT_EASE (highest HYG/LQD = ease). "
+        assert CANONICAL_D1_LABELS["credit"][5] == "EXTREME_EASE", (
+            "Credit Bin 5 must be EXTREME_EASE (highest HYG/LQD = ease). "
             "If this fails, Credit D1 labels are physically inverted."
         )
 

@@ -69,7 +69,7 @@ GRADE A (alta certeza):
 GRADE B (confirmado, necesita más N):
   - SKEW como confirmador de naturaleza del miedo (cola vs volatilidad)
   - PCR como ENTRY (put panic +2.26%, gate N≥10)
-  - DXY DOLLAR_SPIKE_CRISIS = bearish (-1.94%)
+  - DXY EXTREME_STRENGTH = bearish (-1.94%)
   - YIELD EXTREME_STEEPNING = EXIT
   - Conjunciones rara vez suman (VVIX solo basta al cluster MIEDO)
 

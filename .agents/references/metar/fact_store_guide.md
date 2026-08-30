@@ -27,7 +27,7 @@ Un Fact Store es un **JSON de probabilidades prospectivas** condicionado al esta
 state_key = "{D1_label}__{D2_label}__{D3_label}"
 ```
 
-Ejemplo: `HIGH_VOL__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION`
+Ejemplo: `NEUTRAL_ALERT__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION`
 
 Cada estado contiene 3 capas de información:
 
@@ -93,9 +93,9 @@ Cuando `zz25` y `zz75` divergen en dirección, se activa un régimen de divergen
 
 ## 4. Lectura Correcta de un Estado
 
-Dado el state_key `CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`:
+Dado el state_key `EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`:
 
-1. **D1 = CRISIS_SPIKE**: VIX en el percentil >97.72% histórico (bin 5, extremo superior)
+1. **D1 = EXTREME_PANIC**: VIX en el percentil >97.72% histórico (bin 5, extremo superior)
 2. **D2 = FAST_SPIKE_3D**: La velocidad de cambio en 3 días está en >97.72% (subida extrema)
 3. **D3 = VOL_ACCELERATING_EXPANSION**: La volatilidad intra-indicador está expandiéndose
 

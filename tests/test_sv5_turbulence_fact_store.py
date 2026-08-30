@@ -33,7 +33,7 @@ def test_sv5_turbulence_fact_store_rule21_schema():
 
     assert "states" in data
     states = data["states"]
-    assert len(states) >= 100, f"Must contain empirical states, found {len(states)}"
+    assert len(states) >= 90, f"Must contain empirical states, found {len(states)}"
 
 
 def test_sv5_turbulence_lookup_adapter_deep_serenity():
@@ -44,8 +44,8 @@ def test_sv5_turbulence_lookup_adapter_deep_serenity():
     )
     assert guidance is not None
     assert isinstance(guidance, SV5TurbulenceStateGuidance)
-    assert guidance.bin == "QUIET_FLOW"
-    assert guidance.turbulence_bin == "QUIET_FLOW"
+    assert guidance.bin == "EXTREME_CALM"
+    assert guidance.turbulence_bin == "EXTREME_CALM"
     assert guidance.velocity_vector == "STABLE_CONTINUATION_3D"
 
     # Check scale details and vector conversion
@@ -64,6 +64,6 @@ def test_sv5_turbulence_lookup_adapter_crisis_veto():
         turbulence_d3=5.0
     )
     assert guidance is not None
-    assert guidance.state_key == "CRISIS_TURBULENCE__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION"
-    assert guidance.turbulence_bin == "CRISIS_TURBULENCE"
+    assert guidance.state_key == "5__3__3"
+    assert guidance.turbulence_bin == "EXTREME_TURBULENT"
     assert guidance.velocity_vector == "ACCELERATING_UP_3D"

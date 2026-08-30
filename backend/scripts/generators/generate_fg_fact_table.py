@@ -15,8 +15,8 @@ sys.path.insert(0, str(root_dir))
 
 from backend.scripts._lib.v3_fact_table_engine import build_v3_dual_layer_fact_store
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/fg_fact_store.json"
-D1_LABELS = ["EXTREME_FEAR", "FEAR", "NEUTRAL_FEAR", "GREED", "EXTREME_GREED", "EUPHORIA"]
+OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/fg_fact_store.json"
+D1_LABELS = ["EXTREME_FEAR", "FEAR", "NEUTRAL_FEAR", "NEUTRAL_GREED", "GREED", "EXTREME_GREED"]
 
 FG_PIVOT_OVERRIDES = {
     "FALLING_KNIFE": {

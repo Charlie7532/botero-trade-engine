@@ -15,8 +15,8 @@ Los 11 indicadores agrupados por lo que miden:
 |---|---|---|---|---|
 | **VVIX** | ENTRY 🥇 | EXTREME_VVIX | +2.69% 20d, Kelly 61% | Mejor individual del sistema |
 | **FG** | ENTRY | EXTREME_FEAR | +4.4% 20d, WR 82% | Señal más alcista, N=22 |
-| **VIX** | ENTRY | CRISIS_SPIKE | +2.79% 20d, 2 wipeouts | Necesita filtro D2 flip |
-| **SKEW** | CONTRARIANO | BLACK_SWAN_PARANOIA | +2.36% 60d, WR 74% | Ortogonal a VIX (ρ=-0.185) |
+| **VIX** | ENTRY | EXTREME_PANIC | +2.79% 20d, 2 wipeouts | Necesita filtro D2 flip |
+| **SKEW** | CONTRARIANO | EXTREME_PARANOIA | +2.36% 60d, WR 74% | Ortogonal a VIX (ρ=-0.185) |
 
 **Regla MIEDO:** comprar miedo en cualquiera, filtrar VIX con D2 flip.
 VVIX solo basta. La conjunción no suma sobre VVIX.
@@ -59,7 +59,7 @@ SKEW ya NO pertenece a este cluster (está en MIEDO).
 | Estación | Rol | D1 extremo | Señal |
 |---|---|---|---|
 | **BSI** | ENTRY | BREADTH_WASHED_OUT | +2.6% 20d, WR 69%, N=58 |
-| **SV5T** | ENTRY | CRISIS_TURBULENCE | 0 wipeouts, más seguro |
+| **SV5T** | ENTRY | EXTREME_TURBULENT | 0 wipeouts, más seguro |
 
 **REFUTADO: matriz S5×SV5** (16-Ago):
 - La matriz colapsa a S5 solo. SV5 (volumen breadth) es RUIDO.
@@ -74,7 +74,7 @@ SKEW ya NO pertenece a este cluster (está en MIEDO).
 |---|---|---|---|
 | **CREDIT** | ENTRY 🥇 | CREDIT_STRESS | +3.00% 20d, Kelly 50%, N=82 |
 | **YIELD** | EXIT | EXTREME_STEEPNING | PF 0.73, Kelly -0.19 |
-| **DXY** | BEARISH ⬇️ | DOLLAR_SPIKE_CRISIS | -1.94% 20d, WR 28% |
+| **DXY** | BEARISH ⬇️ | EXTREME_STRENGTH | -1.94% 20d, WR 28% |
 | **ROTATION** | NEUTRAL | — | Solo drift SPY |
 
 ---

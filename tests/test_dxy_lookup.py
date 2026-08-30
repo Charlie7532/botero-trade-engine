@@ -22,7 +22,7 @@ def test_dxy_lookup_neutral_state():
     """Test lookup for standard neutral DXY conditions."""
     guidance = dxy_lookup.lookup_dxy_guidance(val=95.0, d3_speed=0.0, vol_norm=1.0)
     assert isinstance(guidance, DXYStateGuidance)
-    assert "MODERATE_LOW_DOLLAR" in guidance.state_key or "MODERATE_HIGH_DOLLAR" in guidance.state_key
+    assert "2__" in guidance.state_key or "3__" in guidance.state_key
     assert isinstance(guidance.zz25, ScaleGuidance)
     assert isinstance(guidance.zz50, ScaleGuidance)
     assert isinstance(guidance.zz75, ScaleGuidance)

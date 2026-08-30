@@ -42,7 +42,7 @@ from backend.modules.shared.infrastructure.repositories.zigzag_leg_repository im
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("GenerateDXYFactTable")
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/dxy_fact_store.json"
+OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/dxy_fact_store.json"
 
 # ── Gaussian Calibration ──────────────────────────────────────────
 PERCENTILES_D1_GAUSS = [0.0228, 0.1587, 0.5000, 0.8413, 0.9772]
@@ -50,12 +50,12 @@ PERCENTILES_D2_GAUSS = [0.0228, 0.1587, 0.8413, 0.9772]
 PERCENTILES_D3_GAUSS = [0.0228, 0.1587, 0.8413, 0.9772]
 
 D1_BINS = [
-    "DEEP_DOLLAR_CRUSH",
-    "WEAK_DOLLAR",
-    "MODERATE_LOW_DOLLAR",
-    "MODERATE_HIGH_DOLLAR",
-    "ELEVATED_DOLLAR_STRESS",
-    "DOLLAR_SPIKE_CRISIS",
+    "EXTREME_WEAKNESS",
+    "WEAKNESS",
+    "NEUTRAL_WEAK",
+    "NEUTRAL_STRONG",
+    "STRENGTH",
+    "EXTREME_STRENGTH",
 ]
 
 D2_BINS = [
@@ -383,12 +383,11 @@ def compute_structural_momentum(matched_legs: pd.DataFrame, all_scale_legs: pd.D
 
     return result
 
-
 # ── Guidance & Regime (standard layer) ────────────────────────────
-def determine_guidance_and_regime(zz25: dict, zz50: dict, zz75: dict, d1: str, n_state: int):
+def determine_guidance_and_regime(zz25: dict, zz50: dict, zz75: dict, d1_bin: int, n_state: int):
     """
-    Identical logic to generate_all_150_state_fact_stores.py + DXY-specific
-    intermarket overrides.
+    Identical logic to v3_fact_table_engine + DXY-specific
+    intermarket overrides. d1_bin is numeric (0-5).
     """
     ev_1d = zz25["ev_net"]
     ev_3d = zz50["ev_net"]
@@ -409,7 +408,9 @@ def determine_guidance_and_regime(zz25: dict, zz50: dict, zz75: dict, d1: str, n
     else:
         divergence_regime = "MIXED_HORIZON_TRANSITION"
 
-    if composite_ev <= -0.008 or pb_3d <= 0.42 or "CRISIS" in d1 or "SPIKE" in d1:
+    # Extreme bins (0 or 5) = ±2σ territory
+    is_extreme_bin = (d1_bin == 0 or d1_bin == 5)
+    if composite_ev <= -0.008 or pb_3d <= 0.42 or is_extreme_bin:
         guidance = "STK_BLOCK_CRISIS"
     elif composite_ev >= 0.008 and pb_3d >= 0.58 and n_state >= 10:
         guidance = "STK_ACCUMULATE_STRUCTURAL"
@@ -420,11 +421,11 @@ def determine_guidance_and_regime(zz25: dict, zz50: dict, zz75: dict, d1: str, n
     else:
         guidance = "STK_HOLD_STABLE"
 
-    # DXY-specific intermarket overrides
-    if d1 == "DOLLAR_SPIKE_CRISIS":
+    # DXY-specific intermarket overrides (bin 5 = EXTREME_STRENGTH, bin 4 = STRENGTH)
+    if d1_bin == 5:  # Was: DOLLAR_SPIKE_CRISIS -> now EXTREME_STRENGTH
         divergence_regime = "GLOBAL_DOLLAR_LIQUIDITY_SQUEEZE"
         guidance = "STK_BLOCK_CRISIS"
-    elif d1 == "ELEVATED_DOLLAR_STRESS" and divergence_regime != "FULL_CONVERGENT_BULL":
+    elif d1_bin == 4 and divergence_regime != "FULL_CONVERGENT_BULL":  # Was: ELEVATED_DOLLAR_STRESS
         guidance = "STK_TRIM_TACTICAL"
 
     return guidance, divergence_regime
@@ -485,13 +486,32 @@ def main():
     d2_edges = [float(x) for x in dxy_df["d2_velocity"].dropna().quantile(PERCENTILES_D2_GAUSS)]
     d3_vol_edges = [float(x) for x in dxy_df["vol_norm"].dropna().quantile(PERCENTILES_D3_GAUSS)]
 
-    # D1: Expanding rank mapped to Gaussian sigma bins
-    dxy_df["bin_d1"] = d1_expanding_rank.apply(
-        lambda r: classify_value(r, PERCENTILES_D1_GAUSS, D1_BINS) if pd.notna(r) else D1_BINS[2]
-    )
-    dxy_df["bin_d2"] = dxy_df["d2_velocity"].apply(lambda v: classify_value(v, d2_edges, D2_BINS))
-    dxy_df["bin_d3"] = dxy_df["vol_norm"].apply(lambda v: classify_value(v, d3_vol_edges, D3_BINS))
-    dxy_df["state_key"] = dxy_df["bin_d1"] + "__" + dxy_df["bin_d2"] + "__" + dxy_df["bin_d3"]
+    # Numeric bin indices (same pattern as v3_fact_table_engine)
+    def _rank_to_bin(rank_val, percentiles):
+        if pd.isna(rank_val):
+            return -1
+        for idx, p in enumerate(percentiles):
+            if rank_val < p:
+                return idx
+        return len(percentiles)
+
+    def _val_to_bin(val, edges):
+        if pd.isna(val):
+            return -1
+        for idx, e in enumerate(edges):
+            if val < e:
+                return idx
+        return len(edges)
+
+    dxy_df["bin_d1"] = d1_expanding_rank.apply(lambda r: _rank_to_bin(r, PERCENTILES_D1_GAUSS))
+    dxy_df["bin_d2"] = dxy_df["d2_velocity"].apply(lambda v: _val_to_bin(v, d2_edges))
+    dxy_df["bin_d3"] = dxy_df["vol_norm"].apply(lambda v: _val_to_bin(v, d3_vol_edges))
+
+    # Drop warmup rows
+    dxy_df = dxy_df[(dxy_df["bin_d1"] >= 0) & (dxy_df["bin_d2"] >= 0) & (dxy_df["bin_d3"] >= 0)].copy()
+
+    # State key = numeric vector
+    dxy_df["state_key"] = dxy_df["bin_d1"].astype(str) + "__" + dxy_df["bin_d2"].astype(str) + "__" + dxy_df["bin_d3"].astype(str)
     dxy_df["date_str"] = dxy_df.index.astype(str)
 
     # Merge DXY dimensions with SPY forward returns
@@ -616,6 +636,31 @@ def main():
                 "years_covered": round(float(n_days / 252.0), 2),
             },
             "state_hierarchy": "L0=Station -> L1=D1(Absolute Level) -> L2=D2(Velocity 72h) -> L3=D3(Vol Magnitude)",
+            "taxonomy": {
+                "d1": {
+                    "dimension": "Magnitud Puntual",
+                    "n_bins": len(D1_BINS),
+                    "gaussian_percentiles": list(PERCENTILES_D1_GAUSS),
+                    "value_edges": d1_edges_doc,
+                    "labels": D1_BINS,
+                },
+                "d2": {
+                    "dimension": "Velocidad Cinemática 3d",
+                    "n_bins": len(D2_BINS),
+                    "gaussian_percentiles": list(PERCENTILES_D2_GAUSS),
+                    "value_edges": d2_edges,
+                    "labels": D2_BINS,
+                },
+                "d3": {
+                    "dimension": "Estabilidad Intra-Indicador (std 2d / std 10d)",
+                    "n_bins": len(D3_BINS),
+                    "gaussian_percentiles": list(PERCENTILES_D3_GAUSS),
+                    "value_edges": d3_vol_edges,
+                    "labels": D3_BINS,
+                },
+                "state_key_format": "D1_bin__D2_bin__D3_bin (e.g. '5__4__4' = taxonomy.d1.labels[5] + taxonomy.d2.labels[4] + taxonomy.d3.labels[4])",
+            },
+            # Legacy alias for backward compatibility
             "dimension_thresholds_definition": {
                 "dxy_edges_d1": d1_edges_doc,
                 "dxy_edges_d2": d2_edges,

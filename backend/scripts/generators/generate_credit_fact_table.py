@@ -15,8 +15,8 @@ sys.path.insert(0, str(root_dir))
 
 from backend.scripts._lib.v3_fact_table_engine import build_v3_dual_layer_fact_store
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/credit_fact_store.json"
-D1_LABELS = ["CREDIT_CRISIS", "CREDIT_STRESS", "ELEVATED_CREDIT_STRESS", "STABLE_CREDIT", "CREDIT_EASE", "DEEP_CREDIT_EASE"]
+OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/credit_fact_store.json"
+D1_LABELS = ["EXTREME_STRESS", "STRESS", "NEUTRAL_TIGHT", "NEUTRAL_LOOSE", "EASE", "EXTREME_EASE"]
 
 CREDIT_PIVOT_OVERRIDES = {
     "FALLING_KNIFE": {

@@ -60,16 +60,16 @@ STATION_TO_TICKER = {
 # Source: backend/scripts/generators/generate_*_fact_table.py
 # Reference: .hermes/paraauditar/fact_store_v3_architecture.md lines 262-274
 STATION_D1_LABELS = {
-    "vix": ["DEEP_COMPLACENCY", "LOW_VOL", "MODERATE_VOL", "HIGH_VOL", "ELEVATED_PANIC", "CRISIS_SPIKE"],
-    "vvix": ["EXTREME_COMPLACENCY", "LOW_VVIX", "MODERATE_VVIX", "HIGH_VVIX", "ELEVATED_VVIX", "EXTREME_VVIX"],
-    "pcr": ["EXTREME_CALL_HEAVY", "BULLISH_PCR", "NEUTRAL_PCR", "ELEVATED_PCR", "HIGH_PUT_PANIC", "EXTREME_PUT_PANIC"],
-    "fg": ["EXTREME_FEAR", "FEAR", "NEUTRAL_FEAR", "GREED", "EXTREME_GREED", "EUPHORIA"],
-    "sv5_turbulence": ["QUIET_FLOW", "LOW_TURBULENCE", "MODERATE_TURBULENCE", "HIGH_TURBULENCE", "ELEVATED_TURBULENCE", "CRISIS_TURBULENCE"],
-    "skew": ["LOW_TAIL_RISK", "NORMAL_TAIL_RISK", "ELEVATED_TAIL_RISK", "HIGH_TAIL_RISK", "TAIL_PARANOIA", "BLACK_SWAN_PARANOIA"],
-    "credit": ["CREDIT_CRISIS", "CREDIT_STRESS", "ELEVATED_CREDIT_STRESS", "STABLE_CREDIT", "CREDIT_EASE", "DEEP_CREDIT_EASE"],
+    "vix": ["EXTREME_COMPLACENCY", "COMPLACENCY", "NEUTRAL_CALM", "NEUTRAL_ALERT", "PANIC", "EXTREME_PANIC"],
+    "vvix": ["EXTREME_STABILITY", "STABILITY", "NEUTRAL_STABLE", "NEUTRAL_UNSTABLE", "INSTABILITY", "EXTREME_INSTABILITY"],
+    "pcr": ["EXTREME_CALL_EUPHORIA", "CALL_EUPHORIA", "NEUTRAL_CALL_BIAS", "NEUTRAL_PUT_BIAS", "PUT_PANIC", "EXTREME_PUT_PANIC"],
+    "fg": ["EXTREME_FEAR", "FEAR", "NEUTRAL_FEAR", "NEUTRAL_GREED", "GREED", "EXTREME_GREED"],
+    "sv5_turbulence": ["EXTREME_CALM", "CALM", "NEUTRAL_CALM", "NEUTRAL_TURBULENT", "TURBULENT", "EXTREME_TURBULENT"],
+    "skew": ["EXTREME_CONFIDENCE", "CONFIDENCE", "NEUTRAL_CONFIDENT", "NEUTRAL_PARANOID", "PARANOIA", "EXTREME_PARANOIA"],
+    "credit": ["EXTREME_STRESS", "STRESS", "NEUTRAL_TIGHT", "NEUTRAL_LOOSE", "EASE", "EXTREME_EASE"],
     "yield_curve": ["DEEP_INVERSION", "MODERATE_INVERSION", "FLAT_CURVE", "NORMAL_CURVE", "STEEPNING_CURVE", "EXTREME_STEEPNING"],
-    "rotation": ["DEFENSIVE_CAPITULATION", "DEFENSIVE", "NEUTRAL_ROTATION", "BALANCED", "CYCLICAL_LEADERSHIP", "AGGRESSIVE_ROTATION"],
-    "dxy": ["DEEP_DOLLAR_CRUSH", "WEAK_DOLLAR", "MODERATE_LOW_DOLLAR", "MODERATE_HIGH_DOLLAR", "ELEVATED_DOLLAR_STRESS", "DOLLAR_SPIKE_CRISIS"],
+    "rotation": ["EXTREME_DEFENSIVE", "DEFENSIVE", "NEUTRAL_DEFENSIVE", "NEUTRAL_OFFENSIVE", "OFFENSIVE", "EXTREME_OFFENSIVE"],
+    "dxy": ["EXTREME_WEAKNESS", "WEAKNESS", "NEUTRAL_WEAK", "NEUTRAL_STRONG", "STRENGTH", "EXTREME_STRENGTH"],
     "bsi": ["BREADTH_WASHED_OUT", "OVERSOLD_BREADTH", "NEUTRAL_LOW_BREADTH", "NEUTRAL_HIGH_BREADTH", "EXPANSIVE_BREADTH", "HYPER_EXPANSIVE_BREADTH"],
 }
 
@@ -85,9 +85,15 @@ MIN_EXPANDING = 252  # Minimum 1 year for expanding rank
 
 
 def classify_value(val: float, edges: list, labels: list) -> str:
-    """Classify a percentile rank into labels using Gaussian edges."""
+    """Classify a percentile rank into labels using Gaussian edges.
+
+    NaN handling: returns None. When a station has no data for a date
+    (e.g. FG before 2011, Credit before 2007), its state must be NaN,
+    not a fabricated neutral label. This prevents 'phantom states' from
+    distorting signal harness statistics and confluence scoring.
+    """
     if pd.isna(val):
-        return labels[len(labels) // 2]
+        return None
     for idx, e in enumerate(edges):
         if val < e:
             return labels[idx]
@@ -112,8 +118,14 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
     raw_val.index = raw_val.index.tz_localize(None).normalize()
     raw_val = raw_val[~raw_val.index.duplicated(keep="last")]
 
+    # ALIGNMENT FIRST (Homologated with production fact store generators):
+    # Align raw series to SPY trading days first, then ffill(limit=3) for FX/holiday gaps.
+    # This prevents pre-1993 historical outliers (e.g. 1985 Plaza Accord DXY=164.72 or
+    # 1980s Volcker yield spreads) from distorting the expanding rank post-1993.
+    raw_val = raw_val.reindex(spy_index).ffill(limit=3)
+
     # Build station DataFrame
-    sdf = pd.DataFrame({f"{station}_val": raw_val}, index=raw_val.index)
+    sdf = pd.DataFrame({f"{station}_val": raw_val}, index=spy_index)
 
     # D2: 3-day velocity
     sdf[f"{station}_d2_raw"] = raw_val.diff(3)
@@ -123,7 +135,7 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
     vol_10d = raw_val.rolling(10).std().replace(0, np.nan)
     sdf[f"{station}_d3_raw"] = (vol_2d / vol_10d).fillna(1.0)
 
-    # D1: Expanding rank (zero look-ahead bias)
+    # D1: Expanding rank (zero look-ahead bias, starting from SPY inception / station inception)
     d1_rank = raw_val.expanding(min_periods=MIN_EXPANDING).rank(pct=True)
     d2_rank = sdf[f"{station}_d2_raw"].expanding(min_periods=MIN_EXPANDING).rank(pct=True)
     d3_rank = sdf[f"{station}_d3_raw"].expanding(min_periods=MIN_EXPANDING).rank(pct=True)
@@ -156,11 +168,6 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
             sdf[f"{station}_ovf2s_{dim}"] = sdf[z_col].abs() >= 2.0
             sdf[f"{station}_ovf3s_{dim}"] = sdf[z_col].abs() >= 3.0
 
-    # Forward-fill gaps (max 3 days) for non-equity stations (FX holidays, etc.)
-    # Then align to SPY trading days
-    sdf = sdf.ffill(limit=3)
-    sdf = sdf.reindex(spy_index)
-
     n_valid = sdf[f"{station}_val"].notna().sum()
     logger.info(f"  {station} ({ticker}): {n_valid} days aligned to SPY, "
                 f"{len(raw_val)} total bars in Vault")
@@ -185,16 +192,19 @@ def compute_cross_station_features(lake: pd.DataFrame, stations: list) -> pd.Dat
     # How many overflow channels were observable (non-NaN) this day
     lake["n_ovf_channels_active"] = lake[ovf2s_cols].notna().sum(axis=1).astype(int) if ovf2s_cols else 0
 
-    # Panic score: count of FEAR-aligned D1 extremes
-    # Labels match production generators (fact_store_v3_architecture.md lines 262-274)
+    # Panic score: count of FEAR/STRESS-aligned D1 extremes
+    # Canonical symmetric labels (Rule 24 & d1_labels_canonical.md)
     panic_conditions = {
-        "vix_d1": {"ELEVATED_PANIC", "CRISIS_SPIKE"},
+        "vix_d1": {"PANIC", "EXTREME_PANIC"},
         "bsi_d1": {"BREADTH_WASHED_OUT", "OVERSOLD_BREADTH"},
-        "pcr_d1": {"HIGH_PUT_PANIC", "EXTREME_PUT_PANIC"},
+        "pcr_d1": {"PUT_PANIC", "EXTREME_PUT_PANIC"},
         "fg_d1": {"EXTREME_FEAR", "FEAR"},
-        "skew_d1": {"TAIL_PARANOIA", "BLACK_SWAN_PARANOIA"},
-        "credit_d1": {"CREDIT_CRISIS", "CREDIT_STRESS"},
-        "sv5_turbulence_d1": {"ELEVATED_TURBULENCE", "CRISIS_TURBULENCE"},
+        "skew_d1": {"PARANOIA", "EXTREME_PARANOIA"},
+        "credit_d1": {"EXTREME_STRESS", "STRESS"},
+        "sv5_turbulence_d1": {"TURBULENT", "EXTREME_TURBULENT"},
+        "yield_curve_d1": {"DEEP_INVERSION", "MODERATE_INVERSION"},
+        "rotation_d1": {"EXTREME_DEFENSIVE", "DEFENSIVE"},
+        "dxy_d1": {"STRENGTH", "EXTREME_STRENGTH"},
     }
 
     panic_score = pd.Series(0, index=lake.index, dtype=int)
@@ -208,13 +218,18 @@ def compute_cross_station_features(lake: pd.DataFrame, stations: list) -> pd.Dat
     lake["n_panic_stations_active"] = panic_active
     lake["panic_score_pct"] = (panic_score / panic_active.replace(0, 1)).round(4)
 
-    # Euphoria score: count of GREED-aligned D1 extremes
+    # Euphoria score: count of GREED/EASE-aligned D1 extremes
     euphoria_conditions = {
-        "vix_d1": {"DEEP_COMPLACENCY", "LOW_VOL"},
+        "vix_d1": {"EXTREME_COMPLACENCY", "COMPLACENCY"},
         "bsi_d1": {"EXPANSIVE_BREADTH", "HYPER_EXPANSIVE_BREADTH"},
-        "pcr_d1": {"EXTREME_CALL_HEAVY", "BULLISH_PCR"},
-        "fg_d1": {"EXTREME_GREED", "EUPHORIA"},
-        "credit_d1": {"CREDIT_EASE", "DEEP_CREDIT_EASE"},
+        "pcr_d1": {"EXTREME_CALL_EUPHORIA", "CALL_EUPHORIA"},
+        "fg_d1": {"GREED", "EXTREME_GREED"},
+        "credit_d1": {"EASE", "EXTREME_EASE"},
+        "skew_d1": {"EXTREME_CONFIDENCE", "CONFIDENCE"},
+        "sv5_turbulence_d1": {"EXTREME_CALM", "CALM"},
+        "yield_curve_d1": {"STEEPNING_CURVE", "EXTREME_STEEPNING"},
+        "rotation_d1": {"OFFENSIVE", "EXTREME_OFFENSIVE"},
+        "dxy_d1": {"EXTREME_WEAKNESS", "WEAKNESS"},
     }
 
     euphoria_score = pd.Series(0, index=lake.index, dtype=int)

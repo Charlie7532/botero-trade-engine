@@ -74,7 +74,7 @@ def test_credit_metar_service_freeze(mock_store, mock_port):
     mock_store._conn.return_value = conn
 
     dates = pd.date_range(end="2026-07-31", periods=10, freq="D")
-    # Low ratio HYG/LQD = 50.0 / 100.0 = 0.50 (CREDIT_CRISIS)
+    # Low ratio HYG/LQD = 50.0 / 100.0 = 0.50 (EXTREME_STRESS)
     df_hyg = pd.DataFrame({"date": dates, "ticker": "HYG", "close": 50.0})
     df_lqd = pd.DataFrame({"date": dates, "ticker": "LQD", "close": 100.0})
     df = pd.concat([df_hyg, df_lqd])
@@ -86,7 +86,7 @@ def test_credit_metar_service_freeze(mock_store, mock_port):
 
         assert metar.action_code == "MKT_CREDIT_FREEZE_EXTREME"
         assert metar.is_crisis_override is True
-        assert metar.credit_bin == "CREDIT_CRISIS"
+        assert metar.credit_bin == "EXTREME_STRESS"
 
 
 def test_credit_metar_cli_broadcast(mock_store, mock_port):

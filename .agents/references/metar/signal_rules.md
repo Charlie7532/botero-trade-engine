@@ -42,13 +42,13 @@ Los 3 horizontes ZigZag son **independientes** y pueden divergir:
 
 ### Incondicionales (siempre activas)
 Una señal que dispara sin importar el contexto del mercado:
-- `VIX en CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION` → modo crisis
+- `VIX en EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION` → modo crisis
 - `FG en EXTREME_FEAR + panic_score ≥ 5` → acumulación contrarian
 
 ### Condicionales (requieren contexto)
 Una señal que solo tiene significado en combinación con otra:
-- `BSI en OVERSOLD_BREADTH` → solo relevante si Credit NO está en CREDIT_CRISIS (breadth wash puede continuar en crisis crediticia)
-- `SKEW en TAIL_PARANOIA` → relevante si VIX está < HIGH_VOL (protección excesiva en ambiente tranquilo = contrarian)
+- `BSI en OVERSOLD_BREADTH` → solo relevante si Credit NO está en EXTREME_STRESS (breadth wash puede continuar en crisis crediticia)
+- `SKEW en PARANOIA` → relevante si VIX está < NEUTRAL_ALERT (protección excesiva en ambiente tranquilo = contrarian)
 
 ---
 

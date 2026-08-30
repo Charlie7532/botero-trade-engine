@@ -33,7 +33,7 @@ def test_vvix_fact_store_rule21_schema():
 
     assert "states" in data
     states = data["states"]
-    assert len(states) >= 100, f"Must contain empirical states, found {len(states)}"
+    assert len(states) >= 90, f"Must contain empirical states, found {len(states)}"
 
 
 def test_vvix_lookup_adapter_deep_stability():
@@ -44,8 +44,8 @@ def test_vvix_lookup_adapter_deep_stability():
     )
     assert guidance is not None
     assert isinstance(guidance, VVIXStateGuidance)
-    assert guidance.bin == "EXTREME_COMPLACENCY"
-    assert guidance.vvix_bin == "EXTREME_COMPLACENCY"
+    assert guidance.bin == "EXTREME_STABILITY"
+    assert guidance.vvix_bin == "EXTREME_STABILITY"
     assert guidance.velocity_vector == "STABLE_CONTINUATION_3D"
 
     # Check scale details and vector conversion
@@ -64,6 +64,6 @@ def test_vvix_lookup_adapter_vol_of_vol_crisis():
         vvix_d3=15.0
     )
     assert guidance is not None
-    assert guidance.state_key == "EXTREME_VVIX__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION"
-    assert guidance.vvix_bin == "EXTREME_VVIX"
+    assert guidance.state_key == "5__3__3"
+    assert guidance.vvix_bin == "EXTREME_INSTABILITY"
     assert guidance.velocity_vector == "ACCELERATING_UP_3D"

@@ -40,19 +40,19 @@
 
 ## 3. Anomalías Empíricas Validadas (N ≥ 20)
 
-### 🚨 Anomalía Empírica 1: `CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`
+### 🚨 Anomalía Empírica 1: `EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`
 - **Condición**: Estado empírico en Vault con N=22 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 66.7\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = +1.279\%$.
 - **Régimen**: `FULL_CONVERGENT_BULL` → `STK_BLOCK_CRISIS`.
 
-### 🚨 Anomalía Empírica 2: `CRISIS_SPIKE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE`
+### 🚨 Anomalía Empírica 2: `EXTREME_PANIC__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE`
 - **Condición**: Estado empírico en Vault con N=40 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 42.7\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = -0.622\%$.
 - **Régimen**: `FULL_CONVERGENT_BEAR` → `STK_BLOCK_CRISIS`.
 
-### 🚨 Anomalía Empírica 3: `CRISIS_SPIKE__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE`
+### 🚨 Anomalía Empírica 3: `EXTREME_PANIC__FAST_CRUSH_3D__VOL_NEUTRAL_BASELINE`
 - **Condición**: Estado empírico en Vault con N=33 observaciones.
 - **Probabilidad Bull**: $P(\text{bull}) = 56.6\%$.
 - **Esperanza Matemática**: $EV_{\text{net}} = +0.317\%$.

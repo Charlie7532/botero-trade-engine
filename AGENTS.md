@@ -290,30 +290,44 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     - **Emergency Circuit Breaker:** `MKT_MACRO_CIRCUIT_BREAKER` (Systemic market crash / liquidity emergency — overrides all stock-level signals).
     - **Urgency Tags (FIX Protocol Tag 61/848):** `URGENCY_EMERGENCY`, `URGENCY_HIGH`, `URGENCY_NORMAL`, `URGENCY_LOW`.
 
-21. **Standard JSON Fact Store Metadata Specification.** Every generated JSON probability table, regime tree, or rule file MUST contain a top-level `_documentation` dictionary with 6 mandatory metadata blocks:
+21. **Standard JSON Fact Store Metadata Specification.** Every generated JSON probability table, regime tree, or rule file MUST contain a top-level `_documentation` dictionary with mandatory metadata blocks:
     - **`model_purpose`**: Descriptive explanation of the quantitative/physical model.
     - **`return_formula`**: Explicit mathematical definition of the target/return variable.
     - **`state_hierarchy`**: Breakdown of state levels (`L0` to `L3`) and dimension mapping.
-    - **`dimension_thresholds_definition`**: Exact numerical thresholds and physical meanings for every discrete bin string (e.g. `T+++`, `C---`, `<<`, `~`, `>>`, `vel`, etc.).
+    - **`taxonomy`**: Complete mapping of dimension configurations: `{d1: {n_bins, labels, value_edges}, d2: {n_bins, labels, value_edges}, d3: {n_bins, labels, value_edges}}`. Labels live strictly here, decoupling state indexing from naming conventions.
+    - **`dimension_thresholds_definition`**: Numerical thresholds, value edges, and physical interpretations.
     - **`field_glossary`**: Complete glossary of every metric key in the data objects (`n`, `p_bull`, `ev`, `sharpe`, `rr_asymmetry`, `fatigue_buckets`, etc.).
-    - **`signal_interpretation_policy`**: Explicit Clean Architecture declaration stating that business signals are NOT static strings in JSON, but are dynamically interpreted by pure-domain adapters (`rc_*_lookup.py`, `signal_cataloger.py`).
+    - **`signal_interpretation_policy`**: Explicit Clean Architecture declaration stating that business signals are NOT static strings in JSON, but are dynamically interpreted by pure-domain adapters (`rc_*_lookup.py`, `signal_cataloger.py`, `*_lookup.py`).
 
 22. **Strict User Approval Before Code/File Mutations or Git Commits for Architectural Proposals.** AI agents MUST NEVER create new reference files, mutate codebase logic, or execute `git commit` / `git push` for architectural proposals, taxonomies, or plans until the USER has explicitly reviewed and approved the plan. All initial design proposals and prompts must remain in Planning Mode / Artifacts (`master_taxonomic_homologation_prompt.md`, `implementation_plan.md`) without mutating codebase files or committing to git.
 
 23. **4-Tier Aeronautical Market Alert Taxonomy Standard (METAR / TAF / SIGMET / NOTAM).** All market observation, forecasting, hazard alert, and operational disruption services MUST strictly adhere to the 4-tier aeronautical classification:
-    - **`METAR` (Multi-Station Telemetry):** Routine daily observation and 72h kinematic velocity ($\Delta 3d$) across the 9 market stations (VIX, VVIX, PCR, F&G, SV5_Turbulence, SKEW, Credit Stress, Yield Curve, Sector Rotation). Always active. Endpoint: `/api/metar/*`.
+    - **`METAR` (Multi-Station Telemetry):** Routine daily observation and 72h kinematic velocity ($\Delta 3d$) across the 11 market stations (VIX, VVIX, PCR, F&G, SV5_Turbulence, SKEW, Credit Stress, Yield Curve, Sector Rotation, BSI, DXY). Always active. Endpoint: `/api/metar/*`.
     - **`TAF` (Terminal Market Forecast):** Stochastic probability matrix and horizon divergence forecast ($P_{bull}, EV$, Capital Velocity at 2.5%, 5.0%, 7.5% scales). Integrated into METAR telemetry.
-    - **`SIGMET` (Severe Weather Hazard Bulletins):** Issued ONLY when a station breaches extreme hazard thresholds (VIX $\ge 28$, SKEW $\ge 145$, SV5_Turbulence surge, Yield Curve inversion, Extreme Fear capitulation). Returns `status: CLEAR` with empty list `[]` when no severe market weather is present. Endpoint: `/api/sigmet/active`.
+    - **`SIGMET` (Severe Weather Hazard Bulletins):** Issued ONLY when a station breaches extreme hazard thresholds (VIX $\ge 28$, SKEW $\ge 145$, SV5_Turbulence surge, Yield Curve inversion, Extreme Fear capitulation, Credit Freeze). Returns `status: CLEAR` with empty list `[]` when no severe market weather is present. Endpoint: `/api/sigmet/active`.
     - **`NOTAM` (Operational Disruption Bulletins):** Reserved strictly for infrastructure outages, Neon Vault pipeline staleness, broker API connectivity failures, FOMC blackout periods, or Macro Circuit Breaker halts. Endpoint: `/api/notam/incidents`.
 
-24. **Gaussian Sigma Scale Calibration Standard.** All indicator dimensional classification (D1 Magnitude, D2 Velocity, D3 Station Volatility) MUST use Gaussian Normal Distribution σ-percentile edges applied to the **full historical population** of each indicator in the Neon Vault. **Full policy in [gaussian_scale_calibration_policy.md](file:///root/botero-trade/.agents/references/metar/gaussian_scale_policy.md).**
+24. **Gaussian Sigma Scale & Symmetric Canonical Taxonomy Standard.** All indicator dimensional classification (D1 Magnitude, D2 Velocity, D3 Station Volatility) MUST use Gaussian Normal Distribution σ-percentile edges applied to the **full historical population** of each indicator in the Neon Vault. **Full policy in [gaussian_scale_calibration_policy.md](file:///root/botero-trade/.agents/references/metar/gaussian_scale_policy.md) and [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md).**
+    - **Numeric Vector State Keys:** All Fact Store keys are formatted as normalized numeric strings: `"{d1}__{d2}__{d3}"` where $d1 \in [0..5]$, $d2 \in [0..4]$, $d3 \in [0..4]$. Labels do NOT form state keys.
+    - **Centralized Classifier:** All dimension classification and label resolution MUST delegate to [`metar_classifier.py`](file:///root/botero-trade/backend/modules/entry_decision/domain/rules/metar_classifier.py) (`classify_bin()`, `make_state_key()`, `resolve_label()`).
     - **D1 (6 bines, 5 edges):** Percentiles `[0.0228, 0.1587, 0.5000, 0.8413, 0.9772]` → `[-2σ, -1σ, μ, +1σ, +2σ]`.
+      Symmetric pattern: `EXTREME_{concept} (0)` / `{concept} (1)` / `NEUTRAL_{bias} (2)` / `NEUTRAL_{antonym_bias} (3)` / `{antonym} (4)` / `EXTREME_{antonym} (5)`.
+      - **VIX**: `EXTREME_COMPLACENCY | COMPLACENCY | NEUTRAL_CALM | NEUTRAL_ALERT | PANIC | EXTREME_PANIC`
+      - **VVIX**: `EXTREME_STABILITY | STABILITY | NEUTRAL_STABLE | NEUTRAL_UNSTABLE | INSTABILITY | EXTREME_INSTABILITY`
+      - **PCR**: `EXTREME_CALL_EUPHORIA | CALL_EUPHORIA | NEUTRAL_CALL_BIAS | NEUTRAL_PUT_BIAS | PUT_PANIC | EXTREME_PUT_PANIC`
+      - **FG**: `EXTREME_FEAR | FEAR | NEUTRAL_FEAR | NEUTRAL_GREED | GREED | EXTREME_GREED`
+      - **SV5 Turb**: `EXTREME_CALM | CALM | NEUTRAL_CALM | NEUTRAL_TURBULENT | TURBULENT | EXTREME_TURBULENT`
+      - **SKEW**: `EXTREME_CONFIDENCE | CONFIDENCE | NEUTRAL_CONFIDENT | NEUTRAL_PARANOID | PARANOIA | EXTREME_PARANOIA`
+      - **Credit**: `EXTREME_STRESS | STRESS | NEUTRAL_TIGHT | NEUTRAL_LOOSE | EASE | EXTREME_EASE`
+      - **Yield**: `DEEP_INVERSION | MODERATE_INVERSION | FLAT_CURVE | NORMAL_CURVE | STEEPNING_CURVE | EXTREME_STEEPNING`
+      - **Rotation**: `EXTREME_DEFENSIVE | DEFENSIVE | NEUTRAL_DEFENSIVE | NEUTRAL_OFFENSIVE | OFFENSIVE | EXTREME_OFFENSIVE`
+      - **BSI**: `BREADTH_WASHED_OUT | OVERSOLD_BREADTH | NEUTRAL_LOW_BREADTH | NEUTRAL_HIGH_BREADTH | EXPANSIVE_BREADTH | HYPER_EXPANSIVE_BREADTH`
+      - **DXY**: `EXTREME_WEAKNESS | WEAKNESS | NEUTRAL_WEAK | NEUTRAL_STRONG | STRENGTH | EXTREME_STRENGTH`
     - **D2 (5 bines, 4 edges):** Percentiles `[0.0228, 0.1587, 0.8413, 0.9772]` → `[-2σ, -1σ, +1σ, +2σ]`. Labels: `FAST_CRUSH_3D | DECELERATING_DOWN_3D | STABLE_CONTINUATION_3D | ACCELERATING_UP_3D | FAST_SPIKE_3D`.
     - **D3 (5 bines, 4 edges):** Same percentiles as D2. Labels: `VOL_EXTREME_SQUEEZE | VOL_MODERATE_COMPRESSION | VOL_NEUTRAL_BASELINE | VOL_ACCELERATING_EXPANSION | VOL_PEAK_DECELERATION`.
-    - **"Extreme" = ±2σ (P2.28% / P97.72%)** — no exceptions. Edges are **empirical quantiles** (`series.quantile()`), NOT parametric `μ ± kσ`. D2 uses `diff(3)`, D3 uses `std(5d)/std(20d)`.
-    - **D2/D3 labels are universal** across all 9 stations. D1 labels are station-specific but maintain semantic ordering (Index 0 = lowest extreme, Index 5 = highest extreme).
-    - **D3 formula (V1.1)**: `std(2d)/std(10d)` — changed from `std(5d)/std(20d)` based on empirical shootout (80% vs 46% correction detection rate, same lead time).
-    - **Recalibration** required when Vault population grows >20% or after structural regime shift. Run `generate_all_150_state_fact_stores.py` atomically.
+    - **"Extreme" = ±2σ (P2.28% / P97.72%)** — no exceptions. Edges are **empirical quantiles** (`series.quantile()`), NOT parametric `μ ± kσ`. D2 uses `diff(3)`, D3 uses `std(2d)/std(10d)` (V1.1).
+    - **Recalibration** required when Vault population grows >20% or after structural regime shift. Run all station generators atomically.
+    - **Integrity Guard:** Automated verification enforced by [`test_taxonomy_integrity.py`](file:///root/botero-trade/tests/test_taxonomy_integrity.py) (46 tests).
 
 25. **Same-Day Trading Session Telemetry Freshness Standard for METAR Queries.**
     When responding to a user request for "today's METAR" or market health on an active trading day, the system/agent MUST NEVER present stale data from prior trading days. The agent MUST:

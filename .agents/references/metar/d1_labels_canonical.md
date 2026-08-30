@@ -1,9 +1,23 @@
 # METAR D1×D2×D3 Labels — Canonical Reference
 
 > **Módulo de**: [fact_store_v3_architecture.md](file:///root/botero-trade/.agents/references/metar/fact_store_v3_architecture.md) §4.2–4.4
-> **Status**: `CANONICAL SOURCE OF TRUTH` | **Last Audit**: 29-Ago-2026
+> **Status**: `CANONICAL SOURCE OF TRUTH` | **Last Update**: 30-Ago-2026
 > **Integrity Guard**: [`test_taxonomy_integrity.py`](file:///root/botero-trade/tests/test_taxonomy_integrity.py) (46 tests)
 > **Relacionados**: [gaussian_scale_policy.md](file:///root/botero-trade/.agents/references/metar/gaussian_scale_policy.md)
+
+---
+
+## State Key — Formato Vectorial Numérico
+
+```
+state_key = "{D1_bin}__{D2_bin}__{D3_bin}"
+```
+
+**Los state keys son vectores numéricos**, no strings de labels. Ejemplo: `"5__4__4"` = `taxonomy.d1.labels[5]` + `taxonomy.d2.labels[4]` + `taxonomy.d3.labels[4]`.
+
+Los labels semánticos viven **exclusivamente** en la sección `_documentation.taxonomy` del JSON. Esto desacopla la nomenclatura de la estructura de datos — renombrar labels NO requiere regenerar fact stores.
+
+Espacio teórico: 6 × 5 × 5 = **150 estados** por estación. En la práctica, ~95-131 estados se observan empíricamente.
 
 ---
 
@@ -11,24 +25,26 @@
 
 **Clasificación:** Expanding Window Percentile Rank con zero look-ahead bias. Los edges Gaussianos `[0.0228, 0.1587, 0.5000, 0.8413, 0.9772]` (= `[-2σ, -1σ, μ, +1σ, +2σ]`) se aplican al rank, NO al valor crudo.
 
-| Estación | Bin 0 (< −2σ) | Bin 1 | Bin 2 | Bin 3 | Bin 4 | Bin 5 (> +2σ) |
+**Simetría canónica:** Todas las etiquetas siguen el patrón `EXTREME_{concepto}` / `{concepto}` / `NEUTRAL_{sesgo}` / `NEUTRAL_{antónimo_sesgo}` / `{antónimo}` / `EXTREME_{antónimo}`.
+
+| Estación | Bin 0 (< −2σ) | Bin 1 | Bin 2 (NEUTRAL_) | Bin 3 (NEUTRAL_) | Bin 4 | Bin 5 (> +2σ) |
 |---|---|---|---|---|---|---|
-| **VIX** | DEEP_COMPLACENCY | LOW_VOL | MODERATE_VOL | HIGH_VOL | ELEVATED_PANIC | CRISIS_SPIKE |
-| **BSI** | BREADTH_WASHED_OUT | OVERSOLD_BREADTH | NEUTRAL_LOW_BREADTH | NEUTRAL_HIGH_BREADTH | EXPANSIVE_BREADTH | HYPER_EXPANSIVE_BREADTH |
-| **F&G** | EXTREME_FEAR | FEAR | NEUTRAL_FEAR | GREED | EXTREME_GREED | EUPHORIA |
-| **Credit** | CREDIT_CRISIS | CREDIT_STRESS | ELEVATED_CREDIT_STRESS | STABLE_CREDIT | CREDIT_EASE | DEEP_CREDIT_EASE |
-| **Rotation** | DEFENSIVE_CAPITULATION | DEFENSIVE | NEUTRAL_ROTATION | BALANCED | CYCLICAL_LEADERSHIP | AGGRESSIVE_ROTATION |
-| **PCR** | EXTREME_CALL_HEAVY | BULLISH_PCR | NEUTRAL_PCR | ELEVATED_PCR | HIGH_PUT_PANIC | EXTREME_PUT_PANIC |
-| **VVIX** | EXTREME_COMPLACENCY | LOW_VVIX | MODERATE_VVIX | HIGH_VVIX | ELEVATED_VVIX | EXTREME_VVIX |
-| **SV5 Turb** | QUIET_FLOW | LOW_TURBULENCE | MODERATE_TURBULENCE | HIGH_TURBULENCE | ELEVATED_TURBULENCE | CRISIS_TURBULENCE |
-| **SKEW** | LOW_TAIL_RISK | NORMAL_TAIL_RISK | ELEVATED_TAIL_RISK | HIGH_TAIL_RISK | TAIL_PARANOIA | BLACK_SWAN_PARANOIA |
+| **VIX** | EXTREME_COMPLACENCY | COMPLACENCY | NEUTRAL_CALM | NEUTRAL_ALERT | PANIC | EXTREME_PANIC |
+| **VVIX** | EXTREME_STABILITY | STABILITY | NEUTRAL_STABLE | NEUTRAL_UNSTABLE | INSTABILITY | EXTREME_INSTABILITY |
+| **PCR** | EXTREME_CALL_EUPHORIA | CALL_EUPHORIA | NEUTRAL_CALL_BIAS | NEUTRAL_PUT_BIAS | PUT_PANIC | EXTREME_PUT_PANIC |
+| **F&G** | EXTREME_FEAR | FEAR | NEUTRAL_FEAR | NEUTRAL_GREED | GREED | EXTREME_GREED |
+| **SV5 Turb** | EXTREME_CALM | CALM | NEUTRAL_CALM | NEUTRAL_TURBULENT | TURBULENT | EXTREME_TURBULENT |
+| **SKEW** | EXTREME_CONFIDENCE | CONFIDENCE | NEUTRAL_CONFIDENT | NEUTRAL_PARANOID | PARANOIA | EXTREME_PARANOIA |
+| **Credit** | EXTREME_STRESS | STRESS | NEUTRAL_TIGHT | NEUTRAL_LOOSE | EASE | EXTREME_EASE |
 | **Yield** | DEEP_INVERSION | MODERATE_INVERSION | FLAT_CURVE | NORMAL_CURVE | STEEPNING_CURVE | EXTREME_STEEPNING |
-| **DXY** | DEEP_DOLLAR_CRUSH | WEAK_DOLLAR | MODERATE_LOW_DOLLAR | MODERATE_HIGH_DOLLAR | ELEVATED_DOLLAR_STRESS | DOLLAR_SPIKE_CRISIS |
+| **Rotation** | EXTREME_DEFENSIVE | DEFENSIVE | NEUTRAL_DEFENSIVE | NEUTRAL_OFFENSIVE | OFFENSIVE | EXTREME_OFFENSIVE |
+| **BSI** | BREADTH_WASHED_OUT | OVERSOLD_BREADTH | NEUTRAL_LOW_BREADTH | NEUTRAL_HIGH_BREADTH | EXPANSIVE_BREADTH | HYPER_EXPANSIVE_BREADTH |
+| **DXY** | EXTREME_WEAKNESS | WEAKNESS | NEUTRAL_WEAK | NEUTRAL_STRONG | STRENGTH | EXTREME_STRENGTH |
 
 **Fuente autoritativa:** `backend/scripts/generators/generate_{station}_fact_table.py` → variable `D1_LABELS` o `D1_BINS`.
 
 > [!CAUTION]
-> **NUNCA inferir, "recordar", ni inventar labels D1.** Copiar LITERALMENTE de esta tabla o del generador correspondiente. El 29-Ago-2026 un agente inventó labels para 9/11 estaciones, incluyendo una inversión física del Credit que etiquetaba la GFC 2008 como "crédito fácil". El test `test_taxonomy_integrity.py` previene este error.
+> **NUNCA inferir, "recordar", ni inventar labels D1.** Copiar LITERALMENTE de esta tabla o del generador correspondiente. El 29-Ago-2026 un agente inventó labels para 9/11 estaciones, incluyendo una inversión física del Credit. El test `test_taxonomy_integrity.py` previene este error.
 
 ---
 
@@ -64,28 +80,32 @@
 
 ---
 
-## State Key — Composición
-
-```
-state_key = "{D1_label}__{D2_label}__{D3_label}"
-```
-
-Ejemplo: `CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`
-
-Espacio teórico: 6 × 5 × 5 = **150 estados** por estación. En la práctica, ~100-130 estados se observan empíricamente.
-
----
-
 ## Dirección Física por Estación
 
 Bin 0 corresponde siempre al **valor más bajo** del indicador en expanding rank. La semántica depende de si el valor bajo es "bueno" o "malo":
 
 | Estación | Valor bajo = | Valor alto = | Dirección |
 |---|---|---|---|
-| VIX | Complacencia | Crisis | ↑ = peor |
+| VIX | Complacencia | Pánico | ↑ = peor |
+| VVIX | Estabilidad | Inestabilidad | ↑ = peor |
 | Credit (HYG/LQD) | Estrés crediticio | Facilidad crediticia | ↑ = mejor |
-| F&G | Miedo extremo | Euforia | ↑ = mejor (contrarian: peor) |
+| F&G | Miedo extremo | Codicia extrema | ↑ = mejor (contrarian: peor) |
 | BSI (S5TW) | Breadth destruido | Breadth expansivo | ↑ = mejor |
 | PCR | Exceso de calls | Pánico en puts | ↑ = peor |
-| Rotation | Capitulación defensiva | Rotación agresiva | ↑ = risk-on |
+| SKEW | Confianza | Paranoia | ↑ = peor |
+| SV5 Turb | Calma | Turbulencia | ↑ = peor |
+| Rotation | Defensivo | Ofensivo | ↑ = risk-on |
 | Yield Spread | Inversión profunda | Curva empinada | ↑ = expansión |
+| DXY | Dólar débil | Dólar fuerte | ↑ = peor (para equities) |
+
+---
+
+## Clasificador Centralizado
+
+Archivo: [`metar_classifier.py`](file:///root/botero-trade/backend/modules/entry_decision/domain/rules/metar_classifier.py)
+
+Funciones:
+- `classify_bin(val, edges) → int` — Clasifica un valor crudo en un índice de bin
+- `make_state_key(d1, d2, d3) → str` — Construye la clave `"5__3__3"`
+- `decode_state_key(key) → (int, int, int)` — Parsea la clave
+- `resolve_label(bin_idx, labels) → str` — Traduce índice a label semántico

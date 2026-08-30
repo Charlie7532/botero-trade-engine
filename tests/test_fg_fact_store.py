@@ -49,12 +49,12 @@ def test_lookup_adapter_extremes():
 
 def test_lookup_adapter_euphoria():
     """Verify that lookup returns correct guidance under euphoria/high greed states."""
-    # Euphoria (95.0 is in EUPHORIA bin), Stable Speed
+    # Extreme Greed (95.0 is in EXTREME_GREED bin), Stable Speed
     guidance = fg_lookup.lookup_fg_guidance(
         fg_val=95.0, 
         fg_d3=0.0
     )
     assert guidance is not None
-    assert guidance.bin == "EUPHORIA"
+    assert guidance.bin == "EXTREME_GREED"
     assert guidance.divergence_regime == "FULL_CONVERGENT_BULL"
     assert guidance.operational_guidance == "STK_HOLD_STABLE"

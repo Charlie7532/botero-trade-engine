@@ -66,7 +66,7 @@ backend/modules/entry_decision/domain/rules/{station}_fact_store.json
 Cada estación METAR produce **tres vectores** simultáneos, uno por cada escala ZigZag:
 
 ```
-DÍA T (ejemplo: VIX en CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCEL):
+DÍA T (ejemplo: VIX en EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCEL):
   zz25 → p_bull=0.30, ev=-0.015, e_days=4     ← pullback táctico
   zz50 → p_bull=0.35, ev=-0.032, e_days=12    ← corrección
   zz75 → p_bull=0.42, ev=-0.051, e_days=35    ← movimiento estructural
@@ -181,8 +181,8 @@ Día 12: Acumulado -8.1% → ZZ25: misma pierna continúa          ✓
 **¿Por qué son diamantes?**
 
 Los eventos más importantes del mercado son inherentemente raros:
-- VIX CRISIS_SPIKE solo ocurre ~5% del tiempo
-- La combinación CRISIS_SPIKE + FAST_SPIKE_3D + VOL_PEAK_DECELERATION puede tener N=3 en 26 años
+- VIX EXTREME_PANIC solo ocurre ~5% del tiempo
+- La combinación EXTREME_PANIC + FAST_SPIKE_3D + VOL_PEAK_DECELERATION puede tener N=3 en 26 años
 - Pero esos 3 eventos incluyen 2008, 2020, y otro crash — son los momentos donde más capital se gana o se pierde
 
 **Protocolo para Diamantes:**
@@ -205,7 +205,7 @@ Los eventos más importantes del mercado son inherentemente raros:
 
 **Ejemplo de diamante:**
 ```
-VIX: CRISIS_SPIKE__FAST_SPIKE_3D__VOL_PEAK_DECELERATION
+VIX: EXTREME_PANIC__FAST_SPIKE_3D__VOL_PEAK_DECELERATION
   N = 3 (tier = LOW)
   zigzag_kinematic.zz75: n_pos=0, n_neg=3 → p_bull_raw=0.000, p_bull_bayesian=0.385
   
@@ -223,7 +223,7 @@ VIX: CRISIS_SPIKE__FAST_SPIKE_3D__VOL_PEAK_DECELERATION
 
 ## 4. Las Tres Dimensiones (D1×D2×D3)
 
-Cada estado es un `state_key` con formato `D1__D2__D3`. Ejemplo: `CRISIS_SPIKE__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`.
+Cada estado es un `state_key` con formato `D1__D2__D3`. Ejemplo: `EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`.
 
 ### 4.1 El Vector de Datos Crudo
 
@@ -253,25 +253,25 @@ vol = std(series[t-1:t+1]) / std(series[t-9:t+1])  # D3: std(2d) / std(10d)
 rank = series[:t].rank(pct=True).iloc[-1]  # Percentil expandible hasta HOY
 # Luego se clasifica usando bordes Gaussianos σ sobre el rank:
 bins = [0.0228, 0.1587, 0.5000, 0.8413, 0.9772]  # -2σ, -1σ, μ, +1σ, +2σ
-# Si rank < 0.0228 → Bin 0 (extremo inferior, ej. DEEP_COMPLACENCY)
-# Si rank > 0.9772 → Bin 5 (extremo superior, ej. CRISIS_SPIKE)
+# Si rank < 0.0228 → Bin 0 (extremo inferior, ej. EXTREME_COMPLACENCY)
+# Si rank > 0.9772 → Bin 5 (extremo superior, ej. EXTREME_PANIC)
 ```
 
 **Labels D1:** Específicos por estación. 6 bines = 6 nombres descriptivos:
 
 | Estación | Bin 0 (< −2σ) | Bin 1 | Bin 2 | Bin 3 | Bin 4 | Bin 5 (> +2σ) |
 |---|---|---|---|---|---|---|
-| **VIX** | DEEP_COMPLACENCY | LOW_VOL | MODERATE_VOL | HIGH_VOL | ELEVATED_PANIC | CRISIS_SPIKE |
+| **VIX** | EXTREME_COMPLACENCY | LOW_VOL | MODERATE_VOL | HIGH_VOL | ELEVATED_PANIC | EXTREME_PANIC |
 | **BSI** | BREADTH_WASHED_OUT | OVERSOLD_BREADTH | NEUTRAL_LOW_BREADTH | NEUTRAL_HIGH_BREADTH | EXPANSIVE_BREADTH | HYPER_EXPANSIVE_BREADTH |
 | **F&G** | EXTREME_FEAR | FEAR | NEUTRAL_FEAR | GREED | EXTREME_GREED | EUPHORIA |
-| **Credit** | CREDIT_CRISIS | CREDIT_STRESS | ELEVATED_CREDIT_STRESS | STABLE_CREDIT | CREDIT_EASE | DEEP_CREDIT_EASE |
-| **Rotation** | DEFENSIVE_CAPITULATION | DEFENSIVE | NEUTRAL_ROTATION | BALANCED | CYCLICAL_LEADERSHIP | AGGRESSIVE_ROTATION |
-| **PCR** | EXTREME_CALL_HEAVY | BULLISH_PCR | NEUTRAL_PCR | ELEVATED_PCR | HIGH_PUT_PANIC | EXTREME_PUT_PANIC |
+| **Credit** | EXTREME_STRESS | CREDIT_STRESS | ELEVATED_CREDIT_STRESS | STABLE_CREDIT | CREDIT_EASE | DEEP_CREDIT_EASE |
+| **Rotation** | EXTREME_DEFENSIVE | DEFENSIVE | NEUTRAL_ROTATION | BALANCED | CYCLICAL_LEADERSHIP | EXTREME_OFFENSIVE |
+| **PCR** | EXTREME_CALL_EUPHORIA | CALL_EUPHORIA | NEUTRAL_PCR | ELEVATED_PCR | HIGH_PUT_PANIC | EXTREME_PUT_PANIC |
 | **VVIX** | EXTREME_COMPLACENCY | LOW_VVIX | MODERATE_VVIX | HIGH_VVIX | ELEVATED_VVIX | EXTREME_VVIX |
-| **SV5 Turb** | QUIET_FLOW | LOW_TURBULENCE | MODERATE_TURBULENCE | HIGH_TURBULENCE | ELEVATED_TURBULENCE | CRISIS_TURBULENCE |
-| **SKEW** | LOW_TAIL_RISK | NORMAL_TAIL_RISK | ELEVATED_TAIL_RISK | HIGH_TAIL_RISK | TAIL_PARANOIA | BLACK_SWAN_PARANOIA |
+| **SV5 Turb** | EXTREME_CALM | LOW_TURBULENCE | MODERATE_TURBULENCE | HIGH_TURBULENCE | ELEVATED_TURBULENCE | EXTREME_TURBULENT |
+| **SKEW** | LOW_TAIL_RISK | NORMAL_TAIL_RISK | ELEVATED_TAIL_RISK | HIGH_TAIL_RISK | PARANOIA | EXTREME_PARANOIA |
 | **Yield** | DEEP_INVERSION | MODERATE_INVERSION | FLAT_CURVE | NORMAL_CURVE | STEEPNING_CURVE | EXTREME_STEEPNING |
-| **DXY** | DEEP_DOLLAR_CRUSH | WEAK_DOLLAR | MODERATE_LOW_DOLLAR | MODERATE_HIGH_DOLLAR | ELEVATED_DOLLAR_STRESS | DOLLAR_SPIKE_CRISIS |
+| **DXY** | DEEP_DOLLAR_CRUSH | WEAK_DOLLAR | MODERATE_LOW_DOLLAR | MODERATE_HIGH_DOLLAR | ELEVATED_DOLLAR_STRESS | EXTREME_STRENGTH |
 
 ### 4.3 D2 — Velocidad Cinemática (5 bines)
 
@@ -364,7 +364,7 @@ cascade_75 = int(any(
 
 ```json
 {
-  "CRISIS_SPIKE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
+  "EXTREME_PANIC__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE": {
     "n": 78,                          // Días de mercado en este estado
     "stats": {                        // Estadísticas del valor del indicador
       "min": 16.61, "max": 46.67,
@@ -614,17 +614,17 @@ El engine emite una acción basada en EV compuesto ($0.3 \cdot EV_{1d} + 0.4 \cd
 
 | Estación | Ticker Vault | D1 Labels | N estados | Observaciones |
 |---|---|---|:---:|---|
-| **VIX** | `VIX` | DEEP_COMPLACENCY → CRISIS_SPIKE | 108 | Pivotes físicos: PANIC_SPIKE, VOL_CRUSH_REBOUND |
+| **VIX** | `VIX` | EXTREME_COMPLACENCY → EXTREME_PANIC | 108 | Pivotes físicos: PANIC_SPIKE, VOL_CRUSH_REBOUND |
 | **BSI** | `S5TW` (breadth 20d MA) | BREADTH_WASHED_OUT → HYPER_EXPANSIVE_BREADTH | 104 | % S&P500 sobre media 20 días |
 | **F&G** | `FG` | EXTREME_FEAR → EUPHORIA | 82 | CNN Fear & Greed, datos desde 2011 |
-| **Credit** | `CREDIT_RATIO` (HYG/LQD) | CREDIT_CRISIS → DEEP_CREDIT_EASE | 112 | Ratio sintético, proxy de estrés crediticio |
-| **Rotation** | `ROTATION_INDEX` | DEFENSIVE_CAPITULATION → AGGRESSIVE_ROTATION | 120 | z(XLY/XLP) + z(XLK/XLU) |
-| **SV5 Turb** | `SV5_TURBULENCE` | QUIET_FLOW → CRISIS_TURBULENCE | 104 | std(Δ_SV5TW, 10d) |
-| **SKEW** | `SKEW` | LOW_TAIL_RISK → BLACK_SWAN_PARANOIA | 98 | CBOE SKEW index (calibración post-2011) |
-| **PCR** | `CBOE_PCR` | EXTREME_CALL_HEAVY → EXTREME_PUT_PANIC | 103 | Put/Call Ratio |
+| **Credit** | `CREDIT_RATIO` (HYG/LQD) | EXTREME_STRESS → DEEP_CREDIT_EASE | 112 | Ratio sintético, proxy de estrés crediticio |
+| **Rotation** | `ROTATION_INDEX` | EXTREME_DEFENSIVE → EXTREME_OFFENSIVE | 120 | z(XLY/XLP) + z(XLK/XLU) |
+| **SV5 Turb** | `SV5_TURBULENCE` | EXTREME_CALM → EXTREME_TURBULENT | 104 | std(Δ_SV5TW, 10d) |
+| **SKEW** | `SKEW` | LOW_TAIL_RISK → EXTREME_PARANOIA | 98 | CBOE SKEW index (calibración post-2011) |
+| **PCR** | `CBOE_PCR` | EXTREME_CALL_EUPHORIA → EXTREME_PUT_PANIC | 103 | Put/Call Ratio |
 | **VVIX** | `VVIX` | EXTREME_COMPLACENCY → EXTREME_VVIX | 104 | Vol-de-vol |
 | **Yield Curve** | `YIELD_SPREAD` | DEEP_INVERSION → EXTREME_STEEPNING | 133 | TNX − IRX (10Y − 13W) |
-| **DXY** | `DXY` | DEEP_DOLLAR_CRUSH → DOLLAR_SPIKE_CRISIS | 128 | Índice del dólar |
+| **DXY** | `DXY` | DEEP_DOLLAR_CRUSH → EXTREME_STRENGTH | 128 | Índice del dólar |
 
 ---
 
@@ -777,7 +777,7 @@ universal = {k: v for k, v in precursor_counts.items() if len(v) >= 3}
 **Ejemplo real:**
 ```
 credit: ACCELERATING_UP_3D   → p_bull=0.35 (bearish)
-vix:    CRISIS_SPIKE          → p_bull=0.32 (bearish)
+vix:    EXTREME_PANIC          → p_bull=0.32 (bearish)
 bsi:    BREADTH_WASHED_OUT    → p_bull=0.28 (bearish)
 → 3/11 estaciones bearish independientes → ALERTA DE CRASH
 → Este patrón NO se detecta mirando los fact stores por separado.
@@ -1106,7 +1106,7 @@ El identificador único sigue el patrón: `SIGMET-OVERFLOW-{station}-{fecha}-{MU
 
 ### 17.4 Brecha de comunicación pendiente (lo que falta)
 
-**El nombre existe a nivel SIGMET, pero NO a nivel METAR.** El reporte diario de una estación muestra el label D1 (`CRISIS_SPIKE`) sin distinguir si el valor está a +2.1σ o a +11σ. La anomalía solo se comunica cuando el servicio SIGMET evalúa y emite el evento — la telemetría METAR de rutina no porta el `sigma_depth` de forma visible para el operador.
+**El nombre existe a nivel SIGMET, pero NO a nivel METAR.** El reporte diario de una estación muestra el label D1 (`EXTREME_PANIC`) sin distinguir si el valor está a +2.1σ o a +11σ. La anomalía solo se comunica cuando el servicio SIGMET evalúa y emite el evento — la telemetría METAR de rutina no porta el `sigma_depth` de forma visible para el operador.
 
 **Tratamiento correcto (protocolo):**
 1. La telemetría METAR de cada estación DEBE incluir `sigma_depth` y `overflow_flag` como campos visibles (ya están en el dataclass; falta exponerlos en el formato de reporte/broadcast).
@@ -1133,9 +1133,9 @@ Un SIGMET overflow es siempre un diamante estadístico (rareza 0.13% por observa
 |-------|----------|-------------|------------------------------|
 | 2020-03-16 | VVIX | 207.59 | EXTREME_VVIX |
 | 2010-02-05 | PCR | 2.872 | EXTREME_PUT_PANIC |
-| 2024-12 / 2025-02 | SKEW | 173.7–175.8 | BLACK_SWAN_PARANOIA |
-| 2026-06-26 | SV5 Turb | 26.307 | CRISIS_TURBULENCE |
-| 2002-01-31 | DXY | 120.28 | DOLLAR_SPIKE_CRISIS |
+| 2024-12 / 2025-02 | SKEW | 173.7–175.8 | EXTREME_PARANOIA |
+| 2026-06-26 | SV5 Turb | 26.307 | EXTREME_TURBULENT |
+| 2002-01-31 | DXY | 120.28 | EXTREME_STRENGTH |
 | 2008-10-15 | Yield | 3.811 | EXTREME_STEEPNING |
 | 2023-05-04 | Yield | −1.705 | DEEP_INVERSION |
 
@@ -1145,6 +1145,6 @@ Total por estación: VIX=4, BSI=3, Credit=2, SKEW=4, SV5=3, VVIX=3, PCR=3, DXY=3
 
 1. Los fact stores NO almacenan estados ±3σ — la anomalía vive en la capa SIGMET (`sigma_overflow.py`), que permanece como única fuente de verdad del overflow.
 2. `STATION_MU_SIGMA` es la referencia de calibración: si el motor recalibra los indicadores, esta tabla debe actualizarse en paralelo (riesgo de desincronización documentado).
-3. Todo estado en bin extremo (bin 0 o bin 5) debe verificarse con `validate_overflow()` antes de tratarse como estado normal. Un `CRISIS_SPIKE` a +2.1σ no es lo mismo que uno a +11σ.
+3. Todo estado en bin extremo (bin 0 o bin 5) debe verificarse con `validate_overflow()` antes de tratarse como estado normal. Un `EXTREME_PANIC` a +2.1σ no es lo mismo que uno a +11σ.
 4. La telemetría METAR debe exponer `sigma_depth`/`overflow_flag` (brecha pendiente, §17.4).
 5. Los SIGMETs overflow entran al inventario de eventos especiales como transiciones, con nombre oficial (`OVERFLOW_MULTI/EXTREMO/MODERADO`) y profundidad σ registrada.

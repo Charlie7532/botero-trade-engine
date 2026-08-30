@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
 from backend.modules.entry_decision.domain.rules.sigma_overflow import validate_overflow
+from backend.modules.entry_decision.domain.rules.metar_classifier import classify_bin, make_state_key, resolve_label
 
 FACT_STORE_PATH = Path(__file__).parent / "vvix_fact_store.json"
 
@@ -87,28 +88,19 @@ class VVIXLookupAdapter:
         self.edges_d1 = doc.get("dimension_thresholds_definition", {}).get("vvix_edges_d1", [78.74, 85.78, 90.89, 96.87, 109.93799999999999])
         self.edges_d2 = doc.get("dimension_thresholds_definition", {}).get("vvix_edges_d2", [-6.919999999999996, -2.5999999999999943, 2.049999999999997, 6.996499999999999])
         self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("vvix_edges_d3", [0.0142, 0.1119, 0.9697, 1.7213])
-        self.labels_d1 = doc.get("dimension_thresholds_definition", {}).get("vvix_labels_d1", ['EXTREME_COMPLACENCY', 'LOW_VVIX', 'MODERATE_VVIX', 'HIGH_VVIX', 'ELEVATED_VVIX', 'EXTREME_VVIX'])
+        self.labels_d1 = doc.get("dimension_thresholds_definition", {}).get("vvix_labels_d1", ['EXTREME_STABILITY', 'STABILITY', 'NEUTRAL_STABLE', 'NEUTRAL_UNSTABLE', 'INSTABILITY', 'EXTREME_INSTABILITY'])
         self.labels_d2 = doc.get("dimension_thresholds_definition", {}).get("vvix_labels_d2", ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D'])
         self.labels_d3 = doc.get("dimension_thresholds_definition", {}).get("vvix_labels_d3", ['VOL_EXTREME_SQUEEZE', 'VOL_MODERATE_COMPRESSION', 'VOL_NEUTRAL_BASELINE', 'VOL_ACCELERATING_EXPANSION', 'VOL_PEAK_DECELERATION'])
         self.states = self._data.get("states", {})
 
     def _classify_d1(self, v: float) -> str:
-        for idx, e in enumerate(self.edges_d1):
-            if v < e:
-                return self.labels_d1[idx]
-        return self.labels_d1[-1]
+        return resolve_label(classify_bin(v, self.edges_d1), self.labels_d1)
 
     def _classify_d2(self, v: float) -> str:
-        for idx, e in enumerate(self.edges_d2):
-            if v < e:
-                return self.labels_d2[idx]
-        return self.labels_d2[-1]
+        return resolve_label(classify_bin(v, self.edges_d2), self.labels_d2)
 
     def _classify_d3(self, vol_norm: float, vol_d3: float = 0.0) -> str:
-        for idx, e in enumerate(self.edges_d3):
-            if vol_norm < e:
-                return self.labels_d3[idx]
-        return self.labels_d3[-1]
+        return resolve_label(classify_bin(vol_norm, self.edges_d3), self.labels_d3)
     def lookup_vvix_guidance(
         self,
         val: float = None,
@@ -134,21 +126,24 @@ class VVIXLookupAdapter:
         cat_d1 = self._classify_d1(val)
         cat_d2 = self._classify_d2(d3_speed)
         cat_d3 = self._classify_d3(vol_norm, vol_d3)
+        bin_d1 = classify_bin(val, self.edges_d1)
+        bin_d2 = classify_bin(d3_speed, self.edges_d2)
+        bin_d3 = classify_bin(vol_norm, self.edges_d3)
 
-        target_key = f"{cat_d1}__{cat_d2}__{cat_d3}"
+        target_key = make_state_key(bin_d1, bin_d2, bin_d3)
         matched_key = target_key if target_key in self.states else None
         state = self.states.get(target_key)
 
         if not state:
-            matched_key = f"{cat_d1}__{cat_d2}__VOL_NEUTRAL_BASELINE"
+            matched_key = make_state_key(bin_d1, bin_d2, 2)
             state = self.states.get(matched_key)
         if not state:
-            matching = [k for k in self.states.keys() if k.startswith(f"{cat_d1}__{cat_d2}")]
+            matching = [k for k in self.states.keys() if k.startswith(f"{bin_d1}__{bin_d2}")]
             if matching:
                 matched_key = matching[0]
                 state = self.states.get(matched_key)
         if not state:
-            matching = [k for k in self.states.keys() if k.startswith(f"{cat_d1}")]
+            matching = [k for k in self.states.keys() if k.startswith(f"{bin_d1}__")]
             if matching:
                 matched_key = matching[0]
                 state = self.states.get(matched_key)

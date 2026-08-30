@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
 from backend.modules.entry_decision.domain.rules.sigma_overflow import validate_overflow
+from backend.modules.entry_decision.domain.rules.metar_classifier import classify_bin, make_state_key, resolve_label
 
 FACT_STORE_PATH = Path(__file__).parent / "sv5_turbulence_fact_store.json"
 
@@ -88,28 +89,19 @@ class SV5TurbulenceLookupAdapter:
         self.edges_d1 = thresh.get("d1_edges_gauss_sigma", thresh.get("sv5_turbulence_edges_d1", [2.30, 3.64, 5.97, 10.75, 17.34]))
         self.edges_d2 = thresh.get("d2_edges_gauss_sigma", thresh.get("sv5_turbulence_edges_d2", [-5.97, -1.58, 1.62, 5.73]))
         self.edges_d3 = thresh.get("d3_vol_edges_gauss_sigma", thresh.get("sv5_turbulence_edges_d3", [0.04, 0.14, 0.97, 1.50]))
-        self.labels_d1 = ['QUIET_FLOW', 'LOW_TURBULENCE', 'MODERATE_TURBULENCE', 'HIGH_TURBULENCE', 'ELEVATED_TURBULENCE', 'CRISIS_TURBULENCE']
+        self.labels_d1 = ['EXTREME_CALM', 'CALM', 'NEUTRAL_CALM', 'NEUTRAL_TURBULENT', 'TURBULENT', 'EXTREME_TURBULENT']
         self.labels_d2 = ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D']
         self.labels_d3 = ['VOL_EXTREME_SQUEEZE', 'VOL_MODERATE_COMPRESSION', 'VOL_NEUTRAL_BASELINE', 'VOL_ACCELERATING_EXPANSION', 'VOL_PEAK_DECELERATION']
         self.states = self._data.get("states", {})
 
     def _classify_d1(self, v: float) -> str:
-        for idx, e in enumerate(self.edges_d1):
-            if v < e:
-                return self.labels_d1[idx]
-        return self.labels_d1[-1]
+        return resolve_label(classify_bin(v, self.edges_d1), self.labels_d1)
 
     def _classify_d2(self, v: float) -> str:
-        for idx, e in enumerate(self.edges_d2):
-            if v < e:
-                return self.labels_d2[idx]
-        return self.labels_d2[-1]
+        return resolve_label(classify_bin(v, self.edges_d2), self.labels_d2)
 
     def _classify_d3(self, vol_norm: float, vol_d3: float = 0.0) -> str:
-        for idx, e in enumerate(self.edges_d3):
-            if vol_norm < e:
-                return self.labels_d3[idx]
-        return self.labels_d3[-1]
+        return resolve_label(classify_bin(vol_norm, self.edges_d3), self.labels_d3)
     def lookup_sv5_turbulence_guidance(
         self,
         val: float = None,
@@ -135,21 +127,24 @@ class SV5TurbulenceLookupAdapter:
         cat_d1 = self._classify_d1(val)
         cat_d2 = self._classify_d2(d3_speed)
         cat_d3 = self._classify_d3(vol_norm, vol_d3)
+        bin_d1 = classify_bin(val, self.edges_d1)
+        bin_d2 = classify_bin(d3_speed, self.edges_d2)
+        bin_d3 = classify_bin(vol_norm, self.edges_d3)
 
-        target_key = f"{cat_d1}__{cat_d2}__{cat_d3}"
+        target_key = make_state_key(bin_d1, bin_d2, bin_d3)
         matched_key = target_key if target_key in self.states else None
         state = self.states.get(target_key)
 
         if not state:
-            matched_key = f"{cat_d1}__{cat_d2}__VOL_NEUTRAL_BASELINE"
+            matched_key = make_state_key(bin_d1, bin_d2, 2)
             state = self.states.get(matched_key)
         if not state:
-            matching = [k for k in self.states.keys() if k.startswith(f"{cat_d1}__{cat_d2}")]
+            matching = [k for k in self.states.keys() if k.startswith(f"{bin_d1}__{bin_d2}")]
             if matching:
                 matched_key = matching[0]
                 state = self.states.get(matched_key)
         if not state:
-            matching = [k for k in self.states.keys() if k.startswith(f"{cat_d1}")]
+            matching = [k for k in self.states.keys() if k.startswith(f"{bin_d1}__")]
             if matching:
                 matched_key = matching[0]
                 state = self.states.get(matched_key)

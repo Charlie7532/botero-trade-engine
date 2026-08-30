@@ -9,7 +9,7 @@
 
 ## 1. Principio
 
-Los fact stores clasifican estados en 6 bins D1 con clipping gaussiano a ±2σ. Un `CRISIS_SPIKE` a +2.1σ y uno a +11σ reciben el mismo bin. La capa de Overflow/Blow-Off **no toca los fact stores** — opera en paralelo usando el z-score crudo para graduar la severidad.
+Los fact stores clasifican estados en 6 bins D1 con clipping gaussiano a ±2σ. Un `EXTREME_PANIC` a +2.1σ y uno a +11σ reciben el mismo bin. La capa de Overflow/Blow-Off **no toca los fact stores** — opera en paralelo usando el z-score crudo para graduar la severidad.
 
 **Fórmula:** `z_score = (value − μ) / σ` donde `μ, σ` provienen de `STATION_MU_SIGMA`.
 
@@ -107,10 +107,10 @@ T5 (≥10σ): NOTAM infra    | CIO: preservación total  | URGENCY_EMERGENCY
 
 | Fecha | Estación | Valor | Label D1 (clipped) |
 |---|---|---|---|
-| 2020-03-16 | VVIX | 207.59 | EXTREME_VVIX |
+| 2020-03-16 | VVIX | 207.59 | EXTREME_INSTABILITY |
 | 2010-02-05 | PCR | 2.872 | EXTREME_PUT_PANIC |
-| 2024-12 / 2025-02 | SKEW | 173.7–175.8 | BLACK_SWAN_PARANOIA |
-| 2026-06-26 | SV5 Turb | 26.307 | CRISIS_TURBULENCE |
-| 2002-01-31 | DXY | 120.28 | DOLLAR_SPIKE_CRISIS |
+| 2024-12 / 2025-02 | SKEW | 173.7–175.8 | EXTREME_PARANOIA |
+| 2026-06-26 | SV5 Turb | 26.307 | EXTREME_TURBULENT |
+| 2002-01-31 | DXY | 120.28 | EXTREME_STRENGTH |
 | 2008-10-15 | Yield | 3.811 | EXTREME_STEEPNING |
 | 2023-05-04 | Yield | −1.705 | DEEP_INVERSION |

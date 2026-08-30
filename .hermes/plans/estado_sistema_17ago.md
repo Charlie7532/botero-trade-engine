@@ -27,7 +27,7 @@ Las permutaciones = regímenes distintos:
 
 ### 3. σ-Overflow (desbordamiento de escala, ±3σ)
 ```
-- Problema: las bandas σ saturan en ±2σ (VIX 41 = VIX 82 = "CRISIS_SPIKE")
+- Problema: las bandas σ saturan en ±2σ (VIX 41 = VIX 82 = "EXTREME_PANIC")
 - Solución: sigma_overflow.py — valida overflow ±3σ para D1×D2×D3
 - depth = (val-μ)/σ — la profundidad continua (VIX 82 = +8.09σ)
 - overflow_flag: UPPER/LOWER/MULTI (MULTI = cisne negro, 2+ dimensiones)
@@ -117,7 +117,7 @@ SUB-REACCIÓN (VIX↑+S5 mantiene): bearish, esperar
 EUFORIA (VIX↓+S5 máximo):        71% bear, techo
 CREDIT_STRESS:                   +3.00% 20d, Kelly 50%
 EXTREME_FEAR + D3 comprimido:    PF 26.76, WR 87%
-DXY DOLLAR_SPIKE_CRISIS:         -1.94%, bearish
+DXY EXTREME_STRENGTH:         -1.94%, bearish
 YIELD EXTREME_STEEPNING:         exit (PF 0.73)
 cascade_conviction:              IC +0.41, PBO 0%, HEALTHY
 ```

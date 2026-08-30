@@ -15,7 +15,7 @@ sys.path.insert(0, str(root_dir))
 
 from backend.scripts._lib.v3_fact_table_engine import build_v3_dual_layer_fact_store
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/bsi_fact_store.json"
+OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/bsi_fact_store.json"
 D1_LABELS = ["BREADTH_WASHED_OUT", "OVERSOLD_BREADTH", "NEUTRAL_LOW_BREADTH", "NEUTRAL_HIGH_BREADTH", "EXPANSIVE_BREADTH", "HYPER_EXPANSIVE_BREADTH"]
 
 BSI_PIVOT_OVERRIDES = {

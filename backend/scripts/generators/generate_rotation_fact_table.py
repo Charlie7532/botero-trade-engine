@@ -15,8 +15,8 @@ sys.path.insert(0, str(root_dir))
 
 from backend.scripts._lib.v3_fact_table_engine import build_v3_dual_layer_fact_store
 
-OUTPUT_PATH = root_dir / "backend/modules/entry_decision/domain/rules/rotation_fact_store.json"
-D1_LABELS = ["DEFENSIVE_CAPITULATION", "DEFENSIVE", "NEUTRAL_ROTATION", "BALANCED", "CYCLICAL_LEADERSHIP", "AGGRESSIVE_ROTATION"]
+OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/rotation_fact_store.json"
+D1_LABELS = ["EXTREME_DEFENSIVE", "DEFENSIVE", "NEUTRAL_DEFENSIVE", "NEUTRAL_OFFENSIVE", "OFFENSIVE", "EXTREME_OFFENSIVE"]
 
 ROTATION_PIVOT_OVERRIDES = {
     "FALLING_KNIFE": {

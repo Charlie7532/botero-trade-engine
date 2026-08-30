@@ -217,10 +217,10 @@ class CreditMetarService:
             now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
             # Determine Universal Taxonomy Action Code
-            if guidance.credit_bin == "CREDIT_CRISIS" or guidance.velocity_vector == "FAST_CRUSH_3D":
+            if guidance.credit_bin == "EXTREME_STRESS" or guidance.velocity_vector == "FAST_CRUSH_3D":
                 action_code = "MKT_CREDIT_FREEZE_EXTREME"
                 market_status = "CRISIS_CREDIT_FREEZE"
-            elif guidance.credit_bin in ("CREDIT_STRESS", "ELEVATED_CREDIT_STRESS") or guidance.velocity_vector == "DECELERATING_DOWN_3D":
+            elif guidance.credit_bin in ("STRESS", "NEUTRAL_TIGHT") or guidance.velocity_vector == "DECELERATING_DOWN_3D":
                 action_code = "MKT_CREDIT_STRESS_ELEVATED"
                 market_status = "ELEVATED_STRESS"
             else:

@@ -31,7 +31,7 @@ D3 (volatilidad): DESGASTE → FILTRO DE CASCADE              [gap -15pp FG]
 Forward ρ (D2→SPY futuro): |ρ|≤0.06  → NO predice
 Backward ρ (SPY pasado→D2): |ρ|0.40-0.83 → REFLEJA
 
-COMPRAR MIEDO:    VIX CRISIS_SPIKE → +3.05% 20d  ✅ MASIVO
+COMPRAR MIEDO:    VIX EXTREME_PANIC → +3.05% 20d  ✅ MASIVO
 VENDER EUFORIA:   FG EXTREME_GREED → +0.77% 20d  ❌ ES UN MITO
                   (ninguna celda D2×D3 negativa en FG extremo)
 ```
@@ -69,15 +69,15 @@ Respuesta post-extremo:
 
 ---
 
-## 6. TIMING — CRISIS_SPIKE es AVISO, el PIVOTE es ENTRADA
+## 6. TIMING — EXTREME_PANIC es AVISO, el PIVOTE es ENTRADA
 
 ```
-CRISIS_SPIKE → pivote zz25: 63% mismo día, 26% ya pasó, 11% 1-3d antes
+EXTREME_PANIC → pivote zz25: 63% mismo día, 26% ya pasó, 11% 1-3d antes
 
 Comprar en la barra:   +0.85% 20d
 Comprar en el pivote:  +2.26% 20d  (+1.41% más)
 
-BENCHMARK CRISIS_SPIKE solo (31 trades):
+BENCHMARK EXTREME_PANIC solo (31 trades):
   Hold 20d media +2.79%, mediana +4.76%
   PERO min -24.63% (2008-09-29), -21.69% (2009-02-06), -16.56% (2020-03-06)
   → LEFT TAIL FATAL sin filtros
@@ -119,5 +119,5 @@ Cascade = D1 + domino (IC +0.41, PBO=0%). NO se toca.
 La nueva info NO agrega al cascade (continuación), sino a las CAPAS que lo rodean:
 - TAF (dirección): D2 contraria → comprar miedo
 - Confirmadores: D3 filtro, VIX×SV5T, pivot zz25
-- Entry timing: CRISIS_SPIKE alerta → pivot gatillo
+- Entry timing: EXTREME_PANIC alerta → pivot gatillo
 - Orphan interpreter: estados N<10 con árbol D1×D2×D3

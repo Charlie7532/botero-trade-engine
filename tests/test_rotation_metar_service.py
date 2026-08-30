@@ -69,6 +69,7 @@ def test_rotation_metar_service_evaluation(mock_store, mock_port):
             "MKT_ROTATION_DEFENSIVE_FREEZE",
             "STK_HOLD_STABLE",
             "STK_ACCUMULATE_STRUCTURAL",
+            "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
             "STK_TRIM_TACTICAL",
             "STK_BLOCK_CRISIS",
         ]

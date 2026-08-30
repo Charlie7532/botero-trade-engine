@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 import { handleAfterChangeHook, handleBeforeChangeHook } from '@/shared/handlers'
 import { encryptCredential } from './domain/useCases/encryptCredential'
 import { syncVaultOnSave } from './infrastructure/hooks/syncVaultOnSave'
@@ -42,6 +44,36 @@ function encryptSecretField(
   data[ivField] = encrypted.iv
   data[authTagField] = encrypted.authTag
   data[maskedField] = maskCredentialValue(String(plaintext))
+
+  delete data[plaintextField]
+}
+
+/** Same as encryptSecretField, but the masked field shows a short SHA-256
+ * fingerprint instead of the last 4 characters — for PEM keys, the last 4
+ * characters are always the same boilerplate ("-----END..."), so they'd tell
+ * you nothing about which key is on file. */
+function encryptSecretFieldWithFingerprint(
+  data: Record<string, any>,
+  plaintextField: string,
+  encryptedField: string,
+  ivField: string,
+  authTagField: string,
+  maskedField: string,
+  encryptionSecret: string,
+) {
+  const plaintext = data[plaintextField]
+  if (!plaintext) {
+    delete data[plaintextField]
+    return
+  }
+
+  const encrypted = encryptCredential(String(plaintext), encryptionSecret)
+  const fingerprint = crypto.createHash('sha256').update(String(plaintext)).digest('hex').slice(0, 8)
+
+  data[encryptedField] = encrypted.ciphertext
+  data[ivField] = encrypted.iv
+  data[authTagField] = encrypted.authTag
+  data[maskedField] = fingerprint
 
   delete data[plaintextField]
 }
@@ -91,11 +123,6 @@ const encryptPlaintextValue = handleBeforeChangeHook({
     if (brokerType === 'alpaca' && !data.alpacaBaseUrl) {
       data.alpacaBaseUrl = defaults.alpacaBaseUrl
     }
-    if (brokerType === 'interactive_brokers') {
-      if (!data.ibHost) data.ibHost = defaults.ibHost
-      if (!data.ibPort) data.ibPort = defaults.ibPort
-      if (!data.ibClientId) data.ibClientId = defaults.ibClientId
-    }
 
     const encryptionSecret = resolveCredentialEncryptionSecret()
     if (!encryptionSecret) {
@@ -124,6 +151,56 @@ const encryptPlaintextValue = handleBeforeChangeHook({
       encryptionSecret,
     )
 
+    encryptSecretField(
+      data,
+      'ibConsumerKeyPlaintext',
+      'ibConsumerKeyEncrypted',
+      'ibConsumerKeyIv',
+      'ibConsumerKeyAuthTag',
+      'ibConsumerKeyMasked',
+      encryptionSecret,
+    )
+
+    encryptSecretField(
+      data,
+      'ibAccessTokenPlaintext',
+      'ibAccessTokenEncrypted',
+      'ibAccessTokenIv',
+      'ibAccessTokenAuthTag',
+      'ibAccessTokenMasked',
+      encryptionSecret,
+    )
+
+    encryptSecretField(
+      data,
+      'ibAccessTokenSecretPlaintext',
+      'ibAccessTokenSecretEncrypted',
+      'ibAccessTokenSecretIv',
+      'ibAccessTokenSecretAuthTag',
+      'ibAccessTokenSecretMasked',
+      encryptionSecret,
+    )
+
+    encryptSecretFieldWithFingerprint(
+      data,
+      'ibSignatureKeyPemPlaintext',
+      'ibSignatureKeyPemEncrypted',
+      'ibSignatureKeyPemIv',
+      'ibSignatureKeyPemAuthTag',
+      'ibSignatureKeyPemMasked',
+      encryptionSecret,
+    )
+
+    encryptSecretFieldWithFingerprint(
+      data,
+      'ibEncryptionKeyPemPlaintext',
+      'ibEncryptionKeyPemEncrypted',
+      'ibEncryptionKeyPemIv',
+      'ibEncryptionKeyPemAuthTag',
+      'ibEncryptionKeyPemMasked',
+      encryptionSecret,
+    )
+
     if (brokerType === 'alpaca') {
       const hasApiKey = Boolean(data.apiKeyEncrypted || (originalDoc as Record<string, unknown> | undefined)?.apiKeyEncrypted)
       const hasSecretKey = Boolean(data.secretKeyEncrypted || (originalDoc as Record<string, unknown> | undefined)?.secretKeyEncrypted)
@@ -136,8 +213,20 @@ const encryptPlaintextValue = handleBeforeChangeHook({
     }
 
     if (brokerType === 'interactive_brokers') {
-      const hasIbAccountId = Boolean(data.ibAccountId || (originalDoc as Record<string, unknown> | undefined)?.ibAccountId)
-      if (!hasIbAccountId && data.isActive === true) {
+      const original = originalDoc as Record<string, unknown> | undefined
+      const hasIbAccountId = Boolean(data.ibAccountId || original?.ibAccountId)
+      const hasConsumerKey = Boolean(data.ibConsumerKeyEncrypted || original?.ibConsumerKeyEncrypted)
+      const hasAccessToken = Boolean(data.ibAccessTokenEncrypted || original?.ibAccessTokenEncrypted)
+      const hasAccessTokenSecret = Boolean(data.ibAccessTokenSecretEncrypted || original?.ibAccessTokenSecretEncrypted)
+      const hasSignatureKey = Boolean(data.ibSignatureKeyPemEncrypted || original?.ibSignatureKeyPemEncrypted)
+      const hasEncryptionKey = Boolean(data.ibEncryptionKeyPemEncrypted || original?.ibEncryptionKeyPemEncrypted)
+      const hasDhPrime = Boolean(data.ibDhPrime || original?.ibDhPrime)
+
+      const complete =
+        hasIbAccountId && hasConsumerKey && hasAccessToken && hasAccessTokenSecret &&
+        hasSignatureKey && hasEncryptionKey && hasDhPrime
+
+      if (!complete && data.isActive === true) {
         data.isActive = false
       }
     }

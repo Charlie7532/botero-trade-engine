@@ -17,7 +17,10 @@ export function requiredCredentialKeys(brokerType: BrokerType): string[] {
     case 'alpaca':
       return ['apiKey', 'secretKey']
     case 'interactive_brokers':
-      return ['apiKey']
+      // OAuth 1.0a Extended (First Party) — not a simple api key. See
+      // ib_adapter.py's module docstring for what each of these is and how
+      // they're generated (IB's OAuth self-service portal).
+      return ['consumerKey', 'accessToken', 'accessTokenSecret', 'signatureKeyPem', 'encryptionKeyPem']
     default:
       return []
   }
@@ -27,10 +30,6 @@ export const ALPACA_BASE_URLS = {
   paper: 'https://paper-api.alpaca.markets',
   live: 'https://api.alpaca.markets',
 } as const
-
-export const IB_DEFAULT_HOST = '127.0.0.1'
-export const IB_DEFAULT_PORT_PAPER = 7497
-export const IB_DEFAULT_PORT_LIVE = 7496
 
 export const DEPARTMENTS = [
   { label: 'Quality', value: 'quality' },

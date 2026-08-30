@@ -274,7 +274,7 @@ def main():
                 continue
             sks.append(g.state_key)
             ns.append(g.n)
-            votes.append(d1_directional_vote(g.state_key))
+            votes.append(d1_directional_vote(g.state_key, code))
             zk = _zk_block(code, g.state_key)
             zk_pbull.append(zk.get("p_bull", np.nan))
             zk_pbear.append(zk.get("p_bear", np.nan))

@@ -7,11 +7,24 @@ import argparse
 import json
 
 from .datos import cargar_datos, SCRATCH
+from .registro import SEÑALES
 from .medicion import medir, medir_cross_overlap
+
+def medir_una_señal(nombre: str, df, forward_col: str, spy, bootstrap: int, seed: int, out: str = None, cross_overlap: bool = False):
+    rep = medir(nombre, df, forward_col, spy=spy, n_iter=bootstrap, seed=seed)
+    rep["meta"] = {"seed": seed, "bootstrap": bootstrap, "determinista": True, "sin_agentes": True}
+    if cross_overlap:
+        rep["cross_overlap"] = medir_cross_overlap(df, forward_col, bootstrap, seed)
+    out_path = out or str(SCRATCH / f"medicion_{nombre}.json")
+    with open(out_path, "w") as f:
+        json.dump(rep, f, indent=2, ensure_ascii=False, default=str)
+    return rep
+
 
 def main():
     ap = argparse.ArgumentParser(description="Arnés de medición estándar Botero Trade")
-    ap.add_argument("--señal", required=True, help="Nombre de la señal registrada")
+    ap.add_argument("--señal", default=None, help="Nombre de la señal registrada (o None si se usa --todas)")
+    ap.add_argument("--todas", "--all", action="store_true", help="Medir todas las señales registradas")
     ap.add_argument("--forward", default="next_leg", help="Columna de retorno forward")
     ap.add_argument("--bootstrap", type=int, default=3000)
     ap.add_argument("--seed", type=int, default=42)
@@ -19,17 +32,42 @@ def main():
     ap.add_argument("--cross-overlap", action="store_true", help="Incluir análisis de cross-signal overlap")
     args = ap.parse_args()
 
+    if not args.señal and not args.todas:
+        ap.error("Debe especificar --señal <nombre> o --todas para medir el catálogo completo.")
+
     df, spy = cargar_datos()
-    rep = medir(args.señal, df, args.forward, spy=spy, n_iter=args.bootstrap, seed=args.seed)
-    rep["meta"] = {"seed": args.seed, "bootstrap": args.bootstrap,
-                   "determinista": True, "sin_agentes": True}
 
-    if args.cross_overlap:
-        rep["cross_overlap"] = medir_cross_overlap(df, args.forward, args.bootstrap, args.seed)
+    if args.todas:
+        print(f"{'='*110}")
+        print(f"MEDICIÓN COMPLETA DEL CATÁLOGO ({len(SEÑALES)} SEÑALES) — BOOTSTRAP={args.bootstrap}, SEED={args.seed}")
+        print(f"{'='*110}")
+        catalogo = []
+        for nombre in SEÑALES.keys():
+            rep = medir_una_señal(nombre, df, args.forward, spy, args.bootstrap, args.seed, cross_overlap=args.cross_overlap)
+            a = rep["activa"]["dist"]
+            wl = rep["activa"]["wl"]
+            fc = rep.get("ficha_credibilidad", {})
+            lift = fc.get("lift_directional", fc.get("lift", "N/A"))
+            catalogo.append({
+                "señal": nombre,
+                "tipo": fc.get("tipo", "unknown"),
+                "n": a.get("n", 0),
+                "mean": round(float(a.get("mean", 0.0)), 4),
+                "median": round(float(a.get("median", 0.0)), 4),
+                "win_rate": round(float(wl.get("win_rate", 0.0)), 4),
+                "lift": lift,
+                "grade": fc.get("grade", "N/A"),
+                "accion": fc.get("accion_recomendada", "N/A"),
+            })
+            print(f"  ✓ {nombre:30s} -> N={a.get('n', 0):4d} | Mean={a.get('mean', 0.0):+.4f} | WR={wl.get('win_rate', 0.0):5.1%} | Lift={lift} | Acc={fc.get('accion_recomendada', 'N/A')}")
 
-    out_path = args.out or str(SCRATCH / f"medicion_{args.señal}.json")
-    with open(out_path, "w") as f:
-        json.dump(rep, f, indent=2, ensure_ascii=False, default=str)
+        cat_out = SCRATCH / "catalogo_31_senales_medidas.json"
+        with open(cat_out, "w") as f:
+            json.dump(catalogo, f, indent=2, ensure_ascii=False)
+        print(f"\nCatálogo consolidado guardado en: {cat_out}")
+        return
+
+    rep = medir_una_señal(args.señal, df, args.forward, spy, args.bootstrap, args.seed, args.out, args.cross_overlap)
 
     # resumen humano a stdout
     a = rep["activa"]["dist"]
@@ -140,9 +178,8 @@ def main():
     # Ficha de credibilidad
     if "ficha_credibilidad" in rep:
         fc = rep["ficha_credibilidad"]
-        print(f"  ── FICHA CREDIBILIDAD ──")
-        print(f"  Grade: {fc['grade'][:60]}")
-        print(f"  WR={fc['win_rate']:.1%} vs BL({fc['baseline_type']})={fc['baseline_wr']:.1%} → LIFT={fc['lift']}")
+        lift_val = fc.get("lift_directional", fc.get("lift", "N/A"))
+        print(f"  WR={fc['win_rate']:.1%} vs BL({fc['baseline_type']})={fc['baseline_wr']:.1%} → LIFT={lift_val}")
         print(f"  p-value Fisher: {fc['p_value_fisher']}")
         if fc.get('dsr_pvalue'):
             print(f"  DSR p-value: {fc['dsr_pvalue']}")

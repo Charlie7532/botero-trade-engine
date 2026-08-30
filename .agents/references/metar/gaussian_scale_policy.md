@@ -38,14 +38,14 @@ Percentiles:  [0.0228,  0.1587,  0.5000,  0.8413,  0.9772]
 Sigma:        [ -2σ,     -1σ,      μ,      +1σ,     +2σ   ]
 ```
 
-| Bin Index | Range | Percentile Band | Population % | Semantic Role |
-|:---:|---|:---:|:---:|---|
-| 0 | val < −2σ | P0 → P2.28 | **2.28%** | Extremo inferior (e.g. `DEEP_COMPLACENCY`, `EXTREME_FEAR`) |
-| 1 | −2σ ≤ val < −1σ | P2.28 → P15.87 | **13.59%** | Bajo (e.g. `LOW_VOL`, `FEAR`) |
-| 2 | −1σ ≤ val < μ | P15.87 → P50 | **34.13%** | Moderado bajo (e.g. `MODERATE_VOL`, `NEUTRAL_FEAR`) |
-| 3 | μ ≤ val < +1σ | P50 → P84.13 | **34.13%** | Moderado alto (e.g. `HIGH_VOL`, `GREED`) |
-| 4 | +1σ ≤ val < +2σ | P84.13 → P97.72 | **13.59%** | Elevado (e.g. `ELEVATED_PANIC`, `EXTREME_GREED`) |
-| 5 | val ≥ +2σ | P97.72 → P100 | **2.28%** | Extremo superior (e.g. `CRISIS_SPIKE`, `EUPHORIA`) |
+| Bin Index | Range | Percentile Band | Population % | Semantic Role | Ejemplos Canónicos (ver [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md)) |
+|:---:|---|:---:|:---:|---|---|
+| 0 | val < −2σ | P0 → P2.28 | **2.28%** | Extremo inferior | VIX→`EXTREME_COMPLACENCY`, FG→`EXTREME_FEAR`, Credit→`EXTREME_STRESS` |
+| 1 | −2σ ≤ val < −1σ | P2.28 → P15.87 | **13.59%** | Bajo | VIX→`COMPLACENCY`, FG→`FEAR`, Credit→`STRESS` |
+| 2 | −1σ ≤ val < μ | P15.87 → P50 | **34.13%** | Neutro (sesgo bajo) | VIX→`NEUTRAL_CALM`, FG→`NEUTRAL_FEAR`, Credit→`NEUTRAL_TIGHT` |
+| 3 | μ ≤ val < +1σ | P50 → P84.13 | **34.13%** | Neutro (sesgo alto) | VIX→`NEUTRAL_ALERT`, FG→`NEUTRAL_GREED`, Credit→`NEUTRAL_LOOSE` |
+| 4 | +1σ ≤ val < +2σ | P84.13 → P97.72 | **13.59%** | Elevado | VIX→`PANIC`, FG→`GREED`, Credit→`EASE` |
+| 5 | val ≥ +2σ | P97.72 → P100 | **2.28%** | Extremo superior | VIX→`EXTREME_PANIC`, FG→`EXTREME_GREED`, Credit→`EXTREME_EASE` |
 
 ### D2: Velocidad Cinemática Δ3d (5 bines, 4 edges)
 

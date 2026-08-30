@@ -1,7 +1,7 @@
 # METAR Fact Store Guide — Estructura e Interpretación
 
 > **Módulo de**: [fact_store_v3_architecture.md](file:///root/botero-trade/.agents/references/metar/fact_store_v3_architecture.md) §1 + §5–8
-> **Status**: `PRODUCTION` | **Last Update**: 29-Ago-2026
+> **Status**: `PRODUCTION` | **Last Update**: 30-Ago-2026 (homologación canónica)
 > **Relacionados**: [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md), [signal_rules.md](file:///root/botero-trade/.agents/references/metar/signal_rules.md)
 
 ---
@@ -24,10 +24,16 @@ Un Fact Store es un **JSON de probabilidades prospectivas** condicionado al esta
 ## 2. Estructura de un State Key
 
 ```
-state_key = "{D1_label}__{D2_label}__{D3_label}"
+state_key = "{D1_bin}__{D2_bin}__{D3_bin}"
 ```
 
-Ejemplo: `NEUTRAL_ALERT__ACCELERATING_UP_3D__VOL_ACCELERATING_EXPANSION`
+Ejemplo: `"3__3__3"` — donde D1=bin 3 (NEUTRAL_ALERT para VIX), D2=bin 3 (ACCELERATING_UP_3D), D3=bin 3 (VOL_ACCELERATING_EXPANSION).
+
+Los labels semánticos viven **exclusivamente** en `_documentation.taxonomy` del JSON. Las keys son vectores numéricos, NO strings de labels. Para resolver labels:
+```python
+from backend.modules.entry_decision.domain.rules.metar_classifier import resolve_label
+label = resolve_label(d1_bin, D1_LABELS)  # Solo para presentación al usuario
+```
 
 Cada estado contiene 3 capas de información:
 
@@ -93,10 +99,17 @@ Cuando `zz25` y `zz75` divergen en dirección, se activa un régimen de divergen
 
 ## 4. Lectura Correcta de un Estado
 
-Dado el state_key `EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION`:
+Dado el state_key `"5__4__3"` (que se resuelve a `EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION` para VIX):
 
-1. **D1 = EXTREME_PANIC**: VIX en el percentil >97.72% histórico (bin 5, extremo superior)
-2. **D2 = FAST_SPIKE_3D**: La velocidad de cambio en 3 días está en >97.72% (subida extrema)
-3. **D3 = VOL_ACCELERATING_EXPANSION**: La volatilidad intra-indicador está expandiéndose
+1. **D1 = bin 5** (`EXTREME_PANIC`): VIX en el percentil >97.72% histórico (extremo superior)
+2. **D2 = bin 4** (`FAST_SPIKE_3D`): La velocidad de cambio en 3 días está en >97.72% (subida extrema)
+3. **D3 = bin 3** (`VOL_ACCELERATING_EXPANSION`): La volatilidad intra-indicador está expandiéndose
 
 → Esto describe un **spike de VIX extremo, acelerándose, con inestabilidad creciente**. Verificar overflow con `validate_overflow()` para determinar si es T1 (3σ) o T4+ (blow-off).
+
+**Acceso en código:**
+```python
+fs = json.load(open("vix_fact_store.json"))
+state = fs["5__4__3"]           # ← bin numérico, NUNCA label
+p_bull = state["zz75"]["p_bull"] # → probabilidad de retorno positivo
+```

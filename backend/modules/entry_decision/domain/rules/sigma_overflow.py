@@ -97,3 +97,53 @@ def validate_overflow(station: str, dim: str, value: Optional[float]) -> Tuple[O
     elif z_score < -3.0:
         return round(float(z_score), 2), "LOWER"
     return None, None
+
+
+def classify_overflow_tier(z_score: Optional[float]) -> Tuple[int, str, str]:
+    """
+    Classify absolute sigma distance into standardized 5-tier hazard scale.
+
+    Scale (from overflow_taxonomy.md):
+        Tier 1 (3σ - 4σ): OVERFLOW_MODERADO (WARNING)
+        Tier 2 (4σ - 5σ): OVERFLOW_EXTREMO (CRITICAL)
+        Tier 3 (5σ - 7σ): BLOW_OFF_SEVERE (EMERGENCY)
+        Tier 4 (7σ - 10σ): BLOW_OFF_EXTREME (CATASTROPHIC)
+        Tier 5 (>= 10σ): BLOW_OFF_SYSTEMIC (SYSTEMIC)
+
+    Returns:
+        (tier_level, hazard_type, severity)
+        tier_level: 0 (Normal < 3σ), 1 (T1), 2 (T2), 3 (T3), 4 (T4), 5 (T5)
+    """
+    if z_score is None:
+        return 0, "NORMAL", "NORMAL"
+    abs_z = abs(z_score)
+    if abs_z >= 10.0:
+        return 5, "BLOW_OFF_SYSTEMIC", "SYSTEMIC"
+    elif abs_z >= 7.0:
+        return 4, "BLOW_OFF_EXTREME", "CATASTROPHIC"
+    elif abs_z >= 5.0:
+        return 3, "BLOW_OFF_SEVERE", "EMERGENCY"
+    elif abs_z >= 4.0:
+        return 2, "OVERFLOW_EXTREMO", "CRITICAL"
+    elif abs_z >= 3.0:
+        return 1, "OVERFLOW_MODERADO", "WARNING"
+    return 0, "NORMAL", "NORMAL"
+
+
+def get_overflow_tier(station: str, dim: str, value: Optional[float]) -> int:
+    """Convenience helper returning integer Tier (0-5) directly."""
+    if value is None:
+        return 0
+    st_data = STATION_MU_SIGMA.get(station.lower())
+    if not st_data:
+        return 0
+    dim_data = st_data.get(dim.lower())
+    if not dim_data:
+        return 0
+    mu, sigma = dim_data
+    if sigma <= 0:
+        return 0
+    z_score = (value - mu) / sigma
+    tier, _, _ = classify_overflow_tier(z_score)
+    return tier
+

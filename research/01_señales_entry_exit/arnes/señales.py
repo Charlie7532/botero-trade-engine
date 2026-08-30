@@ -1,12 +1,30 @@
-"""Definiciones de las 28 señales entry/exit (dominio). Cada una observable en tiempo real salvo las marcadas con filtro pivot_type (sesgo de posición documentado).
+"""Definiciones de las 28+ señales entry/exit (dominio). Cada una observable en tiempo real salvo las marcadas con filtro pivot_type (sesgo de posición documentado).
 
-Extraído del God file medir_senal.py (refactor 22-Ago-2026).
-Matemática pura, determinista, sin agentes.
+Extraído del God file medir_senal.py (refactor 22-Ago-2026, homologado canónico 30-Ago-2026).
+Matemática pura, determinista, basada en vectores numéricos de estado D1__D2__D3.
 """
-import pandas as pd  # noqa: F401
+import numpy as np
+import pandas as pd
 
-from .registro import _registrar  # noqa: F401
+from .registro import _registrar
 from .estructura import _surprise_vector  # usada por sorpresa_total
+
+
+def _get_dim(df: pd.DataFrame, station: str, dim: int = 0) -> pd.Series:
+    """Extrae la dimensión numérica (0=D1, 1=D2, 2=D3) del state_key {station}_sk."""
+    sk_col = f"{station}_sk"
+    if sk_col not in df.columns:
+        return pd.Series(np.nan, index=df.index)
+    parts = df[sk_col].dropna().astype(str).str.split("__", expand=True)
+    if parts.empty or dim >= parts.shape[1]:
+        return pd.Series(np.nan, index=df.index)
+    s = pd.to_numeric(parts[dim], errors="coerce")
+    return s.reindex(df.index)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. SEÑALES DE ENTRY (validadas)
+# ─────────────────────────────────────────────────────────────────────────────
 
 @_registrar("credit_easing_k1",
     validacion="VALIDATED (Grade A)", n_min=112, dsr=None,
@@ -42,10 +60,10 @@ def _sorpresa_total(df):
     descripcion="VIX y SKEW ambos en extremo bearish simultáneamente. Pánico institucional completo = oportunidad contrarian de compra.")
 def _panico_total(df):
     """PÁNICO TOTAL: VIX y SKEW ambos en D1 extremo (bearish).
-    VIX en ELEVATED_PANIC/CRISIS_SPIKE Y SKEW en TAIL_PARANOIA/BLACK_SWAN_PARANOIA."""
-    vix_d1 = df["vix_sk"].str.split("__").str[0]
-    skew_d1 = df["skew_sk"].str.split("__").str[0]
-    return vix_d1.isin({"ELEVATED_PANIC", "CRISIS_SPIKE"}) & skew_d1.isin({"TAIL_PARANOIA", "BLACK_SWAN_PARANOIA"})
+    VIX en PANIC / EXTREME_PANIC (>= 4) Y SKEW en PARANOIA / EXTREME_PARANOIA (>= 4)."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    skew_d1 = _get_dim(df, "skew", 0)
+    return (vix_d1 >= 4) & (skew_d1 >= 4)
 
 
 @_registrar("capitulacion",
@@ -54,10 +72,10 @@ def _panico_total(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="VIX en crisis + breadth colapsado (washed out). Capitulación del mercado = punto de máximo pesimismo.")
 def _capitulacion(df):
-    """CAPITULACIÓN: VIX en HIGH_VOL/CRISIS_SPIKE Y BSI en BREADTH_WASHED_OUT."""
-    vix_d1 = df["vix_sk"].str.split("__").str[0]
-    bsi_d1 = df["bsi_sk"].str.split("__").str[0]
-    return vix_d1.isin({"HIGH_VOL", "CRISIS_SPIKE"}) & (bsi_d1 == "BREADTH_WASHED_OUT")
+    """CAPITULACIÓN: VIX en NEUTRAL_ALERT/PANIC/EXTREME_PANIC (>= 3) Y BSI en BREADTH_WASHED_OUT (== 0)."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    bsi_d1 = _get_dim(df, "bsi", 0)
+    return (vix_d1 >= 3) & (bsi_d1 == 0)
 
 
 @_registrar("sub_reaccion",
@@ -66,10 +84,10 @@ def _capitulacion(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="VIX en extremo pero breadth NO colapsa. El mercado absorbe el shock sin capitular = fortaleza subyacente.")
 def _sub_reaccion(df):
-    """SUB-REACCIÓN: VIX en extremo (HIGH_VOL/CRISIS_SPIKE) pero BSI NO en BREADTH_WASHED_OUT."""
-    vix_d1 = df["vix_sk"].str.split("__").str[0]
-    bsi_d1 = df["bsi_sk"].str.split("__").str[0]
-    return vix_d1.isin({"HIGH_VOL", "CRISIS_SPIKE"}) & (bsi_d1 != "BREADTH_WASHED_OUT")
+    """SUB-REACCIÓN: VIX en extremo (>= 3) pero BSI NO en BREADTH_WASHED_OUT (!= 0)."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    bsi_d1 = _get_dim(df, "bsi", 0)
+    return (vix_d1 >= 3) & (bsi_d1.notna()) & (bsi_d1 != 0)
 
 
 @_registrar("euforia",
@@ -78,10 +96,10 @@ def _sub_reaccion(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="VIX en complacencia extrema + breadth no estresado. Euforia de mercado = señal de techo. WR bear 85.4%.")
 def _euforia(df):
-    """EUFORIA: VIX en DEEP_COMPLACENCY/LOW_VOL y BSI en BULLISH_BREADTH (o no extremo)."""
-    vix_d1 = df["vix_sk"].str.split("__").str[0]
-    bsi_d1 = df["bsi_sk"].str.split("__").str[0]
-    return vix_d1.isin({"DEEP_COMPLACENCY", "LOW_VOL"}) & (bsi_d1 != "BREADTH_WASHED_OUT")
+    """EUFORIA: VIX en complacencia (<= 1) y BSI no en lavado (!= 0)."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    bsi_d1 = _get_dim(df, "bsi", 0)
+    return (vix_d1 <= 1) & (bsi_d1.notna()) & (bsi_d1 != 0)
 
 
 @_registrar("vvix_entry",
@@ -90,8 +108,8 @@ def _euforia(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="VVIX en extremo: la volatilidad de la volatilidad dispara = inestabilidad máxima. Contrarian de compra.")
 def _vvix_entry(df):
-    """VVIX en EXTREME_VVIX."""
-    return df["vvix_sk"].str.split("__").str[0] == "EXTREME_VVIX"
+    """VVIX en EXTREME_INSTABILITY (== 5)."""
+    return _get_dim(df, "vvix", 0) == 5
 
 
 @_registrar("bsi_washed_out",
@@ -100,8 +118,8 @@ def _vvix_entry(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="Breadth del S&P500 colapsado (washed out). Máxima destrucción de amplitud = oportunidad contrarian de compra.")
 def _bsi_washed_out(df):
-    """BSI en BREADTH_WASHED_OUT."""
-    return df["bsi_sk"].str.split("__").str[0] == "BREADTH_WASHED_OUT"
+    """BSI en BREADTH_WASHED_OUT (== 0)."""
+    return _get_dim(df, "bsi", 0) == 0
 
 
 @_registrar("credit_stress",
@@ -110,8 +128,9 @@ def _bsi_washed_out(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="Spread de crédito HYG/LQD en zona de estrés. El mercado de bonos señala miedo = oportunidad contrarian en equity.")
 def _credit_stress(df):
-    """CREDIT en CREDIT_STRESS."""
-    return df["credit_sk"].str.split("__").str[0] == "CREDIT_STRESS"
+    """CREDIT en estrés (EXTREME_STRESS=0, STRESS=1, es decir <= 1)."""
+    credit_d1 = _get_dim(df, "credit", 0)
+    return (credit_d1.notna()) & (credit_d1 <= 1)
 
 
 @_registrar("dxy_bearish",
@@ -120,8 +139,8 @@ def _credit_stress(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="Dólar en spike de crisis. Flight-to-safety extremo = correlación inversa con equity. Contexto macro adverso.")
 def _dxy_bearish(df):
-    """DXY en DOLLAR_SPIKE_CRISIS."""
-    return df["dxy_sk"].str.split("__").str[0] == "DOLLAR_SPIKE_CRISIS"
+    """DXY en EXTREME_STRENGTH (== 5)."""
+    return _get_dim(df, "dxy", 0) == 5
 
 
 @_registrar("pcr_put_panic",
@@ -130,8 +149,8 @@ def _dxy_bearish(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="Put/Call ratio en pánico extremo. Exceso de compra de puts = miedo institucional máximo. Contrarian de compra.")
 def _pcr_put_panic(df):
-    """PCR en EXTREME_PUT_PANIC."""
-    return df["pcr_sk"].str.split("__").str[0] == "EXTREME_PUT_PANIC"
+    """PCR en EXTREME_PUT_PANIC (== 5)."""
+    return _get_dim(df, "pcr", 0) == 5
 
 
 @_registrar("fg_extreme_fear",
@@ -140,9 +159,8 @@ def _pcr_put_panic(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="Fear & Greed CNN en miedo extremo (<10). Sentimiento retail capitulado = oportunidad contrarian de compra.")
 def _fg_extreme_fear(df):
-    """FG en EXTREME_FEAR — miedo extremo."""
-    mask = df["fg_sk"].dropna().str.split("__").str[0] == "EXTREME_FEAR"
-    return mask.reindex(df.index, fill_value=False)
+    """FG en EXTREME_FEAR (== 0)."""
+    return _get_dim(df, "fg", 0) == 0
 
 
 @_registrar("fg_extreme_greed",
@@ -151,28 +169,22 @@ def _fg_extreme_fear(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="Fear & Greed CNN en codicia extrema (>90). Sentimiento retail eufórico = señal de techo. WR bear 80.6%.")
 def _fg_extreme_greed(df):
-    """FG en EXTREME_GREED — codicia extrema (techo)."""
-    mask = df["fg_sk"].dropna().str.split("__").str[0] == "EXTREME_GREED"
-    return mask.reindex(df.index, fill_value=False)
+    """FG en EXTREME_GREED (== 5)."""
+    return _get_dim(df, "fg", 0) == 5
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 2.5 SEÑALES DE EXIT (propuestas 18-Ago-2026)
+# 2. SEÑALES DE EXIT
 # ─────────────────────────────────────────────────────────────────────────────
 
 @_registrar("bsi_recovery",
-    validacion="DEGRADADA post-QE (structural break 22-Ago: hit 59% PRE-2009 → 15% POST en su mejor celda; p agregado 0.006 arrastrado por la era 2000s; semivida/D3 apunta a que solo funciona en shocks ordinarios, no en cambios de régimen)", n_min=None, dsr=None,
+    validacion="DEGRADADA post-QE (structural break 22-Ago)", n_min=None, dsr=None,
     fuente="analisis_señales_exit.md: BSI sale de BREADTH_WASHED_OUT",
     tipo="exit", pivot_type="BOTH",
     descripcion="Breadth sale de washed out hacia recuperación. Señal de salida del pánico. DEGRADADA: solo funcionaba pre-QE.")
 def _bsi_recovery(df):
-    """BSI sale de BREADTH_WASHED_OUT → NEUTRAL_HIGH_BREADTH o EXPANSIVE_BREADTH.
-    FIX 20-Ago-2026: 'BREADTH_RECOVERY' era un label fantasma (0 ocurrencias).
-    El label correcto del generador para bin 4 es EXPANSIVE_BREADTH.
-    """
-    bsi_d1 = df["bsi_sk"].dropna().str.split("__").str[0]
-    mask = bsi_d1.isin(["NEUTRAL_HIGH_BREADTH", "EXPANSIVE_BREADTH"])
-    return mask.reindex(df.index, fill_value=False)
+    """BSI sale de BREADTH_WASHED_OUT → NEUTRAL_HIGH_BREADTH (3) o EXPANSIVE_BREADTH (4)."""
+    return _get_dim(df, "bsi", 0).isin([3, 4])
 
 
 @_registrar("vix_crisis_spike",
@@ -181,14 +193,8 @@ def _bsi_recovery(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="VIX dispara a crisis spike. A pesar del nombre, el edge es POSITIVO: comprar el pánico de volatilidad es contrarian rentable.")
 def _vix_crisis_spike(df):
-    """[RECLASIFICADA ENTRY 20-Ago-2026] VIX entra en CRISIS_SPIKE.
-    Edge = +0.75%, WR = 56.7%, LIFT(MAX) = 0.728x (reduce caída en techos).
-    A pesar de que el nombre sugiere peligro, el forward es POSITIVO:
-    el pánico de volatilidad es contrarian — momento de comprar, no de vender.
-    """
-    vix_d1 = df["vix_sk"].dropna().str.split("__").str[0]
-    mask = vix_d1 == "CRISIS_SPIKE"
-    return mask.reindex(df.index, fill_value=False)
+    """[RECLASIFICADA ENTRY 20-Ago-2026] VIX entra en EXTREME_PANIC (== 5)."""
+    return _get_dim(df, "vix", 0) == 5
 
 
 @_registrar("cascade_reversal",
@@ -198,25 +204,10 @@ def _vix_crisis_spike(df):
     descripcion="Convicción cascade cae por debajo del p15. Colapso de momentum = posible reversión. Sin significancia estadística aún.",
     fuente="analisis_señales_exit.md + calibración 23-Ago (calibracion_cascade_reversal.json)")
 def _cascade_reversal(df):
-    """cascade_conviction_50 cae por debajo de −0.957 — colapso de convicción (EXIT).
-
-    CALIBRACIÓN 23-Ago-2026 (auditoría profunda):
-    - El umbral original 0.30 quedó DESCALIBRADO con la normalización de producción
-      (μ/σ 0.41/0.3206): fire rate 75.8% = background puro.
-    - Barrido de umbrales: tercil_bajo (−0.387) y cero (0.0) también son background
-      (fire rate >25%). p25 (−0.747) y p20 (−0.867) quedan en el límite del umbral
-      de background (20%).
-    - Elegido p15 (−0.957): fire rate 15% (bajo el umbral de background), mejor
-      edge zz25|ALZA +0.28% (hit 72.6%, PF 3.06) — pero p=0.25, NO significativo.
-    - El cuantil se CONGELA como constante (un cuantil recalculado por ejecución
-      sería look-ahead; una señal real necesita un número fijo).
-    - Estado: PROPUESTA con calibración honesta. Requiere validación OOS/walk-forward
-      antes de promoción. El gradiente direccional es real (edge negativo en BAJA)
-      pero sin potencia estadística todavía.
-    """
+    """cascade_conviction_50 cae por debajo de −0.957 — colapso de convicción (EXIT)."""
     if "cascade_conviction_50" not in df.columns:
         return pd.Series(False, index=df.index)
-    UMBRAL_CALIBRADO = -0.957  # cuantil p15 de c50 (calibración 23-Ago, congelado)
+    UMBRAL_CALIBRADO = -0.957
     mask = df["cascade_conviction_50"] < UMBRAL_CALIBRADO
     return mask.fillna(False)
 
@@ -227,14 +218,9 @@ def _cascade_reversal(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="RETIRADA: duplicado exacto de credit_stress. Usar credit_stress en su lugar.")
 def _credit_stress_exit(df):
-    """[RETIRADA 20-Ago-2026] Duplicado exacto de credit_stress.
-    Mismo código, mismo N=215, mismo edge=+1.00%.
-    El sufijo '_exit' es fraudulento — edge positivo = ENTRY, no EXIT.
-    Usar credit_stress en su lugar.
-    """
-    credit_d1 = df["credit_sk"].dropna().str.split("__").str[0]
-    mask = credit_d1 == "CREDIT_STRESS"
-    return mask.reindex(df.index, fill_value=False)
+    """[RETIRADA 20-Ago-2026] Duplicado exacto de credit_stress (<= 1)."""
+    credit_d1 = _get_dim(df, "credit", 0)
+    return (credit_d1.notna()) & (credit_d1 <= 1)
 
 
 @_registrar("dxy_spike_exit",
@@ -243,13 +229,8 @@ def _credit_stress_exit(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="RETIRADA: duplicado exacto de dxy_bearish. Usar dxy_bearish en su lugar.")
 def _dxy_spike_exit(df):
-    """[RETIRADA 20-Ago-2026] Duplicado exacto de dxy_bearish.
-    Mismo código, mismo N=35, mismo edge≈0.
-    Usar dxy_bearish en su lugar.
-    """
-    dxy_d1 = df["dxy_sk"].dropna().str.split("__").str[0]
-    mask = dxy_d1 == "DOLLAR_SPIKE_CRISIS"
-    return mask.reindex(df.index, fill_value=False)
+    """[RETIRADA 20-Ago-2026] Duplicado exacto de dxy_bearish (== 5)."""
+    return _get_dim(df, "dxy", 0) == 5
 
 
 @_registrar("pcr_panic_exit",
@@ -258,14 +239,8 @@ def _dxy_spike_exit(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="RETIRADA: duplicado exacto de pcr_put_panic. Usar pcr_put_panic en su lugar.")
 def _pcr_panic_exit(df):
-    """[RETIRADA 20-Ago-2026] Duplicado exacto de pcr_put_panic.
-    Mismo código, mismo N=70, mismo edge=+2.70%.
-    El sufijo '_exit' es fraudulento — edge positivo = ENTRY, no EXIT.
-    Usar pcr_put_panic en su lugar.
-    """
-    pcr_d1 = df["pcr_sk"].dropna().str.split("__").str[0]
-    mask = pcr_d1 == "EXTREME_PUT_PANIC"
-    return mask.reindex(df.index, fill_value=False)
+    """[RETIRADA 20-Ago-2026] Duplicado exacto de pcr_put_panic (== 5)."""
+    return _get_dim(df, "pcr", 0) == 5
 
 
 @_registrar("skew_paranoia_exit",
@@ -274,14 +249,8 @@ def _pcr_panic_exit(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="SKEW en paranoia de black swan. Institucionales comprando puts OTM masivamente = miedo extremo de cola. Diamante contrarian.")
 def _skew_paranoia_exit(df):
-    """[RESCATADA 22-Ago-2026] SKEW entra en BLACK_SWAN_PARANOIA.
-    El método antiguo la degradó (GRADO C, LIFT≈1.0), pero el evaluador v6
-    (first-passage, baseline por celda) muestra +2.84% favorable neto en zz75|ALZA,
-    p=0.091 e INDEP=71% (alta independencia informacional). Incluida por el arquitecto.
-    """
-    skew_d1 = df["skew_sk"].dropna().str.split("__").str[0]
-    mask = skew_d1 == "BLACK_SWAN_PARANOIA"
-    return mask.reindex(df.index, fill_value=False)
+    """[RESCATADA 22-Ago-2026] SKEW entra en EXTREME_PARANOIA (== 5)."""
+    return _get_dim(df, "skew", 0) == 5
 
 
 @_registrar("vix_complacency_exit",
@@ -290,43 +259,31 @@ def _skew_paranoia_exit(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="RETIRADA: duplicado 100% de euforia. Usar euforia en su lugar.")
 def _vix_complacency_exit(df):
-    """[RETIRADA 20-Ago-2026: duplicado 100% idéntico a la señal validada 'euforia'. N=35, Lift=1.199x.]
-    VIX en DEEP_COMPLACENCY o LOW_VOL — complacencia extrema, fin de euforia."""
-    vix_d1 = df["vix_sk"].dropna().str.split("__").str[0]
-    mask = vix_d1.isin(["DEEP_COMPLACENCY", "LOW_VOL"])
-    return mask.reindex(df.index, fill_value=False)
+    """[RETIRADA 20-Ago-2026] VIX en complacencia (<= 1)."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    return (vix_d1.notna()) & (vix_d1 <= 1)
 
 
 @_registrar("credit_ease_exit",
-    validacion="RE-RETIRADA (structural break 22-Ago: +6.99% PRE-2009 → −2.84% POST, p=0.0000 Fisher. Reliquia de era pre-QE. Rescate v6 invalidado)", n_min=None, dsr=None,
+    validacion="RE-RETIRADA (structural break 22-Ago)", n_min=None, dsr=None,
     fuente="EXIT: CREDIT sale de CREDIT_EASE/DEEP_CREDIT_EASE → fin de easing",
     tipo="exit", pivot_type="BOTH",
     descripcion="RE-RETIRADA: crédito sale de easing. Reliquia pre-QE: el edge desapareció post-2009. No usar.")
 def _credit_ease_exit(df):
-    """[RE-RETIRADA 22-Ago-2026: rescate v6 invalidado por structural break — el edge
-    +1.54% (p=0.0013) era enteramente pre-2009 (+6.99%); post-quiebre −2.84% (p=0.0000
-    Fisher). Es una reliquia de la era pre-QE: cuando el crédito salía del easing,
-    las acciones subían; en la era QE esa relación desapareció.]
-    CREDIT NO está en CREDIT_EASE ni DEEP_CREDIT_EASE — fin del easing."""
-    credit_d1 = df["credit_sk"].dropna().str.split("__").str[0]
-    mask = ~credit_d1.isin(["CREDIT_EASE", "DEEP_CREDIT_EASE"])
-    return mask.reindex(df.index, fill_value=False)
+    """[RE-RETIRADA 22-Ago-2026] CREDIT NO está en easing (< 4)."""
+    credit_d1 = _get_dim(df, "credit", 0)
+    return (credit_d1.notna()) & (credit_d1 < 4)
 
 
 @_registrar("breadth_contraction_exit",
-    validacion="DEGRADADA — structural break interno OOS (auditoría Opus 22-Ago): primeros 5 folds (2001-2016) media −1.48% anti-edge; últimos 5 folds (2016-2026) media +1.81%. El +0.17% agregado enmascara el quiebre. Rescate v6 invalidado para producción hasta identificar la causa del cambio", n_min=None, dsr=None,
+    validacion="DEGRADADA — structural break interno OOS (auditoría Opus 22-Ago)", n_min=None, dsr=None,
     fuente="EXIT: BSI sale de EXPANSIVE → fin de expansión",
     tipo="exit", pivot_type="BOTH",
     descripcion="DEGRADADA: breadth contrae desde expansivo. Structural break OOS: anti-edge pre-2016, edge post-2016. No usar hasta aclarar.")
 def _breadth_contraction_exit(df):
-    """[DEGRADADA 22-Ago-2026 por auditoría Opus: structural break interno en los folds
-    OOS (anti-edge −1.48% pre-2016, edge +1.81% post-2016). El p agregado 0.0008 era
-    real pero mezcla dos regímenes opuestos. No usar en producción hasta identificar
-    la causa del cambio post-2016.]
-    BSI NO está en EXPANSIVE_BREADTH ni HYPER_EXPANSIVE_BREADTH — fin de expansión."""
-    bsi_d1 = df["bsi_sk"].dropna().str.split("__").str[0]
-    mask = ~bsi_d1.isin(["EXPANSIVE_BREADTH", "HYPER_EXPANSIVE_BREADTH"])
-    return mask.reindex(df.index, fill_value=False)
+    """[DEGRADADA 22-Ago-2026] BSI NO está en expansivo (< 4)."""
+    bsi_d1 = _get_dim(df, "bsi", 0)
+    return (bsi_d1.notna()) & (bsi_d1 < 4)
 
 
 @_registrar("regime_change_exit",
@@ -335,17 +292,11 @@ def _breadth_contraction_exit(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="RETIRADA: cambio de régimen verano→invierno. LIFT<1.0 = peor que no hacer nada. Anti-señal.")
 def _regime_change_exit(df):
-    """[RETIRADA 20-Ago-2026: lift=0.789x vs baseline MAX 83.4%. Peor que no hacer nada. Anti-señal.]
-    Cambio de régimen: VERANO (credit_ease + vix_low + bsi_high) → INVIERNO (credit_stress + vix_high + bsi_low)."""
-    credit_d1 = df["credit_sk"].dropna().str.split("__").str[0]
-    vix_d1 = df["vix_sk"].dropna().str.split("__").str[0]
-    bsi_d1 = df["bsi_sk"].dropna().str.split("__").str[0]
-    invierno = (
-        credit_d1.isin(["CREDIT_STRESS", "ELEVATED_CREDIT_STRESS", "CREDIT_CRISIS"]) &
-        vix_d1.isin(["HIGH_VOL", "ELEVATED_PANIC", "CRISIS_SPIKE"]) &
-        bsi_d1.isin(["BREADTH_WASHED_OUT", "OVERSOLD_BREADTH", "NEUTRAL_LOW_BREADTH"])
-    )
-    return invierno.reindex(df.index, fill_value=False)
+    """[RETIRADA 20-Ago-2026] Cambio de régimen: Invierno (credit <= 2 & vix >= 3 & bsi <= 2)."""
+    credit_d1 = _get_dim(df, "credit", 0)
+    vix_d1 = _get_dim(df, "vix", 0)
+    bsi_d1 = _get_dim(df, "bsi", 0)
+    return (credit_d1 <= 2) & (vix_d1 >= 3) & (bsi_d1 <= 2)
 
 
 @_registrar("sv5t_silent_distribution",
@@ -355,15 +306,12 @@ def _regime_change_exit(df):
     descripcion="DIAMANTE SUPREMO: en techo, volumen institucional desaparece mientras volatilidad expande. Distribución silenciosa. 20/20 WR en techos.")
 def _sv5t_silent_distribution(df):
     """[DIAMANTE SUPREMO RESCATADO 28-Ago-2026 bajo Protocolo §3.3]
-    En techo MAX, volumen institucional desaparece (LOW_TURBULENCE) y volatilidad expande.
-    Validación: 20 de 20 disparos en techos MAX (100% hit rate), caída media del SPY −4.63%, Profit Factor 99.9."""
+    En techo MAX, volumen institucional desaparece (sv5t <= 1) y volatilidad expande (sv5t_d3 >= 3)."""
     is_max = df["pivot_type"] == "MAX"
-    sv5t_sk = df["sv5_turbulence_sk"].dropna()
-    d1 = sv5t_sk.str.split("__").str[0]
-    d3 = sv5t_sk.str.split("__").str[2]
-    cond = (d1 == "LOW_TURBULENCE") & d3.isin(["VOL_ACCELERATING_EXPANSION", "VOL_PEAK_DECELERATION"])
-    mask = is_max & cond.reindex(df.index, fill_value=False)
-    return mask
+    sv5t_d1 = _get_dim(df, "sv5_turbulence", 0)
+    sv5t_d3 = _get_dim(df, "sv5_turbulence", 2)
+    cond = (sv5t_d1 <= 1) & (sv5t_d3 >= 3)
+    return is_max & cond
 
 
 @_registrar("credit_equity_divergence",
@@ -372,17 +320,11 @@ def _sv5t_silent_distribution(df):
     tipo="exit", pivot_type="MAX",
     descripcion="DEGRADADA: divergencia crédito-equity en techos. LIFT≈1.0 = no discrimina vs baseline. Solo monitorear con filtro HH.")
 def _credit_equity_divergence(df):
-    """[GRADO C 20-Ago-2026] En techo MAX, crédito se deteriora con velocidad positiva (D2=ACCELERATING_UP_3D).
-    Edge=−3.15%, WR=14.2%, pero LIFT(MAX)=1.035x ≈ baseline.
-    La divergencia crédito-equity NO funciona como señal EXIT independiente.
-    Solo 3.5% mejor que no hacer nada. Monitorear con filtro HH.
-    """
+    """[GRADO C 20-Ago-2026] En techo MAX, crédito se deteriora con velocidad positiva (D2 >= 3)."""
     is_max = df["pivot_type"] == "MAX"
-    credit_sk = df["credit_sk"].dropna()
-    d2 = credit_sk.str.split("__").str[1]
-    cond = d2.isin(["ACCELERATING_UP_3D", "FAST_SPIKE_3D"])
-    mask = is_max & cond.reindex(df.index, fill_value=False)
-    return mask
+    credit_d2 = _get_dim(df, "credit", 1)
+    cond = credit_d2 >= 3
+    return is_max & cond
 
 
 @_registrar("stealth_tail_hedging",
@@ -391,15 +333,10 @@ def _credit_equity_divergence(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="VIX complaciente pero SKEW en expansión: institucionales comprando cobertura de cola en silencio. Señal de distribución oculta.")
 def _stealth_tail_hedging(df):
-    """VIX en complacencia (LOW_VOL/DEEP_COMPLACENCY) mientras SKEW muestra compras OTM (VOL_EXPANSION)."""
-    vix_sk = df["vix_sk"].dropna()
-    skew_sk = df["skew_sk"].dropna()
-    vix_d1 = vix_sk.str.split("__").str[0]
-    skew_d3 = skew_sk.str.split("__").str[2]
-    vix_low = vix_d1.isin(["DEEP_COMPLACENCY", "LOW_VOL", "MODERATE_VOL"])
-    skew_exp = skew_d3.isin(["VOL_ACCELERATING_EXPANSION", "VOL_PEAK_DECELERATION"])
-    mask = vix_low.reindex(df.index, fill_value=False) & skew_exp.reindex(df.index, fill_value=False)
-    return mask
+    """VIX en complacencia (<= 2) mientras SKEW muestra compras OTM (D3 >= 3)."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    skew_d3 = _get_dim(df, "skew", 2)
+    return (vix_d1 <= 2) & (skew_d3 >= 3)
 
 
 @_registrar("defensive_rotation_divergence",
@@ -408,20 +345,17 @@ def _stealth_tail_hedging(df):
     tipo="exit", pivot_type="MAX",
     descripcion="RETIRADA: en techo, rotación colapsa hacia defensivos. LIFT<1.0 = anti-señal, peor que baseline.")
 def _defensive_rotation_divergence(df):
-    """[RETIRADA 20-Ago-2026: lift=0.828x vs baseline MAX 83.4%. Peor que no hacer nada. Anti-señal.]
-    En techo MAX, rotación sectorial cae agresivamente (D2=FAST_CRUSH_3D o D1=DEFENSIVE)."""
+    """[RETIRADA 20-Ago-2026] En techo MAX, rotación sectorial cae agresivamente (D2 == 0 o D1 <= 1)."""
     is_max = df["pivot_type"] == "MAX"
-    rot_sk = df["rotation_sk"].dropna()
-    d1 = rot_sk.str.split("__").str[0]
-    d2 = rot_sk.str.split("__").str[1]
-    cond = (d2 == "FAST_CRUSH_3D") | d1.isin(["DEFENSIVE", "DEFENSIVE_CAPITULATION"])
-    mask = is_max & cond.reindex(df.index, fill_value=False)
-    return mask
+    rot_d1 = _get_dim(df, "rotation", 0)
+    rot_d2 = _get_dim(df, "rotation", 1)
+    cond = (rot_d2 == 0) | (rot_d1 <= 1)
+    return is_max & cond
 
 
-# ── SEÑALES V2 VECTORIALES (Fase 7 V7) ──────────────────────────────────────
-# Integran D1 (nivel) + D2 (cinemática) para las combinaciones con N≥30 y
-# spread >25pp probadas empíricamente tras corrección de Bonferroni.
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. SEÑALES V2 VECTORIALES (Fase 7 V7)
+# ─────────────────────────────────────────────────────────────────────────────
 
 @_registrar("capitulacion_v2",
     validacion="V2_VECTORIAL (Fase 7 V7)", n_min=30, dsr=None,
@@ -429,15 +363,11 @@ def _defensive_rotation_divergence(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="Capitulación vectorial: VIX crisis + BSI washed + BSI decelerando (D2). La cinemática confirma el agotamiento vendedor.")
 def _capitulacion_v2(df):
-    """CAPITULACIÓN V2: VIX HIGH_VOL/CRISIS + BSI WASHED + BSI D2 en FAST_CRUSH o DECEL."""
-    vix_d1 = df["vix_sk"].str.split("__").str[0]
-    bsi_d1 = df["bsi_sk"].str.split("__").str[0]
-    bsi_d2 = df["bsi_sk"].str.split("__").str[1]
-    return (
-        vix_d1.isin({"HIGH_VOL", "CRISIS_SPIKE"})
-        & (bsi_d1 == "BREADTH_WASHED_OUT")
-        & bsi_d2.isin({"FAST_CRUSH_3D", "DECELERATING_DOWN_3D"})
-    )
+    """CAPITULACIÓN V2: VIX >= 3 + BSI D1 == 0 + BSI D2 en {0, 1}."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    bsi_d1 = _get_dim(df, "bsi", 0)
+    bsi_d2 = _get_dim(df, "bsi", 1)
+    return (vix_d1 >= 3) & (bsi_d1 == 0) & (bsi_d2.isin([0, 1]))
 
 
 @_registrar("euforia_v2",
@@ -446,15 +376,10 @@ def _capitulacion_v2(df):
     tipo="exit", pivot_type="BOTH",
     descripcion="Euforia vectorial: BSI en expansión/hiper con D2 acelerando al alza = techo cinemático inminente. 92% ocurre en techos MAX.")
 def _euforia_v2(df):
-    """EUFORIA V2: BSI EXPANSIVE/HYPER + BSI D2 en ACCEL_UP o FAST_SPIKE.
-    WR bear = 81.2% (solo 18.8% el mercado sube). El filtro VIX fue retirado
-    porque sobre-restringía (N=3→48). La cinemática de BSI es suficiente."""
-    bsi_d1 = df["bsi_sk"].str.split("__").str[0]
-    bsi_d2 = df["bsi_sk"].str.split("__").str[1]
-    return (
-        bsi_d1.isin({"HYPER_EXPANSIVE_BREADTH", "EXPANSIVE_BREADTH"})
-        & bsi_d2.isin({"ACCELERATING_UP_3D", "FAST_SPIKE_3D"})
-    )
+    """EUFORIA V2: BSI D1 >= 4 + BSI D2 >= 3."""
+    bsi_d1 = _get_dim(df, "bsi", 0)
+    bsi_d2 = _get_dim(df, "bsi", 1)
+    return (bsi_d1 >= 4) & (bsi_d2 >= 3)
 
 
 @_registrar("vix_crisis_spike_v2",
@@ -463,10 +388,7 @@ def _euforia_v2(df):
     tipo="entry", pivot_type="BOTH",
     descripcion="VIX crisis con cinemática de spike confirmada. El D2 velocidad confirma que el VIX NO está estancado en crisis sino acelerando.")
 def _vix_crisis_spike_v2(df):
-    """VIX CRISIS V2: VIX D1=CRISIS_SPIKE + VIX D2=FAST_SPIKE o ACCEL_UP."""
-    vix_sk = df["vix_sk"].dropna()
-    vix_d1 = vix_sk.str.split("__").str[0]
-    vix_d2 = vix_sk.str.split("__").str[1]
-    mask = (vix_d1 == "CRISIS_SPIKE") & vix_d2.isin({"FAST_SPIKE_3D", "ACCELERATING_UP_3D"})
-    return mask.reindex(df.index, fill_value=False)
-
+    """VIX CRISIS V2: VIX D1 == 5 + VIX D2 >= 3."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    vix_d2 = _get_dim(df, "vix", 1)
+    return (vix_d1 == 5) & (vix_d2 >= 3)

@@ -139,13 +139,21 @@ def test_sigmet_overflow_generation():
     assert sig_mod.severity == "WARNING"
     assert sig_mod.operational_action == "STK_HOLD_STABLE"
 
-    # 3. Extremo (depth > 4σ)
-    metar_ext = DummyMetar(8.1, None, None, "UPPER")
+    # 3. Extremo (4σ <= depth < 5σ: Tier 2)
+    metar_ext = DummyMetar(4.5, None, None, "UPPER")
     sig_ext = _check_overflow_sigmet("VIX", metar_ext, now_str)
     assert sig_ext is not None
     assert sig_ext.hazard_type == "OVERFLOW_EXTREMO"
     assert sig_ext.severity == "CRITICAL"
     assert sig_ext.operational_action == "STK_BLOCK_CRISIS"
+
+    # 3b. Blow-off Extreme (7σ <= depth < 10σ: Tier 4)
+    metar_blowoff = DummyMetar(8.1, None, None, "UPPER")
+    sig_blowoff = _check_overflow_sigmet("VIX", metar_blowoff, now_str)
+    assert sig_blowoff is not None
+    assert sig_blowoff.hazard_type == "BLOW_OFF_EXTREME"
+    assert sig_blowoff.severity == "CATASTROPHIC"
+    assert sig_blowoff.operational_action == "MKT_MACRO_CIRCUIT_BREAKER"
 
     # 4. Multi-dimensional (Black Swan)
     metar_multi = DummyMetar(3.8, 3.2, None, "MULTI")

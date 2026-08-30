@@ -87,6 +87,8 @@ def _check_overflow_sigmet(station: str, metar: Any, now_str: str) -> Optional[M
 
     as_of = str(getattr(metar, "as_of_date", "")).replace("-", "")
 
+    from backend.modules.entry_decision.domain.rules.sigma_overflow import classify_overflow_tier
+
     if flag == "MULTI":
         return MarketSIGMET(
             sigmet_id=f"SIGMET-OVERFLOW-{station}-{as_of}-MULTI",
@@ -101,33 +103,77 @@ def _check_overflow_sigmet(station: str, metar: Any, now_str: str) -> Optional[M
             is_active=True,
             telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag}
         )
-    elif max_depth > 4.0:
+
+    tier, hazard_type, severity = classify_overflow_tier(max_depth)
+    if tier == 5:
         return MarketSIGMET(
-            sigmet_id=f"SIGMET-OVERFLOW-{station}-{as_of}-EXTREMO",
+            sigmet_id=f"SIGMET-BLOWOFF-{station}-{as_of}-T5-SYSTEMIC",
             timestamp_utc=now_str,
             as_of_date=getattr(metar, "as_of_date", ""),
-            hazard_type="OVERFLOW_EXTREMO",
-            severity="CRITICAL",
+            hazard_type=hazard_type,
+            severity=severity,
             station=station,
-            title=f"{station} Extreme σ-Overflow ({max_depth:.1f}σ > 4σ)",
+            title=f"{station} Systemic Blow-Off ({max_depth:.1f}σ ≥ 10σ)",
+            description=f"{station} breached systemic survival limit with extreme depth {max_depth:.1f}σ ({flag}).",
+            operational_action="MKT_MACRO_CIRCUIT_BREAKER",
+            is_active=True,
+            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag, "tier": tier}
+        )
+    elif tier == 4:
+        return MarketSIGMET(
+            sigmet_id=f"SIGMET-BLOWOFF-{station}-{as_of}-T4-EXTREME",
+            timestamp_utc=now_str,
+            as_of_date=getattr(metar, "as_of_date", ""),
+            hazard_type=hazard_type,
+            severity=severity,
+            station=station,
+            title=f"{station} Extreme Blow-Off ({max_depth:.1f}σ ≥ 7σ)",
+            description=f"{station} breached catastrophic limit with depth {max_depth:.1f}σ ({flag}).",
+            operational_action="MKT_MACRO_CIRCUIT_BREAKER",
+            is_active=True,
+            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag, "tier": tier}
+        )
+    elif tier == 3:
+        return MarketSIGMET(
+            sigmet_id=f"SIGMET-BLOWOFF-{station}-{as_of}-T3-SEVERE",
+            timestamp_utc=now_str,
+            as_of_date=getattr(metar, "as_of_date", ""),
+            hazard_type=hazard_type,
+            severity=severity,
+            station=station,
+            title=f"{station} Severe Blow-Off ({max_depth:.1f}σ ≥ 5σ)",
+            description=f"{station} breached emergency limit with depth {max_depth:.1f}σ ({flag}).",
+            operational_action="STK_BLOCK_CRISIS",
+            is_active=True,
+            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag, "tier": tier}
+        )
+    elif tier == 2:
+        return MarketSIGMET(
+            sigmet_id=f"SIGMET-OVERFLOW-{station}-{as_of}-T2-EXTREMO",
+            timestamp_utc=now_str,
+            as_of_date=getattr(metar, "as_of_date", ""),
+            hazard_type=hazard_type,
+            severity=severity,
+            station=station,
+            title=f"{station} Extreme σ-Overflow ({max_depth:.1f}σ ≥ 4σ)",
             description=f"{station} breached extreme statistical limits with depth {max_depth:.1f}σ ({flag}).",
             operational_action="STK_BLOCK_CRISIS",
             is_active=True,
-            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag}
+            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag, "tier": tier}
         )
-    elif max_depth > 3.0:
+    elif tier == 1:
         return MarketSIGMET(
-            sigmet_id=f"SIGMET-OVERFLOW-{station}-{as_of}-MODERADO",
+            sigmet_id=f"SIGMET-OVERFLOW-{station}-{as_of}-T1-MODERADO",
             timestamp_utc=now_str,
             as_of_date=getattr(metar, "as_of_date", ""),
-            hazard_type="OVERFLOW_MODERADO",
-            severity="WARNING",
+            hazard_type=hazard_type,
+            severity=severity,
             station=station,
-            title=f"{station} Moderate σ-Overflow ({max_depth:.1f}σ > 3σ)",
+            title=f"{station} Moderate σ-Overflow ({max_depth:.1f}σ ≥ 3σ)",
             description=f"{station} breached statistical tail limit with depth {max_depth:.1f}σ ({flag}).",
             operational_action="STK_HOLD_STABLE",
             is_active=True,
-            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag}
+            telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag, "tier": tier}
         )
     return None
 

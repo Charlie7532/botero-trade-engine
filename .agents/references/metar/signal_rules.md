@@ -1,7 +1,7 @@
 # METAR Signal Rules & Confidence Tiers
 
 > **Módulo de**: [fact_store_v3_architecture.md](file:///root/botero-trade/.agents/references/metar/fact_store_v3_architecture.md) §11–13
-> **Status**: `PRODUCTION` | **Last Audit**: 29-Ago-2026
+> **Status**: `PRODUCTION` | **Last Audit**: 30-Ago-2026 (homologación canónica)
 > **Relacionados**: [anti_patterns.md](file:///root/botero-trade/.agents/references/metar/anti_patterns.md), [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md)
 
 ---
@@ -42,13 +42,13 @@ Los 3 horizontes ZigZag son **independientes** y pueden divergir:
 
 ### Incondicionales (siempre activas)
 Una señal que dispara sin importar el contexto del mercado:
-- `VIX en EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION` → modo crisis
-- `FG en EXTREME_FEAR + panic_score ≥ 5` → acumulación contrarian
+- VIX con state_key `"5__4__3"` (bin 5 = EXTREME_PANIC + FAST_SPIKE + VOL_ACCEL) → modo crisis
+- FG bin 0 (EXTREME_FEAR) + `panic_score_pct ≥ 5/7` → acumulación contrarian
 
 ### Condicionales (requieren contexto)
 Una señal que solo tiene significado en combinación con otra:
-- `BSI en OVERSOLD_BREADTH` → solo relevante si Credit NO está en EXTREME_STRESS (breadth wash puede continuar en crisis crediticia)
-- `SKEW en PARANOIA` → relevante si VIX está < NEUTRAL_ALERT (protección excesiva en ambiente tranquilo = contrarian)
+- BSI bin 1 (`OVERSOLD_BREADTH`) → solo relevante si Credit bin > 1 (NO en `EXTREME_STRESS` ni `STRESS`). Breadth wash puede continuar en crisis crediticia.
+- SKEW bin 4 (`PARANOIA`) → relevante si VIX bin < 3 (bajo `NEUTRAL_ALERT`). Protección excesiva en ambiente tranquilo = contrarian.
 
 ---
 

@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-from backend.modules.entry_decision.domain.rules.sigma_overflow import STATION_MU_SIGMA
+from backend.modules.entry_decision.domain.rules.sigma_overflow import STATION_MU_SIGMA, classify_overflow_tier
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("ContinuousMETARLake")
@@ -84,20 +84,16 @@ LABELS_D3 = ["VOL_EXTREME_SQUEEZE", "VOL_MODERATE_COMPRESSION", "VOL_NEUTRAL_BAS
 MIN_EXPANDING = 252  # Minimum 1 year for expanding rank
 
 
-def classify_value(val: float, edges: list, labels: list) -> str:
-    """Classify a percentile rank into labels using Gaussian edges.
-
-    NaN handling: returns None. When a station has no data for a date
-    (e.g. FG before 2011, Credit before 2007), its state must be NaN,
-    not a fabricated neutral label. This prevents 'phantom states' from
-    distorting signal harness statistics and confluence scoring.
+def classify_bin_index(val: float, edges: list) -> int:
+    """Classify a percentile rank into integer bin index.
+    Returns -1 if val is NaN.
     """
     if pd.isna(val):
-        return None
+        return -1
     for idx, e in enumerate(edges):
         if val < e:
-            return labels[idx]
-    return labels[-1]
+            return idx
+    return len(edges)
 
 
 def compute_station_features(store: TimescaleDataStore, station: str, spy_index: pd.Index) -> pd.DataFrame:
@@ -120,8 +116,7 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
 
     # ALIGNMENT FIRST (Homologated with production fact store generators):
     # Align raw series to SPY trading days first, then ffill(limit=3) for FX/holiday gaps.
-    # This prevents pre-1993 historical outliers (e.g. 1985 Plaza Accord DXY=164.72 or
-    # 1980s Volcker yield spreads) from distorting the expanding rank post-1993.
+    # This prevents pre-1993 historical outliers from distorting the expanding rank post-1993.
     raw_val = raw_val.reindex(spy_index).ffill(limit=3)
 
     # Build station DataFrame
@@ -140,13 +135,23 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
     d2_rank = sdf[f"{station}_d2_raw"].expanding(min_periods=MIN_EXPANDING).rank(pct=True)
     d3_rank = sdf[f"{station}_d3_raw"].expanding(min_periods=MIN_EXPANDING).rank(pct=True)
 
-    # Classify into bins
-    sdf[f"{station}_d1"] = d1_rank.apply(lambda r: classify_value(r, PERCENTILES_D1, d1_labels))
-    sdf[f"{station}_d2"] = d2_rank.apply(lambda r: classify_value(r, PERCENTILES_D2, LABELS_D2))
-    sdf[f"{station}_d3"] = d3_rank.apply(lambda r: classify_value(r, PERCENTILES_D3, LABELS_D3))
+    # Classify into numeric bin indices
+    sdf[f"{station}_d1_bin"] = d1_rank.apply(lambda r: classify_bin_index(r, PERCENTILES_D1))
+    sdf[f"{station}_d2_bin"] = d2_rank.apply(lambda r: classify_bin_index(r, PERCENTILES_D2))
+    sdf[f"{station}_d3_bin"] = d3_rank.apply(lambda r: classify_bin_index(r, PERCENTILES_D3))
 
-    # State key
-    sdf[f"{station}_sk"] = sdf[f"{station}_d1"] + "__" + sdf[f"{station}_d2"] + "__" + sdf[f"{station}_d3"]
+    # Semantic labels (for visualization and legacy cross-compatibility)
+    sdf[f"{station}_d1"] = sdf[f"{station}_d1_bin"].apply(lambda b: d1_labels[b] if 0 <= b < len(d1_labels) else None)
+    sdf[f"{station}_d2"] = sdf[f"{station}_d2_bin"].apply(lambda b: LABELS_D2[b] if 0 <= b < len(LABELS_D2) else None)
+    sdf[f"{station}_d3"] = sdf[f"{station}_d3_bin"].apply(lambda b: LABELS_D3[b] if 0 <= b < len(LABELS_D3) else None)
+
+    # Numeric state key: D1__D2__D3 (matching production fact stores)
+    def _make_sk(row):
+        b1, b2, b3 = row[f"{station}_d1_bin"], row[f"{station}_d2_bin"], row[f"{station}_d3_bin"]
+        if b1 < 0 or b2 < 0 or b3 < 0:
+            return None
+        return f"{b1}__{b2}__{b3}"
+    sdf[f"{station}_sk"] = sdf.apply(_make_sk, axis=1)
 
     # Z-scores (against population mu/sigma from sigma_overflow.py)
     if "d1" in mu_sigma:
@@ -161,12 +166,15 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
         mu_d3, sig_d3 = mu_sigma["d3"]
         sdf[f"{station}_z_d3"] = (sdf[f"{station}_d3_raw"] - mu_d3) / sig_d3 if sig_d3 > 0 else 0.0
 
-    # Overflow flags per dimension
+    # Overflow flags and standardized tiers (T1-T5) per dimension
     for dim in ["d1", "d2", "d3"]:
         z_col = f"{station}_z_{dim}"
         if z_col in sdf.columns:
             sdf[f"{station}_ovf2s_{dim}"] = sdf[z_col].abs() >= 2.0
             sdf[f"{station}_ovf3s_{dim}"] = sdf[z_col].abs() >= 3.0
+            sdf[f"{station}_overflow_tier_{dim}"] = sdf[z_col].apply(
+                lambda z: classify_overflow_tier(z)[0] if pd.notna(z) else 0
+            )
 
     n_valid = sdf[f"{station}_val"].notna().sum()
     logger.info(f"  {station} ({ticker}): {n_valid} days aligned to SPY, "

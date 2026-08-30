@@ -121,8 +121,9 @@ SCALE_FACTORS = {
 
 # ── D1 Bin → Directional Vote (for rare stations) ────────────────────────
 # These bins carry directional meaning regardless of EV reliability.
-# Bearish D1 bins: market stress / panic / crisis
+# Bearish D1 bins: market stress / panic / crisis (Canonical + Legacy Synonyms)
 D1_BEARISH_BINS = {
+    # Canonical symmetric
     "EXTREME_PANIC", "PANIC",                                      # VIX
     "EXTREME_INSTABILITY", "INSTABILITY",                          # VVIX
     "EXTREME_PUT_PANIC", "PUT_PANIC",                              # PCR
@@ -132,12 +133,20 @@ D1_BEARISH_BINS = {
     "EXTREME_STRESS", "STRESS",                                    # Credit
     "DEEP_INVERSION", "MODERATE_INVERSION",                        # Yield Curve
     "EXTREME_DEFENSIVE", "DEFENSIVE",                              # Rotation
-    "BREADTH_WASHED_OUT",                                          # BSI
+    "BREADTH_WASHED_OUT", "OVERSOLD_BREADTH",                      # BSI
     "EXTREME_STRENGTH", "STRENGTH",                                # DXY (strong dollar = bearish equities)
+    # Legacy synonyms (retrocompatibility)
+    "CRISIS_SPIKE", "HIGH_VOL", "ELEVATED_PANIC",                  # VIX legacy
+    "EXTREME_VVIX",                                                # VVIX legacy
+    "TAIL_PARANOIA", "BLACK_SWAN_PARANOIA",                        # SKEW legacy
+    "CREDIT_CRISIS", "CREDIT_STRESS", "ELEVATED_CREDIT_STRESS",    # Credit legacy
+    "DEFENSIVE_CAPITULATION",                                      # Rotation legacy
+    "DOLLAR_SPIKE_CRISIS",                                         # DXY legacy
 }
 
-# Bullish D1 bins: complacency / ease / euphoria
+# Bullish D1 bins: complacency / ease / euphoria (Canonical + Legacy Synonyms)
 D1_BULLISH_BINS = {
+    # Canonical symmetric
     "EXTREME_COMPLACENCY", "COMPLACENCY",                          # VIX
     "EXTREME_STABILITY", "STABILITY",                              # VVIX
     "EXTREME_CALL_EUPHORIA", "CALL_EUPHORIA",                      # PCR
@@ -149,7 +158,19 @@ D1_BULLISH_BINS = {
     "EXTREME_OFFENSIVE", "OFFENSIVE",                              # Rotation
     "HYPER_EXPANSIVE_BREADTH", "EXPANSIVE_BREADTH",                # BSI
     "EXTREME_WEAKNESS", "WEAKNESS",                                # DXY (weak dollar = bullish equities)
+    # Legacy synonyms (retrocompatibility)
+    "DEEP_COMPLACENCY", "LOW_VOL",                                 # VIX legacy
+    "DEEP_CONFIDENCE",                                             # SKEW legacy
+    "CREDIT_EASE", "DEEP_CREDIT_EASE",                             # Credit legacy
+    "BULLISH_BREADTH",                                             # BSI legacy
 }
+
+
+# Stations where high D1 values (bins 4, 5) mean market stress/bearish for equities
+STATIONS_HIGH_BEARISH = {"vix", "vvix", "pcr", "sv5_turbulence", "skew", "dxy"}
+
+# Stations where low D1 values (bins 0, 1) mean market stress/bearish for equities
+STATIONS_LOW_BEARISH = {"fg", "credit", "yield_curve", "rotation", "bsi"}
 
 
 # ── Reliability & Rarity Functions ────────────────────────────────────────
@@ -178,16 +199,42 @@ def rarity_amplifier(n: int) -> float:
         return 1.5
 
 
-def d1_directional_vote(state_key: str) -> int:
+def d1_directional_vote(state_key: str, station: Optional[str] = None) -> int:
     """Extract D1 bin from state key and return directional vote.
-    Returns +1 (bullish), -1 (bearish), or 0 (neutral)."""
+    Returns +1 (bullish for equities), -1 (bearish for equities), or 0 (neutral).
+
+    Supports:
+    1. Numeric state keys ("4__2__1", "0__1__2") with station code
+    2. Semantic label state keys ("PANIC__...", "EXTREME_FEAR", etc.)
+    """
     if not state_key:
         return 0
-    d1_bin = state_key.split("__")[0]
-    if d1_bin in D1_BEARISH_BINS:
+    d1_part = state_key.split("__")[0]
+
+    # 1. Semantic label match
+    if d1_part in D1_BEARISH_BINS:
         return -1
-    elif d1_bin in D1_BULLISH_BINS:
+    elif d1_part in D1_BULLISH_BINS:
         return +1
+
+    # 2. Numeric bin index match
+    try:
+        bin_idx = int(d1_part)
+    except (ValueError, TypeError):
+        return 0
+
+    st = station.lower() if station else None
+    if st in STATIONS_HIGH_BEARISH:
+        if bin_idx >= 4:
+            return -1
+        elif bin_idx <= 1:
+            return +1
+    elif st in STATIONS_LOW_BEARISH:
+        if bin_idx <= 1:
+            return -1
+        elif bin_idx >= 4:
+            return +1
+
     return 0
 
 
@@ -363,7 +410,7 @@ class ConvergenceCompositor:
                 extreme_stations.append(code)
 
             # Channel 3: D1 Directional Votes
-            vote = d1_directional_vote(state_key)
+            vote = d1_directional_vote(state_key, code)
             if vote > 0:
                 n_bullish_vote += 1
             elif vote < 0:

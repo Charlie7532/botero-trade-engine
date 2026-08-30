@@ -99,7 +99,7 @@ T5 (≥10σ): NOTAM infra    | CIO: preservación total  | URGENCY_EMERGENCY
 2. **Blow-Off cluster:** ≥3 días consecutivos en T3+ → protocolos de supervivencia hasta 5 días consecutivos en T0.
 3. **Post-Blow-Off = señal contrarian.** Los 10-20 días post T4+ = ventana de acumulación institucional (consistente con `regime_change_exit` como detector Wyckoff).
 4. **D3 raramente alcanza T3+.** El ratio `std(2)/std(10)` está físicamente acotado (~5.3σ max). Blow-offs ocurren en D1 y D2.
-5. **`sigma_overflow.py` pendiente de extender** para retornar tier name además de `(sigma_depth, flag)`.
+5. **~~`sigma_overflow.py` pendiente de extender~~** ✅ Resuelto (Fase 0, 30-Ago-2026). `validate_overflow()` retorna `(sigma_depth, tier, hazard_type)` con escala T1-T5 completa.
 
 ---
 

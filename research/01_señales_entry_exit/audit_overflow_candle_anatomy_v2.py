@@ -29,7 +29,8 @@ from backend.modules.entry_decision.domain.rules.sigma_overflow import STATION_M
 TICKERS = {
     'vix': 'VIX', 'vvix': 'VVIX', 'pcr': 'CBOE_PCR', 'fg': 'FG',
     'sv5_turbulence': 'SV5_TURBULENCE', 'skew': 'SKEW', 'credit': 'CREDIT_RATIO',
-    'yield_curve': 'YIELD_SPREAD', 'rotation': 'ROTATION_INDEX', 'bsi': 'S5TW'
+    'yield_curve': 'YIELD_SPREAD', 'rotation': 'ROTATION_INDEX', 'bsi': 'S5TW',
+    'dxy': 'DXY',
 }
 
 SIGMA_BUCKETS = [

@@ -101,15 +101,16 @@ Espacio teórico: 6×5×5 = **150 estados** por estación. Observados: ~95-131.
 
 ## Las 5 Señales del Núcleo Robusto (OOS Validadas)
 
-| Señal | Condición en Bins | N | Edge zz75 | OOS | Decay |
-|:------|:-----------------|:-:|:---------:|:---:|:-----:|
-| **capitulacion** | `VIX >= 3 & BSI == 0` | 117 | +3.24% | +2.64% | 0.77 |
-| **pcr_put_panic** | `PCR == 5` | 51 | +5.10% | +2.56% | 0.63 |
-| **vvix_entry** | `VVIX == 5` | 69 | +2.92% | +2.08% | 0.67 |
-| **credit_stress** | `CREDIT <= 1` | 241 | +1.36% | +1.43% | 0.42 |
-| **bsi_washed_out** | `BSI == 0` | 117 | +3.24% | +0.99% | 0.57 |
+| Señal | Condición en Bins | Mejor Celda | N | Edge IS | OOS | Decay |
+|:------|:-----------------|:----------:|:-:|:-------:|:---:|:-----:|
+| **capitulacion** | `VIX >= 3 & BSI == 0` | zz25·BAJA | 28 | +3.40% | +2.64% | 0.77 |
+| **pcr_put_panic** | `PCR == 5` | zz75·BAJA | 28 | +4.04% | +2.56% | 0.63 |
+| **vvix_entry** | `VVIX == 5` | zz75·ALZA | 45 | +3.11% | +2.08% | 0.67 |
+| **credit_stress** | `CREDIT <= 1` | zz75·ALZA | 101 | +3.42% | +1.43% | 0.42 |
+| **bsi_washed_out** | `BSI == 0` | zz25·BAJA | 65 | +1.73% | +0.99% | 0.57 |
 
-> **N reconciliado** contra `catalogo_31_senales_medidas.json` (fuente de verdad, 30-Ago-2026).
+> **N sobre 1,354 pivotes** (población deduplicada — tras eliminar 236 fechas de pivote duplicado).
+> **Fuente:** [`validacion_oos_catalogo_v7.json`](file:///root/botero-trade/data/research/signals/validacion_oos_catalogo_v7.json). Edge IS = `in_sample_fav_neto`; OOS = `oos_edge_medio_pct`; Decay = `decay_oos_vs_is`.
 
 ---
 

@@ -6,10 +6,14 @@
 
 ---
 
-## Regla #1: Bins para Comparar, Labels para Presentar
+## Regla #1: Polaridad por `d1_vote` y Bins para Comparar
 
 ```python
-# ✅ CORRECTO — comparar contra bin numérico
+# 1. POLARIDAD: Usa d1_vote (-1/0/+1). NO interpretes d1_bin direccionalmente sin contexto.
+#    d1_vote = -1 (Bearish/Riesgo), 0 (Neutro), +1 (Bullish/Oportunidad)
+#    Un bin 5 en VIX es BEARISH (d1_vote=-1), pero un bin 5 en Credit es BULLISH (d1_vote=+1).
+
+# 2. COMPARACIONES: Compara contra bin numérico, NUNCA contra labels string.
 if vix_d1_bin >= 3:  # NEUTRAL_ALERT + PANIC + EXTREME_PANIC
     trigger_crisis_protocol()
 
@@ -19,6 +23,24 @@ if vix_label in {"PANIC", "EXTREME_PANIC"}:  # frágil, pierde NEUTRAL_ALERT
 ```
 
 Los labels semánticos viven **exclusivamente** en `_documentation.taxonomy` del JSON y se usan solo para presentación al usuario humano.
+
+---
+
+## Definición Universal de "Extremo" (±2σ en D1 / D2 / D3)
+
+> Cuando cualquier código, documento o señal se refiere a un estado como **"extremo"**, corresponde estrictamente a los bines de **±2σ** (2.28% de la población cada uno):
+> - **D1 Extremos (6 bins, 0..5):** `d1_bin in {0, 5}` (Bin 0 < −2σ, Bin 5 ≥ +2σ)
+> - **D2 Extremos (5 bins, 0..4):** `d2_bin in {0, 4}` (Bin 0 `FAST_CRUSH_3D`, Bin 4 `FAST_SPIKE_3D`)
+> - **D3 Extremos (5 bins, 0..4):** `d3_bin in {0, 4}` (Bin 0 `VOL_EXTREME_SQUEEZE`, Bin 4 `VOL_PEAK_DECELERATION`)
+
+```python
+def es_extremo(d1_bin: int, d2_bin: int, d3_bin: int) -> bool:
+    """Detecta si alguna dimensión está en su cola gaussiana extrema (+-2sigma)."""
+    d1_extremo = d1_bin in {0, 5}  # 6 bines
+    d2_extremo = d2_bin in {0, 4}  # 5 bines
+    d3_extremo = d3_bin in {0, 4}  # 5 bines
+    return d1_extremo or d2_extremo or d3_extremo
+```
 
 ---
 
@@ -32,8 +54,8 @@ State Key: "4__1__3"
              └─────── D1 bin 4 = PANIC (VIX) / PARANOIA (SKEW) / etc.
 ```
 
-| Dimensión | Bines | Rango | Extremos | Neutro |
-|:----------|:-----:|:------|:---------|:-------|
+| Dimensión | Bines | Rango | Extremos (±2σ) | Neutro |
+|:----------|:-----:|:------|:---------------|:-------|
 | **D1** (Magnitud) | 6 (0-5) | `[-2σ, -1σ, μ, +1σ, +2σ]` | 0 y 5 | 2 y 3 |
 | **D2** (Velocidad Δ3d) | 5 (0-4) | `[-2σ, -1σ, +1σ, +2σ]` | 0 y 4 | 2 |
 | **D3** (Estabilidad) | 5 (0-4) | `[-2σ, -1σ, +1σ, +2σ]` | 0 y 4 | 2 |
@@ -46,17 +68,14 @@ Espacio teórico: 6×5×5 = **150 estados** por estación. Observados: ~95-131.
 
 | Concepto | Comparación | Cobertura |
 |:---------|:-----------|:----------|
-| Extremo alto | `d1_bin >= 4` | Bins 4 + 5 |
-| Extremo bajo | `d1_bin <= 1` | Bins 0 + 1 |
-| Solo extremo máximo | `d1_bin == 5` | Solo bin 5 (>+2σ) |
-| Solo extremo mínimo | `d1_bin == 0` | Solo bin 0 (<-2σ) |
-| Zona neutra | `d1_bin in {2, 3}` | Centro de campana |
-| Velocidad spike | `d2_bin >= 3` | ACCELERATING_UP + FAST_SPIKE |
-| Velocidad crush | `d2_bin <= 1` | FAST_CRUSH + DECELERATING_DOWN |
-| Velocidad estable | `d2_bin == 2` | STABLE_CONTINUATION |
-| Indicador inestable | `d3_bin >= 3` | VOL_ACCEL + VOL_PEAK |
-| Indicador squeeze | `d3_bin <= 1` | VOL_EXTREME_SQUEEZE + VOL_MOD_COMP |
-| Bin extremo (→ verificar overflow) | `d1_bin in {0, 5}` | → `validate_overflow()` |
+| D1 Extremo alto | `d1_bin >= 4` (o `== 5` para >+2σ) | Bins 4 + 5 |
+| D1 Extremo bajo | `d1_bin <= 1` (o `== 0` para <-2σ) | Bins 0 + 1 |
+| D2 Extremo spike | `d2_bin == 4` (>+2σ) / `d2_bin >= 3` | FAST_SPIKE / ACCEL+SPIKE |
+| D2 Extremo crush | `d2_bin == 0` (<-2σ) / `d2_bin <= 1` | FAST_CRUSH / DECEL+CRUSH |
+| D3 Inestabilidad alta | `d3_bin == 4` (>+2σ) / `d3_bin >= 3` | VOL_PEAK / ACCEL+PEAK |
+| D3 Compresión extrema | `d3_bin == 0` (<-2σ) / `d3_bin <= 1` | VOL_SQUEEZE / COMP+SQUEEZE |
+| Zona neutra / baseline | `d1_bin in {2, 3}`, `d2_bin == 2`, `d3_bin == 2` | Centro de campana |
+| Bin extremo D1 (→ verificar overflow) | `d1_bin in {0, 5}` | → `validate_overflow()` |
 
 ---
 

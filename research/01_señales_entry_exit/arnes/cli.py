@@ -23,6 +23,7 @@ def medir_una_señal(nombre: str, df, forward_col: str, spy, bootstrap: int, see
 
 def main():
     ap = argparse.ArgumentParser(description="Arnés de medición estándar Botero Trade")
+    ap.add_argument("--list", action="store_true", help="Listar todas las señales registradas y salir")
     ap.add_argument("--señal", default=None, help="Nombre de la señal registrada (o None si se usa --todas)")
     ap.add_argument("--todas", "--all", action="store_true", help="Medir todas las señales registradas")
     ap.add_argument("--forward", default="next_leg", help="Columna de retorno forward")
@@ -32,8 +33,15 @@ def main():
     ap.add_argument("--cross-overlap", action="store_true", help="Incluir análisis de cross-signal overlap")
     args = ap.parse_args()
 
+    if args.list:
+        print(f"SEÑALES REGISTRADAS EN ARNES ({len(SEÑALES)} señales):")
+        for idx, (nom, fn) in enumerate(SEÑALES.items(), 1):
+            doc = fn.__doc__ or "Sin descripción"
+            print(f"  {idx:2d}. {nom:30s} — {doc.strip()[:80]}")
+        return
+
     if not args.señal and not args.todas:
-        ap.error("Debe especificar --señal <nombre> o --todas para medir el catálogo completo.")
+        ap.error("Debe especificar --señal <nombre>, --todas o --list.")
 
     df, spy = cargar_datos()
 

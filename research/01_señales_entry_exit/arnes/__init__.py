@@ -14,5 +14,7 @@ from .estructura import (_FS_DIR, _ESTACIONES, _CAT, _surprise_vector,
 from .medicion import medir, medir_cross_overlap
 from .cli import main
 
-__all__ = ["ROOT", "SCRATCH", "OBS_PKL", "cargar_datos", "SEÑALES", "_CERTEZA",
+SENALES = SEÑALES
+
+__all__ = ["ROOT", "SCRATCH", "OBS_PKL", "cargar_datos", "SEÑALES", "SENALES", "_CERTEZA",
            "_registrar", "medir", "medir_cross_overlap", "main"]

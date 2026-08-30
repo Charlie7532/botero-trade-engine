@@ -38,14 +38,35 @@ Percentiles:  [0.0228,  0.1587,  0.5000,  0.8413,  0.9772]
 Sigma:        [ -2σ,     -1σ,      μ,      +1σ,     +2σ   ]
 ```
 
-| Bin Index | Range | Percentile Band | Population % | Semantic Role | Ejemplos Canónicos (ver [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md)) |
-|:---:|---|:---:|:---:|---|---|
-| 0 | val < −2σ | P0 → P2.28 | **2.28%** | Extremo inferior | VIX→`EXTREME_COMPLACENCY`, FG→`EXTREME_FEAR`, Credit→`EXTREME_STRESS` |
-| 1 | −2σ ≤ val < −1σ | P2.28 → P15.87 | **13.59%** | Bajo | VIX→`COMPLACENCY`, FG→`FEAR`, Credit→`STRESS` |
-| 2 | −1σ ≤ val < μ | P15.87 → P50 | **34.13%** | Neutro (sesgo bajo) | VIX→`NEUTRAL_CALM`, FG→`NEUTRAL_FEAR`, Credit→`NEUTRAL_TIGHT` |
-| 3 | μ ≤ val < +1σ | P50 → P84.13 | **34.13%** | Neutro (sesgo alto) | VIX→`NEUTRAL_ALERT`, FG→`NEUTRAL_GREED`, Credit→`NEUTRAL_LOOSE` |
-| 4 | +1σ ≤ val < +2σ | P84.13 → P97.72 | **13.59%** | Elevado | VIX→`PANIC`, FG→`GREED`, Credit→`EASE` |
-| 5 | val ≥ +2σ | P97.72 → P100 | **2.28%** | Extremo superior | VIX→`EXTREME_PANIC`, FG→`EXTREME_GREED`, Credit→`EXTREME_EASE` |
+| Bin Index | Range | Percentile Band | Population % | Semantic Role |
+|:---:|---|:---:|:---:|---|
+| 0 | val < −2σ | P0 → P2.28 | **2.28%** | Extremo inferior |
+| 1 | −2σ ≤ val < −1σ | P2.28 → P15.87 | **13.59%** | Bajo |
+| 2 | −1σ ≤ val < μ | P15.87 → P50 | **34.13%** | Neutro (sesgo bajo) |
+| 3 | μ ≤ val < +1σ | P50 → P84.13 | **34.13%** | Neutro (sesgo alto) |
+| 4 | +1σ ≤ val < +2σ | P84.13 → P97.72 | **13.59%** | Elevado |
+| 5 | val ≥ +2σ | P97.72 → P100 | **2.28%** | Extremo superior |
+
+Los labels semánticos específicos de cada estación están en [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md). Para resolver un label dado un bin:
+
+```python
+import json
+from backend.modules.entry_decision.domain.rules.metar_classifier import resolve_label
+
+# Cargar labels del fact store de la estación
+labels = json.load(open("backend/modules/entry_decision/domain/rules/vix_fact_store.json"))["_documentation"]["taxonomy"]["d1"]["labels"]
+label = resolve_label(4, labels)  # → "PANIC" para VIX, "EASE" para Credit
+```
+
+Los overflows (> ±3σ) y blow-offs (> ±5σ) NO modifican el bin (se clipea a [0,5]). Operan en capa paralela sobre el z-score crudo. Ver [overflow_taxonomy.md](file:///root/botero-trade/.agents/references/metar/overflow_taxonomy.md) para la escala T1-T5. En código:
+
+```python
+from backend.modules.entry_decision.domain.rules.sigma_overflow import classify_overflow_tier
+
+# z_score crudo del indicador
+tier, hazard_name, hazard_type = classify_overflow_tier(z_score=4.2)
+# → (2, "OVERFLOW_EXTREMO", "CRITICAL")
+```
 
 ### D2: Velocidad Cinemática Δ3d (5 bines, 4 edges)
 
@@ -76,6 +97,15 @@ Sigma:        [ -2σ,     -1σ,     +1σ,     +2σ   ]
 | 2 | −1σ ≤ vr < +1σ | **68.27%** | `VOL_NEUTRAL_BASELINE` |
 | 3 | +1σ ≤ vr < +2σ | **13.59%** | `VOL_ACCELERATING_EXPANSION` |
 | 4 | vr ≥ +2σ | **2.28%** | `VOL_PEAK_DECELERATION` |
+
+### 3.4 Definición Universal de "Extremo" (±2σ en D1 / D2 / D3)
+
+> Cuando cualquier código, documento o señal se refiere a un estado como **"extremo"**, corresponde estrictamente a los bines de **±2σ** (2.28% de la población cada uno):
+> - **D1 Extremos (6 bins, 0..5):** Bin 0 (< −2σ) y Bin 5 (≥ +2σ) → 2.28% cada uno.
+> - **D2 Extremos (5 bins, 0..4):** Bin 0 (`FAST_CRUSH_3D`) y Bin 4 (`FAST_SPIKE_3D`) → 2.28% cada uno.
+> - **D3 Extremos (5 bins, 0..4):** Bin 0 (`VOL_EXTREME_SQUEEZE`) y Bin 4 (`VOL_PEAK_DECELERATION`) → 2.28% cada uno.
+
+Los percentiles Gaussianos son idénticos: `[0.0228, 0.1587, 0.5000, 0.8413, 0.9772]` para D1 (6 bins) y `[0.0228, 0.1587, 0.8413, 0.9772]` para D2/D3 (5 bins). D1 subdivide la zona media en dos bines (±1σ), mientras D2/D3 tienen un único bin central baseline.
 
 ---
 
@@ -162,11 +192,22 @@ Recalibration procedure:
 ### Rule S7: "Extreme" Means ±2σ (P2.28 / P97.72) — No Exceptions
 
 When any code, documentation, or signal refers to a dimensional state as "extreme", it MUST correspond to the ±2σ bins:
-- D1 extremes: Bin 0 (< −2σ) or Bin 5 (≥ +2σ) → **2.28% of population each**
-- D2 extremes: `FAST_CRUSH_3D` or `FAST_SPIKE_3D` → **2.28% each**
-- D3 extremes: `VOL_EXTREME_SQUEEZE` or `VOL_PEAK_DECELERATION` → **2.28% each**
+- **D1 extremes (6 bins):** Bin 0 (< −2σ) or Bin 5 (≥ +2σ) → **2.28% of population each**
+- **D2 extremes (5 bins):** Bin 0 (`FAST_CRUSH_3D`) or Bin 4 (`FAST_SPIKE_3D`) → **2.28% each**
+- **D3 extremes (5 bins):** Bin 0 (`VOL_EXTREME_SQUEEZE`) or Bin 4 (`VOL_PEAK_DECELERATION`) → **2.28% each**
+
+> **Regla:** Siempre comparar contra el bin numérico. El label semántico entre paréntesis es solo para referencia humana.
 
 An indicator is NOT in an extreme state if it is in Bin 1 or Bin 4 (those are "elevated" = ±1σ to ±2σ).
+
+For a generic function:
+```python
+def is_extreme(d1_bin: int, d2_bin: int, d3_bin: int) -> bool:
+    d1_extreme = d1_bin in {0, 5}        # D1: 6 bins
+    d2_extreme = d2_bin in {0, 4}        # D2: 5 bins (same ±2σ percentiles)
+    d3_extreme = d3_bin in {0, 4}        # D3: 5 bins (same ±2σ percentiles)
+    return d1_extreme or d2_extreme or d3_extreme
+```
 
 ---
 

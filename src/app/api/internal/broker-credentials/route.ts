@@ -29,10 +29,21 @@ import type { BrokerAccount } from '@/payload-types'
  * it does.
  *
  * Request body (JSON):
- *   { "portfolioId": string, "brokerType": "alpaca" | "interactive_brokers" }
- *   — OR, for the two accounts that exist today, before real per-portfolio
- *   accounts are set up —
- *   { "department": "quality" | "speculative", "brokerType": "alpaca" }
+ *   { "department": "quality" | "speculative", "brokerType": "alpaca" | "interactive_brokers" }
+ *   — for the two legacy global accounts (no real per-person portfolios
+ *   set up yet).
+ *   Once real per-person portfolios exist, add portfolioId:
+ *   { "portfolioId": string, "department": "quality" | "speculative", "brokerType": "..." }
+ *
+ *   department is ALWAYS required. A single portfolio can have MULTIPLE
+ *   BrokerAccounts — one person, one real Alpaca login, but a separate
+ *   BrokerAccount record per department (Portfolios.brokerAccounts is a
+ *   one-to-many join) so quality vs. speculative capital is tracked
+ *   separately. portfolioId alone would be ambiguous; portfolioId +
+ *   department together identify exactly one account. If more than one
+ *   active account still matches, this returns 500 (ambiguous_match)
+ *   rather than silently picking one — trading through the wrong account
+ *   because of a silent pick is worse than a loud failure.
  *
  * Response body (200):
  *   Alpaca:
@@ -80,6 +91,12 @@ function isAuthorized(request: NextRequest): boolean {
 
 interface BrokerCredentialsRequestBody {
   portfolioId?: string
+  // Required whenever portfolioId is given: a single portfolio can have
+  // MULTIPLE BrokerAccounts (Portfolios.brokerAccounts is a one-to-many
+  // join — one person, one Alpaca login, but a separate BrokerAccount
+  // record per department so quality/speculative capital is tracked
+  // separately). portfolioId alone is ambiguous; portfolioId + department
+  // together identify exactly one account.
   department?: 'quality' | 'speculative' | 'mixed'
   brokerType: 'alpaca' | 'interactive_brokers'
 }
@@ -161,9 +178,14 @@ export async function POST(request: NextRequest) {
   }
 
   const { portfolioId, department, brokerType } = body
-  if (!brokerType || (!portfolioId && !department)) {
+
+  // department is ALWAYS required — it's what disambiguates which of a
+  // portfolio's BrokerAccounts to use (a portfolio can have both a quality
+  // and a speculative one). portfolioId is optional only for the legacy
+  // two-global-account lookup that predates per-person portfolios.
+  if (!brokerType || !department) {
     return NextResponse.json(
-      { error: 'portfolioId_or_department_and_brokerType_required' },
+      { error: 'department_and_brokerType_required (portfolioId additionally required once real per-person portfolios exist)' },
       { status: 400 },
     )
   }
@@ -173,19 +195,29 @@ export async function POST(request: NextRequest) {
   const where: Where = {
     brokerType: { equals: brokerType },
     isActive: { equals: true },
+    department: { equals: department },
   }
   if (portfolioId) {
     where.portfolio = { equals: portfolioId }
-  } else {
-    where.department = { equals: department }
   }
 
   const result = await payload.find({
     collection: 'broker-accounts',
     where,
-    limit: 1,
+    limit: 2, // fetch 2, not 1 — lets us detect and reject an ambiguous match instead of silently picking one
     depth: 0,
   })
+
+  if (result.docs.length > 1) {
+    // Should be impossible given department disambiguates, but if it ever
+    // happens (e.g. two active accounts mistakenly share portfolio+department),
+    // silently picking one could mean trading through the wrong account.
+    // Surface it loudly instead.
+    return NextResponse.json(
+      { error: 'ambiguous_match', detail: `${result.docs.length} active BrokerAccounts matched — expected exactly 1.` },
+      { status: 500 },
+    )
+  }
 
   const account = result.docs[0] as BrokerAccount | undefined
   if (!account) {

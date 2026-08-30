@@ -64,16 +64,23 @@ def _get_credential_resolver():
     return _credential_resolver
 
 
-def build_alpaca_broker_for_portfolio(portfolio_id: str):
-    """Build an Alpaca BrokerPort for a SPECIFIC portfolio, resolving its
-    credentials dynamically from BrokerAccounts instead of an env var.
+def build_alpaca_broker_for_portfolio(portfolio_id: str, department: str):
+    """Build an Alpaca BrokerPort for a SPECIFIC portfolio + department,
+    resolving credentials dynamically from BrokerAccounts instead of an env var.
+
+    department is required, not optional: Portfolios.brokerAccounts is a
+    one-to-many join, so one portfolio (one person's one real Alpaca login)
+    can have BOTH a quality and a speculative BrokerAccount record —
+    portfolio_id alone doesn't say which one to use. See route.ts's
+    docstring for the full reasoning.
 
     This is the real fix for the "only two hardcoded accounts" gap: any
-    portfolio that has an active Alpaca BrokerAccount record becomes
-    tradeable through this, with no code change or redeploy.
+    portfolio that has an active Alpaca BrokerAccount record for that
+    department becomes tradeable through this, with no code change or
+    redeploy.
     """
     from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
-    creds = _get_credential_resolver().get_alpaca_credentials(portfolio_id=portfolio_id)
+    creds = _get_credential_resolver().get_alpaca_credentials(department=department, portfolio_id=portfolio_id)
     return AlpacaAdapter(
         api_key=creds.api_key,
         secret_key=creds.secret_key,
@@ -82,8 +89,9 @@ def build_alpaca_broker_for_portfolio(portfolio_id: str):
 
 
 def build_alpaca_broker_for_department(department: str):
-    """Same as build_alpaca_broker_for_portfolio, but resolves by department
-    ('quality' / 'speculative') instead of a portfolio id.
+    """Same as build_alpaca_broker_for_portfolio, but for the two legacy
+    global accounts (no portfolio_id yet — there's exactly one QUALITY
+    account and one SPECULATIVE account company-wide today).
 
     Transitional helper: lets the two departments that exist TODAY switch to
     reading from BrokerAccounts (the database) instead of the two static env
@@ -148,17 +156,21 @@ def build_ib_broker(account_key: str = "DEFAULT"):
     )
 
 
-def build_ib_broker_for_portfolio(portfolio_id: str):
-    """Build an Interactive Brokers BrokerPort for a SPECIFIC portfolio,
-    resolving its OAuth credentials dynamically from BrokerAccounts —
-    same pattern as build_alpaca_broker_for_portfolio() above.
+def build_ib_broker_for_portfolio(portfolio_id: str, department: str):
+    """Build an Interactive Brokers BrokerPort for a SPECIFIC portfolio +
+    department, resolving its OAuth credentials dynamically from
+    BrokerAccounts — same pattern as build_alpaca_broker_for_portfolio()
+    above, including the same reason department is required (a portfolio
+    can have more than one BrokerAccount). If a person only registers one
+    IB account for their whole portfolio, tag it department='mixed' and
+    pass department='mixed' here.
 
     NOT yet exercised against a real IB account (see ib_adapter.py's module
     docstring) — reviewed and internally consistent, but treat as unproven
     until run against a real deployment.
     """
     from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
-    creds = _get_credential_resolver().get_ib_credentials(portfolio_id=portfolio_id)
+    creds = _get_credential_resolver().get_ib_credentials(portfolio_id=portfolio_id, department=department)
     return IBAdapter(
         account_id=creds.account_id,
         consumer_key=creds.consumer_key,

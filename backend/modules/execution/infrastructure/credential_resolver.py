@@ -121,14 +121,20 @@ class CredentialResolver:
                 "ENGINE_SERVICE_TOKEN is not set — cannot authenticate to the "
                 "internal broker-credentials endpoint."
             )
+        if not department:
+            # department disambiguates which of a portfolio's BrokerAccounts
+            # to use — Portfolios.brokerAccounts is one-to-many, so this
+            # applies to IB too, not just Alpaca (the department field on
+            # BrokerAccounts isn't broker-specific in the schema).
+            raise CredentialResolutionError(f"Must provide department for {broker_type} credential lookups.")
         if not portfolio_id and not department:
             raise CredentialResolutionError("Must provide portfolio_id or department.")
 
         body = {"brokerType": broker_type}
+        if department:
+            body["department"] = department
         if portfolio_id:
             body["portfolioId"] = portfolio_id
-        else:
-            body["department"] = department
 
         last_error: Optional[str] = None
         for attempt in range(1, self.max_retries + 1):
@@ -204,13 +210,19 @@ class CredentialResolver:
 
     def get_alpaca_credentials(
         self,
+        department: str,
         portfolio_id: Optional[str] = None,
-        department: Optional[str] = None,
     ) -> AlpacaCredentials:
-        """Get Alpaca credentials for a portfolio (preferred) or a department
-        (transitional — matches today's two fixed accounts by department
-        instead of by portfolio, until real per-portfolio BrokerAccounts
-        exist for everyone)."""
+        """Get Alpaca credentials for a department ('quality' / 'speculative').
+
+        department is ALWAYS required: a single portfolio can have MULTIPLE
+        BrokerAccounts (one person, one real Alpaca login, but a separate
+        BrokerAccount record per department, since Portfolios.brokerAccounts
+        is one-to-many) — portfolio_id alone would be ambiguous about which
+        of that portfolio's accounts to use. Pass portfolio_id too once real
+        per-person portfolios exist; omit it for the two legacy global
+        accounts.
+        """
         key = self._cache_key("alpaca", portfolio_id, department)
         cached = self._cache.get(key)
         if cached and (time.time() - cached[0]) < self.cache_ttl_seconds:
@@ -233,20 +245,22 @@ class CredentialResolver:
             self._cache.pop(key, None)
             raise CredentialResolutionError(f"Malformed response from broker-credentials endpoint: missing {e}") from e
 
-    def get_ib_credentials(self, portfolio_id: str) -> IBCredentials:
-        """Get Interactive Brokers OAuth credentials for a portfolio.
+    def get_ib_credentials(self, portfolio_id: str, department: str) -> IBCredentials:
+        """Get Interactive Brokers OAuth credentials for a portfolio + department.
 
-        Unlike Alpaca, there is no department-based transitional path here —
-        IB isn't in use by any account yet, so every caller must already
-        know which portfolio it wants (no legacy two-department fallback to
-        preserve).
+        department is required for the same reason as Alpaca: one portfolio
+        (one person) can have more than one BrokerAccount, and the
+        department field is what tells them apart — it isn't Alpaca-specific
+        in the schema. If in practice a person only ever registers one IB
+        account for their whole portfolio, tag that BrokerAccount
+        department='mixed' and pass department='mixed' here.
         """
-        key = self._cache_key("interactive_brokers", portfolio_id, None)
+        key = self._cache_key("interactive_brokers", portfolio_id, department)
         cached = self._cache.get(key)
         if cached and (time.time() - cached[0]) < self.cache_ttl_seconds:
             data = cached[1]
         else:
-            data = self._fetch("interactive_brokers", portfolio_id, None)
+            data = self._fetch("interactive_brokers", portfolio_id, department)
             self._cache[key] = (time.time(), data)
 
         try:

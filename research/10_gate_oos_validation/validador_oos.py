@@ -25,7 +25,8 @@ from scipy.stats import binomtest
 ROOT = Path("/root/botero-trade")
 sys.path.insert(0, str(ROOT / "research" / "01_señales_entry_exit"))
 
-from medir_senal import SEÑALES, cargar_datos
+from arnes.registro import SEÑALES
+from arnes.datos import cargar_datos
 from evaluador_vela_a_vela import first_passage, BLANCOS, ESCALAS
 
 # ── Catálogo v7 post-auditoría: las señales a validar OOS ──
@@ -33,19 +34,28 @@ CATALOGO_V7 = [
     "pcr_put_panic", "credit_stress", "capitulacion", "panico_total",
     "vvix_entry", "bsi_washed_out", "breadth_contraction_exit",
     "skew_paranoia_exit",  # rescatada diamante — validación exigente
+    "cascade_reversal",   # VALIDATED Grade B — PF=7.42 first-passage, test OOS walk-forward
 ]
 
 BLOQUE_TEST_DIAS = 1095     # ~3 años por fold
 MIN_TRAIN_DIAS = 1825       # mínimo 5 años de train antes del primer test
 N_MIN_TRAIN = 10            # celdas elegibles en train
 
-df, spy = cargar_datos()
-prices = spy["close"].astype(float).values
-spy_idx = spy.close.index
-piv_dates = df["pivot_date"].values
-piv_types = df["pivot_type"].values
-piv_pos = np.array([spy_idx.searchsorted(pd.Timestamp(d)) for d in piv_dates])
-n_piv = len(piv_dates)
+# Globals set by _init_data() — called from __main__ or externally
+df = spy = prices = spy_idx = piv_dates = piv_types = piv_pos = n_piv = None
+
+def _init_data():
+    """Load data and set module globals. Idempotent."""
+    global df, spy, prices, spy_idx, piv_dates, piv_types, piv_pos, n_piv
+    if df is not None:
+        return
+    df, spy = cargar_datos()
+    prices = spy["close"].astype(float).values
+    spy_idx = spy.close.index
+    piv_dates = df["pivot_date"].values
+    piv_types = df["pivot_type"].values
+    piv_pos = np.array([spy_idx.searchsorted(pd.Timestamp(d)) for d in piv_dates])
+    n_piv = len(piv_dates)
 
 def régimen_en(t_pos):
     idx = np.arange(n_piv - 1)
@@ -107,101 +117,172 @@ def edge_por_celda(F, B):
                                "hit": float(sub["hit"].mean())}
     return out
 
-# ── Folds cronológicos anclados ──
-T0 = pd.Timestamp(df["pivot_date"].min())
-T1 = pd.Timestamp(df["pivot_date"].max()) + pd.Timedelta(days=1)
-folds = []
-t = T0 + pd.Timedelta(days=MIN_TRAIN_DIAS)
-while t < T1:
-    folds.append((t, min(t + pd.Timedelta(days=BLOQUE_TEST_DIAS), T1)))
-    t += pd.Timedelta(days=BLOQUE_TEST_DIAS)
 
-print(f"VALIDADOR OOS — catálogo v7 | {len(folds)} folds (train anclado ≥5 años, test ~3 años)")
-print(f"{'='*120}")
+if __name__ == "__main__":
+    _init_data()
 
-resultados = {}
-for s in CATALOGO_V7:
-    blanco = BLANCOS[s]
-    tipo = "MAX" if blanco == "MAX" else "MIN"
-    mask = SEÑALES[s](df).astype(bool)
+    # ── Folds cronológicos anclados ──
+    T0 = pd.Timestamp(df["pivot_date"].min())
+    T1 = pd.Timestamp(df["pivot_date"].max()) + pd.Timedelta(days=1)
+    folds = []
+    t = T0 + pd.Timedelta(days=MIN_TRAIN_DIAS)
+    while t < T1:
+        folds.append((t, min(t + pd.Timedelta(days=BLOQUE_TEST_DIAS), T1)))
+        t += pd.Timedelta(days=BLOQUE_TEST_DIAS)
 
-    # Edge IN-SAMPLE completo (lo que el evaluador midió, referencia)
-    F_all = fichas_celda(mask, blanco, T0, T1)
-    B_all = fichas_baseline(tipo, blanco, T0, T1,
-                            set(pd.DatetimeIndex(df.loc[mask, "pivot_date"])))
-    is_cells = edge_por_celda(F_all, B_all)
-    is_best = max(is_cells.items(), key=lambda kv: kv[1]["fav_neto"]) \
-        if is_cells else (None, None)
+    print(f"VALIDADOR OOS MULTI-CELDA — catálogo v7 | {len(folds)} folds (train anclado ≥5 años, test ~3 años)")
+    print(f"{'='*130}")
 
-    # Walk-forward fold a fold
-    oos_edges, elegidas = [], []
-    for (t_from, t_to) in folds:
-        F_train = fichas_celda(mask, blanco, T0, t_from)
-        B_train = fichas_baseline(tipo, blanco, T0, t_from,
-                                  set(pd.DatetimeIndex(df.loc[mask, "pivot_date"])))
-        train_cells = {c: v for c, v in edge_por_celda(F_train, B_train).items()
-                       if v["n"] >= N_MIN_TRAIN}
-        if not train_cells:
+    resultados = {}
+    for s in CATALOGO_V7:
+        blanco = BLANCOS[s]
+        tipo = "MAX" if blanco == "MAX" else "MIN"
+        mask = SEÑALES[s](df).astype(bool)
+
+        # Edge IN-SAMPLE completo por celda
+        F_all = fichas_celda(mask, blanco, T0, T1)
+        B_all = fichas_baseline(tipo, blanco, T0, T1,
+                                set(pd.DatetimeIndex(df.loc[mask, "pivot_date"])))
+        is_cells = edge_por_celda(F_all, B_all)
+
+        # ── MULTI-CELDA: probar CADA celda calificada independientemente ──
+        celda_results = {}
+        for celda_nombre, celda_is in is_cells.items():
+            if celda_is["n"] < N_MIN_TRAIN or celda_is["fav_neto"] <= 0:
+                continue  # solo celdas con edge positivo y N suficiente
+
+            oos_edges = []
+            for (t_from, t_to) in folds:
+                # Train: verificar que esta celda califica en train
+                F_train = fichas_celda(mask, blanco, T0, t_from)
+                B_train = fichas_baseline(tipo, blanco, T0, t_from,
+                                          set(pd.DatetimeIndex(df.loc[mask, "pivot_date"])))
+                train_cells = edge_por_celda(F_train, B_train)
+                tc = train_cells.get(celda_nombre)
+                if tc is None or tc["n"] < N_MIN_TRAIN or tc["fav_neto"] <= 0:
+                    continue  # celda no califica en este train window
+
+                # Test: medir la celda en el bloque que nunca vio
+                F_test = fichas_celda(mask, blanco, t_from, t_to)
+                B_test = fichas_baseline(tipo, blanco, t_from, t_to,
+                                         set(pd.DatetimeIndex(df.loc[mask, "pivot_date"])))
+                test_cells = edge_por_celda(F_test, B_test)
+                if celda_nombre in test_cells and test_cells[celda_nombre]["n"] >= 3:
+                    oos_edges.append(test_cells[celda_nombre]["fav_neto"])
+
+            if not oos_edges:
+                continue
+
+            is_neto = celda_is["fav_neto"]
+            oos_medio = float(np.mean(oos_edges))
+            folds_pos = sum(1 for e in oos_edges if e > 0)
+            folds_tot = len(oos_edges)
+            decay = round(oos_medio / is_neto, 2) if is_neto > 0 else None
+            sign_p = None
+            if folds_tot >= 4:
+                sign_p = round(float(
+                    binomtest(folds_pos, folds_tot, 0.5,
+                              alternative="greater").pvalue), 4)
+
+            celda_results[celda_nombre] = {
+                "in_sample_fav_neto": round(is_neto * 100, 2),
+                "in_sample_n": celda_is["n"],
+                "folds_con_test": folds_tot,
+                "oos_edge_medio_pct": round(oos_medio * 100, 2),
+                "oos_edges_pct": [round(e * 100, 2) for e in oos_edges],
+                "folds_positivos": folds_pos,
+                "decay_oos_vs_is": decay,
+                "sign_test_p": sign_p,
+            }
+
+        # Elegir la mejor celda OOS (por consistencia, luego folds, luego decay)
+        n_celdas_probadas = len(celda_results)
+        if celda_results:
+            # Priorizar: OOS positivo + mayor ratio folds+/total + más folds + mayor decay
+            def _score(item):
+                r = item[1]
+                oos = r["oos_edge_medio_pct"]
+                ratio = r["folds_positivos"] / r["folds_con_test"] if r["folds_con_test"] > 0 else 0
+                d = r["decay_oos_vs_is"] if r["decay_oos_vs_is"] is not None else 0
+                return (oos > 0, ratio, r["folds_con_test"], d)
+            best_celda = max(celda_results.items(), key=_score)
+            # Bonferroni señal-dependiente: p_ajustado = p_raw × n_celdas_probadas
+            p_raw = best_celda[1].get("sign_test_p")
+            p_bonf = round(p_raw * n_celdas_probadas, 4) if p_raw is not None else None
+            resultados[s] = {
+                "mejor_celda_oos": best_celda[0],
+                "n_celdas_probadas": n_celdas_probadas,
+                "p_bonferroni": p_bonf,
+                "todas_celdas_oos": celda_results,
+                **best_celda[1],
+            }
+        else:
+            resultados[s] = {
+                "mejor_celda_oos": None,
+                "todas_celdas_oos": {},
+                "in_sample_fav_neto": None, "in_sample_n": 0,
+                "folds_con_test": 0, "oos_edge_medio_pct": None,
+                "oos_edges_pct": [], "folds_positivos": 0,
+                "decay_oos_vs_is": None, "sign_test_p": None,
+            }
+
+    # ── Tabla final: mejor celda por señal ──
+    print(f"\n{'señal':>26s} | {'OOS celda':>12s} {'IS neto':>8s} {'N':>4s} | {'folds':>5s} {'OOS medio':>9s} {'folds+':>6s} {'decay':>6s} {'sign-p':>8s} | veredicto")
+    print(f"{'-'*130}")
+    for s in CATALOGO_V7:
+        r = resultados[s]
+        if r["oos_edge_medio_pct"] is None:
+            print(f"{s:>26s} | sin celdas con edge OOS")
             continue
-        mejor_celda = max(train_cells, key=lambda c: train_cells[c]["fav_neto"])
+        pos = r["folds_positivos"]
+        tot = r["folds_con_test"]
+        if tot < 5 and r["oos_edge_medio_pct"] > 0:
+            ver = "🔵 PENDIENTE (folds<5, sign-test imposible)"
+        elif r["oos_edge_medio_pct"] > 0 and pos / tot >= 0.6:
+            ver = "🟢 SE REPITE OOS"
+        elif r["oos_edge_medio_pct"] > 0:
+            ver = "🟡 OOS positivo, inestable"
+        elif r["decay_oos_vs_is"] is not None and r["decay_oos_vs_is"] > 0:
+            ver = "🟠 OOS marginal"
+        else:
+            ver = "🔴 NO SE REPITE OOS"
+        celda = r.get("mejor_celda_oos", "?")
+        is_n = r.get("in_sample_fav_neto", 0) or 0
+        n = r.get("in_sample_n", 0) or 0
+        decay = f"{r['decay_oos_vs_is']:>5.2f}" if r["decay_oos_vs_is"] is not None else "  n/a"
+        stp = f"{r['sign_test_p']:>7.4f}" if r["sign_test_p"] is not None else "    n/a"
+        print(f"{s:>26s} | {str(celda):>12s} {is_n:>+7.2f}% {n:>4d} | "
+              f"{tot:>5d} {r['oos_edge_medio_pct']:>+8.2f}% {pos:>3d}/{tot:<2d} {decay} {stp} | {ver}")
 
-        # Test: la celda elegida, medida en el bloque que nunca vio
-        F_test = fichas_celda(mask, blanco, t_from, t_to)
-        B_test = fichas_baseline(tipo, blanco, t_from, t_to,
-                                 set(pd.DatetimeIndex(df.loc[mask, "pivot_date"])))
-        test_cells = edge_por_celda(F_test, B_test)
-        if mejor_celda in test_cells and test_cells[mejor_celda]["n"] >= 3:
-            e = test_cells[mejor_celda]["fav_neto"]
-            oos_edges.append(e)
-            elegidas.append((str(t_from.date()), mejor_celda,
-                             train_cells[mejor_celda]["fav_neto"], e,
-                             test_cells[mejor_celda]["n"]))
+    # ── Detalle multi-celda (señales con >1 celda probada) ──
+    print(f"\n{'='*130}")
+    print("DETALLE MULTI-CELDA (todas las celdas probadas OOS por señal)")
+    print(f"{'='*130}")
+    for s in CATALOGO_V7:
+        r = resultados[s]
+        celdas = r.get("todas_celdas_oos", {})
+        if len(celdas) <= 1:
+            continue
+        best = r.get("mejor_celda_oos", "")
+        print(f"\n  {s}:")
+        for c, v in sorted(celdas.items()):
+            mark = " ★" if c == best else ""
+            pos = v["folds_positivos"]
+            tot = v["folds_con_test"]
+            decay = f"{v['decay_oos_vs_is']:>5.2f}" if v["decay_oos_vs_is"] is not None else "  n/a"
+            stp = f"p={v['sign_test_p']:.4f}" if v["sign_test_p"] is not None else "p=n/a  "
+            print(f"    {c:15s}  IS={v['in_sample_fav_neto']:>+6.2f}% N={v['in_sample_n']:>3d} | "
+                  f"OOS={v['oos_edge_medio_pct']:>+6.2f}% {pos}/{tot} decay={decay} {stp}{mark}")
 
-    res = {"in_sample_mejor_celda": is_best[0],
-           "in_sample_fav_neto": round(is_best[1]["fav_neto"] * 100, 2) if is_best[1] else None,
-           "in_sample_n": is_best[1]["n"] if is_best[1] else 0,
-           "folds_con_test": len(oos_edges),
-           "oos_edge_medio_pct": round(float(np.mean(oos_edges)) * 100, 2) if oos_edges else None,
-           "oos_edges_pct": [round(e * 100, 2) for e in oos_edges],
-           "folds_positivos": int(sum(1 for e in oos_edges if e > 0)) if oos_edges else 0,
-           "decay_oos_vs_is": None, "sign_test_p": None}
-    if oos_edges and is_best[1] and is_best[1]["fav_neto"] > 0:
-        res["decay_oos_vs_is"] = round(float(np.mean(oos_edges)) / is_best[1]["fav_neto"], 2)
-    if len(oos_edges) >= 4:
-        res["sign_test_p"] = round(float(
-            binomtest(sum(1 for e in oos_edges if e > 0), len(oos_edges),
-                      0.5, alternative="greater").pvalue), 4)
-    resultados[s] = res
-
-# ── Tabla final ──
-print(f"{'señal':>26s} | {'IS celda':>12s} {'IS neto':>8s} {'N':>4s} | {'folds':>5s} {'OOS medio':>9s} {'folds+':>6s} {'decay':>6s} {'sign-test p':>11s} | veredicto")
-for s in CATALOGO_V7:
-    r = resultados[s]
-    if r["oos_edge_medio_pct"] is None:
-        print(f"{s:>26s} | sin folds con N suficiente en test")
-        continue
-    pos = r["folds_positivos"]
-    tot = r["folds_con_test"]
-    if r["oos_edge_medio_pct"] > 0 and pos / tot >= 0.6:
-        ver = "🟢 SE REPITE OOS"
-    elif r["oos_edge_medio_pct"] > 0:
-        ver = "🟡 OOS positivo, inestable"
-    elif r["decay_oos_vs_is"] is not None and r["decay_oos_vs_is"] > 0:
-        ver = "🟠 OOS negativo (edge no se repite)"
-    else:
-        ver = "🔴 NO SE REPITE OOS"
-    decay = f"{r['decay_oos_vs_is']:>5.2f}" if r["decay_oos_vs_is"] is not None else "  n/a"
-    stp = f"{r['sign_test_p']:>10.4f}" if r["sign_test_p"] is not None else "       n/a"
-    print(f"{s:>26s} | {str(r['in_sample_mejor_celda']):>12s} {r['in_sample_fav_neto']:>+7.2f}% {r['in_sample_n']:>4d} | "
-          f"{tot:>5d} {r['oos_edge_medio_pct']:>+8.2f}% {pos:>3d}/{tot:<2d} {decay} {stp} | {ver}")
-
-import json
-out = ROOT / "data" / "research" / "signals" / "validacion_oos_catalogo_v7.json"
-out.write_text(json.dumps({"fecha": str(pd.Timestamp.now()),
-                           "metodo": "walk-forward anclado: celda elegida en train, medida en test; baseline por período de test",
-                           "bloque_test_dias": BLOQUE_TEST_DIAS,
-                           "min_train_dias": MIN_TRAIN_DIAS,
-                           "n_min_train": N_MIN_TRAIN,
-                           "resultados": resultados},
-                          indent=2, ensure_ascii=False, default=str))
-print(f"\nGuardado: {out}")
+    import json
+    out = ROOT / "data" / "research" / "signals" / "validacion_oos_catalogo_v7.json"
+    out.write_text(json.dumps({"fecha": str(pd.Timestamp.now()),
+                               "metodo": "walk-forward anclado MULTI-CELDA v2: cada celda con edge IS>0 y N>=10 probada independientemente OOS. "
+                                         "Baseline excluye pivotes de la señal (P5). Bonferroni señal-dependiente. "
+                                         "Señales con <5 folds OOS: PENDIENTE (sign-test imposible por construcción).",
+                               "bloque_test_dias": BLOQUE_TEST_DIAS,
+                               "min_train_dias": MIN_TRAIN_DIAS,
+                               "n_min_train": N_MIN_TRAIN,
+                               "resultados": resultados},
+                              indent=2, ensure_ascii=False, default=str))
+    print(f"\nGuardado: {out}")

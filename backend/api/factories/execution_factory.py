@@ -39,17 +39,135 @@ def build_speculative_broker():
 
 
 def build_broker_registry() -> dict:
-    """Build a BrokerRegistry mapping department → BrokerPort."""
+    """Build a BrokerRegistry mapping department → BrokerPort.
+
+    Static/legacy path — reads two hardcoded global env vars, so it only
+    ever knows about exactly these two accounts. Kept as-is (nothing here
+    changes) so nothing currently running breaks. See
+    build_broker_registry_dynamic() below for the per-account replacement.
+    """
     return {
         "QUALITY": build_quality_broker(),
         "SPECULATIVE": build_speculative_broker(),
     }
 
 
-def build_ib_broker():
-    """Build the Interactive Brokers BrokerPort implementation."""
+_credential_resolver = None
+
+
+def _get_credential_resolver():
+    """Lazily build a shared CredentialResolver (keeps its cache across calls)."""
+    global _credential_resolver
+    if _credential_resolver is None:
+        from backend.modules.execution.infrastructure.credential_resolver import CredentialResolver
+        _credential_resolver = CredentialResolver()
+    return _credential_resolver
+
+
+def build_alpaca_broker_for_portfolio(portfolio_id: str):
+    """Build an Alpaca BrokerPort for a SPECIFIC portfolio, resolving its
+    credentials dynamically from BrokerAccounts instead of an env var.
+
+    This is the real fix for the "only two hardcoded accounts" gap: any
+    portfolio that has an active Alpaca BrokerAccount record becomes
+    tradeable through this, with no code change or redeploy.
+    """
+    from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
+    creds = _get_credential_resolver().get_alpaca_credentials(portfolio_id=portfolio_id)
+    return AlpacaAdapter(
+        api_key=creds.api_key,
+        secret_key=creds.secret_key,
+        base_url=creds.base_url,
+    )
+
+
+def build_alpaca_broker_for_department(department: str):
+    """Same as build_alpaca_broker_for_portfolio, but resolves by department
+    ('quality' / 'speculative') instead of a portfolio id.
+
+    Transitional helper: lets the two departments that exist TODAY switch to
+    reading from BrokerAccounts (the database) instead of the two static env
+    vars, without needing real per-portfolio ids yet. Once real per-person
+    portfolios exist, build_alpaca_broker_for_portfolio() is the one to use.
+    """
+    from backend.modules.execution.infrastructure.brokers.alpaca_adapter import AlpacaAdapter
+    creds = _get_credential_resolver().get_alpaca_credentials(department=department)
+    return AlpacaAdapter(
+        api_key=creds.api_key,
+        secret_key=creds.secret_key,
+        base_url=creds.base_url,
+    )
+
+
+def build_broker_registry_dynamic() -> dict:
+    """Dynamic replacement for build_broker_registry(): resolves both
+    departments' Alpaca credentials from BrokerAccounts (via the internal
+    API) instead of from ALPACA_QUALITY_* / ALPACA_* env vars.
+
+    NOT wired into build_orchestrator() yet — that's a deliberate, separate
+    switch-over step (change build_orchestrator() to call this instead of
+    build_broker_registry() once ENGINE_SERVICE_TOKEN is deployed and this
+    has been exercised against the real Payload instance). Both registries
+    return the same shape, so the swap is a one-line change when ready.
+    """
+    return {
+        "QUALITY": build_alpaca_broker_for_department("quality"),
+        "SPECULATIVE": build_alpaca_broker_for_department("speculative"),
+    }
+
+
+def build_ib_broker(account_key: str = "DEFAULT"):
+    """Build an Interactive Brokers BrokerPort for ONE IBKR account, reading
+    its OAuth credentials from local env vars (see
+    backend/modules/execution/infrastructure/brokers/IB_OAUTH_SETUP.md).
+
+    Static/local-testing path — kept for the paper-account smoke test
+    described in IB_OAUTH_SETUP.md, and as a fallback that doesn't depend on
+    the Next.js internal API being up. For anything backed by a real
+    BrokerAccounts record, prefer build_ib_broker_for_portfolio() below,
+    which resolves credentials dynamically the same way Alpaca now does.
+
+    `account_key` namespaces the env vars so multiple accounts can coexist,
+    e.g. account_key="JC" reads IB_JC_CONSUMER_KEY, IB_JC_ACCESS_TOKEN, etc.
+    """
     from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
-    return IBAdapter()
+
+    prefix = "IB" if account_key == "DEFAULT" else f"IB_{account_key}"
+
+    def _env(suffix: str, default: str = "") -> str:
+        return os.getenv(f"{prefix}_{suffix}", default)
+
+    return IBAdapter(
+        account_id=_env("ACCOUNT_ID"),
+        consumer_key=_env("CONSUMER_KEY"),
+        access_token=_env("ACCESS_TOKEN"),
+        access_token_secret=_env("ACCESS_TOKEN_SECRET"),
+        dh_prime_hex=_env("DH_PRIME"),
+        signature_key_path=_env("SIGNATURE_KEY_PATH") or None,
+        encryption_key_path=_env("ENCRYPTION_KEY_PATH") or None,
+    )
+
+
+def build_ib_broker_for_portfolio(portfolio_id: str):
+    """Build an Interactive Brokers BrokerPort for a SPECIFIC portfolio,
+    resolving its OAuth credentials dynamically from BrokerAccounts —
+    same pattern as build_alpaca_broker_for_portfolio() above.
+
+    NOT yet exercised against a real IB account (see ib_adapter.py's module
+    docstring) — reviewed and internally consistent, but treat as unproven
+    until run against a real deployment.
+    """
+    from backend.modules.execution.infrastructure.brokers.ib_adapter import IBAdapter
+    creds = _get_credential_resolver().get_ib_credentials(portfolio_id=portfolio_id)
+    return IBAdapter(
+        account_id=creds.account_id,
+        consumer_key=creds.consumer_key,
+        access_token=creds.access_token,
+        access_token_secret=creds.access_token_secret,
+        dh_prime_hex=creds.dh_prime_hex,
+        signature_key_pem=creds.signature_key_pem,
+        encryption_key_pem=creds.encryption_key_pem,
+    )
 
 
 # ── Journals (department-scoped) ─────────────────────────────

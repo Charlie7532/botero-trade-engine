@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Modal, Button } from '@heroui/react'
 import { Plus, Plug, AlertCircle, CheckCircle2 } from 'lucide-react'
 
+import { Textarea } from '@/components/ui/textarea'
+
 import {
   createBrokerAccount,
   type CreateBrokerAccountInput,
@@ -29,9 +31,12 @@ type FormState = {
   secretKeyPlaintext: string
   alpacaBaseUrl: string
   ibAccountId: string
-  ibHost: string
-  ibPort: string
-  ibClientId: string
+  ibConsumerKeyPlaintext: string
+  ibAccessTokenPlaintext: string
+  ibAccessTokenSecretPlaintext: string
+  ibDhPrime: string
+  ibSignatureKeyPemPlaintext: string
+  ibEncryptionKeyPemPlaintext: string
 }
 
 const INITIAL_STATE: FormState = {
@@ -43,9 +48,12 @@ const INITIAL_STATE: FormState = {
   secretKeyPlaintext: '',
   alpacaBaseUrl: '',
   ibAccountId: '',
-  ibHost: '',
-  ibPort: '',
-  ibClientId: '',
+  ibConsumerKeyPlaintext: '',
+  ibAccessTokenPlaintext: '',
+  ibAccessTokenSecretPlaintext: '',
+  ibDhPrime: '',
+  ibSignatureKeyPemPlaintext: '',
+  ibEncryptionKeyPemPlaintext: '',
 }
 
 const BROKERS: { value: BrokerType; label: string; description: string }[] = [
@@ -57,7 +65,7 @@ const BROKERS: { value: BrokerType; label: string; description: string }[] = [
   {
     value: 'interactive_brokers',
     label: 'Interactive Brokers',
-    description: 'TWS / IB Gateway. Global multi-asset coverage.',
+    description: 'OAuth (Web API). Global multi-asset coverage, no local Gateway needed.',
   },
 ]
 
@@ -102,7 +110,15 @@ const NewBrokerAccountDialog: React.FC<Props> = ({
     if (form.brokerType === 'alpaca') {
       return form.apiKeyPlaintext.trim().length > 0 && form.secretKeyPlaintext.trim().length > 0
     }
-    return form.ibAccountId.trim().length > 0
+    return (
+      form.ibAccountId.trim().length > 0 &&
+      form.ibConsumerKeyPlaintext.trim().length > 0 &&
+      form.ibAccessTokenPlaintext.trim().length > 0 &&
+      form.ibAccessTokenSecretPlaintext.trim().length > 0 &&
+      form.ibDhPrime.trim().length > 0 &&
+      form.ibSignatureKeyPemPlaintext.trim().length > 0 &&
+      form.ibEncryptionKeyPemPlaintext.trim().length > 0
+    )
   })()
 
   const handleSubmit = () => {
@@ -120,9 +136,12 @@ const NewBrokerAccountDialog: React.FC<Props> = ({
       if (form.alpacaBaseUrl.trim()) payload.alpacaBaseUrl = form.alpacaBaseUrl
     } else {
       payload.ibAccountId = form.ibAccountId
-      if (form.ibHost.trim()) payload.ibHost = form.ibHost
-      if (form.ibPort.trim()) payload.ibPort = Number(form.ibPort)
-      if (form.ibClientId.trim()) payload.ibClientId = Number(form.ibClientId)
+      payload.ibConsumerKeyPlaintext = form.ibConsumerKeyPlaintext
+      payload.ibAccessTokenPlaintext = form.ibAccessTokenPlaintext
+      payload.ibAccessTokenSecretPlaintext = form.ibAccessTokenSecretPlaintext
+      payload.ibDhPrime = form.ibDhPrime
+      payload.ibSignatureKeyPemPlaintext = form.ibSignatureKeyPemPlaintext
+      payload.ibEncryptionKeyPemPlaintext = form.ibEncryptionKeyPemPlaintext
     }
 
     startTransition(async () => {
@@ -335,51 +354,96 @@ const NewBrokerAccountDialog: React.FC<Props> = ({
                         />
                       </div>
                       <div className="grid gap-4 sm:grid-cols-3">
-                        <div className="sm:col-span-1">
-                          <label className={labelCls} htmlFor="ba-ib-host">
-                            Host
+                        <div>
+                          <label className={labelCls} htmlFor="ba-ib-consumer-key">
+                            Consumer Key
                           </label>
                           <input
-                            id="ba-ib-host"
+                            id="ba-ib-consumer-key"
                             type="text"
-                            className={`mt-1.5 ${inputCls}`}
-                            placeholder="127.0.0.1"
-                            value={form.ibHost}
-                            onChange={(e) => update('ibHost', e.target.value)}
+                            autoComplete="off"
+                            spellCheck={false}
+                            className={`mt-1.5 font-mono ${inputCls}`}
+                            placeholder="9 characters"
+                            value={form.ibConsumerKeyPlaintext}
+                            onChange={(e) => update('ibConsumerKeyPlaintext', e.target.value)}
                           />
                         </div>
                         <div>
-                          <label className={labelCls} htmlFor="ba-ib-port">
-                            Port
+                          <label className={labelCls} htmlFor="ba-ib-access-token">
+                            Access Token
                           </label>
                           <input
-                            id="ba-ib-port"
-                            type="number"
-                            inputMode="numeric"
-                            className={`mt-1.5 ${inputCls}`}
-                            placeholder={form.environment === 'paper' ? '7497' : '7496'}
-                            value={form.ibPort}
-                            onChange={(e) => update('ibPort', e.target.value)}
+                            id="ba-ib-access-token"
+                            type="text"
+                            autoComplete="off"
+                            spellCheck={false}
+                            className={`mt-1.5 font-mono ${inputCls}`}
+                            value={form.ibAccessTokenPlaintext}
+                            onChange={(e) => update('ibAccessTokenPlaintext', e.target.value)}
                           />
                         </div>
                         <div>
-                          <label className={labelCls} htmlFor="ba-ib-client">
-                            Client ID
+                          <label className={labelCls} htmlFor="ba-ib-access-token-secret">
+                            Access Token Secret
                           </label>
                           <input
-                            id="ba-ib-client"
-                            type="number"
-                            inputMode="numeric"
-                            className={`mt-1.5 ${inputCls}`}
-                            placeholder="1"
-                            value={form.ibClientId}
-                            onChange={(e) => update('ibClientId', e.target.value)}
+                            id="ba-ib-access-token-secret"
+                            type="password"
+                            autoComplete="off"
+                            spellCheck={false}
+                            className={`mt-1.5 font-mono ${inputCls}`}
+                            value={form.ibAccessTokenSecretPlaintext}
+                            onChange={(e) => update('ibAccessTokenSecretPlaintext', e.target.value)}
                           />
                         </div>
                       </div>
+                      <div>
+                        <label className={labelCls} htmlFor="ba-ib-dh-prime">
+                          Diffie-Hellman Prime (hex)
+                        </label>
+                        <Textarea
+                          id="ba-ib-dh-prime"
+                          rows={2}
+                          spellCheck={false}
+                          className="mt-1.5 font-mono text-xs"
+                          placeholder="From: openssl dhparam -in dhparam.pem -text -noout"
+                          value={form.ibDhPrime}
+                          onChange={(e) => update('ibDhPrime', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelCls} htmlFor="ba-ib-sig-key">
+                          RSA Signature Private Key (PEM)
+                        </label>
+                        <Textarea
+                          id="ba-ib-sig-key"
+                          rows={4}
+                          spellCheck={false}
+                          className="mt-1.5 font-mono text-xs"
+                          placeholder="-----BEGIN RSA PRIVATE KEY-----"
+                          value={form.ibSignatureKeyPemPlaintext}
+                          onChange={(e) => update('ibSignatureKeyPemPlaintext', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelCls} htmlFor="ba-ib-enc-key">
+                          RSA Encryption Private Key (PEM)
+                        </label>
+                        <Textarea
+                          id="ba-ib-enc-key"
+                          rows={4}
+                          spellCheck={false}
+                          className="mt-1.5 font-mono text-xs"
+                          placeholder="-----BEGIN RSA PRIVATE KEY-----"
+                          value={form.ibEncryptionKeyPemPlaintext}
+                          onChange={(e) => update('ibEncryptionKeyPemPlaintext', e.target.value)}
+                        />
+                      </div>
                       <p className="flex items-start gap-2 rounded-lg border border-border bg-surface-secondary px-3 py-2 text-xs text-muted">
                         <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
-                        TWS or IB Gateway must be running on the host above with API access enabled.
+                        Generated once per IB account via IB&rsquo;s OAuth self-service portal — not a
+                        local TWS/Gateway connection. Activation can take up to a few days.
                       </p>
                     </>
                   )}

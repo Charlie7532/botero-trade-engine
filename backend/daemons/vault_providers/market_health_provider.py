@@ -193,17 +193,17 @@ class MarketHealthProvider:
                 def_vals = []
                 for sec in def_sectors:
                     # Prefer Cap-Weighted (S5CAP), fallback to Equal-Weighted (S5)
-                    bar = store.load_bars(f"S5CAP_{sec}_FI", "1d", limit=1)
+                    bar = store.load_bars(f"S5CAP_{sec}_FI", "1d")
                     if bar is None or bar.empty:
-                        bar = store.load_bars(f"S5_{sec}_FI", "1d", limit=1)
+                        bar = store.load_bars(f"S5_{sec}_FI", "1d")
                     if bar is not None and not bar.empty:
                         def_vals.append(float(bar["close"].iloc[-1]))
                 
                 gro_vals = []
                 for sec in gro_sectors:
-                    bar = store.load_bars(f"S5CAP_{sec}_FI", "1d", limit=1)
+                    bar = store.load_bars(f"S5CAP_{sec}_FI", "1d")
                     if bar is None or bar.empty:
-                        bar = store.load_bars(f"S5_{sec}_FI", "1d", limit=1)
+                        bar = store.load_bars(f"S5_{sec}_FI", "1d")
                     if bar is not None and not bar.empty:
                         gro_vals.append(float(bar["close"].iloc[-1]))
                 

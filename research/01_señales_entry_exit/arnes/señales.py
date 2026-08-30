@@ -198,13 +198,16 @@ def _vix_crisis_spike(df):
 
 
 @_registrar("cascade_reversal",
-    validacion="PROPOSED — calibrada 23-Ago pero SIN edge significativo (mejor p=0.25)",
-    n_min=None, dsr=None,
+    validacion="VALIDATED (Grade B) — first-passage ZZ2.5% ALZA: p<0.0001, PF=7.42, Hit=87%, N=92, INDEP=77% (30-Ago v7). "
+               "ASIMETRÍA DE RÉGIMEN: en BAJA hit=32.6%, PF=0.52 (anti-señal). Consumir SOLO con gate régimen=ALZA.",
+    n_min=92, dsr=None,
     tipo="exit", pivot_type="BOTH",
-    descripcion="Convicción cascade cae por debajo del p15. Colapso de momentum = posible reversión. Sin significancia estadística aún.",
-    fuente="analisis_señales_exit.md + calibración 23-Ago (calibracion_cascade_reversal.json)")
+    descripcion="Colapso de convicción cascade: momentum se destruye. Edge demoledor en ALZA (trim táctico, ~8 barras). "
+                "Anti-señal en BAJA. Gate de régimen observable obligatorio en capa de consumo.",
+    fuente="evaluador_vela_a_vela_v7 (30-Ago) + calibración 23-Ago (umbral −0.957 congelado)")
 def _cascade_reversal(df):
-    """cascade_conviction_50 cae por debajo de −0.957 — colapso de convicción (EXIT)."""
+    """cascade_conviction_50 cae por debajo de −0.957 — colapso de convicción (EXIT).
+    VALIDATED 30-Ago: PF=7.42, p<0.0001 en first-passage ZZ2.5%|ALZA. Anti-señal en BAJA."""
     if "cascade_conviction_50" not in df.columns:
         return pd.Series(False, index=df.index)
     UMBRAL_CALIBRADO = -0.957

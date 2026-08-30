@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-EVALUADOR VELA A VELA v2 — Calificador forense de señales
+EVALUADOR VELA A VELA v3 — Calificador forense de señales
 ===========================================================
+v3 (30-Ago): Import migrado a arnes/, BLANCOS completos 31/31, --dry-run/--senal.
 Correcciones aplicadas tras auditoría Gemini 22-Ago (RECHAZADO v1):
   P0: Usa los pivotes de quants_obs (oficiales) — elimina zigzag incompatible.
   P1: Rechaza señales que filtran pivot_type (sesgo de posición embebido).
@@ -26,11 +27,52 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "research" / "01_señales_entry_exit"))
-from medir_senal import SEÑALES, _CERTEZA, cargar_datos  # noqa: E402
+from arnes.registro import SEÑALES, _CERTEZA  # noqa: E402
+from arnes.datos import cargar_datos  # noqa: E402
 
 ESCALAS = {"zz25": 0.025, "zz50": 0.05, "zz75": 0.075}
 BACKGROUND_THRESHOLD = 0.20  # PC1: señales con fire rate mayor saturan F3
 _CACHE: dict = {"df": None, "spy": None, "pool": None, "signals": None}
+
+
+def _body_uses_pivot_type(fn) -> bool:
+    """True si la función filtra por pivot_type en su CUERPO (no en decorador/docstring).
+    Las señales del arnés declaran pivot_type= como metadata en @_registrar,
+    pero solo unas pocas realmente filtran df['pivot_type'] en la lógica."""
+    src = inspect.getsource(fn)
+    in_body = False
+    in_docstring = False
+    docstring_delim = None
+    for line in src.split("\n"):
+        stripped = line.strip()
+        if stripped.startswith("def "):
+            in_body = True
+            continue
+        if not in_body:
+            continue
+        # Track multi-line docstrings
+        if in_docstring:
+            if docstring_delim in stripped:
+                in_docstring = False
+            continue
+        # Detect docstring start
+        for delim in ('"""', "'''"):
+            if delim in stripped:
+                count = stripped.count(delim)
+                if count == 1:
+                    # Opening of multi-line docstring
+                    in_docstring = True
+                    docstring_delim = delim
+                    break
+                # count >= 2: single-line docstring or inline string — skip line
+                break
+        else:
+            # No triple-quote found — check for pivot_type
+            if stripped.startswith("#"):
+                continue
+            if "pivot_type" in line:
+                return True
+    return False
 
 
 def _get_data():
@@ -41,11 +83,11 @@ def _get_data():
 
 
 def _get_signals(df):
-    """Cache global de las señales evaluables (sin pivot_type)."""
+    """Cache global de las señales evaluables (sin pivot_type en el cuerpo)."""
     if _CACHE["signals"] is None:
         _CACHE["signals"] = {
             n: SEÑALES[n](df).astype(bool) for n in SEÑALES
-            if "pivot_type" not in inspect.getsource(SEÑALES[n])
+            if not _body_uses_pivot_type(SEÑALES[n])
         }
     return _CACHE["signals"]
 
@@ -86,6 +128,11 @@ BLANCOS = {
     "breadth_contraction_exit": "MAX",  # EXIT: BSI sale de EXPANSIVE → fin de expansión
     "credit_ease_exit": "MAX",          # EXIT: CREDIT sale de EASE → fin de easing
     "regime_change_exit": "MAX",        # EXIT: cambio de régimen VERANO→INVIERNO
+    # v3 (30-Ago) — señales V2 vectoriales + turbulencia silenciosa
+    "capitulacion_v2": "MIN",              # ENTRY: V2 vectorial de capitulación (D1+D2)
+    "euforia_v2": "MAX",                   # EXIT: V2 vectorial de euforia (D1+D2)
+    "vix_crisis_spike_v2": "MIN",          # ENTRY: V2 vectorial de VIX crisis spike (D1+D2)
+    "sv5t_silent_distribution": "MAX",     # EXIT: turbulencia silenciosa en techos
 }
 
 
@@ -126,7 +173,7 @@ def evaluar(señal_nombre: str, reevaluar: bool = False, ventana_f3: int = 5):
     ventana_f3: ventana de la forensia F3/INDEP en días calendario (default 5)."""
     # ── P1: detectar señales con sesgo de posición embebido ──
     src = inspect.getsource(SEÑALES[señal_nombre])
-    if "pivot_type" in src:
+    if _body_uses_pivot_type(SEÑALES[señal_nombre]):
         return {"señal": señal_nombre,
                 "status": "EXCLUIDA",
                 "razon": "La definición filtra pivot_type — sesgo de posición "
@@ -340,7 +387,21 @@ def evaluar(señal_nombre: str, reevaluar: bool = False, ventana_f3: int = 5):
 
 
 if __name__ == "__main__":
-    TODAS = sorted(SEÑALES.keys())
+    import argparse
+    parser = argparse.ArgumentParser(description="Evaluador vela-a-vela v3")
+    parser.add_argument("--dry-run", action="store_true", help="Verificar config sin ejecutar")
+    parser.add_argument("--senal", type=str, default=None, help="Evaluar solo una señal")
+    args = parser.parse_args()
+
+    if args.dry_run:
+        print("✅ Dry-run: configuración correcta")
+        print(f"  Señales registradas: {len(SEÑALES)}")
+        print(f"  Blancos definidos: {len(BLANCOS)}")
+        sin_blanco = [s for s in SEÑALES if s not in BLANCOS]
+        print(f"  Señales sin blanco: {sin_blanco}")
+        sys.exit(0)
+
+    TODAS = [args.senal] if args.senal else sorted(SEÑALES.keys())
     reporte = {}
     filas_ranking = []
     # Rescatadas: retiradas/degradadas por el método antiguo que el arquitecto
@@ -402,10 +463,10 @@ if __name__ == "__main__":
                 "indep": r["forensia_F3"].get("independencia"),
             })
 
-    out = ROOT / "data/research/signals/evaluacion_vela_a_vela_v6_final.json"
+    out = ROOT / "data/research/signals/evaluacion_vela_a_vela_v7_final.json"
     out.write_text(json.dumps(reporte, indent=2, ensure_ascii=False, default=str))
 
-    print(f"\n{'='*118}\nRANKING FINAL v6 — mejor celda por señal (favorable neto vs baseline, first-passage)")
+    print(f"\n{'='*118}\nRANKING FINAL v7 — mejor celda por señal (favorable neto vs baseline, first-passage)")
     print(f"{'='*118}")
     print(f"{'señal':>24s} {'celda':>13s} | {'n':>3s} {'tier':>9s} | {'hit':>5s} {'Δhit':>6s} | "
           f"{'neto':>7s} {'p-val':>7s} {'PF':>5s} {'EV/b':>8s} {'bars':>5s} {'INDEP':>6s}")

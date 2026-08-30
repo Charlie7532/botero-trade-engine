@@ -209,6 +209,45 @@ def is_extreme(d1_bin: int, d2_bin: int, d3_bin: int) -> bool:
     return d1_extreme or d2_extreme or d3_extreme
 ```
 
+### Rule S8: Update Cadence — Full Pipeline Regeneration
+
+| Cadencia | Acción | Comando | Responsable |
+|:---------|:-------|:--------|:-----------:|
+| **Diaria** | Ingesta al Vault (TimescaleDB) | EOD batch externo | Datos externos |
+| **Semanal** | Verificar drift taxonómico | `pytest tests/test_taxonomy_integrity.py -q` | Automático (CI) |
+| **Mensual** | Regeneración completa de artefactos | Ver Rule S9 | Humano o cron |
+| **Por evento** | Bug / nueva señal / cambio taxonómico | Variable según evento | Humano |
+
+### Rule S9: Monthly Regeneration Procedure
+
+Ejecutar en **orden estricto** — cada paso depende del anterior:
+
+```bash
+cd /root/botero-trade
+
+# 1. Fact stores (desde Vault) — regenera 11 JSON (~10 min)
+PYTHONPATH=. backend/.venv/bin/python \
+  backend/scripts/generators/generate_all_150_state_fact_stores.py
+
+# 2. Lake continuo — regenera continuous_metar_lake.parquet (~3 min)
+PYTHONPATH=. backend/.venv/bin/python \
+  backend/scripts/generators/build_continuous_metar_lake.py
+
+# 3. Tabla pivotal — regenera quants_obs.pkl (~1 min)
+PYTHONPATH=. backend/.venv/bin/python \
+  backend/scripts/generators/generate_quants_obs.py
+
+# 4. Tests de regresión — verifica integridad (~1 min)
+PYTHONPATH=. backend/.venv/bin/python -m pytest tests/ -q
+```
+
+**Artefactos generados (no versionados, regenerables):**
+- `backend/modules/entry_decision/domain/rules/*_fact_store.json` (11 archivos)
+- `data/research/continuous_metar_lake.parquet` (8,453×257)
+- `data/research/pivots/quants_obs.pkl` (1,590×165)
+
+> **NOTA:** Los scripts de investigación (evaluador vela-a-vela, tríada, anatomía) se ejecutan **a pedido**. No forman parte de la regeneración mensual.
+
 ---
 
 ## 5. Verified Calibration Audit (2026-08-04)

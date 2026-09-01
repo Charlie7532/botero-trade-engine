@@ -43,7 +43,11 @@ SEÑAL_ESTACIONES = {
                             "sv5_turbulence", "fg", "skew", "pcr", "rotation", "dxy"},
     "neutral_spike_exit": {"vix", "bsi", "credit", "yield_curve", "vvix",
                            "sv5_turbulence", "fg", "skew", "pcr", "rotation", "dxy"},
-    "sorpresa_total": set(), "cascade_reversal": set(),
+    # sorpresa_total lee todas las estaciones vía _surprise_vector
+    "sorpresa_total": {"vix", "bsi", "credit", "yield_curve", "vvix",
+                       "sv5_turbulence", "fg", "skew", "pcr", "rotation", "dxy"},
+    # cascade_reversal depende de la columna derivada cascade_conviction en quants_obs
+    "cascade_reversal": set(),
 }
 
 # Estaciones REVERSIVAS (decaen tras overflow) vs DE NIVEL (cambio de era, nunca decaen)

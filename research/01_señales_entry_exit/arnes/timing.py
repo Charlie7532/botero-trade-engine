@@ -134,8 +134,8 @@ def classify_timing_slots(signal_dates, pivot_dates, pivot_types=None, target_pi
     if len(signal_dates) == 0 or len(pivot_dates) == 0:
         return pd.DataFrame(columns=["signal_date", "nearest_pivot_date", "pivot_type", "delta_days", "slot", "categoria"])
 
-    sig_dt = pd.to_datetime(signal_dates).normalize()
-    piv_dt = pd.to_datetime(pivot_dates).normalize()
+    sig_dt = pd.DatetimeIndex(pd.to_datetime(signal_dates)).normalize()
+    piv_dt = pd.DatetimeIndex(pd.to_datetime(pivot_dates)).normalize()
 
     # Filtrar por tipo si se solicita
     if target_pivot_type is not None and pivot_types is not None:

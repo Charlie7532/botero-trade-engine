@@ -427,9 +427,11 @@ _STATIONS_E7 = ["vix", "bsi", "credit", "yield_curve", "vvix", "sv5_turbulence",
 
 
 @_registrar("neutral_crush_entry",
-    validacion="SPECULATIVE (E7 prompt_cierre_v3)", n_min=20, dsr=None,
-    fuente="prompt_cierre_v3 E7: CRUSH > SPIKE en zona neutral (mean-reversion)",
+    validacion="VALIDATED Grade B (auditoría 1-Sep-2026: N=60, HR=68.3%, EV=+1.04%, PF=2.24, p=0.043)", n_min=20, dsr=None,
+    fuente="prompt_cierre_v3 E7 → Upgrade post-auditoría: CRUSH > SPIKE en zona neutral (mean-reversion). "
+           "Uno de los mejores edges del catálogo: +11.7% hit neto, +0.58% EV neto.",
     tipo="entry", pivot_type="BOTH",
+    fecha_inicio_valida="2011-02-01", era_valida="POST_2011",
     descripcion="D1 neutral(2,3) + D2=FAST_CRUSH(0) en ≥2 estaciones simultáneas. Mean-reversion bullish. Umbral ≥2 (no ≥3) porque D2=CRUSH en pivotes es más raro que en días calendario.")
 def _neutral_crush(df):
     """Zona neutral D1(2,3) + D2=FAST_CRUSH(0) en ≥2 estaciones."""
@@ -445,6 +447,7 @@ def _neutral_crush(df):
     validacion="SPECULATIVE (E7 prompt_cierre_v3)", n_min=10, dsr=None,
     fuente="prompt_cierre_v3 E7-exit: SPIKE en zona neutral (mean-reversion counter)",
     tipo="exit", pivot_type="BOTH",
+    fecha_inicio_valida="2011-02-01", era_valida="POST_2011",
     descripcion="D1 neutral(2,3) + D2=FAST_SPIKE(4) en ≥2 estaciones. Contraparte exit del E7 neutral_crush.")
 def _neutral_spike(df):
     """Zona neutral D1(2,3) + D2=FAST_SPIKE(4) en ≥2 estaciones."""
@@ -454,3 +457,51 @@ def _neutral_spike(df):
         d2 = _get_dim(df, st, 1)
         count = count + ((d1.isin([2, 3])) & (d2 == 4)).astype(int)
     return count >= 2
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. SEÑALES DIMENSIONALES NUEVAS (Corrección Consolidada 1-Sep-2026)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@_registrar("bsi_compression_entry",
+    validacion="CANDIDATO (C14 corrección v2 — tipo corregido por auditoría)", n_min=30, dsr=None,
+    fuente="Corrección consolidada C14: BSI comprimido (D1≤1) = mercado washed, tiende a encontrar piso. "
+           "Evaluador fresco: N=348, HR=54% zz25 (bullish, no bearish como sugería quants_obs).",
+    tipo="entry", pivot_type="BOTH",
+    descripcion="BSI comprimido (D1≤1): participación institucional en mínimos. "
+                "El evaluador muestra edge de entry long, no exit.")
+def _bsi_compression_entry(df):
+    """BSI D1 <= 1: participación institucional comprimida."""
+    bsi_d1 = _get_dim(df, "bsi", 0)
+    return bsi_d1 <= 1
+
+
+@_registrar("vix_instability_warning",
+    validacion="CANDIDATO (C16 corrección v2 — tipo corregido por auditoría)", n_min=30, dsr=None,
+    fuente="Corrección consolidada C16: VIX inestable (D3=4) sin pánico confirmado (D1≤3). "
+           "Evaluador fresco: N=136, HR=58.1% zz25, EV=+0.46%, PF=1.41 (bullish entry). "
+           "El V2 decía exit con WR=25.9% pero eso era daily_return_pct, no first-passage.",
+    tipo="entry", pivot_type="BOTH",
+    descripcion="VIX D3=4 (inestable) + D1≤3 (no en pánico): la inestabilidad del VIX "
+                "sin pánico confirmado tiende a resolverse al alza. Primera señal D3 funcional.")
+def _vix_instability_warning(df):
+    """VIX D3=4 (muy inestable) + D1<=3 (no en pánico completo)."""
+    vix_d1 = _get_dim(df, "vix", 0)
+    vix_d3 = _get_dim(df, "vix", 2)
+    return (vix_d3 == 4) & (vix_d1 <= 3)
+
+
+@_registrar("credit_capitulation_entry",
+    validacion="CANDIDATO DIAMANTE (C15 corrección v2 — N=4 en evaluador)", n_min=None, dsr=None,
+    fuente="Corrección consolidada C15: CREDIT en piso absoluto (D1=0) + FAST_CRUSH (D2=0). "
+           "N=4 episodios — insuficiente para inferencia robusta. Monitorear.",
+    tipo="entry", pivot_type="BOTH",
+    fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
+    descripcion="CREDIT D1=0 + D2=0: máximo pánico crediticio (piso + acelerando a la baja). "
+                "Diamante §3.3 con N=4. Requiere acumulación de datos.")
+def _credit_capitulation_entry(df):
+    """CREDIT D1=0 (piso) + D2=0 (FAST_CRUSH — velocidad más negativa)."""
+    credit_d1 = _get_dim(df, "credit", 0)
+    credit_d2 = _get_dim(df, "credit", 1)
+    return (credit_d1 == 0) & (credit_d2 == 0)
+

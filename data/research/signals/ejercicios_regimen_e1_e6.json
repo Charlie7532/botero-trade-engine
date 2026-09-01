@@ -1,0 +1,101 @@
+{
+  "E1": {
+    "ejercicio": "E1 — Asimetría de Régimen en Cascada",
+    "descripcion": "Verifica si cascade_reversal funciona como killer exit en ALZA pero pierde edge en BAJA",
+    "n_alza": 92,
+    "hit_rate_alza": 0.87,
+    "ci95_alza": {
+      "ci95_lo": 0.7832,
+      "ci95_hi": 0.9307
+    },
+    "fav_neto_alza": 0.0124,
+    "n_baja": 135,
+    "hit_rate_baja": 0.326,
+    "ci95_baja": {
+      "ci95_lo": 0.2478,
+      "ci95_hi": 0.4119
+    },
+    "fav_neto_baja": -0.0136,
+    "delta_hit_rate": 0.544,
+    "p_value_fisher": 0.0,
+    "rechaza_h0": true,
+    "conclusion": "ALZA: HR=87.0% (N=92) vs BAJA: HR=32.6% (N=135). Delta=+54.4%, p=0.0000 (SIGNIFICATIVO tras Bonferroni α'=0.0083)."
+  },
+  "E2": {
+    "ejercicio": "E2 — Invarianza Temporal de Extremos VIX",
+    "descripcion": "Verifica estabilidad del edge de compra en pánico de volatilidad pre vs post QE",
+    "n_pre_2010": 77,
+    "hit_rate_pre_2010": 0.5065,
+    "ci95_pre": {
+      "ci95_lo": 0.39,
+      "ci95_hi": 0.6224
+    },
+    "n_post_2010": 6,
+    "hit_rate_post_2010": 0.8333,
+    "ci95_post": {
+      "ci95_lo": 0.3588,
+      "ci95_hi": 0.9958
+    },
+    "delta_hit_rate": 0.3268,
+    "p_value_fisher": 0.20668,
+    "es_invariante": true,
+    "conclusion": "PENDIENTE — N_post=6 insuficiente (Diamante §3.3). Pre: HR=50.6% (N=77), Post: HR=83.3% (N=6). p=0.2067. Sin poder estadístico para confirmar ni rechazar invarianza."
+  },
+  "E3": {
+    "ejercicio": "E3 — Dinámica de Colapso de Crédito vs Equity",
+    "descripcion": "Analiza si el spread de crédito anticipa suelos de equity (Lead Indicator). Nota: delta_mediana_barras usa barras de trading (no días calendario).",
+    "n_episodios": 27,
+    "pct_anticipada_lead": 25.9,
+    "pct_coincidente_exacta": 33.3,
+    "pct_retrasada_lag": 40.7,
+    "delta_mediana_barras": 0.0,
+    "p_value_sign_test": 0.48068,
+    "conclusion": "Coincidente: anticipada=25.9%, exacta=33.3%, retrasada=40.7%. Mediana delta=0 barras (trading days), sign-test p=0.4807."
+  },
+  "E4": {
+    "ejercicio": "E4 — Reversión en Ráfaga de Turbulencia",
+    "descripcion": "Velocidad de absorción de shocks de volumen institucional (SV5_Turbulence D1=5)",
+    "n_episodios": 81,
+    "n_resueltos": 81,
+    "hit_rate_zz25": 0.5802,
+    "ci95_hr": {
+      "ci95_lo": 0.4654,
+      "ci95_hi": 0.6891
+    },
+    "mediana_barras_resolucion": 10.0,
+    "p90_barras_resolucion": 25.4,
+    "p_value_binom": 0.31978,
+    "conclusion": "HR=58.0% (N=81). Mediana resolución=10 barras, P90=25 barras, p=0.3198."
+  },
+  "E5": {
+    "ejercicio": "E5 — Confluencia de Pánico Multi-Estación",
+    "descripcion": "Rendimiento de compra en confluencia simultánea de estrés multi-activo (≥2 estaciones en overflow D1 extremo)",
+    "n_episodios_confluencia": 63,
+    "n_resueltos": 63,
+    "hit_rate_zz50": 0.5079,
+    "ci95_hr": {
+      "ci95_lo": 0.3789,
+      "ci95_hi": 0.6362
+    },
+    "lift_vs_unconditional": -0.0721,
+    "p_value_binom": 0.90031,
+    "conclusion": "RECHAZADA — lift negativo: HR=50.8% (N=63), lift=-7.2% vs baseline incondicional, p=0.9003. Confluencia ≥2 estaciones NO produce edge sobre azar."
+  },
+  "E6": {
+    "ejercicio": "E6 — Asimetría de Euforia de Sentimiento",
+    "descripcion": "Verifica si la euforia extrema produce falsas salidas en bull market secular",
+    "n_en_bull_trend": 18,
+    "hit_rate_bull": 0.4444,
+    "ci95_bull": {
+      "ci95_lo": 0.2153,
+      "ci95_hi": 0.6924
+    },
+    "n_en_bear_trend": 0,
+    "hit_rate_bear": 0.0,
+    "ci95_bear": {
+      "ci95_lo": null,
+      "ci95_hi": null
+    },
+    "conclusion": "INCONCLUSO — sin datos de bear (N=0). Bull: HR=44.4% (N=18). La señal es intrínsecamente procíclica (solo dispara en bull markets)."
+  }
+}

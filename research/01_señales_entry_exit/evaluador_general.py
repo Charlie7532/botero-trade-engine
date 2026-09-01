@@ -115,15 +115,30 @@ def build_episodes(sig_mask: np.ndarray, index: pd.DatetimeIndex) -> List[Dict[s
 
 
 def first_passage_bar(close: np.ndarray, highs: np.ndarray, lows: np.ndarray,
-                      t0: int, scale: float, blanco: str) -> Optional[Dict[str, Any]]:
-    """Evalúa el primer paso vela a vela desde la barra t0 con precios OHLC."""
+                      t0: int, scale: float, blanco: str,
+                      max_barras: Optional[int] = None) -> Optional[Dict[str, Any]]:
+    """Evalúa el primer paso vela a vela desde la barra t0 con precios OHLC.
+    
+    C9: Third barrier (time-stop). max_barras = ceil(2/scale) by default.
+    zz25→80 bars, zz50→40 bars, zz75→27 bars.
+    Timeout = failure (counted in metrics, not excluded).
+    """
     p0 = close[t0]
     if p0 <= 0 or t0 >= len(close) - 1:
         return None
 
-    path_h = highs[t0 + 1:]
-    path_l = lows[t0 + 1:]
-    path_c = close[t0 + 1:]
+    # C9: Time-stop — third barrier
+    if max_barras is None:
+        max_barras = int(np.ceil(2.0 / scale))  # zz25→80, zz50→40, zz75→27
+    remaining = len(close) - t0 - 1
+    window = min(remaining, max_barras)
+
+    path_h = highs[t0 + 1: t0 + 1 + window]
+    path_l = lows[t0 + 1: t0 + 1 + window]
+    path_c = close[t0 + 1: t0 + 1 + window]
+
+    if len(path_h) == 0:
+        return None
 
     up_target = p0 * (1.0 + scale)
     dn_target = p0 * (1.0 - scale)
@@ -135,7 +150,27 @@ def first_passage_bar(close: np.ndarray, highs: np.ndarray, lows: np.ndarray,
     d_idx = dn_i[0] if len(dn_i) > 0 else np.inf
 
     if np.isinf(u_idx) and np.isinf(d_idx):
-        return {"resuelto": False}
+        # Time-stop triggered: count as failure
+        p_end = path_c[-1] if len(path_c) > 0 else p0
+        seg_h = highs[t0: t0 + 1 + len(path_h)]
+        seg_l = lows[t0: t0 + 1 + len(path_l)]
+        if blanco == "MAX":
+            favorable = float((p0 - p_end) / p0)
+            mae = float((seg_h.max() - p0) / p0)
+            mfe = float((p0 - seg_l.min()) / p0)
+        else:
+            favorable = float((p_end - p0) / p0)
+            mae = float((seg_l.min() - p0) / p0)
+            mfe = float((seg_h.max() - p0) / p0)
+        return {
+            "resuelto": True,
+            "hit": False,
+            "timeout": True,
+            "favorable": favorable,
+            "mae": float(mae),
+            "mfe": float(mfe),
+            "bars": len(path_h),
+        }
 
     event_i = int(min(u_idx, d_idx))
     down_first = bool(d_idx < u_idx)
@@ -158,6 +193,7 @@ def first_passage_bar(close: np.ndarray, highs: np.ndarray, lows: np.ndarray,
     return {
         "resuelto": True,
         "hit": bool(hit),
+        "timeout": False,
         "favorable": float(favorable),
         "mae": float(mae),
         "mfe": float(mfe),

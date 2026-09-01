@@ -491,6 +491,10 @@
           "n_crashes_con_senal": 11,
           "pct_crashes": 9.5
         },
+        "neutral_crush_entry": {
+          "n_crashes_con_senal": 8,
+          "pct_crashes": 6.9
+        },
         "fg_extreme_fear": {
           "n_crashes_con_senal": 5,
           "pct_crashes": 4.3
@@ -580,6 +584,10 @@
         "capitulacion_v2": {
           "n_crashes_con_senal": 10,
           "pct_crashes": 11.9
+        },
+        "neutral_crush_entry": {
+          "n_crashes_con_senal": 8,
+          "pct_crashes": 9.5
         },
         "fg_extreme_fear": {
           "n_crashes_con_senal": 5,

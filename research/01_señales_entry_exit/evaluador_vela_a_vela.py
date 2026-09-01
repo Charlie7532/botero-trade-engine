@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "research" / "01_señales_entry_exit"))
 from arnes.registro import SEÑALES, _CERTEZA  # noqa: E402
 from arnes.datos import cargar_datos  # noqa: E402
+from arnes.timing import calc_timing_distribution  # noqa: E402
 
 ESCALAS = {"zz25": 0.025, "zz50": 0.05, "zz75": 0.075}
 BACKGROUND_THRESHOLD = 0.20  # PC1: señales con fire rate mayor saturan F3
@@ -133,6 +134,15 @@ BLANCOS = {
     "euforia_v2": "MAX",                   # EXIT: V2 vectorial de euforia (D1+D2)
     "vix_crisis_spike_v2": "MIN",          # ENTRY: V2 vectorial de VIX crisis spike (D1+D2)
     "sv5t_silent_distribution": "MAX",     # EXIT: turbulencia silenciosa en techos
+    # prompt_cierre_v3 (31-Ago) — Ejercicios Probatorios
+    "neutral_crush_entry": "MIN",          # E7 ENTRY: D1 neutral + CRUSH mean-reversion
+    "neutral_spike_exit": "MAX",           # E7 EXIT: D1 neutral + SPIKE
+    # Señales RETIRADAS/DEGRADADAS (targets asignados para re-evaluación)
+    "credit_stress_exit": "MAX",           # EXIT: salida de estrés crediticio en techo
+    "dxy_spike_exit": "MAX",               # EXIT: spike de dólar en techo
+    "pcr_panic_exit": "MAX",               # EXIT: salida de pánico PCR
+    "vix_complacency_exit": "MAX",         # EXIT: complacencia de VIX en techo
+    "defensive_rotation_divergence": "MAX", # EXIT: divergencia defensiva en techo
 }
 
 
@@ -198,6 +208,15 @@ def evaluar(señal_nombre: str, reevaluar: bool = False, ventana_f3: int = 5):
     sig = SEÑALES[señal_nombre](df).astype(bool)
     disparos = df[sig]
 
+    # ── Filtrar datos pre-inception (ej. SKEW/FG pre-2011 sintético, CREDIT pre-2007) ──
+    fecha_inicio = cert.get("fecha_inicio_valida")
+    if fecha_inicio:
+        n_antes = len(disparos)
+        disparos = disparos[disparos["pivot_date"] >= pd.Timestamp(fecha_inicio)]
+        n_filtrado = n_antes - len(disparos)
+        if n_filtrado > 0:
+            print(f"  [{señal_nombre}] Filtrados {n_filtrado} disparos pre-{fecha_inicio} (datos sintéticos/inválidos)")
+
     # ── Régimen desde pivotes de quants_obs (P0) ──
     piv_dates = df["pivot_date"].values
     piv_types = df["pivot_type"].values
@@ -242,11 +261,14 @@ def evaluar(señal_nombre: str, reevaluar: bool = False, ventana_f3: int = 5):
                 "razon": "Ningún disparo produjo un tramo resoluble (N=0 o sin primer paso)."}
 
     # ── Baseline: todos los pivotes del mismo tipo EXCLUIDOS los de la señal (P5) ──
+    # Si la señal tiene fecha de inicio válida, el baseline se restringe a la misma era temporal
     tipo = "MAX" if blanco == "MAX" else "MIN"
     señal_fechas = set(pd.DatetimeIndex(disparos["pivot_date"]))
     base_rows = []
     for i in range(n_piv):
         if piv_types[i] != tipo:
+            continue
+        if fecha_inicio and pd.Timestamp(piv_dates[i]) < pd.Timestamp(fecha_inicio):
             continue
         if pd.Timestamp(piv_dates[i]) in señal_fechas:
             continue
@@ -323,6 +345,7 @@ def evaluar(señal_nombre: str, reevaluar: bool = False, ventana_f3: int = 5):
                 "rr": round(mfe_m / abs(mae_m), 2) if mae_m != 0 else None,
                 "ev_por_barra": round(ev_bar, 5) if ev_bar is not None else None,
                 "mae_medio": round(mae_m, 4),
+                "mae_p10": round(float(s["mae"].quantile(0.10)), 4) if n >= 10 else None,
                 "mfe_medio": round(mfe_m, 4),
                 "bars_medio": round(bars_m, 1),
             }
@@ -374,10 +397,19 @@ def evaluar(señal_nombre: str, reevaluar: bool = False, ventana_f3: int = 5):
         t = f3_esc[esc]["fallas"] + f3_esc[esc]["impredecibles"]
         f3_esc[esc]["techo"] = round(f3_esc[esc]["fallas"] / t, 2) if t else None
 
+    # Calificación canónica de timing (6 slots: t-2, t-1, t=0, t+1, t+2, ENTRE)
+    timing_slots = calc_timing_distribution(
+        signal_dates=disparos["pivot_date"].values,
+        pivot_dates=df["pivot_date"].values,
+        pivot_types=df["pivot_type"].values,
+        target_pivot_type=blanco,
+    )
+
     return {
         "señal": señal_nombre, "blanco": blanco, "status": "OK",
         "n_disparos": int(len(disparos)),
         "perfil_3d_régimen": perfil,
+        "timing_slots": timing_slots,
         "forensia_F3": {"fallidos": tot, "falla_lectura": fallas,
                         "impredecible": impredecibles,
                         "techo_mejora": round(fallas / tot, 2) if tot else None,
@@ -415,10 +447,10 @@ if __name__ == "__main__":
         print(f"{s:32s} → {st}{marca}", flush=True)
         if st != "OK":
             continue
-        # fila de ranking: mejor celda de la señal (fav_neto, n>=5)
+        # fila de ranking: mejor celda de la señal (fav_neto, n>=10 para robustez)
         mejor = None
         for celda, p in r["perfil_3d_régimen"].items():
-            if p["n"] < 5:
+            if p["n"] < 10:
                 continue
             if mejor is None or p["fav_neto"] > r["perfil_3d_régimen"][mejor]["fav_neto"]:
                 mejor = celda
@@ -449,7 +481,7 @@ if __name__ == "__main__":
             continue
         mejor = None
         for celda, p in r["perfil_3d_régimen"].items():
-            if p["n"] < 5:
+            if p["n"] < 10:
                 continue
             if mejor is None or p["fav_neto"] > r["perfil_3d_régimen"][mejor]["fav_neto"]:
                 mejor = celda

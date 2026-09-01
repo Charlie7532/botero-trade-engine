@@ -119,52 +119,11 @@ SCALE_FACTORS = {
     "skew":           {"zz25": 0.27, "zz50": 0.77, "zz75": 1.96},
 }
 
-# ── D1 Bin → Directional Vote (for rare stations) ────────────────────────
-# These bins carry directional meaning regardless of EV reliability.
-# Bearish D1 bins: market stress / panic / crisis (Canonical + Legacy Synonyms)
-D1_BEARISH_BINS = {
-    # Canonical symmetric
-    "EXTREME_PANIC", "PANIC",                                      # VIX
-    "EXTREME_INSTABILITY", "INSTABILITY",                          # VVIX
-    "EXTREME_PUT_PANIC", "PUT_PANIC",                              # PCR
-    "EXTREME_FEAR", "FEAR",                                        # FG
-    "EXTREME_TURBULENT", "TURBULENT",                              # SV5
-    "EXTREME_PARANOIA", "PARANOIA",                                # SKEW
-    "EXTREME_STRESS", "STRESS",                                    # Credit
-    "DEEP_INVERSION", "MODERATE_INVERSION",                        # Yield Curve
-    "EXTREME_DEFENSIVE", "DEFENSIVE",                              # Rotation
-    "BREADTH_WASHED_OUT", "OVERSOLD_BREADTH",                      # BSI
-    "EXTREME_STRENGTH", "STRENGTH",                                # DXY (strong dollar = bearish equities)
-    # Legacy synonyms (retrocompatibility)
-    "CRISIS_SPIKE", "HIGH_VOL", "ELEVATED_PANIC",                  # VIX legacy
-    "EXTREME_VVIX",                                                # VVIX legacy
-    "TAIL_PARANOIA", "BLACK_SWAN_PARANOIA",                        # SKEW legacy
-    "CREDIT_CRISIS", "CREDIT_STRESS", "ELEVATED_CREDIT_STRESS",    # Credit legacy
-    "DEFENSIVE_CAPITULATION",                                      # Rotation legacy
-    "DOLLAR_SPIKE_CRISIS",                                         # DXY legacy
-}
-
-# Bullish D1 bins: complacency / ease / euphoria (Canonical + Legacy Synonyms)
-D1_BULLISH_BINS = {
-    # Canonical symmetric
-    "EXTREME_COMPLACENCY", "COMPLACENCY",                          # VIX
-    "EXTREME_STABILITY", "STABILITY",                              # VVIX
-    "EXTREME_CALL_EUPHORIA", "CALL_EUPHORIA",                      # PCR
-    "EXTREME_GREED", "GREED",                                      # FG
-    "EXTREME_CALM", "CALM",                                        # SV5
-    "EXTREME_CONFIDENCE", "CONFIDENCE",                            # SKEW
-    "EXTREME_EASE", "EASE",                                        # Credit
-    "EXTREME_STEEPNING", "STEEPNING_CURVE",                        # Yield Curve
-    "EXTREME_OFFENSIVE", "OFFENSIVE",                              # Rotation
-    "HYPER_EXPANSIVE_BREADTH", "EXPANSIVE_BREADTH",                # BSI
-    "EXTREME_WEAKNESS", "WEAKNESS",                                # DXY (weak dollar = bullish equities)
-    # Legacy synonyms (retrocompatibility)
-    "DEEP_COMPLACENCY", "LOW_VOL",                                 # VIX legacy
-    "DEEP_CONFIDENCE",                                             # SKEW legacy
-    "CREDIT_EASE", "DEEP_CREDIT_EASE",                             # Credit legacy
-    "BULLISH_BREADTH",                                             # BSI legacy
-}
-
+# ── D1 Bin → Directional Vote (numeric bins only) ─────────────────────────
+# Production state_keys are always numeric ("4__3__2"), so we classify
+# using bin indices + station polarity. The old label-string sets
+# (D1_BEARISH_BINS, D1_BULLISH_BINS) were dead code with non-canonical labels
+# and were removed in v2 (31-Ago-2026, prompt_cierre_opus_v3 Fase 0.4).
 
 # Stations where high D1 values (bins 4, 5) mean market stress/bearish for equities
 STATIONS_HIGH_BEARISH = {"vix", "vvix", "pcr", "sv5_turbulence", "skew", "dxy"}
@@ -200,30 +159,22 @@ def rarity_amplifier(n: int) -> float:
 
 
 def d1_directional_vote(state_key: str, station: Optional[str] = None) -> int:
-    """Extract D1 bin from state key and return directional vote.
+    """Extract D1 bin index from numeric state key and return directional vote.
     Returns +1 (bullish for equities), -1 (bearish for equities), or 0 (neutral).
 
-    Supports:
-    1. Numeric state keys ("4__2__1", "0__1__2") with station code
-    2. Semantic label state keys ("PANIC__...", "EXTREME_FEAR", etc.)
+    Requires station code to determine polarity (high-bearish vs low-bearish).
+    State keys MUST be numeric format ("4__2__1"). Label-format keys return 0.
     """
-    if not state_key:
+    if not state_key or not station:
         return 0
     d1_part = state_key.split("__")[0]
 
-    # 1. Semantic label match
-    if d1_part in D1_BEARISH_BINS:
-        return -1
-    elif d1_part in D1_BULLISH_BINS:
-        return +1
-
-    # 2. Numeric bin index match
     try:
         bin_idx = int(d1_part)
     except (ValueError, TypeError):
         return 0
 
-    st = station.lower() if station else None
+    st = station.lower()
     if st in STATIONS_HIGH_BEARISH:
         if bin_idx >= 4:
             return -1
@@ -285,6 +236,13 @@ class ConvergenceReport:
     unified_guidance: str
     guidance_horizon: str                  # 1D | 3D | 5D | WAIT
     confidence_level: str                  # HIGH | MODERATE | LOW | SPECULATIVE
+
+    # Convexity Signal (Fase 0.5: Standard layer consumption)
+    n_convex_stations: int                 # Count of stations with rr_asymmetry > 1.0 at zz75
+
+    # Kinematic Layer Convergence (GAP 4 / E10)
+    n_kinematic_bull_convergent: int       # Stations with zigzag_kinematic.zz75.p_bull > 0.52
+    n_kinematic_bear_convergent: int       # Stations with zigzag_kinematic.zz75.p_bull < 0.48
 
     # Station Details
     station_summaries: Dict[str, Any]
@@ -368,6 +326,9 @@ class ConvergenceCompositor:
         n_bullish_vote, n_bearish_vote, n_neutral_vote = 0, 0, 0
         n_grupo_a_bearish = 0
         n_grupo_a_active = 0
+        n_convex = 0  # Fase 0.5: count stations with rr_asymmetry > 1.0 at zz75
+        n_kinematic_bull = 0  # GAP 4 / E10: stations with kinematic p_bull > 0.52 at zz75
+        n_kinematic_bear = 0  # GAP 4 / E10: stations with kinematic p_bull < 0.48 at zz75
 
         station_summaries = {}
         grupo_a_votes = {}
@@ -422,6 +383,26 @@ class ConvergenceCompositor:
                 if vote < 0:
                     n_grupo_a_bearish += 1
 
+            # ── Extract Standard layer fields already in dataclass (Fase 0.5) ──
+            rr_ratio = data.get("rr_asymmetry_ratio", None)
+            e_ret_max_zz75 = data.get("e_ret_max_zz75", None)
+            e_ret_min_zz75 = data.get("e_ret_min_zz75", None)
+            ev_per_day_vec = data.get("ev_per_day_vector", [])
+
+            if rr_ratio is not None and rr_ratio > 1.0:
+                n_convex += 1
+
+            # ── Extract Kinematic layer fields (GAP 4 / E10) ──
+            zk = data.get("zigzag_kinematic") or {}
+            zk75 = zk.get("zz75") or {} if isinstance(zk, dict) else {}
+            kinematic_pbull_75 = zk75.get("p_bull") if isinstance(zk75, dict) else None
+
+            if kinematic_pbull_75 is not None:
+                if kinematic_pbull_75 > 0.52:
+                    n_kinematic_bull += 1
+                elif kinematic_pbull_75 < 0.48:
+                    n_kinematic_bear += 1
+
             # Station summary for report (using real values, not phantom defaults)
             d1_bin = state_key.split("__")[0] if state_key and "__" in state_key else state_key
             station_summaries[code] = {
@@ -440,6 +421,13 @@ class ConvergenceCompositor:
                 "scale_factor_zz25": sf.get("zz25", 1.0),
                 "scale_factor_zz75": sf.get("zz75", 1.0),
                 "divergence_regime": data.get("divergence_regime"),
+                # Fase 0.5: Standard layer fields now consumed
+                "rr_asymmetry": round(rr_ratio, 4) if rr_ratio is not None else None,
+                "e_ret_max_zz75": round(e_ret_max_zz75, 6) if e_ret_max_zz75 is not None else None,
+                "e_ret_min_zz75": round(e_ret_min_zz75, 6) if e_ret_min_zz75 is not None else None,
+                "ev_per_day": round(ev_per_day_vec[-1], 6) if ev_per_day_vec else None,
+                # GAP 4 / E10: Kinematic layer p_bull
+                "kinematic_p_bull_75": round(kinematic_pbull_75, 4) if kinematic_pbull_75 is not None else None,
             }
 
         # ── Compute composites ───────────────────────────────────────
@@ -647,5 +635,8 @@ class ConvergenceCompositor:
             unified_guidance=unified_guidance,
             guidance_horizon=guidance_horizon,
             confidence_level=confidence,
+            n_convex_stations=n_convex,
+            n_kinematic_bull_convergent=n_kinematic_bull,
+            n_kinematic_bear_convergent=n_kinematic_bear,
             station_summaries=station_summaries,
         )

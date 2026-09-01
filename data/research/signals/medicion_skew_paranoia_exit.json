@@ -175,11 +175,11 @@
   },
   "desglose_d2d3": {
     "skew": {
-      "d1_dominante": "BLACK_SWAN_PARANOIA",
+      "d1_dominante": "5",
       "d1_pct": 100.0,
       "n_d1": 10,
       "d2_velocity": {
-        "FAST_SPIKE_3D": {
+        "4": {
           "n": 5,
           "mean": 0.018628,
           "wr": 0.6,
@@ -194,7 +194,7 @@
       },
       "d2_ci95": null,
       "d3_station_vol": {
-        "VOL_NEUTRAL_BASELINE": {
+        "2": {
           "n": 7,
           "mean": -0.006754,
           "wr": 0.4286,
@@ -210,21 +210,21 @@
       "d3_ci95": null
     },
     "credit": {
-      "d1_dominante": "CREDIT_EASE",
-      "d1_pct": 70.0,
-      "n_d1": 7,
+      "d1_dominante": "4",
+      "d1_pct": 80.0,
+      "n_d1": 8,
       "d2_velocity": {
-        "STABLE_CONTINUATION_3D": {
-          "n": 6,
-          "mean": 0.001848,
-          "wr": 0.5,
+        "2": {
+          "n": 7,
+          "mean": -0.002191,
+          "wr": 0.4286,
           "tag": "NEUTRAL",
           "mean_win": 0.041637,
-          "mean_loss": -0.03794,
-          "loss_gain_ratio": 0.9112,
-          "ev_neto": 0.001848,
+          "mean_loss": -0.035061,
+          "loss_gain_ratio": 0.8421,
+          "ev_neto": -0.002191,
           "fisher_p": 1.0,
-          "lift_directional": 1.0
+          "lift_directional": 0.8571
         }
       },
       "d2_ci95": null,
@@ -232,13 +232,13 @@
       "d3_ci95": null
     },
     "yield_curve": {
-      "d1_dominante": "FLAT_CURVE",
+      "d1_dominante": "2",
       "d1_pct": 60.0,
       "n_d1": 6,
       "d2_velocity": {},
       "d2_ci95": null,
       "d3_station_vol": {
-        "VOL_NEUTRAL_BASELINE": {
+        "2": {
           "n": 5,
           "mean": 0.023613,
           "wr": 0.8,
@@ -364,10 +364,6 @@
           "n_crashes_con_senal": 3,
           "pct_crashes": 75.0
         },
-        "cascade_reversal": {
-          "n_crashes_con_senal": 3,
-          "pct_crashes": 75.0
-        },
         "breadth_contraction_exit": {
           "n_crashes_con_senal": 3,
           "pct_crashes": 75.0
@@ -435,136 +431,136 @@
   },
   "precursores_t1_t2": {
     "vix": {
-      "t1_dominante": "MODERATE_VOL__STABLE_CONTINUATION_3D__VOL_MODERATE_COMPRESSION",
+      "t1_dominante": "2__2__1",
       "t1_n": 4,
       "t1_pct": 40.0,
       "t1_wr_con_precursor": 0.5,
       "t1_wr_sin_precursor": 0.5,
       "delta_wr_precursor": 0.0,
       "amplifica": false,
-      "t2_dominante": "MODERATE_VOL__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "2__2__2",
       "t2_n": 3,
-      "transicion_d1_frecuente": "MODERATE_VOL → MODERATE_VOL → MODERATE_VOL"
+      "transicion_d1_frecuente": "2 → 2 → 2"
     },
     "vvix": {
-      "t1_dominante": "ELEVATED_VVIX__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "4__2__2",
       "t1_n": 2,
       "t1_pct": 20.0,
       "t1_wr_con_precursor": null,
       "t1_wr_sin_precursor": 0.625,
       "delta_wr_precursor": null,
       "amplifica": null,
-      "t2_dominante": "HIGH_VVIX__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "3__2__2",
       "t2_n": 3,
-      "transicion_d1_frecuente": "HIGH_VVIX → HIGH_VVIX → HIGH_VVIX"
+      "transicion_d1_frecuente": "3 → 3 → 3"
     },
     "bsi": {
-      "t1_dominante": "NEUTRAL_HIGH_BREADTH__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "3__2__2",
       "t1_n": 2,
       "t1_pct": 20.0,
       "t1_wr_con_precursor": null,
       "t1_wr_sin_precursor": 0.5,
       "delta_wr_precursor": null,
       "amplifica": null,
-      "t2_dominante": "NEUTRAL_LOW_BREADTH__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "2__2__2",
       "t2_n": 2,
-      "transicion_d1_frecuente": "NEUTRAL_HIGH_BREADTH → NEUTRAL_LOW_BREADTH → NEUTRAL_LOW_BREADTH"
+      "transicion_d1_frecuente": "3 → 2 → 2"
     },
     "credit": {
-      "t1_dominante": "CREDIT_EASE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
-      "t1_n": 4,
-      "t1_pct": 40.0,
-      "t1_wr_con_precursor": 0.75,
-      "t1_wr_sin_precursor": 0.3333333333333333,
-      "delta_wr_precursor": 0.4167,
+      "t1_dominante": "4__2__2",
+      "t1_n": 5,
+      "t1_pct": 50.0,
+      "t1_wr_con_precursor": 0.8,
+      "t1_wr_sin_precursor": 0.2,
+      "delta_wr_precursor": 0.6,
       "amplifica": true,
-      "t2_dominante": "CREDIT_EASE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "4__2__2",
       "t2_n": 5,
-      "transicion_d1_frecuente": "CREDIT_EASE → CREDIT_EASE → CREDIT_EASE"
+      "transicion_d1_frecuente": "4 → 4 → 4"
     },
     "pcr": {
-      "t1_dominante": "BULLISH_PCR__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "1__2__2",
       "t1_n": 2,
       "t1_pct": 20.0,
       "t1_wr_con_precursor": null,
       "t1_wr_sin_precursor": 0.5,
       "delta_wr_precursor": null,
       "amplifica": null,
-      "t2_dominante": "NEUTRAL_PCR__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "2__2__2",
       "t2_n": 3,
-      "transicion_d1_frecuente": "NEUTRAL_PCR → BULLISH_PCR → NEUTRAL_PCR"
+      "transicion_d1_frecuente": "2 → 1 → 2"
     },
     "fg": {
-      "t1_dominante": "NEUTRAL_FEAR__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "2__2__2",
       "t1_n": 3,
       "t1_pct": 30.0,
       "t1_wr_con_precursor": 0.6666666666666666,
       "t1_wr_sin_precursor": 0.42857142857142855,
       "delta_wr_precursor": 0.2381,
       "amplifica": true,
-      "t2_dominante": "NEUTRAL_FEAR__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "2__2__2",
       "t2_n": 4,
-      "transicion_d1_frecuente": "NEUTRAL_FEAR → NEUTRAL_FEAR → NEUTRAL_FEAR"
+      "transicion_d1_frecuente": "2 → 2 → 2"
     },
     "skew": {
-      "t1_dominante": "BLACK_SWAN_PARANOIA__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "5__2__2",
       "t1_n": 3,
       "t1_pct": 30.0,
       "t1_wr_con_precursor": 0.3333333333333333,
       "t1_wr_sin_precursor": 0.5714285714285714,
       "delta_wr_precursor": -0.2381,
       "amplifica": false,
-      "t2_dominante": "BLACK_SWAN_PARANOIA__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "5__2__2",
       "t2_n": 3,
-      "transicion_d1_frecuente": "BLACK_SWAN_PARANOIA → BLACK_SWAN_PARANOIA → BLACK_SWAN_PARANOIA"
+      "transicion_d1_frecuente": "5 → 5 → 5"
     },
     "rotation": {
-      "t1_dominante": "BALANCED__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "3__2__2",
       "t1_n": 3,
       "t1_pct": 30.0,
       "t1_wr_con_precursor": 0.3333333333333333,
       "t1_wr_sin_precursor": 0.5714285714285714,
       "delta_wr_precursor": -0.2381,
       "amplifica": false,
-      "t2_dominante": "BALANCED__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "3__2__2",
       "t2_n": 3,
-      "transicion_d1_frecuente": "BALANCED → BALANCED → BALANCED"
+      "transicion_d1_frecuente": "3 → 3 → 3"
     },
     "dxy": {
-      "t1_dominante": "ELEVATED_DOLLAR_STRESS__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "4__2__2",
       "t1_n": 5,
       "t1_pct": 55.6,
       "t1_wr_con_precursor": 0.4,
       "t1_wr_sin_precursor": 0.5,
       "delta_wr_precursor": -0.1,
       "amplifica": false,
-      "t2_dominante": "ELEVATED_DOLLAR_STRESS__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "4__2__2",
       "t2_n": 3,
-      "transicion_d1_frecuente": "ELEVATED_DOLLAR_STRESS → ELEVATED_DOLLAR_STRESS → ELEVATED_DOLLAR_STRESS"
+      "transicion_d1_frecuente": "4 → 4 → 4"
     },
     "sv5_turbulence": {
-      "t1_dominante": "MODERATE_TURBULENCE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "2__2__2",
       "t1_n": 2,
       "t1_pct": 20.0,
       "t1_wr_con_precursor": null,
       "t1_wr_sin_precursor": 0.375,
       "delta_wr_precursor": null,
       "amplifica": null,
-      "t2_dominante": "HIGH_TURBULENCE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "3__3__2",
       "t2_n": 2,
-      "transicion_d1_frecuente": "HIGH_TURBULENCE → HIGH_TURBULENCE → HIGH_TURBULENCE"
+      "transicion_d1_frecuente": "3 → 3 → 3"
     },
     "yield_curve": {
-      "t1_dominante": "FLAT_CURVE__ACCELERATING_UP_3D__VOL_NEUTRAL_BASELINE",
+      "t1_dominante": "2__3__2",
       "t1_n": 2,
       "t1_pct": 20.0,
       "t1_wr_con_precursor": null,
       "t1_wr_sin_precursor": 0.375,
       "delta_wr_precursor": null,
       "amplifica": null,
-      "t2_dominante": "FLAT_CURVE__STABLE_CONTINUATION_3D__VOL_NEUTRAL_BASELINE",
+      "t2_dominante": "2__2__2",
       "t2_n": 4,
-      "transicion_d1_frecuente": "FLAT_CURVE → FLAT_CURVE → FLAT_CURVE"
+      "transicion_d1_frecuente": "2 → 2 → 2"
     }
   },
   "overflows_sigma": {

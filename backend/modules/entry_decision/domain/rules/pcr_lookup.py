@@ -36,6 +36,7 @@ class PCRStateGuidance:
     zz25: ScaleGuidance
     zz50: ScaleGuidance
     zz75: ScaleGuidance
+    zigzag_kinematic: Optional[Dict[str, Any]] = None
     sigma_depth_d1: Optional[float] = None
     sigma_depth_d2: Optional[float] = None
     sigma_depth_d3: Optional[float] = None
@@ -72,6 +73,7 @@ class PCRStateGuidance:
             "primary_ev_net": self.zz50.ev_net,
             "primary_e_days": self.zz50.e_days,
             "primary_capital_velocity": self.zz50.ev_per_day,
+            "zigzag_kinematic": self.zigzag_kinematic,
             "sigma_depth_d1": self.sigma_depth_d1,
             "sigma_depth_d2": self.sigma_depth_d2,
             "sigma_depth_d3": self.sigma_depth_d3,
@@ -178,6 +180,7 @@ class PCRLookupAdapter:
             zz25=_make_scale(state["zz25"]),
             zz50=_make_scale(state["zz50"]),
             zz75=_make_scale(state["zz75"]),
+            zigzag_kinematic=state.get("zigzag_kinematic"),
             sigma_depth_d1=d1_depth,
             sigma_depth_d2=d2_depth,
             sigma_depth_d3=d3_depth,

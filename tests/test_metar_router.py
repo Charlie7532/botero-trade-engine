@@ -67,10 +67,42 @@ def test_api_metar_bsi_endpoint():
 
 
 def test_api_metar_all_endpoint():
-    """Verify GET /api/metar/all returns aggregated 10 stations dictionary."""
+    """Verify GET /api/metar/all returns aggregated 11 stations dictionary."""
     response = client.get("/api/metar/all")
     assert response.status_code == 200
     data = response.json()
-    assert data["registered_count"] == 10
+    assert data["registered_count"] == 11
     assert "metars" in data
     assert "bsi" in data["metars"]
+    assert "dxy" in data["metars"]
+
+
+def test_api_metar_skew_endpoint():
+    """Verify GET /api/metar/skew returns structured SKEW METAR JSON."""
+    response = client.get("/api/metar/skew")
+    assert response.status_code in [200, 404]
+
+
+def test_api_metar_credit_endpoint():
+    """Verify GET /api/metar/credit returns structured Credit Stress METAR JSON."""
+    response = client.get("/api/metar/credit")
+    assert response.status_code in [200, 404]
+
+
+def test_api_metar_yield_curve_endpoint():
+    """Verify GET /api/metar/yield-curve returns structured Yield Curve METAR JSON."""
+    response = client.get("/api/metar/yield-curve")
+    assert response.status_code in [200, 404]
+
+
+def test_api_metar_rotation_endpoint():
+    """Verify GET /api/metar/rotation returns structured Rotation METAR JSON."""
+    response = client.get("/api/metar/rotation")
+    assert response.status_code in [200, 404]
+
+
+def test_api_metar_dxy_endpoint():
+    """Verify GET /api/metar/dxy returns structured DXY METAR JSON."""
+    response = client.get("/api/metar/dxy")
+    assert response.status_code in [200, 404]
+

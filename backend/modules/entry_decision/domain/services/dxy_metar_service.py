@@ -9,7 +9,7 @@ Follows Clean & Hexagonal Architecture rules.
 """
 import logging
 from datetime import datetime, timezone
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Dict, Any, Optional, List
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
@@ -56,38 +56,12 @@ class DXYMarketMETAR:
     sigma_depth_d2: Optional[float] = None
     sigma_depth_d3: Optional[float] = None
     overflow_flag: Optional[str] = None
+    e_ret_max_zz75: Optional[float] = None
+    e_ret_min_zz75: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "metar_id": self.metar_id,
-            "timestamp_utc": self.timestamp_utc,
-            "as_of_date": self.as_of_date,
-            "issuer": self.issuer,
-            "market_status": self.market_status,
-            "dxy_index_value": self.dxy_index_value,
-            "dxy_velocity_3d": self.dxy_velocity_3d,
-            "state_key": self.state_key,
-            "dxy_bin": self.dxy_bin,
-            "velocity_vector": self.velocity_vector,
-            "n_samples": self.n_samples,
-            "divergence_regime": self.divergence_regime,
-            "operational_guidance": self.operational_guidance,
-            "p_bull_vector": self.p_bull_vector,
-            "p_bear_vector": self.p_bear_vector,
-            "ev_net_vector": self.ev_net_vector,
-            "e_days_vector": self.e_days_vector,
-            "ev_per_day_vector": self.ev_per_day_vector,
-            "primary_p_bull": self.primary_p_bull,
-            "primary_ev_net": self.primary_ev_net,
-            "primary_e_days": self.primary_e_days,
-            "primary_capital_velocity": self.primary_capital_velocity,
-            "rr_asymmetry_ratio": self.rr_asymmetry_ratio,
-            "zigzag_kinematic": self.zigzag_kinematic,
-            "sigma_depth_d1": self.sigma_depth_d1,
-            "sigma_depth_d2": self.sigma_depth_d2,
-            "sigma_depth_d3": self.sigma_depth_d3,
-            "overflow_flag": self.overflow_flag,
-        }
+        """Returns full structured METAR payload as a dictionary."""
+        return asdict(self)
 
     def format_cli_broadcast(self) -> str:
         """Formats the METAR into a high-visibility CLI broadcast string."""
@@ -225,6 +199,8 @@ def get_dxy_market_metar(as_of_date: Optional[str] = None) -> DXYMarketMETAR:
             sigma_depth_d2=guidance.sigma_depth_d2,
             sigma_depth_d3=guidance.sigma_depth_d3,
             overflow_flag=guidance.overflow_flag,
+            e_ret_max_zz75=guidance.zz75.e_ret_max,
+            e_ret_min_zz75=guidance.zz75.e_ret_min,
         )
 
     finally:

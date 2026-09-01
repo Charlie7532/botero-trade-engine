@@ -1,8 +1,8 @@
 """
 Market METAR REST Router — FastAPI API Boundary
 ===============================================
-Exposes zero-fallback Market METAR services for VIX, VVIX, Fear & Greed, Put/Call Ratio,
-SV5_Turbulence, SKEW, Credit Stress, Yield Curve Spread, and Sector Rotation.
+Exposes zero-fallback Market METAR services for all 11 registered stations:
+VIX, VVIX, PCR, F&G, SV5_Turbulence, SKEW, Credit, Yield Curve, Rotation, BSI, DXY.
 Reads exclusively from Neon Vault using pure domain services.
 """
 from typing import Optional
@@ -47,6 +47,10 @@ from backend.modules.entry_decision.domain.services.rotation_metar_service impor
 from backend.modules.entry_decision.domain.services.bsi_metar_service import (
     get_bsi_market_metar,
     StrictDataPolicyError as BSIStrictError
+)
+from backend.modules.entry_decision.domain.services.dxy_metar_service import (
+    get_dxy_market_metar,
+    StrictDataPolicyError as DXYStrictError
 )
 
 router = APIRouter(prefix="/metar", tags=["Market METAR Multi-Station Telemetry"])
@@ -192,13 +196,27 @@ async def get_bsi_metar(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/dxy")
+async def get_dxy_metar(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
+):
+    """Returns authoritative 3-Day Fast Kinematic DXY (US Dollar Index) Market METAR."""
+    try:
+        metar = get_dxy_market_metar(as_of_date=as_of_date)
+        return metar.to_dict()
+    except DXYStrictError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/all")
 @router.get("")
 async def get_all_metars(
     as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD")
 ):
     """
-    Returns an aggregated dictionary of all 10 registered Market METAR stations.
+    Returns an aggregated dictionary of all 11 registered Market METAR stations.
     """
     indicators = {
         "vix": (get_vix_market_metar, VIXStrictError),
@@ -211,6 +229,7 @@ async def get_all_metars(
         "yield_curve": (get_yield_curve_market_metar, YieldCurveStrictError),
         "rotation": (get_rotation_market_metar, RotationStrictError),
         "bsi": (get_bsi_market_metar, BSIStrictError),
+        "dxy": (get_dxy_market_metar, DXYStrictError),
     }
 
     results = {}

@@ -213,4 +213,5 @@ def main():
             tag_icon = "+" if ov["tag"] == "ADITIVA" else "−" if ov["tag"] == "CANCELATORIA" else "="
             print(f"    [{tag_icon}] {ov['par']:45s} N={both['n']:3d} ({ov['pct_overlap']:.0f}%) | ambas={both['mean']:+.4f} WR={both['wr']:.0%} | solo_a={(a_info['mean'] or 0):+.4f} solo_b={(b_info['mean'] or 0):+.4f} | {ov['tag']}")
 
+    out_path = args.out or str(SCRATCH / f"medicion_{args.señal}.json")
     print(f"  Reporte: {out_path}")

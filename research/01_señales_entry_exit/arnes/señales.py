@@ -30,6 +30,7 @@ def _get_dim(df: pd.DataFrame, station: str, dim: int = 0) -> pd.Series:
     validacion="VALIDATED (Grade A)", n_min=112, dsr=None,
     fuente="credit_easing_pisos.py (17-Ago)",
     tipo="entry", pivot_type="MIN",
+    fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
     descripcion="Crédito mejorando en piso de drawdown. Señal contrarian de compra: el estrés crediticio cede mientras el precio toca fondo.")
 def _credit_easing(df):
     """CREDIT easing en ventana K=1, EN UN PISO DE DRAWDOWN (pivot_type == MIN).
@@ -44,10 +45,13 @@ def _credit_easing(df):
     validacion="SPECULATIVE", n_min=525, dsr=None,
     fuente="distortion_surprise_adelantada.py (17-Ago), ρ≤0.15",
     tipo="entry", pivot_type="BOTH",
-    descripcion="Sorpresa agregada de Shannon alta: el sistema METAR está en un estado estadísticamente improbable. Precursor de reversión.")
+    descripcion="Sorpresa agregada de Shannon alta: el sistema METAR está en un estado estadísticamente improbable. "
+                "Pre-2007: 6-8/11 estaciones activas (VVIX/PCR/Credit/SKEW/FG no existen). "
+                "mean(skipna=True) normaliza por conteo activo. Percentil Q67 puede sesgar ligeramente pre-2011.")
 def _sorpresa_total(df):
     """Sorpresa agregada de Shannon (alta = sistema en estado improbable).
-    Computada desde los fact stores vía state_key. Umbral = tercil alto."""
+    Computada desde los fact stores vía state_key. Umbral = tercil alto.
+    NOTA: Pre-2011, solo 6-9 de 11 estaciones contribuyen (skipna=True normaliza)."""
     surprise = _surprise_vector(df)
     total = surprise.mean(axis=1, skipna=True)
     return total >= total.quantile(0.67)
@@ -57,10 +61,12 @@ def _sorpresa_total(df):
     validacion="VALIDATED (Grade A)", n_min=30, dsr=0.9680,
     fuente="operational-spec: VIX+SKEW extremos, +6.81% 60d, 82% WR",
     tipo="entry", pivot_type="BOTH",
-    descripcion="VIX y SKEW ambos en extremo bearish simultáneamente. Pánico institucional completo = oportunidad contrarian de compra.")
+    fecha_inicio_valida="2011-02-01", era_valida="POST_2011",
+    descripcion="VIX y SKEW ambos en extremo bearish simultáneamente (Post-2011: CBOE SKEW oficial). Data pre-2011 es sintética e inválida. Pánico institucional completo = compra contrarian.")
 def _panico_total(df):
     """PÁNICO TOTAL: VIX y SKEW ambos en D1 extremo (bearish).
-    VIX en PANIC / EXTREME_PANIC (>= 4) Y SKEW en PARANOIA / EXTREME_PARANOIA (>= 4)."""
+    VIX en PANIC / EXTREME_PANIC (>= 4) Y SKEW en PARANOIA / EXTREME_PARANOIA (>= 4).
+    POBLACIÓN VÁLIDA: Exclusivamente Post-2011-02-01 (Inception CBOE SKEW oficial)."""
     vix_d1 = _get_dim(df, "vix", 0)
     skew_d1 = _get_dim(df, "skew", 0)
     return (vix_d1 >= 4) & (skew_d1 >= 4)
@@ -106,6 +112,7 @@ def _euforia(df):
     validacion="VALIDATED (Grade A)", n_min=30, dsr=None,
     fuente="operational-spec: EXTREME_VVIX, +2.69% 20d, Kelly 61%",
     tipo="entry", pivot_type="BOTH",
+    fecha_inicio_valida="2006-03-06", era_valida="POST_2006",
     descripcion="VVIX en extremo: la volatilidad de la volatilidad dispara = inestabilidad máxima. Contrarian de compra.")
 def _vvix_entry(df):
     """VVIX en EXTREME_INSTABILITY (== 5)."""
@@ -126,6 +133,7 @@ def _bsi_washed_out(df):
     validacion="VALIDATED (Grade A)", n_min=82, dsr=0.9509,
     fuente="operational-spec: CREDIT_STRESS, +3.00% 20d, Kelly 50%",
     tipo="entry", pivot_type="BOTH",
+    fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
     descripcion="Spread de crédito HYG/LQD en zona de estrés. El mercado de bonos señala miedo = oportunidad contrarian en equity.")
 def _credit_stress(df):
     """CREDIT en estrés (EXTREME_STRESS=0, STRESS=1, es decir <= 1)."""
@@ -147,6 +155,7 @@ def _dxy_bearish(df):
     validacion="VALIDATED (Grade A)", n_min=20, dsr=None,
     fuente="operational-spec: EXTREME_PUT_PANIC, +2.26% 20d, WR 79%",
     tipo="entry", pivot_type="BOTH",
+    fecha_inicio_valida="2006-11-01", era_valida="POST_2006",
     descripcion="Put/Call ratio en pánico extremo. Exceso de compra de puts = miedo institucional máximo. Contrarian de compra.")
 def _pcr_put_panic(df):
     """PCR en EXTREME_PUT_PANIC (== 5)."""
@@ -157,9 +166,10 @@ def _pcr_put_panic(df):
     validacion="VALIDATED", n_min=54, dsr=None,
     fuente="auditoria 17-Ago: EXTREME_FEAR=+1.58% WR=68.5% N=54",
     tipo="entry", pivot_type="BOTH",
-    descripcion="Fear & Greed CNN en miedo extremo (<10). Sentimiento retail capitulado = oportunidad contrarian de compra.")
+    fecha_inicio_valida="2011-02-01", era_valida="POST_2011",
+    descripcion="Fear & Greed CNN en miedo extremo (<10, Post-2011). Sentimiento retail capitulado = oportunidad contrarian de compra.")
 def _fg_extreme_fear(df):
-    """FG en EXTREME_FEAR (== 0)."""
+    """FG en EXTREME_FEAR (== 0). POBLACIÓN VÁLIDA: Post-2011-02-01 (Inception CNN F&G)."""
     return _get_dim(df, "fg", 0) == 0
 
 
@@ -167,9 +177,10 @@ def _fg_extreme_fear(df):
     validacion="VALIDATED", n_min=31, dsr=None,
     fuente="auditoria 17-Ago: EXTREME_GREED=-1.92% WR=19.4% N=31",
     tipo="exit", pivot_type="BOTH",
-    descripcion="Fear & Greed CNN en codicia extrema (>90). Sentimiento retail eufórico = señal de techo. WR bear 80.6%.")
+    fecha_inicio_valida="2011-02-01", era_valida="POST_2011",
+    descripcion="Fear & Greed CNN en codicia extrema (>90, Post-2011). Sentimiento retail eufórico = señal de techo. WR bear 80.6%.")
 def _fg_extreme_greed(df):
-    """FG en EXTREME_GREED (== 5)."""
+    """FG en EXTREME_GREED (== 5). POBLACIÓN VÁLIDA: Post-2011-02-01 (Inception CNN F&G)."""
     return _get_dim(df, "fg", 0) == 5
 
 
@@ -219,6 +230,7 @@ def _cascade_reversal(df):
     validacion="RETIRADA (duplicado exacto de credit_stress — 20-Ago-2026)", n_min=None, dsr=None,
     fuente="analisis_señales_exit.md: CREDIT entra en CREDIT_STRESS. RETIRADA: código idéntico a credit_stress (N=215, edge=+1.00%).",
     tipo="exit", pivot_type="BOTH",
+    fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
     descripcion="RETIRADA: duplicado exacto de credit_stress. Usar credit_stress en su lugar.")
 def _credit_stress_exit(df):
     """[RETIRADA 20-Ago-2026] Duplicado exacto de credit_stress (<= 1)."""
@@ -240,6 +252,7 @@ def _dxy_spike_exit(df):
     validacion="RETIRADA (duplicado exacto de pcr_put_panic — 20-Ago-2026)", n_min=None, dsr=None,
     fuente="analisis_señales_exit.md: PCR entra en EXTREME_PUT_PANIC. RETIRADA: código idéntico a pcr_put_panic (N=70, edge=+2.70%).",
     tipo="exit", pivot_type="BOTH",
+    fecha_inicio_valida="2006-11-01", era_valida="POST_2006",
     descripcion="RETIRADA: duplicado exacto de pcr_put_panic. Usar pcr_put_panic en su lugar.")
 def _pcr_panic_exit(df):
     """[RETIRADA 20-Ago-2026] Duplicado exacto de pcr_put_panic (== 5)."""
@@ -249,10 +262,12 @@ def _pcr_panic_exit(df):
 @_registrar("skew_paranoia_exit",
     validacion="RESCATADA (v6: +2.84% neto, p=0.091, N=16, INDEP=71% — método first-passage)", n_min=None, dsr=None,
     fuente="analisis_señales_exit.md: SKEW entra en BLACK_SWAN_PARANOIA. Rescatada por arquitecto 22-Ago tras re-evaluación v6.",
-    tipo="entry", pivot_type="BOTH",
-    descripcion="SKEW en paranoia de black swan. Institucionales comprando puts OTM masivamente = miedo extremo de cola. Diamante contrarian.")
+    tipo="exit", pivot_type="BOTH",
+    fecha_inicio_valida="2011-02-01", era_valida="POST_2011",
+    descripcion="SKEW en paranoia de black swan (Post-2011: CBOE SKEW oficial). Institucionales comprando puts OTM masivamente = miedo extremo de cola. Pre-2011 sintética inválida. Diamante contrarian.")
 def _skew_paranoia_exit(df):
-    """[RESCATADA 22-Ago-2026] SKEW entra en EXTREME_PARANOIA (== 5)."""
+    """[RESCATADA 22-Ago-2026] SKEW entra en EXTREME_PARANOIA (== 5).
+    POBLACIÓN VÁLIDA: Exclusivamente Post-2011-02-01 (Inception CBOE SKEW oficial)."""
     return _get_dim(df, "skew", 0) == 5
 
 
@@ -271,6 +286,7 @@ def _vix_complacency_exit(df):
     validacion="RE-RETIRADA (structural break 22-Ago)", n_min=None, dsr=None,
     fuente="EXIT: CREDIT sale de CREDIT_EASE/DEEP_CREDIT_EASE → fin de easing",
     tipo="exit", pivot_type="BOTH",
+    fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
     descripcion="RE-RETIRADA: crédito sale de easing. Reliquia pre-QE: el edge desapareció post-2009. No usar.")
 def _credit_ease_exit(df):
     """[RE-RETIRADA 22-Ago-2026] CREDIT NO está en easing (< 4)."""
@@ -293,6 +309,7 @@ def _breadth_contraction_exit(df):
     validacion="RETIRADA (lift<1.0 — 20-Ago-2026 Opus PC1)", n_min=None, dsr=None,
     fuente="EXIT: Cambio de régimen VERANO→INVIERNO (credit_stress + vix_high + bsi_low)",
     tipo="exit", pivot_type="BOTH",
+    fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
     descripcion="RETIRADA: cambio de régimen verano→invierno. LIFT<1.0 = peor que no hacer nada. Anti-señal.")
 def _regime_change_exit(df):
     """[RETIRADA 20-Ago-2026] Cambio de régimen: Invierno (credit <= 2 & vix >= 3 & bsi <= 2)."""
@@ -321,6 +338,7 @@ def _sv5t_silent_distribution(df):
     validacion="DEGRADADA GRADO C (LIFT≈1.0 — 20-Ago-2026)", n_min=None, dsr=None,
     fuente="EXIT: Techo MAX con spread de crédito acelerando al alza. LIFT(MAX)=1.035x ≈ baseline (82.9%→85.8%) — NO discrimina.",
     tipo="exit", pivot_type="MAX",
+    fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
     descripcion="DEGRADADA: divergencia crédito-equity en techos. LIFT≈1.0 = no discrimina vs baseline. Solo monitorear con filtro HH.")
 def _credit_equity_divergence(df):
     """[GRADO C 20-Ago-2026] En techo MAX, crédito se deteriora con velocidad positiva (D2 >= 3)."""
@@ -332,11 +350,13 @@ def _credit_equity_divergence(df):
 
 @_registrar("stealth_tail_hedging",
     validacion="PROPOSED", n_min=None, dsr=None,
-    fuente="EXIT: VIX complaciente pero SKEW en expansión de volatilidad/cobertura",
+    fuente="EXIT: VIX complaciente pero SKEW en expansión de volatilidad/cobertura (Post-2011)",
     tipo="exit", pivot_type="BOTH",
-    descripcion="VIX complaciente pero SKEW en expansión: institucionales comprando cobertura de cola en silencio. Señal de distribución oculta.")
+    fecha_inicio_valida="2011-02-01", era_valida="POST_2011",
+    descripcion="VIX complaciente pero SKEW en expansión (Post-2011): institucionales comprando cobertura de cola en silencio. Pre-2011 sintética inválida.")
 def _stealth_tail_hedging(df):
-    """VIX en complacencia (<= 2) mientras SKEW muestra compras OTM (D3 >= 3)."""
+    """VIX en complacencia (<= 2) mientras SKEW muestra compras OTM (D3 >= 3).
+    POBLACIÓN VÁLIDA: Exclusivamente Post-2011-02-01 (Inception CBOE SKEW oficial)."""
     vix_d1 = _get_dim(df, "vix", 0)
     skew_d3 = _get_dim(df, "skew", 2)
     return (vix_d1 <= 2) & (skew_d3 >= 3)
@@ -395,3 +415,42 @@ def _vix_crisis_spike_v2(df):
     vix_d1 = _get_dim(df, "vix", 0)
     vix_d2 = _get_dim(df, "vix", 1)
     return (vix_d1 == 5) & (vix_d2 >= 3)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. SEÑALES PROMPT_CIERRE_V3 — Ejercicios Probatorios (31-Ago-2026)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Stations for E7/E11 multi-station signals
+_STATIONS_E7 = ["vix", "bsi", "credit", "yield_curve", "vvix", "sv5_turbulence",
+                "fg", "skew", "pcr", "rotation", "dxy"]
+
+
+@_registrar("neutral_crush_entry",
+    validacion="SPECULATIVE (E7 prompt_cierre_v3)", n_min=20, dsr=None,
+    fuente="prompt_cierre_v3 E7: CRUSH > SPIKE en zona neutral (mean-reversion)",
+    tipo="entry", pivot_type="BOTH",
+    descripcion="D1 neutral(2,3) + D2=FAST_CRUSH(0) en ≥2 estaciones simultáneas. Mean-reversion bullish. Umbral ≥2 (no ≥3) porque D2=CRUSH en pivotes es más raro que en días calendario.")
+def _neutral_crush(df):
+    """Zona neutral D1(2,3) + D2=FAST_CRUSH(0) en ≥2 estaciones."""
+    count = pd.Series(0, index=df.index, dtype=int)
+    for st in _STATIONS_E7:
+        d1 = _get_dim(df, st, 0)
+        d2 = _get_dim(df, st, 1)
+        count = count + ((d1.isin([2, 3])) & (d2 == 0)).astype(int)
+    return count >= 2
+
+
+@_registrar("neutral_spike_exit",
+    validacion="SPECULATIVE (E7 prompt_cierre_v3)", n_min=10, dsr=None,
+    fuente="prompt_cierre_v3 E7-exit: SPIKE en zona neutral (mean-reversion counter)",
+    tipo="exit", pivot_type="BOTH",
+    descripcion="D1 neutral(2,3) + D2=FAST_SPIKE(4) en ≥2 estaciones. Contraparte exit del E7 neutral_crush.")
+def _neutral_spike(df):
+    """Zona neutral D1(2,3) + D2=FAST_SPIKE(4) en ≥2 estaciones."""
+    count = pd.Series(0, index=df.index, dtype=int)
+    for st in _STATIONS_E7:
+        d1 = _get_dim(df, st, 0)
+        d2 = _get_dim(df, st, 1)
+        count = count + ((d1.isin([2, 3])) & (d2 == 4)).astype(int)
+    return count >= 2

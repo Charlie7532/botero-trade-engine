@@ -45,10 +45,13 @@ class MarketMETAR:
     primary_e_days: float
     primary_capital_velocity: float
     rr_asymmetry_ratio: float
+    zigzag_kinematic: Optional[Dict[str, Any]] = None
     sigma_depth_d1: Optional[float] = None
     sigma_depth_d2: Optional[float] = None
     sigma_depth_d3: Optional[float] = None
     overflow_flag: Optional[str] = None
+    e_ret_max_zz75: Optional[float] = None
+    e_ret_min_zz75: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Returns full structured METAR payload as a dictionary."""
@@ -208,10 +211,13 @@ def get_fg_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
             primary_e_days=vec["primary_e_days"],
             primary_capital_velocity=vec["primary_capital_velocity"],
             rr_asymmetry_ratio=guidance.zz50.rr_asymmetry,
+            zigzag_kinematic=guidance.zigzag_kinematic,
             sigma_depth_d1=guidance.sigma_depth_d1,
             sigma_depth_d2=guidance.sigma_depth_d2,
             sigma_depth_d3=guidance.sigma_depth_d3,
             overflow_flag=guidance.overflow_flag,
+            e_ret_max_zz75=guidance.zz75.e_ret_max,
+            e_ret_min_zz75=guidance.zz75.e_ret_min,
         )
 
     finally:

@@ -10,10 +10,9 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRATCH = ROOT / "data/research"
+SCRATCH = ROOT / "data/research/signals"
+SCRATCH.mkdir(parents=True, exist_ok=True)
 OBS_PKL = ROOT / "data/research/pivots/quants_obs.pkl"
-if not OBS_PKL.exists():
-    OBS_PKL = ROOT / "data/research/pivots/quants_obs.pkl"
 
 def cargar_datos():
     """Carga los pivotes de quants_obs.pkl y las barras diarias de SPY desde el Vault."""

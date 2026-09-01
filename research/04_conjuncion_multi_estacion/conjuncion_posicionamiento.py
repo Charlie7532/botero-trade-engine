@@ -39,6 +39,7 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
+from arnes.timing import classify_single_delta
 
 ROOT = Path("/root/botero-trade")
 sys.path.insert(0, str(ROOT))
@@ -118,17 +119,21 @@ for leg in legs25:
 pivot_items.sort(key=lambda x: x[0])
 
 def find_nearest_pivot(signal_date):
-    """Returns (days_diff, pivot_date, pivot_type, pivot_price)."""
+    """Returns (delta_days, slot, pivot_date, pivot_type, pivot_price).
+    delta_days = (signal_date - pivot_date).days
+    slot = 't-2' | 't-1' | 't=0' | 't+1' | 't+2' | 'ENTRE'
+    """
     best = None
     best_dist = float('inf')
     for pd_d, ptype, pprice in pivot_items:
-        dist = (pd_d - signal_date).days
+        dist = (signal_date - pd_d).days
         if abs(dist) < best_dist:
             best = (dist, pd_d, ptype, pprice)
             best_dist = abs(dist)
         elif abs(dist) == best_dist and dist > best[0]:
             best = (dist, pd_d, ptype, pprice)
-    return best
+    slot = classify_single_delta(best[0])
+    return best[0], slot, best[1], best[2], best[3]
 
 # ── PCR data ──
 pcr_raw = store.load_bars("CBOE_PCR", "1d")["close"].copy()
@@ -290,7 +295,7 @@ def build_entries(signal_dates, spy_aligned, spy_dates, spy_price_map):
 
         # Timing vs zigzag
         pivot_info = find_nearest_pivot(entry_date)
-        pivot_days, pivot_date, pivot_type, pivot_price = pivot_info
+        pivot_days, slot, pivot_date, pivot_type, pivot_price = pivot_info
 
         # Falling knife DD
         dd_to_pivot = np.nan
@@ -328,6 +333,7 @@ def build_entries(signal_dates, spy_aligned, spy_dates, spy_price_map):
             "fwd_20d": fwd_rets.get(20, np.nan),
             "fwd_40d": fwd_rets.get(40, np.nan),
             "pivot_days": pivot_days,
+            "slot": slot,
             "pivot_type": pivot_type,
             "pivot_price": pivot_price,
             "dd_to_pivot": dd_to_pivot,
@@ -464,20 +470,35 @@ for group_name, group_config in GROUPS.items():
             "n_streaks": len(loss_streaks),
         }
 
-    # F. Timing vs zigzag
+    # F. Timing vs zigzag (6 Slots Canónicos: t-2, t-1, t=0, t+1, t+2, ENTRE)
     pivot_days_arr = df["pivot_days"].values
-    anticipada = int((pivot_days_arr > 0).sum())
-    en_piv = int((pivot_days_arr == 0).sum())
-    retrasada = int((pivot_days_arr < 0).sum())
+    slots_arr = df["slot"].values
+    counts = {s: int((slots_arr == s).sum()) for s in ["t-2", "t-1", "t=0", "t+1", "t+2", "ENTRE"]}
+    n_ant = counts["t-2"] + counts["t-1"]
+    n_exa = counts["t=0"]
+    n_ret = counts["t+1"] + counts["t+2"]
+    n_fue = counts["ENTRE"]
+    n_rng = n_ant + n_exa + n_ret
 
     ret20 = df["fwd_20d"].values
     dd_pivot_arr = df["dd_to_pivot"].dropna().values
 
     timing = {
-        "n_anticipada": anticipada, "n_en_pivote": en_piv, "n_retrasada": retrasada,
-        "ret_anticipada_mean": float(ret20[pivot_days_arr > 0].mean()) if anticipada > 0 else np.nan,
-        "ret_en_pivote_mean": float(ret20[pivot_days_arr == 0].mean()) if en_piv > 0 else np.nan,
-        "ret_retrasada_mean": float(ret20[pivot_days_arr < 0].mean()) if retrasada > 0 else np.nan,
+        "slots": counts,
+        "n_en_rango": n_rng,
+        "pct_en_rango": float(n_rng / n_total * 100) if n_total > 0 else 0.0,
+        "n_anticipada": n_ant,
+        "pct_anticipada": float(n_ant / n_total * 100) if n_total > 0 else 0.0,
+        "n_exacta": n_exa,
+        "pct_exacta": float(n_exa / n_total * 100) if n_total > 0 else 0.0,
+        "n_retrasada": n_ret,
+        "pct_retrasada": float(n_ret / n_total * 100) if n_total > 0 else 0.0,
+        "n_fuera_de_rango": n_fue,
+        "pct_fuera_de_rango": float(n_fue / n_total * 100) if n_total > 0 else 0.0,
+        "ret_anticipada_mean": float(ret20[df["slot"].isin(["t-2", "t-1"])].mean()) if n_ant > 0 else np.nan,
+        "ret_exacta_mean": float(ret20[df["slot"] == "t=0"].mean()) if n_exa > 0 else np.nan,
+        "ret_retrasada_mean": float(ret20[df["slot"].isin(["t+1", "t+2"])].mean()) if n_ret > 0 else np.nan,
+        "ret_fuera_mean": float(ret20[df["slot"] == "ENTRE"].mean()) if n_fue > 0 else np.nan,
         "pivot_days_stats": {
             "P25": float(np.percentile(pivot_days_arr, 25)),
             "P50": float(np.percentile(pivot_days_arr, 50)),
@@ -608,16 +629,14 @@ for group_name in COMPARISON_ORDER:
 
     # F. Timing
     timing = results["timing"]
-    print(f"\n  ── F. TIMING vs ZIGZAG ──")
-    print(f"    Anticipada (señal antes del pivote): {timing['n_anticipada']} "
-          f"({timing['n_anticipada']/n*100:.0f}%)")
-    print(f"    En pivote (señal = pivote):         {timing['n_en_pivote']} "
-          f"({timing['n_en_pivote']/n*100:.0f}%)")
-    print(f"    Retrasada (señal después pivote):    {timing['n_retrasada']} "
-          f"({timing['n_retrasada']/n*100:.0f}%)")
+    print(f"\n  ── F. TIMING vs ZIGZAG (6 Slots Canónicos) ──")
+    print(f"    EN RANGO ([-2t, +2t]): {timing['n_en_rango']} / {n} ({timing['pct_en_rango']:.0f}%)")
+    print(f"      • Anticipada  (t-2, t-1): {timing['n_anticipada']} ({timing['pct_anticipada']:.0f}%)  [t-2: {timing['slots']['t-2']}, t-1: {timing['slots']['t-1']}]")
+    print(f"      • Exacta      (t=0):     {timing['n_exacta']} ({timing['pct_exacta']:.0f}%)")
+    print(f"      • Retrasada   (t+1, t+2): {timing['n_retrasada']} ({timing['pct_retrasada']:.0f}%)  [t+1: {timing['slots']['t+1']}, t+2: {timing['slots']['t+2']}]")
+    print(f"    FUERA DE RANGO (ENTRE):    {timing['n_fuera_de_rango']} ({timing['pct_fuera_de_rango']:.0f}%)")
     pds = timing["pivot_days_stats"]
-    print(f"    Días señal→pivote: P50={pds['P50']:.0f}  mean={pds['mean']:.1f}  "
-          f"[{pds['min']}, {pds['max']}]")
+    print(f"    Días señal→pivote: P50={pds['P50']:.0f}  mean={pds['mean']:.1f}  [{pds['min']}, {pds['max']}]")
 
     # G. Cuchillo
     cuchillo = results["cuchillo"]
@@ -691,10 +710,12 @@ print(header_t)
 print(f"  {'─'*28}{'─'*col_width * len(active_gt)}")
 
 for label, getter in [
-    ("Anticipada %", lambda r: f"{r['timing']['n_anticipada']/r['n_entries']*100:.0f}%"),
-    ("En pivote %", lambda r: f"{r['timing']['n_en_pivote']/r['n_entries']*100:.0f}%"),
-    ("Retrasada %", lambda r: f"{r['timing']['n_retrasada']/r['n_entries']*100:.0f}%"),
-    ("Cuchillo cayendo %", lambda r: f"{r['cuchillo']['cuchillo_pct']:.0f}%"),
+    ("En Rango % ([-2t, +2t])", lambda r: f"{r['timing']['pct_en_rango']:.0f}%"),
+    ("Anticipada % (t-2, t-1)", lambda r: f"{r['timing']['pct_anticipada']:.0f}%"),
+    ("Exacta % (t=0)",          lambda r: f"{r['timing']['pct_exacta']:.0f}%"),
+    ("Retrasada % (t+1, t+2)",   lambda r: f"{r['timing']['pct_retrasada']:.0f}%"),
+    ("Fuera de Rango % (ENTRE)", lambda r: f"{r['timing']['pct_fuera_de_rango']:.0f}%"),
+    ("Cuchillo cayendo %",       lambda r: f"{r['cuchillo']['cuchillo_pct']:.0f}%"),
 ]:
     line = f"  {label:<28}"
     for gn in active_gt:

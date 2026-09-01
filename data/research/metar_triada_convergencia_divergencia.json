@@ -1,0 +1,899 @@
+{
+  "exercise": "E11a_sign_consistency + E11b_ev_gradient + E11c_ftt_collapse",
+  "source": "prompt_cierre_opus_v3_v2",
+  "criterion": "EV_CONVERGENT_BULL > 2x |EV_MIXED| in ≥3 stations",
+  "n_stations_pass": 7,
+  "results": {
+    "vix": {
+      "total_states": 113,
+      "triada_counts": {
+        "CONVERGENT_BULL": 40,
+        "CONVERGENT_BEAR": 8,
+        "DIVERGENT_EXHAUSTION": 7,
+        "DIVERGENT_REVERSAL": 15,
+        "MIXED": 43
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.1891,
+        "CONVERGENT_BEAR": -0.1896,
+        "DIVERGENT_EXHAUSTION": -0.133,
+        "DIVERGENT_REVERSAL": 0.2975,
+        "MIXED": 0.149
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 18.91,
+        "CONVERGENT_BEAR": -18.96,
+        "DIVERGENT_EXHAUSTION": -13.3,
+        "DIVERGENT_REVERSAL": 29.75,
+        "MIXED": 14.9
+      },
+      "passes_criterion_conv_gt_2x_mixed": false,
+      "gradient_counts": {
+        "AMPLIFYING": 36,
+        "DECAYING": 13,
+        "FLAT": 64
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.5059,
+        "DECAYING": -0.3374,
+        "FLAT": 0.0477
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 50.59,
+        "DECAYING": -33.74,
+        "FLAT": 4.77
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 65,
+        "NORMAL": 22,
+        "STRETCHED": 26,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 62,
+        "NORMAL": 38,
+        "STRETCHED": 13,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 62,
+      "ftt_compressed_bull_count": 65,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__1__0",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__1__1",
+          "ratio": 1.0,
+          "n": 5
+        },
+        {
+          "state_key": "0__1__2",
+          "ratio": 1.0,
+          "n": 10
+        },
+        {
+          "state_key": "0__1__3",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__1__4",
+          "ratio": 1.0,
+          "n": 1
+        }
+      ]
+    },
+    "vvix": {
+      "total_states": 98,
+      "triada_counts": {
+        "CONVERGENT_BULL": 35,
+        "CONVERGENT_BEAR": 8,
+        "DIVERGENT_EXHAUSTION": 10,
+        "DIVERGENT_REVERSAL": 12,
+        "MIXED": 33
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.212,
+        "CONVERGENT_BEAR": -0.4606,
+        "DIVERGENT_EXHAUSTION": -0.3895,
+        "DIVERGENT_REVERSAL": 0.0903,
+        "MIXED": 0.1464
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 21.2,
+        "CONVERGENT_BEAR": -46.06,
+        "DIVERGENT_EXHAUSTION": -38.95,
+        "DIVERGENT_REVERSAL": 9.03,
+        "MIXED": 14.64
+      },
+      "passes_criterion_conv_gt_2x_mixed": false,
+      "gradient_counts": {
+        "AMPLIFYING": 35,
+        "DECAYING": 15,
+        "FLAT": 48
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.5008,
+        "DECAYING": -0.3019,
+        "FLAT": 0.071
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 50.08,
+        "DECAYING": -30.19,
+        "FLAT": 7.1
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 57,
+        "NORMAL": 23,
+        "STRETCHED": 18,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 53,
+        "NORMAL": 36,
+        "STRETCHED": 9,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 53,
+      "ftt_compressed_bull_count": 57,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__1__2",
+          "ratio": 1.0,
+          "n": 3
+        },
+        {
+          "state_key": "0__2__0",
+          "ratio": 1.0,
+          "n": 5
+        },
+        {
+          "state_key": "0__2__1",
+          "ratio": 1.0,
+          "n": 5
+        },
+        {
+          "state_key": "0__2__2",
+          "ratio": 1.0,
+          "n": 6
+        },
+        {
+          "state_key": "1__0__1",
+          "ratio": 1.0,
+          "n": 3
+        }
+      ]
+    },
+    "pcr": {
+      "total_states": 95,
+      "triada_counts": {
+        "CONVERGENT_BULL": 36,
+        "CONVERGENT_BEAR": 5,
+        "DIVERGENT_EXHAUSTION": 8,
+        "DIVERGENT_REVERSAL": 19,
+        "MIXED": 27
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.2275,
+        "CONVERGENT_BEAR": -0.4372,
+        "DIVERGENT_EXHAUSTION": -0.2981,
+        "DIVERGENT_REVERSAL": 0.1095,
+        "MIXED": 0.0259
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 22.75,
+        "CONVERGENT_BEAR": -43.72,
+        "DIVERGENT_EXHAUSTION": -29.81,
+        "DIVERGENT_REVERSAL": 10.95,
+        "MIXED": 2.59
+      },
+      "passes_criterion_conv_gt_2x_mixed": true,
+      "gradient_counts": {
+        "AMPLIFYING": 31,
+        "DECAYING": 17,
+        "FLAT": 47
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.3462,
+        "DECAYING": -0.383,
+        "FLAT": 0.0639
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 34.62,
+        "DECAYING": -38.3,
+        "FLAT": 6.39
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 52,
+        "NORMAL": 31,
+        "STRETCHED": 12,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 56,
+        "NORMAL": 30,
+        "STRETCHED": 9,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 56,
+      "ftt_compressed_bull_count": 52,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__0__2",
+          "ratio": 1.0,
+          "n": 3
+        },
+        {
+          "state_key": "0__1__0",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__1__3",
+          "ratio": 1.43,
+          "n": 10
+        },
+        {
+          "state_key": "0__1__4",
+          "ratio": 1.0,
+          "n": 5
+        },
+        {
+          "state_key": "0__2__0",
+          "ratio": 1.0,
+          "n": 1
+        }
+      ]
+    },
+    "fg": {
+      "total_states": 82,
+      "triada_counts": {
+        "CONVERGENT_BULL": 38,
+        "CONVERGENT_BEAR": 3,
+        "DIVERGENT_EXHAUSTION": 1,
+        "DIVERGENT_REVERSAL": 14,
+        "MIXED": 26
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.2703,
+        "CONVERGENT_BEAR": -0.2612,
+        "DIVERGENT_EXHAUSTION": -0.1853,
+        "DIVERGENT_REVERSAL": 0.2845,
+        "MIXED": 0.0817
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 27.03,
+        "CONVERGENT_BEAR": -26.12,
+        "DIVERGENT_EXHAUSTION": -18.53,
+        "DIVERGENT_REVERSAL": 28.45,
+        "MIXED": 8.17
+      },
+      "passes_criterion_conv_gt_2x_mixed": true,
+      "gradient_counts": {
+        "AMPLIFYING": 29,
+        "DECAYING": 2,
+        "FLAT": 51
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.4699,
+        "DECAYING": -0.7385,
+        "FLAT": 0.0924
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 46.99,
+        "DECAYING": -73.84,
+        "FLAT": 9.24
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 58,
+        "NORMAL": 14,
+        "STRETCHED": 10,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 52,
+        "NORMAL": 23,
+        "STRETCHED": 7,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 52,
+      "ftt_compressed_bull_count": 58,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__0__1",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__0__2",
+          "ratio": 1.67,
+          "n": 2
+        },
+        {
+          "state_key": "0__1__2",
+          "ratio": 0.67,
+          "n": 8
+        },
+        {
+          "state_key": "0__2__1",
+          "ratio": 0.91,
+          "n": 6
+        },
+        {
+          "state_key": "0__2__2",
+          "ratio": 1.25,
+          "n": 24
+        }
+      ]
+    },
+    "sv5_turbulence": {
+      "total_states": 110,
+      "triada_counts": {
+        "CONVERGENT_BULL": 46,
+        "CONVERGENT_BEAR": 8,
+        "DIVERGENT_EXHAUSTION": 8,
+        "DIVERGENT_REVERSAL": 10,
+        "MIXED": 38
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.1865,
+        "CONVERGENT_BEAR": -0.358,
+        "DIVERGENT_EXHAUSTION": -0.2522,
+        "DIVERGENT_REVERSAL": 0.2653,
+        "MIXED": 0.0462
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 18.65,
+        "CONVERGENT_BEAR": -35.8,
+        "DIVERGENT_EXHAUSTION": -25.22,
+        "DIVERGENT_REVERSAL": 26.53,
+        "MIXED": 4.62
+      },
+      "passes_criterion_conv_gt_2x_mixed": true,
+      "gradient_counts": {
+        "AMPLIFYING": 34,
+        "DECAYING": 22,
+        "FLAT": 54
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.4251,
+        "DECAYING": -0.3646,
+        "FLAT": 0.0401
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 42.51,
+        "DECAYING": -36.46,
+        "FLAT": 4.01
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 62,
+        "NORMAL": 31,
+        "STRETCHED": 17,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 58,
+        "NORMAL": 43,
+        "STRETCHED": 9,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 58,
+      "ftt_compressed_bull_count": 62,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__0__0",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__0__2",
+          "ratio": 1.0,
+          "n": 2
+        },
+        {
+          "state_key": "0__1__0",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__1__1",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__1__2",
+          "ratio": 0.71,
+          "n": 16
+        }
+      ]
+    },
+    "skew": {
+      "total_states": 118,
+      "triada_counts": {
+        "CONVERGENT_BULL": 44,
+        "CONVERGENT_BEAR": 4,
+        "DIVERGENT_EXHAUSTION": 5,
+        "DIVERGENT_REVERSAL": 21,
+        "MIXED": 44
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.1894,
+        "CONVERGENT_BEAR": -0.372,
+        "DIVERGENT_EXHAUSTION": -0.1797,
+        "DIVERGENT_REVERSAL": 0.1779,
+        "MIXED": 0.1265
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 18.94,
+        "CONVERGENT_BEAR": -37.2,
+        "DIVERGENT_EXHAUSTION": -17.97,
+        "DIVERGENT_REVERSAL": 17.79,
+        "MIXED": 12.65
+      },
+      "passes_criterion_conv_gt_2x_mixed": false,
+      "gradient_counts": {
+        "AMPLIFYING": 39,
+        "DECAYING": 9,
+        "FLAT": 70
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.4757,
+        "DECAYING": -0.4917,
+        "FLAT": 0.0922
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 47.57,
+        "DECAYING": -49.17,
+        "FLAT": 9.22
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 65,
+        "NORMAL": 33,
+        "STRETCHED": 20,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 63,
+        "NORMAL": 41,
+        "STRETCHED": 14,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 63,
+      "ftt_compressed_bull_count": 65,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__1__1",
+          "ratio": 1.0,
+          "n": 3
+        },
+        {
+          "state_key": "0__1__2",
+          "ratio": 1.0,
+          "n": 12
+        },
+        {
+          "state_key": "0__1__3",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__2__0",
+          "ratio": 0.91,
+          "n": 3
+        },
+        {
+          "state_key": "0__2__3",
+          "ratio": 0.83,
+          "n": 7
+        }
+      ]
+    },
+    "credit": {
+      "total_states": 104,
+      "triada_counts": {
+        "CONVERGENT_BULL": 39,
+        "CONVERGENT_BEAR": 8,
+        "DIVERGENT_EXHAUSTION": 4,
+        "DIVERGENT_REVERSAL": 11,
+        "MIXED": 42
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.2414,
+        "CONVERGENT_BEAR": -0.648,
+        "DIVERGENT_EXHAUSTION": -0.528,
+        "DIVERGENT_REVERSAL": 0.2686,
+        "MIXED": 0.043
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 24.14,
+        "CONVERGENT_BEAR": -64.8,
+        "DIVERGENT_EXHAUSTION": -52.8,
+        "DIVERGENT_REVERSAL": 26.86,
+        "MIXED": 4.3
+      },
+      "passes_criterion_conv_gt_2x_mixed": true,
+      "gradient_counts": {
+        "AMPLIFYING": 37,
+        "DECAYING": 21,
+        "FLAT": 46
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.483,
+        "DECAYING": -0.4136,
+        "FLAT": 0.0319
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 48.3,
+        "DECAYING": -41.36,
+        "FLAT": 3.19
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 57,
+        "NORMAL": 32,
+        "STRETCHED": 15,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 54,
+        "NORMAL": 39,
+        "STRETCHED": 11,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 54,
+      "ftt_compressed_bull_count": 57,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__0__1",
+          "ratio": 1.0,
+          "n": 2
+        },
+        {
+          "state_key": "0__0__2",
+          "ratio": 2.0,
+          "n": 10
+        },
+        {
+          "state_key": "0__1__4",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__2__1",
+          "ratio": 2.67,
+          "n": 3
+        },
+        {
+          "state_key": "0__3__0",
+          "ratio": 1.0,
+          "n": 1
+        }
+      ]
+    },
+    "yield_curve": {
+      "total_states": 131,
+      "triada_counts": {
+        "CONVERGENT_BULL": 44,
+        "CONVERGENT_BEAR": 10,
+        "DIVERGENT_EXHAUSTION": 13,
+        "DIVERGENT_REVERSAL": 21,
+        "MIXED": 43
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.2481,
+        "CONVERGENT_BEAR": -0.338,
+        "DIVERGENT_EXHAUSTION": -0.295,
+        "DIVERGENT_REVERSAL": 0.0982,
+        "MIXED": 0.0172
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 24.81,
+        "CONVERGENT_BEAR": -33.8,
+        "DIVERGENT_EXHAUSTION": -29.5,
+        "DIVERGENT_REVERSAL": 9.82,
+        "MIXED": 1.72
+      },
+      "passes_criterion_conv_gt_2x_mixed": true,
+      "gradient_counts": {
+        "AMPLIFYING": 50,
+        "DECAYING": 29,
+        "FLAT": 52
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.4267,
+        "DECAYING": -0.463,
+        "FLAT": 0.0758
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 42.67,
+        "DECAYING": -46.3,
+        "FLAT": 7.58
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 75,
+        "NORMAL": 28,
+        "STRETCHED": 28,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 66,
+        "NORMAL": 44,
+        "STRETCHED": 21,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 66,
+      "ftt_compressed_bull_count": 75,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__0__1",
+          "ratio": 0.67,
+          "n": 5
+        },
+        {
+          "state_key": "0__0__4",
+          "ratio": 1.0,
+          "n": 2
+        },
+        {
+          "state_key": "0__1__0",
+          "ratio": 1.0,
+          "n": 2
+        },
+        {
+          "state_key": "0__1__1",
+          "ratio": 2.0,
+          "n": 19
+        },
+        {
+          "state_key": "0__2__4",
+          "ratio": 1.5,
+          "n": 7
+        }
+      ]
+    },
+    "rotation": {
+      "total_states": 124,
+      "triada_counts": {
+        "CONVERGENT_BULL": 49,
+        "CONVERGENT_BEAR": 6,
+        "DIVERGENT_EXHAUSTION": 6,
+        "DIVERGENT_REVERSAL": 15,
+        "MIXED": 48
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.1522,
+        "CONVERGENT_BEAR": -0.2159,
+        "DIVERGENT_EXHAUSTION": -0.2252,
+        "DIVERGENT_REVERSAL": 0.1784,
+        "MIXED": 0.0962
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 15.22,
+        "CONVERGENT_BEAR": -21.59,
+        "DIVERGENT_EXHAUSTION": -22.52,
+        "DIVERGENT_REVERSAL": 17.84,
+        "MIXED": 9.62
+      },
+      "passes_criterion_conv_gt_2x_mixed": false,
+      "gradient_counts": {
+        "AMPLIFYING": 41,
+        "DECAYING": 17,
+        "FLAT": 66
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.4151,
+        "DECAYING": -0.415,
+        "FLAT": 0.0443
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 41.51,
+        "DECAYING": -41.5,
+        "FLAT": 4.43
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 74,
+        "NORMAL": 28,
+        "STRETCHED": 22,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 77,
+        "NORMAL": 35,
+        "STRETCHED": 12,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 77,
+      "ftt_compressed_bull_count": 74,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__0__1",
+          "ratio": 2.5,
+          "n": 3
+        },
+        {
+          "state_key": "0__0__3",
+          "ratio": 1.0,
+          "n": 4
+        },
+        {
+          "state_key": "0__1__0",
+          "ratio": 1.0,
+          "n": 2
+        },
+        {
+          "state_key": "0__1__1",
+          "ratio": 1.6,
+          "n": 7
+        },
+        {
+          "state_key": "0__1__3",
+          "ratio": 2.0,
+          "n": 6
+        }
+      ]
+    },
+    "bsi": {
+      "total_states": 112,
+      "triada_counts": {
+        "CONVERGENT_BULL": 44,
+        "CONVERGENT_BEAR": 2,
+        "DIVERGENT_EXHAUSTION": 10,
+        "DIVERGENT_REVERSAL": 16,
+        "MIXED": 40
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.2532,
+        "CONVERGENT_BEAR": -0.2393,
+        "DIVERGENT_EXHAUSTION": -0.2859,
+        "DIVERGENT_REVERSAL": 0.1474,
+        "MIXED": 0.0321
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 25.32,
+        "CONVERGENT_BEAR": -23.93,
+        "DIVERGENT_EXHAUSTION": -28.59,
+        "DIVERGENT_REVERSAL": 14.74,
+        "MIXED": 3.21
+      },
+      "passes_criterion_conv_gt_2x_mixed": true,
+      "gradient_counts": {
+        "AMPLIFYING": 40,
+        "DECAYING": 14,
+        "FLAT": 58
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.4371,
+        "DECAYING": -0.313,
+        "FLAT": 0.0789
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 43.71,
+        "DECAYING": -31.3,
+        "FLAT": 7.89
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 59,
+        "NORMAL": 27,
+        "STRETCHED": 26,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 53,
+        "NORMAL": 45,
+        "STRETCHED": 14,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 53,
+      "ftt_compressed_bull_count": 59,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__0__0",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__1__0",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__1__2",
+          "ratio": 1.0,
+          "n": 57
+        },
+        {
+          "state_key": "0__2__0",
+          "ratio": 1.0,
+          "n": 9
+        },
+        {
+          "state_key": "0__2__1",
+          "ratio": 2.5,
+          "n": 61
+        }
+      ]
+    },
+    "dxy": {
+      "total_states": 128,
+      "triada_counts": {
+        "CONVERGENT_BULL": 59,
+        "CONVERGENT_BEAR": 5,
+        "DIVERGENT_EXHAUSTION": 6,
+        "DIVERGENT_REVERSAL": 16,
+        "MIXED": 42
+      },
+      "triada_mean_ev_pct": {
+        "CONVERGENT_BULL": 0.3206,
+        "CONVERGENT_BEAR": -0.3351,
+        "DIVERGENT_EXHAUSTION": -0.1035,
+        "DIVERGENT_REVERSAL": 0.3209,
+        "MIXED": 0.0618
+      },
+      "triada_mean_ev_bps": {
+        "CONVERGENT_BULL": 32.06,
+        "CONVERGENT_BEAR": -33.51,
+        "DIVERGENT_EXHAUSTION": -10.35,
+        "DIVERGENT_REVERSAL": 32.09,
+        "MIXED": 6.18
+      },
+      "passes_criterion_conv_gt_2x_mixed": true,
+      "gradient_counts": {
+        "AMPLIFYING": 54,
+        "DECAYING": 16,
+        "FLAT": 58
+      },
+      "gradient_mean_ev_pct": {
+        "AMPLIFYING": 0.4892,
+        "DECAYING": -0.4062,
+        "FLAT": 0.0661
+      },
+      "gradient_mean_ev_bps": {
+        "AMPLIFYING": 48.92,
+        "DECAYING": -40.62,
+        "FLAT": 6.61
+      },
+      "ftt_bull_counts": {
+        "COMPRESSED": 57,
+        "NORMAL": 25,
+        "STRETCHED": 46,
+        "NO_DATA": 0
+      },
+      "ftt_bear_counts": {
+        "COMPRESSED": 57,
+        "NORMAL": 36,
+        "STRETCHED": 35,
+        "NO_DATA": 0
+      },
+      "ftt_compressed_bear_count": 57,
+      "ftt_compressed_bull_count": 57,
+      "ftt_compressed_bear_states": [
+        {
+          "state_key": "0__0__2",
+          "ratio": 1.0,
+          "n": 3
+        },
+        {
+          "state_key": "0__0__3",
+          "ratio": 1.0,
+          "n": 3
+        },
+        {
+          "state_key": "0__1__0",
+          "ratio": 1.0,
+          "n": 1
+        },
+        {
+          "state_key": "0__1__3",
+          "ratio": 2.14,
+          "n": 8
+        },
+        {
+          "state_key": "0__1__4",
+          "ratio": 0.14,
+          "n": 1
+        }
+      ]
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-08-30 21:25:35.504556",
+  "fecha": "2026-08-31 23:42:14.068261",
   "metodo": "walk-forward anclado MULTI-CELDA v2: cada celda con edge IS>0 y N>=10 probada independientemente OOS. Baseline excluye pivotes de la señal (P5). Bonferroni señal-dependiente. Señales con <5 folds OOS: PENDIENTE (sign-test imposible por construcción).",
   "bloque_test_dias": 1095,
   "min_train_dias": 1825,

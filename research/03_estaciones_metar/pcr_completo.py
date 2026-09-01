@@ -19,6 +19,7 @@ from collections import defaultdict, Counter
 
 import numpy as np
 import pandas as pd
+from arnes.timing import classify_single_delta
 from scipy.stats import spearmanr
 
 ROOT = Path("/root/botero-trade")
@@ -388,8 +389,9 @@ for l in legs25:
 all_pivots.sort(key=lambda x: x[0])
 
 def nearest_min_pivot(date):
-    """Returns (days_since, pivot_date, pivot_price) for nearest MIN pivot.
+    """Returns (days_since, slot, pivot_date, pivot_price) for nearest MIN pivot.
     days_since = (signal_date - pivot_date).days
+    slot = 't-2' | 't-1' | 't=0' | 't+1' | 't+2' | 'ENTRE'
     negative = anticipada (signal BEFORE pivot), 0 = en_pivote, positive = retrasada."""
     best = None
     for pd_d, pt, pr in all_pivots:
@@ -398,7 +400,10 @@ def nearest_min_pivot(date):
         delta = (date - pd_d).days
         if best is None or abs(delta) < abs(best[0]):
             best = (delta, pd_d, pr)
-    return best
+    if best is not None:
+        slot = classify_single_delta(best[0])
+        return best[0], slot, best[1], best[2]
+    return None, 'ENTRE', None, None
 
 # Compute forward returns + timing
 signals = []
@@ -414,7 +419,7 @@ for sb in deduped:
             fwd_returns[h] = float(spy_values[fwd_idx] / entry_price - 1.0)
 
     # Timing vs nearest MIN pivot
-    days_since, min_date, min_price = nearest_min_pivot(sb["date"])
+    days_since, slot, min_date, min_price = nearest_min_pivot(sb["date"])
     if days_since is not None:
         if days_since <= 0:
             # anticipada (signal before pivot) or en_pivote
@@ -441,7 +446,7 @@ for sb in deduped:
         "state_key": sb["state_key"], "d1": sb["d1"], "d2": sb["d2"], "d3": sb["d3"],
         "n_state": sb["n_state"], "val": sb["val"], "vel": sb["vel"], "vol": sb["vol"],
         "fwd": fwd_returns,
-        "days_since_pivot": days_since, "pivot_date": min_date,
+        "days_since_pivot": days_since, "slot": slot, "pivot_date": min_date,
         "dd_to_pivot": dd_to_pivot, "is_knife": is_knife,
     })
 
@@ -558,15 +563,26 @@ def analyze_pcr_signals(sig_list, label, quality_label=""):
     else:
         R["E_streaks"] = None
 
-    # F. Timing vs zigzag
+    # F. Timing vs zigzag (6 Slots Canónicos: t-2, t-1, t=0, t+1, t+2, ENTRE)
     days_arr = np.array([s["days_since_pivot"] for s in sig_list if s["days_since_pivot"] is not None])
+    slots_arr = np.array([s["slot"] for s in sig_list if s["days_since_pivot"] is not None])
     dd_arr = np.array([s["dd_to_pivot"] for s in sig_list])
-    anticipada = int((days_arr < 0).sum())
-    en_pivote = int((days_arr == 0).sum())
-    retrasada = int((days_arr > 0).sum())
+    
+    counts = {s: int((slots_arr == s).sum()) for s in ["t-2", "t-1", "t=0", "t+1", "t+2", "ENTRE"]}
+    n_ant = counts["t-2"] + counts["t-1"]
+    n_exa = counts["t=0"]
+    n_ret = counts["t+1"] + counts["t+2"]
+    n_fue = counts["ENTRE"]
+    n_rng = n_ant + n_exa + n_ret
+
     R["F_timing"] = {
         "n_with_pivot": len(days_arr),
-        "anticipada": anticipada, "en_pivote": en_pivote, "retrasada": retrasada,
+        "slots": counts,
+        "n_en_rango": n_rng, "pct_en_rango": float(n_rng / len(days_arr) * 100) if len(days_arr) > 0 else 0.0,
+        "n_anticipada": n_ant, "pct_anticipada": float(n_ant / len(days_arr) * 100) if len(days_arr) > 0 else 0.0,
+        "n_exacta": n_exa, "pct_exacta": float(n_exa / len(days_arr) * 100) if len(days_arr) > 0 else 0.0,
+        "n_retrasada": n_ret, "pct_retrasada": float(n_ret / len(days_arr) * 100) if len(days_arr) > 0 else 0.0,
+        "n_fuera_de_rango": n_fue, "pct_fuera_de_rango": float(n_fue / len(days_arr) * 100) if len(days_arr) > 0 else 0.0,
         "days_since_mean": float(np.mean(days_arr)) if len(days_arr) > 0 else np.nan,
         "days_since_median": float(np.median(days_arr)) if len(days_arr) > 0 else np.nan,
         "dd_to_pivot_mean": float(np.mean(dd_arr)),
@@ -683,8 +699,13 @@ for grp in results_groups:
 
     # Timing
     ft = grp.get("F_timing", {})
-    print(f"  │ F. TIMING vs ZIGZAG (MIN pivot):")
-    print(f"  │    Anticipada={ft.get('anticipada',0)}  En_pivote={ft.get('en_pivote',0)}  Retrasada={ft.get('retrasada',0)}")
+    slots = ft.get("slots", {})
+    print(f"  │ F. TIMING vs ZIGZAG (6 Slots Canónicos, MIN pivot):")
+    print(f"  │    EN RANGO ([-2t, +2t]): {ft.get('n_en_rango',0)} ({ft.get('pct_en_rango',0):.0f}%)")
+    print(f"  │      • Anticipada  (t-2, t-1): {ft.get('n_anticipada',0)} ({ft.get('pct_anticipada',0):.0f}%)  [t-2: {slots.get('t-2',0)}, t-1: {slots.get('t-1',0)}]")
+    print(f"  │      • Exacta      (t=0):     {ft.get('n_exacta',0)} ({ft.get('pct_exacta',0):.0f}%)")
+    print(f"  │      • Retrasada   (t+1, t+2): {ft.get('n_retrasada',0)} ({ft.get('pct_retrasada',0):.0f}%)  [t+1: {slots.get('t+1',0)}, t+2: {slots.get('t+2',0)}]")
+    print(f"  │    FUERA DE RANGO (ENTRE):    {ft.get('n_fuera_de_rango',0)} ({ft.get('pct_fuera_de_rango',0):.0f}%)")
     dd_mean = ft.get('dd_to_pivot_mean', 0)
     dd_p50 = ft.get('dd_to_pivot_p50', 0)
     print(f"  │    DD hasta pivot: mean={dd_mean*100:+.2f}%  P50={dd_p50*100:+.2f}%")
@@ -949,7 +970,7 @@ print(f"""
   ║  C. Losses (P50):       {combined_r.get('C_losses',{}).get(20,{}).get('median',0)*100:+.1f}%   {'⚠ WIPEOUT' if G_k.get('n',0) > 0 else ''}                 ║
   ║  D. Profit Factor:      {D_m.get('profit_factor',0):.1f}    Kelly: {D_m.get('kelly',0)*100:.0f}%    EV: {D_m.get('ev',0)*100:+.1f}%       ║
   ║  E. Rachas:             max loss streak = {E_s.get('max_streak','N/A')}                        ║
-  ║  F. Timing vs zigzag:   anticipada={F_t.get('anticipada',0)}  en_pivote={F_t.get('en_pivote',0)}  retrasada={F_t.get('retrasada',0)}       ║
+  ║  F. Timing vs zigzag:   ant={F_t.get('n_anticipada',0)}  exacta={F_t.get('n_exacta',0)}  ret={F_t.get('n_retrasada',0)}  fuera={F_t.get('n_fuera_de_rango',0)}       ║
   ║  G. Cuchillo cayendo:   {G_k.get('n',0)}/{n_signals} ({G_k.get('pct',0):.0f}%)                        ║
   ║  H. Calidad muestra:    N≥30={H_q.get('n_ge_30',0)}  N10-30={H_q.get('n_10_30',0)}  N<10={H_q.get('n_lt_10',0)}       ║
   ║                                                                            ║
@@ -1020,9 +1041,10 @@ report = {
             "D_kelly_20d": D_m.get('kelly'),
             "D_ev_20d": D_m.get('ev'),
             "E_max_loss_streak": E_s.get('max_streak'),
-            "F_anticipada": F_t.get('anticipada', 0),
-            "F_en_pivote": F_t.get('en_pivote', 0),
-            "F_retrasada": F_t.get('retrasada', 0),
+            "F_anticipada": F_t.get('n_anticipada', 0),
+            "F_exacta": F_t.get('n_exacta', 0),
+            "F_retrasada": F_t.get('n_retrasada', 0),
+            "F_fuera": F_t.get('n_fuera_de_rango', 0),
             "G_knife_n": G_k.get('n', 0),
             "G_knife_pct": G_k.get('pct', 0),
             "H_n_ge30": H_q.get('n_ge_30', 0),

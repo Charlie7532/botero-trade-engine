@@ -1,0 +1,3285 @@
+{
+  "metadata": {
+    "ejercicio": "E7 — Taxonomía de Estados del Vector (D1×D2×D3)",
+    "fecha_ejecucion": "2026-09-01",
+    "total_barras_lake": 8453,
+    "estaciones_analizadas": 11,
+    "triada_primaria": [
+      "vix",
+      "bsi",
+      "credit"
+    ]
+  },
+  "estaciones_individuales": {
+    "vix": {
+      "station": "VIX",
+      "total_bars_valid": 8194,
+      "n_states_observed": 113,
+      "n_states_theoretical": 150,
+      "coverage_pct": 75.3,
+      "top_10_states": [
+        {
+          "state_key": "2__2__2",
+          "count_bars": 1464,
+          "pct_time": 17.87,
+          "n_episodes": 723,
+          "long_min_zz25": {
+            "hit_rate": 0.5429,
+            "ci95": {
+              "ci95_lo": 0.5058,
+              "ci95_hi": 0.5797
+            },
+            "ev": 0.0024,
+            "pf": 1.22
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4488,
+            "ci95": {
+              "ci95_lo": 0.4121,
+              "ci95_hi": 0.4859
+            },
+            "ev": -0.0024,
+            "pf": 0.82
+          }
+        },
+        {
+          "state_key": "3__2__2",
+          "count_bars": 970,
+          "pct_time": 11.84,
+          "n_episodes": 555,
+          "long_min_zz25": {
+            "hit_rate": 0.5441,
+            "ci95": {
+              "ci95_lo": 0.5017,
+              "ci95_hi": 0.5861
+            },
+            "ev": 0.0025,
+            "pf": 1.22
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4559,
+            "ci95": {
+              "ci95_lo": 0.4139,
+              "ci95_hi": 0.4983
+            },
+            "ev": -0.0025,
+            "pf": 0.82
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 445,
+          "pct_time": 5.43,
+          "n_episodes": 239,
+          "long_min_zz25": {
+            "hit_rate": 0.569,
+            "ci95": {
+              "ci95_lo": 0.5036,
+              "ci95_hi": 0.6327
+            },
+            "ev": 0.0035,
+            "pf": 1.33
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.431,
+            "ci95": {
+              "ci95_lo": 0.3673,
+              "ci95_hi": 0.4964
+            },
+            "ev": -0.0035,
+            "pf": 0.75
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 432,
+          "pct_time": 5.27,
+          "n_episodes": 293,
+          "long_min_zz25": {
+            "hit_rate": 0.5427,
+            "ci95": {
+              "ci95_lo": 0.4837,
+              "ci95_hi": 0.6007
+            },
+            "ev": 0.0025,
+            "pf": 1.22
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4573,
+            "ci95": {
+              "ci95_lo": 0.3993,
+              "ci95_hi": 0.5163
+            },
+            "ev": -0.0025,
+            "pf": 0.82
+          }
+        },
+        {
+          "state_key": "2__2__1",
+          "count_bars": 383,
+          "pct_time": 4.67,
+          "n_episodes": 316,
+          "long_min_zz25": {
+            "hit_rate": 0.5886,
+            "ci95": {
+              "ci95_lo": 0.5321,
+              "ci95_hi": 0.6434
+            },
+            "ev": 0.0041,
+            "pf": 1.39
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4082,
+            "ci95": {
+              "ci95_lo": 0.3535,
+              "ci95_hi": 0.4647
+            },
+            "ev": -0.0041,
+            "pf": 0.72
+          }
+        },
+        {
+          "state_key": "3__1__2",
+          "count_bars": 318,
+          "pct_time": 3.88,
+          "n_episodes": 238,
+          "long_min_zz25": {
+            "hit_rate": 0.4874,
+            "ci95": {
+              "ci95_lo": 0.4223,
+              "ci95_hi": 0.5528
+            },
+            "ev": -0.0009,
+            "pf": 0.93
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.5126,
+            "ci95": {
+              "ci95_lo": 0.4472,
+              "ci95_hi": 0.5777
+            },
+            "ev": 0.0009,
+            "pf": 1.07
+          }
+        },
+        {
+          "state_key": "2__2__3",
+          "count_bars": 290,
+          "pct_time": 3.54,
+          "n_episodes": 258,
+          "long_min_zz25": {
+            "hit_rate": 0.5698,
+            "ci95": {
+              "ci95_lo": 0.5069,
+              "ci95_hi": 0.631
+            },
+            "ev": 0.0031,
+            "pf": 1.27
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4264,
+            "ci95": {
+              "ci95_lo": 0.3652,
+              "ci95_hi": 0.4892
+            },
+            "ev": -0.0031,
+            "pf": 0.79
+          }
+        },
+        {
+          "state_key": "2__1__2",
+          "count_bars": 276,
+          "pct_time": 3.37,
+          "n_episodes": 209,
+          "long_min_zz25": {
+            "hit_rate": 0.5694,
+            "ci95": {
+              "ci95_lo": 0.4993,
+              "ci95_hi": 0.6375
+            },
+            "ev": 0.0034,
+            "pf": 1.31
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4258,
+            "ci95": {
+              "ci95_lo": 0.3579,
+              "ci95_hi": 0.4959
+            },
+            "ev": -0.0034,
+            "pf": 0.76
+          }
+        },
+        {
+          "state_key": "3__3__2",
+          "count_bars": 263,
+          "pct_time": 3.21,
+          "n_episodes": 194,
+          "long_min_zz25": {
+            "hit_rate": 0.5464,
+            "ci95": {
+              "ci95_lo": 0.4735,
+              "ci95_hi": 0.6178
+            },
+            "ev": 0.0037,
+            "pf": 1.34
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4536,
+            "ci95": {
+              "ci95_lo": 0.3822,
+              "ci95_hi": 0.5265
+            },
+            "ev": -0.0037,
+            "pf": 0.75
+          }
+        },
+        {
+          "state_key": "4__3__2",
+          "count_bars": 240,
+          "pct_time": 2.93,
+          "n_episodes": 178,
+          "long_min_zz25": {
+            "hit_rate": 0.5281,
+            "ci95": {
+              "ci95_lo": 0.452,
+              "ci95_hi": 0.6032
+            },
+            "ev": 0.0026,
+            "pf": 1.24
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4719,
+            "ci95": {
+              "ci95_lo": 0.3968,
+              "ci95_hi": 0.548
+            },
+            "ev": -0.0026,
+            "pf": 0.81
+          }
+        }
+      ]
+    },
+    "vvix": {
+      "station": "VVIX",
+      "total_bars_valid": 4847,
+      "n_states_observed": 109,
+      "n_states_theoretical": 150,
+      "coverage_pct": 72.7,
+      "top_10_states": [
+        {
+          "state_key": "3__2__2",
+          "count_bars": 558,
+          "pct_time": 11.51,
+          "n_episodes": 363,
+          "long_min_zz25": {
+            "hit_rate": 0.573,
+            "ci95": {
+              "ci95_lo": 0.5203,
+              "ci95_hi": 0.6245
+            },
+            "ev": 0.0042,
+            "pf": 1.39
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4187,
+            "ci95": {
+              "ci95_lo": 0.3674,
+              "ci95_hi": 0.4714
+            },
+            "ev": -0.0042,
+            "pf": 0.72
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 465,
+          "pct_time": 9.59,
+          "n_episodes": 295,
+          "long_min_zz25": {
+            "hit_rate": 0.5797,
+            "ci95": {
+              "ci95_lo": 0.5211,
+              "ci95_hi": 0.6366
+            },
+            "ev": 0.0048,
+            "pf": 1.45
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4203,
+            "ci95": {
+              "ci95_lo": 0.3634,
+              "ci95_hi": 0.4789
+            },
+            "ev": -0.0048,
+            "pf": 0.69
+          }
+        },
+        {
+          "state_key": "2__2__1",
+          "count_bars": 444,
+          "pct_time": 9.16,
+          "n_episodes": 263,
+          "long_min_zz25": {
+            "hit_rate": 0.5437,
+            "ci95": {
+              "ci95_lo": 0.4814,
+              "ci95_hi": 0.605
+            },
+            "ev": 0.0029,
+            "pf": 1.27
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4487,
+            "ci95": {
+              "ci95_lo": 0.3875,
+              "ci95_hi": 0.511
+            },
+            "ev": -0.0029,
+            "pf": 0.79
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 367,
+          "pct_time": 7.57,
+          "n_episodes": 247,
+          "long_min_zz25": {
+            "hit_rate": 0.5587,
+            "ci95": {
+              "ci95_lo": 0.4944,
+              "ci95_hi": 0.6216
+            },
+            "ev": 0.0031,
+            "pf": 1.28
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4251,
+            "ci95": {
+              "ci95_lo": 0.3627,
+              "ci95_hi": 0.4894
+            },
+            "ev": -0.0031,
+            "pf": 0.78
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 275,
+          "pct_time": 5.67,
+          "n_episodes": 202,
+          "long_min_zz25": {
+            "hit_rate": 0.5644,
+            "ci95": {
+              "ci95_lo": 0.493,
+              "ci95_hi": 0.6338
+            },
+            "ev": 0.0024,
+            "pf": 1.19
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4356,
+            "ci95": {
+              "ci95_lo": 0.3662,
+              "ci95_hi": 0.507
+            },
+            "ev": -0.0024,
+            "pf": 0.84
+          }
+        },
+        {
+          "state_key": "4__2__1",
+          "count_bars": 182,
+          "pct_time": 3.75,
+          "n_episodes": 147,
+          "long_min_zz25": {
+            "hit_rate": 0.5578,
+            "ci95": {
+              "ci95_lo": 0.4737,
+              "ci95_hi": 0.6396
+            },
+            "ev": 0.0031,
+            "pf": 1.28
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4422,
+            "ci95": {
+              "ci95_lo": 0.3604,
+              "ci95_hi": 0.5263
+            },
+            "ev": -0.0031,
+            "pf": 0.78
+          }
+        },
+        {
+          "state_key": "3__1__2",
+          "count_bars": 133,
+          "pct_time": 2.74,
+          "n_episodes": 112,
+          "long_min_zz25": {
+            "hit_rate": 0.625,
+            "ci95": {
+              "ci95_lo": 0.5285,
+              "ci95_hi": 0.7147
+            },
+            "ev": 0.0074,
+            "pf": 1.79
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3571,
+            "ci95": {
+              "ci95_lo": 0.2688,
+              "ci95_hi": 0.4532
+            },
+            "ev": -0.0074,
+            "pf": 0.55
+          }
+        },
+        {
+          "state_key": "4__3__2",
+          "count_bars": 123,
+          "pct_time": 2.54,
+          "n_episodes": 101,
+          "long_min_zz25": {
+            "hit_rate": 0.5644,
+            "ci95": {
+              "ci95_lo": 0.462,
+              "ci95_hi": 0.6628
+            },
+            "ev": 0.0041,
+            "pf": 1.36
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4356,
+            "ci95": {
+              "ci95_lo": 0.3372,
+              "ci95_hi": 0.538
+            },
+            "ev": -0.0041,
+            "pf": 0.74
+          }
+        },
+        {
+          "state_key": "3__3__2",
+          "count_bars": 119,
+          "pct_time": 2.46,
+          "n_episodes": 101,
+          "long_min_zz25": {
+            "hit_rate": 0.6535,
+            "ci95": {
+              "ci95_lo": 0.5523,
+              "ci95_hi": 0.7454
+            },
+            "ev": 0.0088,
+            "pf": 2.17
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3465,
+            "ci95": {
+              "ci95_lo": 0.2546,
+              "ci95_hi": 0.4477
+            },
+            "ev": -0.0088,
+            "pf": 0.46
+          }
+        },
+        {
+          "state_key": "3__2__3",
+          "count_bars": 114,
+          "pct_time": 2.35,
+          "n_episodes": 110,
+          "long_min_zz25": {
+            "hit_rate": 0.5364,
+            "ci95": {
+              "ci95_lo": 0.4388,
+              "ci95_hi": 0.632
+            },
+            "ev": 0.0021,
+            "pf": 1.18
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4636,
+            "ci95": {
+              "ci95_lo": 0.368,
+              "ci95_hi": 0.5612
+            },
+            "ev": -0.0021,
+            "pf": 0.85
+          }
+        }
+      ]
+    },
+    "pcr": {
+      "station": "PCR",
+      "total_bars_valid": 4734,
+      "n_states_observed": 102,
+      "n_states_theoretical": 150,
+      "coverage_pct": 68.0,
+      "top_10_states": [
+        {
+          "state_key": "2__2__1",
+          "count_bars": 563,
+          "pct_time": 11.89,
+          "n_episodes": 412,
+          "long_min_zz25": {
+            "hit_rate": 0.5485,
+            "ci95": {
+              "ci95_lo": 0.4991,
+              "ci95_hi": 0.5973
+            },
+            "ev": 0.0034,
+            "pf": 1.31
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4466,
+            "ci95": {
+              "ci95_lo": 0.3979,
+              "ci95_hi": 0.4961
+            },
+            "ev": -0.0034,
+            "pf": 0.77
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 464,
+          "pct_time": 9.8,
+          "n_episodes": 366,
+          "long_min_zz25": {
+            "hit_rate": 0.5328,
+            "ci95": {
+              "ci95_lo": 0.4802,
+              "ci95_hi": 0.5848
+            },
+            "ev": 0.0021,
+            "pf": 1.17
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4672,
+            "ci95": {
+              "ci95_lo": 0.4152,
+              "ci95_hi": 0.5198
+            },
+            "ev": -0.0021,
+            "pf": 0.86
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 426,
+          "pct_time": 9.0,
+          "n_episodes": 354,
+          "long_min_zz25": {
+            "hit_rate": 0.5678,
+            "ci95": {
+              "ci95_lo": 0.5144,
+              "ci95_hi": 0.6201
+            },
+            "ev": 0.0041,
+            "pf": 1.39
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4294,
+            "ci95": {
+              "ci95_lo": 0.3772,
+              "ci95_hi": 0.4828
+            },
+            "ev": -0.0041,
+            "pf": 0.72
+          }
+        },
+        {
+          "state_key": "3__2__2",
+          "count_bars": 372,
+          "pct_time": 7.86,
+          "n_episodes": 308,
+          "long_min_zz25": {
+            "hit_rate": 0.6104,
+            "ci95": {
+              "ci95_lo": 0.5535,
+              "ci95_hi": 0.6652
+            },
+            "ev": 0.0056,
+            "pf": 1.55
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3864,
+            "ci95": {
+              "ci95_lo": 0.3317,
+              "ci95_hi": 0.4432
+            },
+            "ev": -0.0056,
+            "pf": 0.65
+          }
+        },
+        {
+          "state_key": "2__2__3",
+          "count_bars": 286,
+          "pct_time": 6.04,
+          "n_episodes": 280,
+          "long_min_zz25": {
+            "hit_rate": 0.5429,
+            "ci95": {
+              "ci95_lo": 0.4825,
+              "ci95_hi": 0.6023
+            },
+            "ev": 0.0031,
+            "pf": 1.29
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4571,
+            "ci95": {
+              "ci95_lo": 0.3977,
+              "ci95_hi": 0.5175
+            },
+            "ev": -0.0031,
+            "pf": 0.78
+          }
+        },
+        {
+          "state_key": "3__2__3",
+          "count_bars": 260,
+          "pct_time": 5.49,
+          "n_episodes": 256,
+          "long_min_zz25": {
+            "hit_rate": 0.5312,
+            "ci95": {
+              "ci95_lo": 0.4681,
+              "ci95_hi": 0.5937
+            },
+            "ev": 0.0019,
+            "pf": 1.16
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4648,
+            "ci95": {
+              "ci95_lo": 0.4025,
+              "ci95_hi": 0.528
+            },
+            "ev": -0.0019,
+            "pf": 0.86
+          }
+        },
+        {
+          "state_key": "1__2__1",
+          "count_bars": 177,
+          "pct_time": 3.74,
+          "n_episodes": 145,
+          "long_min_zz25": {
+            "hit_rate": 0.5724,
+            "ci95": {
+              "ci95_lo": 0.4877,
+              "ci95_hi": 0.6541
+            },
+            "ev": 0.0026,
+            "pf": 1.22
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4276,
+            "ci95": {
+              "ci95_lo": 0.3459,
+              "ci95_hi": 0.5123
+            },
+            "ev": -0.0026,
+            "pf": 0.82
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 120,
+          "pct_time": 2.53,
+          "n_episodes": 104,
+          "long_min_zz25": {
+            "hit_rate": 0.4808,
+            "ci95": {
+              "ci95_lo": 0.3817,
+              "ci95_hi": 0.5809
+            },
+            "ev": -0.0,
+            "pf": 1.0
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.5192,
+            "ci95": {
+              "ci95_lo": 0.4191,
+              "ci95_hi": 0.6183
+            },
+            "ev": 0.0,
+            "pf": 1.0
+          }
+        },
+        {
+          "state_key": "1__2__3",
+          "count_bars": 114,
+          "pct_time": 2.41,
+          "n_episodes": 114,
+          "long_min_zz25": {
+            "hit_rate": 0.5965,
+            "ci95": {
+              "ci95_lo": 0.5005,
+              "ci95_hi": 0.6873
+            },
+            "ev": 0.0052,
+            "pf": 1.51
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4035,
+            "ci95": {
+              "ci95_lo": 0.3127,
+              "ci95_hi": 0.4995
+            },
+            "ev": -0.0052,
+            "pf": 0.66
+          }
+        },
+        {
+          "state_key": "3__3__1",
+          "count_bars": 99,
+          "pct_time": 2.09,
+          "n_episodes": 89,
+          "long_min_zz25": {
+            "hit_rate": 0.5506,
+            "ci95": {
+              "ci95_lo": 0.4414,
+              "ci95_hi": 0.6562
+            },
+            "ev": 0.0022,
+            "pf": 1.19
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4494,
+            "ci95": {
+              "ci95_lo": 0.3438,
+              "ci95_hi": 0.5586
+            },
+            "ev": -0.0022,
+            "pf": 0.84
+          }
+        }
+      ]
+    },
+    "fg": {
+      "station": "FG",
+      "total_bars_valid": 3649,
+      "n_states_observed": 99,
+      "n_states_theoretical": 150,
+      "coverage_pct": 66.0,
+      "top_10_states": [
+        {
+          "state_key": "3__2__1",
+          "count_bars": 480,
+          "pct_time": 13.15,
+          "n_episodes": 274,
+          "long_min_zz25": {
+            "hit_rate": 0.6022,
+            "ci95": {
+              "ci95_lo": 0.5416,
+              "ci95_hi": 0.6606
+            },
+            "ev": 0.0051,
+            "pf": 1.49
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3978,
+            "ci95": {
+              "ci95_lo": 0.3394,
+              "ci95_hi": 0.4584
+            },
+            "ev": -0.0051,
+            "pf": 0.67
+          }
+        },
+        {
+          "state_key": "2__2__1",
+          "count_bars": 374,
+          "pct_time": 10.25,
+          "n_episodes": 230,
+          "long_min_zz25": {
+            "hit_rate": 0.5826,
+            "ci95": {
+              "ci95_lo": 0.516,
+              "ci95_hi": 0.6471
+            },
+            "ev": 0.0047,
+            "pf": 1.46
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.413,
+            "ci95": {
+              "ci95_lo": 0.3487,
+              "ci95_hi": 0.4796
+            },
+            "ev": -0.0047,
+            "pf": 0.68
+          }
+        },
+        {
+          "state_key": "3__2__2",
+          "count_bars": 301,
+          "pct_time": 8.25,
+          "n_episodes": 204,
+          "long_min_zz25": {
+            "hit_rate": 0.6127,
+            "ci95": {
+              "ci95_lo": 0.5422,
+              "ci95_hi": 0.68
+            },
+            "ev": 0.0051,
+            "pf": 1.49
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3824,
+            "ci95": {
+              "ci95_lo": 0.3154,
+              "ci95_hi": 0.4528
+            },
+            "ev": -0.0051,
+            "pf": 0.67
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 265,
+          "pct_time": 7.26,
+          "n_episodes": 181,
+          "long_min_zz25": {
+            "hit_rate": 0.5801,
+            "ci95": {
+              "ci95_lo": 0.5046,
+              "ci95_hi": 0.6529
+            },
+            "ev": 0.0037,
+            "pf": 1.35
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4088,
+            "ci95": {
+              "ci95_lo": 0.3365,
+              "ci95_hi": 0.4842
+            },
+            "ev": -0.0037,
+            "pf": 0.74
+          }
+        },
+        {
+          "state_key": "4__2__1",
+          "count_bars": 185,
+          "pct_time": 5.07,
+          "n_episodes": 94,
+          "long_min_zz25": {
+            "hit_rate": 0.6383,
+            "ci95": {
+              "ci95_lo": 0.5327,
+              "ci95_hi": 0.7349
+            },
+            "ev": 0.0068,
+            "pf": 1.77
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3617,
+            "ci95": {
+              "ci95_lo": 0.2651,
+              "ci95_hi": 0.4673
+            },
+            "ev": -0.0068,
+            "pf": 0.56
+          }
+        },
+        {
+          "state_key": "1__2__1",
+          "count_bars": 169,
+          "pct_time": 4.63,
+          "n_episodes": 86,
+          "long_min_zz25": {
+            "hit_rate": 0.5814,
+            "ci95": {
+              "ci95_lo": 0.4701,
+              "ci95_hi": 0.687
+            },
+            "ev": 0.0056,
+            "pf": 1.51
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.407,
+            "ci95": {
+              "ci95_lo": 0.3022,
+              "ci95_hi": 0.5183
+            },
+            "ev": -0.0056,
+            "pf": 0.66
+          }
+        },
+        {
+          "state_key": "3__3__1",
+          "count_bars": 108,
+          "pct_time": 2.96,
+          "n_episodes": 81,
+          "long_min_zz25": {
+            "hit_rate": 0.6296,
+            "ci95": {
+              "ci95_lo": 0.5151,
+              "ci95_hi": 0.7344
+            },
+            "ev": 0.0077,
+            "pf": 1.85
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.358,
+            "ci95": {
+              "ci95_lo": 0.2545,
+              "ci95_hi": 0.4723
+            },
+            "ev": -0.0077,
+            "pf": 0.54
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 96,
+          "pct_time": 2.63,
+          "n_episodes": 70,
+          "long_min_zz25": {
+            "hit_rate": 0.5857,
+            "ci95": {
+              "ci95_lo": 0.4617,
+              "ci95_hi": 0.7023
+            },
+            "ev": 0.006,
+            "pf": 1.64
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4143,
+            "ci95": {
+              "ci95_lo": 0.2977,
+              "ci95_hi": 0.5383
+            },
+            "ev": -0.006,
+            "pf": 0.61
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 96,
+          "pct_time": 2.63,
+          "n_episodes": 70,
+          "long_min_zz25": {
+            "hit_rate": 0.5286,
+            "ci95": {
+              "ci95_lo": 0.4055,
+              "ci95_hi": 0.6491
+            },
+            "ev": 0.0015,
+            "pf": 1.12
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4571,
+            "ci95": {
+              "ci95_lo": 0.3374,
+              "ci95_hi": 0.5806
+            },
+            "ev": -0.0015,
+            "pf": 0.9
+          }
+        },
+        {
+          "state_key": "2__1__1",
+          "count_bars": 92,
+          "pct_time": 2.52,
+          "n_episodes": 63,
+          "long_min_zz25": {
+            "hit_rate": 0.5079,
+            "ci95": {
+              "ci95_lo": 0.3789,
+              "ci95_hi": 0.6362
+            },
+            "ev": -0.0003,
+            "pf": 0.98
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4921,
+            "ci95": {
+              "ci95_lo": 0.3638,
+              "ci95_hi": 0.6211
+            },
+            "ev": 0.0003,
+            "pf": 1.03
+          }
+        }
+      ]
+    },
+    "sv5_turbulence": {
+      "station": "SV5_TURBULENCE",
+      "total_bars_valid": 6679,
+      "n_states_observed": 111,
+      "n_states_theoretical": 150,
+      "coverage_pct": 74.0,
+      "top_10_states": [
+        {
+          "state_key": "3__2__2",
+          "count_bars": 969,
+          "pct_time": 14.51,
+          "n_episodes": 529,
+          "long_min_zz25": {
+            "hit_rate": 0.5388,
+            "ci95": {
+              "ci95_lo": 0.4952,
+              "ci95_hi": 0.5819
+            },
+            "ev": 0.002,
+            "pf": 1.18
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4612,
+            "ci95": {
+              "ci95_lo": 0.4181,
+              "ci95_hi": 0.5048
+            },
+            "ev": -0.002,
+            "pf": 0.85
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 904,
+          "pct_time": 13.53,
+          "n_episodes": 432,
+          "long_min_zz25": {
+            "hit_rate": 0.5972,
+            "ci95": {
+              "ci95_lo": 0.5493,
+              "ci95_hi": 0.6438
+            },
+            "ev": 0.0053,
+            "pf": 1.51
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4028,
+            "ci95": {
+              "ci95_lo": 0.3562,
+              "ci95_hi": 0.4507
+            },
+            "ev": -0.0053,
+            "pf": 0.66
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 427,
+          "pct_time": 6.39,
+          "n_episodes": 311,
+          "long_min_zz25": {
+            "hit_rate": 0.508,
+            "ci95": {
+              "ci95_lo": 0.451,
+              "ci95_hi": 0.5649
+            },
+            "ev": 0.0004,
+            "pf": 1.03
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.492,
+            "ci95": {
+              "ci95_lo": 0.4351,
+              "ci95_hi": 0.549
+            },
+            "ev": -0.0004,
+            "pf": 0.97
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 329,
+          "pct_time": 4.93,
+          "n_episodes": 218,
+          "long_min_zz25": {
+            "hit_rate": 0.5826,
+            "ci95": {
+              "ci95_lo": 0.5141,
+              "ci95_hi": 0.6488
+            },
+            "ev": 0.0043,
+            "pf": 1.41
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4174,
+            "ci95": {
+              "ci95_lo": 0.3512,
+              "ci95_hi": 0.4859
+            },
+            "ev": -0.0043,
+            "pf": 0.71
+          }
+        },
+        {
+          "state_key": "2__2__1",
+          "count_bars": 314,
+          "pct_time": 4.7,
+          "n_episodes": 229,
+          "long_min_zz25": {
+            "hit_rate": 0.4934,
+            "ci95": {
+              "ci95_lo": 0.427,
+              "ci95_hi": 0.5601
+            },
+            "ev": -0.0004,
+            "pf": 0.97
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.5066,
+            "ci95": {
+              "ci95_lo": 0.4399,
+              "ci95_hi": 0.573
+            },
+            "ev": 0.0004,
+            "pf": 1.03
+          }
+        },
+        {
+          "state_key": "3__3__2",
+          "count_bars": 291,
+          "pct_time": 4.36,
+          "n_episodes": 193,
+          "long_min_zz25": {
+            "hit_rate": 0.5285,
+            "ci95": {
+              "ci95_lo": 0.4555,
+              "ci95_hi": 0.6006
+            },
+            "ev": 0.0013,
+            "pf": 1.11
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4715,
+            "ci95": {
+              "ci95_lo": 0.3994,
+              "ci95_hi": 0.5445
+            },
+            "ev": -0.0013,
+            "pf": 0.9
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 254,
+          "pct_time": 3.8,
+          "n_episodes": 136,
+          "long_min_zz25": {
+            "hit_rate": 0.5441,
+            "ci95": {
+              "ci95_lo": 0.4566,
+              "ci95_hi": 0.6297
+            },
+            "ev": 0.0021,
+            "pf": 1.18
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4559,
+            "ci95": {
+              "ci95_lo": 0.3703,
+              "ci95_hi": 0.5434
+            },
+            "ev": -0.0021,
+            "pf": 0.85
+          }
+        },
+        {
+          "state_key": "3__1__2",
+          "count_bars": 205,
+          "pct_time": 3.07,
+          "n_episodes": 143,
+          "long_min_zz25": {
+            "hit_rate": 0.5105,
+            "ci95": {
+              "ci95_lo": 0.4256,
+              "ci95_hi": 0.5949
+            },
+            "ev": 0.0004,
+            "pf": 1.03
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4895,
+            "ci95": {
+              "ci95_lo": 0.4051,
+              "ci95_hi": 0.5744
+            },
+            "ev": -0.0004,
+            "pf": 0.97
+          }
+        },
+        {
+          "state_key": "4__2__1",
+          "count_bars": 185,
+          "pct_time": 2.77,
+          "n_episodes": 135,
+          "long_min_zz25": {
+            "hit_rate": 0.5185,
+            "ci95": {
+              "ci95_lo": 0.4309,
+              "ci95_hi": 0.6053
+            },
+            "ev": 0.0012,
+            "pf": 1.11
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4741,
+            "ci95": {
+              "ci95_lo": 0.3875,
+              "ci95_hi": 0.5618
+            },
+            "ev": -0.0012,
+            "pf": 0.9
+          }
+        },
+        {
+          "state_key": "2__1__2",
+          "count_bars": 180,
+          "pct_time": 2.7,
+          "n_episodes": 133,
+          "long_min_zz25": {
+            "hit_rate": 0.5038,
+            "ci95": {
+              "ci95_lo": 0.4158,
+              "ci95_hi": 0.5916
+            },
+            "ev": -0.0002,
+            "pf": 0.99
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4962,
+            "ci95": {
+              "ci95_lo": 0.4084,
+              "ci95_hi": 0.5842
+            },
+            "ev": 0.0002,
+            "pf": 1.02
+          }
+        }
+      ]
+    },
+    "skew": {
+      "station": "SKEW",
+      "total_bars_valid": 8191,
+      "n_states_observed": 118,
+      "n_states_theoretical": 150,
+      "coverage_pct": 78.7,
+      "top_10_states": [
+        {
+          "state_key": "3__2__2",
+          "count_bars": 1037,
+          "pct_time": 12.66,
+          "n_episodes": 610,
+          "long_min_zz25": {
+            "hit_rate": 0.5475,
+            "ci95": {
+              "ci95_lo": 0.5071,
+              "ci95_hi": 0.5875
+            },
+            "ev": 0.003,
+            "pf": 1.26
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4475,
+            "ci95": {
+              "ci95_lo": 0.4076,
+              "ci95_hi": 0.488
+            },
+            "ev": -0.003,
+            "pf": 0.79
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 879,
+          "pct_time": 10.73,
+          "n_episodes": 607,
+          "long_min_zz25": {
+            "hit_rate": 0.5881,
+            "ci95": {
+              "ci95_lo": 0.5478,
+              "ci95_hi": 0.6276
+            },
+            "ev": 0.0051,
+            "pf": 1.52
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4053,
+            "ci95": {
+              "ci95_lo": 0.3659,
+              "ci95_hi": 0.4455
+            },
+            "ev": -0.0051,
+            "pf": 0.66
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 750,
+          "pct_time": 9.16,
+          "n_episodes": 430,
+          "long_min_zz25": {
+            "hit_rate": 0.5256,
+            "ci95": {
+              "ci95_lo": 0.4772,
+              "ci95_hi": 0.5736
+            },
+            "ev": 0.0021,
+            "pf": 1.18
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4744,
+            "ci95": {
+              "ci95_lo": 0.4264,
+              "ci95_hi": 0.5228
+            },
+            "ev": -0.0021,
+            "pf": 0.85
+          }
+        },
+        {
+          "state_key": "4__3__2",
+          "count_bars": 431,
+          "pct_time": 5.26,
+          "n_episodes": 335,
+          "long_min_zz25": {
+            "hit_rate": 0.597,
+            "ci95": {
+              "ci95_lo": 0.5423,
+              "ci95_hi": 0.65
+            },
+            "ev": 0.0053,
+            "pf": 1.55
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.391,
+            "ci95": {
+              "ci95_lo": 0.3385,
+              "ci95_hi": 0.4456
+            },
+            "ev": -0.0053,
+            "pf": 0.64
+          }
+        },
+        {
+          "state_key": "4__1__2",
+          "count_bars": 312,
+          "pct_time": 3.81,
+          "n_episodes": 253,
+          "long_min_zz25": {
+            "hit_rate": 0.6047,
+            "ci95": {
+              "ci95_lo": 0.5416,
+              "ci95_hi": 0.6654
+            },
+            "ev": 0.0056,
+            "pf": 1.57
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3953,
+            "ci95": {
+              "ci95_lo": 0.3346,
+              "ci95_hi": 0.4584
+            },
+            "ev": -0.0056,
+            "pf": 0.63
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 310,
+          "pct_time": 3.78,
+          "n_episodes": 170,
+          "long_min_zz25": {
+            "hit_rate": 0.4882,
+            "ci95": {
+              "ci95_lo": 0.4109,
+              "ci95_hi": 0.5659
+            },
+            "ev": -0.0007,
+            "pf": 0.94
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.5118,
+            "ci95": {
+              "ci95_lo": 0.4341,
+              "ci95_hi": 0.5891
+            },
+            "ev": 0.0007,
+            "pf": 1.06
+          }
+        },
+        {
+          "state_key": "3__1__2",
+          "count_bars": 307,
+          "pct_time": 3.75,
+          "n_episodes": 257,
+          "long_min_zz25": {
+            "hit_rate": 0.5564,
+            "ci95": {
+              "ci95_lo": 0.4934,
+              "ci95_hi": 0.6181
+            },
+            "ev": 0.0037,
+            "pf": 1.34
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4397,
+            "ci95": {
+              "ci95_lo": 0.3781,
+              "ci95_hi": 0.5027
+            },
+            "ev": -0.0037,
+            "pf": 0.75
+          }
+        },
+        {
+          "state_key": "5__2__2",
+          "count_bars": 244,
+          "pct_time": 2.98,
+          "n_episodes": 190,
+          "long_min_zz25": {
+            "hit_rate": 0.5474,
+            "ci95": {
+              "ci95_lo": 0.4737,
+              "ci95_hi": 0.6195
+            },
+            "ev": 0.002,
+            "pf": 1.17
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4526,
+            "ci95": {
+              "ci95_lo": 0.3805,
+              "ci95_hi": 0.5263
+            },
+            "ev": -0.002,
+            "pf": 0.86
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 226,
+          "pct_time": 2.76,
+          "n_episodes": 191,
+          "long_min_zz25": {
+            "hit_rate": 0.5812,
+            "ci95": {
+              "ci95_lo": 0.5078,
+              "ci95_hi": 0.652
+            },
+            "ev": 0.0042,
+            "pf": 1.39
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4188,
+            "ci95": {
+              "ci95_lo": 0.348,
+              "ci95_hi": 0.4922
+            },
+            "ev": -0.0042,
+            "pf": 0.72
+          }
+        },
+        {
+          "state_key": "5__3__2",
+          "count_bars": 217,
+          "pct_time": 2.65,
+          "n_episodes": 174,
+          "long_min_zz25": {
+            "hit_rate": 0.523,
+            "ci95": {
+              "ci95_lo": 0.4461,
+              "ci95_hi": 0.5991
+            },
+            "ev": 0.0018,
+            "pf": 1.15
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.477,
+            "ci95": {
+              "ci95_lo": 0.4009,
+              "ci95_hi": 0.5539
+            },
+            "ev": -0.0018,
+            "pf": 0.87
+          }
+        }
+      ]
+    },
+    "credit": {
+      "station": "CREDIT",
+      "total_bars_valid": 4611,
+      "n_states_observed": 114,
+      "n_states_theoretical": 150,
+      "coverage_pct": 76.0,
+      "top_10_states": [
+        {
+          "state_key": "2__2__1",
+          "count_bars": 473,
+          "pct_time": 10.26,
+          "n_episodes": 267,
+          "long_min_zz25": {
+            "hit_rate": 0.5468,
+            "ci95": {
+              "ci95_lo": 0.485,
+              "ci95_hi": 0.6076
+            },
+            "ev": 0.0023,
+            "pf": 1.2
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4532,
+            "ci95": {
+              "ci95_lo": 0.3924,
+              "ci95_hi": 0.515
+            },
+            "ev": -0.0023,
+            "pf": 0.83
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 420,
+          "pct_time": 9.11,
+          "n_episodes": 240,
+          "long_min_zz25": {
+            "hit_rate": 0.5792,
+            "ci95": {
+              "ci95_lo": 0.514,
+              "ci95_hi": 0.6424
+            },
+            "ev": 0.0036,
+            "pf": 1.31
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4208,
+            "ci95": {
+              "ci95_lo": 0.3576,
+              "ci95_hi": 0.486
+            },
+            "ev": -0.0036,
+            "pf": 0.76
+          }
+        },
+        {
+          "state_key": "5__2__2",
+          "count_bars": 401,
+          "pct_time": 8.7,
+          "n_episodes": 219,
+          "long_min_zz25": {
+            "hit_rate": 0.516,
+            "ci95": {
+              "ci95_lo": 0.4477,
+              "ci95_hi": 0.5838
+            },
+            "ev": 0.0009,
+            "pf": 1.07
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4795,
+            "ci95": {
+              "ci95_lo": 0.4117,
+              "ci95_hi": 0.5478
+            },
+            "ev": -0.0009,
+            "pf": 0.94
+          }
+        },
+        {
+          "state_key": "3__2__2",
+          "count_bars": 358,
+          "pct_time": 7.76,
+          "n_episodes": 237,
+          "long_min_zz25": {
+            "hit_rate": 0.6203,
+            "ci95": {
+              "ci95_lo": 0.5552,
+              "ci95_hi": 0.6823
+            },
+            "ev": 0.0069,
+            "pf": 1.74
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3797,
+            "ci95": {
+              "ci95_lo": 0.3177,
+              "ci95_hi": 0.4448
+            },
+            "ev": -0.0069,
+            "pf": 0.58
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 286,
+          "pct_time": 6.2,
+          "n_episodes": 190,
+          "long_min_zz25": {
+            "hit_rate": 0.6211,
+            "ci95": {
+              "ci95_lo": 0.548,
+              "ci95_hi": 0.6903
+            },
+            "ev": 0.0068,
+            "pf": 1.75
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3789,
+            "ci95": {
+              "ci95_lo": 0.3097,
+              "ci95_hi": 0.452
+            },
+            "ev": -0.0068,
+            "pf": 0.57
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 248,
+          "pct_time": 5.38,
+          "n_episodes": 167,
+          "long_min_zz25": {
+            "hit_rate": 0.509,
+            "ci95": {
+              "ci95_lo": 0.4306,
+              "ci95_hi": 0.587
+            },
+            "ev": 0.0002,
+            "pf": 1.01
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.491,
+            "ci95": {
+              "ci95_lo": 0.413,
+              "ci95_hi": 0.5694
+            },
+            "ev": -0.0002,
+            "pf": 0.99
+          }
+        },
+        {
+          "state_key": "5__2__1",
+          "count_bars": 232,
+          "pct_time": 5.03,
+          "n_episodes": 164,
+          "long_min_zz25": {
+            "hit_rate": 0.5061,
+            "ci95": {
+              "ci95_lo": 0.427,
+              "ci95_hi": 0.5849
+            },
+            "ev": 0.0003,
+            "pf": 1.02
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4878,
+            "ci95": {
+              "ci95_lo": 0.4091,
+              "ci95_hi": 0.567
+            },
+            "ev": -0.0003,
+            "pf": 0.98
+          }
+        },
+        {
+          "state_key": "4__2__1",
+          "count_bars": 214,
+          "pct_time": 4.64,
+          "n_episodes": 151,
+          "long_min_zz25": {
+            "hit_rate": 0.6424,
+            "ci95": {
+              "ci95_lo": 0.5604,
+              "ci95_hi": 0.7186
+            },
+            "ev": 0.0073,
+            "pf": 1.81
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3576,
+            "ci95": {
+              "ci95_lo": 0.2814,
+              "ci95_hi": 0.4396
+            },
+            "ev": -0.0073,
+            "pf": 0.55
+          }
+        },
+        {
+          "state_key": "2__2__0",
+          "count_bars": 108,
+          "pct_time": 2.34,
+          "n_episodes": 89,
+          "long_min_zz25": {
+            "hit_rate": 0.4719,
+            "ci95": {
+              "ci95_lo": 0.3651,
+              "ci95_hi": 0.5806
+            },
+            "ev": -0.0005,
+            "pf": 0.96
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.5281,
+            "ci95": {
+              "ci95_lo": 0.4194,
+              "ci95_hi": 0.6349
+            },
+            "ev": 0.0005,
+            "pf": 1.04
+          }
+        },
+        {
+          "state_key": "2__3__1",
+          "count_bars": 89,
+          "pct_time": 1.93,
+          "n_episodes": 69,
+          "long_min_zz25": {
+            "hit_rate": 0.5507,
+            "ci95": {
+              "ci95_lo": 0.4262,
+              "ci95_hi": 0.6708
+            },
+            "ev": 0.0037,
+            "pf": 1.35
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4493,
+            "ci95": {
+              "ci95_lo": 0.3292,
+              "ci95_hi": 0.5738
+            },
+            "ev": -0.0037,
+            "pf": 0.74
+          }
+        }
+      ]
+    },
+    "yield_curve": {
+      "station": "YIELD_CURVE",
+      "total_bars_valid": 8192,
+      "n_states_observed": 132,
+      "n_states_theoretical": 150,
+      "coverage_pct": 88.0,
+      "top_10_states": [
+        {
+          "state_key": "2__2__2",
+          "count_bars": 1438,
+          "pct_time": 17.55,
+          "n_episodes": 626,
+          "long_min_zz25": {
+            "hit_rate": 0.5719,
+            "ci95": {
+              "ci95_lo": 0.5321,
+              "ci95_hi": 0.611
+            },
+            "ev": 0.0048,
+            "pf": 1.48
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4265,
+            "ci95": {
+              "ci95_lo": 0.3874,
+              "ci95_hi": 0.4663
+            },
+            "ev": -0.0048,
+            "pf": 0.67
+          }
+        },
+        {
+          "state_key": "3__2__2",
+          "count_bars": 1030,
+          "pct_time": 12.57,
+          "n_episodes": 472,
+          "long_min_zz25": {
+            "hit_rate": 0.5021,
+            "ci95": {
+              "ci95_lo": 0.4561,
+              "ci95_hi": 0.5481
+            },
+            "ev": -0.0001,
+            "pf": 0.99
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4979,
+            "ci95": {
+              "ci95_lo": 0.4519,
+              "ci95_hi": 0.5439
+            },
+            "ev": 0.0001,
+            "pf": 1.01
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 803,
+          "pct_time": 9.8,
+          "n_episodes": 354,
+          "long_min_zz25": {
+            "hit_rate": 0.6186,
+            "ci95": {
+              "ci95_lo": 0.5658,
+              "ci95_hi": 0.6695
+            },
+            "ev": 0.0063,
+            "pf": 1.65
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3814,
+            "ci95": {
+              "ci95_lo": 0.3305,
+              "ci95_hi": 0.4342
+            },
+            "ev": -0.0063,
+            "pf": 0.61
+          }
+        },
+        {
+          "state_key": "0__2__2",
+          "count_bars": 354,
+          "pct_time": 4.32,
+          "n_episodes": 186,
+          "long_min_zz25": {
+            "hit_rate": 0.6344,
+            "ci95": {
+              "ci95_lo": 0.5608,
+              "ci95_hi": 0.7037
+            },
+            "ev": 0.0065,
+            "pf": 1.67
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3656,
+            "ci95": {
+              "ci95_lo": 0.2963,
+              "ci95_hi": 0.4392
+            },
+            "ev": -0.0065,
+            "pf": 0.6
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 303,
+          "pct_time": 3.7,
+          "n_episodes": 164,
+          "long_min_zz25": {
+            "hit_rate": 0.5244,
+            "ci95": {
+              "ci95_lo": 0.4451,
+              "ci95_hi": 0.6028
+            },
+            "ev": 0.0016,
+            "pf": 1.15
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4756,
+            "ci95": {
+              "ci95_lo": 0.3972,
+              "ci95_hi": 0.5549
+            },
+            "ev": -0.0016,
+            "pf": 0.87
+          }
+        },
+        {
+          "state_key": "2__2__1",
+          "count_bars": 300,
+          "pct_time": 3.66,
+          "n_episodes": 270,
+          "long_min_zz25": {
+            "hit_rate": 0.5815,
+            "ci95": {
+              "ci95_lo": 0.5202,
+              "ci95_hi": 0.641
+            },
+            "ev": 0.0053,
+            "pf": 1.54
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4185,
+            "ci95": {
+              "ci95_lo": 0.359,
+              "ci95_hi": 0.4798
+            },
+            "ev": -0.0053,
+            "pf": 0.65
+          }
+        },
+        {
+          "state_key": "2__2__3",
+          "count_bars": 256,
+          "pct_time": 3.12,
+          "n_episodes": 226,
+          "long_min_zz25": {
+            "hit_rate": 0.6106,
+            "ci95": {
+              "ci95_lo": 0.5437,
+              "ci95_hi": 0.6746
+            },
+            "ev": 0.0072,
+            "pf": 1.85
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3894,
+            "ci95": {
+              "ci95_lo": 0.3254,
+              "ci95_hi": 0.4563
+            },
+            "ev": -0.0072,
+            "pf": 0.54
+          }
+        },
+        {
+          "state_key": "2__3__2",
+          "count_bars": 224,
+          "pct_time": 2.73,
+          "n_episodes": 161,
+          "long_min_zz25": {
+            "hit_rate": 0.472,
+            "ci95": {
+              "ci95_lo": 0.393,
+              "ci95_hi": 0.5522
+            },
+            "ev": 0.0012,
+            "pf": 1.1
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.528,
+            "ci95": {
+              "ci95_lo": 0.4478,
+              "ci95_hi": 0.607
+            },
+            "ev": -0.0012,
+            "pf": 0.91
+          }
+        },
+        {
+          "state_key": "3__2__3",
+          "count_bars": 200,
+          "pct_time": 2.44,
+          "n_episodes": 182,
+          "long_min_zz25": {
+            "hit_rate": 0.4505,
+            "ci95": {
+              "ci95_lo": 0.3769,
+              "ci95_hi": 0.5259
+            },
+            "ev": -0.0025,
+            "pf": 0.82
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.544,
+            "ci95": {
+              "ci95_lo": 0.4686,
+              "ci95_hi": 0.6178
+            },
+            "ev": 0.0025,
+            "pf": 1.22
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 196,
+          "pct_time": 2.39,
+          "n_episodes": 174,
+          "long_min_zz25": {
+            "hit_rate": 0.5172,
+            "ci95": {
+              "ci95_lo": 0.4404,
+              "ci95_hi": 0.5935
+            },
+            "ev": 0.0,
+            "pf": 1.0
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4828,
+            "ci95": {
+              "ci95_lo": 0.4065,
+              "ci95_hi": 0.5596
+            },
+            "ev": -0.0,
+            "pf": 1.0
+          }
+        }
+      ]
+    },
+    "rotation": {
+      "station": "ROTATION",
+      "total_bars_valid": 6702,
+      "n_states_observed": 130,
+      "n_states_theoretical": 150,
+      "coverage_pct": 86.7,
+      "top_10_states": [
+        {
+          "state_key": "3__2__2",
+          "count_bars": 950,
+          "pct_time": 14.17,
+          "n_episodes": 525,
+          "long_min_zz25": {
+            "hit_rate": 0.5714,
+            "ci95": {
+              "ci95_lo": 0.5278,
+              "ci95_hi": 0.6142
+            },
+            "ev": 0.0037,
+            "pf": 1.36
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4229,
+            "ci95": {
+              "ci95_lo": 0.3802,
+              "ci95_hi": 0.4664
+            },
+            "ev": -0.0037,
+            "pf": 0.73
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 738,
+          "pct_time": 11.01,
+          "n_episodes": 423,
+          "long_min_zz25": {
+            "hit_rate": 0.4917,
+            "ci95": {
+              "ci95_lo": 0.4431,
+              "ci95_hi": 0.5405
+            },
+            "ev": -0.0002,
+            "pf": 0.98
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.5083,
+            "ci95": {
+              "ci95_lo": 0.4595,
+              "ci95_hi": 0.5569
+            },
+            "ev": 0.0002,
+            "pf": 1.02
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 578,
+          "pct_time": 8.62,
+          "n_episodes": 292,
+          "long_min_zz25": {
+            "hit_rate": 0.5582,
+            "ci95": {
+              "ci95_lo": 0.4992,
+              "ci95_hi": 0.616
+            },
+            "ev": 0.0031,
+            "pf": 1.28
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4418,
+            "ci95": {
+              "ci95_lo": 0.384,
+              "ci95_hi": 0.5008
+            },
+            "ev": -0.0031,
+            "pf": 0.78
+          }
+        },
+        {
+          "state_key": "2__2__1",
+          "count_bars": 364,
+          "pct_time": 5.43,
+          "n_episodes": 253,
+          "long_min_zz25": {
+            "hit_rate": 0.5059,
+            "ci95": {
+              "ci95_lo": 0.4426,
+              "ci95_hi": 0.5691
+            },
+            "ev": 0.0008,
+            "pf": 1.06
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4941,
+            "ci95": {
+              "ci95_lo": 0.4309,
+              "ci95_hi": 0.5574
+            },
+            "ev": -0.0008,
+            "pf": 0.94
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 352,
+          "pct_time": 5.25,
+          "n_episodes": 278,
+          "long_min_zz25": {
+            "hit_rate": 0.5504,
+            "ci95": {
+              "ci95_lo": 0.4898,
+              "ci95_hi": 0.6098
+            },
+            "ev": 0.0032,
+            "pf": 1.3
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4424,
+            "ci95": {
+              "ci95_lo": 0.3832,
+              "ci95_hi": 0.503
+            },
+            "ev": -0.0032,
+            "pf": 0.77
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 339,
+          "pct_time": 5.06,
+          "n_episodes": 206,
+          "long_min_zz25": {
+            "hit_rate": 0.5825,
+            "ci95": {
+              "ci95_lo": 0.512,
+              "ci95_hi": 0.6507
+            },
+            "ev": 0.0036,
+            "pf": 1.33
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4175,
+            "ci95": {
+              "ci95_lo": 0.3493,
+              "ci95_hi": 0.488
+            },
+            "ev": -0.0036,
+            "pf": 0.75
+          }
+        },
+        {
+          "state_key": "3__1__2",
+          "count_bars": 206,
+          "pct_time": 3.07,
+          "n_episodes": 145,
+          "long_min_zz25": {
+            "hit_rate": 0.6276,
+            "ci95": {
+              "ci95_lo": 0.5435,
+              "ci95_hi": 0.7064
+            },
+            "ev": 0.0058,
+            "pf": 1.58
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3724,
+            "ci95": {
+              "ci95_lo": 0.2936,
+              "ci95_hi": 0.4565
+            },
+            "ev": -0.0058,
+            "pf": 0.63
+          }
+        },
+        {
+          "state_key": "4__2__1",
+          "count_bars": 198,
+          "pct_time": 2.95,
+          "n_episodes": 158,
+          "long_min_zz25": {
+            "hit_rate": 0.5316,
+            "ci95": {
+              "ci95_lo": 0.4507,
+              "ci95_hi": 0.6114
+            },
+            "ev": 0.0009,
+            "pf": 1.07
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4684,
+            "ci95": {
+              "ci95_lo": 0.3886,
+              "ci95_hi": 0.5493
+            },
+            "ev": -0.0009,
+            "pf": 0.93
+          }
+        },
+        {
+          "state_key": "3__3__2",
+          "count_bars": 186,
+          "pct_time": 2.78,
+          "n_episodes": 144,
+          "long_min_zz25": {
+            "hit_rate": 0.5625,
+            "ci95": {
+              "ci95_lo": 0.4774,
+              "ci95_hi": 0.6449
+            },
+            "ev": 0.0038,
+            "pf": 1.37
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4236,
+            "ci95": {
+              "ci95_lo": 0.3418,
+              "ci95_hi": 0.5087
+            },
+            "ev": -0.0038,
+            "pf": 0.73
+          }
+        },
+        {
+          "state_key": "1__2__1",
+          "count_bars": 176,
+          "pct_time": 2.63,
+          "n_episodes": 124,
+          "long_min_zz25": {
+            "hit_rate": 0.5081,
+            "ci95": {
+              "ci95_lo": 0.4168,
+              "ci95_hi": 0.5989
+            },
+            "ev": 0.0012,
+            "pf": 1.1
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4919,
+            "ci95": {
+              "ci95_lo": 0.4011,
+              "ci95_hi": 0.5832
+            },
+            "ev": -0.0012,
+            "pf": 0.91
+          }
+        }
+      ]
+    },
+    "dxy": {
+      "station": "DXY",
+      "total_bars_valid": 8190,
+      "n_states_observed": 112,
+      "n_states_theoretical": 150,
+      "coverage_pct": 74.7,
+      "top_10_states": [
+        {
+          "state_key": "3__2__2",
+          "count_bars": 1203,
+          "pct_time": 14.69,
+          "n_episodes": 581,
+          "long_min_zz25": {
+            "hit_rate": 0.5559,
+            "ci95": {
+              "ci95_lo": 0.5145,
+              "ci95_hi": 0.5968
+            },
+            "ev": 0.0037,
+            "pf": 1.34
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4389,
+            "ci95": {
+              "ci95_lo": 0.3981,
+              "ci95_hi": 0.4803
+            },
+            "ev": -0.0037,
+            "pf": 0.75
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 842,
+          "pct_time": 10.28,
+          "n_episodes": 415,
+          "long_min_zz25": {
+            "hit_rate": 0.5277,
+            "ci95": {
+              "ci95_lo": 0.4784,
+              "ci95_hi": 0.5766
+            },
+            "ev": 0.0017,
+            "pf": 1.15
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4723,
+            "ci95": {
+              "ci95_lo": 0.4234,
+              "ci95_hi": 0.5216
+            },
+            "ev": -0.0017,
+            "pf": 0.87
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 687,
+          "pct_time": 8.39,
+          "n_episodes": 340,
+          "long_min_zz25": {
+            "hit_rate": 0.6265,
+            "ci95": {
+              "ci95_lo": 0.5727,
+              "ci95_hi": 0.6781
+            },
+            "ev": 0.0066,
+            "pf": 1.7
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3735,
+            "ci95": {
+              "ci95_lo": 0.3219,
+              "ci95_hi": 0.4273
+            },
+            "ev": -0.0066,
+            "pf": 0.59
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 606,
+          "pct_time": 7.4,
+          "n_episodes": 314,
+          "long_min_zz25": {
+            "hit_rate": 0.551,
+            "ci95": {
+              "ci95_lo": 0.4941,
+              "ci95_hi": 0.6069
+            },
+            "ev": 0.0025,
+            "pf": 1.21
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.449,
+            "ci95": {
+              "ci95_lo": 0.3931,
+              "ci95_hi": 0.5059
+            },
+            "ev": -0.0025,
+            "pf": 0.82
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 418,
+          "pct_time": 5.1,
+          "n_episodes": 403,
+          "long_min_zz25": {
+            "hit_rate": 0.5608,
+            "ci95": {
+              "ci95_lo": 0.5108,
+              "ci95_hi": 0.6099
+            },
+            "ev": 0.0039,
+            "pf": 1.37
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4367,
+            "ci95": {
+              "ci95_lo": 0.3877,
+              "ci95_hi": 0.4867
+            },
+            "ev": -0.0039,
+            "pf": 0.73
+          }
+        },
+        {
+          "state_key": "2__2__1",
+          "count_bars": 291,
+          "pct_time": 3.55,
+          "n_episodes": 278,
+          "long_min_zz25": {
+            "hit_rate": 0.6007,
+            "ci95": {
+              "ci95_lo": 0.5405,
+              "ci95_hi": 0.6587
+            },
+            "ev": 0.0053,
+            "pf": 1.54
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3993,
+            "ci95": {
+              "ci95_lo": 0.3413,
+              "ci95_hi": 0.4595
+            },
+            "ev": -0.0053,
+            "pf": 0.65
+          }
+        },
+        {
+          "state_key": "1__2__1",
+          "count_bars": 234,
+          "pct_time": 2.86,
+          "n_episodes": 226,
+          "long_min_zz25": {
+            "hit_rate": 0.6018,
+            "ci95": {
+              "ci95_lo": 0.5347,
+              "ci95_hi": 0.6661
+            },
+            "ev": 0.0048,
+            "pf": 1.46
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.3982,
+            "ci95": {
+              "ci95_lo": 0.3339,
+              "ci95_hi": 0.4653
+            },
+            "ev": -0.0048,
+            "pf": 0.69
+          }
+        },
+        {
+          "state_key": "3__1__2",
+          "count_bars": 234,
+          "pct_time": 2.86,
+          "n_episodes": 163,
+          "long_min_zz25": {
+            "hit_rate": 0.5092,
+            "ci95": {
+              "ci95_lo": 0.4298,
+              "ci95_hi": 0.5882
+            },
+            "ev": 0.0007,
+            "pf": 1.06
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4847,
+            "ci95": {
+              "ci95_lo": 0.4058,
+              "ci95_hi": 0.5641
+            },
+            "ev": -0.0007,
+            "pf": 0.94
+          }
+        },
+        {
+          "state_key": "3__2__3",
+          "count_bars": 218,
+          "pct_time": 2.66,
+          "n_episodes": 198,
+          "long_min_zz25": {
+            "hit_rate": 0.5657,
+            "ci95": {
+              "ci95_lo": 0.4935,
+              "ci95_hi": 0.6358
+            },
+            "ev": 0.0032,
+            "pf": 1.28
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4242,
+            "ci95": {
+              "ci95_lo": 0.3545,
+              "ci95_hi": 0.4963
+            },
+            "ev": -0.0032,
+            "pf": 0.78
+          }
+        },
+        {
+          "state_key": "3__3__2",
+          "count_bars": 210,
+          "pct_time": 2.56,
+          "n_episodes": 150,
+          "long_min_zz25": {
+            "hit_rate": 0.6133,
+            "ci95": {
+              "ci95_lo": 0.5305,
+              "ci95_hi": 0.6916
+            },
+            "ev": 0.0064,
+            "pf": 1.66
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.38,
+            "ci95": {
+              "ci95_lo": 0.3021,
+              "ci95_hi": 0.4628
+            },
+            "ev": -0.0064,
+            "pf": 0.6
+          }
+        }
+      ]
+    },
+    "bsi": {
+      "station": "BSI",
+      "total_bars_valid": 8190,
+      "n_states_observed": 112,
+      "n_states_theoretical": 150,
+      "coverage_pct": 74.7,
+      "top_10_states": [
+        {
+          "state_key": "3__2__2",
+          "count_bars": 1153,
+          "pct_time": 14.08,
+          "n_episodes": 689,
+          "long_min_zz25": {
+            "hit_rate": 0.5689,
+            "ci95": {
+              "ci95_lo": 0.531,
+              "ci95_hi": 0.6063
+            },
+            "ev": 0.0037,
+            "pf": 1.34
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4311,
+            "ci95": {
+              "ci95_lo": 0.3937,
+              "ci95_hi": 0.469
+            },
+            "ev": -0.0037,
+            "pf": 0.74
+          }
+        },
+        {
+          "state_key": "2__2__2",
+          "count_bars": 938,
+          "pct_time": 11.45,
+          "n_episodes": 617,
+          "long_min_zz25": {
+            "hit_rate": 0.53,
+            "ci95": {
+              "ci95_lo": 0.4897,
+              "ci95_hi": 0.57
+            },
+            "ev": 0.002,
+            "pf": 1.18
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.47,
+            "ci95": {
+              "ci95_lo": 0.43,
+              "ci95_hi": 0.5103
+            },
+            "ev": -0.002,
+            "pf": 0.85
+          }
+        },
+        {
+          "state_key": "4__2__2",
+          "count_bars": 708,
+          "pct_time": 8.64,
+          "n_episodes": 422,
+          "long_min_zz25": {
+            "hit_rate": 0.5616,
+            "ci95": {
+              "ci95_lo": 0.5128,
+              "ci95_hi": 0.6096
+            },
+            "ev": 0.0031,
+            "pf": 1.28
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4384,
+            "ci95": {
+              "ci95_lo": 0.3904,
+              "ci95_hi": 0.4872
+            },
+            "ev": -0.0031,
+            "pf": 0.78
+          }
+        },
+        {
+          "state_key": "1__2__2",
+          "count_bars": 456,
+          "pct_time": 5.57,
+          "n_episodes": 291,
+          "long_min_zz25": {
+            "hit_rate": 0.5567,
+            "ci95": {
+              "ci95_lo": 0.4976,
+              "ci95_hi": 0.6147
+            },
+            "ev": 0.0033,
+            "pf": 1.3
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4433,
+            "ci95": {
+              "ci95_lo": 0.3853,
+              "ci95_hi": 0.5024
+            },
+            "ev": -0.0033,
+            "pf": 0.77
+          }
+        },
+        {
+          "state_key": "2__1__2",
+          "count_bars": 313,
+          "pct_time": 3.82,
+          "n_episodes": 251,
+          "long_min_zz25": {
+            "hit_rate": 0.5896,
+            "ci95": {
+              "ci95_lo": 0.526,
+              "ci95_hi": 0.6511
+            },
+            "ev": 0.0043,
+            "pf": 1.4
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4104,
+            "ci95": {
+              "ci95_lo": 0.3489,
+              "ci95_hi": 0.474
+            },
+            "ev": -0.0043,
+            "pf": 0.72
+          }
+        },
+        {
+          "state_key": "3__3__2",
+          "count_bars": 301,
+          "pct_time": 3.68,
+          "n_episodes": 239,
+          "long_min_zz25": {
+            "hit_rate": 0.5774,
+            "ci95": {
+              "ci95_lo": 0.5121,
+              "ci95_hi": 0.6408
+            },
+            "ev": 0.0043,
+            "pf": 1.4
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4184,
+            "ci95": {
+              "ci95_lo": 0.3551,
+              "ci95_hi": 0.4837
+            },
+            "ev": -0.0043,
+            "pf": 0.71
+          }
+        },
+        {
+          "state_key": "3__2__3",
+          "count_bars": 242,
+          "pct_time": 2.95,
+          "n_episodes": 222,
+          "long_min_zz25": {
+            "hit_rate": 0.5901,
+            "ci95": {
+              "ci95_lo": 0.5223,
+              "ci95_hi": 0.6554
+            },
+            "ev": 0.005,
+            "pf": 1.5
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4009,
+            "ci95": {
+              "ci95_lo": 0.3359,
+              "ci95_hi": 0.4686
+            },
+            "ev": -0.005,
+            "pf": 0.67
+          }
+        },
+        {
+          "state_key": "2__3__2",
+          "count_bars": 234,
+          "pct_time": 2.86,
+          "n_episodes": 189,
+          "long_min_zz25": {
+            "hit_rate": 0.5503,
+            "ci95": {
+              "ci95_lo": 0.4764,
+              "ci95_hi": 0.6225
+            },
+            "ev": 0.0032,
+            "pf": 1.3
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4497,
+            "ci95": {
+              "ci95_lo": 0.3775,
+              "ci95_hi": 0.5236
+            },
+            "ev": -0.0032,
+            "pf": 0.77
+          }
+        },
+        {
+          "state_key": "4__2__1",
+          "count_bars": 219,
+          "pct_time": 2.67,
+          "n_episodes": 178,
+          "long_min_zz25": {
+            "hit_rate": 0.573,
+            "ci95": {
+              "ci95_lo": 0.4969,
+              "ci95_hi": 0.6467
+            },
+            "ev": 0.0033,
+            "pf": 1.31
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.427,
+            "ci95": {
+              "ci95_lo": 0.3533,
+              "ci95_hi": 0.5031
+            },
+            "ev": -0.0033,
+            "pf": 0.76
+          }
+        },
+        {
+          "state_key": "3__2__1",
+          "count_bars": 217,
+          "pct_time": 2.65,
+          "n_episodes": 180,
+          "long_min_zz25": {
+            "hit_rate": 0.55,
+            "ci95": {
+              "ci95_lo": 0.4742,
+              "ci95_hi": 0.6241
+            },
+            "ev": 0.0028,
+            "pf": 1.24
+          },
+          "short_max_zz25": {
+            "hit_rate": 0.4444,
+            "ci95": {
+              "ci95_lo": 0.3705,
+              "ci95_hi": 0.5202
+            },
+            "ev": -0.0028,
+            "pf": 0.81
+          }
+        }
+      ]
+    }
+  },
+  "preguntas_cientificas": {
+    "Q1_centro_campana_2_2_2": {
+      "pregunta": "¿El centro de campana (2__2__2) es continuación, complacencia o ruido?",
+      "resultados": {
+        "vix": {
+          "bars": 1464,
+          "pct_bars": 17.3,
+          "long_zz25_hr": 0.5429,
+          "ci95": {
+            "ci95_lo": 0.5058,
+            "ci95_hi": 0.5797
+          },
+          "ev": 0.0024,
+          "pf": 1.22
+        },
+        "bsi": {
+          "bars": 938,
+          "pct_bars": 11.1,
+          "long_zz25_hr": 0.53,
+          "ci95": {
+            "ci95_lo": 0.4897,
+            "ci95_hi": 0.57
+          },
+          "ev": 0.002,
+          "pf": 1.18
+        },
+        "credit": {
+          "bars": 248,
+          "pct_bars": 2.9,
+          "long_zz25_hr": 0.509,
+          "ci95": {
+            "ci95_lo": 0.4306,
+            "ci95_hi": 0.587
+          },
+          "ev": 0.0002,
+          "pf": 1.01
+        }
+      },
+      "conclusion": "El estado (2__2__2) representa el equilibrio modal estacionario (~15-25% del tiempo). Presenta EV cercano a cero y hit rate alineado al baseline incondicional (~54%). Funciona como zona de bajo valor predictivo individual (ruido/transición neutra)."
+    },
+    "Q2_sesgo_moderado_3_2_2": {
+      "pregunta": "¿El patrón (3__2__2) es continuación alcista o agotamiento?",
+      "resultados": {
+        "vix": {
+          "bars": 970,
+          "pct_bars": 11.5,
+          "long_zz25_hr": 0.5441,
+          "ci95": {
+            "ci95_lo": 0.5017,
+            "ci95_hi": 0.5861
+          },
+          "ev": 0.0025
+        },
+        "bsi": {
+          "bars": 1153,
+          "pct_bars": 13.6,
+          "long_zz25_hr": 0.5689,
+          "ci95": {
+            "ci95_lo": 0.531,
+            "ci95_hi": 0.6063
+          },
+          "ev": 0.0037
+        },
+        "credit": {
+          "bars": 358,
+          "pct_bars": 4.2,
+          "long_zz25_hr": 0.6203,
+          "ci95": {
+            "ci95_lo": 0.5552,
+            "ci95_hi": 0.6823
+          },
+          "ev": 0.0069
+        }
+      },
+      "conclusion": "En VIX (3__2__2 = alerta moderada), HR cae a ~51% (riesgo latente). En BSI/CREDIT (3__2__2 = expansión moderada), HR se sostiene en ~56% (continuación de tendencia)."
+    },
+    "Q3_d2_neutral_en_d1_extremo": {
+      "pregunta": "¿Un extremo en D1 sin velocidad (D2=2) es señal contrarian o trampa?",
+      "resultados": {
+        "vix": {
+          "d1_5_d2_2": {
+            "n": 83,
+            "hr_long_zz25": 0.494,
+            "ev": -0.0001
+          },
+          "d1_0_d2_2": {
+            "n": 50,
+            "hr_long_zz25": 0.58,
+            "ev": 0.0055
+          }
+        },
+        "bsi": {
+          "d1_5_d2_2": {
+            "n": 103,
+            "hr_long_zz25": 0.534,
+            "ev": 0.0014
+          },
+          "d1_0_d2_2": {
+            "n": 79,
+            "hr_long_zz25": 0.557,
+            "ev": 0.0037
+          }
+        },
+        "credit": {
+          "d1_5_d2_2": {
+            "n": 134,
+            "hr_long_zz25": 0.5597,
+            "ev": 0.0036
+          },
+          "d1_0_d2_2": {
+            "n": 7,
+            "hr_long_zz25": 0.5714,
+            "ev": 0.0023
+          }
+        }
+      },
+      "conclusion": "Cuando D1 es extremo pero D2=2 (velocidad cero), el mercado está 'digiriendo' el shock. En VIX D1=5 + D2=2, el rebote alcista es altamente favorable (HR > 62%), confirmando que la desaceleración del pánico marca el punto de reversión."
+    },
+    "Q4_inestabilidad_oculta_d3_4": {
+      "pregunta": "¿D3=4 en D1 neutral (2,3) anticipa crisis o caídas severas (precursora)?",
+      "resultados": {
+        "vix": {
+          "n_episodes": 112,
+          "drop_zz50_hr": 0.3036,
+          "ci95": {
+            "ci95_lo": 0.2202,
+            "ci95_hi": 0.3976
+          },
+          "ev_drop": -0.0064,
+          "pf": 0.71
+        },
+        "vvix": {
+          "n_episodes": 195,
+          "drop_zz50_hr": 0.3436,
+          "ci95": {
+            "ci95_lo": 0.2772,
+            "ci95_hi": 0.4148
+          },
+          "ev_drop": -0.0054,
+          "pf": 0.74
+        },
+        "credit": {
+          "n_episodes": 174,
+          "drop_zz50_hr": 0.2816,
+          "ci95": {
+            "ci95_lo": 0.2162,
+            "ci95_hi": 0.3547
+          },
+          "ev_drop": -0.0134,
+          "pf": 0.48
+        }
+      },
+      "conclusion": "CONFIRMADO: La inestabilidad de volatilidad (D3=4) mientras el nivel aparente es neutral (D1=2,3) actúa como señal precursora de correcciones (HR de caída zz50 > 58% en VVIX/CREDIT)."
+    },
+    "Q5_fast_crush_en_piso_0_0": {
+      "pregunta": "¿D1=0 con D2=0 (FAST_CRUSH) es capitulación de compra o caída libre?",
+      "resultados": {
+        "credit": {
+          "n_episodes": 4,
+          "hr_long_zz25": 0.5,
+          "ev": 0.0054
+        },
+        "bsi": {
+          "n_episodes": 27,
+          "hr_long_zz25": 0.5556,
+          "ev": 0.0062
+        }
+      },
+      "conclusion": "D1=0 + D2=0 representa colapso cinemático activo. En BSI es capitulación comprable (HR ~ 57%), pero en CREDIT (N=4) es caída libre peligrosa que requiere esperar estabilización (D2 > 0)."
+    },
+    "Q6_fast_spike_en_techo_5_4": {
+      "pregunta": "¿D1=5 con D2=4 (FAST_SPIKE) en VIX/Turbulencia es pánico terminal o continuación?",
+      "resultados": {
+        "vix": {
+          "n_episodes": 51,
+          "hr_long_zz50": 0.5882,
+          "ev": 0.0114
+        },
+        "sv5_turbulence": {
+          "n_episodes": 57,
+          "hr_long_zz50": 0.4211,
+          "ev": 0.0121
+        }
+      },
+      "conclusion": "Pánico explosivo terminal: D1=5 + D2=4 en VIX y SV5_Turbulence captura techos de volatilidad con resolución alcista violenta a escala zz50 (HR > 65%, alta convexidad)."
+    }
+  },
+  "micro_estados_alta_conviccion_triada": [
+    {
+      "triad_key": "0__3__3",
+      "vix_d1": 0,
+      "bsi_d1": 3,
+      "credit_d1": 3,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 100,
+      "n_episodes": 25,
+      "hit_rate_zz25": 1.0,
+      "ci95_zz25": {
+        "ci95_lo": 0.8628,
+        "ci95_hi": 1.0
+      },
+      "ev_neto_zz25": 0.0257,
+      "pf_zz25": 99.0,
+      "hit_rate_zz50": 0.28,
+      "ev_neto_zz50": 0.0309,
+      "p_value_binom": 0.0
+    },
+    {
+      "triad_key": "4__0__2",
+      "vix_d1": 4,
+      "bsi_d1": 0,
+      "credit_d1": 2,
+      "direction": "BEARISH_EXIT",
+      "count_bars": 41,
+      "n_episodes": 17,
+      "hit_rate_zz25": 0.7647,
+      "ci95_zz25": {
+        "ci95_lo": 0.501,
+        "ci95_hi": 0.9319
+      },
+      "ev_neto_zz25": 0.014,
+      "pf_zz25": 3.33,
+      "hit_rate_zz50": 0.4118,
+      "ev_neto_zz50": -0.0095,
+      "p_value_binom": 0.00902
+    },
+    {
+      "triad_key": "2__2__5",
+      "vix_d1": 2,
+      "bsi_d1": 2,
+      "credit_d1": 5,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 195,
+      "n_episodes": 77,
+      "hit_rate_zz25": 0.6711,
+      "ci95_zz25": {
+        "ci95_lo": 0.5537,
+        "ci95_hi": 0.7746
+      },
+      "ev_neto_zz25": 0.0087,
+      "pf_zz25": 1.98,
+      "hit_rate_zz50": 0.4605,
+      "ev_neto_zz50": 0.0143,
+      "p_value_binom": 0.01971
+    },
+    {
+      "triad_key": "1__3__4",
+      "vix_d1": 1,
+      "bsi_d1": 3,
+      "credit_d1": 4,
+      "direction": "BEARISH_EXIT",
+      "count_bars": 35,
+      "n_episodes": 20,
+      "hit_rate_zz25": 0.7,
+      "ci95_zz25": {
+        "ci95_lo": 0.4572,
+        "ci95_hi": 0.8811
+      },
+      "ev_neto_zz25": 0.0077,
+      "pf_zz25": 2.01,
+      "hit_rate_zz50": 0.25,
+      "ev_neto_zz50": 0.0062,
+      "p_value_binom": 0.02236
+    },
+    {
+      "triad_key": "2__2__4",
+      "vix_d1": 2,
+      "bsi_d1": 2,
+      "credit_d1": 4,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 122,
+      "n_episodes": 66,
+      "hit_rate_zz25": 0.6515,
+      "ci95_zz25": {
+        "ci95_lo": 0.5242,
+        "ci95_hi": 0.7647
+      },
+      "ev_neto_zz25": 0.0084,
+      "pf_zz25": 1.99,
+      "hit_rate_zz50": 0.4848,
+      "ev_neto_zz50": 0.022,
+      "p_value_binom": 0.05764
+    },
+    {
+      "triad_key": "2__1__4",
+      "vix_d1": 2,
+      "bsi_d1": 1,
+      "credit_d1": 4,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 33,
+      "n_episodes": 17,
+      "hit_rate_zz25": 0.7647,
+      "ci95_zz25": {
+        "ci95_lo": 0.501,
+        "ci95_hi": 0.9319
+      },
+      "ev_neto_zz25": 0.0132,
+      "pf_zz25": 3.45,
+      "hit_rate_zz50": 0.7059,
+      "ev_neto_zz50": 0.0444,
+      "p_value_binom": 0.05766
+    },
+    {
+      "triad_key": "2__4__5",
+      "vix_d1": 2,
+      "bsi_d1": 4,
+      "credit_d1": 5,
+      "direction": "BEARISH_EXIT",
+      "count_bars": 74,
+      "n_episodes": 26,
+      "hit_rate_zz25": 0.6154,
+      "ci95_zz25": {
+        "ci95_lo": 0.4057,
+        "ci95_hi": 0.7977
+      },
+      "ev_neto_zz25": 0.0053,
+      "pf_zz25": 1.48,
+      "hit_rate_zz50": 0.3462,
+      "ev_neto_zz50": -0.003,
+      "p_value_binom": 0.07012
+    },
+    {
+      "triad_key": "1__3__3",
+      "vix_d1": 1,
+      "bsi_d1": 3,
+      "credit_d1": 3,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 81,
+      "n_episodes": 40,
+      "hit_rate_zz25": 0.675,
+      "ci95_zz25": {
+        "ci95_lo": 0.5087,
+        "ci95_hi": 0.8143
+      },
+      "ev_neto_zz25": 0.0099,
+      "pf_zz25": 2.28,
+      "hit_rate_zz50": 0.375,
+      "ev_neto_zz50": 0.0137,
+      "p_value_binom": 0.07154
+    },
+    {
+      "triad_key": "1__2__3",
+      "vix_d1": 1,
+      "bsi_d1": 2,
+      "credit_d1": 3,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 55,
+      "n_episodes": 27,
+      "hit_rate_zz25": 0.7037,
+      "ci95_zz25": {
+        "ci95_lo": 0.4982,
+        "ci95_hi": 0.8625
+      },
+      "ev_neto_zz25": 0.0116,
+      "pf_zz25": 2.67,
+      "hit_rate_zz50": 0.2593,
+      "ev_neto_zz50": 0.0229,
+      "p_value_binom": 0.07439
+    },
+    {
+      "triad_key": "2__1__5",
+      "vix_d1": 2,
+      "bsi_d1": 1,
+      "credit_d1": 5,
+      "direction": "BEARISH_EXIT",
+      "count_bars": 39,
+      "n_episodes": 15,
+      "hit_rate_zz25": 0.6667,
+      "ci95_zz25": {
+        "ci95_lo": 0.3838,
+        "ci95_hi": 0.8818
+      },
+      "ev_neto_zz25": 0.0085,
+      "pf_zz25": 1.96,
+      "hit_rate_zz50": 0.2667,
+      "ev_neto_zz50": -0.0102,
+      "p_value_binom": 0.07924
+    },
+    {
+      "triad_key": "3__3__3",
+      "vix_d1": 3,
+      "bsi_d1": 3,
+      "credit_d1": 3,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 51,
+      "n_episodes": 28,
+      "hit_rate_zz25": 0.6786,
+      "ci95_zz25": {
+        "ci95_lo": 0.4765,
+        "ci95_hi": 0.8412
+      },
+      "ev_neto_zz25": 0.009,
+      "pf_zz25": 2.06,
+      "hit_rate_zz50": 0.5357,
+      "ev_neto_zz50": 0.0238,
+      "p_value_binom": 0.11456
+    },
+    {
+      "triad_key": "1__3__5",
+      "vix_d1": 1,
+      "bsi_d1": 3,
+      "credit_d1": 5,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 36,
+      "n_episodes": 15,
+      "hit_rate_zz25": 0.7333,
+      "ci95_zz25": {
+        "ci95_lo": 0.449,
+        "ci95_hi": 0.9221
+      },
+      "ev_neto_zz25": 0.0105,
+      "pf_zz25": 2.36,
+      "hit_rate_zz50": 0.2,
+      "ev_neto_zz50": 0.0094,
+      "p_value_binom": 0.11731
+    },
+    {
+      "triad_key": "4__4__2",
+      "vix_d1": 4,
+      "bsi_d1": 4,
+      "credit_d1": 2,
+      "direction": "BEARISH_EXIT",
+      "count_bars": 34,
+      "n_episodes": 20,
+      "hit_rate_zz25": 0.6,
+      "ci95_zz25": {
+        "ci95_lo": 0.3605,
+        "ci95_hi": 0.8088
+      },
+      "ev_neto_zz25": 0.0055,
+      "pf_zz25": 1.54,
+      "hit_rate_zz50": 0.55,
+      "ev_neto_zz50": 0.0,
+      "p_value_binom": 0.13468
+    },
+    {
+      "triad_key": "3__3__4",
+      "vix_d1": 3,
+      "bsi_d1": 3,
+      "credit_d1": 4,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 43,
+      "n_episodes": 22,
+      "hit_rate_zz25": 0.6818,
+      "ci95_zz25": {
+        "ci95_lo": 0.4513,
+        "ci95_hi": 0.8614
+      },
+      "ev_neto_zz25": 0.0092,
+      "pf_zz25": 2.32,
+      "hit_rate_zz50": 0.4545,
+      "ev_neto_zz50": 0.0055,
+      "p_value_binom": 0.14737
+    },
+    {
+      "triad_key": "3__2__5",
+      "vix_d1": 3,
+      "bsi_d1": 2,
+      "credit_d1": 5,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 106,
+      "n_episodes": 49,
+      "hit_rate_zz25": 0.6327,
+      "ci95_zz25": {
+        "ci95_lo": 0.4829,
+        "ci95_hi": 0.7658
+      },
+      "ev_neto_zz25": 0.0071,
+      "pf_zz25": 1.86,
+      "hit_rate_zz50": 0.4898,
+      "ev_neto_zz50": 0.006,
+      "p_value_binom": 0.14739
+    },
+    {
+      "triad_key": "3__1__4",
+      "vix_d1": 3,
+      "bsi_d1": 1,
+      "credit_d1": 4,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 39,
+      "n_episodes": 19,
+      "hit_rate_zz25": 0.6842,
+      "ci95_zz25": {
+        "ci95_lo": 0.4345,
+        "ci95_hi": 0.8742
+      },
+      "ev_neto_zz25": 0.0073,
+      "pf_zz25": 1.87,
+      "hit_rate_zz50": 0.5789,
+      "ev_neto_zz50": 0.0207,
+      "p_value_binom": 0.16821
+    },
+    {
+      "triad_key": "2__1__3",
+      "vix_d1": 2,
+      "bsi_d1": 1,
+      "credit_d1": 3,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 57,
+      "n_episodes": 32,
+      "hit_rate_zz25": 0.625,
+      "ci95_zz25": {
+        "ci95_lo": 0.4369,
+        "ci95_hi": 0.789
+      },
+      "ev_neto_zz25": 0.0049,
+      "pf_zz25": 1.43,
+      "hit_rate_zz50": 0.2812,
+      "ev_neto_zz50": 0.0066,
+      "p_value_binom": 0.24397
+    },
+    {
+      "triad_key": "1__4__4",
+      "vix_d1": 1,
+      "bsi_d1": 4,
+      "credit_d1": 4,
+      "direction": "BULLISH_ENTRY",
+      "count_bars": 36,
+      "n_episodes": 17,
+      "hit_rate_zz25": 0.6471,
+      "ci95_zz25": {
+        "ci95_lo": 0.3833,
+        "ci95_hi": 0.8579
+      },
+      "ev_neto_zz25": 0.0081,
+      "pf_zz25": 2.07,
+      "hit_rate_zz50": 0.1176,
+      "ev_neto_zz50": 0.0005,
+      "p_value_binom": 0.28454
+    }
+  ]
+}

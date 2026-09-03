@@ -850,10 +850,10 @@
     "gradiente_wr": 0.1692
   },
   "ficha_credibilidad": {
-    "grade": "RESCATADA — DIAMANTE SUPREMO (§3.3: N=20, 100% WR en techos MAX, Fwd=-4.63%, PF=99.9, CI95=[83.2%, 100.0%])",
+    "grade": "ESCASA — FIRMA DE TECHO (§3.3: N=22, 2.77% de techos, 22/22 coincidencia con techo confirmado; direccional débil: WR 27%, EV-2.5%, PF 0.27)",
     "tipo": "exit",
     "pivot_type": "MAX",
-    "descripcion": "DIAMANTE SUPREMO: en techo, volumen institucional desaparece mientras volatilidad expande. Distribución silenciosa. 20/20 WR en techos.",
+    "descripcion": "FIRMA DE TECHO ESCASA: en techo, volumen institucional desaparece mientras volatilidad expande. Precursora de contexto (22/22 en techos). No operable direccionalmente (WR 27%).",
     "signal_direction": "BEAR",
     "n_total": 22,
     "win_rate": 0.2727,
@@ -869,7 +869,10 @@
     "dsr_pvalue": null,
     "diamante": null,
     "structural_break": true,
-    "accion_recomendada": "CUARENTENA"
+    "accion_recomendada": "FILTRO_CONTEXTO",
+    "rareza_pct_techos": 0.0277,
+    "coincidencia_techo_confirmado": 1.0,
+    "rol_operativo": "FILTRO_CONTEXTO_TECHO"
   },
   "meta": {
     "seed": 42,

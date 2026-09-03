@@ -320,12 +320,12 @@ def _regime_change_exit(df):
 
 
 @_registrar("sv5t_silent_distribution",
-    validacion="RESCATADA — DIAMANTE SUPREMO (§3.3: N=20, 100% WR en techos MAX, Fwd=-4.63%, PF=99.9, CI95=[83.2%, 100.0%])", n_min=20, dsr=None,
-    fuente="EXIT: SV5T en silencio institucional (LOW_TURBULENCE + VOL_EXPANSION) en techo. Rescatada 28-Ago bajo Protocolo Diamante §3.3.",
+    validacion="ESCASA — FIRMA DE TECHO (§3.3: N=22, 2.77% de techos, 22/22 coincidencia con techo confirmado; direccional débil: WR 27%, EV-2.5%, PF 0.27)", n_min=22, dsr=None,
+    fuente="FIRMA: SV5T en silencio institucional (LOW_TURBULENCE + VOL_EXPANSION) en techo. 22/22 coincidencia retrospectiva con techo confirmado (2.77% de techos). Direccional débil (WR 27%). Usar como filtro de contexto de techo, NO señal direccional.",
     tipo="exit", pivot_type="MAX",
-    descripcion="DIAMANTE SUPREMO: en techo, volumen institucional desaparece mientras volatilidad expande. Distribución silenciosa. 20/20 WR en techos.")
+    descripcion="FIRMA DE TECHO ESCASA: en techo, volumen institucional desaparece mientras volatilidad expande. Precursora de contexto (22/22 en techos). No operable direccionalmente (WR 27%).")
 def _sv5t_silent_distribution(df):
-    """[DIAMANTE SUPREMO RESCATADO 28-Ago-2026 bajo Protocolo §3.3]
+    """[FIRMA DE TECHO ESCASA — §3.3]
     En techo MAX, volumen institucional desaparece (sv5t <= 1) y volatilidad expande (sv5t_d3 >= 3)."""
     is_max = df["pivot_type"] == "MAX"
     sv5t_d1 = _get_dim(df, "sv5_turbulence", 0)

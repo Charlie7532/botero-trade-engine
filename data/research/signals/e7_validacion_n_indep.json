@@ -1,0 +1,238 @@
+{
+  "metadata": {
+    "ejercicio": "B2 v4 \u2014 M\u00e9todo VAV can\u00f3nico (first_passage sin time-stop, tiers \u00a73.3)",
+    "fecha": "2026-09-03",
+    "metodo": "Id\u00e9ntico a evaluador_vela_a_vela.py: first_passage sin max_barras, baselines VAV",
+    "credit_inception": "2007-04-11",
+    "baselines_vav": {
+      "zz25_MIN": 0.5824243671537354,
+      "zz25_MAX": 0.41757563284626464,
+      "zz50_MIN": 0.6257261410788382,
+      "zz50_MAX": 0.37427385892116183,
+      "zz75_MIN": 0.6554096310193871,
+      "zz75_MAX": 0.3445903689806129
+    }
+  },
+  "resultados": [
+    {
+      "triad": "0__3__3",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 25,
+      "n_res": 25,
+      "tier": "ROBUST",
+      "hr": 1.0,
+      "bl_hr": 0.5824,
+      "lift": 0.4176,
+      "pf": 99.0,
+      "p_val": 1e-06
+    },
+    {
+      "triad": "4__0__2",
+      "direction": "BEARISH_EXIT",
+      "n_ep": 17,
+      "n_res": 17,
+      "tier": "HIGH",
+      "hr": 0.5882,
+      "bl_hr": 0.4176,
+      "lift": 0.1707,
+      "pf": 1.81,
+      "p_val": 0.119419
+    },
+    {
+      "triad": "2__2__5",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 77,
+      "n_res": 76,
+      "tier": "ROBUST",
+      "hr": 0.6974,
+      "bl_hr": 0.5824,
+      "lift": 0.1149,
+      "pf": 2.16,
+      "p_val": 0.026218
+    },
+    {
+      "triad": "1__3__4",
+      "direction": "BEARISH_EXIT",
+      "n_ep": 20,
+      "n_res": 20,
+      "tier": "HIGH",
+      "hr": 0.6,
+      "bl_hr": 0.4176,
+      "lift": 0.1824,
+      "pf": 1.6,
+      "p_val": 0.077675
+    },
+    {
+      "triad": "2__2__4",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 66,
+      "n_res": 66,
+      "tier": "ROBUST",
+      "hr": 0.6364,
+      "bl_hr": 0.5824,
+      "lift": 0.0539,
+      "pf": 1.71,
+      "p_val": 0.223492
+    },
+    {
+      "triad": "2__1__4",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 17,
+      "n_res": 17,
+      "tier": "HIGH",
+      "hr": 0.7647,
+      "bl_hr": 0.5824,
+      "lift": 0.1823,
+      "pf": 3.39,
+      "p_val": 0.098289
+    },
+    {
+      "triad": "2__4__5",
+      "direction": "BEARISH_EXIT",
+      "n_ep": 26,
+      "n_res": 26,
+      "tier": "ROBUST",
+      "hr": 0.5769,
+      "bl_hr": 0.4176,
+      "lift": 0.1593,
+      "pf": 1.48,
+      "p_val": 0.074655
+    },
+    {
+      "triad": "1__3__3",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 40,
+      "n_res": 40,
+      "tier": "ROBUST",
+      "hr": 0.675,
+      "bl_hr": 0.5824,
+      "lift": 0.0926,
+      "pf": 1.88,
+      "p_val": 0.152081
+    },
+    {
+      "triad": "1__2__3",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 27,
+      "n_res": 27,
+      "tier": "ROBUST",
+      "hr": 0.7407,
+      "bl_hr": 0.5824,
+      "lift": 0.1583,
+      "pf": 2.85,
+      "p_val": 0.067828
+    },
+    {
+      "triad": "2__1__5",
+      "direction": "BEARISH_EXIT",
+      "n_ep": 15,
+      "n_res": 15,
+      "tier": "HIGH",
+      "hr": 0.5333,
+      "bl_hr": 0.4176,
+      "lift": 0.1158,
+      "pf": 1.18,
+      "p_val": 0.256659
+    },
+    {
+      "triad": "3__3__3",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 28,
+      "n_res": 28,
+      "tier": "ROBUST",
+      "hr": 0.6071,
+      "bl_hr": 0.5824,
+      "lift": 0.0247,
+      "pf": 1.3,
+      "p_val": 0.474987
+    },
+    {
+      "triad": "1__3__5",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 15,
+      "n_res": 15,
+      "tier": "HIGH",
+      "hr": 0.7333,
+      "bl_hr": 0.5824,
+      "lift": 0.1509,
+      "pf": 1.98,
+      "p_val": 0.178832
+    },
+    {
+      "triad": "4__4__2",
+      "direction": "BEARISH_EXIT",
+      "n_ep": 20,
+      "n_res": 20,
+      "tier": "HIGH",
+      "hr": 0.65,
+      "bl_hr": 0.4176,
+      "lift": 0.2324,
+      "pf": 1.95,
+      "p_val": 0.030793
+    },
+    {
+      "triad": "3__3__4",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 22,
+      "n_res": 22,
+      "tier": "ROBUST",
+      "hr": 0.5455,
+      "bl_hr": 0.5824,
+      "lift": -0.037,
+      "pf": 1.06,
+      "p_val": 0.717173
+    },
+    {
+      "triad": "3__2__5",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 49,
+      "n_res": 49,
+      "tier": "ROBUST",
+      "hr": 0.5918,
+      "bl_hr": 0.5824,
+      "lift": 0.0094,
+      "pf": 1.33,
+      "p_val": 0.507679
+    },
+    {
+      "triad": "3__1__4",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 19,
+      "n_res": 19,
+      "tier": "HIGH",
+      "hr": 0.7368,
+      "bl_hr": 0.5824,
+      "lift": 0.1544,
+      "pf": 2.67,
+      "p_val": 0.127697
+    },
+    {
+      "triad": "2__1__3",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 32,
+      "n_res": 32,
+      "tier": "ROBUST",
+      "hr": 0.6562,
+      "bl_hr": 0.5824,
+      "lift": 0.0738,
+      "pf": 1.45,
+      "p_val": 0.254324
+    },
+    {
+      "triad": "1__4__4",
+      "direction": "BULLISH_ENTRY",
+      "n_ep": 17,
+      "n_res": 17,
+      "tier": "HIGH",
+      "hr": 0.6471,
+      "bl_hr": 0.5824,
+      "lift": 0.0646,
+      "pf": 1.84,
+      "p_val": 0.389634
+    }
+  ],
+  "resumen_tiers": {
+    "ROBUST": 10,
+    "HIGH": 8
+  }
+}

@@ -19,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from typing import Optional, Dict, Any
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -48,8 +49,68 @@ DIRECTIONS = {"long": "MIN", "short": "MAX"}
 OUT_DIR = ROOT / "data" / "research"
 
 
+def first_passage_ohlc_nolimit(
+    close: np.ndarray, highs: np.ndarray, lows: np.ndarray,
+    t0: int, scale: float, blanco: str
+) -> Optional[Dict[str, Any]]:
+    """Calcula el primer paso OHLC intrabar sin corte artificial de velas (Opción C Canónica).
+    
+    Detecta el toque de barrera intrabar con highs/lows a lo largo de toda la serie continua.
+    No impone reloj arbitrario (sin C9 80/40/27).
+    Solo retorna resuelto=False para las últimas barras que no alcanzan barrera al final del dataset.
+    """
+    p0 = close[t0]
+    if p0 <= 0 or t0 >= len(close) - 1:
+        return None
+    
+    path_h = highs[t0 + 1:]
+    path_l = lows[t0 + 1:]
+    
+    if blanco == "MIN":  # ENTRY (long)
+        fav_barrier = p0 * (1.0 + scale)
+        adv_barrier = p0 * (1.0 - scale)
+        fav_hits = np.where(path_h >= fav_barrier)[0]
+        adv_hits = np.where(path_l <= adv_barrier)[0]
+    else:  # EXIT (short)
+        fav_barrier = p0 * (1.0 - scale)
+        adv_barrier = p0 * (1.0 + scale)
+        fav_hits = np.where(path_l <= fav_barrier)[0]
+        adv_hits = np.where(path_h >= adv_barrier)[0]
+        
+    first_fav = fav_hits[0] if len(fav_hits) > 0 else np.inf
+    first_adv = adv_hits[0] if len(adv_hits) > 0 else np.inf
+    
+    if np.isinf(first_fav) and np.isinf(first_adv):
+        return {"resuelto": False, "timeout": True}
+        
+    hit = bool(first_fav < first_adv)
+    event_i = int(min(first_fav, first_adv))
+    
+    seg_h = path_h[:event_i + 1]
+    seg_l = path_l[:event_i + 1]
+    
+    if blanco == "MIN":
+        captured = (fav_barrier - p0) / p0 if hit else (adv_barrier - p0) / p0
+        mae = float((seg_l.min() - p0) / p0)
+        mfe = float((seg_h.max() - p0) / p0)
+    else:
+        captured = (p0 - fav_barrier) / p0 if hit else (p0 - adv_barrier) / p0
+        mae = float((p0 - seg_h.max()) / p0)
+        mfe = float((p0 - seg_l.min()) / p0)
+        
+    return {
+        "resuelto": True,
+        "hit": hit,
+        "favorable": float(captured),
+        "mae": mae,
+        "mfe": mfe,
+        "bars": event_i + 1,
+        "timeout": False,
+    }
+
+
 def build_first_passage_columns(lake: pd.DataFrame) -> pd.DataFrame:
-    """Compute 36 First-Passage columns for every bar in the Lake.
+    """Compute 36 First-Passage columns for every bar in the Lake (Opción C OHLC).
     
     For each bar, for each scale (zz25, zz50, zz75) × direction (long, short):
       {scale}_{dir}_hit, {scale}_{dir}_fav, {scale}_{dir}_mae,
@@ -77,16 +138,22 @@ def build_first_passage_columns(lake: pd.DataFrame) -> pd.DataFrame:
     for i in range(n):
         for scale_name, scale_val in ESCALAS.items():
             for dir_name, blanco in DIRECTIONS.items():
-                r = first_passage_bar(close, highs, lows, i, scale_val, blanco)
-                if r is None:
-                    continue
+                r = first_passage_ohlc_nolimit(close, highs, lows, i, scale_val, blanco)
                 prefix = f"{scale_name}_{dir_name}"
-                cols[f"{prefix}_hit"][i] = float(r["hit"])
-                cols[f"{prefix}_fav"][i] = r["favorable"]
-                cols[f"{prefix}_mae"][i] = r["mae"]
-                cols[f"{prefix}_mfe"][i] = r["mfe"]
-                cols[f"{prefix}_bars"][i] = r["bars"]
-                cols[f"{prefix}_timeout"][i] = float(r["timeout"])
+                if r is None or not r.get("resuelto", False):
+                    cols[f"{prefix}_timeout"][i] = 1.0
+                    cols[f"{prefix}_hit"][i] = np.nan
+                    cols[f"{prefix}_fav"][i] = np.nan
+                    cols[f"{prefix}_mae"][i] = np.nan
+                    cols[f"{prefix}_mfe"][i] = np.nan
+                    cols[f"{prefix}_bars"][i] = np.nan
+                else:
+                    cols[f"{prefix}_timeout"][i] = 0.0
+                    cols[f"{prefix}_hit"][i] = float(r["hit"])
+                    cols[f"{prefix}_fav"][i] = r["favorable"]
+                    cols[f"{prefix}_mae"][i] = r["mae"]
+                    cols[f"{prefix}_mfe"][i] = r["mfe"]
+                    cols[f"{prefix}_bars"][i] = float(r["bars"])
         
         if (i + 1) % 2000 == 0:
             elapsed = time.time() - t0_time
@@ -94,7 +161,7 @@ def build_first_passage_columns(lake: pd.DataFrame) -> pd.DataFrame:
             print(f"  FP: {i+1}/{n} bars ({elapsed:.1f}s elapsed, ~{eta:.1f}s remaining)")
 
     elapsed = time.time() - t0_time
-    print(f"  FP complete: {n} bars × 6 FP calls = {n*6:,} calls in {elapsed:.1f}s")
+    print(f"  FP complete (Opción C OHLC): {n} bars × 6 FP calls = {n*6:,} calls in {elapsed:.1f}s")
     
     return pd.DataFrame(cols, index=lake.index)
 
@@ -147,8 +214,13 @@ def build_entry_flags(lake: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+# Canonical suffix for episode-start markers (avoids _entry_entry collision
+# with signals whose name already ends in _entry like vvix_entry)
+FIRE_SUFFIX = "_fire"
+
+
 def build_signal_columns(lake: pd.DataFrame) -> pd.DataFrame:
-    """Compute signal columns: {S} (bool) + {S}_entry (bool) for each registered signal."""
+    """Compute signal columns: {S} (bool) + {S}_fire (bool) for each registered signal."""
     result = pd.DataFrame(index=lake.index)
     
     n_registered = 0
@@ -157,21 +229,21 @@ def build_signal_columns(lake: pd.DataFrame) -> pd.DataFrame:
             mask = fn(lake).values.astype(bool)
             result[name] = mask
             
-            # Entry flag: first bar of each episode (transition 0→1)
-            entry = np.zeros(len(mask), dtype=bool)
-            entry[0] = mask[0]
+            # Fire flag: first bar of each episode (transition 0→1)
+            fire = np.zeros(len(mask), dtype=bool)
+            fire[0] = mask[0]
             for i in range(1, len(mask)):
-                entry[i] = mask[i] and not mask[i - 1]
-            result[f"{name}_entry"] = entry
+                fire[i] = mask[i] and not mask[i - 1]
+            result[f"{name}{FIRE_SUFFIX}"] = fire
             
             n_active = mask.sum()
-            n_entries = entry.sum()
+            n_fires = fire.sum()
             n_registered += 1
             
         except Exception as e:
             print(f"  WARNING: Signal '{name}' failed: {e}")
             result[name] = False
-            result[f"{name}_entry"] = False
+            result[f"{name}{FIRE_SUFFIX}"] = False
     
     print(f"  Signals: {n_registered}/{len(SEÑALES)} registered successfully")
     return result
@@ -258,7 +330,10 @@ def main():
     
     # Signal columns present
     assert "panico_total" in sig.columns, "Missing panico_total"
-    assert "panico_total_entry" in sig.columns, "Missing panico_total_entry"
+    assert "panico_total_fire" in sig.columns, "Missing panico_total_fire"
+    # Verify no _entry_entry columns exist
+    bad_cols = [c for c in sig.columns if c.endswith('_entry_entry')]
+    assert len(bad_cols) == 0, f"Bug _entry_entry persists: {bad_cols}"
     
     print("  ✅ All assertions passed!")
     print(f"\n  Augment: {aug.shape[1]} columns")

@@ -100,30 +100,26 @@ def compute_baseline_hr(augment: pd.DataFrame) -> Dict[str, float]:
     return baselines
 
 
-def grade_state(n_indep: int, lift: float, p_bh: float, rr: float) -> str:
-    """Classify state quality based on de-clustered N, lift, and adjusted p-value."""
-    if n_indep >= 30 and abs(lift) > 0.05 and p_bh < 0.05:
-        return "GRADE_A_VALIDADA"
-    elif n_indep >= 15 and abs(lift) > 0.03 and p_bh < 0.10:
-        return "GRADE_B_MODERADA"
-    elif n_indep < 15 and rr > 2.0:
-        return "GRADE_C_DIAMANTE"
-    else:
-        return "ESPECULATIVA"
+def grade_state(n_resolved: int, lift: float, p_bh: float, rr: float) -> str:
+    """Canonical confidence tier §3.3. Replaces old GRADE_A/B/C system.
+    
+    Tiers define permissible inference level, never whether to discard.
+    Rareza = riqueza. n_resolved = observations with resolved first-passage.
+    """
+    if n_resolved <= 2:  return "ANECDOTAL"
+    if n_resolved <= 5:  return "LOW"
+    if n_resolved <= 10: return "MODERATE"
+    if n_resolved <= 20: return "HIGH"
+    return "ROBUST"
 
 
 def rareza_tier(n: int) -> str:
-    """Classify rarity tier based on sample size."""
-    if n >= 30:
-        return "NORMAL"
-    elif n >= 20:
-        return "MARGINAL"
-    elif n >= 10:
-        return "RARO"
-    elif n >= 3:
-        return "DIAMANTE"
-    else:
-        return "ULTRA_RARO"
+    """Canonical confidence tier §3.3 Protocolo Diamante."""
+    if n <= 2:  return "ANECDOTAL"
+    if n <= 5:  return "LOW"
+    if n <= 10: return "MODERATE"
+    if n <= 20: return "HIGH"
+    return "ROBUST"
 
 
 def compute_state_metrics(
@@ -283,6 +279,40 @@ def compute_state_metrics(
             "grade": grade,
             "tier_rareza": tier,
         }
+        
+        # Inyección de Ficha de Caso de Estudio §3.3 para N < 21 (Rescate de Diamantes)
+        if n_all < 21:
+            eventos = []
+            for idx_row in indices[:10]:
+                date_str = str(lake.index[idx_row].date())
+                fav_val = augment[fav_col].iloc[idx_row]
+                fav_str = f"{fav_val:+.2%}" if pd.notna(fav_val) else "N/A"
+                spy_c = float(lake["spy_close"].iloc[idx_row]) if "spy_close" in lake.columns else None
+                eventos.append({
+                    "fecha": date_str,
+                    "resultado": fav_str,
+                    "spy_close": spy_c,
+                })
+            
+            inferencia_desc = {
+                "ANECDOTAL": "Solo existencia del evento — REQUIERE caso de estudio individual",
+                "LOW": "Solo dirección — REQUIERE caso de estudio individual",
+                "MODERATE": "Dirección y magnitud preliminar",
+                "HIGH": "Intervalos estrechándose",
+                "ROBUST": "Inferencia estadística completa",
+            }.get(tier, "Inferencia preliminar")
+            
+            sustento = f"p_bull={p_bull:.2f} con ev_net={ev_net:+.2%} en estado extremo N={n_all} — candidato a señal de cola"
+            
+            result_scales[scale_name]["caso_de_estudio_§3.3"] = {
+                "protocolo": "Rareza = riqueza. N bajo define nivel de INFERENCIA, no valor.",
+                "eventos": eventos,
+                "tasa_cruda": round(p_bull, 4),
+                "nivel_inferencia": tier,
+                "descripcion_inferencia": inferencia_desc,
+                "sustento": sustento,
+                "instruccion": "NO descartar. Analizar cada evento. Si el mecanismo es explicable, escalar a DIAMANTE_COLA con validación cruzada por confluencia.",
+            }
     
     # BH correction across scales for this state
     p_bh_values = benjamini_hochberg(all_p_raw)
@@ -452,6 +482,7 @@ def main():
     print("\n[3/3] Regenerating enriched fact stores...")
     t0 = time.time()
     
+    all_diamantes = []
     summary = []
     for station in STATIONS:
         t_station = time.time()
@@ -467,6 +498,25 @@ def main():
         
         n_states = fact_store.get("states_populated", 0)
         elapsed_station = time.time() - t_station
+        
+        # Collect diamantes de cola candidates
+        for sk, sv in fact_store.get("states", {}).items():
+            for sc in ["zz25", "zz50", "zz75"]:
+                sc_data = sv.get(sc, {})
+                n_raw = sc_data.get("n_raw", 0)
+                pb = sc_data.get("p_bull", 0.5)
+                ev = sc_data.get("ev_net", 0.0)
+                if n_raw > 0 and n_raw < 21 and (pb >= 0.70 or pb <= 0.30 or abs(ev) >= 0.015):
+                    all_diamantes.append({
+                        "station": station,
+                        "state_key": sk,
+                        "scale": sc,
+                        "n_raw": n_raw,
+                        "p_bull": pb,
+                        "ev_net": ev,
+                        "tier": sc_data.get("tier_rareza"),
+                        "caso_de_estudio_§3.3": sc_data.get("caso_de_estudio_§3.3"),
+                    })
         
         # Count grades
         grades = {}
@@ -484,6 +534,23 @@ def main():
         
         grade_str = " | ".join(f"{g}:{c}" for g, c in sorted(grades.items()))
         print(f"    → {station:20s}: {n_states:3d} states in {elapsed_station:.1f}s [{grade_str}]")
+    
+    # Save diamantes_cola.json
+    diamantes_out1 = DATA_DIR / "signals" / "diamantes_cola.json"
+    diamantes_out2 = DATA_DIR / "diamantes_cola.json"
+    diamantes_payload = {
+        "metadata": {
+            "total_candidatos": len(all_diamantes),
+            "protocolo": "§3.3 Rareza = riqueza. Micro-estados extremos de cola observados en Lake continuo (Opción C OHLC).",
+            "criterio": "N < 21 y (p_bull >= 0.70 o <= 0.30 o |ev_net| >= 1.5%)"
+        },
+        "diamantes": all_diamantes
+    }
+    with open(diamantes_out1, "w", encoding="utf-8") as f:
+        json.dump(diamantes_payload, f, indent=2, ensure_ascii=False, default=str)
+    with open(diamantes_out2, "w", encoding="utf-8") as f:
+        json.dump(diamantes_payload, f, indent=2, ensure_ascii=False, default=str)
+    print(f"\n  ✅ Guardados {len(all_diamantes)} candidatos en {diamantes_out1}")
     
     total_time = time.time() - t0
     

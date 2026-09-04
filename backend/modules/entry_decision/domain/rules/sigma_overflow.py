@@ -1,97 +1,347 @@
 """
-Sigma-Overflow Validation Module
-=================================
+Sigma-Overflow Validation Module (V2 Canónica — Escala Empírica sin Look-Ahead)
+=============================================================================
 Validates empirical ±3σ statistical tail overflows across all 11 METAR stations
 for dimensions D1 (Level), D2 (3d Velocity), and D3 (std(2)/std(10) Instability).
 
-Rule:
+Rule (Reglas S1/S7 de gaussian_scale_policy.md y Reglas 23/24 de AGENTS.md):
 - Pure software layer. Fact stores are UNTOUCHED.
+- Quantiles calibrated on valid population starting from canonical station inception dates.
 - Values within ±3σ return (None, None).
 - Values > +3σ return (round(z_score, 2), "UPPER").
 - Values < -3σ return (round(z_score, 2), "LOWER").
+- Piecewise Quantile Scaling with duplicate anchor guards for flat/tied quantiles.
 """
 from typing import Dict, Tuple, Optional
+import numpy as np
 
-STATION_MU_SIGMA: Dict[str, Dict[str, Tuple[float, float]]] = {
+# Canonical Inception Dates (registro METAR canónico)
+STATION_INCEPTION_DATES: Dict[str, str] = {
+    "vix": "1990-01-02",
+    "vvix": "2006-03-06",
+    "pcr": "2006-11-01",
+    "fg": "2011-02-01",
+    "sv5_turbulence": "1999-01-04",
+    "skew": "2011-02-01",
+    "credit": "2007-04-11",
+    "yield_curve": "1993-01-29",
+    "rotation": "1999-01-04",
+    "dxy": "1993-01-29",
+    "bsi": "1993-01-29",
+}
+
+# Empirical Quantile Anchors calibrated strictly from inception
+# 7 Gaussian anchors: [P0.135, P2.275, P15.866, P50.0, P84.134, P97.725, P99.865]
+STATION_EMPIRICAL_EDGES: Dict[str, Dict[str, Dict[str, float]]] = {
     "vix": {
-        "d1": (19.4419, 7.7300),
-        "d2": (-0.0012, 2.5911),
-        "d3": (0.5399, 0.4583),
+        "d1": {
+            "p0135": 9.4381, "p0228": 10.6921, "p1587": 12.74, "p5000": 17.63,
+            "p8413": 25.71, "p9772": 40.7336, "p99865": 69.9559,
+            "tail_up": 29.2223, "tail_lo": 1.254,
+        },
+        "d2": {
+            "p0135": -13.8809, "p0228": -4.99, "p1587": -1.76, "p5000": -0.1,
+            "p8413": 1.7, "p9772": 5.48, "p99865": 18.0169,
+            "tail_up": 12.5369, "tail_lo": 8.8909,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0156, "p1587": 0.1142, "p5000": 0.4217,
+            "p8413": 1.0, "p9772": 1.7446, "p99865": 2.3433,
+            "tail_up": 0.5987, "tail_lo": 0.0156,
+        },
     },
     "vvix": {
-        "d1": (93.4701, 16.3885),
-        "d2": (0.0295, 8.7782),
-        "d3": (0.5268, 0.4535),
+        "d1": {
+            "p0135": 37.35, "p0228": 67.41, "p1587": 78.9786, "p5000": 90.8,
+            "p8413": 108.9914, "p9772": 131.5041, "p99865": 173.69,
+            "tail_up": 42.1859, "tail_lo": 30.06,
+        },
+        "d2": {
+            "p0135": -38.654, "p0228": -17.0422, "p1587": -6.6, "p5000": -0.41,
+            "p8413": 6.6, "p9772": 19.1026, "p99865": 49.6243,
+            "tail_up": 30.5217, "tail_lo": 21.6118,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0135, "p1587": 0.1132, "p5000": 0.4119,
+            "p8413": 1.0, "p9772": 1.7192, "p99865": 2.3764,
+            "tail_up": 0.6572, "tail_lo": 0.0135,
+        },
     },
     "pcr": {
-        "d1": (0.9445, 0.1747),
-        "d2": (0.0, 0.1765),
-        "d3": (0.7357, 0.5432),
+        "d1": {
+            "p0135": 0.6019, "p0228": 0.6911, "p1587": 0.7995, "p5000": 0.92,
+            "p8413": 1.083, "p9772": 1.3115, "p99865": 2.6391,
+            "tail_up": 1.3276, "tail_lo": 0.0892,
+        },
+        "d2": {
+            "p0135": -0.626, "p0228": -0.3456, "p1587": -0.148, "p5000": -0.0008,
+            "p8413": 0.149, "p9772": 0.347, "p99865": 0.688,
+            "tail_up": 0.341, "tail_lo": 0.2804,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0247, "p1587": 0.1853, "p5000": 0.6196,
+            "p8413": 1.3215, "p9772": 2.0406, "p99865": 2.4825,
+            "tail_up": 0.4419, "tail_lo": 0.0247,
+        },
     },
     "fg": {
-        "d1": (48.8497, 21.0618),
-        "d2": (-0.0119, 8.9751),
-        "d3": (0.4525, 0.4315),
+        "d1": {
+            "p0135": 2.0, "p0228": 8.0, "p1587": 25.0, "p5000": 50.2286,
+            "p8413": 71.0, "p9772": 87.0, "p99865": 93.7485,
+            "tail_up": 6.7485, "tail_lo": 6.0,
+        },
+        "d2": {
+            "p0135": -35.026, "p0228": -20.6664, "p1587": -8.0, "p5000": 0.3714,
+            "p8413": 8.0, "p9772": 17.0, "p99865": 28.5186,
+            "tail_up": 11.5186, "tail_lo": 14.3596,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0, "p1587": 0.0697, "p5000": 0.3263,
+            "p8413": 0.908, "p9772": 1.6028, "p99865": 2.3912,
+            "tail_up": 0.7884, "tail_lo": 1.0,
+        },
     },
     "sv5_turbulence": {
-        "d1": (7.0381, 3.9006),
-        "d2": (0.0066, 2.5386),
-        "d3": (0.3924, 0.5172),
+        "d1": {
+            "p0135": 1.6563, "p0228": 2.2996, "p1587": 3.6435, "p5000": 5.977,
+            "p8413": 10.7765, "p9772": 17.4431, "p99865": 23.7506,
+            "tail_up": 6.3075, "tail_lo": 0.6433,
+        },
+        "d2": {
+            "p0135": -13.7993, "p0228": -5.9687, "p1587": -1.5793, "p5000": -0.0206,
+            "p8413": 1.625, "p9772": 5.7334, "p99865": 11.5394,
+            "tail_up": 5.806, "tail_lo": 7.8306,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0015, "p1587": 0.0226, "p5000": 0.1698,
+            "p8413": 0.842, "p9772": 1.9734, "p99865": 2.5023,
+            "tail_up": 0.5289, "tail_lo": 0.0015,
+        },
     },
     "skew": {
-        "d1": (132.1308, 11.9337),
-        "d2": (0.0066, 5.3562),
-        "d3": (0.5709, 0.4866),
+        "d1": {
+            "p0135": 111.513, "p0228": 114.6709, "p1587": 120.01, "p5000": 130.34,
+            "p8413": 144.4837, "p9772": 159.4011, "p99865": 175.2355,
+            "tail_up": 15.8344, "tail_lo": 3.1579,
+        },
+        "d2": {
+            "p0135": -20.8482, "p0228": -11.6182, "p1587": -4.54, "p5000": 0.05,
+            "p8413": 4.5769, "p9772": 11.3582, "p99865": 19.4698,
+            "tail_up": 8.1116, "tail_lo": 9.23,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0155, "p1587": 0.1226, "p5000": 0.4323,
+            "p8413": 1.0492, "p9772": 1.893, "p99865": 2.5362,
+            "tail_up": 0.6432, "tail_lo": 0.0155,
+        },
     },
     "credit": {
-        "d1": (0.6241, 0.0502),
-        "d2": (0.0001, 0.0064),
-        "d3": (0.5344, 0.4325),
+        "d1": {
+            "p0135": 0.4639, "p0228": 0.5256, "p1587": 0.5799, "p5000": 0.6205,
+            "p8413": 0.6768, "p9772": 0.7315, "p99865": 0.7467,
+            "tail_up": 0.0152, "tail_lo": 0.0617,
+        },
+        "d2": {
+            "p0135": -0.0403, "p0228": -0.013, "p1587": -0.0044, "p5000": 0.0003,
+            "p8413": 0.0046, "p9772": 0.012, "p99865": 0.0328,
+            "tail_up": 0.0208, "tail_lo": 0.0273,
+        },
+        "d3": {
+            "p0135": 0.0005, "p0228": 0.0166, "p1587": 0.1209, "p5000": 0.4253,
+            "p8413": 0.9765, "p9772": 1.6225, "p99865": 2.3541,
+            "tail_up": 0.7316, "tail_lo": 0.0161,
+        },
     },
     "yield_curve": {
-        "d1": (1.3942, 1.2675),
-        "d2": (-0.0001, 0.1506),
-        "d3": (0.4868, 0.4206),
+        "d1": {
+            "p0135": -1.5544, "p0228": -1.0569, "p1587": 0.2179, "p5000": 1.4655,
+            "p8413": 2.7991, "p9772": 3.52, "p99865": 3.7776,
+            "tail_up": 0.2576, "tail_lo": 0.4975,
+        },
+        "d2": {
+            "p0135": -0.4738, "p0228": -0.21, "p1587": -0.0926, "p5000": -0.005,
+            "p8413": 0.092, "p9772": 0.221, "p99865": 0.6311,
+            "tail_up": 0.4101, "tail_lo": 0.2638,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0099, "p1587": 0.1118, "p5000": 0.3993,
+            "p8413": 0.908, "p9772": 1.6199, "p99865": 2.3395,
+            "tail_up": 0.7196, "tail_lo": 0.0099,
+        },
     },
     "rotation": {
-        "d1": (0.5301, 2.4011),
-        "d2": (0.0006, 0.6358),
-        "d3": (0.5065, 0.4118),
-    },
-    "bsi": {
-        "d1": (56.6184, 20.7608),
-        "d2": (0.0014, 14.8147),
-        "d3": (0.4936, 0.4375),
+        "d1": {
+            "p0135": -6.6793, "p0228": -4.3144, "p1587": -1.9745, "p5000": 0.7272,
+            "p8413": 2.9654, "p9772": 4.6533, "p99865": 6.8366,
+            "tail_up": 2.1833, "tail_lo": 2.3649,
+        },
+        "d2": {
+            "p0135": -2.626, "p0228": -1.3497, "p1587": -0.5433, "p5000": 0.0007,
+            "p8413": 0.5483, "p9772": 1.2946, "p99865": 2.376,
+            "tail_up": 1.0814, "tail_lo": 1.2763,
+        },
+        "d3": {
+            "p0135": 0.0007, "p0228": 0.0189, "p1587": 0.1175, "p5000": 0.4006,
+            "p8413": 0.9104, "p9772": 1.5769, "p99865": 2.2375,
+            "tail_up": 0.6606, "tail_lo": 0.0182,
+        },
     },
     "dxy": {
-        "d1": (97.4445, 14.0207),
-        "d2": (-0.0044, 0.8609),
-        "d3": (0.4854, 0.4207),
+        "d1": {
+            "p0135": 71.8124, "p0228": 74.9886, "p1587": 81.3058, "p5000": 93.768,
+            "p8413": 102.8278, "p9772": 116.07, "p99865": 119.5042,
+            "tail_up": 3.4342, "tail_lo": 3.1762,
+        },
+        "d2": {
+            "p0135": -3.2803, "p0228": -1.6099, "p1587": -0.6809, "p5000": 0.005,
+            "p8413": 0.7069, "p9772": 1.61, "p99865": 2.7421,
+            "tail_up": 1.1321, "tail_lo": 1.6704,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0, "p1587": 0.0, "p5000": 0.3081,
+            "p8413": 0.9233, "p9772": 1.7338, "p99865": 2.3802,
+            "tail_up": 0.6464, "tail_lo": 1.0,
+        },
+    },
+    "bsi": {
+        "d1": {
+            "p0135": 0.9, "p0228": 10.3, "p1587": 34.5, "p5000": 60.0,
+            "p8413": 77.9, "p9772": 89.7, "p99865": 96.0397,
+            "tail_up": 6.3397, "tail_lo": 9.4,
+        },
+        "d2": {
+            "p0135": -55.3818, "p0228": -31.999, "p1587": -13.9, "p5000": 0.0,
+            "p8413": 13.3, "p9772": 33.4, "p99865": 57.1242,
+            "tail_up": 23.7242, "tail_lo": 23.3828,
+        },
+        "d3": {
+            "p0135": 0.0, "p0228": 0.0107, "p1587": 0.0997, "p5000": 0.3767,
+            "p8413": 0.9605, "p9772": 1.7017, "p99865": 2.3352,
+            "tail_up": 0.6335, "tail_lo": 0.0107,
+        },
     },
 }
 
+# Backward compatibility alias for existing modules importing STATION_MU_SIGMA
+STATION_MU_SIGMA: Dict[str, Dict[str, Tuple[float, float]]] = {
+    "vix": {"d1": (19.4419, 7.7300), "d2": (-0.0012, 2.5911), "d3": (0.5399, 0.4583)},
+    "vvix": {"d1": (93.4701, 16.3885), "d2": (0.0295, 8.7782), "d3": (0.5268, 0.4535)},
+    "pcr": {"d1": (0.9445, 0.1747), "d2": (0.0, 0.1765), "d3": (0.7357, 0.5432)},
+    "fg": {"d1": (48.8497, 21.0618), "d2": (-0.0119, 8.9751), "d3": (0.4525, 0.4315)},
+    "sv5_turbulence": {"d1": (7.0381, 3.9006), "d2": (0.0066, 2.5386), "d3": (0.3924, 0.5172)},
+    "skew": {"d1": (132.1308, 11.9337), "d2": (0.0066, 5.3562), "d3": (0.5709, 0.4866)},
+    "credit": {"d1": (0.6241, 0.0502), "d2": (0.0001, 0.0064), "d3": (0.5344, 0.4325)},
+    "yield_curve": {"d1": (1.3942, 1.2675), "d2": (-0.0001, 0.1506), "d3": (0.4868, 0.4206)},
+    "rotation": {"d1": (0.5301, 2.4011), "d2": (0.0006, 0.6358), "d3": (0.5065, 0.4118)},
+    "bsi": {"d1": (56.6184, 20.7608), "d2": (0.0014, 14.8147), "d3": (0.4936, 0.4375)},
+    "dxy": {"d1": (97.4445, 14.0207), "d2": (-0.0044, 0.8609), "d3": (0.4854, 0.4207)},
+}
 
-def validate_overflow(station: str, dim: str, value: Optional[float]) -> Tuple[Optional[float], Optional[str]]:
+
+def compute_empirical_z(val: Optional[float], edges: Optional[Dict[str, float]]) -> Optional[float]:
     """
-    Validates whether a specific station and dimension value exceeds ±3σ.
+    Compute continuous empirical z-score via Piecewise Quantile Scaling.
+    
+    Guarantees:
+    - Exactly maps 7 canonical Gaussian percentiles to [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
+    - Strict monotonic continuity across all segments
+    - Guard against duplicate/tied quantile anchors (e.g. flat D3 vol ratio)
+    - Linear extrapolation on extreme tails (> P99.865 and < P0.135)
+    """
+    if val is None or edges is None:
+        return None
+    try:
+        val_f = float(val)
+        if np.isnan(val_f):
+            return None
+    except (TypeError, ValueError):
+        return None
+
+    p0135 = edges["p0135"]
+    p0228 = edges["p0228"]
+    p1587 = edges["p1587"]
+    p5000 = edges["p5000"]
+    p8413 = edges["p8413"]
+    p9772 = edges["p9772"]
+    p99865 = edges["p99865"]
+
+    tail_up = edges.get("tail_up", p99865 - p9772)
+    tail_lo = edges.get("tail_lo", p0228 - p0135)
+
+    # Upper extrapolation (> P99.865)
+    if val_f >= p99865:
+        denom = tail_up if tail_up > 1e-6 else 1.0
+        return round(float(3.0 + (val_f - p99865) / denom), 2)
+
+    # Lower extrapolation (< P0.135)
+    if val_f <= p0135:
+        denom = tail_lo if tail_lo > 1e-6 else 1.0
+        return round(float(-3.0 - (p0135 - val_f) / denom), 2)
+
+    # Monotonic piecewise linear interpolation with duplicate anchor guard
+    segments = (
+        (p0135, p0228, -3.0, -2.0),
+        (p0228, p1587, -2.0, -1.0),
+        (p1587, p5000, -1.0, 0.0),
+        (p5000, p8413, 0.0, 1.0),
+        (p8413, p9772, 1.0, 2.0),
+        (p9772, p99865, 2.0, 3.0),
+    )
+
+    for p_lo, p_hi, z_lo, z_hi in segments:
+        if val_f <= p_hi:
+            span = p_hi - p_lo
+            if span <= 1e-8:
+                # Degenerate interval (tie between quantile edges)
+                return round(float((z_lo + z_hi) / 2.0), 2)
+            z = z_lo + (val_f - p_lo) / span * (z_hi - z_lo)
+            return round(float(z), 2)
+
+    return 0.0
+
+
+def validate_overflow(
+    station: str,
+    dim: str,
+    value: Optional[float],
+    date: Optional[str] = None,
+) -> Tuple[Optional[float], Optional[str]]:
+    """
+    Validates whether a specific station and dimension value exceeds empirical ±3σ.
+    
+    Args:
+        station: Station name (e.g. 'vix', 'skew', 'credit')
+        dim: Dimension key ('d1', 'd2', 'd3')
+        value: Scalar value to classify
+        date: Optional observation date (YYYY-MM-DD). If provided and prior to
+              station inception, returns (None, None) per D0 policy.
+
     Returns:
         (sigma_depth, overflow_flag) where:
-        - sigma_depth: float representing distance in sigma units (e.g. 8.1 for 8.1σ)
+        - sigma_depth: float representing distance in sigma units (e.g. 3.44 for 3.44σ)
         - overflow_flag: "UPPER" | "LOWER" | None
     """
     if value is None:
         return None, None
-    st_data = STATION_MU_SIGMA.get(station.lower())
-    if not st_data:
+    st_key = station.lower()
+    dim_key = dim.lower()
+
+    if date is not None:
+        incept = STATION_INCEPTION_DATES.get(st_key)
+        if incept and str(date)[:10] < incept:
+            return None, None
+
+    st_edges = STATION_EMPIRICAL_EDGES.get(st_key)
+    if not st_edges:
         return None, None
-    dim_data = st_data.get(dim.lower())
-    if not dim_data:
-        return None, None
-    mu, sigma = dim_data
-    if sigma <= 0:
+    dim_edges = st_edges.get(dim_key)
+    if not dim_edges:
         return None, None
 
-    z_score = (value - mu) / sigma
+    z_score = compute_empirical_z(value, dim_edges)
+    if z_score is None:
+        return None, None
+
     if z_score > 3.0:
         return round(float(z_score), 2), "UPPER"
     elif z_score < -3.0:
@@ -130,20 +380,30 @@ def classify_overflow_tier(z_score: Optional[float]) -> Tuple[int, str, str]:
     return 0, "NORMAL", "NORMAL"
 
 
-def get_overflow_tier(station: str, dim: str, value: Optional[float]) -> int:
+def get_overflow_tier(
+    station: str,
+    dim: str,
+    value: Optional[float],
+    date: Optional[str] = None,
+) -> int:
     """Convenience helper returning integer Tier (0-5) directly."""
     if value is None:
         return 0
-    st_data = STATION_MU_SIGMA.get(station.lower())
-    if not st_data:
+    st_key = station.lower()
+    dim_key = dim.lower()
+
+    if date is not None:
+        incept = STATION_INCEPTION_DATES.get(st_key)
+        if incept and str(date)[:10] < incept:
+            return 0
+
+    st_edges = STATION_EMPIRICAL_EDGES.get(st_key)
+    if not st_edges:
         return 0
-    dim_data = st_data.get(dim.lower())
-    if not dim_data:
+    dim_edges = st_edges.get(dim_key)
+    if not dim_edges:
         return 0
-    mu, sigma = dim_data
-    if sigma <= 0:
-        return 0
-    z_score = (value - mu) / sigma
+
+    z_score = compute_empirical_z(value, dim_edges)
     tier, _, _ = classify_overflow_tier(z_score)
     return tier
-

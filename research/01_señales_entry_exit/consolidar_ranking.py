@@ -149,8 +149,12 @@ def construir_ranking_maestro() -> Dict[str, Any]:
 
         filas.append({
             "senal": name,
+            "criterio": "first_passage_ohlc_continuo",
+            "unidad": "episodio_continuo (primera barra activa)",
             "tipo": l_res.get("tipo", "entry"),
             "blanco": l_res.get("blanco", "MIN"),
+            "inception": l_res.get("fecha_inicio_valida"),
+            "escala": best_scale,
             "rol_operacional": rol,
             "escala_optima": best_scale,
             "score_compuesto": score_compuesto,

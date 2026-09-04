@@ -36,7 +36,11 @@ ROOT = Path(__file__).resolve().parents[3]  # backend/scripts/generators/ → re
 sys.path.insert(0, str(ROOT))
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-from backend.modules.entry_decision.domain.rules.sigma_overflow import STATION_MU_SIGMA, classify_overflow_tier
+from backend.modules.entry_decision.domain.rules.sigma_overflow import (
+    STATION_MU_SIGMA,
+    STATION_INCEPTION_DATES,
+    classify_overflow_tier,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("ContinuousMETARLake")
@@ -96,11 +100,69 @@ def classify_bin_index(val: float, edges: list) -> int:
     return len(edges)
 
 
+def compute_series_expanding_z(series: pd.Series, min_periods: int = MIN_EXPANDING) -> pd.Series:
+    """Compute expanding empirical z-score via Piecewise Quantile Scaling without look-ahead."""
+    s = series.dropna()
+    if len(s) < min_periods:
+        return pd.Series(np.nan, index=series.index)
+
+    qs = [0.00135, 0.02275, 0.15866, 0.50000, 0.84134, 0.97725, 0.99865]
+    q_names = ["p0135", "p0228", "p1587", "p5000", "p8413", "p9772", "p99865"]
+
+    exp_q = {name: s.expanding(min_periods).quantile(q) for name, q in zip(q_names, qs)}
+    exp_df = pd.DataFrame(exp_q, index=s.index)
+    exp_df["val"] = s
+    exp_df["tail_up"] = (exp_df["p99865"] - exp_df["p9772"]).clip(lower=1e-4)
+    exp_df["tail_lo"] = (exp_df["p0228"] - exp_df["p0135"]).clip(lower=1e-4)
+
+    v = exp_df["val"].values
+    p0135 = exp_df["p0135"].values
+    p0228 = exp_df["p0228"].values
+    p1587 = exp_df["p1587"].values
+    p5000 = exp_df["p5000"].values
+    p8413 = exp_df["p8413"].values
+    p9772 = exp_df["p9772"].values
+    p99865 = exp_df["p99865"].values
+    tail_up = exp_df["tail_up"].values
+    tail_lo = exp_df["tail_lo"].values
+
+    z = np.full(len(v), np.nan)
+    valid = ~np.isnan(p99865)
+
+    m_up = valid & (v >= p99865)
+    z[m_up] = 3.0 + (v[m_up] - p99865[m_up]) / tail_up[m_up]
+
+    m_lo = valid & (v <= p0135)
+    z[m_lo] = -3.0 - (p0135[m_lo] - v[m_lo]) / tail_lo[m_lo]
+
+    segs = (
+        (p0135, p0228, -3.0, -2.0),
+        (p0228, p1587, -2.0, -1.0),
+        (p1587, p5000, -1.0, 0.0),
+        (p5000, p8413, 0.0, 1.0),
+        (p8413, p9772, 1.0, 2.0),
+        (p9772, p99865, 2.0, 3.0),
+    )
+
+    for p_l, p_h, z_l, z_h in segs:
+        m = valid & ~m_up & ~m_lo & (v <= p_h) & (v >= p_l)
+        if not np.any(m):
+            continue
+        span = p_h[m] - p_l[m]
+        tie = span <= 1e-8
+        safe_span = np.where(tie, 1.0, span)
+        z_interp = z_l + (v[m] - p_l[m]) / safe_span * (z_h - z_l)
+        z_seg = np.where(tie, (z_l + z_h) / 2.0, z_interp)
+        z[m] = z_seg
+
+    res_s = pd.Series(np.round(z, 2), index=s.index)
+    return res_s.reindex(series.index)
+
+
 def compute_station_features(store: TimescaleDataStore, station: str, spy_index: pd.Index) -> pd.DataFrame:
     """Compute all features for a single METAR station aligned to SPY trading days."""
     ticker = STATION_TO_TICKER[station]
     d1_labels = STATION_D1_LABELS[station]
-    mu_sigma = STATION_MU_SIGMA.get(station, {})
 
     bars = store.load_bars(ticker, "1d")
     if bars is None or len(bars) < 30:
@@ -116,8 +178,12 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
 
     # ALIGNMENT FIRST (Homologated with production fact store generators):
     # Align raw series to SPY trading days first, then ffill(limit=3) for FX/holiday gaps.
-    # This prevents pre-1993 historical outliers from distorting the expanding rank post-1993.
     raw_val = raw_val.reindex(spy_index).ffill(limit=3)
+
+    # Inception filter per D0 / D1:
+    incept = STATION_INCEPTION_DATES.get(station)
+    if incept:
+        raw_val = raw_val.mask(raw_val.index < pd.Timestamp(incept))
 
     # Build station DataFrame
     sdf = pd.DataFrame({f"{station}_val": raw_val}, index=spy_index)
@@ -129,6 +195,8 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
     vol_2d = raw_val.rolling(2).std()
     vol_10d = raw_val.rolling(10).std().replace(0, np.nan)
     sdf[f"{station}_d3_raw"] = (vol_2d / vol_10d).fillna(1.0)
+    sdf.loc[raw_val.isna(), f"{station}_d2_raw"] = np.nan
+    sdf.loc[raw_val.isna(), f"{station}_d3_raw"] = np.nan
 
     # D1: Expanding rank (zero look-ahead bias, starting from SPY inception / station inception)
     d1_rank = raw_val.expanding(min_periods=MIN_EXPANDING).rank(pct=True)
@@ -153,28 +221,20 @@ def compute_station_features(store: TimescaleDataStore, station: str, spy_index:
         return f"{b1}__{b2}__{b3}"
     sdf[f"{station}_sk"] = sdf.apply(_make_sk, axis=1)
 
-    # Z-scores (against population mu/sigma from sigma_overflow.py)
-    if "d1" in mu_sigma:
-        mu_d1, sig_d1 = mu_sigma["d1"]
-        sdf[f"{station}_z_d1"] = (raw_val - mu_d1) / sig_d1 if sig_d1 > 0 else 0.0
-
-    if "d2" in mu_sigma:
-        mu_d2, sig_d2 = mu_sigma["d2"]
-        sdf[f"{station}_z_d2"] = (sdf[f"{station}_d2_raw"] - mu_d2) / sig_d2 if sig_d2 > 0 else 0.0
-
-    if "d3" in mu_sigma:
-        mu_d3, sig_d3 = mu_sigma["d3"]
-        sdf[f"{station}_z_d3"] = (sdf[f"{station}_d3_raw"] - mu_d3) / sig_d3 if sig_d3 > 0 else 0.0
+    # Z-scores (empirical expanding quantiles without look-ahead per D2)
+    sdf[f"{station}_z_d1"] = compute_series_expanding_z(sdf[f"{station}_val"], min_periods=MIN_EXPANDING)
+    sdf[f"{station}_z_d2"] = compute_series_expanding_z(sdf[f"{station}_d2_raw"], min_periods=MIN_EXPANDING)
+    sdf[f"{station}_z_d3"] = compute_series_expanding_z(sdf[f"{station}_d3_raw"], min_periods=MIN_EXPANDING)
 
     # Overflow flags and standardized tiers (T1-T5) per dimension
     for dim in ["d1", "d2", "d3"]:
         z_col = f"{station}_z_{dim}"
-        if z_col in sdf.columns:
-            sdf[f"{station}_ovf2s_{dim}"] = sdf[z_col].abs() >= 2.0
-            sdf[f"{station}_ovf3s_{dim}"] = sdf[z_col].abs() >= 3.0
-            sdf[f"{station}_overflow_tier_{dim}"] = sdf[z_col].apply(
-                lambda z: classify_overflow_tier(z)[0] if pd.notna(z) else 0
-            )
+        z_abs = sdf[z_col].abs()
+        sdf[f"{station}_ovf2s_{dim}"] = (z_abs >= 2.0).fillna(False)
+        sdf[f"{station}_ovf3s_{dim}"] = (z_abs >= 3.0).fillna(False)
+        sdf[f"{station}_overflow_tier_{dim}"] = sdf[z_col].apply(
+            lambda z: classify_overflow_tier(z)[0] if pd.notna(z) else 0
+        )
 
     n_valid = sdf[f"{station}_val"].notna().sum()
     logger.info(f"  {station} ({ticker}): {n_valid} days aligned to SPY, "

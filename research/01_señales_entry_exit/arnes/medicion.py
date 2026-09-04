@@ -34,6 +34,16 @@ from .estructura import (_surprise_vector, _structural_momentum_filter,
 def medir(señal_nombre, df, forward_col, spy=None, n_iter=3000, seed=42):
     if señal_nombre not in SEÑALES:
         raise ValueError(f"Señal desconocida: {señal_nombre}. Disponibles: {list(SEÑALES)}")
+
+    # Inception filter per D0 policy: exclude pre-inception data
+    cert = _CERTEZA.get(señal_nombre, {})
+    fecha_inicio = cert.get("fecha_inicio_valida")
+    if fecha_inicio:
+        if "pivot_date" in df.columns:
+            df = df[pd.to_datetime(df["pivot_date"]) >= pd.Timestamp(fecha_inicio)].copy()
+        elif isinstance(df.index, pd.DatetimeIndex):
+            df = df[df.index >= pd.Timestamp(fecha_inicio)].copy()
+
     señal = SEÑALES[señal_nombre](df)
     señal = señal.astype(bool)
 

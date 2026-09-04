@@ -161,6 +161,15 @@ for entry in ranking_list:
     
     # Ficha
     ficha = {
+        "_meta": {
+            "fecha": "2026-09-03",
+            "version": "2.0-homologada",
+            "fuentes": [
+                "evaluacion_generalizada_lake.json",
+                "evaluacion_vela_a_vela_v7_final.json",
+                "ranking_maestro.json"
+            ]
+        },
         "senal": s_name,
         "tipo": entry.get("tipo", r_lake.get("tipo", "")),
         "blanco": entry.get("blanco", r_lake.get("blanco", "")),
@@ -225,7 +234,7 @@ for entry in ranking_list:
 # Resumen ejecutivo
 resumen = {
     "_meta": {
-        "fecha": "2026-09-01",
+        "fecha": "2026-09-03",
         "total_senales": senal_count,
         "fuentes": ["evaluacion_generalizada_lake.json", "evaluacion_vela_a_vela_v7_final.json", "ranking_maestro.json"]
     },

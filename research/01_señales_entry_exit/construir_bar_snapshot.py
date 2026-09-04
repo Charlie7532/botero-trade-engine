@@ -226,7 +226,14 @@ def build_signal_columns(lake: pd.DataFrame) -> pd.DataFrame:
     n_registered = 0
     for name, fn in sorted(SEÑALES.items()):
         try:
-            mask = fn(lake).values.astype(bool)
+            cert = _CERTEZA.get(name, {})
+            fecha_inicio = cert.get("fecha_inicio_valida")
+            mask = np.asarray(fn(lake)).astype(bool)
+            if fecha_inicio:
+                # Pre-inception observations do not exist (D0 policy)
+                pre_incept = (lake.index < pd.Timestamp(fecha_inicio))
+                mask[pre_incept] = False
+
             result[name] = mask
             
             # Fire flag: first bar of each episode (transition 0→1)
@@ -314,8 +321,8 @@ def main():
     aug = pd.read_parquet(augment_path)
     sig = pd.read_parquet(signals_path)
     
-    assert len(aug) == 8453, f"Augment rows: {len(aug)} (expected 8453)"
-    assert len(sig) == 8453, f"Signals rows: {len(sig)} (expected 8453)"
+    assert len(aug) == len(lake), f"Augment rows: {len(aug)} (expected {len(lake)})"
+    assert len(sig) == len(lake), f"Signals rows: {len(sig)} (expected {len(lake)})"
     assert (aug.index == lake.index).all(), "Augment index mismatch"
     assert (sig.index == lake.index).all(), "Signals index mismatch"
     

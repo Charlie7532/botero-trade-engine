@@ -227,10 +227,13 @@ def ejecutar_e2_vix_invarianza(lake: pd.DataFrame, spy: pd.DataFrame) -> Dict[st
 # ── E3: Dinámica de Colapso de Crédito vs Equity ────────────────────────────────
 def ejecutar_e3_credito_timing(lake: pd.DataFrame, quants: pd.DataFrame) -> Dict[str, Any]:
     """Mide el lead/lag entre credit_stress y el suelo definitivo de SPY (pivote MIN)."""
-    from arnes.registro import SEÑALES
+    from arnes.registro import SEÑALES, _CERTEZA
     fn_sig = SEÑALES["credit_stress"]
-    sig_mask = fn_sig(lake)
-    episodes = build_episodes(sig_mask.values, lake.index)
+    cert = _CERTEZA.get("credit_stress", {})
+    fecha_inicio = cert.get("fecha_inicio_valida")
+    lake_eval = lake[lake.index >= pd.Timestamp(fecha_inicio)] if fecha_inicio else lake
+    sig_mask = fn_sig(lake_eval)
+    episodes = build_episodes(sig_mask.values, lake_eval.index)
 
     piv_min = quants[quants["pivot_type"] == "MIN"]
     piv_dates = pd.to_datetime(piv_min["pivot_date"])
@@ -348,10 +351,13 @@ def ejecutar_e5_confluencia_panico(lake: pd.DataFrame, spy: pd.DataFrame) -> Dic
 # ── E6: Asimetría de Euforia de Sentimiento ────────────────────────────────────
 def ejecutar_e6_euforia_sentimiento(lake: pd.DataFrame, spy: pd.DataFrame) -> Dict[str, Any]:
     """Evalúa fg_extreme_greed en tendencia alcista (SPY > 200 SMA) vs bajista."""
-    from arnes.registro import SEÑALES
+    from arnes.registro import SEÑALES, _CERTEZA
     fn_sig = SEÑALES["fg_extreme_greed"]
-    sig_mask = fn_sig(lake)
-    episodes = build_episodes(sig_mask.values, lake.index)
+    cert = _CERTEZA.get("fg_extreme_greed", {})
+    fecha_inicio = cert.get("fecha_inicio_valida")
+    lake_eval = lake[lake.index >= pd.Timestamp(fecha_inicio)] if fecha_inicio else lake
+    sig_mask = fn_sig(lake_eval)
+    episodes = build_episodes(sig_mask.values, lake_eval.index)
 
     close_arr = _CACHE_DATA["spy_close"]
     sma200 = pd.Series(close_arr).rolling(200).mean().values

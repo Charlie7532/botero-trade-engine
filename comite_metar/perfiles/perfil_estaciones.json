@@ -1,0 +1,435 @@
+{
+  "_meta": {
+    "proposito": "Perfiles canónicos de los 11 agentes de estación METAR. Cada agente es un 'mundo' con personalidad, rol, ancla de validación, y el mapa de datos que lo alimenta. Simulación walk-forward en vivo sobre el SPY.",
+    "principio": "'La verdad habla' — cada estación se valida contra el ancla que responde a su rol.",
+    "metrologia": "first-passage OHLC intrabar, sin time-stop (Opción C). De-clustering = credibilidad (no exclusión). Rareza = riqueza (§3.3).",
+    "CANONICO_LABELS": "Los labels D1/D2/D3 se copian LITERALMENTE de .agents/references/metar/d1_labels_canonical.md — NUNCA inferir ni inventar.",
+    "estructura_state_key": "{D1_bin}__{D2_bin}__{D3_bin} — 6×5×5 = 150 estados teóricos, ~95-131 observados por estación.",
+    "D2_DEFINICION": "Velocidad cinemática: vel = val[t] - val[t-3] (cambio en 3 días hábiles). Edges gaussianos. Bin 0=CAÍDA<x2, 2=estable, 4=subida>x2.",
+    "D3_DEFINICION": "Estabilidad/vol intra-indicador: instability = std(val,2d)/std(val,10d). Bin 0=quieto, 2=normal, 4=pico de vol."
+  },
+  "columnas_disponibles_por_estacion": [
+    "{est}_val",
+    "{est}_d2_raw",
+    "{est}_d3_raw",
+    "{est}_d1_bin",
+    "{est}_d2_bin",
+    "{est}_d3_bin",
+    "{est}_d1",
+    "{est}_d2",
+    "{est}_d3",
+    "{est}_sk",
+    "{est}_z_d1",
+    "{est}_z_d2",
+    "{est}_z_d3",
+    "{est}_ovf2s_d1",
+    "{est}_ovf3s_d1",
+    "{est}_overflow_tier_d1",
+    "{est}_ovf2s_d2",
+    "{est}_ovf3s_d2",
+    "{est}_overflow_tier_d2",
+    "{est}_ovf2s_d3",
+    "{est}_ovf3s_d3",
+    "{est}_overflow_tier_d3"
+  ],
+  "columnas_mercado": [
+    "spy_open",
+    "spy_high",
+    "spy_low",
+    "spy_close",
+    "spy_volume",
+    "spy_ret_1d"
+  ],
+  "escudo_de_lectura": "El agente lee: *val (valor crudo), *_d1/d2/d3 (z-score continuo), *_d?_bin (bin 0-4/5), *_sk (state_key), *_overflow_tier (overflow ±2σ). El *_d1_bin es la magnitud; *_d2_bin velocidad; *_d3_bin estabilidad.",
+  "estaciones": {
+    "vix": {
+      "mundo": "volatilidad_implicita_miedo",
+      "personalidad": "Radar del miedo del mercado. Lee la expectativa de volatilidad a 30 días (VIX).",
+      "rol": "precursor",
+      "ancla_validacion": "anticipa_pivote",
+      "inception": "1990-01-02",
+      "direccion_fisica": "valor_alto = peor (pánico)",
+      "D1_LABELS_canonical": [
+        "EXTREME_COMPLACENCY",
+        "COMPLACENCY",
+        "NEUTRAL_CALM",
+        "NEUTRAL_ALERT",
+        "PANIC",
+        "EXTREME_PANIC"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D:< -2σ caída extrema",
+        "DECELERATING_DOWN_3D:-2σ a -1σ",
+        "STABLE_CONTINUATION_3D:-1σ a +1σ sin cambio",
+        "ACCELERATING_UP_3D:+1σ a +2σ subiendo",
+        "FAST_SPIKE_3D:> +2σ subida extrema"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE:quieto",
+        "VOL_MODERATE_COMPRESSION:compresión",
+        "VOL_NEUTRAL_BASELINE:normal",
+        "VOL_ACCELERATING_EXPANSION:expansión",
+        "VOL_PEAK_DECELERATION:pico desacelerando"
+      ],
+      "sentido_combinaciones_D1D2D3": "D1=5..4 (pánico) + D2=4 (subida rápida) = PÁNICO CLÍMAX/precisa giro bajista; D1=5 + D2=2 (ambiguo) = posible contrarian; D1=0 (complacencia) + D3=4 (vol expandiendo) = firma de distribución. D2<2 = velocidad negativa confirmada → contrarian. Overflow D1 (vix_overflow_tier) = pánico sobre-2σ → clímax.",
+      "canario": "D3 alto (inestabilidad de expectativa) en D1 alto precede giro"
+    },
+    "vvix": {
+      "mundo": "volatilidad_de_la_volatilidad",
+      "personalidad": "Turbulencia sobre el miedo. Mide cuán volátil es el VIX mismo (VVIX).",
+      "rol": "precursor",
+      "ancla_validacion": "anticipa_pivote",
+      "inception": "2006-03-06",
+      "direccion_fisica": "valor_alto = peor (inestabilidad)",
+      "D1_LABELS_canonical": [
+        "EXTREME_STABILITY",
+        "STABILITY",
+        "NEUTRAL_STABLE",
+        "NEUTRAL_UNSTABLE",
+        "INSTABILITY",
+        "EXTREME_INSTABILITY"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "D1=0..1 (estabilidad) + D2=0 (crush rápido) = compresión de vol → posible explosión. Pico de vvol (D1=4-5) precede reversiones.",
+      "canario": "vol_de_vol_en_extremo_precede_giro"
+    },
+    "pcr": {
+      "mundo": "posicionamiento_put_call",
+      "personalidad": "Mide la cobertura institucional (puts vs calls). Protección o apostía.",
+      "rol": "precursor",
+      "ancla_validacion": "anticipa_pivote",
+      "inception": "2006-11-01",
+      "direccion_fisica": "valor_alto = peor (put panic)",
+      "D1_LABELS_canonical": [
+        "EXTREME_CALL_EUPHORIA",
+        "CALL_EUPHORIA",
+        "NEUTRAL_CALL_BIAS",
+        "NEUTRAL_PUT_BIAS",
+        "PUT_PANIC",
+        "EXTREME_PUT_PANIC"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "PUT_PANIC extremo (D1=4) = miedo → posible piso contrarian. EXTREME_CALL_EUPHORIA (D1=0) = complacencia → posible techo.",
+      "canario": "put_panic_en_extremo_marca_piso_contrarian"
+    },
+    "fg": {
+      "mundo": "sentimiento_extremo_fear_greed",
+      "personalidad": "Termómetro del sentimiento social (CNN Fear & Greed). Estado emocional agregado.",
+      "rol": "exageracion_fat_tail",
+      "ancla_validacion": "anticipa_giro_y_eventos_extremos",
+      "inception": "2011-02-01",
+      "direccion_fisica": "↑ = mejor (greed), pero contrarian en extremo",
+      "D1_LABELS_canonical": [
+        "EXTREME_FEAR",
+        "FEAR",
+        "NEUTRAL_FEAR",
+        "NEUTRAL_GREED",
+        "GREED",
+        "EXTREME_GREED"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "EXTREME_FEAR (D1=0) = pánico social → suele marcar suelos contrarian. EXTREME_GREED (D1=5) = euforia → techos. El sentimiento extremo tiende a revertir (fat-tail).",
+      "canario": "miedo_extremo_marca_suelos, euforia_marca_techos"
+    },
+    "sv5_turbulence": {
+      "mundo": "turbulencia_de_mercado",
+      "personalidad": "Régimen de quietud vs estallido. Distorsión del mercado (SV5T).",
+      "rol": "regimen_fondo",
+      "ancla_validacion": "cambio_de_regimen_quietud_estallido",
+      "inception": "1999-01-04",
+      "direccion_fisica": "valor_alto = peor (turbulencia)",
+      "D1_LABELS_canonical": [
+        "EXTREME_CALM",
+        "CALM",
+        "NEUTRAL_CALM",
+        "NEUTRAL_TURBULENT",
+        "TURBULENT",
+        "EXTREME_TURBULENT"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "SILENCIO (D1=0-1) en techo = distribución silenciosa (SV5T). TURBULENT extrema (D1=4-5) = crisis activa. D3 expansion precede estallido.",
+      "canario": "silencio_institucional_en_techo_marca_distribucion"
+    },
+    "skew": {
+      "mundo": "riesgo_de_cola",
+      "personalidad": "Probabilidad implícita de eventos de cola (SKEW). Cuánto paga por protección extrema.",
+      "rol": "precursor_eventos_extremos",
+      "ancla_validacion": "anticipa_eventos_de_cola",
+      "inception": "2011-02-01",
+      "direccion_fisica": "valor_alto = peor (paranoia)",
+      "D1_LABELS_canonical": [
+        "EXTREME_CONFIDENCE",
+        "CONFIDENCE",
+        "NEUTRAL_CONFIDENT",
+        "NEUTRAL_PARANOID",
+        "PARANOIA",
+        "EXTREME_PARANOIA"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "EXTREME_CONFIDENCE (D1=0) = complacencia de cola → posible techo. EXTREME_PARANOIA (D1=5) = pánico de cola → posible piso contrarian.",
+      "canario": "confianza_extrema_marca_techos, paranoia_marca_pisos_contrarian"
+    },
+    "credit": {
+      "mundo": "apetito_de_riesgo",
+      "personalidad": "Spread de crédito: cuánto cobra por riesgo de crédito. Apetito/flujo de riesgo.",
+      "rol": "contexto",
+      "ancla_validacion": "regimen_y_direccion_del_flujo",
+      "inception": "2007-04-11",
+      "direccion_fisica": "valor_alto = MEJOR (facilidad crediticia). INVERTIDO: estrés en bin bajo.",
+      "D1_LABELS_canonical": [
+        "EXTREME_STRESS",
+        "STRESS",
+        "NEUTRAL_TIGHT",
+        "NEUTRAL_LOOSE",
+        "EASE",
+        "EXTREME_EASE"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "ATENCIÓN: bin 0 = EXTREME_STRESS (NOT tight). Estrés crediticio (D1=0-1) anticipa caídas; EASE (D1=4-5) = apetito de riesgo. D2<2 = spread ampliándose = riesgo off.",
+      "canario": "stress_crediticio_anticipa_caidas"
+    },
+    "yield_curve": {
+      "mundo": "espera_del_ciclo",
+      "personalidad": "Pendiente de la curva. Expectativa de ciclo económico.",
+      "rol": "regimen_fondo",
+      "ancla_validacion": "recesion_expansion_meses",
+      "inception": "1993-01-29",
+      "direccion_fisica": "↑ = expansión (steepening). Bin 0 = recesión.",
+      "D1_LABELS_canonical": [
+        "DEEP_INVERSION",
+        "MODERATE_INVERSION",
+        "FLAT_CURVE",
+        "NORMAL_CURVE",
+        "STEEPNING_CURVE",
+        "EXTREME_STEEPNING"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "DEEP_INVERSION (D1=0) = contexto de recesión lento (meses, no timing). NORMAL/STEEPNING = expansión. Es régimen de fondo, no canario de corto plazo.",
+      "canario": "contexto_de_recesion_no_timing"
+    },
+    "rotation": {
+      "mundo": "rotacion_sectorial",
+      "personalidad": "Rotación defensivo vs cíclico. Cuál mercado favorece el flujo.",
+      "rol": "regimen_contexto",
+      "ancla_validacion": "defensivo_vs_ciclico",
+      "inception": "1999-01-04",
+      "direccion_fisica": "↑ = risk-on (ofensivo). Bin 0 = defensivo.",
+      "D1_LABELS_canonical": [
+        "EXTREME_DEFENSIVE",
+        "DEFENSIVE",
+        "NEUTRAL_DEFENSIVE",
+        "NEUTRAL_OFFENSIVE",
+        "OFFENSIVE",
+        "EXTREME_OFFENSIVE"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "Extremo defensivo (D1=0) = aversión → precede correcciones. Ofensivo (D1=4-5) = riesgo on. Cambia lento: régimen de fondo.",
+      "canario": "colapso_defensivo_marca_techo"
+    },
+    "dxy": {
+      "mundo": "dolar_liquidez",
+      "personalidad": "Dólar global. Flujo de liquidez internacional.",
+      "rol": "contexto",
+      "ancla_validacion": "direccion_del_flujo_global",
+      "inception": "1993-01-29",
+      "direccion_fisica": "valor_alto = peor para equities (dólar fuerte = risk off). Bin 0 = débil.",
+      "D1_LABELS_canonical": [
+        "EXTREME_WEAKNESS",
+        "WEAKNESS",
+        "NEUTRAL_WEAK",
+        "NEUTRAL_STRONG",
+        "STRENGTH",
+        "EXTREME_STRENGTH"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "DÓLAR DÉBIL (D1=0) = liquidez/riesgo on. DÓLAR FUERTE (D1=4-5) = risk off. Contexto del flujo global.",
+      "canario": "contexto_de_liquidez"
+    },
+    "bsi": {
+      "mundo": "amplitud_breadth",
+      "personalidad": "Participación interna del mercado (anchura). Cuántas acciones moviliza el índice.",
+      "rol": "confirmador",
+      "ancla_validacion": "continuacion_de_la_salud_del_movimiento",
+      "inception": "1993-01-29",
+      "direccion_fisica": "valor_alto = mejor (breadth expansivo). Bin 0 = washed out.",
+      "D1_LABELS_canonical": [
+        "BREADTH_WASHED_OUT",
+        "OVERSOLD_BREADTH",
+        "NEUTRAL_LOW_BREADTH",
+        "NEUTRAL_HIGH_BREADTH",
+        "EXPANSIVE_BREADTH",
+        "HYPER_EXPANSIVE_BREADTH"
+      ],
+      "D2_LABELS_universal": [
+        "FAST_CRUSH_3D",
+        "DECELERATING_DOWN_3D",
+        "STABLE_CONTINUATION_3D",
+        "ACCELERATING_UP_3D",
+        "FAST_SPIKE_3D"
+      ],
+      "D3_LABELS_universal": [
+        "VOL_EXTREME_SQUEEZE",
+        "VOL_MODERATE_COMPRESSION",
+        "VOL_NEUTRAL_BASELINE",
+        "VOL_ACCELERATING_EXPANSION",
+        "VOL_PEAK_DECELERATION"
+      ],
+      "sentido_combinaciones_D1D2D3": "BREADTH_WASHED_OUT (D1=0) = pánico interno → posible suelo. HYPER_EXPANSIVE (D1=5) = salud extrema. BSI confirma: rally con BSI alta = sano; rally con BSI baja = frágil.",
+      "canario": "confirmador_de_la_salud"
+    }
+  },
+  "instrucciones_al_agente": "Antes de interpretar: (1) lee tu *val, *_bin, *_sk y *_overflow_tier de TU estación en la vela t. (2) Decodifica el state_key D1__D2__D3 con TUS D1_LABELS_canonical + universales D2/D3. (3) Aplica TU dirección física (ojo: CREDIT y YIELD tienen bin 0 = estrés/inversión). (4) Interpreta el SENTIDO de la combinación (ver sentido_combinaciones_D1D2D3) y tu rol (precursor/contexto/confirmador/régimen). (5) Emite tu veredicto en el idioma de tu mundo con TODAS las dimensiones D1/D2/D3, NUNCA solo D1.",
+  "interpretacion_probabilistica_gaussiana": {
+    "principio": "Los edges son percentiles EMPIRICOS de la poblacion historica completa (NO mu+k*sigma). Los percentiles [0.0228, 0.1587, 0.5000, 0.8413, 0.9772] garantizan la proporcion correcta aunque la data no sea normal (VIX/SKEW fat tails).",
+    "D1_magnitud_6_bins": {
+      "bin0": "P0 a P2.28 = 2.28% de la poblacion (extremo inferior)",
+      "bin1": "P2.28 a P15.87 = 13.59% (bajo)",
+      "bin2": "P15.87 a P50 = 34.13% (centro, sesgo bajo)",
+      "bin3": "P50 a P84.13 = 34.13% (centro, sesgo alto)",
+      "bin4": "P84.13 a P97.72 = 13.59% (elevado)",
+      "bin5": "P97.72 a P100 = 2.28% (extremo superior)"
+    },
+    "D2_velocidad_5_bins": {
+      "bin0": "FAST_CRUSH_3D, < -2s, 2.28% (caida extrema 72h)",
+      "bin1": "DECELERATING_DOWN_3D, -2s a -1s, 13.59%",
+      "bin2": "STABLE_CONTINUATION_3D, -1s a +1s, 68.27% (el centro)",
+      "bin3": "ACCELERATING_UP_3D, +1s a +2s, 13.59%",
+      "bin4": "FAST_SPIKE_3D, > +2s, 2.28% (subida extrema 72h)"
+    },
+    "D3_estabilidad_5_bins": {
+      "bin0": "VOL_EXTREME_SQUEEZE, < -2s, 2.28% (quieto)",
+      "bin1": "VOL_MODERATE_COMPRESSION, -2s a -1s, 13.59%",
+      "bin2": "VOL_NEUTRAL_BASELINE, -1s a +1s, 68.27% (vol normal)",
+      "bin3": "VOL_ACCELERATING_EXPANSION, +1s a +2s, 13.59%",
+      "bin4": "VOL_PEAK_DECELERATION, > +2s, 2.28% (pico de vol)"
+    },
+    "regla_extremo_estricta": "EXTREMO = exclusivamente bins de ±2s (P2.28/P97.72), 2.28% cada uno. D1 extremo: bins 0 y 5. D2 extremo: bins 0 y 4. D3 extremo: bins 0 y 4. NO confundir bins 1/4 (elevado) con extremos. >3s no altera el bin (se clipea); opera en capa de overflow."
+  },
+  "interpretacion_overflow_taxonomia": {
+    "principio": "Opera en PARALELO sobre el z-score crudo, NUNCA modifica el bin. Formula z=(value-mu)/sigma. Lee *_ovf2s_d*, *_ovf3s_d*, *_overflow_tier_d*.",
+    "T1": "3s a 4s = OVERFLOW_MODERADO, WARNING, ~14.2%, reducir",
+    "T2": "4s a 5s = OVERFLOW_EXTREMO, CRITICAL, ~4.1%, bloquear entradas",
+    "T3": "5s a 7s = BLOW_OFF_SEVERE, EMERGENCY, ~1.4%, reducir 25-50%",
+    "T4": "7s a 10s = BLOW_OFF_EXTREME, CATASTROPHIC, ~0.35%, solo coberturas",
+    "T5": ">= 10s = BLOW_OFF_SYSTEMIC, SYSTEMIC, ~0.15%, preservacion",
+    "post_blowoff_contrarian": "10-20 dias post T4+ = acumulacion institucional = contrarian (Wyckoff)"
+  },
+  "instrucciones_probabilisticas_al_agente": "Al interpretar tu estado: (1) cuantifica extremeza por probabilidad gaussiana (bin5=top 2.28%, bin0=bottom 2.28%, D2/D3 bin4/0=2.28%). (2) Distingue extremo (±2s) de elevado (±1s a 2s). (3) Si *_overflow_tier_d* > 0, el canal esta MAS ALLA de ±2s: aplica T1-T5. (4) Un blow-off (T3+) es evento de cola; el periodo post es contrarian. (5) La rareza (bin de 2.28%) ES el significado, no ruido (§3.3)."
+}

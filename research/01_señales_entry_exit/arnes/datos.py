@@ -37,8 +37,19 @@ def cargar_datos():
         spy = store.load_bars("SPY", "1d")
         spy.index = pd.to_datetime(spy.index).tz_localize(None)
     except Exception as e:
-        print(f"[WARN] No se pudo cargar SPY del Vault: {e}", file=sys.stderr)
-        spy = None
+        lake_path = ROOT / "data/research/continuous_metar_lake.parquet"
+        if lake_path.exists():
+            lake = pd.read_parquet(lake_path)
+            spy = pd.DataFrame({
+                "open": lake["spy_open"].values,
+                "high": lake["spy_high"].values,
+                "low": lake["spy_low"].values,
+                "close": lake["spy_close"].values,
+                "volume": lake["spy_volume"].values,
+            }, index=pd.to_datetime(lake.index).tz_localize(None))
+        else:
+            print(f"[WARN] No se pudo cargar SPY del Vault ni del Lake: {e}", file=sys.stderr)
+            spy = None
 
     return df, spy
 

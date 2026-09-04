@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "fecha": "2026-09-03",
+    "version": "2.0-homologada",
+    "fuentes": [
+      "evaluacion_generalizada_lake.json",
+      "evaluacion_vela_a_vela_v7_final.json",
+      "ranking_maestro.json"
+    ]
+  },
+  "senal": "credit_ease_exit",
+  "tipo": "exit",
+  "blanco": "MAX",
+  "version": "2.0-homologada",
+  "poblacion": {
+    "n_episodios": 48,
+    "n_barras_totales": 2884,
+    "fire_rate_pct": 59.09,
+    "cadencia_1_en_n_barras": 101.7,
+    "duracion_episodio_barras": {
+      "mean": 60.08,
+      "median": 3.0,
+      "p90": 179.8,
+      "min": 1,
+      "max": 721
+    },
+    "es_diamante": false,
+    "tier_rareza": "ROBUST"
+  },
+  "timing": {
+    "precision": "CONFIRMADORA",
+    "pct_en_rango": 31.25,
+    "pct_fuera_de_rango": 68.75,
+    "delta_medio_barras": 8.1,
+    "delta_mediana_barras": 4.5,
+    "por_slot": {
+      "t-2": {
+        "n": 1,
+        "hit_rate": 1.0,
+        "ev": 0.0223,
+        "bars_medio": 3.0
+      },
+      "t-1": {
+        "n": 2,
+        "hit_rate": 0.5,
+        "ev": 0.0067,
+        "bars_medio": 3.5
+      },
+      "t=0": {
+        "n": 5,
+        "hit_rate": 0.6,
+        "ev": 0.0136,
+        "bars_medio": 3.0
+      },
+      "t+1": {
+        "n": 6,
+        "hit_rate": 0.5,
+        "ev": -0.0012,
+        "bars_medio": 6.5
+      },
+      "t+2": {
+        "n": 1,
+        "hit_rate": 1.0,
+        "ev": 0.0244,
+        "bars_medio": 7.0
+      },
+      "ENTRE": {
+        "n": 33,
+        "hit_rate": 0.424,
+        "ev": -0.0058,
+        "bars_medio": 19.4
+      }
+    },
+    "perfil_agregado": {
+      "anticipadora_t2_t1_pct": 6.25,
+      "coincidente_t0_pct": 10.42,
+      "confirmadora_t1_t2_pct": 14.58,
+      "fuera_rango_pct": 68.75
+    }
+  },
+  "first_passage": {
+    "escalas": {
+      "zz25": {
+        "n": 48,
+        "hit_rate": 0.479,
+        "hit_neto": 0.0578,
+        "ev_neto": 0.0027,
+        "profit_factor": 0.89,
+        "mae_medio": 0.0212,
+        "mfe_medio": 0.0226,
+        "bars_medio": 14.8,
+        "p_value_binom": 0.252
+      },
+      "zz50": {
+        "n": 48,
+        "hit_rate": 0.229,
+        "hit_neto": -0.0709,
+        "ev_neto": 0.0047,
+        "profit_factor": 0.58,
+        "mae_medio": 0.0317,
+        "mfe_medio": 0.0316,
+        "bars_medio": 28.2,
+        "p_value_binom": 0.8931
+      },
+      "zz75": {
+        "n": 48,
+        "hit_rate": 0.104,
+        "hit_neto": -0.0469,
+        "ev_neto": -0.0027,
+        "profit_factor": 0.32,
+        "mae_medio": 0.0341,
+        "mfe_medio": 0.0336,
+        "bars_medio": 24.3,
+        "p_value_binom": 0.8698
+      }
+    },
+    "escala_optima": "zz50",
+    "ci95_hit_rate_mejor_escala": [
+      0.3329,
+      0.6281
+    ]
+  },
+  "perfil_regimen_pivotes": {},
+  "drawdown_y_riesgo": {
+    "max_drawdown": null,
+    "max_consecutive_losses": null
+  },
+  "confiabilidad": {
+    "p_value_binom_mejor_escala": 0.252,
+    "p_BH": 0.974291,
+    "p_bonferroni": 1.0,
+    "significativo_BH": false,
+    "independencia_F3": null,
+    "techo_mejora_F3": null,
+    "score_compuesto": 0.05,
+    "rol_institucional": "TACTICA_RAPIDA"
+  },
+  "score_compuesto": 0.05,
+  "rol": "TACTICA_RAPIDA"
+}

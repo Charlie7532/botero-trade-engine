@@ -1,0 +1,183 @@
+{
+  "_meta": {
+    "fecha": "2026-09-03",
+    "version": "2.0-homologada",
+    "fuentes": [
+      "evaluacion_generalizada_lake.json",
+      "evaluacion_vela_a_vela_v7_final.json",
+      "ranking_maestro.json"
+    ]
+  },
+  "senal": "neutral_crush_entry",
+  "tipo": "entry",
+  "blanco": "MIN",
+  "version": "2.0-homologada",
+  "poblacion": {
+    "n_episodios": 59,
+    "n_barras_totales": 75,
+    "fire_rate_pct": 1.91,
+    "cadencia_1_en_n_barras": 66.4,
+    "duracion_episodio_barras": {
+      "mean": 1.27,
+      "median": 1.0,
+      "p90": 2.0,
+      "min": 1,
+      "max": 4
+    },
+    "es_diamante": false,
+    "tier_rareza": "ROBUST"
+  },
+  "timing": {
+    "precision": "CONFIRMADORA",
+    "pct_en_rango": 54.24,
+    "pct_fuera_de_rango": 45.76,
+    "delta_medio_barras": 4.4,
+    "delta_mediana_barras": 2.0,
+    "por_slot": {
+      "t-2": {
+        "n": 4,
+        "hit_rate": 0.25,
+        "ev": -0.0183,
+        "bars_medio": 5.8
+      },
+      "t-1": {
+        "n": 5,
+        "hit_rate": 0.4,
+        "ev": -0.0057,
+        "bars_medio": 2.8
+      },
+      "t=0": {
+        "n": 11,
+        "hit_rate": 1.0,
+        "ev": 0.0282,
+        "bars_medio": 3.1
+      },
+      "t+1": {
+        "n": 4,
+        "hit_rate": 0.5,
+        "ev": 0.0073,
+        "bars_medio": 7.2
+      },
+      "t+2": {
+        "n": 8,
+        "hit_rate": 0.875,
+        "ev": 0.0184,
+        "bars_medio": 10.5
+      },
+      "ENTRE": {
+        "n": 27,
+        "hit_rate": 0.667,
+        "ev": 0.0095,
+        "bars_medio": 14.0
+      }
+    },
+    "perfil_agregado": {
+      "anticipadora_t2_t1_pct": 15.25,
+      "coincidente_t0_pct": 18.64,
+      "confirmadora_t1_t2_pct": 20.34,
+      "fuera_rango_pct": 45.76
+    }
+  },
+  "first_passage": {
+    "escalas": {
+      "zz25": {
+        "n": 59,
+        "hit_rate": 0.695,
+        "hit_neto": 0.109,
+        "ev_neto": 0.0063,
+        "profit_factor": 2.46,
+        "mae_medio": -0.0164,
+        "mfe_medio": 0.0245,
+        "bars_medio": 9.5,
+        "p_value_binom": 0.0567
+      },
+      "zz50": {
+        "n": 59,
+        "hit_rate": 0.39,
+        "hit_neto": 0.0014,
+        "ev_neto": -0.0081,
+        "profit_factor": 0.76,
+        "mae_medio": -0.0347,
+        "mfe_medio": 0.038,
+        "bars_medio": 24.6,
+        "p_value_binom": 0.5406
+      },
+      "zz75": {
+        "n": 59,
+        "hit_rate": 0.085,
+        "hit_neto": 0.0027,
+        "ev_neto": -0.0039,
+        "profit_factor": 0.16,
+        "mae_medio": -0.0347,
+        "mfe_medio": 0.04,
+        "bars_medio": 23.9,
+        "p_value_binom": 0.5377
+      }
+    },
+    "escala_optima": "zz25",
+    "ci95_hit_rate_mejor_escala": [
+      0.5613,
+      0.8081
+    ]
+  },
+  "perfil_regimen_pivotes": {
+    "zz25|ALZA": {
+      "n": 4,
+      "hit_rate": 0.25,
+      "fav_neto": -0.0188,
+      "p_value": null,
+      "profit_factor": 0.27
+    },
+    "zz25|BAJA": {
+      "n": 11,
+      "hit_rate": 0.636,
+      "fav_neto": -0.0141,
+      "p_value": 0.9593,
+      "profit_factor": 1.41
+    },
+    "zz50|ALZA": {
+      "n": 3,
+      "hit_rate": 1.0,
+      "fav_neto": 0.0563,
+      "p_value": null,
+      "profit_factor": null
+    },
+    "zz50|BAJA": {
+      "n": 11,
+      "hit_rate": 0.455,
+      "fav_neto": -0.0375,
+      "p_value": 0.995,
+      "profit_factor": 0.73
+    },
+    "zz75|ALZA": {
+      "n": 3,
+      "hit_rate": 1.0,
+      "fav_neto": 0.0812,
+      "p_value": null,
+      "profit_factor": null
+    },
+    "zz75|BAJA": {
+      "n": 11,
+      "hit_rate": 0.818,
+      "fav_neto": 0.0086,
+      "p_value": 0.4705,
+      "profit_factor": 3.54
+    }
+  },
+  "drawdown_y_riesgo": {
+    "max_drawdown": null,
+    "max_consecutive_losses": null
+  },
+  "confiabilidad": {
+    "p_value_binom_mejor_escala": 0.0567,
+    "p_BH": 0.20412,
+    "p_bonferroni": 1.0,
+    "significativo_BH": false,
+    "independencia_F3": 0.0,
+    "techo_mejora_F3": 1.0,
+    "score_compuesto": 11.504,
+    "rol_institucional": "TACTICA_RAPIDA"
+  },
+  "score_compuesto": 11.504,
+  "rol": "TACTICA_RAPIDA"
+}

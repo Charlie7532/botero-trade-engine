@@ -1,0 +1,183 @@
+{
+  "_meta": {
+    "fecha": "2026-09-03",
+    "version": "2.0-homologada",
+    "fuentes": [
+      "evaluacion_generalizada_lake.json",
+      "evaluacion_vela_a_vela_v7_final.json",
+      "ranking_maestro.json"
+    ]
+  },
+  "senal": "cascade_reversal",
+  "tipo": "exit",
+  "blanco": "MAX",
+  "version": "2.0-homologada",
+  "poblacion": {
+    "n_episodios": 219,
+    "n_barras_totales": 238,
+    "fire_rate_pct": 2.81,
+    "cadencia_1_en_n_barras": 38.6,
+    "duracion_episodio_barras": {
+      "mean": 1.09,
+      "median": 1.0,
+      "p90": 1.0,
+      "min": 1,
+      "max": 3
+    },
+    "es_diamante": false,
+    "tier_rareza": "ROBUST"
+  },
+  "timing": {
+    "precision": "COINCIDENTE",
+    "pct_en_rango": 72.15,
+    "pct_fuera_de_rango": 27.85,
+    "delta_medio_barras": 1.9,
+    "delta_mediana_barras": 0.0,
+    "por_slot": {
+      "t-2": {
+        "n": 4,
+        "hit_rate": 0.0,
+        "ev": -0.0279,
+        "bars_medio": 1.5
+      },
+      "t-1": {
+        "n": 6,
+        "hit_rate": 0.667,
+        "ev": 0.0068,
+        "bars_medio": 4.0
+      },
+      "t=0": {
+        "n": 118,
+        "hit_rate": 0.856,
+        "ev": 0.0198,
+        "bars_medio": 6.2
+      },
+      "t+1": {
+        "n": 6,
+        "hit_rate": 0.167,
+        "ev": -0.0179,
+        "bars_medio": 6.7
+      },
+      "t+2": {
+        "n": 24,
+        "hit_rate": 0.167,
+        "ev": -0.0197,
+        "bars_medio": 6.3
+      },
+      "ENTRE": {
+        "n": 61,
+        "hit_rate": 0.131,
+        "ev": -0.0204,
+        "bars_medio": 7.5
+      }
+    },
+    "perfil_agregado": {
+      "anticipadora_t2_t1_pct": 4.57,
+      "coincidente_t0_pct": 53.88,
+      "confirmadora_t1_t2_pct": 13.7,
+      "fuera_rango_pct": 27.85
+    }
+  },
+  "first_passage": {
+    "escalas": {
+      "zz25": {
+        "n": 219,
+        "hit_rate": 0.539,
+        "hit_neto": 0.1075,
+        "ev_neto": 0.0063,
+        "profit_factor": 1.17,
+        "mae_medio": 0.0186,
+        "mfe_medio": 0.0225,
+        "bars_medio": 6.4,
+        "p_value_binom": 0.0009
+      },
+      "zz50": {
+        "n": 219,
+        "hit_rate": 0.411,
+        "hit_neto": 0.1213,
+        "ev_neto": 0.0069,
+        "profit_factor": 0.73,
+        "mae_medio": 0.0361,
+        "mfe_medio": 0.0372,
+        "bars_medio": 22.1,
+        "p_value_binom": 0.0001
+      },
+      "zz75": {
+        "n": 219,
+        "hit_rate": 0.215,
+        "hit_neto": 0.0736,
+        "ev_neto": 0.0084,
+        "profit_factor": 0.47,
+        "mae_medio": 0.0372,
+        "mfe_medio": 0.0427,
+        "bars_medio": 23.5,
+        "p_value_binom": 0.002
+      }
+    },
+    "escala_optima": "zz75",
+    "ci95_hit_rate_mejor_escala": [
+      0.4704,
+      0.6062
+    ]
+  },
+  "perfil_regimen_pivotes": {
+    "zz25|ALZA": {
+      "n": 92,
+      "hit_rate": 0.87,
+      "fav_neto": 0.0124,
+      "p_value": 0.0,
+      "profit_factor": 7.42
+    },
+    "zz25|BAJA": {
+      "n": 135,
+      "hit_rate": 0.326,
+      "fav_neto": -0.0136,
+      "p_value": 1.0,
+      "profit_factor": 0.52
+    },
+    "zz50|ALZA": {
+      "n": 92,
+      "hit_rate": 0.63,
+      "fav_neto": 0.0016,
+      "p_value": 0.0521,
+      "profit_factor": 1.33
+    },
+    "zz50|BAJA": {
+      "n": 135,
+      "hit_rate": 0.356,
+      "fav_neto": -0.0133,
+      "p_value": 0.9993,
+      "profit_factor": 0.6
+    },
+    "zz75|ALZA": {
+      "n": 92,
+      "hit_rate": 0.543,
+      "fav_neto": 0.0049,
+      "p_value": 0.1099,
+      "profit_factor": 1.09
+    },
+    "zz75|BAJA": {
+      "n": 134,
+      "hit_rate": 0.284,
+      "fav_neto": -0.0276,
+      "p_value": 1.0,
+      "profit_factor": 0.42
+    }
+  },
+  "drawdown_y_riesgo": {
+    "max_drawdown": null,
+    "max_consecutive_losses": null
+  },
+  "confiabilidad": {
+    "p_value_binom_mejor_escala": 0.0009,
+    "p_BH": 0.01728,
+    "p_bonferroni": 0.072,
+    "significativo_BH": true,
+    "independencia_F3": 0.71,
+    "techo_mejora_F3": 0.29,
+    "score_compuesto": 11.735,
+    "rol_institucional": "ESTRUCTURAL"
+  },
+  "score_compuesto": 11.735,
+  "rol": "ESTRUCTURAL"
+}

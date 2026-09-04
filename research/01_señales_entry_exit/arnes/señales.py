@@ -33,12 +33,13 @@ def _get_dim(df: pd.DataFrame, station: str, dim: int = 0) -> pd.Series:
     fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
     descripcion="Crédito mejorando en piso de drawdown. Señal contrarian de compra: el estrés crediticio cede mientras el precio toca fondo.")
 def _credit_easing(df):
-    """CREDIT easing en ventana K=1, EN UN PISO DE DRAWDOWN (pivot_type == MIN).
-    (Hallazgo validado: EASING en piso → +5.19% 93.75%WR vs SIN → +2.99%.)"""
-    es_min = (df["pivot_type"] == "MIN").values
-    d = df["credit_val"]
+    """CREDIT easing en ventana K=1. En quants_obs requiere piso MIN; en continuo evalúa easing observable."""
+    d = df["credit_val"] if "credit_val" in df.columns else df.get("credit", pd.Series(0, index=df.index))
     easing = (d > d.shift(1)).values
-    return pd.Series(es_min & easing, index=df.index)
+    if "pivot_type" in df.columns:
+        es_min = (df["pivot_type"] == "MIN").values
+        return pd.Series(es_min & easing, index=df.index)
+    return pd.Series(easing, index=df.index)
 
 
 @_registrar("sorpresa_total",
@@ -323,15 +324,17 @@ def _regime_change_exit(df):
     validacion="ESCASA — FIRMA DE TECHO (§3.3: N=22, 2.77% de techos, 22/22 coincidencia con techo confirmado; direccional débil: WR 27%, EV-2.5%, PF 0.27)", n_min=22, dsr=None,
     fuente="FIRMA: SV5T en silencio institucional (LOW_TURBULENCE + VOL_EXPANSION) en techo. 22/22 coincidencia retrospectiva con techo confirmado (2.77% de techos). Direccional débil (WR 27%). Usar como filtro de contexto de techo, NO señal direccional.",
     tipo="exit", pivot_type="MAX",
+    fecha_inicio_valida="1999-01-04", era_valida="POST_1999",
     descripcion="FIRMA DE TECHO ESCASA: en techo, volumen institucional desaparece mientras volatilidad expande. Precursora de contexto (22/22 en techos). No operable direccionalmente (WR 27%).")
 def _sv5t_silent_distribution(df):
     """[FIRMA DE TECHO ESCASA — §3.3]
-    En techo MAX, volumen institucional desaparece (sv5t <= 1) y volatilidad expande (sv5t_d3 >= 3)."""
-    is_max = df["pivot_type"] == "MAX"
+    En continuo evalúa estado observable: volumen institucional desaparece (sv5t <= 1) y volatilidad expande (sv5t_d3 >= 3)."""
     sv5t_d1 = _get_dim(df, "sv5_turbulence", 0)
     sv5t_d3 = _get_dim(df, "sv5_turbulence", 2)
     cond = (sv5t_d1 <= 1) & (sv5t_d3 >= 3)
-    return is_max & cond
+    if "pivot_type" in df.columns:
+        return (df["pivot_type"] == "MAX") & cond
+    return cond
 
 
 @_registrar("credit_equity_divergence",
@@ -341,11 +344,12 @@ def _sv5t_silent_distribution(df):
     fecha_inicio_valida="2007-04-11", era_valida="POST_2007",
     descripcion="DEGRADADA: divergencia crédito-equity en techos. LIFT≈1.0 = no discrimina vs baseline. Solo monitorear con filtro HH.")
 def _credit_equity_divergence(df):
-    """[GRADO C 20-Ago-2026] En techo MAX, crédito se deteriora con velocidad positiva (D2 >= 3)."""
-    is_max = df["pivot_type"] == "MAX"
+    """[GRADO C 20-Ago-2026] Crédito se deteriora con velocidad positiva (D2 >= 3)."""
     credit_d2 = _get_dim(df, "credit", 1)
     cond = credit_d2 >= 3
-    return is_max & cond
+    if "pivot_type" in df.columns:
+        return (df["pivot_type"] == "MAX") & cond
+    return cond
 
 
 @_registrar("stealth_tail_hedging",
@@ -366,14 +370,16 @@ def _stealth_tail_hedging(df):
     validacion="RETIRADA (lift<1.0 — 20-Ago-2026 Opus PC1)", n_min=None, dsr=None,
     fuente="EXIT: Techo MAX con rotación de capital colapsando hacia defensivos (FAST_CRUSH_3D)",
     tipo="exit", pivot_type="MAX",
+    fecha_inicio_valida="1999-01-04", era_valida="POST_1999",
     descripcion="RETIRADA: en techo, rotación colapsa hacia defensivos. LIFT<1.0 = anti-señal, peor que baseline.")
 def _defensive_rotation_divergence(df):
-    """[RETIRADA 20-Ago-2026] En techo MAX, rotación sectorial cae agresivamente (D2 == 0 o D1 <= 1)."""
-    is_max = df["pivot_type"] == "MAX"
+    """[RETIRADA 20-Ago-2026] Rotación sectorial cae agresivamente hacia defensivos (D2 == 0 o D1 <= 1)."""
     rot_d1 = _get_dim(df, "rotation", 0)
     rot_d2 = _get_dim(df, "rotation", 1)
     cond = (rot_d2 == 0) | (rot_d1 <= 1)
-    return is_max & cond
+    if "pivot_type" in df.columns:
+        return (df["pivot_type"] == "MAX") & cond
+    return cond
 
 
 # ─────────────────────────────────────────────────────────────────────────────

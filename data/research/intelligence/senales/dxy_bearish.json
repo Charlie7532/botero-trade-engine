@@ -1,0 +1,183 @@
+{
+  "_meta": {
+    "fecha": "2026-09-03",
+    "version": "2.0-homologada",
+    "fuentes": [
+      "evaluacion_generalizada_lake.json",
+      "evaluacion_vela_a_vela_v7_final.json",
+      "ranking_maestro.json"
+    ]
+  },
+  "senal": "dxy_bearish",
+  "tipo": "entry",
+  "blanco": "MIN",
+  "version": "2.0-homologada",
+  "poblacion": {
+    "n_episodios": 38,
+    "n_barras_totales": 514,
+    "fire_rate_pct": 6.08,
+    "cadencia_1_en_n_barras": 222.5,
+    "duracion_episodio_barras": {
+      "mean": 13.53,
+      "median": 5.0,
+      "p90": 34.2,
+      "min": 1,
+      "max": 105
+    },
+    "es_diamante": false,
+    "tier_rareza": "ROBUST"
+  },
+  "timing": {
+    "precision": "CONFIRMADORA",
+    "pct_en_rango": 39.47,
+    "pct_fuera_de_rango": 60.53,
+    "delta_medio_barras": 5.4,
+    "delta_mediana_barras": 3.0,
+    "por_slot": {
+      "t-2": {
+        "n": 2,
+        "hit_rate": 0.0,
+        "ev": -0.0305,
+        "bars_medio": 3.0
+      },
+      "t-1": {
+        "n": 1,
+        "hit_rate": 0.0,
+        "ev": -0.006,
+        "bars_medio": 1.0
+      },
+      "t=0": {
+        "n": 4,
+        "hit_rate": 0.75,
+        "ev": 0.0133,
+        "bars_medio": 2.8
+      },
+      "t+1": {
+        "n": 5,
+        "hit_rate": 0.8,
+        "ev": 0.0116,
+        "bars_medio": 3.2
+      },
+      "t+2": {
+        "n": 3,
+        "hit_rate": 0.333,
+        "ev": -0.0169,
+        "bars_medio": 2.3
+      },
+      "ENTRE": {
+        "n": 23,
+        "hit_rate": 0.522,
+        "ev": 0.0012,
+        "bars_medio": 7.5
+      }
+    },
+    "perfil_agregado": {
+      "anticipadora_t2_t1_pct": 7.89,
+      "coincidente_t0_pct": 10.53,
+      "confirmadora_t1_t2_pct": 21.05,
+      "fuera_rango_pct": 60.53
+    }
+  },
+  "first_passage": {
+    "escalas": {
+      "zz25": {
+        "n": 38,
+        "hit_rate": 0.526,
+        "hit_neto": -0.0406,
+        "ev_neto": -0.0037,
+        "profit_factor": 1.05,
+        "mae_medio": -0.0213,
+        "mfe_medio": 0.0218,
+        "bars_medio": 5.6,
+        "p_value_binom": 0.7493
+      },
+      "zz50": {
+        "n": 38,
+        "hit_rate": 0.474,
+        "hit_neto": 0.0845,
+        "ev_neto": -0.0011,
+        "profit_factor": 1.37,
+        "mae_medio": -0.0325,
+        "mfe_medio": 0.0397,
+        "bars_medio": 18.6,
+        "p_value_binom": 0.1831
+      },
+      "zz75": {
+        "n": 38,
+        "hit_rate": 0.368,
+        "hit_neto": 0.263,
+        "ev_neto": 0.0105,
+        "profit_factor": 1.35,
+        "mae_medio": -0.0364,
+        "mfe_medio": 0.0517,
+        "bars_medio": 22.9,
+        "p_value_binom": 0.0
+      }
+    },
+    "escala_optima": "zz75",
+    "ci95_hit_rate_mejor_escala": [
+      0.3582,
+      0.6902
+    ]
+  },
+  "perfil_regimen_pivotes": {
+    "zz25|ALZA": {
+      "n": 16,
+      "hit_rate": 0.062,
+      "fav_neto": -0.028,
+      "p_value": null,
+      "profit_factor": 0.06
+    },
+    "zz25|BAJA": {
+      "n": 16,
+      "hit_rate": 0.688,
+      "fav_neto": -0.0074,
+      "p_value": 0.8691,
+      "profit_factor": 2.01
+    },
+    "zz50|ALZA": {
+      "n": 16,
+      "hit_rate": 0.0,
+      "fav_neto": -0.0541,
+      "p_value": null,
+      "profit_factor": 0.0
+    },
+    "zz50|BAJA": {
+      "n": 16,
+      "hit_rate": 0.5,
+      "fav_neto": -0.0242,
+      "p_value": 0.9848,
+      "profit_factor": 1.04
+    },
+    "zz75|ALZA": {
+      "n": 16,
+      "hit_rate": 0.0,
+      "fav_neto": -0.0823,
+      "p_value": null,
+      "profit_factor": 0.0
+    },
+    "zz75|BAJA": {
+      "n": 16,
+      "hit_rate": 0.188,
+      "fav_neto": -0.0809,
+      "p_value": 1.0,
+      "profit_factor": 0.27
+    }
+  },
+  "drawdown_y_riesgo": {
+    "max_drawdown": null,
+    "max_consecutive_losses": null
+  },
+  "confiabilidad": {
+    "p_value_binom_mejor_escala": 0.7493,
+    "p_BH": 0.0,
+    "p_bonferroni": 0.0,
+    "significativo_BH": true,
+    "independencia_F3": 0.57,
+    "techo_mejora_F3": 0.43,
+    "score_compuesto": 18.147,
+    "rol_institucional": "ESTRUCTURAL"
+  },
+  "score_compuesto": 18.147,
+  "rol": "ESTRUCTURAL"
+}

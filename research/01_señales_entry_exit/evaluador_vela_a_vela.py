@@ -143,6 +143,10 @@ BLANCOS = {
     "pcr_panic_exit": "MAX",               # EXIT: salida de pánico PCR
     "vix_complacency_exit": "MAX",         # EXIT: complacencia de VIX en techo
     "defensive_rotation_divergence": "MAX", # EXIT: divergencia defensiva en techo
+    # Señales adicionales auditadas (C14-C16)
+    "bsi_compression_entry": "MIN",        # ENTRY: BSI lavado/comprimido
+    "vix_instability_warning": "MIN",      # ENTRY: VIX inestable (D3=4) sin pánico
+    "credit_capitulation_entry": "MIN",    # ENTRY: CREDIT piso absoluto D1=0 + D2=0
 }
 
 
@@ -468,7 +472,8 @@ if __name__ == "__main__":
     # ── RE-EVALUACIÓN de señales retiradas/degradadas con el método nuevo ──
     # Solo las retiradas por fire-rate o lift (no duplicados ni pivot_type).
     REEVALUAR = ["breadth_contraction_exit", "credit_ease_exit",
-                 "regime_change_exit", "skew_paranoia_exit"]
+                 "regime_change_exit", "skew_paranoia_exit",
+                 "defensive_rotation_divergence", "credit_equity_divergence"]
     filas_reeval = []
     print(f"\n{'='*110}\nRE-EVALUACIÓN de señales retiradas (juzgadas con método antiguo)")
     print(f"{'='*110}")

@@ -1,0 +1,138 @@
+{
+  "_meta": {
+    "fecha": "2026-09-03",
+    "version": "2.0-homologada",
+    "fuentes": [
+      "evaluacion_generalizada_lake.json",
+      "evaluacion_vela_a_vela_v7_final.json",
+      "ranking_maestro.json"
+    ]
+  },
+  "senal": "fg_extreme_greed",
+  "tipo": "exit",
+  "blanco": "MAX",
+  "version": "2.0-homologada",
+  "poblacion": {
+    "n_episodios": 16,
+    "n_barras_totales": 62,
+    "fire_rate_pct": 1.58,
+    "cadencia_1_en_n_barras": 245.0,
+    "duracion_episodio_barras": {
+      "mean": 3.88,
+      "median": 2.0,
+      "p90": 7.5,
+      "min": 1,
+      "max": 17
+    },
+    "es_diamante": true,
+    "tier_rareza": "HIGH"
+  },
+  "timing": {
+    "precision": "ANTICIPADORA",
+    "pct_en_rango": 6.25,
+    "pct_fuera_de_rango": 93.75,
+    "delta_medio_barras": 18.2,
+    "delta_mediana_barras": 15.5,
+    "por_slot": {
+      "t-1": {
+        "n": 1,
+        "hit_rate": 1.0,
+        "ev": 0.0252,
+        "bars_medio": 21.0
+      },
+      "ENTRE": {
+        "n": 15,
+        "hit_rate": 0.4,
+        "ev": -0.006,
+        "bars_medio": 31.1
+      }
+    },
+    "perfil_agregado": {
+      "anticipadora_t2_t1_pct": 6.25,
+      "coincidente_t0_pct": 0.0,
+      "confirmadora_t1_t2_pct": 0.0,
+      "fuera_rango_pct": 93.75
+    }
+  },
+  "first_passage": {
+    "escalas": {
+      "zz25": {
+        "n": 16,
+        "hit_rate": 0.438,
+        "hit_neto": 0.0272,
+        "ev_neto": 0.0005,
+        "profit_factor": 0.7,
+        "mae_medio": 0.0214,
+        "mfe_medio": 0.0163,
+        "bars_medio": 30.4,
+        "p_value_binom": 0.5067
+      },
+      "zz50": {
+        "n": 16,
+        "hit_rate": 0.125,
+        "hit_neto": -0.1365,
+        "ev_neto": -0.0072,
+        "profit_factor": 0.2,
+        "mae_medio": 0.0339,
+        "mfe_medio": 0.0172,
+        "bars_medio": 36.1,
+        "p_value_binom": 0.9479
+      },
+      "zz75": {
+        "n": 16,
+        "hit_rate": 0.0,
+        "hit_neto": -0.1192,
+        "ev_neto": -0.0019,
+        "profit_factor": 0.0,
+        "mae_medio": 0.0264,
+        "mfe_medio": 0.0139,
+        "bars_medio": 27.0,
+        "p_value_binom": 1.0
+      }
+    },
+    "escala_optima": "zz25",
+    "ci95_hit_rate_mejor_escala": [
+      0.1975,
+      0.7012
+    ]
+  },
+  "perfil_regimen_pivotes": {
+    "zz25|ALZA": {
+      "n": 1,
+      "hit_rate": 1.0,
+      "fav_neto": 0.0106,
+      "p_value": 0.7349,
+      "profit_factor": null
+    },
+    "zz50|ALZA": {
+      "n": 1,
+      "hit_rate": 1.0,
+      "fav_neto": 0.0421,
+      "p_value": 0.5425,
+      "profit_factor": null
+    },
+    "zz75|ALZA": {
+      "n": 1,
+      "hit_rate": 1.0,
+      "fav_neto": 0.0802,
+      "p_value": 0.4528,
+      "profit_factor": null
+    }
+  },
+  "drawdown_y_riesgo": {
+    "max_drawdown": null,
+    "max_consecutive_losses": null
+  },
+  "confiabilidad": {
+    "p_value_binom_mejor_escala": 0.5067,
+    "p_BH": 0.722215,
+    "p_bonferroni": 1.0,
+    "significativo_BH": false,
+    "independencia_F3": null,
+    "techo_mejora_F3": null,
+    "score_compuesto": 2.035,
+    "rol_institucional": "DIAMANTE_COLA"
+  },
+  "score_compuesto": 2.035,
+  "rol": "DIAMANTE_COLA"
+}

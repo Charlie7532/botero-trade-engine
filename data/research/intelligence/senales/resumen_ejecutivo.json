@@ -1,0 +1,100 @@
+{
+  "_meta": {
+    "fecha": "2026-09-03",
+    "total_senales": 36,
+    "fuentes": [
+      "evaluacion_generalizada_lake.json",
+      "evaluacion_vela_a_vela_v7_final.json",
+      "ranking_maestro.json"
+    ]
+  },
+  "distribucion_precision": {
+    "COINCIDENTE": 11,
+    "CONFIRMADORA": 11,
+    "ANTICIPADORA": 14
+  },
+  "distribucion_roles": {
+    "TACTICA_RAPIDA": 20,
+    "ESTRUCTURAL": 11,
+    "DIAMANTE_COLA": 3,
+    "FILTRO_FONDO": 2
+  },
+  "multiple_testing": {
+    "n_pass_BH": 7,
+    "n_pass_bonferroni": 3,
+    "dsr_pasa": 1,
+    "dsr_delta": 0.976
+  },
+  "top_10_score": [
+    {
+      "senal": "fg_extreme_fear",
+      "score": 22.408,
+      "rol": "DIAMANTE_COLA",
+      "p_BH": 0.01728,
+      "significativo_BH": true
+    },
+    {
+      "senal": "dxy_bearish",
+      "score": 18.147,
+      "rol": "ESTRUCTURAL",
+      "p_BH": 0.0,
+      "significativo_BH": true
+    },
+    {
+      "senal": "panico_total",
+      "score": 16.596,
+      "rol": "ESTRUCTURAL",
+      "p_BH": 0.126,
+      "significativo_BH": false
+    },
+    {
+      "senal": "vvix_entry",
+      "score": 15.138,
+      "rol": "ESTRUCTURAL",
+      "p_BH": 0.027,
+      "significativo_BH": true
+    },
+    {
+      "senal": "pcr_put_panic",
+      "score": 14.505,
+      "rol": "ESTRUCTURAL",
+      "p_BH": 0.152,
+      "significativo_BH": false
+    },
+    {
+      "senal": "defensive_rotation_divergence",
+      "score": 14.21,
+      "rol": "TACTICA_RAPIDA",
+      "p_BH": 0.0,
+      "significativo_BH": true
+    },
+    {
+      "senal": "vix_crisis_spike",
+      "score": 13.972,
+      "rol": "TACTICA_RAPIDA",
+      "p_BH": 0.032914,
+      "significativo_BH": true
+    },
+    {
+      "senal": "pcr_panic_exit",
+      "score": 13.1,
+      "rol": "TACTICA_RAPIDA",
+      "p_BH": 0.2664,
+      "significativo_BH": false
+    },
+    {
+      "senal": "credit_stress",
+      "score": 12.582,
+      "rol": "TACTICA_RAPIDA",
+      "p_BH": 0.50445,
+      "significativo_BH": false
+    },
+    {
+      "senal": "cascade_reversal",
+      "score": 11.735,
+      "rol": "ESTRUCTURAL",
+      "p_BH": 0.01728,
+      "significativo_BH": true
+    }
+  ]
+}

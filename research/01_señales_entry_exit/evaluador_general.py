@@ -457,6 +457,7 @@ def evaluar_condicion_booleana(sig_mask: Union[np.ndarray, pd.Series],
         "tipo": _CERTEZA.get(nombre, {}).get("tipo", "unknown"),
         "blanco": blanco,
         "status": "OK",
+        "n_episodes": n_episodes,
         "descripcion": descripcion or _CERTEZA.get(nombre, {}).get("descripcion", ""),
         "poblacion": {
             "total_barras_dataset": total_barras,

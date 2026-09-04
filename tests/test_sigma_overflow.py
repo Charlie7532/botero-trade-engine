@@ -36,17 +36,17 @@ def test_validate_overflow_within_bounds():
 
 
 def test_validate_overflow_vix_82():
-    """VIX=82 is a catastrophic tail event (COVID crash peak, ~8.1σ)."""
+    """VIX=82 is a catastrophic tail event (COVID crash peak, ~3.41σ empirical)."""
     depth, flag = validate_overflow("vix", "d1", 82.0)
     assert depth is not None
-    assert pytest.approx(depth, rel=0.05) == 8.09
+    assert pytest.approx(depth, rel=0.05) == 3.41
     assert flag == "UPPER"
 
 
 def test_validate_overflow_lower_bound():
     """Extreme negative outliers trigger LOWER overflow."""
-    # Yield curve spread at -4.0% (mean ~1.39%, sigma ~1.27% -> z = (-4 - 1.39)/1.27 ≈ -4.24)
-    depth, flag = validate_overflow("yield_curve", "d1", -4.0)
+    # Yield curve spread at -1.8% (below P0.135 of -1.55% -> empirical z < -3.0)
+    depth, flag = validate_overflow("yield_curve", "d1", -1.8)
     assert depth is not None
     assert depth < -3.0
     assert flag == "LOWER"
@@ -67,7 +67,7 @@ def test_vix_lookup_normal_vs_overflow():
     g_overflow = vix_lookup.lookup_vix_guidance(82.0, 0.0, 0.5)
     assert g_overflow is not None
     assert g_overflow.sigma_depth_d1 is not None
-    assert pytest.approx(g_overflow.sigma_depth_d1, rel=0.05) == 8.09
+    assert pytest.approx(g_overflow.sigma_depth_d1, rel=0.05) == 3.41
     assert g_overflow.sigma_depth_d2 is None
     assert g_overflow.sigma_depth_d3 is None
     assert g_overflow.overflow_flag == "UPPER"
@@ -76,12 +76,46 @@ def test_vix_lookup_normal_vs_overflow():
 
 def test_multi_dimension_overflow():
     """When 2+ dimensions breach ±3σ, overflow_flag becomes 'MULTI'."""
-    # VIX=82 (D1 > 3σ), d3_speed=20.0 (D2 mean ~0, sigma ~2.59 -> z ≈ 7.7 > 3σ)
+    # VIX=82 (D1 > 3σ), d3_speed=20.0 (D2 > P99.865 of 18.01 -> z > 3σ)
     g_multi = vix_lookup.lookup_vix_guidance(82.0, 20.0, 0.5)
     assert g_multi is not None
     assert g_multi.sigma_depth_d1 is not None
     assert g_multi.sigma_depth_d2 is not None
     assert g_multi.overflow_flag == "MULTI"
+
+
+def test_empirical_edge_cases_and_inception():
+    """Test critical edge cases per prompt v2: FG extremes, Yield, duplicate D3 anchors, NaN, inception."""
+    # VIX median near 17.63 -> within bounds
+    d, f = validate_overflow("vix", "d1", 17.63)
+    assert d is None and f is None
+
+    # VIX 70.5 -> > P99.865 (69.96) -> UPPER
+    d, f = validate_overflow("vix", "d1", 70.5)
+    assert d is not None and d >= 3.0 and f == "UPPER"
+
+    # FG extremes
+    d_fg_up, f_fg_up = validate_overflow("fg", "d1", 95.0)
+    assert d_fg_up is not None and d_fg_up > 3.0 and f_fg_up == "UPPER"
+
+    d_fg_lo, f_fg_lo = validate_overflow("fg", "d1", 1.5)
+    assert d_fg_lo is not None and d_fg_lo < -3.0 and f_fg_lo == "LOWER"
+
+    # D3 flat duplicate anchors (DXY d3 at 0.0)
+    d_flat, f_flat = validate_overflow("dxy", "d3", 0.0)
+    assert d_flat is None and f_flat is None  # -3.0 is boundary, not > 3.0 or < -3.0
+
+    # NaN / None handling
+    d_nan, f_nan = validate_overflow("vix", "d1", None)
+    assert d_nan is None and f_nan is None
+
+    # Pre-inception exclusion (SKEW before 2011-02-01)
+    d_pre, f_pre = validate_overflow("skew", "d1", 180.0, date="2005-06-15")
+    assert d_pre is None and f_pre is None
+
+    # Post-inception valid (SKEW after 2011-02-01)
+    d_post, f_post = validate_overflow("skew", "d1", 180.0, date="2021-06-15")
+    assert d_post is not None and d_post > 3.0 and f_post == "UPPER"
 
 
 def test_all_11_stations_have_sigma_overflow_fields():

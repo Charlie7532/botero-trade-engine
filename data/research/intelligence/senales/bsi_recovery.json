@@ -15,7 +15,7 @@
   "poblacion": {
     "n_episodios": 658,
     "n_barras_totales": 3916,
-    "fire_rate_pct": 46.31,
+    "fire_rate_pct": 46.3,
     "cadencia_1_en_n_barras": 12.9,
     "duracion_episodio_barras": {
       "mean": 5.95,
@@ -67,7 +67,7 @@
       "ENTRE": {
         "n": 426,
         "hit_rate": 0.3,
-        "ev": -0.0104,
+        "ev": -0.0105,
         "bars_medio": 13.5
       }
     },
@@ -84,7 +84,7 @@
         "n": 658,
         "hit_rate": 0.439,
         "hit_neto": 0.0079,
-        "ev_neto": 0.0011,
+        "ev_neto": 0.001,
         "profit_factor": 0.77,
         "mae_medio": 0.0204,
         "mfe_medio": 0.0209,
@@ -99,7 +99,7 @@
         "profit_factor": 0.6,
         "mae_medio": 0.0346,
         "mfe_medio": 0.0327,
-        "bars_medio": 25.6,
+        "bars_medio": 25.7,
         "p_value_binom": 0.1536
       },
       "zz75": {

@@ -95,7 +95,7 @@
         "n": 208,
         "hit_rate": 0.312,
         "hit_neto": 0.0228,
-        "ev_neto": 0.0048,
+        "ev_neto": 0.0049,
         "profit_factor": 0.59,
         "mae_medio": 0.0356,
         "mfe_medio": 0.0337,
@@ -175,9 +175,9 @@
     "significativo_BH": false,
     "independencia_F3": 0.31,
     "techo_mejora_F3": 0.69,
-    "score_compuesto": 5.226,
+    "score_compuesto": 5.236,
     "rol_institucional": "TACTICA_RAPIDA"
   },
-  "score_compuesto": 5.226,
+  "score_compuesto": 5.236,
   "rol": "TACTICA_RAPIDA"
 }

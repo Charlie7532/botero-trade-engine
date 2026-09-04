@@ -29,7 +29,7 @@
       "escala": "zz75",
       "rol_operacional": "DIAMANTE_COLA",
       "escala_optima": "zz75",
-      "score_compuesto": 22.408,
+      "score_compuesto": 22.398,
       "p_value_raw": 0.0024,
       "poblacion": {
         "n_episodios": 18,
@@ -51,7 +51,7 @@
         "hit_rate_optimo": 0.333,
         "hit_neto_optimo": 0.2513,
         "ev_optimo": 0.0262,
-        "ev_neto_optimo": 0.0151,
+        "ev_neto_optimo": 0.015,
         "profit_factor_optimo": 0.91,
         "mae_medio": -0.0415,
         "mae_p10": -0.0112,
@@ -84,7 +84,7 @@
       "poblacion": {
         "n_episodios": 38,
         "fire_rate_pct": 6.08,
-        "cadencia_barras": 222.5,
+        "cadencia_barras": 222.6,
         "duracion_mediana_barras": 5.0,
         "tier_rareza": "ROBUST",
         "es_diamante": false,
@@ -179,7 +179,7 @@
       "escala": "zz75",
       "rol_operacional": "ESTRUCTURAL",
       "escala_optima": "zz75",
-      "score_compuesto": 15.138,
+      "score_compuesto": 15.128,
       "p_value_raw": 0.0045,
       "poblacion": {
         "n_episodios": 56,
@@ -201,7 +201,7 @@
         "hit_rate_optimo": 0.214,
         "hit_neto_optimo": 0.1219,
         "ev_optimo": 0.0165,
-        "ev_neto_optimo": 0.0065,
+        "ev_neto_optimo": 0.0064,
         "profit_factor_optimo": 0.55,
         "mae_medio": -0.0461,
         "mae_p10": -0.0078,
@@ -279,7 +279,7 @@
       "escala": "zz50",
       "rol_operacional": "TACTICA_RAPIDA",
       "escala_optima": "zz50",
-      "score_compuesto": 14.21,
+      "score_compuesto": 14.22,
       "p_value_raw": 0.0,
       "poblacion": {
         "n_episodios": 167,
@@ -301,7 +301,7 @@
         "hit_rate_optimo": 0.473,
         "hit_neto_optimo": 0.1604,
         "ev_optimo": 0.0034,
-        "ev_neto_optimo": 0.011,
+        "ev_neto_optimo": 0.0111,
         "profit_factor_optimo": 1.07,
         "mae_medio": 0.0364,
         "mae_p10": 0.0105,
@@ -433,7 +433,7 @@
       "p_value_raw": 0.2242,
       "poblacion": {
         "n_episodios": 27,
-        "fire_rate_pct": 6.99,
+        "fire_rate_pct": 6.98,
         "cadencia_barras": 180.8,
         "duracion_mediana_barras": 2.0,
         "tier_rareza": "ROBUST",
@@ -479,7 +479,7 @@
       "escala": "zz75",
       "rol_operacional": "ESTRUCTURAL",
       "escala_optima": "zz75",
-      "score_compuesto": 11.94,
+      "score_compuesto": 11.95,
       "p_value_raw": 0.0257,
       "poblacion": {
         "n_episodios": 80,
@@ -501,7 +501,7 @@
         "hit_rate_optimo": 0.2,
         "hit_neto_optimo": 0.0808,
         "ev_optimo": -0.0021,
-        "ev_neto_optimo": 0.009,
+        "ev_neto_optimo": 0.0091,
         "profit_factor_optimo": 0.52,
         "mae_medio": 0.032,
         "mae_p10": 0.0033,
@@ -534,7 +534,7 @@
       "poblacion": {
         "n_episodios": 59,
         "fire_rate_pct": 1.91,
-        "cadencia_barras": 66.4,
+        "cadencia_barras": 66.5,
         "duracion_mediana_barras": 1.0,
         "tier_rareza": "ROBUST",
         "es_diamante": false,
@@ -683,7 +683,7 @@
       "p_value_raw": 0.3821,
       "poblacion": {
         "n_episodios": 104,
-        "fire_rate_pct": 3.73,
+        "fire_rate_pct": 3.72,
         "cadencia_barras": 81.3,
         "duracion_mediana_barras": 2.0,
         "tier_rareza": "ROBUST",
@@ -733,7 +733,7 @@
       "p_value_raw": 0.2728,
       "poblacion": {
         "n_episodios": 27,
-        "fire_rate_pct": 6.99,
+        "fire_rate_pct": 6.98,
         "cadencia_barras": 180.8,
         "duracion_mediana_barras": 2.0,
         "tier_rareza": "ROBUST",
@@ -834,7 +834,7 @@
       "poblacion": {
         "n_episodios": 38,
         "fire_rate_pct": 6.08,
-        "cadencia_barras": 222.5,
+        "cadencia_barras": 222.6,
         "duracion_mediana_barras": 5.0,
         "tier_rareza": "ROBUST",
         "es_diamante": false,
@@ -884,7 +884,7 @@
       "poblacion": {
         "n_episodios": 68,
         "fire_rate_pct": 1.02,
-        "cadencia_barras": 102.3,
+        "cadencia_barras": 102.4,
         "duracion_mediana_barras": 1.0,
         "tier_rareza": "ROBUST",
         "es_diamante": false,
@@ -965,7 +965,7 @@
         "independencia_f3": 0.0
       },
       "p_bonferroni": 1.0,
-      "p_BH": 0.879445,
+      "p_BH": 0.886297,
       "significativo_bonferroni": false,
       "significativo_BH": false
     },
@@ -984,7 +984,7 @@
       "poblacion": {
         "n_episodios": 4,
         "fire_rate_pct": 0.25,
-        "cadencia_barras": 1220.2,
+        "cadencia_barras": 1220.5,
         "duracion_mediana_barras": 3.0,
         "tier_rareza": "LOW",
         "es_diamante": true,
@@ -1033,7 +1033,7 @@
       "p_value_raw": 0.291,
       "poblacion": {
         "n_episodios": 289,
-        "fire_rate_pct": 47.47,
+        "fire_rate_pct": 47.46,
         "cadencia_barras": 29.3,
         "duracion_mediana_barras": 3.0,
         "tier_rareza": "ROBUST",
@@ -1083,7 +1083,7 @@
       "p_value_raw": 0.3886,
       "poblacion": {
         "n_episodios": 121,
-        "fire_rate_pct": 13.34,
+        "fire_rate_pct": 13.33,
         "cadencia_barras": 40.3,
         "duracion_mediana_barras": 3.0,
         "tier_rareza": "ROBUST",
@@ -1179,7 +1179,7 @@
       "escala": "zz50",
       "rol_operacional": "TACTICA_RAPIDA",
       "escala_optima": "zz50",
-      "score_compuesto": 5.226,
+      "score_compuesto": 5.236,
       "p_value_raw": 0.2563,
       "poblacion": {
         "n_episodios": 208,
@@ -1201,7 +1201,7 @@
         "hit_rate_optimo": 0.312,
         "hit_neto_optimo": 0.0228,
         "ev_optimo": -0.007,
-        "ev_neto_optimo": 0.0048,
+        "ev_neto_optimo": 0.0049,
         "profit_factor_optimo": 0.59,
         "mae_medio": 0.0356,
         "mae_p10": 0.0074,
@@ -1233,7 +1233,7 @@
       "p_value_raw": 0.1536,
       "poblacion": {
         "n_episodios": 658,
-        "fire_rate_pct": 46.31,
+        "fire_rate_pct": 46.3,
         "cadencia_barras": 12.9,
         "duracion_mediana_barras": 3.0,
         "tier_rareza": "ROBUST",
@@ -1250,7 +1250,7 @@
       "rendimiento_lake": {
         "hit_rate_optimo": 0.309,
         "hit_neto_optimo": 0.0188,
-        "ev_optimo": -0.0071,
+        "ev_optimo": -0.0072,
         "ev_neto_optimo": 0.0047,
         "profit_factor_optimo": 0.6,
         "mae_medio": 0.0346,
@@ -1329,8 +1329,8 @@
       "escala": "zz50",
       "rol_operacional": "TACTICA_RAPIDA",
       "escala_optima": "zz50",
-      "score_compuesto": 4.291,
-      "p_value_raw": 0.5818,
+      "score_compuesto": 4.256,
+      "p_value_raw": 0.5942,
       "poblacion": {
         "n_episodios": 396,
         "fire_rate_pct": 75.9,
@@ -1348,14 +1348,14 @@
         "delta_medio_barras": 9.6
       },
       "rendimiento_lake": {
-        "hit_rate_optimo": 0.286,
-        "hit_neto_optimo": -0.0036,
-        "ev_optimo": -0.0085,
+        "hit_rate_optimo": 0.285,
+        "hit_neto_optimo": -0.0043,
+        "ev_optimo": -0.0086,
         "ev_neto_optimo": 0.0033,
-        "profit_factor_optimo": 0.55,
-        "mae_medio": 0.0355,
+        "profit_factor_optimo": 0.56,
+        "mae_medio": 0.0354,
         "mae_p10": 0.0092,
-        "mfe_medio": 0.0308
+        "mfe_medio": 0.0307
       },
       "rendimiento_pivotes_vav": {
         "mejor_celda": null,
@@ -1429,29 +1429,29 @@
       "escala": "zz25",
       "rol_operacional": "FILTRO_FONDO",
       "escala_optima": "zz25",
-      "score_compuesto": 3.457,
-      "p_value_raw": 0.751,
+      "score_compuesto": 3.436,
+      "p_value_raw": 0.7632,
       "poblacion": {
-        "n_episodios": 1269,
+        "n_episodios": 1272,
         "fire_rate_pct": 32.01,
-        "cadencia_barras": 6.7,
+        "cadencia_barras": 6.6,
         "duracion_mediana_barras": 1.0,
         "tier_rareza": "ROBUST",
         "es_diamante": false,
         "es_fondo": true
       },
       "timing": {
-        "en_rango_pct": 39.87,
-        "anticipada_pct": 15.84,
-        "exacta_pct": 12.06,
-        "retrasada_pct": 11.98,
+        "en_rango_pct": 39.86,
+        "anticipada_pct": 15.8,
+        "exacta_pct": 12.03,
+        "retrasada_pct": 12.03,
         "delta_medio_barras": 7.5
       },
       "rendimiento_lake": {
-        "hit_rate_optimo": 0.558,
-        "hit_neto_optimo": -0.009,
+        "hit_rate_optimo": 0.557,
+        "hit_neto_optimo": -0.0096,
         "ev_optimo": 0.0035,
-        "ev_neto_optimo": -0.0008,
+        "ev_neto_optimo": -0.0007,
         "profit_factor_optimo": 1.31,
         "mae_medio": -0.0206,
         "mae_p10": -0.0046,
@@ -1465,7 +1465,7 @@
         "independencia_f3": 0.2
       },
       "p_bonferroni": 1.0,
-      "p_BH": 0.879445,
+      "p_BH": 0.886297,
       "significativo_bonferroni": false,
       "significativo_BH": false
     },
@@ -1483,7 +1483,7 @@
       "p_value_raw": 0.6089,
       "poblacion": {
         "n_episodios": 1262,
-        "fire_rate_pct": 50.62,
+        "fire_rate_pct": 50.61,
         "cadencia_barras": 3.9,
         "duracion_mediana_barras": 2.0,
         "tier_rareza": "ROBUST",
@@ -1584,7 +1584,7 @@
       "poblacion": {
         "n_episodios": 16,
         "fire_rate_pct": 1.58,
-        "cadencia_barras": 245.0,
+        "cadencia_barras": 245.1,
         "duracion_mediana_barras": 2.0,
         "tier_rareza": "HIGH",
         "es_diamante": true,
@@ -1629,11 +1629,11 @@
       "escala": "zz75",
       "rol_operacional": "ESTRUCTURAL",
       "escala_optima": "zz75",
-      "score_compuesto": 0.859,
-      "p_value_raw": 0.9778,
+      "score_compuesto": 0.826,
+      "p_value_raw": 0.9789,
       "poblacion": {
-        "n_episodios": 276,
-        "fire_rate_pct": 9.31,
+        "n_episodios": 277,
+        "fire_rate_pct": 9.36,
         "cadencia_barras": 14.2,
         "duracion_mediana_barras": 1.0,
         "tier_rareza": "ROBUST",
@@ -1641,21 +1641,21 @@
         "es_fondo": false
       },
       "timing": {
-        "en_rango_pct": 21.74,
-        "anticipada_pct": 7.61,
-        "exacta_pct": 3.99,
-        "retrasada_pct": 10.14,
-        "delta_medio_barras": 11.1
+        "en_rango_pct": 21.66,
+        "anticipada_pct": 7.58,
+        "exacta_pct": 3.97,
+        "retrasada_pct": 10.11,
+        "delta_medio_barras": 11.2
       },
       "rendimiento_lake": {
         "hit_rate_optimo": 0.083,
-        "hit_neto_optimo": -0.0359,
-        "ev_optimo": -0.0064,
-        "ev_neto_optimo": 0.0048,
+        "hit_neto_optimo": -0.0362,
+        "ev_optimo": -0.0065,
+        "ev_neto_optimo": 0.0047,
         "profit_factor_optimo": 0.27,
         "mae_medio": 0.0284,
         "mae_p10": 0.006,
-        "mfe_medio": 0.0285
+        "mfe_medio": 0.0284
       },
       "rendimiento_pivotes_vav": {
         "mejor_celda": "zz75|ALZA",
@@ -1679,11 +1679,11 @@
       "escala": "zz50",
       "rol_operacional": "TACTICA_RAPIDA",
       "escala_optima": "zz50",
-      "score_compuesto": 0.05,
+      "score_compuesto": 0.06,
       "p_value_raw": 0.8931,
       "poblacion": {
         "n_episodios": 48,
-        "fire_rate_pct": 59.09,
+        "fire_rate_pct": 59.07,
         "cadencia_barras": 101.7,
         "duracion_mediana_barras": 3.0,
         "tier_rareza": "ROBUST",
@@ -1701,7 +1701,7 @@
         "hit_rate_optimo": 0.229,
         "hit_neto_optimo": -0.0709,
         "ev_optimo": -0.0049,
-        "ev_neto_optimo": 0.0047,
+        "ev_neto_optimo": 0.0048,
         "profit_factor_optimo": 0.58,
         "mae_medio": 0.0317,
         "mae_p10": 0.0093,

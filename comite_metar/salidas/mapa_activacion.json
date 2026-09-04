@@ -4581,26 +4581,11 @@
     "pcr",
     "credit"
   ],
-  "8441": [
-    "pcr",
-    "sv5_turbulence",
-    "dxy"
-  ],
-  "8442": [
-    "pcr",
-    "sv5_turbulence",
-    "credit",
-    "rotation",
-    "dxy"
-  ],
-  "8443": [
+  "8453": [
     "pcr",
     "fg",
     "sv5_turbulence",
-    "credit",
-    "yield_curve",
-    "rotation",
-    "dxy"
+    "credit"
   ],
   "4788": [
     "fg"
@@ -5807,11 +5792,16 @@
     "credit",
     "bsi"
   ],
+  "8443": [
+    "fg",
+    "sv5_turbulence",
+    "credit",
+    "rotation"
+  ],
   "8445": [
     "fg",
     "sv5_turbulence",
     "credit",
-    "yield_curve",
     "rotation"
   ],
   "8449": [
@@ -5821,11 +5811,6 @@
     "fg"
   ],
   "8452": [
-    "fg",
-    "sv5_turbulence",
-    "credit"
-  ],
-  "8453": [
     "fg",
     "sv5_turbulence",
     "credit"
@@ -7747,10 +7732,17 @@
   "8440": [
     "sv5_turbulence"
   ],
+  "8441": [
+    "sv5_turbulence"
+  ],
+  "8442": [
+    "sv5_turbulence",
+    "credit",
+    "rotation"
+  ],
   "8444": [
     "sv5_turbulence",
     "credit",
-    "yield_curve",
     "rotation"
   ],
   "8454": [
@@ -7759,7 +7751,11 @@
   ],
   "8455": [
     "sv5_turbulence",
-    "skew",
+    "credit",
+    "yield_curve"
+  ],
+  "8456": [
+    "sv5_turbulence",
     "credit"
   ],
   "4815": [

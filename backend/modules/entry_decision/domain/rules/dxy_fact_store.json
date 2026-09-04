@@ -185,7 +185,7 @@
     "schema_version": "V3_HARMONIZED_DUAL_LAYER"
   },
   "station": "DXY",
-  "sample_size": 8453,
+  "sample_size": 8457,
   "states_populated": 112,
   "baselines": {
     "zz25": 0.558,
@@ -194,7 +194,7 @@
   },
   "enrichment_metadata": {
     "generated_by": "regenerar_fact_stores.py (Sprint 2)",
-    "generated_at": "2026-09-03T10:09:09.642007+00:00",
+    "generated_at": "2026-09-04T04:28:59.076079+00:00",
     "declustering": "embargo by scale window (zz25=80, zz50=40, zz75=27)",
     "ci_method": "Clopper-Pearson exact",
     "multiple_testing": "Benjamini-Hochberg (q=0.05)",
@@ -3903,7 +3903,7 @@
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
       "n_episodes": 340,
-      "pct_tiempo": 8.13,
+      "pct_tiempo": 8.12,
       "duration_mean": 2.0,
       "duration_max": 8,
       "zz25": {
@@ -6933,7 +6933,7 @@
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
       "n_episodes": 122,
-      "pct_tiempo": 1.59,
+      "pct_tiempo": 1.58,
       "duration_mean": 1.1,
       "duration_max": 3,
       "zz25": {
@@ -9068,17 +9068,17 @@
       }
     },
     "3__1__2": {
-      "n": 234,
+      "n": 236,
       "stats": {
         "min": 88.271,
         "max": 112.29,
-        "mean": 97.7488,
-        "std": 4.3469
+        "mean": 97.7581,
+        "std": 4.3295
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
-      "n_episodes": 163,
-      "pct_tiempo": 2.77,
+      "n_episodes": 164,
+      "pct_tiempo": 2.79,
       "duration_mean": 1.4,
       "duration_max": 5,
       "zz25": {
@@ -9158,17 +9158,17 @@
       }
     },
     "3__1__3": {
-      "n": 73,
+      "n": 74,
       "stats": {
         "min": 89.436,
         "max": 111.58,
-        "mean": 97.2694,
-        "std": 4.3694
+        "mean": 97.2905,
+        "std": 4.3432
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
-      "n_episodes": 72,
-      "pct_tiempo": 0.86,
+      "n_episodes": 73,
+      "pct_tiempo": 0.88,
       "duration_mean": 1.0,
       "duration_max": 2,
       "zz25": {
@@ -9428,19 +9428,19 @@
       }
     },
     "3__2__1": {
-      "n": 418,
+      "n": 415,
       "stats": {
         "min": 87.642,
         "max": 111.87,
-        "mean": 96.5726,
-        "std": 3.9269
+        "mean": 96.5477,
+        "std": 3.9301
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
-      "n_episodes": 403,
-      "pct_tiempo": 4.94,
+      "n_episodes": 402,
+      "pct_tiempo": 4.91,
       "duration_mean": 1.0,
-      "duration_max": 3,
+      "duration_max": 2,
       "zz25": {
         "n_raw": 415,
         "p_bull": 0.5639,
@@ -9518,17 +9518,17 @@
       }
     },
     "3__2__2": {
-      "n": 1203,
+      "n": 1213,
       "stats": {
         "min": 87.575,
         "max": 111.32,
-        "mean": 96.5202,
-        "std": 3.7993
+        "mean": 96.5441,
+        "std": 3.7928
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
-      "n_episodes": 581,
-      "pct_tiempo": 14.23,
+      "n_episodes": 585,
+      "pct_tiempo": 14.34,
       "duration_mean": 2.1,
       "duration_max": 9,
       "zz25": {
@@ -9608,17 +9608,17 @@
       }
     },
     "3__2__3": {
-      "n": 218,
+      "n": 220,
       "stats": {
         "min": 88.356,
         "max": 108.13,
-        "mean": 96.6417,
-        "std": 3.4026
+        "mean": 96.6665,
+        "std": 3.397
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_HOLD_STABLE",
-      "n_episodes": 198,
-      "pct_tiempo": 2.58,
+      "n_episodes": 200,
+      "pct_tiempo": 2.6,
       "duration_mean": 1.1,
       "duration_max": 3,
       "zz25": {
@@ -9968,17 +9968,17 @@
       }
     },
     "3__3__3": {
-      "n": 53,
+      "n": 54,
       "stats": {
         "min": 89.133,
         "max": 108.57,
-        "mean": 96.8738,
-        "std": 4.4396
+        "mean": 96.9262,
+        "std": 4.4143
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
-      "n_episodes": 51,
-      "pct_tiempo": 0.63,
+      "n_episodes": 52,
+      "pct_tiempo": 0.64,
       "duration_mean": 1.0,
       "duration_max": 2,
       "zz25": {
@@ -15423,7 +15423,7 @@
       "divergence_regime": "FULL_CONVERGENT_BEAR",
       "operational_guidance": "STK_HOLD_STABLE",
       "n_episodes": 105,
-      "pct_tiempo": 2.11,
+      "pct_tiempo": 2.1,
       "duration_mean": 1.7,
       "duration_max": 6,
       "zz25": {

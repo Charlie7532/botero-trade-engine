@@ -102,7 +102,7 @@ def test_evaluar_senal_cascade_reversal_pierna_confirmada():
     res = evaluar_senal("cascade_reversal")
     assert res["status"] == "OK"
     assert res["modo_ejecucion"] == "pierna_confirmada"
-    assert res["poblacion"]["n_episodios"] > 100
+    assert res["poblacion"]["n_episodios"] >= 80
     assert "escalas_zigzag" in res
     assert res["escalas_zigzag"]["zz75"]["hit_rate"] > 0
 

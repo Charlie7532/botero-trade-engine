@@ -20,17 +20,17 @@
     "FILTRO_FONDO": 2
   },
   "multiple_testing": {
-    "n_pass_BH": 7,
+    "n_pass_BH": 6,
     "n_pass_bonferroni": 3,
     "dsr_pasa": 1,
-    "dsr_delta": 0.976
+    "dsr_delta": 0.918
   },
   "top_10_score": [
     {
       "senal": "fg_extreme_fear",
-      "score": 22.408,
+      "score": 22.398,
       "rol": "DIAMANTE_COLA",
-      "p_BH": 0.01728,
+      "p_BH": 0.0216,
       "significativo_BH": true
     },
     {
@@ -49,9 +49,9 @@
     },
     {
       "senal": "vvix_entry",
-      "score": 15.138,
+      "score": 15.128,
       "rol": "ESTRUCTURAL",
-      "p_BH": 0.027,
+      "p_BH": 0.0324,
       "significativo_BH": true
     },
     {
@@ -63,7 +63,7 @@
     },
     {
       "senal": "defensive_rotation_divergence",
-      "score": 14.21,
+      "score": 14.22,
       "rol": "TACTICA_RAPIDA",
       "p_BH": 0.0,
       "significativo_BH": true
@@ -72,7 +72,7 @@
       "senal": "vix_crisis_spike",
       "score": 13.972,
       "rol": "TACTICA_RAPIDA",
-      "p_BH": 0.032914,
+      "p_BH": 0.0384,
       "significativo_BH": true
     },
     {
@@ -91,10 +91,10 @@
     },
     {
       "senal": "cascade_reversal",
-      "score": 11.735,
+      "score": 11.95,
       "rol": "ESTRUCTURAL",
-      "p_BH": 0.01728,
-      "significativo_BH": true
+      "p_BH": 0.126,
+      "significativo_BH": false
     }
   ]
 }

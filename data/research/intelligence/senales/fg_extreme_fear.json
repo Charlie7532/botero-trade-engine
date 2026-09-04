@@ -89,7 +89,7 @@
         "n": 18,
         "hit_rate": 0.611,
         "hit_neto": 0.2226,
-        "ev_neto": 0.0115,
+        "ev_neto": 0.0114,
         "profit_factor": 2.14,
         "mae_medio": -0.0365,
         "mfe_medio": 0.0464,
@@ -100,7 +100,7 @@
         "n": 18,
         "hit_rate": 0.333,
         "hit_neto": 0.2513,
-        "ev_neto": 0.0151,
+        "ev_neto": 0.015,
         "profit_factor": 0.91,
         "mae_medio": -0.0415,
         "mfe_medio": 0.0578,
@@ -164,14 +164,14 @@
   },
   "confiabilidad": {
     "p_value_binom_mejor_escala": 0.1756,
-    "p_BH": 0.01728,
+    "p_BH": 0.0216,
     "p_bonferroni": 0.0864,
     "significativo_BH": true,
     "independencia_F3": 0.11,
     "techo_mejora_F3": 0.89,
-    "score_compuesto": 22.408,
+    "score_compuesto": 22.398,
     "rol_institucional": "DIAMANTE_COLA"
   },
-  "score_compuesto": 22.408,
+  "score_compuesto": 22.398,
   "rol": "DIAMANTE_COLA"
 }

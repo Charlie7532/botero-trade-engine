@@ -170,7 +170,7 @@
   },
   "confiabilidad": {
     "p_value_binom_mejor_escala": 0.0064,
-    "p_BH": 0.032914,
+    "p_BH": 0.0384,
     "p_bonferroni": 0.2304,
     "significativo_BH": true,
     "independencia_F3": 0.0,

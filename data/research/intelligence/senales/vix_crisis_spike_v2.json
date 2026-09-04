@@ -95,7 +95,7 @@
         "n": 95,
         "hit_rate": 0.516,
         "hit_neto": 0.1266,
-        "ev_neto": -0.0045,
+        "ev_neto": -0.0046,
         "profit_factor": 1.15,
         "mae_medio": -0.0417,
         "mfe_medio": 0.0446,
@@ -170,7 +170,7 @@
   },
   "confiabilidad": {
     "p_value_binom_mejor_escala": 0.7573,
-    "p_BH": 0.879445,
+    "p_BH": 0.886297,
     "p_bonferroni": 1.0,
     "significativo_BH": false,
     "independencia_F3": 0.0,

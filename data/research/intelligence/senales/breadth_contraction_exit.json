@@ -14,7 +14,7 @@
   "version": "2.0-homologada",
   "poblacion": {
     "n_episodios": 396,
-    "n_barras_totales": 6418,
+    "n_barras_totales": 6419,
     "fire_rate_pct": 75.9,
     "cadencia_1_en_n_barras": 21.4,
     "duracion_episodio_barras": {
@@ -65,8 +65,8 @@
         "bars_medio": 8.5
       },
       "ENTRE": {
-        "n": 231,
-        "hit_rate": 0.234,
+        "n": 232,
+        "hit_rate": 0.233,
         "ev": -0.0133,
         "bars_medio": 14.8
       }
@@ -81,43 +81,43 @@
   "first_passage": {
     "escalas": {
       "zz25": {
-        "n": 395,
-        "hit_rate": 0.42,
-        "hit_neto": -0.011,
-        "ev_neto": 0.0,
+        "n": 396,
+        "hit_rate": 0.419,
+        "hit_neto": -0.0121,
+        "ev_neto": -0.0,
         "profit_factor": 0.71,
-        "mae_medio": 0.0221,
-        "mfe_medio": 0.0188,
-        "bars_medio": 11.7,
-        "p_value_binom": 0.6884
+        "mae_medio": 0.022,
+        "mfe_medio": 0.0187,
+        "bars_medio": 11.6,
+        "p_value_binom": 0.7036
       },
       "zz50": {
-        "n": 395,
-        "hit_rate": 0.286,
-        "hit_neto": -0.0036,
+        "n": 396,
+        "hit_rate": 0.285,
+        "hit_neto": -0.0043,
         "ev_neto": 0.0033,
-        "profit_factor": 0.55,
-        "mae_medio": 0.0355,
-        "mfe_medio": 0.0308,
-        "bars_medio": 26.4,
-        "p_value_binom": 0.5818
+        "profit_factor": 0.56,
+        "mae_medio": 0.0354,
+        "mfe_medio": 0.0307,
+        "bars_medio": 26.3,
+        "p_value_binom": 0.5942
       },
       "zz75": {
-        "n": 395,
-        "hit_rate": 0.122,
-        "hit_neto": -0.0195,
+        "n": 396,
+        "hit_rate": 0.121,
+        "hit_neto": -0.0198,
         "ev_neto": 0.0018,
         "profit_factor": 0.29,
-        "mae_medio": 0.0364,
-        "mfe_medio": 0.032,
-        "bars_medio": 24.9,
-        "p_value_binom": 0.8835
+        "mae_medio": 0.0363,
+        "mfe_medio": 0.0319,
+        "bars_medio": 24.8,
+        "p_value_binom": 0.8873
       }
     },
     "escala_optima": "zz50",
     "ci95_hit_rate_mejor_escala": [
-      0.3711,
-      0.4706
+      0.3701,
+      0.4695
     ]
   },
   "perfil_regimen_pivotes": {},
@@ -126,15 +126,15 @@
     "max_consecutive_losses": null
   },
   "confiabilidad": {
-    "p_value_binom_mejor_escala": 0.6884,
+    "p_value_binom_mejor_escala": 0.7036,
     "p_BH": 0.755876,
     "p_bonferroni": 1.0,
     "significativo_BH": false,
     "independencia_F3": null,
     "techo_mejora_F3": null,
-    "score_compuesto": 4.291,
+    "score_compuesto": 4.256,
     "rol_institucional": "TACTICA_RAPIDA"
   },
-  "score_compuesto": 4.291,
+  "score_compuesto": 4.256,
   "rol": "TACTICA_RAPIDA"
 }

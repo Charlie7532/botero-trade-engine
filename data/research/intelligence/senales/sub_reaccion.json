@@ -15,7 +15,7 @@
   "poblacion": {
     "n_episodios": 289,
     "n_barras_totales": 4014,
-    "fire_rate_pct": 47.47,
+    "fire_rate_pct": 47.46,
     "cadencia_1_en_n_barras": 29.3,
     "duracion_episodio_barras": {
       "mean": 13.89,
@@ -95,11 +95,11 @@
         "n": 289,
         "hit_rate": 0.429,
         "hit_neto": 0.0398,
-        "ev_neto": -0.0038,
-        "profit_factor": 1.0,
+        "ev_neto": -0.0037,
+        "profit_factor": 0.99,
         "mae_medio": -0.0355,
         "mfe_medio": 0.0371,
-        "bars_medio": 21.3,
+        "bars_medio": 21.4,
         "p_value_binom": 0.0924
       },
       "zz75": {

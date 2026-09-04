@@ -11080,16 +11080,31 @@
   {
     "t0": 8334,
     "fecha_inicio": "2026-03-11 00:00:00",
-    "t1": 8443,
-    "fecha_t1": "2026-08-17 00:00:00",
-    "longitud_barras": 109,
+    "t1": 8445,
+    "fecha_t1": "2026-08-19 00:00:00",
+    "longitud_barras": 111,
     "n_activas_t0": 1,
     "estaciones_activas_t0": [
       "credit"
     ],
-    "nucleo_pos": 8443,
-    "nucleo_fecha": "2026-08-17 00:00:00",
-    "n_activas_nucleo": 7,
+    "nucleo_pos": 8436,
+    "nucleo_fecha": "2026-08-06 00:00:00",
+    "n_activas_nucleo": 6,
     "episodio_id": 729
+  },
+  {
+    "t0": 8449,
+    "fecha_inicio": "2026-08-25 00:00:00",
+    "t1": 8456,
+    "fecha_t1": "2026-09-03 00:00:00",
+    "longitud_barras": 7,
+    "n_activas_t0": 1,
+    "estaciones_activas_t0": [
+      "fg"
+    ],
+    "nucleo_pos": 8453,
+    "nucleo_fecha": "2026-08-31 00:00:00",
+    "n_activas_nucleo": 4,
+    "episodio_id": 730
   }
 ]

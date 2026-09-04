@@ -7,8 +7,8 @@
     "n_episodes": 396,
     "descripcion": "DEGRADADA: breadth contrae desde expansivo. Structural break OOS: anti-edge pre-2016, edge post-2016. No usar hasta aclarar.",
     "poblacion": {
-      "total_barras_dataset": 8456,
-      "total_barras_activas": 6418,
+      "total_barras_dataset": 8457,
+      "total_barras_activas": 6419,
       "fire_rate_pct": 75.9,
       "n_episodios": 396,
       "cadencia_1_en_n_barras": 21.4,
@@ -86,8 +86,8 @@
         "bars_medio": 8.5
       },
       "ENTRE": {
-        "n": 231,
-        "hit_rate": 0.234,
+        "n": 232,
+        "hit_rate": 0.233,
         "ev": -0.0133,
         "bars_medio": 14.8
       }
@@ -95,71 +95,71 @@
     "escalas_zigzag": {
       "zz25": {
         "escala_pct": 2.5,
-        "n": 395,
-        "hit_rate": 0.42,
+        "n": 396,
+        "hit_rate": 0.419,
         "baseline_hit": 0.431,
-        "hit_neto": -0.011,
-        "p_value_binom": 0.6884,
-        "ev": -0.0042,
+        "hit_neto": -0.0121,
+        "p_value_binom": 0.7036,
+        "ev": -0.0043,
         "baseline_ev": -0.0042,
-        "ev_neto": 0.0,
+        "ev_neto": -0.0,
         "profit_factor": 0.71,
-        "mae_medio": 0.0221,
+        "mae_medio": 0.022,
         "mae_p10": 0.0068,
         "mae_p90": 0.0323,
-        "mfe_medio": 0.0188,
+        "mfe_medio": 0.0187,
         "mfe_p90": 0.0336,
         "rr_asymmetry": 0.85,
-        "bars_medio": 11.7,
-        "ev_por_barra": -0.000361
+        "bars_medio": 11.6,
+        "ev_por_barra": -0.000367
       },
       "zz50": {
         "escala_pct": 5.0,
-        "n": 395,
-        "hit_rate": 0.286,
+        "n": 396,
+        "hit_rate": 0.285,
         "baseline_hit": 0.29,
-        "hit_neto": -0.0036,
-        "p_value_binom": 0.5818,
-        "ev": -0.0085,
+        "hit_neto": -0.0043,
+        "p_value_binom": 0.5942,
+        "ev": -0.0086,
         "baseline_ev": -0.0118,
         "ev_neto": 0.0033,
-        "profit_factor": 0.55,
-        "mae_medio": 0.0355,
+        "profit_factor": 0.56,
+        "mae_medio": 0.0354,
         "mae_p10": 0.0092,
         "mae_p90": 0.0543,
-        "mfe_medio": 0.0308,
+        "mfe_medio": 0.0307,
         "mfe_p90": 0.0579,
         "rr_asymmetry": 0.87,
-        "bars_medio": 26.4,
-        "ev_por_barra": -0.000324
+        "bars_medio": 26.3,
+        "ev_por_barra": -0.000326
       },
       "zz75": {
         "escala_pct": 7.5,
-        "n": 395,
-        "hit_rate": 0.122,
+        "n": 396,
+        "hit_rate": 0.121,
         "baseline_hit": 0.141,
-        "hit_neto": -0.0195,
-        "p_value_binom": 0.8835,
+        "hit_neto": -0.0198,
+        "p_value_binom": 0.8873,
         "ev": -0.0094,
         "baseline_ev": -0.0112,
         "ev_neto": 0.0018,
         "profit_factor": 0.29,
-        "mae_medio": 0.0364,
+        "mae_medio": 0.0363,
         "mae_p10": 0.0089,
         "mae_p90": 0.0753,
-        "mfe_medio": 0.032,
+        "mfe_medio": 0.0319,
         "mfe_p90": 0.0765,
         "rr_asymmetry": 0.88,
-        "bars_medio": 24.9,
-        "ev_por_barra": -0.000376
+        "bars_medio": 24.8,
+        "ev_por_barra": -0.000379
       }
     },
     "escala_optima": "zz50",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 167,
-      "zz25_hit_rate": 0.41,
-      "zz25_ev": -0.0043
+      "zz25_hit_rate": 0.407,
+      "zz25_ev": -0.0044
     },
     "modo_ejecucion": "lake",
     "fecha_inicio_valida": null,
@@ -173,7 +173,7 @@
     "n_episodes": 348,
     "descripcion": "BSI comprimido (D1≤1): participación institucional en mínimos. El evaluador muestra edge de entry long, no exit.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 1549,
       "fire_rate_pct": 18.32,
       "n_episodios": 348,
@@ -322,7 +322,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 158,
       "zz25_hit_rate": 0.589,
       "zz25_ev": 0.0046
@@ -339,9 +339,9 @@
     "n_episodes": 658,
     "descripcion": "Breadth sale de washed out hacia recuperación. Señal de salida del pánico. DEGRADADA: solo funcionaba pre-QE.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 3916,
-      "fire_rate_pct": 46.31,
+      "fire_rate_pct": 46.3,
       "n_episodios": 658,
       "cadencia_1_en_n_barras": 12.9,
       "es_fondo": false,
@@ -420,7 +420,7 @@
       "ENTRE": {
         "n": 426,
         "hit_rate": 0.3,
-        "ev": -0.0104,
+        "ev": -0.0105,
         "bars_medio": 13.5
       }
     },
@@ -434,7 +434,7 @@
         "p_value_binom": 0.3546,
         "ev": -0.0032,
         "baseline_ev": -0.0042,
-        "ev_neto": 0.0011,
+        "ev_neto": 0.001,
         "profit_factor": 0.77,
         "mae_medio": 0.0204,
         "mae_p10": 0.0039,
@@ -443,7 +443,7 @@
         "mfe_p90": 0.0347,
         "rr_asymmetry": 1.03,
         "bars_medio": 11.0,
-        "ev_por_barra": -0.000288
+        "ev_por_barra": -0.000293
       },
       "zz50": {
         "escala_pct": 5.0,
@@ -452,7 +452,7 @@
         "baseline_hit": 0.29,
         "hit_neto": 0.0188,
         "p_value_binom": 0.1536,
-        "ev": -0.0071,
+        "ev": -0.0072,
         "baseline_ev": -0.0118,
         "ev_neto": 0.0047,
         "profit_factor": 0.6,
@@ -462,8 +462,8 @@
         "mfe_medio": 0.0327,
         "mfe_p90": 0.0589,
         "rr_asymmetry": 0.95,
-        "bars_medio": 25.6,
-        "ev_por_barra": -0.000276
+        "bars_medio": 25.7,
+        "ev_por_barra": -0.000279
       },
       "zz75": {
         "escala_pct": 7.5,
@@ -472,7 +472,7 @@
         "baseline_hit": 0.141,
         "hit_neto": -0.0042,
         "p_value_binom": 0.6388,
-        "ev": -0.0071,
+        "ev": -0.0072,
         "baseline_ev": -0.0112,
         "ev_neto": 0.004,
         "profit_factor": 0.36,
@@ -483,15 +483,15 @@
         "mfe_p90": 0.078,
         "rr_asymmetry": 0.96,
         "bars_medio": 24.5,
-        "ev_por_barra": -0.000292
+        "ev_por_barra": -0.000294
       }
     },
     "escala_optima": "zz50",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 316,
       "zz25_hit_rate": 0.427,
-      "zz25_ev": -0.0036
+      "zz25_ev": -0.0037
     },
     "modo_ejecucion": "lake",
     "fecha_inicio_valida": null,
@@ -505,9 +505,9 @@
     "n_episodes": 104,
     "descripcion": "Breadth del S&P500 colapsado (washed out). Máxima destrucción de amplitud = oportunidad contrarian de compra.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 315,
-      "fire_rate_pct": 3.73,
+      "fire_rate_pct": 3.72,
       "n_episodios": 104,
       "cadencia_1_en_n_barras": 81.3,
       "es_fondo": false,
@@ -654,7 +654,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 35,
       "zz25_hit_rate": 0.686,
       "zz25_ev": 0.0086
@@ -671,7 +671,7 @@
     "n_episodes": 98,
     "descripcion": "VIX en crisis + breadth colapsado (washed out). Capitulación del mercado = punto de máximo pesimismo.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 298,
       "fire_rate_pct": 3.52,
       "n_episodios": 98,
@@ -766,7 +766,7 @@
         "p_value_binom": 0.3478,
         "ev": 0.0042,
         "baseline_ev": 0.0042,
-        "ev_neto": 0.0,
+        "ev_neto": -0.0,
         "profit_factor": 1.35,
         "mae_medio": -0.0243,
         "mae_p10": -0.0028,
@@ -820,7 +820,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 34,
       "zz25_hit_rate": 0.676,
       "zz25_ev": 0.0078
@@ -837,7 +837,7 @@
     "n_episodes": 66,
     "descripcion": "Capitulación vectorial: VIX crisis + BSI washed + BSI decelerando (D2). La cinemática confirma el agotamiento vendedor.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 106,
       "fire_rate_pct": 1.25,
       "n_episodios": 66,
@@ -986,7 +986,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 26,
       "zz25_hit_rate": 0.654,
       "zz25_ev": 0.0074
@@ -1003,7 +1003,7 @@
     "n_episodes": 80,
     "descripcion": "Colapso de convicción cascade: momentum se destruye. Edge demoledor en ALZA (trim táctico, ~8 barras). Anti-señal en BAJA. Gate de régimen observable obligatorio en capa de consumo. Señal de confirmación de pierna cerrada (observable al confirmar el pivote, forward medido hacia adelante).",
     "poblacion": {
-      "total_barras_dataset": 3920,
+      "total_barras_dataset": 3921,
       "total_barras_activas": 85,
       "fire_rate_pct": 2.17,
       "n_episodios": 80,
@@ -1098,7 +1098,7 @@
         "p_value_binom": 0.0022,
         "ev": 0.0026,
         "baseline_ev": -0.0045,
-        "ev_neto": 0.0071,
+        "ev_neto": 0.0072,
         "profit_factor": 1.23,
         "mae_medio": 0.0169,
         "mae_p10": 0.0019,
@@ -1118,7 +1118,7 @@
         "p_value_binom": 0.0299,
         "ev": -0.0044,
         "baseline_ev": -0.0113,
-        "ev_neto": 0.0068,
+        "ev_neto": 0.0069,
         "profit_factor": 0.74,
         "mae_medio": 0.0315,
         "mae_p10": 0.0032,
@@ -1138,7 +1138,7 @@
         "p_value_binom": 0.0257,
         "ev": -0.0021,
         "baseline_ev": -0.0112,
-        "ev_neto": 0.009,
+        "ev_neto": 0.0091,
         "profit_factor": 0.52,
         "mae_medio": 0.032,
         "mae_p10": 0.0033,
@@ -1152,7 +1152,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 80,
       "zz25_hit_rate": 0.575,
       "zz25_ev": 0.0026
@@ -1169,11 +1169,11 @@
     "n_episodes": 4,
     "descripcion": "CREDIT D1=0 + D2=0: máximo pánico crediticio (piso + acelerando a la baja). Diamante §3.3 con N=4. Requiere acumulación de datos.",
     "poblacion": {
-      "total_barras_dataset": 4881,
+      "total_barras_dataset": 4882,
       "total_barras_activas": 12,
       "fire_rate_pct": 0.25,
       "n_episodios": 4,
-      "cadencia_1_en_n_barras": 1220.2,
+      "cadencia_1_en_n_barras": 1220.5,
       "es_fondo": false,
       "duracion_episodio": {
         "mean": 3.0,
@@ -1278,7 +1278,7 @@
         "hit_neto": 0.1002,
         "p_value_binom": 0.5244,
         "ev": -0.0116,
-        "baseline_ev": 0.0096,
+        "baseline_ev": 0.0097,
         "ev_neto": -0.0213,
         "profit_factor": 0.7,
         "mae_medio": -0.0621,
@@ -1325,9 +1325,9 @@
     "n_episodes": 48,
     "descripcion": "RE-RETIRADA: crédito sale de easing. Reliquia pre-QE: el edge desapareció post-2009. No usar.",
     "poblacion": {
-      "total_barras_dataset": 4881,
+      "total_barras_dataset": 4882,
       "total_barras_activas": 2884,
-      "fire_rate_pct": 59.09,
+      "fire_rate_pct": 59.07,
       "n_episodios": 48,
       "cadencia_1_en_n_barras": 101.7,
       "es_fondo": false,
@@ -1439,8 +1439,8 @@
         "hit_neto": -0.0709,
         "p_value_binom": 0.8931,
         "ev": -0.0049,
-        "baseline_ev": -0.0096,
-        "ev_neto": 0.0047,
+        "baseline_ev": -0.0097,
+        "ev_neto": 0.0048,
         "profit_factor": 0.58,
         "mae_medio": 0.0317,
         "mae_p10": 0.0093,
@@ -1474,7 +1474,7 @@
     },
     "escala_optima": "zz50",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 45,
       "zz25_hit_rate": 0.444,
       "zz25_ev": -0.0045
@@ -1491,9 +1491,9 @@
     "n_episodes": 1262,
     "descripcion": "Crédito mejorando en piso de drawdown. Señal contrarian de compra: el estrés crediticio cede mientras el precio toca fondo.",
     "poblacion": {
-      "total_barras_dataset": 4881,
+      "total_barras_dataset": 4882,
       "total_barras_activas": 2471,
-      "fire_rate_pct": 50.62,
+      "fire_rate_pct": 50.61,
       "n_episodios": 1262,
       "cadencia_1_en_n_barras": 3.9,
       "es_fondo": true,
@@ -1595,7 +1595,7 @@
         "mfe_p90": 0.0325,
         "rr_asymmetry": 1.01,
         "bars_medio": 11.0,
-        "ev_por_barra": 0.000356
+        "ev_por_barra": 0.000357
       },
       "zz50": {
         "escala_pct": 5.0,
@@ -1605,8 +1605,8 @@
         "hit_neto": 0.0004,
         "p_value_binom": 0.5002,
         "ev": 0.009,
-        "baseline_ev": 0.0096,
-        "ev_neto": -0.0006,
+        "baseline_ev": 0.0097,
+        "ev_neto": -0.0007,
         "profit_factor": 0.94,
         "mae_medio": -0.0328,
         "mae_p10": -0.006,
@@ -1615,7 +1615,7 @@
         "mfe_p90": 0.0556,
         "rr_asymmetry": 1.1,
         "bars_medio": 25.0,
-        "ev_por_barra": 0.00036
+        "ev_por_barra": 0.000361
       },
       "zz75": {
         "escala_pct": 7.5,
@@ -1635,12 +1635,12 @@
         "mfe_p90": 0.0738,
         "rr_asymmetry": 1.05,
         "bars_medio": 24.2,
-        "ev_por_barra": 0.000367
+        "ev_por_barra": 0.000368
       }
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 1007,
       "zz25_hit_rate": 0.59,
       "zz25_ev": 0.005
@@ -1657,7 +1657,7 @@
     "n_episodes": 293,
     "descripcion": "DEGRADADA: divergencia crédito-equity en techos. LIFT≈1.0 = no discrimina vs baseline. Solo monitorear con filtro HH.",
     "poblacion": {
-      "total_barras_dataset": 4881,
+      "total_barras_dataset": 4882,
       "total_barras_activas": 572,
       "fire_rate_pct": 11.72,
       "n_episodios": 293,
@@ -1770,8 +1770,8 @@
         "baseline_hit": 0.3,
         "hit_neto": 0.0105,
         "p_value_binom": 0.3688,
-        "ev": -0.0089,
-        "baseline_ev": -0.0096,
+        "ev": -0.009,
+        "baseline_ev": -0.0097,
         "ev_neto": 0.0007,
         "profit_factor": 0.59,
         "mae_medio": 0.0375,
@@ -1781,7 +1781,7 @@
         "mfe_p90": 0.0638,
         "rr_asymmetry": 0.93,
         "bars_medio": 23.2,
-        "ev_por_barra": -0.000386
+        "ev_por_barra": -0.000389
       },
       "zz75": {
         "escala_pct": 7.5,
@@ -1801,12 +1801,12 @@
         "mfe_p90": 0.0801,
         "rr_asymmetry": 0.92,
         "bars_medio": 23.1,
-        "ev_por_barra": -0.000384
+        "ev_por_barra": -0.000386
       }
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 228,
       "zz25_hit_rate": 0.447,
       "zz25_ev": -0.0026
@@ -1823,9 +1823,9 @@
     "n_episodes": 27,
     "descripcion": "Spread de crédito HYG/LQD en zona de estrés. El mercado de bonos señala miedo = oportunidad contrarian en equity.",
     "poblacion": {
-      "total_barras_dataset": 4881,
+      "total_barras_dataset": 4882,
       "total_barras_activas": 341,
-      "fire_rate_pct": 6.99,
+      "fire_rate_pct": 6.98,
       "n_episodios": 27,
       "cadencia_1_en_n_barras": 180.8,
       "es_fondo": false,
@@ -1936,7 +1936,7 @@
         "hit_neto": 0.1558,
         "p_value_binom": 0.074,
         "ev": 0.011,
-        "baseline_ev": 0.0096,
+        "baseline_ev": 0.0097,
         "ev_neto": 0.0013,
         "profit_factor": 1.45,
         "mae_medio": -0.0364,
@@ -1971,7 +1971,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 19,
       "zz25_hit_rate": 0.737,
       "zz25_ev": 0.0204
@@ -1988,9 +1988,9 @@
     "n_episodes": 27,
     "descripcion": "RETIRADA: duplicado exacto de credit_stress. Usar credit_stress en su lugar.",
     "poblacion": {
-      "total_barras_dataset": 4881,
+      "total_barras_dataset": 4882,
       "total_barras_activas": 341,
-      "fire_rate_pct": 6.99,
+      "fire_rate_pct": 6.98,
       "n_episodios": 27,
       "cadencia_1_en_n_barras": 180.8,
       "es_fondo": false,
@@ -2102,7 +2102,7 @@
         "hit_neto": 0.0703,
         "p_value_binom": 0.2728,
         "ev": -0.011,
-        "baseline_ev": -0.0096,
+        "baseline_ev": -0.0097,
         "ev_neto": -0.0013,
         "profit_factor": 0.64,
         "mae_medio": 0.0459,
@@ -2137,7 +2137,7 @@
     },
     "escala_optima": "zz50",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 19,
       "zz25_hit_rate": 0.263,
       "zz25_ev": -0.0204
@@ -2154,7 +2154,7 @@
     "n_episodes": 167,
     "descripcion": "RETIRADA: en techo, rotación colapsa hacia defensivos. LIFT<1.0 = anti-señal, peor que baseline.",
     "poblacion": {
-      "total_barras_dataset": 6959,
+      "total_barras_dataset": 6960,
       "total_barras_activas": 1275,
       "fire_rate_pct": 18.32,
       "n_episodios": 167,
@@ -2268,8 +2268,8 @@
         "hit_neto": 0.1604,
         "p_value_binom": 0.0,
         "ev": 0.0034,
-        "baseline_ev": -0.0076,
-        "ev_neto": 0.011,
+        "baseline_ev": -0.0077,
+        "ev_neto": 0.0111,
         "profit_factor": 1.07,
         "mae_medio": 0.0364,
         "mae_p10": 0.0105,
@@ -2303,7 +2303,7 @@
     },
     "escala_optima": "zz50",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 101,
       "zz25_hit_rate": 0.475,
       "zz25_ev": -0.0016
@@ -2320,11 +2320,11 @@
     "n_episodes": 38,
     "descripcion": "Dólar en spike de crisis. Flight-to-safety extremo = correlación inversa con equity. Contexto macro adverso.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 514,
       "fire_rate_pct": 6.08,
       "n_episodios": 38,
-      "cadencia_1_en_n_barras": 222.5,
+      "cadencia_1_en_n_barras": 222.6,
       "es_fondo": false,
       "duracion_episodio": {
         "mean": 13.53,
@@ -2481,11 +2481,11 @@
     "n_episodes": 38,
     "descripcion": "RETIRADA: duplicado exacto de dxy_bearish. Usar dxy_bearish en su lugar.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 514,
       "fire_rate_pct": 6.08,
       "n_episodios": 38,
-      "cadencia_1_en_n_barras": 222.5,
+      "cadencia_1_en_n_barras": 222.6,
       "es_fondo": false,
       "duracion_episodio": {
         "mean": 13.53,
@@ -2641,7 +2641,7 @@
     "n_episodes": 164,
     "descripcion": "VIX en complacencia extrema + breadth no estresado. Euforia de mercado = señal de techo. WR bear 85.4%.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 969,
       "fire_rate_pct": 11.46,
       "n_episodios": 164,
@@ -2756,7 +2756,7 @@
         "p_value_binom": 0.9892,
         "ev": -0.009,
         "baseline_ev": -0.0118,
-        "ev_neto": 0.0028,
+        "ev_neto": 0.0029,
         "profit_factor": 0.46,
         "mae_medio": 0.0325,
         "mae_p10": 0.0063,
@@ -2790,7 +2790,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 105,
       "zz25_hit_rate": 0.476,
       "zz25_ev": -0.0011
@@ -2807,7 +2807,7 @@
     "n_episodes": 208,
     "descripcion": "Euforia vectorial: BSI en expansión/hiper con D2 acelerando al alza = techo cinemático inminente. 92% ocurre en techos MAX.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 382,
       "fire_rate_pct": 4.52,
       "n_episodios": 208,
@@ -2922,7 +2922,7 @@
         "p_value_binom": 0.2563,
         "ev": -0.007,
         "baseline_ev": -0.0118,
-        "ev_neto": 0.0048,
+        "ev_neto": 0.0049,
         "profit_factor": 0.59,
         "mae_medio": 0.0356,
         "mae_p10": 0.0074,
@@ -2956,7 +2956,7 @@
     },
     "escala_optima": "zz50",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 83,
       "zz25_hit_rate": 0.446,
       "zz25_ev": -0.0031
@@ -2973,7 +2973,7 @@
     "n_episodes": 18,
     "descripcion": "Fear & Greed CNN en miedo extremo (<10, Post-2011). Sentimiento retail capitulado = oportunidad contrarian de compra.",
     "poblacion": {
-      "total_barras_dataset": 3920,
+      "total_barras_dataset": 3921,
       "total_barras_activas": 46,
       "fire_rate_pct": 1.17,
       "n_episodios": 18,
@@ -3087,7 +3087,7 @@
         "p_value_binom": 0.0467,
         "ev": 0.0227,
         "baseline_ev": 0.0113,
-        "ev_neto": 0.0115,
+        "ev_neto": 0.0114,
         "profit_factor": 2.14,
         "mae_medio": -0.0365,
         "mae_p10": -0.0112,
@@ -3107,7 +3107,7 @@
         "p_value_binom": 0.0024,
         "ev": 0.0262,
         "baseline_ev": 0.0112,
-        "ev_neto": 0.0151,
+        "ev_neto": 0.015,
         "profit_factor": 0.91,
         "mae_medio": -0.0415,
         "mae_p10": -0.0112,
@@ -3121,7 +3121,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 18,
       "zz25_hit_rate": 0.722,
       "zz25_ev": 0.0086
@@ -3138,11 +3138,11 @@
     "n_episodes": 16,
     "descripcion": "Fear & Greed CNN en codicia extrema (>90, Post-2011). Sentimiento retail eufórico = señal de techo. WR bear 80.6%.",
     "poblacion": {
-      "total_barras_dataset": 3920,
+      "total_barras_dataset": 3921,
       "total_barras_activas": 62,
       "fire_rate_pct": 1.58,
       "n_episodios": 16,
-      "cadencia_1_en_n_barras": 245.0,
+      "cadencia_1_en_n_barras": 245.1,
       "es_fondo": false,
       "duracion_episodio": {
         "mean": 3.88,
@@ -3269,7 +3269,7 @@
         "p_value_binom": 1.0,
         "ev": -0.013,
         "baseline_ev": -0.0112,
-        "ev_neto": -0.0019,
+        "ev_neto": -0.0018,
         "profit_factor": 0.0,
         "mae_medio": 0.0264,
         "mae_p10": 0.0122,
@@ -3283,7 +3283,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 16,
       "zz25_hit_rate": 0.438,
       "zz25_ev": -0.004
@@ -3300,11 +3300,11 @@
     "n_episodes": 59,
     "descripcion": "D1 neutral(2,3) + D2=FAST_CRUSH(0) en ≥2 estaciones simultáneas. Mean-reversion bullish. Umbral ≥2 (no ≥3) porque D2=CRUSH en pivotes es más raro que en días calendario.",
     "poblacion": {
-      "total_barras_dataset": 3920,
+      "total_barras_dataset": 3921,
       "total_barras_activas": 75,
       "fire_rate_pct": 1.91,
       "n_episodios": 59,
-      "cadencia_1_en_n_barras": 66.4,
+      "cadencia_1_en_n_barras": 66.5,
       "es_fondo": false,
       "duracion_episodio": {
         "mean": 1.27,
@@ -3449,7 +3449,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 59,
       "zz25_hit_rate": 0.695,
       "zz25_ev": 0.0109
@@ -3466,7 +3466,7 @@
     "n_episodes": 26,
     "descripcion": "D1 neutral(2,3) + D2=FAST_SPIKE(4) en ≥2 estaciones. Contraparte exit del E7 neutral_crush.",
     "poblacion": {
-      "total_barras_dataset": 3920,
+      "total_barras_dataset": 3921,
       "total_barras_activas": 32,
       "fire_rate_pct": 0.82,
       "n_episodios": 26,
@@ -3613,7 +3613,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 26,
       "zz25_hit_rate": 0.423,
       "zz25_ev": -0.0054
@@ -3630,7 +3630,7 @@
     "n_episodes": 29,
     "descripcion": "VIX y SKEW ambos en extremo bearish simultáneamente (Post-2011: CBOE SKEW oficial). Data pre-2011 es sintética e inválida. Pánico institucional completo = compra contrarian.",
     "poblacion": {
-      "total_barras_dataset": 3920,
+      "total_barras_dataset": 3921,
       "total_barras_activas": 53,
       "fire_rate_pct": 1.35,
       "n_episodios": 29,
@@ -3745,7 +3745,7 @@
         "p_value_binom": 0.001,
         "ev": 0.0221,
         "baseline_ev": 0.0113,
-        "ev_neto": 0.0109,
+        "ev_neto": 0.0108,
         "profit_factor": 2.32,
         "mae_medio": -0.0312,
         "mae_p10": -0.0048,
@@ -3779,7 +3779,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 29,
       "zz25_hit_rate": 0.655,
       "zz25_ev": 0.0087
@@ -3796,7 +3796,7 @@
     "n_episodes": 41,
     "descripcion": "RETIRADA: duplicado exacto de pcr_put_panic. Usar pcr_put_panic en su lugar.",
     "poblacion": {
-      "total_barras_dataset": 4989,
+      "total_barras_dataset": 4990,
       "total_barras_activas": 55,
       "fire_rate_pct": 1.1,
       "n_episodios": 41,
@@ -3910,8 +3910,8 @@
         "hit_neto": 0.0701,
         "p_value_binom": 0.2061,
         "ev": -0.0129,
-        "baseline_ev": -0.0097,
-        "ev_neto": -0.0032,
+        "baseline_ev": -0.0098,
+        "ev_neto": -0.0031,
         "profit_factor": 0.57,
         "mae_medio": 0.0455,
         "mae_p10": 0.0276,
@@ -3945,7 +3945,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 34,
       "zz25_hit_rate": 0.5,
       "zz25_ev": 0.0012
@@ -3962,7 +3962,7 @@
     "n_episodes": 41,
     "descripcion": "Put/Call ratio en pánico extremo. Exceso de compra de puts = miedo institucional máximo. Contrarian de compra.",
     "poblacion": {
-      "total_barras_dataset": 4989,
+      "total_barras_dataset": 4990,
       "total_barras_activas": 55,
       "fire_rate_pct": 1.1,
       "n_episodios": 41,
@@ -4076,8 +4076,8 @@
         "hit_neto": 0.2368,
         "p_value_binom": 0.0019,
         "ev": 0.0129,
-        "baseline_ev": 0.0097,
-        "ev_neto": 0.0032,
+        "baseline_ev": 0.0098,
+        "ev_neto": 0.0031,
         "profit_factor": 1.76,
         "mae_medio": -0.0411,
         "mae_p10": -0.0083,
@@ -4111,7 +4111,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 34,
       "zz25_hit_rate": 0.5,
       "zz25_ev": -0.0012
@@ -4128,9 +4128,9 @@
     "n_episodes": 121,
     "descripcion": "RETIRADA: cambio de régimen verano→invierno. LIFT<1.0 = peor que no hacer nada. Anti-señal.",
     "poblacion": {
-      "total_barras_dataset": 4881,
+      "total_barras_dataset": 4882,
       "total_barras_activas": 651,
-      "fire_rate_pct": 13.34,
+      "fire_rate_pct": 13.33,
       "n_episodios": 121,
       "cadencia_1_en_n_barras": 40.3,
       "es_fondo": false,
@@ -4242,8 +4242,8 @@
         "hit_neto": 0.0635,
         "p_value_binom": 0.0787,
         "ev": -0.0087,
-        "baseline_ev": -0.0096,
-        "ev_neto": 0.0009,
+        "baseline_ev": -0.0097,
+        "ev_neto": 0.001,
         "profit_factor": 0.65,
         "mae_medio": 0.041,
         "mae_p10": 0.0163,
@@ -4277,7 +4277,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 77,
       "zz25_hit_rate": 0.416,
       "zz25_ev": -0.0047
@@ -4294,7 +4294,7 @@
     "n_episodes": 114,
     "descripcion": "SKEW en paranoia de black swan (Post-2011: CBOE SKEW oficial). Institucionales comprando puts OTM masivamente = miedo extremo de cola. Pre-2011 sintética inválida. Diamante contrarian.",
     "poblacion": {
-      "total_barras_dataset": 3920,
+      "total_barras_dataset": 3921,
       "total_barras_activas": 374,
       "fire_rate_pct": 9.54,
       "n_episodios": 114,
@@ -4429,7 +4429,7 @@
         "p_value_binom": 0.9366,
         "ev": -0.0116,
         "baseline_ev": -0.0112,
-        "ev_neto": -0.0005,
+        "ev_neto": -0.0004,
         "profit_factor": 0.22,
         "mae_medio": 0.0321,
         "mae_p10": 0.008,
@@ -4443,7 +4443,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 114,
       "zz25_hit_rate": 0.412,
       "zz25_ev": -0.0044
@@ -4457,14 +4457,14 @@
     "tipo": "entry",
     "blanco": "MIN",
     "status": "OK",
-    "n_episodes": 1269,
+    "n_episodes": 1272,
     "descripcion": "Sorpresa agregada de Shannon alta: el sistema METAR está en un estado estadísticamente improbable. Pre-2007: 6-8/11 estaciones activas (VVIX/PCR/Credit/SKEW/FG no existen). mean(skipna=True) normaliza por conteo activo. Percentil Q67 puede sesgar ligeramente pre-2011.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 2707,
       "fire_rate_pct": 32.01,
-      "n_episodios": 1269,
-      "cadencia_1_en_n_barras": 6.7,
+      "n_episodios": 1272,
+      "cadencia_1_en_n_barras": 6.6,
       "es_fondo": true,
       "duracion_episodio": {
         "mean": 2.13,
@@ -4477,33 +4477,33 @@
       "tier_rareza": "ROBUST"
     },
     "timing_canonico": {
-      "n_total": 1269,
+      "n_total": 1272,
       "counts": {
         "t-2": 75,
         "t-1": 126,
         "t=0": 153,
-        "t+1": 89,
+        "t+1": 90,
         "t+2": 63,
-        "ENTRE": 763
+        "ENTRE": 765
       },
       "pcts": {
-        "t-2": 5.91,
-        "t-1": 9.93,
-        "t=0": 12.06,
-        "t+1": 7.01,
-        "t+2": 4.96,
-        "ENTRE": 60.13
+        "t-2": 5.9,
+        "t-1": 9.91,
+        "t=0": 12.03,
+        "t+1": 7.08,
+        "t+2": 4.95,
+        "ENTRE": 60.14
       },
-      "n_en_rango": 506,
-      "pct_en_rango": 39.87,
+      "n_en_rango": 507,
+      "pct_en_rango": 39.86,
       "n_anticipada": 201,
-      "pct_anticipada": 15.84,
+      "pct_anticipada": 15.8,
       "n_exacta": 153,
-      "pct_exacta": 12.06,
-      "n_retrasada": 152,
-      "pct_retrasada": 11.98,
-      "n_fuera": 763,
-      "pct_fuera": 60.13,
+      "pct_exacta": 12.03,
+      "n_retrasada": 153,
+      "pct_retrasada": 12.03,
+      "n_fuera": 765,
+      "pct_fuera": 60.14,
       "delta_medio": 7.5,
       "delta_mediana": 3.0
     },
@@ -4527,9 +4527,9 @@
         "bars_medio": 4.0
       },
       "t+1": {
-        "n": 89,
-        "hit_rate": 0.607,
-        "ev": 0.0043,
+        "n": 90,
+        "hit_rate": 0.611,
+        "ev": 0.0045,
         "bars_medio": 5.3
       },
       "t+2": {
@@ -4539,40 +4539,40 @@
         "bars_medio": 7.3
       },
       "ENTRE": {
-        "n": 763,
-        "hit_rate": 0.526,
-        "ev": 0.0014,
-        "bars_medio": 12.7
+        "n": 765,
+        "hit_rate": 0.524,
+        "ev": 0.0015,
+        "bars_medio": 12.8
       }
     },
     "escalas_zigzag": {
       "zz25": {
         "escala_pct": 2.5,
-        "n": 1269,
-        "hit_rate": 0.558,
+        "n": 1272,
+        "hit_rate": 0.557,
         "baseline_hit": 0.567,
-        "hit_neto": -0.009,
-        "p_value_binom": 0.751,
+        "hit_neto": -0.0096,
+        "p_value_binom": 0.7632,
         "ev": 0.0035,
         "baseline_ev": 0.0042,
-        "ev_neto": -0.0008,
+        "ev_neto": -0.0007,
         "profit_factor": 1.31,
         "mae_medio": -0.0206,
         "mae_p10": -0.0046,
         "mae_p90": -0.035,
         "mfe_medio": 0.0224,
-        "mfe_p90": 0.0332,
+        "mfe_p90": 0.0331,
         "rr_asymmetry": 1.09,
         "bars_medio": 9.7,
-        "ev_por_barra": 0.000359
+        "ev_por_barra": 0.000362
       },
       "zz50": {
         "escala_pct": 5.0,
-        "n": 1269,
+        "n": 1272,
         "hit_rate": 0.407,
         "baseline_hit": 0.389,
-        "hit_neto": 0.0182,
-        "p_value_binom": 0.097,
+        "hit_neto": 0.018,
+        "p_value_binom": 0.0989,
         "ev": 0.0076,
         "baseline_ev": 0.0118,
         "ev_neto": -0.0042,
@@ -4582,36 +4582,36 @@
         "mae_p90": -0.0591,
         "mfe_medio": 0.0367,
         "mfe_p90": 0.0568,
-        "rr_asymmetry": 1.1,
+        "rr_asymmetry": 1.11,
         "bars_medio": 23.5,
-        "ev_por_barra": 0.000324
+        "ev_por_barra": 0.000326
       },
       "zz75": {
         "escala_pct": 7.5,
-        "n": 1269,
+        "n": 1272,
         "hit_rate": 0.123,
         "baseline_hit": 0.105,
-        "hit_neto": 0.0175,
-        "p_value_binom": 0.0256,
-        "ev": 0.0088,
+        "hit_neto": 0.0172,
+        "p_value_binom": 0.0275,
+        "ev": 0.0089,
         "baseline_ev": 0.0112,
-        "ev_neto": -0.0024,
+        "ev_neto": -0.0023,
         "profit_factor": 0.3,
         "mae_medio": -0.0361,
         "mae_p10": -0.0058,
-        "mae_p90": -0.0793,
+        "mae_p90": -0.0792,
         "mfe_medio": 0.0389,
         "mfe_p90": 0.0768,
         "rr_asymmetry": 1.08,
         "bars_medio": 23.6,
-        "ev_por_barra": 0.000371
+        "ev_por_barra": 0.000375
       }
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
-      "n_episodios": 526,
-      "zz25_hit_rate": 0.58,
+      "total_barras_post2011": 3921,
+      "n_episodios": 528,
+      "zz25_hit_rate": 0.578,
       "zz25_ev": 0.0045
     },
     "modo_ejecucion": "lake",
@@ -4623,13 +4623,13 @@
     "tipo": "exit",
     "blanco": "MAX",
     "status": "OK",
-    "n_episodes": 276,
+    "n_episodes": 277,
     "descripcion": "VIX complaciente pero SKEW en expansión (Post-2011): institucionales comprando cobertura de cola en silencio. Pre-2011 sintética inválida.",
     "poblacion": {
-      "total_barras_dataset": 3920,
-      "total_barras_activas": 365,
-      "fire_rate_pct": 9.31,
-      "n_episodios": 276,
+      "total_barras_dataset": 3921,
+      "total_barras_activas": 367,
+      "fire_rate_pct": 9.36,
+      "n_episodios": 277,
       "cadencia_1_en_n_barras": 14.2,
       "es_fondo": false,
       "duracion_episodio": {
@@ -4643,34 +4643,34 @@
       "tier_rareza": "ROBUST"
     },
     "timing_canonico": {
-      "n_total": 276,
+      "n_total": 277,
       "counts": {
         "t-2": 10,
         "t-1": 11,
         "t=0": 11,
         "t+1": 16,
         "t+2": 12,
-        "ENTRE": 216
+        "ENTRE": 217
       },
       "pcts": {
-        "t-2": 3.62,
-        "t-1": 3.99,
-        "t=0": 3.99,
-        "t+1": 5.8,
-        "t+2": 4.35,
-        "ENTRE": 78.26
+        "t-2": 3.61,
+        "t-1": 3.97,
+        "t=0": 3.97,
+        "t+1": 5.78,
+        "t+2": 4.33,
+        "ENTRE": 78.34
       },
       "n_en_rango": 60,
-      "pct_en_rango": 21.74,
+      "pct_en_rango": 21.66,
       "n_anticipada": 21,
-      "pct_anticipada": 7.61,
+      "pct_anticipada": 7.58,
       "n_exacta": 11,
-      "pct_exacta": 3.99,
+      "pct_exacta": 3.97,
       "n_retrasada": 28,
-      "pct_retrasada": 10.14,
-      "n_fuera": 216,
-      "pct_fuera": 78.26,
-      "delta_medio": 11.1,
+      "pct_retrasada": 10.11,
+      "n_fuera": 217,
+      "pct_fuera": 78.34,
+      "delta_medio": 11.2,
       "delta_mediana": 8.0
     },
     "rendimiento_por_slot": {
@@ -4705,80 +4705,80 @@
         "bars_medio": 8.5
       },
       "ENTRE": {
-        "n": 216,
-        "hit_rate": 0.356,
-        "ev": -0.0066,
-        "bars_medio": 16.7
+        "n": 217,
+        "hit_rate": 0.355,
+        "ev": -0.0067,
+        "bars_medio": 16.6
       }
     },
     "escalas_zigzag": {
       "zz25": {
         "escala_pct": 2.5,
-        "n": 276,
-        "hit_rate": 0.457,
+        "n": 277,
+        "hit_rate": 0.455,
         "baseline_hit": 0.41,
-        "hit_neto": 0.0463,
-        "p_value_binom": 0.0671,
-        "ev": -0.0014,
+        "hit_neto": 0.0446,
+        "p_value_binom": 0.0742,
+        "ev": -0.0015,
         "baseline_ev": -0.0045,
-        "ev_neto": 0.0032,
+        "ev_neto": 0.0031,
         "profit_factor": 0.89,
-        "mae_medio": 0.0191,
-        "mae_p10": 0.0036,
+        "mae_medio": 0.019,
+        "mae_p10": 0.0037,
         "mae_p90": 0.0285,
-        "mfe_medio": 0.02,
+        "mfe_medio": 0.0199,
         "mfe_p90": 0.0344,
         "rr_asymmetry": 1.05,
         "bars_medio": 15.2,
-        "ev_por_barra": -8.9e-05
+        "ev_por_barra": -9.6e-05
       },
       "zz50": {
         "escala_pct": 5.0,
-        "n": 276,
-        "hit_rate": 0.236,
+        "n": 277,
+        "hit_rate": 0.235,
         "baseline_hit": 0.262,
-        "hit_neto": -0.026,
-        "p_value_binom": 0.854,
-        "ev": -0.0075,
+        "hit_neto": -0.0269,
+        "p_value_binom": 0.8618,
+        "ev": -0.0076,
         "baseline_ev": -0.0113,
-        "ev_neto": 0.0038,
-        "profit_factor": 0.5,
+        "ev_neto": 0.0037,
+        "profit_factor": 0.49,
         "mae_medio": 0.0315,
         "mae_p10": 0.0057,
         "mae_p90": 0.0533,
-        "mfe_medio": 0.0288,
+        "mfe_medio": 0.0287,
         "mfe_p90": 0.0568,
         "rr_asymmetry": 0.91,
-        "bars_medio": 31.1,
-        "ev_por_barra": -0.00024
+        "bars_medio": 31.0,
+        "ev_por_barra": -0.000244
       },
       "zz75": {
         "escala_pct": 7.5,
-        "n": 276,
+        "n": 277,
         "hit_rate": 0.083,
         "baseline_hit": 0.119,
-        "hit_neto": -0.0359,
-        "p_value_binom": 0.9778,
-        "ev": -0.0064,
+        "hit_neto": -0.0362,
+        "p_value_binom": 0.9789,
+        "ev": -0.0065,
         "baseline_ev": -0.0112,
-        "ev_neto": 0.0048,
+        "ev_neto": 0.0047,
         "profit_factor": 0.27,
         "mae_medio": 0.0284,
         "mae_p10": 0.006,
-        "mae_p90": 0.0564,
-        "mfe_medio": 0.0285,
-        "mfe_p90": 0.0689,
+        "mae_p90": 0.0563,
+        "mfe_medio": 0.0284,
+        "mfe_p90": 0.0688,
         "rr_asymmetry": 1.0,
-        "bars_medio": 26.0,
-        "ev_por_barra": -0.000245
+        "bars_medio": 25.9,
+        "ev_por_barra": -0.000249
       }
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
-      "n_episodios": 276,
-      "zz25_hit_rate": 0.457,
-      "zz25_ev": -0.0014
+      "total_barras_post2011": 3921,
+      "n_episodios": 277,
+      "zz25_hit_rate": 0.455,
+      "zz25_ev": -0.0015
     },
     "modo_ejecucion": "lake",
     "fecha_inicio_valida": "2011-02-01",
@@ -4792,9 +4792,9 @@
     "n_episodes": 289,
     "descripcion": "VIX en extremo pero breadth NO colapsa. El mercado absorbe el shock sin capitular = fortaleza subyacente.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 4014,
-      "fire_rate_pct": 47.47,
+      "fire_rate_pct": 47.46,
       "n_episodios": 289,
       "cadencia_1_en_n_barras": 29.3,
       "es_fondo": false,
@@ -4907,16 +4907,16 @@
         "p_value_binom": 0.0924,
         "ev": 0.0081,
         "baseline_ev": 0.0118,
-        "ev_neto": -0.0038,
-        "profit_factor": 1.0,
+        "ev_neto": -0.0037,
+        "profit_factor": 0.99,
         "mae_medio": -0.0355,
         "mae_p10": -0.0057,
         "mae_p90": -0.0625,
         "mfe_medio": 0.0371,
         "mfe_p90": 0.0559,
         "rr_asymmetry": 1.05,
-        "bars_medio": 21.3,
-        "ev_por_barra": 0.000378
+        "bars_medio": 21.4,
+        "ev_por_barra": 0.000379
       },
       "zz75": {
         "escala_pct": 7.5,
@@ -4941,7 +4941,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 151,
       "zz25_hit_rate": 0.609,
       "zz25_ev": 0.0061
@@ -4958,11 +4958,11 @@
     "n_episodes": 68,
     "descripcion": "FIRMA DE TECHO ESCASA: en techo, volumen institucional desaparece mientras volatilidad expande. Precursora de contexto (22/22 en techos). No operable direccionalmente (WR 27%).",
     "poblacion": {
-      "total_barras_dataset": 6959,
+      "total_barras_dataset": 6960,
       "total_barras_activas": 71,
       "fire_rate_pct": 1.02,
       "n_episodios": 68,
-      "cadencia_1_en_n_barras": 102.3,
+      "cadencia_1_en_n_barras": 102.4,
       "es_fondo": false,
       "duracion_episodio": {
         "mean": 1.04,
@@ -5072,7 +5072,7 @@
         "hit_neto": -0.0039,
         "p_value_binom": 0.5727,
         "ev": -0.0091,
-        "baseline_ev": -0.0076,
+        "baseline_ev": -0.0077,
         "ev_neto": -0.0015,
         "profit_factor": 0.54,
         "mae_medio": 0.0355,
@@ -5107,7 +5107,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 37,
       "zz25_hit_rate": 0.432,
       "zz25_ev": -0.0044
@@ -5124,7 +5124,7 @@
     "n_episodes": 164,
     "descripcion": "RETIRADA: duplicado 100% de euforia. Usar euforia en su lugar.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 969,
       "fire_rate_pct": 11.46,
       "n_episodios": 164,
@@ -5239,7 +5239,7 @@
         "p_value_binom": 0.9892,
         "ev": -0.009,
         "baseline_ev": -0.0118,
-        "ev_neto": 0.0028,
+        "ev_neto": 0.0029,
         "profit_factor": 0.46,
         "mae_medio": 0.0325,
         "mae_p10": 0.0063,
@@ -5273,7 +5273,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 105,
       "zz25_hit_rate": 0.476,
       "zz25_ev": -0.0011
@@ -5290,7 +5290,7 @@
     "n_episodes": 83,
     "descripcion": "VIX dispara a crisis spike. A pesar del nombre, el edge es POSITIVO: comprar el pánico de volatilidad es contrarian rentable.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 433,
       "fire_rate_pct": 5.12,
       "n_episodios": 83,
@@ -5439,7 +5439,7 @@
     },
     "escala_optima": "zz50",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 5,
       "zz25_hit_rate": 0.6,
       "zz25_ev": -0.0046
@@ -5456,7 +5456,7 @@
     "n_episodes": 95,
     "descripcion": "VIX crisis con cinemática de spike confirmada. El D2 velocidad confirma que el VIX NO está estancado en crisis sino acelerando.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 209,
       "fire_rate_pct": 2.47,
       "n_episodios": 95,
@@ -5571,7 +5571,7 @@
         "p_value_binom": 0.0082,
         "ev": 0.0073,
         "baseline_ev": 0.0118,
-        "ev_neto": -0.0045,
+        "ev_neto": -0.0046,
         "profit_factor": 1.15,
         "mae_medio": -0.0417,
         "mae_p10": -0.0067,
@@ -5605,7 +5605,7 @@
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 7,
       "zz25_hit_rate": 0.714,
       "zz25_ev": 0.0017
@@ -5622,7 +5622,7 @@
     "n_episodes": 136,
     "descripcion": "VIX D3=4 (inestable) + D1≤3 (no en pánico): la inestabilidad del VIX sin pánico confirmado tiende a resolverse al alza. Primera señal D3 funcional.",
     "poblacion": {
-      "total_barras_dataset": 8456,
+      "total_barras_dataset": 8457,
       "total_barras_activas": 147,
       "fire_rate_pct": 1.74,
       "n_episodios": 136,
@@ -5755,7 +5755,7 @@
         "baseline_hit": 0.105,
         "hit_neto": -0.076,
         "p_value_binom": 0.9998,
-        "ev": 0.0082,
+        "ev": 0.0083,
         "baseline_ev": 0.0112,
         "ev_neto": -0.0029,
         "profit_factor": 0.07,
@@ -5766,12 +5766,12 @@
         "mfe_p90": 0.0562,
         "rr_asymmetry": 1.08,
         "bars_medio": 25.5,
-        "ev_por_barra": 0.000323
+        "ev_por_barra": 0.000326
       }
     },
     "escala_optima": "zz25",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 69,
       "zz25_hit_rate": 0.623,
       "zz25_ev": 0.0061
@@ -5788,7 +5788,7 @@
     "n_episodes": 56,
     "descripcion": "VVIX en extremo: la volatilidad de la volatilidad dispara = inestabilidad máxima. Contrarian de compra.",
     "poblacion": {
-      "total_barras_dataset": 5157,
+      "total_barras_dataset": 5158,
       "total_barras_activas": 207,
       "fire_rate_pct": 4.01,
       "n_episodios": 56,
@@ -5881,7 +5881,7 @@
         "p_value_binom": 0.6171,
         "ev": 0.0086,
         "baseline_ev": 0.0044,
-        "ev_neto": 0.0042,
+        "ev_neto": 0.0041,
         "profit_factor": 1.78,
         "mae_medio": -0.0258,
         "mae_p10": -0.0044,
@@ -5921,7 +5921,7 @@
         "p_value_binom": 0.0045,
         "ev": 0.0165,
         "baseline_ev": 0.01,
-        "ev_neto": 0.0065,
+        "ev_neto": 0.0064,
         "profit_factor": 0.55,
         "mae_medio": -0.0461,
         "mae_p10": -0.0078,
@@ -5935,7 +5935,7 @@
     },
     "escala_optima": "zz75",
     "post_2011": {
-      "total_barras_post2011": 3920,
+      "total_barras_post2011": 3921,
       "n_episodios": 45,
       "zz25_hit_rate": 0.556,
       "zz25_ev": 0.0033

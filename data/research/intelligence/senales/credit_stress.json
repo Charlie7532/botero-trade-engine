@@ -15,7 +15,7 @@
   "poblacion": {
     "n_episodios": 27,
     "n_barras_totales": 341,
-    "fire_rate_pct": 6.99,
+    "fire_rate_pct": 6.98,
     "cadencia_1_en_n_barras": 180.8,
     "duracion_episodio_barras": {
       "mean": 12.63,

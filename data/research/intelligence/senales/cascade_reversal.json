@@ -13,111 +13,111 @@
   "blanco": "MAX",
   "version": "2.0-homologada",
   "poblacion": {
-    "n_episodios": 219,
-    "n_barras_totales": 238,
-    "fire_rate_pct": 2.81,
-    "cadencia_1_en_n_barras": 38.6,
+    "n_episodios": 80,
+    "n_barras_totales": 85,
+    "fire_rate_pct": 2.17,
+    "cadencia_1_en_n_barras": 49.0,
     "duracion_episodio_barras": {
-      "mean": 1.09,
+      "mean": 1.06,
       "median": 1.0,
       "p90": 1.0,
       "min": 1,
-      "max": 3
+      "max": 2
     },
     "es_diamante": false,
     "tier_rareza": "ROBUST"
   },
   "timing": {
     "precision": "COINCIDENTE",
-    "pct_en_rango": 72.15,
-    "pct_fuera_de_rango": 27.85,
-    "delta_medio_barras": 1.9,
+    "pct_en_rango": 70.0,
+    "pct_fuera_de_rango": 30.0,
+    "delta_medio_barras": 1.7,
     "delta_mediana_barras": 0.0,
     "por_slot": {
       "t-2": {
-        "n": 4,
+        "n": 1,
         "hit_rate": 0.0,
-        "ev": -0.0279,
-        "bars_medio": 1.5
+        "ev": -0.0296,
+        "bars_medio": 2.0
       },
       "t-1": {
-        "n": 6,
-        "hit_rate": 0.667,
-        "ev": 0.0068,
-        "bars_medio": 4.0
+        "n": 2,
+        "hit_rate": 1.0,
+        "ev": 0.0154,
+        "bars_medio": 5.5
       },
       "t=0": {
-        "n": 118,
-        "hit_rate": 0.856,
-        "ev": 0.0198,
-        "bars_medio": 6.2
+        "n": 44,
+        "hit_rate": 0.909,
+        "ev": 0.0213,
+        "bars_medio": 6.5
       },
       "t+1": {
-        "n": 6,
-        "hit_rate": 0.167,
-        "ev": -0.0179,
-        "bars_medio": 6.7
+        "n": 3,
+        "hit_rate": 0.333,
+        "ev": -0.0145,
+        "bars_medio": 11.3
       },
       "t+2": {
-        "n": 24,
+        "n": 6,
         "hit_rate": 0.167,
-        "ev": -0.0197,
-        "bars_medio": 6.3
+        "ev": -0.0214,
+        "bars_medio": 5.3
       },
       "ENTRE": {
-        "n": 61,
-        "hit_rate": 0.131,
-        "ev": -0.0204,
-        "bars_medio": 7.5
+        "n": 24,
+        "hit_rate": 0.083,
+        "ev": -0.0231,
+        "bars_medio": 6.4
       }
     },
     "perfil_agregado": {
-      "anticipadora_t2_t1_pct": 4.57,
-      "coincidente_t0_pct": 53.88,
-      "confirmadora_t1_t2_pct": 13.7,
-      "fuera_rango_pct": 27.85
+      "anticipadora_t2_t1_pct": 3.75,
+      "coincidente_t0_pct": 55.0,
+      "confirmadora_t1_t2_pct": 11.25,
+      "fuera_rango_pct": 30.0
     }
   },
   "first_passage": {
     "escalas": {
       "zz25": {
-        "n": 219,
-        "hit_rate": 0.539,
-        "hit_neto": 0.1075,
-        "ev_neto": 0.0063,
-        "profit_factor": 1.17,
-        "mae_medio": 0.0186,
-        "mfe_medio": 0.0225,
-        "bars_medio": 6.4,
-        "p_value_binom": 0.0009
+        "n": 80,
+        "hit_rate": 0.575,
+        "hit_neto": 0.1647,
+        "ev_neto": 0.0072,
+        "profit_factor": 1.23,
+        "mae_medio": 0.0169,
+        "mfe_medio": 0.0221,
+        "bars_medio": 6.5,
+        "p_value_binom": 0.0022
       },
       "zz50": {
-        "n": 219,
-        "hit_rate": 0.411,
-        "hit_neto": 0.1213,
+        "n": 80,
+        "hit_rate": 0.362,
+        "hit_neto": 0.101,
         "ev_neto": 0.0069,
-        "profit_factor": 0.73,
-        "mae_medio": 0.0361,
-        "mfe_medio": 0.0372,
-        "bars_medio": 22.1,
-        "p_value_binom": 0.0001
+        "profit_factor": 0.74,
+        "mae_medio": 0.0315,
+        "mfe_medio": 0.0344,
+        "bars_medio": 23.8,
+        "p_value_binom": 0.0299
       },
       "zz75": {
-        "n": 219,
-        "hit_rate": 0.215,
-        "hit_neto": 0.0736,
-        "ev_neto": 0.0084,
-        "profit_factor": 0.47,
-        "mae_medio": 0.0372,
-        "mfe_medio": 0.0427,
-        "bars_medio": 23.5,
-        "p_value_binom": 0.002
+        "n": 80,
+        "hit_rate": 0.2,
+        "hit_neto": 0.0808,
+        "ev_neto": 0.0091,
+        "profit_factor": 0.52,
+        "mae_medio": 0.032,
+        "mfe_medio": 0.0394,
+        "bars_medio": 24.2,
+        "p_value_binom": 0.0257
       }
     },
     "escala_optima": "zz75",
     "ci95_hit_rate_mejor_escala": [
-      0.4704,
-      0.6062
+      0.4594,
+      0.6849
     ]
   },
   "perfil_regimen_pivotes": {
@@ -169,15 +169,15 @@
     "max_consecutive_losses": null
   },
   "confiabilidad": {
-    "p_value_binom_mejor_escala": 0.0009,
-    "p_BH": 0.01728,
-    "p_bonferroni": 0.072,
-    "significativo_BH": true,
+    "p_value_binom_mejor_escala": 0.0022,
+    "p_BH": 0.126,
+    "p_bonferroni": 0.9252,
+    "significativo_BH": false,
     "independencia_F3": 0.71,
     "techo_mejora_F3": 0.29,
-    "score_compuesto": 11.735,
+    "score_compuesto": 11.95,
     "rol_institucional": "ESTRUCTURAL"
   },
-  "score_compuesto": 11.735,
+  "score_compuesto": 11.95,
   "rol": "ESTRUCTURAL"
 }

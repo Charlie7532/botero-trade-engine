@@ -15,7 +15,7 @@
   "poblacion": {
     "n_episodios": 48,
     "n_barras_totales": 2884,
-    "fire_rate_pct": 59.09,
+    "fire_rate_pct": 59.07,
     "cadencia_1_en_n_barras": 101.7,
     "duracion_episodio_barras": {
       "mean": 60.08,
@@ -95,7 +95,7 @@
         "n": 48,
         "hit_rate": 0.229,
         "hit_neto": -0.0709,
-        "ev_neto": 0.0047,
+        "ev_neto": 0.0048,
         "profit_factor": 0.58,
         "mae_medio": 0.0317,
         "mfe_medio": 0.0316,
@@ -132,9 +132,9 @@
     "significativo_BH": false,
     "independencia_F3": null,
     "techo_mejora_F3": null,
-    "score_compuesto": 0.05,
+    "score_compuesto": 0.06,
     "rol_institucional": "TACTICA_RAPIDA"
   },
-  "score_compuesto": 0.05,
+  "score_compuesto": 0.06,
   "rol": "TACTICA_RAPIDA"
 }

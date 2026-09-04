@@ -16,7 +16,7 @@
     "n_episodios": 4,
     "n_barras_totales": 12,
     "fire_rate_pct": 0.25,
-    "cadencia_1_en_n_barras": 1220.2,
+    "cadencia_1_en_n_barras": 1220.5,
     "duracion_episodio_barras": {
       "mean": 3.0,
       "median": 3.0,

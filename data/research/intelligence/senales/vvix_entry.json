@@ -72,7 +72,7 @@
         "n": 56,
         "hit_rate": 0.571,
         "hit_neto": -0.0103,
-        "ev_neto": 0.0042,
+        "ev_neto": 0.0041,
         "profit_factor": 1.78,
         "mae_medio": -0.0258,
         "mfe_medio": 0.032,
@@ -94,7 +94,7 @@
         "n": 56,
         "hit_rate": 0.214,
         "hit_neto": 0.1219,
-        "ev_neto": 0.0065,
+        "ev_neto": 0.0064,
         "profit_factor": 0.55,
         "mae_medio": -0.0461,
         "mfe_medio": 0.0519,
@@ -158,14 +158,14 @@
   },
   "confiabilidad": {
     "p_value_binom_mejor_escala": 0.6171,
-    "p_BH": 0.027,
+    "p_BH": 0.0324,
     "p_bonferroni": 0.162,
     "significativo_BH": true,
     "independencia_F3": 0.11,
     "techo_mejora_F3": 0.89,
-    "score_compuesto": 15.138,
+    "score_compuesto": 15.128,
     "rol_institucional": "ESTRUCTURAL"
   },
-  "score_compuesto": 15.138,
+  "score_compuesto": 15.128,
   "rol": "ESTRUCTURAL"
 }

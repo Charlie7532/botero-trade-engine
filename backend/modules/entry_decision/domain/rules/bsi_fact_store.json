@@ -160,7 +160,7 @@
     "signal_interpretation_policy": "Clean Architecture Standard: pure domain rules iterate over states and emit universal 4D action taxonomy."
   },
   "station": "BSI",
-  "sample_size": 8453,
+  "sample_size": 8457,
   "states_populated": 112,
   "baselines": {
     "zz25": 0.558,
@@ -169,7 +169,7 @@
   },
   "enrichment_metadata": {
     "generated_by": "regenerar_fact_stores.py (Sprint 2)",
-    "generated_at": "2026-09-03T10:09:12.433077+00:00",
+    "generated_at": "2026-09-04T04:29:02.258912+00:00",
     "declustering": "embargo by scale window (zz25=80, zz50=40, zz75=27)",
     "ci_method": "Clopper-Pearson exact",
     "multiple_testing": "Benjamini-Hochberg (q=0.05)",
@@ -6818,7 +6818,7 @@
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_HOLD_STABLE",
       "n_episodes": 121,
-      "pct_tiempo": 1.46,
+      "pct_tiempo": 1.45,
       "duration_mean": 1.0,
       "duration_max": 2,
       "zz25": {
@@ -7238,7 +7238,7 @@
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_HOLD_STABLE",
       "n_episodes": 617,
-      "pct_tiempo": 11.1,
+      "pct_tiempo": 11.09,
       "duration_mean": 1.5,
       "duration_max": 9,
       "zz25": {
@@ -7318,17 +7318,17 @@
       }
     },
     "2__2__3": {
-      "n": 203,
+      "n": 205,
       "stats": {
         "min": 34.5,
         "max": 60.2,
-        "mean": 49.8552,
-        "std": 6.5118
+        "mean": 49.7346,
+        "std": 6.5932
       },
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_HOLD_STABLE",
-      "n_episodes": 191,
-      "pct_tiempo": 2.4,
+      "n_episodes": 192,
+      "pct_tiempo": 2.42,
       "duration_mean": 1.1,
       "duration_max": 3,
       "zz25": {
@@ -7898,7 +7898,7 @@
       "divergence_regime": "HORIZON_DIVERGENT",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
       "n_episodes": 51,
-      "pct_tiempo": 0.62,
+      "pct_tiempo": 0.61,
       "duration_mean": 1.0,
       "duration_max": 2,
       "zz25": {
@@ -9458,7 +9458,7 @@
       "divergence_regime": "HORIZON_DIVERGENT",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
       "n_episodes": 118,
-      "pct_tiempo": 1.59,
+      "pct_tiempo": 1.58,
       "duration_mean": 1.1,
       "duration_max": 3,
       "zz25": {
@@ -9548,7 +9548,7 @@
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_HOLD_STABLE",
       "n_episodes": 63,
-      "pct_tiempo": 0.75,
+      "pct_tiempo": 0.74,
       "duration_mean": 1.0,
       "duration_max": 1,
       "zz25": {
@@ -10088,7 +10088,7 @@
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_HOLD_STABLE",
       "n_episodes": 689,
-      "pct_tiempo": 13.64,
+      "pct_tiempo": 13.63,
       "duration_mean": 1.7,
       "duration_max": 9,
       "zz25": {
@@ -12638,7 +12638,7 @@
       "divergence_regime": "FULL_CONVERGENT_BULL",
       "operational_guidance": "STK_ACCUMULATE_STRUCTURAL",
       "n_episodes": 422,
-      "pct_tiempo": 8.38,
+      "pct_tiempo": 8.37,
       "duration_mean": 1.7,
       "duration_max": 8,
       "zz25": {

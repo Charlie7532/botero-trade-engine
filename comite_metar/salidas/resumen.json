@@ -1,0 +1,41 @@
+{
+  "episodios_generados": 730,
+  "episodios_procesados": 730,
+  "episodios_con_senal": 660,
+  "n_estaciones_validadas": 0,
+  "n_estaciones_invalidadas": 11,
+  "estaciones_validadas": "",
+  "estaciones_invalidadas": "bsi, credit, dxy, fg, pcr, rotation, skew, sv5_turbulence, vix, vvix, yield_curve",
+  "modelo_confluencia_test_deflated": {
+    "n_episodios_con_senal": 14,
+    "hits": 12,
+    "accuracy": 0.8571,
+    "baseline": 0.875,
+    "lift": -0.0205,
+    "p_value_two_sided": 0.012939,
+    "p_value_greater": 0.00647,
+    "deflated": false,
+    "n_episodios": 16,
+    "porcentaje_con_importancia": {
+      "episodios_con_senal_net": 14,
+      "total_test": 16,
+      "cobertura_pct": 0.875
+    }
+  },
+  "modelo_confluencia_raw_test": {
+    "n_episodios_con_senal": 16,
+    "hits": 12,
+    "accuracy": 0.75,
+    "baseline": 0.875,
+    "lift": -0.1429,
+    "p_value_two_sided": 0.076813,
+    "p_value_greater": 0.038406,
+    "deflated": false,
+    "cobertura": 1.0
+  },
+  "sin_lookahead": {
+    "n_verificados": 25,
+    "n_ok": 25,
+    "sin_lookahead": true
+  }
+}

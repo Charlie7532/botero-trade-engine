@@ -2,7 +2,7 @@
 
 **Fecha de detección:** 2026-09-04
 **Documentado por:** Hermes (auditoría del comité walk-forward)
-**Estado:** ESPERANDO AL VAULT (backfill upstream en curso)
+**Estado:** ✅ **RESUELTO** (2026-09-04) — Vault completado + lake regenerado + commiteado (`a3591d5` → `46f23e5`)
 
 ---
 
@@ -53,3 +53,27 @@ for tk in ['SPY','CBOE_PCR','DXY','YIELD_SPREAD']:
 2. Re-generar el lake (`build_continuous_metar_lake.py`).
 3. Re-generar `episodios.json` del comité → la ventana de cobertura completa se extenderá sola.
 4. Opcional: si se necesita backfill inmediato, localizar el ingestor primario de CBOE_PCR/DXY y ejecutar fetch histórico (solo si la fuente lo soporta y tiene los datos).
+
+---
+
+## ✅ RESOLUCIÓN (2026-09-04)
+
+**Causa raíz corregida en código** (verificado): el corte NO era la fuente externa caída — era que el `ohlcv_provider` descargaba los símbolos canónicos de índices (`TNX`, `IRX`, `DXY`) por Yahoo **sin el símbolo real de índice** (`^TNX`, `^IRX`, `DX-Y.NYB`), que Yahoo no reconoce → esos tickers se quedaban congelados.
+
+**Corrección aplicada y commiteada (`a3591d5`):**
+- `SOURCE_TICKER_MAP` en `ohlcv_provider.py` (mapeo a símbolos externos reales)
+- `retry_tickers()` + `stats["failed"]` (seguimiento/reintento de tickers fallidos, anti-silent-swallowing)
+- `synthetic_indicators_provider.py`: backfill incremental + **fallback FRED** (DGS10-DTB3) para YIELD_SPREAD
+- `pcr_provider.py`: ingestión directa del feed oficial CBOE (RSC) para CBOE_PCR
+- `bsi_provider.py`: sincronización S5TW→BSI (11,678 barras)
+- `notam_incident_service.py`: monitoreo de 21 estaciones + NOTAM operativo
+
+**Verificación independiente del resultado (TimescaleDataStore):**
+- SPY, CBOE_PCR, DXY, TNX, IRX, YIELD_SPREAD, VIX, FG, SKEW, CREDIT, SV5, BSI → **todas al día 2026-09-03/04** (antes PCR/DXY congelados en 08-12)
+
+**Lake re-generado y validado:**
+- `continuous_metar_lake.parquet` → 8,457 filas, cobertura **11/11 estaciones hasta 2026-09-03**
+- `bar_signals.parquet` → 8,457 filas, al día
+- Restricción de fechas finales del comité **eliminada** (vista completa se extiende a 09-03)
+- Señales consistentes (panico_total N=29, fg_extreme_fear N=18, cascade_reversal N=80 `pierna_confirmada`)
+- Tests alineados a datos nuevos: `test_dxy_lookup/fg_fact_store/rotation_lookup/evaluador_general` actualizados (valores reales cambiaron con datos completos — verificado no-enmascaramiento)

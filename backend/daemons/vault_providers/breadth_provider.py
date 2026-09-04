@@ -23,9 +23,12 @@ class BreadthProvider:
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> dict:
         """Calculate all three breadth indicators from SP500 OHLCV data."""
-        if _already_vaulted_today(store, "macro/breadth", "SP500"):
-            logger.info("📊 Breadth already vaulted today — skipping")
-            return {"status": "skipped", "reason": "already_today"}
+        last_s5tw = store.bars_last_date("S5TW", "1d")
+        last_spy = store.bars_last_date("SPY", "1d")
+        if last_s5tw and last_spy and last_s5tw >= last_spy:
+            if _already_vaulted_today(store, "macro/breadth", "SP500"):
+                logger.info("📊 Breadth already vaulted today — skipping")
+                return {"status": "skipped", "reason": "already_today"}
 
         return self._compute_breadth(store)
 
@@ -60,22 +63,36 @@ class BreadthProvider:
             store.save_mcp_snapshot("macro/breadth", "SP500", snapshot)
 
             now = datetime.now(UTC)
-            for ticker, value in [("S5TH", s5th), ("S5TW", s5tw), ("S5FI", s5fi)]:
+            for ticker, value in [("S5TH", s5th), ("S5TW", s5tw), ("S5FI", s5fi), ("BSI", s5tw)]:
                 if value is not None:
                     store.upsert_ohlcv_bar(
                         ticker=ticker, timeframe="1d", time=now,
                         open=value, high=value, low=value, close=value,
                         volume=n_constituents,
                     )
+                    store.upsert_ticker_metadata(
+                        ticker=ticker,
+                        sector="Breadth",
+                        industry="INDICATOR",
+                        market_cap_bucket=None,
+                    )
+
+            # Trigger BSI METAR generation and regime transition immediately with breadth update
+            try:
+                from backend.daemons.vault_providers.bsi_provider import BSIProvider
+                bsi_res = BSIProvider().run_full(store)
+                logger.info(f"📊 BSI Provider executed in direct cascade with breadth update: {bsi_res.get('status')}")
+            except Exception as bsi_err:
+                logger.warning(f"BSI cascade execution failed: {bsi_err}")
 
             s5th_str = f"{s5th:.1f}%" if s5th is not None else "N/A"
             s5tw_str = f"{s5tw:.1f}%" if s5tw is not None else "N/A"
             s5fi_str = f"{s5fi:.1f}%" if s5fi is not None else "N/A"
             logger.info(
-                f"📊 Breadth vault: S5TH={s5th_str} S5TW={s5tw_str} S5FI={s5fi_str} "
+                f"📊 Breadth vault: S5TH={s5th_str} S5TW={s5tw_str} S5FI={s5fi_str} BSI={s5tw_str} "
                 f"({len(all_closes)} SP500 tickers)"
             )
-            return {"status": "ok", "s5th": s5th, "s5tw": s5tw, "s5fi": s5fi}
+            return {"status": "ok", "s5th": s5th, "s5tw": s5tw, "s5fi": s5fi, "bsi": s5tw}
 
         except Exception as e:
             logger.warning(f"Breadth vault failed (non-critical): {e}")

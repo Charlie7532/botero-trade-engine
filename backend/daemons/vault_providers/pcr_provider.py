@@ -31,16 +31,106 @@ class PCRProvider:
     categories = ["pcr", "cboe_pcr"]
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
-        """Compute and persist PCR Market METAR and regime state from Vault data."""
-        if _already_vaulted_today(store, "pcr/sigmet", "MARKET"):
+        """Fetch latest CBOE official daily PCR bars, then compute and persist METAR & regime state."""
+        sync_res = self._sync_cboe_bars(store)
+        
+        # If no new bars were added and already vaulted today, skip computation
+        if sync_res.get("new_bars", 0) == 0 and _already_vaulted_today(store, "pcr/sigmet", "MARKET"):
             logger.info("📊 PCR Market METAR already vaulted today — skipping")
-            return {"status": "skipped", "reason": "already_today"}
+            return {"status": "skipped", "reason": "already_today", "sync": sync_res}
 
-        return self._compute(store)
+        res = self._compute(store)
+        res["sync"] = sync_res
+        return res
 
     def run_ticker(self, store: TimescaleDataStore, ticker: str) -> Dict[str, Any]:
         """PCR METAR is market-wide — falls back to run_full."""
-        return self._compute(store)
+        return self.run_full(store)
+
+    def _sync_cboe_bars(self, store: TimescaleDataStore) -> Dict[str, Any]:
+        """Fetch and persist official daily CBOE Put/Call Ratio bars directly from CBOE."""
+        import requests
+        import re
+        import json
+        import pandas as pd
+        from datetime import datetime, UTC, timedelta
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'RSC': '1',
+        }
+
+        def fetch_cboe_daily(date_str: str) -> Optional[tuple]:
+            url = f"https://www.cboe.com/us/options/market_statistics/daily/?dt={date_str}"
+            try:
+                r = requests.get(url, headers=headers, timeout=10)
+                if r.status_code != 200:
+                    return None
+                m_ratios = re.search(r'\"ratios\":(\[\{.*?\}\])', r.text)
+                if not m_ratios:
+                    return None
+                m_dt = re.search(r'\"selectedDate\":\"([0-9-]+)\"', r.text)
+                actual_date = m_dt.group(1) if m_dt else date_str
+                if actual_date != date_str:
+                    return None
+                ratios = json.loads(m_ratios.group(1))
+                ratio_map = {item['name']: float(item['value']) for item in ratios if 'name' in item and 'value' in item}
+                return actual_date, ratio_map
+            except Exception as e:
+                logger.warning(f"Failed to fetch CBOE data for {date_str}: {e}")
+                return None
+
+        try:
+            last_date = store.bars_last_date("CBOE_PCR", "1d")
+            now_utc = datetime.now(UTC)
+            ref_date = now_utc.date()
+
+            if not last_date:
+                start_date = ref_date - timedelta(days=30)
+            else:
+                last_dt = last_date.date() if isinstance(last_date, datetime) else last_date
+                start_date = last_dt + timedelta(days=1)
+
+            if start_date > ref_date:
+                return {"status": "ok", "new_bars": 0}
+
+            bdays = [d.strftime("%Y-%m-%d") for d in pd.bdate_range(start_date, ref_date)]
+            if not bdays:
+                return {"status": "ok", "new_bars": 0}
+
+            pcr_rows = []
+            cpce_rows = []
+            for d in bdays:
+                res = fetch_cboe_daily(d)
+                if res:
+                    adate, rmap = res
+                    tot = rmap.get("TOTAL PUT/CALL RATIO")
+                    eq = rmap.get("EQUITY PUT/CALL RATIO")
+                    ts = pd.to_datetime(adate).tz_localize("UTC")
+                    if tot is not None:
+                        pcr_rows.append({"time": ts, "open": tot, "high": tot, "low": tot, "close": tot, "volume": 0})
+                    if eq is not None:
+                        cpce_rows.append({"time": ts, "open": eq, "high": eq, "low": eq, "close": eq, "volume": 0})
+
+            new_count = 0
+            if pcr_rows:
+                df_pcr = pd.DataFrame(pcr_rows).set_index("time")
+                store.save_bars("CBOE_PCR", "1d", df_pcr)
+                store.upsert_ticker_metadata(ticker="CBOE_PCR", sector="Options", industry="INDICATOR")
+                new_count = len(df_pcr)
+
+            if cpce_rows:
+                df_cpce = pd.DataFrame(cpce_rows).set_index("time")
+                store.save_bars("CBOE_CPCE", "1d", df_cpce)
+                store.upsert_ticker_metadata(ticker="CBOE_CPCE", sector="Options", industry="INDICATOR")
+
+            if new_count > 0:
+                logger.info(f"📊 CBOE_PCR vault: {new_count} new bars saved from official CBOE feed")
+
+            return {"status": "ok", "new_bars": new_count}
+        except Exception as e:
+            logger.error(f"CBOE daily sync failed: {e}")
+            return {"status": "error", "error": str(e), "new_bars": 0}
 
     def _compute(self, store: TimescaleDataStore) -> Dict[str, Any]:
         """Core computation: read Vault → METAR service → persist snapshot & regime state."""

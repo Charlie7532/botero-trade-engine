@@ -27,6 +27,7 @@ import time
 from dataclasses import asdict
 from datetime import datetime, date, UTC
 from pathlib import Path
+from typing import Optional, Dict, Any, List
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
@@ -59,6 +60,9 @@ def _sanitize_for_json(obj):
 
 # Module-level flag: when True, _already_vaulted_today always returns False
 _FORCE_REFRESH = False
+
+# Persistent failure and retry tracker across cycles (Item/Station -> consecutive failure count)
+_RETRY_TRACKER: dict[str, int] = {}
 
 
 def _already_vaulted_today(store: TimescaleDataStore, category: str, ticker: str) -> bool:
@@ -537,6 +541,27 @@ def vault_market_indices(store: TimescaleDataStore) -> dict:
                         "volume": int(latest["Volume"]) if latest["Volume"] else 0,
                     }
                     stats["series"] += 1
+
+                    # Persist OHLCV bars directly for key macro indicators (Rule 14 & Rule 18)
+                    vault_bar_ticker = None
+                    if label == "DXY":
+                        vault_bar_ticker = "DXY"
+                    elif label == "YIELD_10Y":
+                        vault_bar_ticker = "TNX"
+                    elif label == "YIELD_3M":
+                        vault_bar_ticker = "IRX"
+
+                    if vault_bar_ticker:
+                        df_b = pd.DataFrame({
+                            "open": hist["Open"],
+                            "high": hist["High"],
+                            "low": hist["Low"],
+                            "close": hist["Close"],
+                            "volume": hist["Volume"].fillna(0).astype(int),
+                        }, index=hist.index)
+                        store.save_bars(vault_bar_ticker, "1d", df_b)
+                        sector = "Yields" if vault_bar_ticker in ("TNX", "IRX") else "Currency"
+                        store.upsert_ticker_metadata(ticker=vault_bar_ticker, sector=sector, industry="INDICATOR")
             except Exception as e:
                 logger.debug(f"  Macro {label}: {e}")
 
@@ -1249,124 +1274,15 @@ def vault_analyst_credibility(store: TimescaleDataStore, tickers: list[str]) -> 
 # ═══════════════════════════════════════════════════════════════
 # 7. OHLCV BARS — Daily update (yfinance + Alpaca enrichment)
 # ═══════════════════════════════════════════════════════════════
-
-def vault_ohlcv_bars(store: TimescaleDataStore, tickers: list[str]) -> dict:
-    """Update OHLCV bars with today's candle. 1x/day after market close."""
-    stats = {"updated": 0, "enriched": 0}
-
-    # Only run once per day
-    if _already_vaulted_today(store, "ohlcv/update", "BATCH_DONE"):
-        logger.info("📈 OHLCV bars already updated today — skipping")
-        return {"status": "skipped", "reason": "already_today"}
-
+def vault_ohlcv_bars(store: TimescaleDataStore, tickers: list[str], retry_tickers: list[str] = None) -> dict:
+    """Update OHLCV bars with today's candle via OHLCVProvider."""
     try:
-        import yfinance as yf
-        import pandas as pd
-        import os
-    except ImportError:
-        return {"status": "skipped", "reason": "no_yfinance"}
-
-    # Process in batches of 20 to avoid yfinance rate limits
-    batch_size = 20
-    for i in range(0, len(tickers), batch_size):
-        batch = tickers[i:i + batch_size]
-        for ticker in batch:
-            try:
-                # Get last date in Neon
-                last = store.bars_last_date(ticker, "1d")
-                if not last:
-                    continue
-
-                from datetime import timedelta
-                start_str = (last + timedelta(days=1)).strftime("%Y-%m-%d")
-
-                # Download new bars from yfinance
-                df = yf.download(ticker, start=start_str, interval="1d",
-                                 progress=False, auto_adjust=True)
-                if df.empty:
-                    continue
-
-                # Harmonize
-                if isinstance(df.columns, pd.MultiIndex):
-                    df = df.xs(ticker, level=1, axis=1)
-                df.columns = [c.lower() for c in df.columns]
-                required = ["open", "high", "low", "close", "volume"]
-                available = [c for c in required if c in df.columns]
-                df = df[available].copy()
-                if df.index.tz is not None:
-                    df.index = df.index.tz_convert("UTC")
-                else:
-                    df.index = df.index.tz_localize("UTC")
-                df.index.name = "timestamp"
-                df.dropna(subset=["open", "high", "low", "close"], inplace=True)
-
-                if df.empty:
-                    continue
-
-                store.save_bars(ticker, "1d", df)
-                stats["updated"] += 1
-
-                # Enrich with Alpaca trade_count + vwap
-                api_key = os.environ.get("ALPACA_API_KEY", "")
-                if api_key:
-                    try:
-                        from alpaca.data.historical import StockHistoricalDataClient
-                        from alpaca.data.requests import StockBarsRequest
-                        from alpaca.data.timeframe import TimeFrame
-
-                        client = StockHistoricalDataClient(
-                            api_key, os.environ.get("ALPACA_SECRET_KEY", "")
-                        )
-                        first_date = df.index.min()
-                        last_date = df.index.max()
-                        request = StockBarsRequest(
-                            symbol_or_symbols=ticker,
-                            timeframe=TimeFrame.Day,
-                            start=first_date,
-                            end=last_date + pd.Timedelta(days=1),
-                            limit=10,
-                        )
-                        alpaca_bars = client.get_stock_bars(request)
-                        if alpaca_bars and ticker in alpaca_bars.data:
-                            conn = store._conn()
-                            try:
-                                with conn.cursor() as cur:
-                                    for bar in alpaca_bars.data[ticker]:
-                                        vwap = float(bar.vwap) if hasattr(bar, 'vwap') and bar.vwap else None
-                                        tc = int(bar.trade_count) if hasattr(bar, 'trade_count') and bar.trade_count else None
-                                        if vwap or tc:
-                                            cur.execute(
-                                                """UPDATE market.ohlcv_bars
-                                                   SET vwap = %s, trade_count = %s
-                                                   WHERE ticker = %s AND timeframe = '1d'
-                                                   AND time::date = %s""",
-                                                (vwap, tc, ticker, bar.timestamp.date()),
-                                            )
-                                conn.commit()
-                                stats["enriched"] += 1
-                            except Exception:
-                                conn.rollback()
-                            finally:
-                                store._put(conn)
-                    except Exception:
-                        pass  # Enrichment is best-effort
-
-            except Exception as e:
-                logger.debug(f"  {ticker} OHLCV update failed: {e}")
-
-    # Mark as done for today
-    if stats["updated"] > 0:
-        store.save_mcp_snapshot("ohlcv/update", "BATCH_DONE", {
-            "timestamp": datetime.now(UTC).isoformat(),
-            "tickers_updated": stats["updated"],
-            "tickers_enriched": stats["enriched"],
-        })
-
-    logger.info(
-        f"📈 OHLCV vault: {stats['updated']} tickers updated, "
-        f"{stats['enriched']} enriched with trade_count+vwap"
-    )
-    return {"status": "ok", **stats}
+        from backend.daemons.vault_providers.ohlcv_provider import OHLCVProvider
+        provider = OHLCVProvider()
+        return provider.run_full(store, tickers=tickers, retry_tickers=retry_tickers or [])
+    except Exception as e:
+        logger.error(f"vault_ohlcv_bars failed: {e}")
+        return {"status": "error", "error": str(e), "updated": 0, "enriched": 0, "failed": {}}
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1573,9 +1489,12 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
     Only uses stocks marked as SP500 members (asset_type='STOCK' + index_membership contains 'SP500').
     Writes results as OHLCV bars to maintain continuity with TradingView-imported historical data.
     """
-    if _already_vaulted_today(store, "macro/breadth", "SP500"):
-        logger.info("📊 Breadth already vaulted today — skipping")
-        return {"status": "skipped", "reason": "already_today"}
+    last_s5tw = store.bars_last_date("S5TW", "1d")
+    last_spy = store.bars_last_date("SPY", "1d")
+    if last_s5tw and last_spy and last_s5tw >= last_spy:
+        if _already_vaulted_today(store, "macro/breadth", "SP500"):
+            logger.info("📊 Breadth already vaulted today — skipping")
+            return {"status": "skipped", "reason": "already_today"}
 
     try:
         from backend.modules.shared.domain.rules.macro_trend_calculator import calculate_breadth
@@ -1606,21 +1525,35 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
         # Write as OHLCV bars (OHLC all = close, volume=0) for continuity
         # with TradingView-imported historical data
         now = datetime.now(UTC)
-        for ticker, value in [("S5TH", s5th), ("S5TW", s5tw), ("S5FI", s5fi)]:
+        for ticker, value in [("S5TH", s5th), ("S5TW", s5tw), ("S5FI", s5fi), ("BSI", s5tw)]:
             if value is not None:
                 store.upsert_ohlcv_bar(
                     ticker=ticker, timeframe="1d", time=now,
                     open=value, high=value, low=value, close=value, volume=0,
                 )
+                store.upsert_ticker_metadata(
+                    ticker=ticker,
+                    sector="Breadth",
+                    industry="INDICATOR",
+                    market_cap_bucket=None,
+                )
+
+        # Trigger BSI METAR generation and regime transition immediately with breadth update
+        try:
+            from backend.daemons.vault_providers.bsi_provider import BSIProvider
+            bsi_res = BSIProvider().run_full(store)
+            logger.info(f"📊 BSI Provider executed in direct cascade with breadth update: {bsi_res.get('status')}")
+        except Exception as bsi_err:
+            logger.warning(f"BSI cascade execution failed: {bsi_err}")
 
         s5th_str = f"{s5th:.1f}%" if s5th is not None else "N/A"
         s5tw_str = f"{s5tw:.1f}%" if s5tw is not None else "N/A"
         s5fi_str = f"{s5fi:.1f}%" if s5fi is not None else "N/A"
         logger.info(
-            f"📊 Breadth vault: S5TH={s5th_str} S5TW={s5tw_str} S5FI={s5fi_str} "
+            f"📊 Breadth vault: S5TH={s5th_str} S5TW={s5tw_str} S5FI={s5fi_str} BSI={s5tw_str} "
             f"({len(all_closes)} SP500 tickers)"
         )
-        return {"status": "ok", "s5th": s5th, "s5tw": s5tw, "s5fi": s5fi}
+        return {"status": "ok", "s5th": s5th, "s5tw": s5tw, "s5fi": s5fi, "bsi": s5tw}
 
     except Exception as e:
         logger.warning(f"Breadth vault failed (non-critical): {e}")
@@ -1994,16 +1927,26 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         return {"status": "error", "error": str(e)}
 
 
-def _log_cycle_report(results: dict) -> None:
-    """Log a structured Vault Cycle Report with key derived metrics.
+def _log_cycle_report(results: dict, store: Optional[TimescaleDataStore] = None) -> None:
+    """Log a structured Vault Cycle Report with multi-station freshness, retries, and NOTAM escalations.
 
-    Groups results into: Data Sources, Derived Indicators, Composite Intelligence.
-    Extracts actual metric values (not just status) for operator visibility.
+    Groups results into:
+      1. Data Sources (with failure/retry counts)
+      2. Derived Indicators
+      3. Composite Intelligence
+      4. Sourcing & Surveillance
+      5. METAR Station Telemetry & Freshness (11 stations)
+      6. Active Operational NOTAMs (Escalations)
+      7. Failures & Retry Tracking
     """
+    import pandas as pd
+    from datetime import datetime, UTC
 
     def _status_icon(r: dict) -> str:
         s = r.get("status", "?")
         if s == "ok":
+            if r.get("failed"):
+                return "⚠️"
             return "✅"
         if s == "skipped":
             return "⏭️"
@@ -2031,8 +1974,13 @@ def _log_cycle_report(results: dict) -> None:
     uw = results.get("uw", {})
     portfolio = results.get("portfolio", {})
 
+    ohlcv_failed_dict = ohlcv.get("failed", {}) if isinstance(ohlcv.get("failed"), dict) else {}
+    for t in ohlcv_failed_dict:
+        _RETRY_TRACKER[t] = _RETRY_TRACKER.get(t, 0) + 1
+
     lines.append("║  📦 DATA SOURCES                                        ║")
-    lines.append(f"║    OHLCV Bars     {_status_icon(ohlcv)}  {_fmt(ohlcv, 'updated', ' tickers', 'd'):>12}  (enriched: {_fmt(ohlcv, 'enriched', '', 'd')})")
+    failed_str = f", failed: {len(ohlcv_failed_dict)}" if ohlcv_failed_dict else ""
+    lines.append(f"║    OHLCV Bars     {_status_icon(ohlcv)}  {_fmt(ohlcv, 'updated', ' tickers', 'd'):>12}  (enriched: {_fmt(ohlcv, 'enriched', '', 'd')}{failed_str})")
     lines.append(f"║    Finnhub        {_status_icon(finnhub)}  news={_fmt(finnhub, 'news', '', 'd')}, earnings={'✓' if finnhub.get('earnings') else '—'}")
     lines.append(f"║    GuruFocus      {_status_icon(gf)}  {_fmt(gf, 'screened', ' screened', 'd')}")
     lines.append(f"║    Estimates      {_status_icon(est)}  {_fmt(est, 'estimated', ' tickers', 'd')}")
@@ -2116,14 +2064,64 @@ def _log_cycle_report(results: dict) -> None:
     lines.append(f"║    SEC 8-K        {_status_icon(sec_8k)}  {_fmt(sec_8k, 'tickers_scanned', ' scanned', 'd')}, {_fmt(sec_8k, 'filings_found', ' filings', 'd')}")
     lines.append(f"║    Analyst Cred.  {_status_icon(cred)}  {_fmt(cred, 'scored', ' scored', 'd')}")
 
-    # ── Failures ──
-    failures = [k for k, v in results.items() if v.get("status") == "error"]
-    if failures:
+    # ── METAR Station Freshness (Monitored Stations) ──
+    if store:
         lines.append("║                                                          ║")
-        lines.append("║  ⚠️  FAILURES                                            ║")
-        for f in failures:
+        try:
+            from backend.modules.entry_decision.domain.services.notam_incident_service import generate_notam_report
+            notam_report = generate_notam_report()
+            stations_count = len(notam_report.get("station_telemetry", []))
+            lines.append(f"║  📡 METAR STATIONS TELEMETRY ({stations_count:2d} STATIONS)               ║")
+            for st in notam_report.get("station_telemetry", []):
+                symbol = st["station"]
+                status = st["status"]
+                latest_dt = st["latest_bar"]
+                lag = st["lag_trading_days"]
+                if status == "OUTAGE":
+                    _RETRY_TRACKER[symbol] = _RETRY_TRACKER.get(symbol, 0) + 1
+                    lines.append(f"║    {symbol:14s} ❌ OUTAGE (retry #{_RETRY_TRACKER[symbol]})")
+                elif status == "STALE":
+                    _RETRY_TRACKER[symbol] = _RETRY_TRACKER.get(symbol, 0) + 1
+                    lines.append(f"║    {symbol:14s} ⚠️  STALE ({lag}d lag | retry #{_RETRY_TRACKER[symbol]}) [{latest_dt}]")
+                else:
+                    _RETRY_TRACKER.pop(symbol, None)
+                    lines.append(f"║    {symbol:14s} ✅ OK ({latest_dt})")
+
+            # ── Operational NOTAMs (Escalations) ──
+            lines.append("║                                                          ║")
+            bulletins = notam_report.get("bulletins", [])
+            outdated_stations = notam_report.get("outdated_stations", [])
+            if bulletins:
+                lines.append("║  🚨 ACTIVE OPERATIONAL NOTAMS (ESCALATIONS)              ║")
+                for inc in bulletins:
+                    icon = "🚨" if inc.get("severity") == "CRITICAL" else "⚠️"
+                    lines.append(f"║    {icon} [{inc['notam_id'][:26]}] {inc['severity']} → {inc['operational_action'][:20]}")
+                    lines.append(f"║       {inc['title'][:54]}")
+            elif outdated_stations:
+                lines.append("║  ⚠️  OUTDATED STATIONS DETECTED                          ║")
+                for ost in outdated_stations:
+                    lines.append(f"║    ⚠️  {ost['station']:12s} ({ost['lag_trading_days']}d lag) → {ost['operational_action'][:20]}")
+            else:
+                lines.append("║  🛡️ OPERATIONAL NOTAMS: [CLEAR] (0 Active Incidents)     ║")
+        except Exception as e:
+            lines.append(f"║  ⚠️  NOTAM check failed: {str(e)[:45]:45s}║")
+
+    # ── Failures & Retry Tracking ──
+    general_failures = [k for k, v in results.items() if v.get("status") == "error"]
+    if general_failures or ohlcv_failed_dict or any(v > 0 for v in _RETRY_TRACKER.values()):
+        lines.append("║                                                          ║")
+        lines.append("║  ⚠️  FAILURES & RETRY TRACKING                           ║")
+        for f in general_failures:
             err = results[f].get("error", results[f].get("reason", "unknown"))
-            lines.append(f"║    {f:18s} → {str(err)[:35]}")
+            _RETRY_TRACKER[f] = _RETRY_TRACKER.get(f, 0) + 1
+            lines.append(f"║    Provider {f:12s} ❌ (retry #{_RETRY_TRACKER[f]}): {str(err)[:30]}")
+        
+        for t, err in ohlcv_failed_dict.items():
+            lines.append(f"║    Ticker {t:14s} ⚠️  (retry #{_RETRY_TRACKER.get(t, 1)}): {str(err)[:30]}")
+
+        for item, count in list(_RETRY_TRACKER.items()):
+            if item not in general_failures and item not in ohlcv_failed_dict and count > 1:
+                lines.append(f"║    Station {item:13s} ⏳ Unresolved (retry #{count})")
 
     lines.append("╚══════════════════════════════════════════════════════════╝")
 
@@ -2198,7 +2196,8 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["insider_activity"] = vault_insider_activity(store)
 
     # ── Tier 3: Heavy (~5-20 min) ──
-    results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers)
+    pending_retries = [k for k, v in _RETRY_TRACKER.items() if v > 0 and k.isupper() and len(k) <= 6]
+    results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers, retry_tickers=pending_retries)
     results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
     results["estimates"] = vault_earnings_estimates(store, neon_tickers)
     results["credibility"] = vault_analyst_credibility(store, neon_tickers)
@@ -2360,7 +2359,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"UW Gamma vault failed (non-critical): {e}")
         results["uw_gamma"] = {"status": "error", "error": str(e)}
 
-    _log_cycle_report(results)
+    _log_cycle_report(results, store=store)
 
 
 def main():

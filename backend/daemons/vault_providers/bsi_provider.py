@@ -11,6 +11,8 @@ Follows Rules 13, 15, 16, 17, 18.
 """
 import logging
 from typing import Dict, Any, Optional
+from datetime import timedelta, datetime, UTC
+import pandas as pd
 
 from backend.daemons.vault_providers import register_provider
 from backend.daemons.data_vault_daemon import _already_vaulted_today
@@ -31,10 +33,15 @@ class BSIProvider:
     categories = ["bsi", "s5tw", "breadth_shock"]
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> Dict[str, Any]:
-        """Compute and persist BSI Market METAR and regime state from Vault data."""
-        if _already_vaulted_today(store, "bsi/sigmet", "MARKET"):
-            logger.info("📊 BSI Market METAR already vaulted today — skipping")
-            return {"status": "skipped", "reason": "already_today"}
+        """Compute and persist BSI Market METAR, bars, and regime state from Vault data."""
+        last_bsi = store.bars_last_date("BSI", "1d")
+        last_s5tw = store.bars_last_date("S5TW", "1d")
+
+        # Only skip if already vaulted today AND BSI bars are fully synchronized with S5TW
+        if last_bsi and last_s5tw and last_bsi >= last_s5tw:
+            if _already_vaulted_today(store, "bsi/sigmet", "MARKET"):
+                logger.info("📊 BSI Market METAR already vaulted today — skipping")
+                return {"status": "skipped", "reason": "already_today"}
 
         return self._compute(store)
 
@@ -42,12 +49,62 @@ class BSIProvider:
         """BSI METAR is market-wide — falls back to run_full."""
         return self._compute(store)
 
+    def _sync_s5tw_to_bsi(self, store: TimescaleDataStore) -> int:
+        """Ensure BSI OHLCV bars in market.ohlcv_bars match S5TW breadth series."""
+        last_bsi = store.bars_last_date("BSI", "1d")
+        last_s5tw = store.bars_last_date("S5TW", "1d")
+
+        if not last_s5tw:
+            return 0
+
+        if last_bsi and last_bsi >= last_s5tw:
+            return 0
+
+        start = (last_bsi + timedelta(days=1)) if last_bsi else None
+        s5tw_bars = store.load_bars("S5TW", "1d", start=start)
+        if s5tw_bars is None or s5tw_bars.empty:
+            return 0
+
+        df_sync = pd.DataFrame({
+            "open": s5tw_bars["close"],
+            "high": s5tw_bars["close"],
+            "low": s5tw_bars["close"],
+            "close": s5tw_bars["close"],
+            "volume": 0,
+        }, index=s5tw_bars.index)
+        store.save_bars("BSI", "1d", df_sync)
+        store.upsert_ticker_metadata(ticker="BSI", sector="Breadth", industry="INDICATOR")
+        logger.info(f"📊 BSI synced {len(df_sync)} bars from S5TW (up to {last_s5tw})")
+        return len(df_sync)
+
     def _compute(self, store: TimescaleDataStore) -> Dict[str, Any]:
-        """Core computation: read Vault → METAR service → persist snapshot & regime state."""
+        """Core computation: sync bars → METAR service → persist snapshot & regime state."""
         try:
+            # 1. Ensure BSI OHLCV bars are synchronized from S5TW
+            synced_bars = self._sync_s5tw_to_bsi(store)
+
+            # 2. Generate live authoritative Market METAR
             sigmet = get_bsi_market_metar()
+
+            # 3. Persist latest BSI bar to market.ohlcv_bars
+            bsi_val = float(sigmet.bsi_value)
+            time_val = pd.to_datetime(sigmet.as_of_date).tz_localize("UTC")
+            store.upsert_ohlcv_bar(
+                ticker="BSI",
+                timeframe="1d",
+                time=time_val,
+                open=bsi_val,
+                high=bsi_val,
+                low=bsi_val,
+                close=bsi_val,
+                volume=0,
+            )
+            store.upsert_ticker_metadata(ticker="BSI", sector="Breadth", industry="INDICATOR")
+
+            # 4. Save MCP snapshot
             store.save_mcp_snapshot("bsi/sigmet", "MARKET", sigmet.to_dict())
 
+            # 5. Save regime states
             try:
                 regime_store = PostgresRegimeStateAdapter()
 

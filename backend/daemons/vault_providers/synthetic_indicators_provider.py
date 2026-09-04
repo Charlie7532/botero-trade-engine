@@ -46,7 +46,8 @@ class SyntheticIndicatorsProvider:
         results["credit_ratio"] = self._compute_credit_ratio(store)
         results["yield_spread"] = self._compute_yield_spread(store)
         results["rotation_index"] = self._compute_rotation_index(store)
-        return {"status": "ok", "indicators": results}
+        has_error = any(v.get("status") == "error" for v in results.values())
+        return {"status": "error" if has_error else "ok", "indicators": results}
 
     def run_ticker(self, store: TimescaleDataStore, ticker: str) -> Dict[str, Any]:
         """Synthetic indicators are market-wide — falls back to run_full."""
@@ -70,6 +71,9 @@ class SyntheticIndicatorsProvider:
 
             hyg_last = float(hyg.sort_index().iloc[-1]["close"])
             lqd_last = float(lqd.sort_index().iloc[-1]["close"])
+            if lqd_last == 0:
+                return {"status": "error", "reason": "lqd_zero"}
+
             credit_ratio = float(hyg_last / lqd_last)
 
             now = datetime.now(UTC)
@@ -103,49 +107,80 @@ class SyntheticIndicatorsProvider:
             return {"status": "error", "error": str(e)}
 
     # ──────────────────────────────────────────────────────────────────
-    # 2. YIELD_SPREAD = TNX - IRX
+    # 2. YIELD_SPREAD = TNX - IRX (with FRED DGS10 - DTB3 fallback)
     # ──────────────────────────────────────────────────────────────────
     def _compute_yield_spread(self, store: TimescaleDataStore) -> Dict[str, Any]:
         try:
-            if _already_vaulted_today(store, "derived/yield_spread", "MARKET"):
-                logger.info("📊 YIELD_SPREAD already vaulted today — skipping")
-                return {"status": "skipped"}
-
-            start = (datetime.now(UTC) - timedelta(days=5)).date()
+            import pandas as pd
+            last_spread_date = store.bars_last_date("YIELD_SPREAD", "1d")
+            
+            # If already up to date with today or yesterday, check daily guard
+            if last_spread_date:
+                ref_date = datetime.now(UTC).date()
+                last_dt = last_spread_date.date() if isinstance(last_spread_date, datetime) else last_spread_date
+                bdays = max(0, len(pd.bdate_range(last_dt, ref_date)) - 1)
+                if bdays <= 1 and _already_vaulted_today(store, "derived/yield_spread", "MARKET"):
+                    logger.info("📊 YIELD_SPREAD already vaulted and fresh — skipping")
+                    return {"status": "skipped"}
+                start = last_dt + timedelta(days=1)
+            else:
+                start = (datetime.now(UTC) - timedelta(days=30)).date()
             tnx = store.load_bars("TNX", "1d", start=start)
             irx = store.load_bars("IRX", "1d", start=start)
 
-            if tnx is None or irx is None or len(tnx) == 0 or len(irx) == 0:
-                return {"status": "error", "reason": "no_data"}
+            m = pd.DataFrame()
+            source_used = "CBOE_YFINANCE"
 
-            tnx_last = float(tnx.sort_index().iloc[-1]["close"])
-            irx_last = float(irx.sort_index().iloc[-1]["close"])
-            yield_spread = float(tnx_last - irx_last)
+            if tnx is not None and irx is not None and not tnx.empty and not irx.empty:
+                m = pd.concat([tnx["close"].rename("tnx"), irx["close"].rename("irx")], axis=1).dropna()
 
-            now = datetime.now(UTC)
-            store.upsert_ohlcv_bar(
-                ticker="YIELD_SPREAD",
-                timeframe="1d",
-                time=now,
-                open=yield_spread,
-                high=yield_spread,
-                low=yield_spread,
-                close=yield_spread,
-                volume=0,
-            )
+            # Respaldo oficial FRED: si falta TNX o IRX, usar DGS10 y DTB3 (10Y y 3M del Tesoro)
+            if m.empty:
+                dgs10 = store.load_bars("DGS10", "1d", start=start)
+                dtb3 = store.load_bars("DTB3", "1d", start=start)
+                if dgs10 is not None and dtb3 is not None and not dgs10.empty and not dtb3.empty:
+                    m = pd.concat([dgs10["close"].rename("tnx"), dtb3["close"].rename("irx")], axis=1).dropna()
+                    source_used = "FRED_OFFICIAL"
+                    logger.info("📊 YIELD_SPREAD using official FRED DGS10 - DTB3 series")
+
+            if m.empty:
+                logger.warning(f"YIELD_SPREAD: No underlying yield bars found after {start}")
+                return {"status": "error", "reason": "no_underlying_data", "after_date": str(start)}
+
+            # Compute spread for all new bars
+            spread_series = m["tnx"] - m["irx"]
+
+            # Format DataFrame for save_bars
+            df_spread = pd.DataFrame({
+                "open": spread_series,
+                "high": spread_series,
+                "low": spread_series,
+                "close": spread_series,
+                "volume": 0
+            }, index=spread_series.index)
+
+            store.save_bars("YIELD_SPREAD", "1d", df_spread)
             store.upsert_ticker_metadata(
                 ticker="YIELD_SPREAD",
                 sector="Yields",
                 industry="INDICATOR",
                 market_cap_bucket=None,
             )
+
+            latest_val = float(spread_series.iloc[-1])
+            tnx_last = float(m["tnx"].iloc[-1])
+            irx_last = float(m["irx"].iloc[-1])
+
             store.save_mcp_snapshot("derived/yield_spread", "MARKET", {
-                "value": yield_spread,
+                "value": latest_val,
                 "tnx": tnx_last,
                 "irx": irx_last,
+                "source": source_used,
+                "bars_inserted": len(df_spread),
+                "latest_date": str(spread_series.index[-1].date()),
             })
-            logger.info(f"📊 YIELD_SPREAD vault: {yield_spread:.2f}% (TNX={tnx_last:.2f}%, IRX={irx_last:.2f}%)")
-            return {"status": "ok", "value": yield_spread}
+            logger.info(f"📊 YIELD_SPREAD vault: {len(df_spread)} bars saved (latest={latest_val:.2f}%, source={source_used})")
+            return {"status": "ok", "value": latest_val, "bars_updated": len(df_spread)}
 
         except Exception as e:
             logger.warning(f"YIELD_SPREAD vault failed: {e}")

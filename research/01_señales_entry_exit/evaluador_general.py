@@ -478,6 +478,21 @@ def evaluar_condicion_booleana(sig_mask: Union[np.ndarray, pd.Series],
     }
 
 
+# Señales cuya arquitectura ES una confirmación de pierna cerrada: el disparo depende
+# de una métrica POR-PIERNA (p.ej. cascade_conviction_50, calculada en quants_obs por
+# pivote zigzag) que NO existe en el lake continuo. Para estas, el fallback quants_mapped
+# NO es una degradación: operan legítimamente HACIA ADELANTE desde el pivote confirmado
+# (un institucional entra tras la confirmación). Por ello su modo de evaluación se
+# re-etiqueta como `pierna_confirmada` (NO quants_mapped, NO NO_OPERABLE).
+#
+# Nota de distinción (NO cambiar su semántica ahora): el fallback quants_mapped TAMBIÉN se
+# alcanza por otras señales cuyo lake no dispara por FILTRO DE POSICIÓN (requieren
+# `pivot_type` real del pivote para el gate long/short, ausente en el lake). Ese caso es
+# distinto conceptualmente (es una limitación de medición, no una semántica de confirmación),
+# pero se deja como `quants_mapped` para no alterar el comportamiento de otras señales.
+SEÑALES_CONFIRMACION_PIERNA = frozenset({"cascade_reversal"})
+
+
 def evaluar_senal(senal_nombre: str, forzar_full: bool = False) -> Dict[str, Any]:
     """Evalúa una señal registrada en el arnés con fallback inteligente Lake -> Quants.
     Aplica automáticamente la restricción de fecha de inicio válida (ej. Post-2011 para SKEW/FG)
@@ -507,13 +522,24 @@ def evaluar_senal(senal_nombre: str, forzar_full: bool = False) -> Dict[str, Any
             if q_mask.sum() > 0:
                 q_dates = pd.DatetimeIndex(quants.loc[q_mask, "pivot_date"]).normalize()
                 mask_arr = lake_idx.isin(q_dates)
-                modo = "quants_mapped"
+                # Re-etiquetado de metrología: para señales de confirmación de pierna cerrada
+                # (cascade_reversal usa cascade_conviction_50, por-pierna) el pivote confirmado
+                # es el ANCLA del disparo → medir HACIA ADELANTE desde él. No es degradación ni
+                # lookahead. (Señales con fallback por FILTRO DE POSICIÓN/pivot_type NO cambian:
+                #  sigan como quants_mapped — ver nota en SEÑALES_CONFIRMACION_PIERNA.)
+                if senal_nombre in SEÑALES_CONFIRMACION_PIERNA:
+                    modo = "pierna_confirmada"
+                else:
+                    modo = "quants_mapped"
     except Exception:
         # Fallback a quants
         q_mask = fn(quants).values.astype(bool)
         q_dates = pd.DatetimeIndex(quants.loc[q_mask, "pivot_date"]).normalize()
         mask_arr = lake_idx.isin(q_dates)
-        modo = "quants_mapped"
+        if senal_nombre in SEÑALES_CONFIRMACION_PIERNA:
+            modo = "pierna_confirmada"
+        else:
+            modo = "quants_mapped"
 
     # Filtrar datos sintéticos previos a la fecha de inicio oficial (ej. SKEW < 2011-02-01)
     if fecha_inicio and not forzar_full:
@@ -538,17 +564,17 @@ def evaluar_todas(guardar_path: Optional[Path] = None) -> Dict[str, Any]:
     reporte = {}
     filas_resumen = []
 
-    print(f"\n{'=' * 125}\nEVALUADOR GENERALIZADO CONTINUO (8,453 Barras Lake + First-Passage + Timing Canónico)\n{'=' * 125}")
-    print(f"{'Señal':<30s} | {'Modo':<13s} | {'N (Ep)':>6s} {'Tier':>8s} | {'Fire%':>6s} {'1/N':>5s} | "
+    print(f"\n{'=' * 130}\nEVALUADOR GENERALIZADO CONTINUO (8,453 Barras Lake + First-Passage + Timing Canónico)\n{'=' * 130}")
+    print(f"{'Señal':<30s} | {'Modo':<18s} | {'N (Ep)':>6s} {'Tier':>8s} | {'Fire%':>6s} {'1/N':>5s} | "
           f"{'EnRng%':>6s} {'Ant%':>5s} {'Exa%':>5s} {'Ret%':>5s} | {'Hit(zz25)':>9s} {'EV(zz25)':>9s} {'Best':>5s}")
-    print("-" * 125)
+    print("-" * 130)
 
     for s_name in sorted(SEÑALES.keys()):
         r = evaluar_senal(s_name)
         reporte[s_name] = r
 
         if r.get("status") != "OK":
-            print(f"{s_name:<30s} | {r.get('status', 'ERROR'):<13s} | SIN DATOS")
+            print(f"{s_name:<30s} | {r.get('status', 'ERROR'):<18s} | SIN DATOS")
             continue
 
         pob = r["poblacion"]
@@ -571,7 +597,7 @@ def evaluar_todas(guardar_path: Optional[Path] = None) -> Dict[str, Any]:
         best = r.get("escala_optima", "-")
         modo = r.get("modo_ejecucion", "lake")
 
-        print(f"{s_name:<30s} | {modo:<13s} | {n_ep:>6d} {tier:>8s} | {fire:>6s} {cad:>5s} | "
+        print(f"{s_name:<30s} | {modo:<18s} | {n_ep:>6d} {tier:>8s} | {fire:>6s} {cad:>5s} | "
               f"{en_rng:>6s} {ant:>5s} {exa:>5s} {ret:>5s} | {hit25:>9s} {ev25:>9s} {best:>5s}")
 
         filas_resumen.append({

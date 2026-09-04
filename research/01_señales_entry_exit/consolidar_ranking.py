@@ -20,11 +20,19 @@ Produce el artefacto `data/research/signals/ranking_maestro.json`.
 """
 
 import json
+import sys
 from pathlib import Path
 from typing import Dict, Any, List
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent.parent
+if str(ROOT / "research" / "01_señales_entry_exit") not in sys.path:
+    sys.path.insert(0, str(ROOT / "research" / "01_señales_entry_exit"))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from arnes.registro import _CERTEZA
+
 DIR_SIGNALS = ROOT / "data" / "research" / "signals"
 FILE_LAKE = DIR_SIGNALS / "evaluacion_generalizada_lake.json"
 FILE_VAV = DIR_SIGNALS / "evaluacion_vela_a_vela_v7_final.json"
@@ -147,10 +155,18 @@ def construir_ranking_maestro() -> Dict[str, Any]:
         if p_value_raw is None:
             p_value_raw = 1.0
 
+        meta = _CERTEZA.get(name, {})
+        unidad_med = meta.get("unidad_medicion")
+        if not unidad_med:
+            if l_res.get("modo_ejecucion") == "pierna_confirmada":
+                unidad_med = "pierna confirmada -> forward"
+            else:
+                unidad_med = "episodio_continuo (primera barra activa)"
+
         filas.append({
             "senal": name,
             "criterio": "first_passage_ohlc_continuo",
-            "unidad": "episodio_continuo (primera barra activa)",
+            "unidad": unidad_med,
             "tipo": l_res.get("tipo", "entry"),
             "blanco": l_res.get("blanco", "MIN"),
             "inception": l_res.get("fecha_inicio_valida"),

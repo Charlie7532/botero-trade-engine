@@ -214,8 +214,14 @@ def _vix_crisis_spike(df):
                "ASIMETRÍA DE RÉGIMEN: en BAJA hit=32.6%, PF=0.52 (anti-señal). Consumir SOLO con gate régimen=ALZA.",
     n_min=92, dsr=None,
     tipo="exit", pivot_type="BOTH",
+    fecha_inicio_valida="2011-02-01", era_valida="POST_2011",
+    temporidad="CONFIRMACION_PIERNA",
+    unidad_medicion="pierna confirmada -> forward",
+    # INCEPTION DERIVADO (04-Sep): GRUPO_A = unión(MIN: vix,bsi,fg,credit,rotation | MAX: vix,bsi,credit,rotation)
+    # = {vix,bsi,fg,credit,rotation} → FG (2011-02-01) es el insumo más tardío → la señal no existe antes.
     descripcion="Colapso de convicción cascade: momentum se destruye. Edge demoledor en ALZA (trim táctico, ~8 barras). "
-                "Anti-señal en BAJA. Gate de régimen observable obligatorio en capa de consumo.",
+                "Anti-señal en BAJA. Gate de régimen observable obligatorio en capa de consumo. "
+                "Señal de confirmación de pierna cerrada (observable al confirmar el pivote, forward medido hacia adelante).",
     fuente="evaluador_vela_a_vela_v7 (30-Ago) + calibración 23-Ago (umbral −0.957 congelado)")
 def _cascade_reversal(df):
     """cascade_conviction_50 cae por debajo de −0.957 — colapso de convicción (EXIT).

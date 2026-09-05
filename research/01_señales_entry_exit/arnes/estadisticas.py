@@ -118,3 +118,85 @@ def _fisher_pvalue(n_wins_signal, n_total_signal, n_wins_baseline, n_total_basel
     d = n_total_baseline - n_wins_baseline
     _, p = fisher_exact([[a, b], [c, d]], alternative='two-sided')
     return round(float(p), 6)
+
+
+def edge_direccional(n_alza: int, hits_alza: int, n_baja: int, hits_baja: int,
+                     baseline_alza: float, baseline_baja: float) -> dict:
+    """Edge direccional condicionado: accuracy vs baseline PROPIO por dirección.
+
+    Principio de López de Prado: probar contra la clase mayoritaria que la señal
+    predice, no contra un baseline global agregado.
+
+    Migrado de comite_metar/curador/modelador.py (Sep-2026 saneamiento).
+    Usa _clopper_pearson_ci canónica (beta-based, arnes/).
+
+    Args:
+        n_alza: episodios donde la señal predijo ALZA
+        hits_alza: aciertos de esos episodios
+        n_baja: episodios donde la señal predijo BAJA
+        hits_baja: aciertos de esos episodios
+        baseline_alza: hit rate incondicional para movimientos alcistas
+        baseline_baja: hit rate incondicional para movimientos bajistas
+
+    Returns:
+        Dict con edge_alza, edge_baja, edge_combinado, CI95, p_greater por dirección.
+    """
+    from scipy.stats import binomtest
+
+    acc_a = round(hits_alza / n_alza, 4) if n_alza > 0 else None
+    acc_b = round(hits_baja / n_baja, 4) if n_baja > 0 else None
+
+    # Edge aditivo en puntos porcentuales
+    edge_a = round(acc_a - baseline_alza, 4) if acc_a is not None else None
+    edge_b = round(acc_b - baseline_baja, 4) if acc_b is not None else None
+
+    # One-sided binomial test: accuracy > baseline
+    p_a = None
+    if n_alza > 0:
+        p_a = round(float(binomtest(hits_alza, n_alza, baseline_alza,
+                                     alternative="greater").pvalue), 6)
+    p_b = None
+    if n_baja > 0:
+        p_b = round(float(binomtest(hits_baja, n_baja, baseline_baja,
+                                     alternative="greater").pvalue), 6)
+
+    # CI95 via canonical _clopper_pearson_ci
+    ci_a = _clopper_pearson_ci(hits_alza, n_alza) if n_alza > 0 else {"ci_lo": None, "ci_hi": None}
+    ci_b = _clopper_pearson_ci(hits_baja, n_baja) if n_baja > 0 else {"ci_lo": None, "ci_hi": None}
+
+    # Combined (ponderado por N)
+    n_tot = n_alza + n_baja
+    h_tot = hits_alza + hits_baja
+    if n_tot > 0:
+        base_cond = round((n_alza * baseline_alza + n_baja * baseline_baja) / n_tot, 4)
+        acc_tot = round(h_tot / n_tot, 4)
+        edge_comb = round(acc_tot - base_cond, 4)
+        ci_tot = _clopper_pearson_ci(h_tot, n_tot)
+    else:
+        base_cond = acc_tot = edge_comb = None
+        ci_tot = {"ci_lo": None, "ci_hi": None}
+
+    return {
+        "n_alza": n_alza,
+        "hits_alza": hits_alza,
+        "accuracy_alza": acc_a,
+        "baseline_alza": round(baseline_alza, 4),
+        "edge_alza": edge_a,
+        "p_greater_alza": p_a,
+        "ci95_alza": [ci_a["ci_lo"], ci_a["ci_hi"]],
+
+        "n_baja": n_baja,
+        "hits_baja": hits_baja,
+        "accuracy_baja": acc_b,
+        "baseline_baja": round(baseline_baja, 4),
+        "edge_baja": edge_b,
+        "p_greater_baja": p_b,
+        "ci95_baja": [ci_b["ci_lo"], ci_b["ci_hi"]],
+
+        "n_total": n_tot,
+        "hits_total": h_tot,
+        "accuracy_total": acc_tot,
+        "baseline_condicionado": base_cond,
+        "edge_combinado": edge_comb,
+        "ci95_total": [ci_tot["ci_lo"], ci_tot["ci_hi"]],
+    }

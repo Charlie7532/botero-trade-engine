@@ -77,6 +77,7 @@ def _panico_total(df):
     validacion="VALIDATED (Grade A)", n_min=20, dsr=None,
     fuente="operational-spec: VIX↑ + S5 colapsa, +1.5% 20d, PF 2.19",
     tipo="entry", pivot_type="BOTH",
+    fecha_inicio_valida="1993-01-29", era_valida="FULL",
     descripcion="VIX en crisis + breadth colapsado (washed out). Capitulación del mercado = punto de máximo pesimismo.")
 def _capitulacion(df):
     """CAPITULACIÓN: VIX en NEUTRAL_ALERT/PANIC/EXTREME_PANIC (>= 3) Y BSI en BREADTH_WASHED_OUT (== 0)."""
@@ -124,6 +125,7 @@ def _vvix_entry(df):
     validacion="VALIDATED (Grade A)", n_min=58, dsr=None,
     fuente="operational-spec: BREADTH_WASHED_OUT, +2.6% 20d, WR 69%",
     tipo="entry", pivot_type="BOTH",
+    fecha_inicio_valida="1993-01-29", era_valida="FULL",
     descripcion="Breadth del S&P500 colapsado (washed out). Máxima destrucción de amplitud = oportunidad contrarian de compra.")
 def _bsi_washed_out(df):
     """BSI en BREADTH_WASHED_OUT (== 0)."""
@@ -305,6 +307,7 @@ def _credit_ease_exit(df):
     validacion="DEGRADADA — structural break interno OOS (auditoría Opus 22-Ago)", n_min=None, dsr=None,
     fuente="EXIT: BSI sale de EXPANSIVE → fin de expansión",
     tipo="exit", pivot_type="BOTH",
+    fecha_inicio_valida="1993-01-29", era_valida="FULL",
     descripcion="DEGRADADA: breadth contrae desde expansivo. Structural break OOS: anti-edge pre-2016, edge post-2016. No usar hasta aclarar.")
 def _breadth_contraction_exit(df):
     """[DEGRADADA 22-Ago-2026] BSI NO está en expansivo (< 4)."""

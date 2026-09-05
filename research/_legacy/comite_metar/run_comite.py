@@ -1,4 +1,4 @@
-No# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 run_comite.py — Fase 5. Orquestador del Comité METAR Walk-Forward (end-to-end).
 

@@ -103,7 +103,7 @@ def _nivel_extremo(estado: Dict) -> str:
     return "NEUTRAL"
 
 
-_TIPOS_DIR = {1: "ALCISTA", -1: "BAJISTA", 0: "NEUTRAL"}
+_TIPOS_DIR = {1: "ALZA", -1: "BAJA", 0: "NEUTRAL"}
 
 
 class Agente:
@@ -181,19 +181,22 @@ class Agente:
 
         evi_ord = sorted(evi, key=lambda e: -(e["score_compuesto"] or -9e9)) if evi else []
         strongest = evi_ord[0] if evi_ord else None
-        edge_ok = bool(strongest and strongest.get("significativo_BH"))
 
-        if rol_pre == "ruido":
+        # Convicción puramente física causal (D1xD2xD3 + overflow en t, sin lookahead de ranking futuro)
+        if rol_pre == "ruido" or dir_spy == 0:
             conviccion, accion = "BAJA", "OBSERVAR"
-        elif extremo and edge_ok:
+        elif ovf_max >= 2 or (d1 in (0, 5) and ovf_max >= 1) or (d1 in (0, 5) and (d2 in (0, 4) or d3 in (0, 4))):
             conviccion = "ALTA"
-            accion = "COBERTURA" if dir_spy < 0 else "OBSERVAR"
+            accion = "COBERTURA" if dir_spy < 0 else "ENTRADA"
         elif extremo:
-            conviccion, accion = "MEDIA", "OBSERVAR"
-        elif edge_ok:
-            conviccion, accion = "MEDIA", "OBSERVAR"
+            conviccion = "MEDIA"
+            accion = "COBERTURA" if dir_spy < 0 else "ENTRADA"
+        elif elevado:
+            conviccion = "BAJA"
+            accion = "OBSERVAR"
         else:
-            conviccion, accion = "BAJA", "OBSERVAR"
+            conviccion = "BAJA"
+            accion = "OBSERVAR"
 
         tier = max(overflow.get("d1", 0), 1 if extremo else 0)
 

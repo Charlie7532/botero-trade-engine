@@ -30,10 +30,22 @@ from . import common
 
 # Parámetros de policy (deterministas y documentados)
 GAP_BRIDGE = 2                 # max hueco (barras) fusionado al mismo episodio
+MAX_RUN_BARS = 20              # longitud máxima de episodio (evita mega-episodios macro)
 MIN_LEN = 1                    # longitud mínima de episodio
 BINS_D1_EXTREMO = (0, 5)       # extremos ±2σ de D1 (magnitud)
 BINS_D2D3_EXTREMO = (0, 4)     # extremos ±2σ de D2/D3 (velocidad/vol)
 OVERFLOW_ACTIVO = 1            # tier >= 1 => estrictamente más allá de ±2σ
+
+ESTACIONES_TACTICAS = ("vix", "vvix", "pcr", "fg", "sv5_turbulence", "skew", "bsi", "rotation")
+ESTACIONES_MACRO = ("yield_curve", "credit", "dxy")
+
+
+def _obtener_inceptions() -> Dict[str, pd.Timestamp]:
+    try:
+        perfiles = common.cargar_perfiles()
+        return {p["estacion"]: pd.Timestamp(p.get("inception", "1993-01-29")) for p in perfiles}
+    except Exception:
+        return {}
 
 
 # ---------------------------------------------------------------------------
@@ -45,8 +57,13 @@ def _tier(df: pd.DataFrame, pos: int, est: str, dim: str) -> int:
         return 0
 
 
-def estacion_activa(df: pd.DataFrame, pos: int, est: str) -> bool:
-    """True si `est` está 'activa' en la vela pos (causal, sin lookahead)."""
+def estacion_activa(df: pd.DataFrame, pos: int, est: str,
+                    inceptions: Optional[Dict[str, pd.Timestamp]] = None) -> bool:
+    """True si `est` está 'activa' en la vela pos (causal, sin lookahead y post-inception)."""
+    if inceptions:
+        inc = inceptions.get(est)
+        if inc is not None and df.index[pos] < inc:
+            return False
     try:
         d1 = int(df.iloc[pos][f"{est}_d1_bin"])
     except (KeyError, TypeError, ValueError):
@@ -61,23 +78,32 @@ def estacion_activa(df: pd.DataFrame, pos: int, est: str) -> bool:
 def activas_en(df: pd.DataFrame, pos: int,
                estaciones: Optional[List[str]] = None) -> List[str]:
     estaciones = estaciones or common.ESTACIONES
-    return [e for e in estaciones if estacion_activa(df, pos, e)]
+    incs = _obtener_inceptions()
+    return [e for e in estaciones if estacion_activa(df, pos, e, inceptions=incs)]
 
 
 def marcas(df: pd.DataFrame, estaciones: Optional[List[str]] = None) -> Dict[int, List[str]]:
-    """Vectorizado: pos -> [estaciones activas] para toda fila con >=1 activa."""
+    """Vectorizado: pos -> [estaciones activas] respetando inceptions."""
     estaciones = estaciones or common.ESTACIONES
+    incs = _obtener_inceptions()
     detalle: Dict[int, List[str]] = {}
     for e in estaciones:
-        a = df[f"{e}_d1_bin"].fillna(-1).astype(int).values
-        presente = a >= 0
+        col = f"{e}_d1_bin"
+        if col not in df.columns:
+            continue
+        a = df[col].fillna(-1).astype(int).values
+        inc = incs.get(e, pd.Timestamp("1993-01-29"))
+        valid_date = np.asarray(df.index >= inc)
+        presente = (a >= 0) & valid_date
         if not presente.any():
             continue
         ext = presente & np.isin(a, list(BINS_D1_EXTREMO))
         ovf = np.zeros(len(df), dtype=bool)
         for dim in ("d1", "d2", "d3"):
-            tiers = df[f"{e}_overflow_tier_{dim}"].fillna(0).astype(int).values
-            ovf = np.logical_or(ovf, tiers >= OVERFLOW_ACTIVO)
+            col_ovf = f"{e}_overflow_tier_{dim}"
+            if col_ovf in df.columns:
+                tiers = df[col_ovf].fillna(0).astype(int).values
+                ovf = np.logical_or(ovf, tiers >= OVERFLOW_ACTIVO)
         act = np.logical_and(np.logical_or(ext, ovf), presente)
         for pos in np.where(act)[0]:
             detalle.setdefault(int(pos), []).append(e)
@@ -121,13 +147,7 @@ def _empaquetar(df: pd.DataFrame, run: List[int], estaciones: List[str],
 
 def ultima_fecha_completa(df: pd.DataFrame,
                           estaciones: Optional[List[str]] = None) -> "pd.Timestamp":
-    """Última fila donde TODAS las estaciones tienen cobertura (no pre-inception).
-
-    Evita que el comité interprete un mundo parcial: las últimas velas del lake
-    pueden quedar con NaN en estaciones cuyo dato no se ha publicado (lag de
-    publicación normal, p.ej. PCR/DXY/YIELD). El comité solo debe leer en
-    puntos donde las 11 estaciones están disponibles (cobertura completa).
-    """
+    """Última fila donde TODAS las estaciones tienen cobertura (no pre-inception)."""
     estaciones = estaciones or common.ESTACIONES
     mask_todo = None
     for e in estaciones:
@@ -144,12 +164,15 @@ def ultima_fecha_completa(df: pd.DataFrame,
 
 def episodios(df: pd.DataFrame, estaciones: Optional[List[str]] = None,
               gap: int = GAP_BRIDGE,
+              max_run: int = MAX_RUN_BARS,
               solo_vista_completa: bool = False) -> List[Dict]:
-    """Agrupa velas activas contiguas (de-clustering dinámico) en episodios.
+    """Agrupa velas activas en episodios con de-clustering desacoplado.
 
-    Si `solo_vista_completa=True`, solo genera episodios cuyo t0 está dentro de
-    la ventana de cobertura completa (<= última fecha con TODAS las estaciones
-    presentes). Evita interpretar el mundo parcial del tail del lake.
+    Desacoplo:
+      - Estaciones estructurales (yield_curve, credit, dxy) son de contexto;
+        NO abren episodios por sí solas.
+      - Disparan episodios: >=1 estación táctica O confluencia de >=2 estaciones.
+      - Cierre de episodio: hueco > gap O longitud >= max_run (evita mega-episodios).
     """
     estaciones = estaciones or common.ESTACIONES
     detalle = marcas(df, estaciones)
@@ -162,8 +185,14 @@ def episodios(df: pd.DataFrame, estaciones: Optional[List[str]] = None,
         idx_ok = df.index <= ultima_ok
         detalle = {pos: acts for pos, acts in detalle.items() if idx_ok[pos]}
 
-    for pos in sorted(detalle):
-        if prev is None or pos - prev <= gap:
+    # Filtrar velas activables que disparan episodios (tácticas o confluencia >= 2)
+    trigger_pos = sorted(
+        pos for pos, acts in detalle.items()
+        if any(st in ESTACIONES_TACTICAS for st in acts) or len(acts) >= 2
+    )
+
+    for pos in trigger_pos:
+        if prev is None or (pos - prev <= gap and len(run) < max_run):
             run.append(pos)
         else:
             if (ep := _empaquetar(df, run, estaciones, detalle)) is not None:

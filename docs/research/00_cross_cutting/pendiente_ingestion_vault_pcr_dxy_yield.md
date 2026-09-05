@@ -45,13 +45,13 @@ for tk in ['SPY','CBOE_PCR','DXY','YIELD_SPREAD']:
 
 **"Vamos a esperar el Vault, está corriendo."**
 → NO ejecutar backfill a ciegas (riesgo de corromper Vault / datos falsos). Se **espera** a que la fuente externa/daemon se restablezca y complete.
-→ El **lake** se conserva íntegro; el **comité walk-forward** trabaja sobre la ventana de cobertura completa (última fecha con 11/11 estaciones = 2026-08-17), ya configurado vía `ultima_fecha_completa()` en `comite_metar/scripts/episodios.py`.
+→ El **lake** se conserva íntegro. ~~El comité walk-forward trabajaba sobre la ventana de cobertura completa~~ **NOTA (Sep-2026): El comité METAR fue archivado a `research/_legacy/comite_metar/` por deficiencias metodológicas. El validador OOS canónico es `research/10_gate_oos_validation/validador_oos.py` (v8 saneado).**
 
 ## Acción futura (cuando se restablezca)
 
 1. Confirmar que el Vault alcance 2026-09-02 para PCR/DXY/YIELD (`store.load_bars`).
 2. Re-generar el lake (`build_continuous_metar_lake.py`).
-3. Re-generar `episodios.json` del comité → la ventana de cobertura completa se extenderá sola.
+3. Re-ejecutar el validador OOS saneado (`validador_oos.py`) con datos extendidos.
 4. Opcional: si se necesita backfill inmediato, localizar el ingestor primario de CBOE_PCR/DXY y ejecutar fetch histórico (solo si la fuente lo soporta y tiene los datos).
 
 ---

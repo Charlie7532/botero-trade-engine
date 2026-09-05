@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VALIDADOR OOS — Catálogo v7 (capa separada del calificador post-mortem)
+VALIDADOR OOS — Catálogo v8 (capa separada del calificador post-mortem)
 ========================================================================
 Pregunta: el edge medido por el evaluador vela a vela (post-mortem), ¿se
 repite cuando la celda se elige SOLO con datos pasados?
@@ -18,6 +18,7 @@ Esto es el "OOS validator" — capa separada del calificador (shooter principle)
 el calificador juzga el tiro ya hecho; el validador responde si se repetirá.
 """
 import sys
+
 from pathlib import Path
 import numpy as np, pandas as pd
 from scipy.stats import binomtest
@@ -25,9 +26,10 @@ from scipy.stats import binomtest
 ROOT = Path("/root/botero-trade")
 sys.path.insert(0, str(ROOT / "research" / "01_señales_entry_exit"))
 
-from arnes.registro import SEÑALES
+from arnes.registro import SEÑALES, _CERTEZA
 from arnes.datos import cargar_datos
-from evaluador_vela_a_vela import first_passage, BLANCOS, ESCALAS
+from evaluador_vela_a_vela import BLANCOS, ESCALAS
+from evaluador_general import first_passage_bar
 
 # ── Catálogo v7 post-auditoría: las señales a validar OOS ──
 CATALOGO_V7 = [
@@ -41,16 +43,32 @@ BLOQUE_TEST_DIAS = 1095     # ~3 años por fold
 MIN_TRAIN_DIAS = 1825       # mínimo 5 años de train antes del primer test
 N_MIN_TRAIN = 10            # celdas elegibles en train
 
+# ── Time-Stop Calibrado P90 por Escala ZigZag (Sep-2026) ──
+# Derivado empíricamente de 1,354 pivotes en SPY (resolución OHLC intrabarra):
+#   zz25 (±2.5%): mediana=3b,  P90=9b   (~3.0× mediana) — movimiento táctico
+#   zz50 (±5.0%): mediana=12b, P90=45b  (~3.8× mediana) — movimiento intermedio
+#   zz75 (±7.5%): mediana=29b, P90=101b (~3.5× mediana) — movimiento estructural
+# Proporción armónica constante (~3.5× mediana). Respeta la ventana de causalidad
+# temporal: una señal táctica/circunstancial no retiene atribución infinita.
+TIMESTOP_P90 = {
+    "zz25": 9,
+    "zz50": 45,
+    "zz75": 101,
+}
+
+
 # Globals set by _init_data() — called from __main__ or externally
-df = spy = prices = spy_idx = piv_dates = piv_types = piv_pos = n_piv = None
+df = spy = prices = highs = lows = spy_idx = piv_dates = piv_types = piv_pos = n_piv = None
 
 def _init_data():
     """Load data and set module globals. Idempotent."""
-    global df, spy, prices, spy_idx, piv_dates, piv_types, piv_pos, n_piv
+    global df, spy, prices, highs, lows, spy_idx, piv_dates, piv_types, piv_pos, n_piv
     if df is not None:
         return
     df, spy = cargar_datos()
     prices = spy["close"].astype(float).values
+    highs = spy["high"].astype(float).values
+    lows = spy["low"].astype(float).values
     spy_idx = spy.close.index
     piv_dates = df["pivot_date"].values
     piv_types = df["pivot_type"].values
@@ -66,7 +84,9 @@ def régimen_en(t_pos):
     return "ALZA" if piv_types[valid[-1]] == "MIN" else "BAJA"
 
 def fichas_celda(señal_mask, blanco, desde, hasta):
-    """Fichas first-passage de la señal en [desde, hasta), todas las escalas."""
+    """Fichas first-passage de la señal en [desde, hasta), todas las escalas.
+    Saneamiento Sep-2026: OHLC intrabar, time-stop calibrado al P90 empírico de cada escala
+    (zz25: 9b, zz50: 45b, zz75: 101b). Respeta la ventana de atribución causal."""
     idx_disp = np.where(señal_mask.values)[0]
     out = []
     for i in idx_disp:
@@ -78,13 +98,16 @@ def fichas_celda(señal_mask, blanco, desde, hasta):
             continue
         reg = régimen_en(t)
         for esc, thr in ESCALAS.items():
-            r = first_passage(prices, t, thr, blanco)
+            r = first_passage_bar(prices, highs, lows, t, thr, blanco,
+                                  max_barras=TIMESTOP_P90[esc])
             if r and r["resuelto"]:
                 out.append({"escala": esc, "régimen": reg, **r})
     return pd.DataFrame(out)
 
 def fichas_baseline(tipo, blanco, desde, hasta, excluir_fechas):
-    """Baseline: pivotes del mismo tipo en [desde, hasta), sin los de la señal."""
+    """Baseline: pivotes del mismo tipo en [desde, hasta), sin los de la señal.
+    Saneamiento Sep-2026: OHLC intrabar, time-stop calibrado al P90 empírico de cada escala
+    (zz25: 9b, zz50: 45b, zz75: 101b)."""
     out = []
     for i in range(n_piv):
         if piv_types[i] != tipo:
@@ -97,7 +120,8 @@ def fichas_baseline(tipo, blanco, desde, hasta, excluir_fechas):
             continue
         reg = régimen_en(t)
         for esc, thr in ESCALAS.items():
-            r = first_passage(prices, t, thr, blanco)
+            r = first_passage_bar(prices, highs, lows, t, thr, blanco,
+                                  max_barras=TIMESTOP_P90[esc])
             if r and r["resuelto"]:
                 out.append({"escala": esc, "régimen": reg, **r})
     return pd.DataFrame(out)
@@ -124,13 +148,15 @@ if __name__ == "__main__":
     # ── Folds cronológicos anclados ──
     T0 = pd.Timestamp(df["pivot_date"].min())
     T1 = pd.Timestamp(df["pivot_date"].max()) + pd.Timedelta(days=1)
-    folds = []
+    folds_all = []
     t = T0 + pd.Timedelta(days=MIN_TRAIN_DIAS)
     while t < T1:
-        folds.append((t, min(t + pd.Timedelta(days=BLOQUE_TEST_DIAS), T1)))
+        folds_all.append((t, min(t + pd.Timedelta(days=BLOQUE_TEST_DIAS), T1)))
         t += pd.Timedelta(days=BLOQUE_TEST_DIAS)
 
-    print(f"VALIDADOR OOS MULTI-CELDA — catálogo v7 | {len(folds)} folds (train anclado ≥5 años, test ~3 años)")
+    print(f"VALIDADOR OOS MULTI-CELDA — catálogo v8 (SANEADO Sep-2026: inception + OHLC + time-stop P90 calibrado)")
+    print(f"  Time-stops P90 empíricos: {TIMESTOP_P90}")
+    print(f"  {len(folds_all)} folds totales (train anclado ≥5 años, test ~3 años)")
     print(f"{'='*130}")
 
     resultados = {}
@@ -139,9 +165,27 @@ if __name__ == "__main__":
         tipo = "MAX" if blanco == "MAX" else "MIN"
         mask = SEÑALES[s](df).astype(bool)
 
-        # Edge IN-SAMPLE completo por celda
-        F_all = fichas_celda(mask, blanco, T0, T1)
-        B_all = fichas_baseline(tipo, blanco, T0, T1,
+        # ── Corrección 1: Inception Policy ──
+        # Folds cuyo test window termina ANTES del inception de la señal se saltan.
+        cert = _CERTEZA.get(s, {})
+        inception_str = cert.get("fecha_inicio_valida")
+        inception = pd.Timestamp(inception_str) if inception_str else T0
+        folds = [(f, t) for (f, t) in folds_all if t > inception]
+        n_skipped = len(folds_all) - len(folds)
+        if n_skipped > 0:
+            print(f"  [{s}] inception={inception_str} → {n_skipped} folds pre-inception saltados, {len(folds)} válidos")
+
+        # Aplicar inception al mask también: datos pre-inception = False
+        mask_inception = pd.Series(False, index=df.index)
+        for idx_i in range(len(df)):
+            if pd.Timestamp(piv_dates[idx_i]) >= inception:
+                mask_inception.iloc[idx_i] = True
+        mask = mask & mask_inception
+
+        # Edge IN-SAMPLE completo por celda (solo datos post-inception)
+        T0_eff = max(T0, inception)  # Train starts at max(T0, inception)
+        F_all = fichas_celda(mask, blanco, T0_eff, T1)
+        B_all = fichas_baseline(tipo, blanco, T0_eff, T1,
                                 set(pd.DatetimeIndex(df.loc[mask, "pivot_date"])))
         is_cells = edge_por_celda(F_all, B_all)
 
@@ -153,14 +197,14 @@ if __name__ == "__main__":
 
             oos_edges = []
             for (t_from, t_to) in folds:
-                # Train: verificar que esta celda califica en train
-                F_train = fichas_celda(mask, blanco, T0, t_from)
-                B_train = fichas_baseline(tipo, blanco, T0, t_from,
+                # Train: verificar que esta celda califica en train (post-inception)
+                F_train = fichas_celda(mask, blanco, T0_eff, t_from)
+                B_train = fichas_baseline(tipo, blanco, T0_eff, t_from,
                                           set(pd.DatetimeIndex(df.loc[mask, "pivot_date"])))
                 train_cells = edge_por_celda(F_train, B_train)
                 tc = train_cells.get(celda_nombre)
-                if tc is None or tc["n"] < N_MIN_TRAIN or tc["fav_neto"] <= 0:
-                    continue  # celda no califica en este train window
+                if tc is None or tc["n"] < N_MIN_TRAIN:
+                    continue  # celda sin datos suficientes en train
 
                 # Test: medir la celda en el bloque que nunca vio
                 F_test = fichas_celda(mask, blanco, t_from, t_to)
@@ -195,16 +239,15 @@ if __name__ == "__main__":
                 "sign_test_p": sign_p,
             }
 
-        # Elegir la mejor celda OOS (por consistencia, luego folds, luego decay)
+        # Elegir la mejor celda OOS (por consistencia, luego edge absoluto)
         n_celdas_probadas = len(celda_results)
         if celda_results:
-            # Priorizar: OOS positivo + mayor ratio folds+/total + más folds + mayor decay
+            # Priorizar: OOS positivo > más folds > más folds+ > mayor edge absoluto OOS
+            # NOT decay — decay = OOS/IS se infla con IS pequeño (artefacto aritmético)
             def _score(item):
                 r = item[1]
                 oos = r["oos_edge_medio_pct"]
-                ratio = r["folds_positivos"] / r["folds_con_test"] if r["folds_con_test"] > 0 else 0
-                d = r["decay_oos_vs_is"] if r["decay_oos_vs_is"] is not None else 0
-                return (oos > 0, ratio, r["folds_con_test"], d)
+                return (oos > 0, r["folds_con_test"], r["folds_positivos"], oos)
             best_celda = max(celda_results.items(), key=_score)
             # Bonferroni señal-dependiente: p_ajustado = p_raw × n_celdas_probadas
             p_raw = best_celda[1].get("sign_test_p")
@@ -275,14 +318,23 @@ if __name__ == "__main__":
                   f"OOS={v['oos_edge_medio_pct']:>+6.2f}% {pos}/{tot} decay={decay} {stp}{mark}")
 
     import json
-    out = ROOT / "data" / "research" / "signals" / "validacion_oos_catalogo_v7.json"
-    out.write_text(json.dumps({"fecha": str(pd.Timestamp.now()),
-                               "metodo": "walk-forward anclado MULTI-CELDA v2: cada celda con edge IS>0 y N>=10 probada independientemente OOS. "
-                                         "Baseline excluye pivotes de la señal (P5). Bonferroni señal-dependiente. "
-                                         "Señales con <5 folds OOS: PENDIENTE (sign-test imposible por construcción).",
-                               "bloque_test_dias": BLOQUE_TEST_DIAS,
-                               "min_train_dias": MIN_TRAIN_DIAS,
-                               "n_min_train": N_MIN_TRAIN,
-                               "resultados": resultados},
-                              indent=2, ensure_ascii=False, default=str))
+    out = ROOT / "data" / "research" / "signals" / "validacion_oos_catalogo_v8_saneado.json"
+    out_p90 = ROOT / "data" / "research" / "signals" / "validacion_oos_catalogo_v8_p90.json"
+    payload = {
+        "fecha": str(pd.Timestamp.now()),
+        "metodo": "walk-forward anclado MULTI-CELDA v8 SANEADO (Sep-2026): "
+                  "inception policy (fecha_inicio_valida por señal), "
+                  "OHLC intrabar (first_passage_bar con spy high/low), "
+                  "time-stop P90 calibrado empíricamente en SPY (zz25=9b, zz50=45b, zz75=101b). "
+                  "Baseline excluye pivotes de la señal (P5). Bonferroni señal-dependiente.",
+        "timestop_p90": TIMESTOP_P90,
+        "bloque_test_dias": BLOQUE_TEST_DIAS,
+        "min_train_dias": MIN_TRAIN_DIAS,
+        "n_min_train": N_MIN_TRAIN,
+        "resultados": resultados,
+    }
+    content = json.dumps(payload, indent=2, ensure_ascii=False, default=str)
+    out.write_text(content)
+    out_p90.write_text(content)
     print(f"\nGuardado: {out}")
+    print(f"Guardado: {out_p90}")

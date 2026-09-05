@@ -1,0 +1,329 @@
+{
+  "fecha": "2026-09-05 11:43:07.861288",
+  "metodo": "walk_forward_anclado_OHLC_sin_timestop",
+  "nota": "OHLC intrabar via first_passage_bar con max_barras=99999 (horizonte natural, sin C9)",
+  "resultados": {
+    "credit_stress": {
+      "mejor": "zz75|BAJA",
+      "in_sample_fav_neto_pct": 0.69,
+      "in_sample_n": 160,
+      "folds_con_test": 4,
+      "oos_edge_medio_pct": 1.18,
+      "oos_edges_pct": [
+        0.98,
+        -1.07,
+        4.23,
+        0.58
+      ],
+      "folds_positivos": 3,
+      "decay_oos_vs_is": 1.71,
+      "sign_test_p": 0.3125,
+      "todas": {
+        "zz50|ALZA": {
+          "in_sample_fav_neto_pct": 0.17,
+          "in_sample_n": 81,
+          "folds_con_test": 3,
+          "oos_edge_medio_pct": -0.04,
+          "oos_edges_pct": [
+            -0.97,
+            0.34,
+            0.51
+          ],
+          "folds_positivos": 2,
+          "decay_oos_vs_is": -0.22,
+          "sign_test_p": null
+        },
+        "zz50|BAJA": {
+          "in_sample_fav_neto_pct": 0.23,
+          "in_sample_n": 160,
+          "folds_con_test": 4,
+          "oos_edge_medio_pct": -0.27,
+          "oos_edges_pct": [
+            -0.05,
+            -1.28,
+            0.96,
+            -0.7
+          ],
+          "folds_positivos": 1,
+          "decay_oos_vs_is": -1.17,
+          "sign_test_p": 0.9375
+        },
+        "zz75|ALZA": {
+          "in_sample_fav_neto_pct": 1.73,
+          "in_sample_n": 81,
+          "folds_con_test": 3,
+          "oos_edge_medio_pct": 3.08,
+          "oos_edges_pct": [
+            -1.79,
+            7.63,
+            3.39
+          ],
+          "folds_positivos": 2,
+          "decay_oos_vs_is": 1.78,
+          "sign_test_p": null
+        },
+        "zz75|BAJA": {
+          "in_sample_fav_neto_pct": 0.69,
+          "in_sample_n": 160,
+          "folds_con_test": 4,
+          "oos_edge_medio_pct": 1.18,
+          "oos_edges_pct": [
+            0.98,
+            -1.07,
+            4.23,
+            0.58
+          ],
+          "folds_positivos": 3,
+          "decay_oos_vs_is": 1.71,
+          "sign_test_p": 0.3125
+        }
+      },
+      "n_celdas": 4,
+      "p_bonf": 1.25
+    },
+    "vvix_entry": {
+      "mejor": "zz50|BAJA",
+      "in_sample_fav_neto_pct": 2.12,
+      "in_sample_n": 54,
+      "folds_con_test": 3,
+      "oos_edge_medio_pct": 2.55,
+      "oos_edges_pct": [
+        -0.15,
+        -0.78,
+        8.58
+      ],
+      "folds_positivos": 1,
+      "decay_oos_vs_is": 1.2,
+      "sign_test_p": null,
+      "todas": {
+        "zz25|BAJA": {
+          "in_sample_fav_neto_pct": 0.19,
+          "in_sample_n": 54,
+          "folds_con_test": 3,
+          "oos_edge_medio_pct": -0.88,
+          "oos_edges_pct": [
+            0.37,
+            -0.96,
+            -2.04
+          ],
+          "folds_positivos": 1,
+          "decay_oos_vs_is": -4.55,
+          "sign_test_p": null
+        },
+        "zz50|BAJA": {
+          "in_sample_fav_neto_pct": 2.12,
+          "in_sample_n": 54,
+          "folds_con_test": 3,
+          "oos_edge_medio_pct": 2.55,
+          "oos_edges_pct": [
+            -0.15,
+            -0.78,
+            8.58
+          ],
+          "folds_positivos": 1,
+          "decay_oos_vs_is": 1.2,
+          "sign_test_p": null
+        },
+        "zz75|BAJA": {
+          "in_sample_fav_neto_pct": 0.87,
+          "in_sample_n": 54,
+          "folds_con_test": 3,
+          "oos_edge_medio_pct": -0.16,
+          "oos_edges_pct": [
+            -1.63,
+            -5.1,
+            6.25
+          ],
+          "folds_positivos": 1,
+          "decay_oos_vs_is": -0.18,
+          "sign_test_p": null
+        }
+      },
+      "n_celdas": 3,
+      "p_bonf": null
+    },
+    "breadth_contraction_exit": {
+      "mejor": "zz50|ALZA",
+      "in_sample_fav_neto_pct": 0.52,
+      "in_sample_n": 455,
+      "folds_con_test": 10,
+      "oos_edge_medio_pct": 1.33,
+      "oos_edges_pct": [
+        3.02,
+        2.67,
+        2.74,
+        3.67,
+        -0.18,
+        4.05,
+        -0.55,
+        -1.71,
+        -3.76,
+        3.31
+      ],
+      "folds_positivos": 6,
+      "decay_oos_vs_is": 2.53,
+      "sign_test_p": 0.377,
+      "todas": {
+        "zz50|ALZA": {
+          "in_sample_fav_neto_pct": 0.52,
+          "in_sample_n": 455,
+          "folds_con_test": 10,
+          "oos_edge_medio_pct": 1.33,
+          "oos_edges_pct": [
+            3.02,
+            2.67,
+            2.74,
+            3.67,
+            -0.18,
+            4.05,
+            -0.55,
+            -1.71,
+            -3.76,
+            3.31
+          ],
+          "folds_positivos": 6,
+          "decay_oos_vs_is": 2.53,
+          "sign_test_p": 0.377
+        },
+        "zz75|ALZA": {
+          "in_sample_fav_neto_pct": 0.79,
+          "in_sample_n": 455,
+          "folds_con_test": 10,
+          "oos_edge_medio_pct": 1.3,
+          "oos_edges_pct": [
+            6.59,
+            1.33,
+            -0.99,
+            2.97,
+            0.49,
+            3.64,
+            -0.79,
+            -2.33,
+            -0.21,
+            2.33
+          ],
+          "folds_positivos": 6,
+          "decay_oos_vs_is": 1.65,
+          "sign_test_p": 0.377
+        }
+      },
+      "n_celdas": 2,
+      "p_bonf": 0.754
+    },
+    "cascade_reversal": {
+      "mejor": "zz25|ALZA",
+      "in_sample_fav_neto_pct": 0.7,
+      "in_sample_n": 39,
+      "folds_con_test": 3,
+      "oos_edge_medio_pct": 1.03,
+      "oos_edges_pct": [
+        1.29,
+        1.65,
+        0.15
+      ],
+      "folds_positivos": 3,
+      "decay_oos_vs_is": 1.47,
+      "sign_test_p": null,
+      "todas": {
+        "zz25|ALZA": {
+          "in_sample_fav_neto_pct": 0.7,
+          "in_sample_n": 39,
+          "folds_con_test": 3,
+          "oos_edge_medio_pct": 1.03,
+          "oos_edges_pct": [
+            1.29,
+            1.65,
+            0.15
+          ],
+          "folds_positivos": 3,
+          "decay_oos_vs_is": 1.47,
+          "sign_test_p": null
+        },
+        "zz50|ALZA": {
+          "in_sample_fav_neto_pct": 1.7,
+          "in_sample_n": 39,
+          "folds_con_test": 3,
+          "oos_edge_medio_pct": 1.68,
+          "oos_edges_pct": [
+            -1.19,
+            3.03,
+            3.19
+          ],
+          "folds_positivos": 2,
+          "decay_oos_vs_is": 0.98,
+          "sign_test_p": null
+        },
+        "zz75|ALZA": {
+          "in_sample_fav_neto_pct": 2.43,
+          "in_sample_n": 39,
+          "folds_con_test": 3,
+          "oos_edge_medio_pct": 0.74,
+          "oos_edges_pct": [
+            -3.04,
+            -3.69,
+            8.94
+          ],
+          "folds_positivos": 1,
+          "decay_oos_vs_is": 0.3,
+          "sign_test_p": null
+        }
+      },
+      "n_celdas": 3,
+      "p_bonf": null
+    },
+    "pcr_put_panic": {
+      "mejor": "zz50|BAJA",
+      "in_sample_fav_neto_pct": 0.19,
+      "in_sample_n": 48,
+      "folds_con_test": 4,
+      "oos_edge_medio_pct": 0.61,
+      "oos_edges_pct": [
+        1.25,
+        2.4,
+        2.19,
+        -3.41
+      ],
+      "folds_positivos": 3,
+      "decay_oos_vs_is": 3.17,
+      "sign_test_p": 0.3125,
+      "todas": {
+        "zz50|BAJA": {
+          "in_sample_fav_neto_pct": 0.19,
+          "in_sample_n": 48,
+          "folds_con_test": 4,
+          "oos_edge_medio_pct": 0.61,
+          "oos_edges_pct": [
+            1.25,
+            2.4,
+            2.19,
+            -3.41
+          ],
+          "folds_positivos": 3,
+          "decay_oos_vs_is": 3.17,
+          "sign_test_p": 0.3125
+        },
+        "zz75|BAJA": {
+          "in_sample_fav_neto_pct": 0.72,
+          "in_sample_n": 48,
+          "folds_con_test": 4,
+          "oos_edge_medio_pct": 0.1,
+          "oos_edges_pct": [
+            2.08,
+            4.62,
+            1.85,
+            -8.17
+          ],
+          "folds_positivos": 3,
+          "decay_oos_vs_is": 0.14,
+          "sign_test_p": 0.3125
+        }
+      },
+      "n_celdas": 2,
+      "p_bonf": 0.625
+    },
+    "capitulacion": null,
+    "bsi_washed_out": null,
+    "skew_paranoia_exit": null,
+    "panico_total": null
+  }
+}

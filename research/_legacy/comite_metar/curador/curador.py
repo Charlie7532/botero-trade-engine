@@ -140,19 +140,27 @@ def fuse(lecturas: List[Dict],
         rol = lec.get("rol_precognitivo", "ruido")
         conv = lec.get("conviccion")
         w = conviccion_peso(conv)
+        accion = lec.get("accion", "OBSERVAR")
+
+        # §8b & §10.1: OBSERVAR o NEUTRAL aportan peso 0 al voto
+        if accion == "OBSERVAR" or dir_ == "NEUTRAL":
+            w_voto = 0
+        else:
+            w_voto = w
+
         resultado["conteo_votos"][dir_] = resultado["conteo_votos"].get(dir_, 0) + 1
         resultado["conteo_roles"][rol] = resultado["conteo_roles"].get(rol, 0) + 1
         pesos[est] = w
         resultado["lecturas_utilizadas"].append({
             "estacion": est, "direccion": dir_, "rol": rol,
-            "conviccion": conv, "peso": w,
+            "conviccion": conv, "peso": w, "peso_voto": w_voto,
             "D1xD2xD3": lec.get("D1xD2DXD3") or lec.get("D1xD2xD3") or lec.get("D1xD2DxD3"),
             "state_key": (lec.get("D1xD2xD3") or {}).get("state_key"),
-            "accion": lec.get("accion"), "razon": lec.get("razon"),
+            "accion": accion, "razon": lec.get("razon"),
         })
-        if dir_ in ("ALZA", "BAJA"):
+        if dir_ in ("ALZA", "BAJA") and w_voto > 0:
             resultado["n_agentes_senal"] += 1
-            anti[dir_] += w
+            anti[dir_] += w_voto
             senal_est.add(est)
     resultado["n_agentes_maduros"] = maduros
     resultado["pesos_total"] = pesos
@@ -176,7 +184,9 @@ def fuse(lecturas: List[Dict],
         "direccion_confluente": direccion,
         "conviccion_confluente": conf_conv,
     }
-    resultado["flujo_neto"] = round(anti["ALZA"] - anti["BAJA"] if w_total else 0.0, 4)
+    # §10.1: normalizar flujo_neto por el número de agentes que efectivamente votaron
+    n_votantes = resultado["n_agentes_senal"]
+    resultado["flujo_neto"] = round((anti["ALZA"] - anti["BAJA"]) / n_votantes, 4) if n_votantes > 0 else 0.0
 
     # --- Contradicción (conflicto entre agentes) ---------------------------
     pp = min(P_alza, P_baja)

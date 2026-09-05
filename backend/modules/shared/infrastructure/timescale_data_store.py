@@ -80,10 +80,14 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         if df.empty:
             return
 
-        # VAULT STANDARD: daily bars always use midnight UTC timestamps
+        # VAULT STANDARD (Rule 18): daily bars always use midnight UTC timestamps
         if tf == "1d":
             df = df.copy()
-            df.index = pd.to_datetime(df.index).normalize()
+            idx = pd.to_datetime(df.index)
+            if idx.tz is not None:
+                df.index = idx.tz_convert("UTC").normalize()
+            else:
+                df.index = idx.normalize().tz_localize("UTC")
             df = df[~df.index.duplicated(keep="last")]
 
         conn = self._conn()
@@ -508,9 +512,13 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         open: float, high: float, low: float, close: float, volume: int = 0,
     ) -> None:
         """Insert a single OHLCV bar, skip if already exists."""
-        # VAULT STANDARD: daily bars always use midnight UTC timestamps
+        # VAULT STANDARD (Rule 18): daily bars always use midnight UTC timestamps
         if timeframe == "1d":
-            time = pd.Timestamp(time).normalize()
+            ts = pd.Timestamp(time)
+            if ts.tz is not None:
+                time = ts.tz_convert("UTC").normalize()
+            else:
+                time = ts.normalize().tz_localize("UTC")
         conn = self._conn()
         try:
             with conn.cursor() as cur:
@@ -539,9 +547,13 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         close=latest score. Open is preserved (first reading of the day).
         Volume increments as a read counter (proxy for candle confidence).
         """
-        # VAULT STANDARD: daily bars always use midnight UTC timestamps
+        # VAULT STANDARD (Rule 18): daily bars always use midnight UTC timestamps
         if timeframe == "1d":
-            time = pd.Timestamp(time).normalize()
+            ts = pd.Timestamp(time)
+            if ts.tz is not None:
+                time = ts.tz_convert("UTC").normalize()
+            else:
+                time = ts.normalize().tz_localize("UTC")
         conn = self._conn()
         try:
             with conn.cursor() as cur:

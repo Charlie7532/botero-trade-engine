@@ -27,6 +27,8 @@ SOURCE_TICKER_MAP = {
     "NDQ": "^IXIC",      # Nasdaq Composite
     "SKEW": "^SKEW",     # CBOE SKEW
     "TRIN": "^TRIN",     # Arms TRIN
+    "BK": "BNY",         # The Bank of New York Mellon rebranded ticker (May 2026)
+    "SATS": "ECHO",      # EchoStar rebranded ticker (June 2026)
 }
 
 

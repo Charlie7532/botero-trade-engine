@@ -189,6 +189,7 @@ class YieldCurveMetarService:
                     )
 
             date_col = 'date' if 'date' in df_raw.columns else 'time'
+            df_raw = df_raw.drop_duplicates(subset=[date_col, "ticker"], keep="last")
             pivot_c = df_raw.pivot(index=date_col, columns="ticker", values="close").dropna()
             
             if as_of_date:

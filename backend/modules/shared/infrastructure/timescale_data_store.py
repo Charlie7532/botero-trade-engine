@@ -403,6 +403,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                            AND b.time >= NOW() - INTERVAL '%s days'
                            AND m.asset_type = 'STOCK'
                            AND 'SP500' = ANY(m.index_membership)
+                           AND m.update_source = 'vault_ohlcv_bars'
                            ORDER BY b.ticker, b.time""",
                         (days,),
                     )
@@ -447,6 +448,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                            AND b.time >= NOW() - INTERVAL '%s days'
                            AND m.asset_type = 'STOCK'
                            AND 'SP500' = ANY(m.index_membership)
+                           AND m.update_source = 'vault_ohlcv_bars'
                            AND b.volume > 0
                            ORDER BY b.ticker, b.time""",
                         (days,),
@@ -491,6 +493,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                          AND b.time >= NOW() - INTERVAL '%s days'
                          AND m.asset_type = 'STOCK'
                          AND 'SP500' = ANY(m.index_membership)
+                         AND m.update_source = 'vault_ohlcv_bars'
                          AND m.sector IS NOT NULL
                          AND b.volume > 0
                        ORDER BY b.ticker, b.time""",
@@ -647,6 +650,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                          AND b.time >= NOW() - INTERVAL '%s days'
                          AND m.asset_type = 'STOCK'
                          AND ('SP500' = ANY(m.index_membership) OR 'QQQ' = ANY(m.index_membership))
+                         AND m.update_source = 'vault_ohlcv_bars'
                          AND m.sector IS NOT NULL
                        ORDER BY b.ticker, b.time""",
                     (days,),

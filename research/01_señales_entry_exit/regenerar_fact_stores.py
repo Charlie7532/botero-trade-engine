@@ -41,7 +41,7 @@ STATIONS = [
 ]
 
 ESCALAS = {"zz25": 0.025, "zz50": 0.050, "zz75": 0.075}
-SCALE_WINDOWS = {"zz25": 80, "zz50": 40, "zz75": 27}
+SCALE_WINDOWS = {"zz25": 35, "zz50": 110, "zz75": 190}  # P95 empirical resolution
 
 FACT_STORE_DIR = ROOT / "backend" / "modules" / "entry_decision" / "domain" / "rules"
 DATA_DIR = ROOT / "data" / "research"
@@ -444,7 +444,7 @@ def regenerate_station_fact_store(
         "enrichment_metadata": {
             "generated_by": "regenerar_fact_stores.py (Sprint 2)",
             "generated_at": pd.Timestamp.now(tz="UTC").isoformat(),
-            "declustering": "embargo by scale window (zz25=80, zz50=40, zz75=27)",
+            "declustering": "embargo by scale window (zz25=35, zz50=110, zz75=190, P95 empirical)",
             "ci_method": "Clopper-Pearson exact",
             "multiple_testing": "Benjamini-Hochberg (q=0.05)",
             "n_states": len(states),

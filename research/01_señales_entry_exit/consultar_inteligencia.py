@@ -53,7 +53,7 @@ STATIONS = [
 
 ESCALAS = {"zz25": 0.025, "zz50": 0.050, "zz75": 0.075}
 FIRE_SUFFIX = "_fire"  # Canonical suffix for episode-start markers
-EMBARGO_BARS = {"zz25": 80, "zz50": 40, "zz75": 27}  # ceil(2/scale)
+EMBARGO_BARS = {"zz25": 35, "zz50": 110, "zz75": 190}  # P95 empirical resolution
 
 DATA_DIR = ROOT / "data" / "research"
 

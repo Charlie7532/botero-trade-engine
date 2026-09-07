@@ -119,17 +119,21 @@ def first_passage_bar(close: np.ndarray, highs: np.ndarray, lows: np.ndarray,
                       max_barras: Optional[int] = None) -> Optional[Dict[str, Any]]:
     """Evalúa el primer paso vela a vela desde la barra t0 con precios OHLC.
     
-    C9: Third barrier (time-stop). max_barras = ceil(2/scale) by default.
-    zz25→80 bars, zz50→40 bars, zz75→27 bars.
+    C9: Third barrier (time-stop). Calibrado al P95 empírico de resolución SPY.
+    zz25→35 bars, zz50→110 bars, zz75→190 bars.
     Timeout = failure (counted in metrics, not excluded).
     """
     p0 = close[t0]
     if p0 <= 0 or t0 >= len(close) - 1:
         return None
 
-    # C9: Time-stop — third barrier
+    # C9: Time-stop — third barrier (calibrado al P95 empírico de resolución)
+    # Datos reales SPY 1993-2026: zz25 resuelve en median=7v P95=33v,
+    # zz50 median=26v P95=108v, zz75 median=56v P95=190v.
+    # Barreras anteriores (ceil(2/scale)): 80/40/27 → zz50 32% timeouts, zz75 75% timeouts.
+    _BARRIER_P95 = {0.025: 35, 0.05: 110, 0.075: 190}
     if max_barras is None:
-        max_barras = int(np.ceil(2.0 / scale))  # zz25→80, zz50→40, zz75→27
+        max_barras = _BARRIER_P95.get(round(scale, 3), int(np.ceil(2.0 / scale)))
     remaining = len(close) - t0 - 1
     window = min(remaining, max_barras)
 
@@ -152,8 +156,8 @@ def first_passage_bar(close: np.ndarray, highs: np.ndarray, lows: np.ndarray,
     if np.isinf(u_idx) and np.isinf(d_idx):
         # Time-stop triggered: count as failure
         p_end = path_c[-1] if len(path_c) > 0 else p0
-        seg_h = highs[t0: t0 + 1 + len(path_h)]
-        seg_l = lows[t0: t0 + 1 + len(path_l)]
+        seg_h = highs[t0 + 1: t0 + 1 + len(path_h)]
+        seg_l = lows[t0 + 1: t0 + 1 + len(path_l)]
         if blanco == "MAX":
             favorable = float((p0 - p_end) / p0)
             mae = float((seg_h.max() - p0) / p0)
@@ -175,8 +179,8 @@ def first_passage_bar(close: np.ndarray, highs: np.ndarray, lows: np.ndarray,
     event_i = int(min(u_idx, d_idx))
     down_first = bool(d_idx < u_idx)
 
-    seg_h = highs[t0: t0 + 1 + event_i + 1]
-    seg_l = lows[t0: t0 + 1 + event_i + 1]
+    seg_h = highs[t0 + 1: t0 + 1 + event_i + 1]
+    seg_l = lows[t0 + 1: t0 + 1 + event_i + 1]
     p_end = path_c[event_i]
 
     if blanco == "MAX":  # EXIT / Short / Techo
@@ -350,6 +354,8 @@ def evaluar_condicion_booleana(sig_mask: Union[np.ndarray, pd.Series],
             continue
 
         n_val = len(valid_fp)
+        n_timeout = sum(1 for r in valid_fp if r.get("timeout", False))
+        timeout_rate = n_timeout / n_val if n_val > 0 else 0.0
         hits = np.array([r["hit"] for r in valid_fp])
         favs = np.array([r["favorable"] for r in valid_fp])
         maes = np.array([r["mae"] for r in valid_fp])
@@ -385,6 +391,9 @@ def evaluar_condicion_booleana(sig_mask: Union[np.ndarray, pd.Series],
         scale_entry = {
             "escala_pct": round(esc_val * 100, 1),
             "n": n_val,
+            "n_timeout": n_timeout,
+            "timeout_rate": round(timeout_rate, 4),
+            "max_barras": {0.025: 35, 0.05: 110, 0.075: 190}.get(round(esc_val, 3), int(np.ceil(2.0 / esc_val))),
             "hit_rate": round(hit_rate, 3),
             "baseline_hit": round(b_hit, 3),
             "hit_neto": hit_neto,

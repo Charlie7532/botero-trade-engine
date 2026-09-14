@@ -1261,3 +1261,403 @@ SIGMET-OVERFLOW_EXTREMO-SKEW-D1-20250219-3.66σ
 4. **`sigma_overflow.py` debe extenderse** para retornar el tier name además de `(sigma_depth, flag)`. La función `validate_overflow()` actualmente solo retorna `UPPER`/`LOWER` sin graduar la severidad.
 5. **D3 (instability) raramente alcanza T3+.** El ratio `std(2)/std(10)` está físicamente acotado — su máximo empírico es ~5.3σ. Los blow-offs T4+ ocurren casi exclusivamente en D1 (nivel) y D2 (velocidad).
 
+
+
+---
+
+# ABSORBED FROM: anti_patterns.md
+
+# METAR Anti-Patrones — Errores a NUNCA Repetir
+
+> **Módulo de**: [fact_store_v3_architecture.md](file:///root/botero-trade/.agents/references/metar/fact_store_v3_architecture.md) §16
+> **Status**: `MANDATORY` | **Last Update**: 29-Ago-2026
+> **Scope**: Todo agente que trabaje con fact stores, señales METAR, o clasificación de estados
+
+---
+
+## Errores Documentados
+
+1. **Usar `fwd_20d` o cualquier retorno a horizonte fijo como métrica causal.** Los retornos se miden con ZigZag (variable, adaptativo), no con ventanas fijas. `fwd_20d` mezcla múltiples piernas ZigZag y diluye la señal real. (Regla E.9).
+
+2. **Confundir `p_bull` con un score de calidad.** `p_bull = 0.80` en un estado con `n=5` tiene menos valor que `p_bull = 0.55` con `n=500`. La calidad de una señal es `p_bull × n × (EV > 0)`, nunca `p_bull` aislado.
+
+3. **Promediar métricas entre escalas ZigZag.** `zz25`, `zz50`, y `zz75` son escalas INDEPENDIENTES con horizontes y poblaciones distintos. Promediar `p_bull_zz25` y `p_bull_zz75` es promediar temperatura y presión — produce un número sin significado.
+
+4. **Usar Bonferroni sobre el Protocolo §3.3.** El protocolo §3.3 ya tiene su marco propio (N≥30 + dossier cualitativo + CI95). Aplicar Bonferroni encima es sobre-corrección.
+
+5. **Tratar señales EXIT como inversas de señales ENTRY.** Una señal EXIT no es "entrar en corto" — es "proteger una posición existente". Los umbrales, horizontes, y poblaciones son distintos.
+
+6. **Inventar labels D1/D2/D3 en lugar de copiarlos de la fuente canónica.** El 29-Ago-2026 un agente inventó labels para 9/11 estaciones, invirtiendo físicamente el Credit (GFC 2008 → "DEEP_EASE"). **Siempre copiar de** [`d1_labels_canonical.md`](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md).
+
+7. **Ignorar el programa de overflow.** Una señal EXIT que dice "va a caer" sin medir si la caída escala de zz25 a zz50 y zz75 tiene valor operacional limitado. La cascada de overflow distingue un pullback de -3% de un crash de -15%.
+
+8. **Comparar `panic_score` entre eras sin normalizar.** En 1995 solo había 5/11 estaciones activas. Un `panic_score = 3` en 1995 (de 5 posibles) es más extremo que en 2025 (de 7 posibles). Usar siempre `panic_score_pct` para comparaciones inter-temporales.
+
+9. **Tratar estados ±2σ+ como estados normales sin verificar overflow.** Un `EXTREME_PANIC` a +2.1σ no es lo mismo que uno a +8σ. Todo estado en bin 0 o bin 5 debe verificarse con `validate_overflow()`.
+
+10. **Aplicar reglas estáticas sin considerar Wyckoff.** Señales degradadas como `bsi_recovery` y `regime_change_exit` son detectores de FASES institucionales (distribución y acumulación), no "ruido". Buscar siempre la dinámica entre pivotes.
+
+
+---
+
+# ABSORBED FROM: signal_rules.md
+
+# METAR Signal Rules & Confidence Tiers
+
+> **Módulo de**: [fact_store_v3_architecture.md](file:///root/botero-trade/.agents/references/metar/fact_store_v3_architecture.md) §11–13
+> **Status**: `PRODUCTION` | **Last Audit**: 30-Ago-2026 (homologación canónica)
+> **Relacionados**: [anti_patterns.md](file:///root/botero-trade/.agents/references/metar/anti_patterns.md), [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md)
+
+---
+
+## 1. Reglas de Interpretación para Señales
+
+### La Regla de Oro
+> La fiabilidad de una señal NO es solo `p_bull`. Es la combinación de **probabilidad × magnitud del retorno en ambas direcciones** (Descomposición EV).
+
+```
+EV = p_bull × avg_bull_return + (1 - p_bull) × avg_bear_return
+```
+
+Un `p_bull = 0.55` con `avg_bull = +4.2%` y `avg_bear = -1.8%` tiene EV = +0.049% — una señal de calidad. Un `p_bull = 0.80` con `avg_bull = +0.5%` y `avg_bear = -2.0%` tiene EV = +0.00% — una trampa.
+
+### Métricas del Estado
+
+| Métrica | Qué Mide | Uso |
+|---|---|---|
+| `n` | Observaciones históricas en este estado | Confiabilidad del dato |
+| `p_bull` | Probabilidad de retorno positivo | Dirección |
+| `ev` | Expected Value ponderado | Señal de convicción |
+| `sharpe` | Sharpe ratio del estado | Calidad riesgo/retorno |
+| `rr_asymmetry` | `|avg_bull| / |avg_bear|` | Asimetría del payoff |
+
+### Regla de Multi-Escala
+
+Los 3 horizontes ZigZag son **independientes** y pueden divergir:
+- **`zz25` (2.5%)**: Señal táctica (1-30 días)
+- **`zz50` (5.0%)**: Señal intermedia (1-60 días)
+- **`zz75` (7.5%)**: Señal estructural (1-90 días)
+
+**Convergencia = alta convicción.** Si las 3 escalas coinciden en dirección, la señal es robusta. Si divergen, el horizonte temporal importa más que la señal individual.
+
+---
+
+## 2. Señales Incondicionales vs Condicionales
+
+### Incondicionales (siempre activas)
+Una señal que dispara sin importar el contexto del mercado:
+- VIX con state_key `"5__4__3"` (bin 5 = EXTREME_PANIC + FAST_SPIKE + VOL_ACCEL) → modo crisis
+- FG bin 0 (EXTREME_FEAR) + `panic_score_pct ≥ 5/7` → acumulación contrarian
+
+### Condicionales (requieren contexto)
+Una señal que solo tiene significado en combinación con otra:
+- BSI bin 1 (`OVERSOLD_BREADTH`) → solo relevante si Credit bin > 1 (NO en `EXTREME_STRESS` ni `STRESS`). Breadth wash puede continuar en crisis crediticia.
+- SKEW bin 4 (`PARANOIA`) → relevante si VIX bin < 3 (bajo `NEUTRAL_ALERT`). Protección excesiva en ambiente tranquilo = contrarian.
+
+---
+
+## 3. Confidence Tiers (Protocolo §3.3)
+
+| Tier | Criterio | Tratamiento |
+|---|---|---|
+| **Tier A** | N ≥ 30 + CI95 acotado + EV > 0 | Producción directa |
+| **Tier B** | 10 ≤ N < 30 + CI95 | Producción con flag de incertidumbre |
+| **Tier C** | N < 10 | Observación solamente — sin peso en decisiones |
+
+### Protocolo §3.3 (Marco de Validación)
+1. **N ≥ 30** observaciones históricas
+2. **Dossier cualitativo** explicando por qué la señal debería funcionar (no puro data mining)
+3. **CI95** (Intervalo de confianza 95%) que no cruza cero para EV
+
+> [!IMPORTANT]
+> **No aplicar Bonferroni sobre §3.3.** El protocolo ya incluye su propio marco de validación. Bonferroni encima es sobre-corrección.
+
+### DSR — Deflated Sharpe Ratio
+Para señales con N ≥ 30, el DSR corrige por:
+- Múltiples comparaciones (cuántos estados se probaron)
+- Longitud de la serie temporal
+- Asimetría y curtosis de los retornos
+
+Un DSR p-value > 0.95 indica que la señal probablemente no es espuria.
+
+
+---
+
+# ABSORBED FROM: fact_store_guide.md
+
+# METAR Fact Store Guide — Estructura e Interpretación
+
+> **Módulo de**: [fact_store_v3_architecture.md](file:///root/botero-trade/.agents/references/metar/fact_store_v3_architecture.md) §1 + §5–8
+> **Status**: `PRODUCTION` | **Last Update**: 30-Ago-2026 (homologación canónica)
+> **Relacionados**: [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md), [signal_rules.md](file:///root/botero-trade/.agents/references/metar/signal_rules.md)
+
+---
+
+## 1. Qué Es un Fact Store
+
+Un Fact Store es un **JSON de probabilidades prospectivas** condicionado al estado observable del mercado. Para cada combinación D1×D2×D3, contiene estadísticas de lo que históricamente ocurrió DESPUÉS.
+
+| | **Fact Store** (Prospección) | **quants_obs** (Historia) |
+|---|---|---|
+| **Dirección** | → ADELANTE | ← ATRÁS |
+| **Pregunta** | "Dado HOY el estado X, ¿qué espero?" | "En pivotes pasados con estado X, ¿qué pasó?" |
+| **Población** | Todos los días de mercado en el estado | Solo los pivotes ZigZag (MAX/MIN) |
+| **Uso** | Engine de decisión en producción | Validación empírica (backtest) |
+
+**Regla:** Si divergen >20%, investigar el sesgo de selección por `pivot_type`.
+
+---
+
+## 2. Estructura de un State Key
+
+```
+state_key = "{D1_bin}__{D2_bin}__{D3_bin}"
+```
+
+Ejemplo: `"3__3__3"` — donde D1=bin 3 (NEUTRAL_ALERT para VIX), D2=bin 3 (ACCELERATING_UP_3D), D3=bin 3 (VOL_ACCELERATING_EXPANSION).
+
+Los labels semánticos viven **exclusivamente** en `_documentation.taxonomy` del JSON. Las keys son vectores numéricos, NO strings de labels. Para resolver labels:
+```python
+from backend.modules.entry_decision.domain.rules.metar_classifier import resolve_label
+label = resolve_label(d1_bin, D1_LABELS)  # Solo para presentación al usuario
+```
+
+Cada estado contiene 3 capas de información:
+
+### Capa Estándar (`zz25`/`zz50`/`zz75`)
+
+Estadísticas condicionales del retorno de SPY medido con ZigZag a 3 escalas:
+
+```json
+{
+  "n": 45,
+  "p_bull": 0.622,
+  "ev": 0.00185,
+  "sharpe": 0.34,
+  "rr_asymmetry": 1.42,
+  "avg_bull": 0.0312,
+  "avg_bear": -0.0220,
+  "ftt_median_days": 3.0
+}
+```
+
+| Campo | Significado |
+|---|---|
+| `n` | Observaciones históricas en este estado |
+| `p_bull` | P(retorno positivo) condicional a este estado |
+| `ev` | Expected Value = p_bull × avg_bull + (1-p_bull) × avg_bear |
+| `sharpe` | Sharpe ratio condicional |
+| `rr_asymmetry` | Asimetría risk/reward: `|avg_bull| / |avg_bear|` |
+| `ftt_median_days` | First-Touch-Time mediano (cuántos días hasta completar la pierna ZZ) |
+
+### Capa Cinemática (`zigzag_kinematic`)
+
+Descomposición de la pierna ZigZag actual por tipo de movimiento:
+
+```json
+"zigzag_kinematic": {
+  "zz25": {"n": 45, "p_bull": 0.622, "momentum": "CONTINUATION", ...},
+  "zz50": {"n": 23, "p_bull": 0.565, "momentum": "REVERSAL", ...}
+}
+```
+
+### Structural Momentum
+
+Tendencia HH/HL/LH/LL — la secuencia de altos y bajos:
+- `CONTINUATION`: Same direction as prior leg
+- `REVERSAL`: Opposite direction
+- `ACCELERATION`: Increasing magnitude
+- `DECELERATION`: Decreasing magnitude
+
+---
+
+## 3. Regímenes de Divergencia Temporal (Horizon Divergence)
+
+Cuando `zz25` y `zz75` divergen en dirección, se activa un régimen de divergencia:
+
+| zz25 | zz75 | Régimen | Interpretación |
+|---|---|---|---|
+| BULL | BULL | **Convergencia alcista** | Alta convicción larga |
+| BEAR | BEAR | **Convergencia bajista** | Alta convicción corta/protección |
+| BULL | BEAR | **Rebote táctico en bear estructural** | Scalp/swing corto horizonte |
+| BEAR | BULL | **Pullback táctico en bull estructural** | Dip-buying con stops anchos |
+
+---
+
+## 4. Lectura Correcta de un Estado
+
+Dado el state_key `"5__4__3"` (que se resuelve a `EXTREME_PANIC__FAST_SPIKE_3D__VOL_ACCELERATING_EXPANSION` para VIX):
+
+1. **D1 = bin 5** (`EXTREME_PANIC`): VIX en el percentil >97.72% histórico (extremo superior)
+2. **D2 = bin 4** (`FAST_SPIKE_3D`): La velocidad de cambio en 3 días está en >97.72% (subida extrema)
+3. **D3 = bin 3** (`VOL_ACCELERATING_EXPANSION`): La volatilidad intra-indicador está expandiéndose
+
+→ Esto describe un **spike de VIX extremo, acelerándose, con inestabilidad creciente**. Verificar overflow con `validate_overflow()` para determinar si es T1 (3σ) o T4+ (blow-off).
+
+**Acceso en código:**
+```python
+fs = json.load(open("vix_fact_store.json"))
+state = fs["5__4__3"]           # ← bin numérico, NUNCA label
+p_bull = state["zz75"]["p_bull"] # → probabilidad de retorno positivo
+```
+
+
+---
+
+# ABSORBED FROM: indicator_stochastic_registry.md
+
+# Indicator Stochastic Registry & METAR (Observación) / SIGMET (Alerta Severa) / Market NOTAM Service
+
+> **Location:** `backend/modules/entry_decision/domain/services/`
+> **REST Endpoints:** `/api/metar/*`, `/api/sigmet/active`, `/api/notam/incidents`, `/api/notam/circuit-breaker`
+> **Zero Fallback Policy:** Enforces StrictDataPolicyError on missing or unupdated Vault dates.
+> **Architecture Reference:** [metar_architecture_and_signals_map.md](file:///root/botero-trade/.agents/references/metar/metar_architecture_and_signals_map.md)
+
+---
+
+## Registered METAR Telemetry Stations (11 Domain Services)
+
+| Indicator / Domain | Ticker | Service File | Primary Metric / Interpretation | Polaridad (`d1_vote`) |
+|---|---|---|---|:---:|
+| **SV5_TURBULENCE** | `SV5_TURBULENCE` | `sv5_turbulence_metar_service.py` | Institutional Volume Turbulence ($\text{std}(\Delta_{\text{SV5TW}}, 10d)$). Capitulación ($>14.87$) vs Trampa de Serenidad ($<4.85$). | $-1$ (Bearish) |
+| **VIX** | `VIX` | `vix_metar_service.py` | CBOE Volatility Index. <20=Calma, 20-28=Elevado, >28=Pánico. | $-1$ (Bearish) |
+| **VVIX** | `VVIX` | `vvix_metar_service.py` | Volatility of Volatility Index. >120=Transición de régimen de volatilidad. | $-1$ (Bearish) |
+| **FG** | `FG` | `fg_metar_service.py` | CNN Fear & Greed Index (0-100). Sentimiento contrario (<10=Miedo Extremo, >90=Euforia). | Contrarian |
+| **CBOE_PCR** | `CBOE_PCR` | `pcr_metar_service.py` | CBOE Equity Put/Call Ratio. Cobertura institucional en derivados. | $-1$ (Bearish) |
+| **SKEW** | `SKEW` | `skew_metar_service.py` | CBOE SKEW Index. Riesgo de cola y demanda de puts OTM. | $-1$ (Bearish) |
+| **CREDIT** | `CREDIT_RATIO` | `credit_metar_service.py` | High Yield Corporate Credit Stress Ratio (HYG/LQD). Liquidez corporativa. | $+1$ (Bullish) |
+| **ROTATION** | `ROTATION_INDEX` | `rotation_metar_service.py` | Sector Breadth & Institutional Rotation across 11 GICS sectors + QQQ. | $+1$ (Risk-On) |
+| **YIELD_CURVE** | `YIELD_SPREAD` | `yield_curve_metar_service.py` | Macro Yield Curve Spread (TNX - IRX). Ciclo económico y recesión. | $+1$ (Expansión) |
+| **BSI** | `S5TW` | `bsi_metar_service.py` | Breadth Shock Index (% SP500 sobre 20-DMA). Impulso y capitulación táctica. | $+1$ (Bullish) |
+| **DXY** | `DXY` | `dxy_metar_service.py` | US Dollar Index. Condiciones globales de liquidez y estrés cambiario. | $-1$ (Bearish p/EQ) |
+
+---
+
+## Architecture & Integration Boundaries
+
+- **Data Source**: Exclusive read from Neon Vault (`market.ohlcv_bars`).
+- **Domain Adaptation**: Each service queries a pure domain Fact Store Lookup (`*_lookup.py`) with numeric state keys (`d1__d2__d3`).
+- **Compositor**: `convergence_compositor.py` generates multi-station synthesis and dimensional telemetry.
+- **Hazards & Disruptions**: `market_sigmet_hazard_service.py` issues severe weather bulletins (SIGMET) and `notam_incident_service.py` monitors operational anomalies (NOTAM).
+
+
+---
+
+# ABSORBED FROM: overflow_taxonomy.md
+
+# METAR Overflow & Blow-Off Taxonomy
+
+> **Módulo de**: [fact_store_v3_architecture.md](file:///root/botero-trade/.agents/references/metar/fact_store_v3_architecture.md) §17 + §18
+> **Status**: `PRODUCTION` | **Last Update**: 29-Ago-2026
+> **Relacionados**: [d1_labels_canonical.md](file:///root/botero-trade/.agents/references/metar/d1_labels_canonical.md), [gaussian_scale_policy.md](file:///root/botero-trade/.agents/references/metar/gaussian_scale_policy.md)
+> **Implementación**: [`sigma_overflow.py`](file:///root/botero-trade/backend/modules/entry_decision/domain/rules/sigma_overflow.py)
+
+---
+
+## 1. Principio
+
+Los fact stores clasifican estados en 6 bins D1 con clipping gaussiano a ±2σ. Un `EXTREME_PANIC` a +2.1σ y uno a +11σ reciben el mismo bin. La capa de Overflow/Blow-Off **no toca los fact stores** — opera en paralelo usando el z-score crudo para graduar la severidad.
+
+**Fórmula:** `z_score = (value − μ) / σ` donde `μ, σ` provienen de `STATION_MU_SIGMA`.
+
+---
+
+## 2. Escala Graduada de Severidad (5 Tiers)
+
+| Tier | Rango σ | `hazard_type` | Severidad | Frecuencia | Acción |
+|:---:|:---:|---|:---:|---|---|
+| **T1** | 3σ – 4σ | `OVERFLOW_MODERADO` | WARNING ⚠️ | ~14.2% | `STK_HOLD_STABLE` |
+| **T2** | 4σ – 5σ | `OVERFLOW_EXTREMO` | CRITICAL 🚨 | ~4.1% | `STK_BLOCK_CRISIS` |
+| **T3** | 5σ – 7σ | `BLOW_OFF_SEVERE` | EMERGENCY 🔴 | ~1.4% | Circuit Breaker si ≥2 estaciones |
+| **T4** | 7σ – 10σ | `BLOW_OFF_EXTREME` | CATASTROPHIC ⛔ | ~0.35% | Supervivencia + contrarian post |
+| **T5** | ≥ 10σ | `BLOW_OFF_SYSTEMIC` | SYSTEMIC 💀 | ~0.15% | Preservación capital absoluta |
+
+> Las frecuencias son sobre cualquier canal (11 estaciones × 3 dimensiones = 33 canales).
+
+---
+
+## 3. Tipos SIGMET Existentes (implementados)
+
+`_check_overflow_sigmet()` en `market_sigmet_hazard_service.py` emite:
+
+| Condición | `hazard_type` | Severidad |
+|---|---|:---:|
+| ≥2 dimensiones >±3σ simultáneamente | `OVERFLOW_MULTI` — Black Swan Anomaly | CRITICAL 🚨 |
+| max(sigma_depth) > 4σ | `OVERFLOW_EXTREMO` | CRITICAL 🚨 |
+| 3σ < max(sigma_depth) ≤ 4σ | `OVERFLOW_MODERADO` | WARNING ⚠️ |
+
+**Identificador:** `SIGMET-{TIER}-{station}-{dimension}-{fecha}-{depth}σ`
+
+---
+
+## 4. Evidencia Empírica (Vault, 1993-2026)
+
+### T3: BLOW_OFF_SEVERE (5σ – 7σ) — ~120 eventos en 33 años
+```
+VIX_D1:   max=8.18σ   (44 días ≥5σ)  — pánico sostenido multi-día
+VIX_D2:   max=11.11σ  (40 días ≥5σ)  — velocidad de spike extrema
+PCR_D1:   max=12.61σ  (15 días ≥5σ)  — capitulación en opciones
+Credit_D2: max=8.64σ  (22 días ≥5σ)  — velocidad de estrés crediticio
+```
+
+### T4: BLOW_OFF_EXTREME (7σ – 10σ) — ~30 eventos en 33 años
+```
+VIX_D1:    8 días ≥7σ   — solo GFC 2008 y COVID 2020
+PCR_D1:   12 días ≥7σ   — capitulación institucional completa
+Credit_D2: 7 días ≥7σ   — desplome crediticio sistémico
+```
+
+### T5: BLOW_OFF_SYSTEMIC (≥10σ) — 13 eventos en 33 años
+```
+PCR_D1:      6 días ≥10σ  — put/call en territorio sin precedentes
+PCR_D2:      4 días ≥10σ  — aceleración extrema del pánico
+VIX_D2:      2 días ≥10σ  — velocidad de spike solo en GFC/COVID
+Rotation_D2: 1 día  ≥10σ  — rotación sectorial violenta
+```
+
+---
+
+## 5. Blow-Off vs Overflow
+
+| | Overflow (T1-T2) | Blow-Off (T3-T5) |
+|---|---|---|
+| **Qué mide** | Fuera de campana gaussiana | Evento de cola extrema |
+| **Analogía** | Tormenta severa (80+ km/h) | Huracán categoría 5 (200+ km/h) |
+| **Duración** | 1-3 días | Clusters de 5-15 días |
+| **Señal** | Reducir exposición | Circuit breaker + acumulación contrarian post |
+
+---
+
+## 6. Protocolo Operacional
+
+```
+T1 (3-4σ): METAR flag ⚠️ | Gate: mantener, no añadir | URGENCY_NORMAL
+T2 (4-5σ): SIGMET emitido | Gate: bloquear entradas  | URGENCY_HIGH
+T3 (5-7σ): SIGMET elevado | CIO: reducir 25-50%     | URGENCY_EMERGENCY
+T4 (7-10σ): Circuit Breaker | CIO: solo coberturas   | URGENCY_EMERGENCY
+T5 (≥10σ): NOTAM infra    | CIO: preservación total  | URGENCY_EMERGENCY
+```
+
+---
+
+## 7. Reglas
+
+1. **T3-T5 son extensión, no reemplazo.** T1 y T2 mantienen nombres y lógica existente.
+2. **Blow-Off cluster:** ≥3 días consecutivos en T3+ → protocolos de supervivencia hasta 5 días consecutivos en T0.
+3. **Post-Blow-Off = señal contrarian.** Los 10-20 días post T4+ = ventana de acumulación institucional (consistente con `regime_change_exit` como detector Wyckoff).
+4. **D3 raramente alcanza T3+.** El ratio `std(2)/std(10)` está físicamente acotado (~5.3σ max). Blow-offs ocurren en D1 y D2.
+5. **~~`sigma_overflow.py` pendiente de extender~~** ✅ Resuelto (Fase 0, 30-Ago-2026). `validate_overflow()` retorna `(sigma_depth, tier, hazard_type)` con escala T1-T5 completa.
+
+---
+
+## 8. Inventario Histórico (34 eventos >3σ en pivotes)
+
+| Fecha | Estación | Valor | Label D1 (clipped) |
+|---|---|---|---|
+| 2020-03-16 | VVIX | 207.59 | EXTREME_INSTABILITY |
+| 2010-02-05 | PCR | 2.872 | EXTREME_PUT_PANIC |
+| 2024-12 / 2025-02 | SKEW | 173.7–175.8 | EXTREME_PARANOIA |
+| 2026-06-26 | SV5 Turb | 26.307 | EXTREME_TURBULENT |
+| 2002-01-31 | DXY | 120.28 | EXTREME_STRENGTH |
+| 2008-10-15 | Yield | 3.811 | EXTREME_STEEPNING |
+| 2023-05-04 | Yield | −1.705 | DEEP_INVERSION |

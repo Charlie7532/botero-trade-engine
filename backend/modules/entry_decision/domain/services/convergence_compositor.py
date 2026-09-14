@@ -3,13 +3,16 @@ Multi-Station Convergence Compositor — Pure Domain Service
 ============================================================
 Aggregates all 11 Market METAR stations (VIX, VVIX, PCR, FG, SV5_TURBULENCE, SKEW, CREDIT, YIELD_CURVE, ROTATION, BSI, DXY).
 
-Dual-Channel Architecture:
-  Channel 1 (Statistic): EV composite weighted by reliability_factor(N).
+Four-Channel Architecture (v3.1 — signal_router with kinematic anomaly):
+  Channel 1 (Statistic): EV composite weighted by composite_weight from signal_router.
       N >= 30 → weight 1.0 (robust), 10 <= N < 30 → 0.5 (marginal), N < 10 → 0.0 (anecdote)
-  Channel 2 (Signal): Rarity Score amplified by rarity_amplifier(N).
-      N >= 30 → 0.0 (normal), 10 <= N < 30 → 0.5, N < 10 → 1.0, N < 3 → 1.5
-  Channel 3 (D1 Vote): Rare stations contribute directional vote via D1 bin classification,
-      not via unreliable EV numbers.
+  Channel 2 (Alert): Crisis/anomaly alert channel governed by:
+      - D1 severity: CRITICAL for extreme bins (0, 5). INDEPENDENT of N.
+      - Sigma overflow: CRITICAL for |σ_depth| >= 3.0.
+      - Kinematic anomaly: MODERATE for central D1 (2,3) + extreme D2/D3 (0,4).
+      A VIX at +6σ generates alert whether N=3 or N=300.
+  Channel 3 (D1 Vote): Directional vote via D1 bin classification + station polarity.
+  Channel 4 (Cascade): Type-masked cascade conviction from zigzag legs.
 
 Clean Architecture: Pure Domain Service reading exclusively from Neon Vault via METAR services.
 """
@@ -33,6 +36,10 @@ from backend.modules.entry_decision.domain.services.dxy_metar_service import get
 import json
 from pathlib import Path
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.entry_decision.domain.rules.timing_context import get_timing_context
+from backend.modules.entry_decision.domain.rules.family_sequence_detector import (
+    detect_family_sequence, FamilySequenceReport,
+)
 
 CALIBRATION_FILE = Path(__file__).parent.parent / "rules" / "cascade_calibration.json"
 
@@ -133,10 +140,14 @@ STATIONS_LOW_BEARISH = {"fg", "credit", "yield_curve", "rotation", "bsi"}
 
 
 # ── Reliability & Rarity Functions ────────────────────────────────────────
+# DEPRECATED: Use signal_router() from station_profiles.py instead.
+# Kept for backward compatibility with existing tests.
+from backend.modules.entry_decision.domain.rules.station_profiles import signal_router as _signal_router
+
 
 def reliability_factor(n: int) -> float:
-    """How much to trust the EV statistic based on sample size.
-    N >= 30: full trust (1.0). N 10-29: partial (0.5). N < 10: zero (anecdote)."""
+    """DEPRECATED — Use signal_router().composite_weight instead.
+    Kept for backward compat with test_compositor.py."""
     if n >= 30:
         return 1.0
     elif n >= 10:
@@ -146,8 +157,8 @@ def reliability_factor(n: int) -> float:
 
 
 def rarity_amplifier(n: int) -> float:
-    """How loud the ALARM signal should be based on sample rarity.
-    N >= 30: no alarm (0.0). N 10-29: moderate (0.5). N < 10: loud (1.0). N < 3: max (1.5)."""
+    """DEPRECATED — Use signal_router().alert_priority instead.
+    Kept for backward compat with test_compositor.py."""
     if n >= 30:
         return 0.0
     elif n >= 10:
@@ -244,8 +255,14 @@ class ConvergenceReport:
     n_kinematic_bull_convergent: int       # Stations with zigzag_kinematic.zz75.p_bull > 0.52
     n_kinematic_bear_convergent: int       # Stations with zigzag_kinematic.zz75.p_bull < 0.48
 
+    # Timing Context (F2: temporal intelligence from timing_fact_stores)
+    n_timing_signal_stations: int          # Stations with has_timing_signal=True (floor/ceiling spread > 0.5%)
+
+    # Family Sequence (E2: cross-station causal phase detection)
+    family_sequence: Optional[Dict[str, Any]] = None  # FamilySequenceReport.to_dict()
+
     # Station Details
-    station_summaries: Dict[str, Any]
+    station_summaries: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -317,10 +334,11 @@ class ConvergenceCompositor:
         n_buy_dip = 0
         ev_contributing = 0
 
-        # ── Channel 2: Rarity Score ──────────────────────────────────
+        # ── Channel 2: Rarity Score + Crisis Alerts ──────────────────
         rarity_numerator = 0.0
         rarity_denominator = 0.0
         extreme_stations = []
+        crisis_alerts = []  # v3: EVENT states in extreme D1 (previously silenced)
 
         # ── Channel 3: D1 Directional Votes ──────────────────────────
         n_bullish_vote, n_bearish_vote, n_neutral_vote = 0, 0, 0
@@ -329,6 +347,7 @@ class ConvergenceCompositor:
         n_convex = 0  # Fase 0.5: count stations with rr_asymmetry > 1.0 at zz75
         n_kinematic_bull = 0  # GAP 4 / E10: stations with kinematic p_bull > 0.52 at zz75
         n_kinematic_bear = 0  # GAP 4 / E10: stations with kinematic p_bull < 0.48 at zz75
+        n_timing_signal = 0   # F2: stations with has_timing_signal=True
 
         station_summaries = {}
         grupo_a_votes = {}
@@ -338,7 +357,27 @@ class ConvergenceCompositor:
             sf = SCALE_FACTORS.get(code, {"zz25": 1.0, "zz50": 1.0, "zz75": 1.0})
             n = data.get("n_samples", 100) or 100
             state_key = data.get("state_key", "")
-            guidance = data.get("operational_guidance", "STK_HOLD_STABLE")
+            # v3.2: operational_guidance removed from fact stores.
+            # Timing context now travels inside each station's to_vector().
+            timing_data = data.get("timing")
+
+            # Extract D1/D2/D3 bins from state_key for signal_router
+            _parts = state_key.split("__") if state_key and "__" in state_key else []
+            try:
+                d1_bin_int = int(_parts[0]) if len(_parts) >= 1 else 2
+                d2_bin_int = int(_parts[1]) if len(_parts) >= 2 else -1
+                d3_bin_int = int(_parts[2]) if len(_parts) >= 3 else -1
+            except (ValueError, TypeError):
+                d1_bin_int, d2_bin_int, d3_bin_int = 2, -1, -1
+            sigma_depth = data.get("sigma_depth_d1", 0.0) or 0.0
+
+            # v3: signal_router decouples statistical weight from alert severity
+            route = _signal_router(n, d1_bin_int, code, sigma_depth_d1=sigma_depth,
+                                   d2_bin=d2_bin_int, d3_bin=d3_bin_int)
+            tier = route["tier"]
+            rf = route["composite_weight"]  # Identical to old reliability_factor(n)
+            alert_priority = route["alert_priority"]
+            alert_channel = route["alert_channel"]
 
             # Extract EV vectors
             ev_vec = data.get("ev_net_vector", {})
@@ -348,7 +387,6 @@ class ConvergenceCompositor:
             p5 = p_vec.get("zz75", 0.5) if isinstance(p_vec, dict) else (p_vec[-1] if isinstance(p_vec, list) and p_vec else 0.5)
 
             # Channel 1: Scale-differentiated N-attenuated EV
-            rf = reliability_factor(n)
             ew_1d = w * sf["zz25"] * rf
             ew_5d = w * sf["zz75"] * rf
             ev1_list.append(ev1)
@@ -361,14 +399,21 @@ class ConvergenceCompositor:
             # Legacy convergence counters (unattenuated, for backward compat)
             if ev1 > 0: n_bull_1d += 1
             if ev5 > 0: n_bull_5d += 1
-            if guidance == "STK_BUY_DIP_TACTICAL": n_buy_dip += 1
+            # n_buy_dip now computed from EV convergence, not per-station guidance
 
-            # Channel 2: Rarity
-            ra = rarity_amplifier(n)
+            # Channel 2: Rarity + Crisis Alerts (v3)
+            ra = rarity_amplifier(n)  # Keep for report backward compat
             rarity_numerator += ra * w
             rarity_denominator += rf
             if ra > 1.0:
                 extreme_stations.append(code)
+            # v3.1: ALL alerts (CRITICAL/HIGH/MODERATE) are captured — not just alert_only.
+            # Kinematic anomalies (central D1 + extreme D2/D3) with N>=30 get
+            # alert_and_composite, so filtering on alert_only would miss them.
+            if alert_priority != "NONE":
+                crisis_alerts.append({"station": code, "tier": tier, "d1_bin": d1_bin_int,
+                                       "alert_priority": alert_priority, "state_key": state_key,
+                                       "n": n, "sigma_depth_d1": sigma_depth})
 
             # Channel 3: D1 Directional Votes
             vote = d1_directional_vote(state_key, code)
@@ -404,15 +449,18 @@ class ConvergenceCompositor:
                     n_kinematic_bear += 1
 
             # Station summary for report (using real values, not phantom defaults)
-            d1_bin = state_key.split("__")[0] if state_key and "__" in state_key else state_key
             station_summaries[code] = {
                 "state_key": state_key,
-                "d1_bin": d1_bin,
-                "operational_guidance": guidance,
+                "d1_bin": d1_bin_int,
+                "has_timing": timing_data is not None,
                 "action_code": data.get("action_code", ""),
                 "n_samples": n,
                 "reliability_factor": round(rf, 4),
                 "rarity_amplifier": round(ra, 4),
+                # v3: signal_router fields
+                "tier": tier,
+                "alert_priority": alert_priority,
+                "alert_channel": alert_channel,
                 "ev_1d": round(ev1, 6),
                 "ev_5d": round(ev5, 6),
                 "ev_weight_1d": round(ew_1d, 3),
@@ -428,7 +476,22 @@ class ConvergenceCompositor:
                 "ev_per_day": round(ev_per_day_vec[-1], 6) if ev_per_day_vec else None,
                 # GAP 4 / E10: Kinematic layer p_bull
                 "kinematic_p_bull_75": round(kinematic_pbull_75, 4) if kinematic_pbull_75 is not None else None,
+                # E2: Fields consumed by family_sequence_detector
+                "d1_bin_numeric": d1_bin_int,
+                "d2_bin_numeric": d2_bin_int,
+                "zigzag_kinematic": data.get("zigzag_kinematic"),
             }
+
+            # F2: Timing Context enrichment (additive-only)
+            tc = get_timing_context(code, state_key)
+            if tc:
+                station_summaries[code]["timing_context"] = tc.to_dict()
+                if tc.has_timing_signal:
+                    n_timing_signal += 1
+                    # NOTE (F3-A cleanup): TIMING_PROXIMITY alerts no longer injected
+                    # into crisis_alerts. Timing proximity is consumed by
+                    # family_sequence_detector.py (F3-B) via station_summaries,
+                    # not through the crisis channel.
 
         # ── Compute composites ───────────────────────────────────────
 
@@ -607,6 +670,10 @@ class ConvergenceCompositor:
         t1 = time.time()
         exec_ms = round((t1 - t0) * 1000, 2)
 
+        # ── E2: Family Sequence Detection ─────────────────────────────
+        family_report = detect_family_sequence(station_summaries)
+        family_dict = family_report.to_dict()
+
         return ConvergenceReport(
             timestamp_utc=ts_utc,
             as_of_date=as_of,
@@ -638,5 +705,7 @@ class ConvergenceCompositor:
             n_convex_stations=n_convex,
             n_kinematic_bull_convergent=n_kinematic_bull,
             n_kinematic_bear_convergent=n_kinematic_bear,
+            n_timing_signal_stations=n_timing_signal,
+            family_sequence=family_dict,
             station_summaries=station_summaries,
         )

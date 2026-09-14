@@ -38,6 +38,12 @@ sys.path.insert(0, str(root_dir))
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.shared.infrastructure.repositories.zigzag_leg_repository import ZigzagLegRepository
+from backend.scripts._lib.v3_fact_table_engine import (
+    compute_enriched_standard_metrics,
+    benjamini_hochberg,
+    rareza_tier,
+    SCALE_WINDOWS,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("GenerateDXYFactTable")
@@ -449,6 +455,7 @@ def main():
     finally:
         store._put(conn)
 
+    df_bars = df_bars.drop_duplicates(subset=['date', 'ticker'], keep='last')
     pivot_c = df_bars.pivot(index='date', columns='ticker', values='close').dropna()
 
     common = pivot_c.index
@@ -530,6 +537,14 @@ def main():
         scale_dfs[scale] = df_legs
         logger.info(f"  {scale}: {len(df_legs)} confirmed legs loaded")
 
+    # ── Sprint 2: Compute baselines ──
+    baselines = {}
+    for fwd_col, scale_name in [("fwd_1d", "zz25"), ("fwd_3d", "zz50"), ("fwd_5d", "zz75")]:
+        valid_returns = df_merged[fwd_col].dropna()
+        baselines[scale_name] = float((valid_returns > 0).mean()) if len(valid_returns) > 0 else 0.5
+
+    all_state_keys = df_merged["state_key"].values
+
     # ── Build States ──────────────────────────────────────────────
     state_groups = df_merged.groupby("state_key")
     final_states = {}
@@ -540,6 +555,17 @@ def main():
         d1_cat = df_group["bin_d1"].iloc[0]
         dates_set = set(df_group["date_str"].values)
 
+        # Sprint 2: Population metadata
+        pct_tiempo = n_state / len(df_merged) * 100
+        state_bool = (all_state_keys == state_k).astype(int)
+        diff_ep = np.diff(np.concatenate(([0], state_bool, [0])))
+        episode_starts = np.where(diff_ep == 1)[0]
+        episode_ends = np.where(diff_ep == -1)[0] - 1
+        n_episodes = len(episode_starts)
+        durations = episode_ends - episode_starts + 1
+        duration_mean = float(durations.mean()) if len(durations) > 0 else 0
+        duration_max = int(durations.max()) if len(durations) > 0 else 0
+
         state_doc = {
             "n": int(n_state),
             "stats": {
@@ -548,12 +574,16 @@ def main():
                 "mean": round(float(np.mean(dxy_vals)), 4),
                 "std": round(float(np.std(dxy_vals)), 4) if n_state > 1 else 0.0,
             },
+            "n_episodes": n_episodes,
+            "pct_tiempo": round(pct_tiempo, 2),
+            "duration_mean": round(duration_mean, 1),
+            "duration_max": duration_max,
         }
 
-        # ── Standard Layer (Compatible with Compositor) ───────────
-        zz25_std = compute_standard_scale_metrics(df_group, "fwd_1d")
-        zz50_std = compute_standard_scale_metrics(df_group, "fwd_3d")
-        zz75_std = compute_standard_scale_metrics(df_group, "fwd_5d")
+        # ── Standard Layer (enriched with Sprint 2 governance) ────
+        zz25_std = compute_enriched_standard_metrics(df_group, "fwd_1d", baselines["zz25"], SCALE_WINDOWS["zz25"])
+        zz50_std = compute_enriched_standard_metrics(df_group, "fwd_3d", baselines["zz50"], SCALE_WINDOWS["zz50"])
+        zz75_std = compute_enriched_standard_metrics(df_group, "fwd_5d", baselines["zz75"], SCALE_WINDOWS["zz75"])
 
         guidance, divergence_regime = determine_guidance_and_regime(
             zz25_std, zz50_std, zz75_std, d1_cat, n_state
@@ -607,6 +637,50 @@ def main():
 
     # Filter out empty states
     final_states = {k: v for k, v in final_states.items() if v["n"] > 0}
+
+    # ── Sprint 2: Benjamini-Hochberg correction across all states ──
+    for scale_name in ["zz25", "zz50", "zz75"]:
+        p_raws = []
+        state_key_order = []
+        for sk, sv in final_states.items():
+            if scale_name in sv and "p_raw" in sv[scale_name]:
+                p_raws.append(sv[scale_name]["p_raw"])
+                state_key_order.append(sk)
+        if p_raws:
+            p_bh_corrected = benjamini_hochberg(p_raws)
+            for j, sk in enumerate(state_key_order):
+                final_states[sk][scale_name]["p_bh"] = round(p_bh_corrected[j], 6)
+
+    # ── Sprint 2: Caso de Estudio §3.3 for rare states (N < 21) ──
+    for state_k, state_doc in final_states.items():
+        n_total = state_doc["n"]
+        if n_total >= 21:
+            continue
+        for scale_name in ["zz25", "zz50", "zz75"]:
+            scale_data = state_doc.get(scale_name, {})
+            n_raw = scale_data.get("n_raw", 0)
+            if n_raw == 0 or n_raw >= 21:
+                continue
+            p_bull = scale_data.get("p_bull", 0.5)
+            ev_net = scale_data.get("ev_net", 0.0)
+            tier = scale_data.get("tier_rareza", "ANECDOTAL")
+            inferencia_desc = {
+                "ANECDOTAL": "Solo existencia del evento — REQUIERE caso de estudio individual",
+                "LOW": "Solo dirección — REQUIERE caso de estudio individual",
+                "MODERATE": "Dirección y magnitud preliminar",
+                "HIGH": "Intervalos estrechándose",
+                "ROBUST": "Inferencia estadística completa",
+            }.get(tier, "Inferencia preliminar")
+            sustento = f"p_bull={p_bull:.2f} con ev_net={ev_net:+.2%} en estado extremo N={n_raw} — candidato a señal de cola"
+            scale_data["caso_de_estudio_§3.3"] = {
+                "protocolo": "Rareza = riqueza. N bajo define nivel de INFERENCIA, no valor.",
+                "tasa_cruda": round(p_bull, 4),
+                "nivel_inferencia": tier,
+                "descripcion_inferencia": inferencia_desc,
+                "sustento": sustento,
+                "instruccion": "NO descartar. Analizar cada evento. Si el mecanismo es explicable, escalar a DIAMANTE_COLA con validación cruzada por confluencia.",
+            }
+
 
     fact_store = {
         "_documentation": {

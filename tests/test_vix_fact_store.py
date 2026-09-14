@@ -44,7 +44,9 @@ def test_lookup_adapter_deep_calm():
     assert guidance.zz50.p_bull > 0.0
     assert guidance.zz50.p_bear > 0.0
     assert isinstance(guidance.divergence_regime, str)
-    assert isinstance(guidance.operational_guidance, str)
+    # timing context is Optional — if timing store has this state, it's a TimingContext
+    if guidance.timing is not None:
+        assert guidance.timing.station == "vix"
 
 def test_lookup_adapter_crisis_spike():
     """Verify that lookup returns correct guidance under crisis spike VIX states."""

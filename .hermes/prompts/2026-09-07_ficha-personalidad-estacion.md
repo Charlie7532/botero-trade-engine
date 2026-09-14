@@ -69,17 +69,26 @@ La arquitectura de decisión se estructura en DOS NIVELES para garantizar 100% d
 
 ### 2.1 Baseline Incondicional por D1 (Cobertura 100% de Estados Base)
 Tabla exhaustiva de 6 filas obligatorias (Bins 0 a 5):
-| D1 Bin | Label Canónico | Dirección | Fase del Ciclo | Acción Canónica (Regla 20) | Restricción Operativa |
-*Acciones Canónicas válidas:* STK_ACCUMULATE_STRUCTURAL, STK_BUY_DIP_TACTICAL, STK_HOLD_STABLE, STK_TRIM_TACTICAL, STK_DISTRIBUTE_DECAY, STK_EXIT_THESIS_DEATH, STK_EXIT_TIME_STOP, STK_BLOCK_CRISIS, MKT_MACRO_CIRCUIT_BREAKER.
+| D1 Bin | Label Canónico | Dirección | Fase del Ciclo | Directiva Canónica MKT (Regla 20) | Restricción Operativa |
+*Directivas Canónicas de Mercado válidas (Ámbito MKT_):* MKT_ACCUMULATE_STRUCTURAL, MKT_BUY_DIP_TACTICAL, MKT_HOLD_STABLE, MKT_TRIM_TACTICAL, MKT_DISTRIBUTE_DECAY, MKT_BLOCK_CRISIS, MKT_MACRO_CIRCUIT_BREAKER.
+
+> ⚠️ **CRÍTICO — ÁMBITO DE ACCIÓN (MKT_ vs STK_):** En Capa 1 las directivas pertenecen ESTRICTAMENTE al ámbito de Mercado (`MKT_`). Las estaciones METAR monitorean el mercado global y emiten directivas macro/clima; **PROHIBIDO usar el prefijo `STK_`** (las acciones a nivel de ticker individual pertenecen exclusivamente a los Entry Gates de cartera al evaluar acciones específicas).
 
 ### 2.2 Tríadas Singulares de Excepción (Moduladas por D2/D3 o |Edge| >= 10%)
 Tabla con las combinaciones específicas donde la velocidad cinemática (D2) o la volatilidad interna (D3) alteran la directiva base de D1:
-| State Key | Label D1 | D2 Kinematic | D3 Vol | Edge % | HR | RR | N | Tier Cred (§3.3) | Directiva Específica |
+| State Key | Label D1 | D2 Kinematic | D3 Vol | Edge % | HR | RR | N | Tier Cred (Opus σ×N) | Directiva Específica (MKT_) |
+
+> ⚠️ **TIERS DE CREDIBILIDAD (Matriz σ×N de Opus):** Usar exclusivamente las categorías cuantitativas de Opus:
+> - `DIAMOND` ($N < 10$): Rareza con significado §3.3 (colas gaussianas extremas, auditoría de caso histórico real).
+> - `UNUSUAL_COMBO` ($N \in [10..29]$): Muestra intermedia / combinación cinemática infrecuente.
+> - `CONFIRMED_ALERT` ($N \ge 30$ en bines de alerta/extremos $D1 \in \{0, 1, 4, 5\}$ o estados de tensión): Señal estadísticamente robusta y confirmada.
+> - `WEATHER` ($N \ge 30$ en bines centrales $D1 \in [2, 3]$): Clima modal ordinario del mercado.
+> **PROHIBIDO usar las etiquetas obsoletas/degradantes `ANECDOTAL`, `LOW`, `MODERATE`, `HIGH`, `ROBUST`.**
 
 > 📌 **Regla de Lookup para el Agente:**
 > Al recibir el `state_key` actual:
-> 1. Buscar si el `state_key` está registrado en la **Sub-tabla 2.2**. Si existe → ejecutar la directiva específica de excepción.
-> 2. Si no está en 2.2 → aplicar el baseline correspondiente a su bin D1 en la **Sub-tabla 2.1**.
+> 1. Buscar si el `state_key` está registrado en la **Sub-tabla 2.2**. Si existe → ejecutar la directiva específica de excepción (`MKT_`).
+> 2. Si no está en 2.2 → aplicar el baseline correspondiente a su bin D1 en la **Sub-tabla 2.1** (`MKT_`).
 > Cero deducción, cero cálculo en runtime.
 
 ## 3. PROFESIÓN, POLARIDAD & SESGO MODAL DE TIMING
@@ -164,14 +173,14 @@ Evaluación formal y obligatoria de cada bin notable bajo 4 arquetipos:
   * Alerta Amarilla (WARNING): Tier 1 (3σ - 4σ).
   * Alerta Roja (CRITICAL / EMERGENCY): Tier ≥ 2 (≥ 4σ) o detección de estado Diamante disruptivo.
 - **Doble Naturaleza Operativa (Riesgo vs Oportunidad Generacional):**
-  * **Fase de Impacto Cinético / Shock Inicial (D2 expansivo / falling knife):** La estación ordena a SIGMET emitir boletín con directiva de preservación de capital: `STK_BLOCK_CRISIS` o `MKT_MACRO_CIRCUIT_BREAKER`.
-  * **Fase de Clímax, Capitulación Extrema o Absorción Institucional:** Un overflow extremo post-clímax o una señal Diamante en suelo de pánico NO es un bloqueo permanente, sino **LA GRAN OPORTUNIDAD DE COMPRA GENERACIONAL** → La estación ordena a SIGMET emitir directiva de acumulación agresiva: `STK_BUY_DIP_TACTICAL` o `STK_ACCUMULATE_STRUCTURAL`.
+  * **Fase de Impacto Cinético / Shock Inicial (D2 expansivo / falling knife):** La estación ordena a SIGMET emitir boletín con directiva de preservación de capital: `MKT_BLOCK_CRISIS` o `MKT_MACRO_CIRCUIT_BREAKER`.
+  * **Fase de Clímax, Capitulación Extrema o Absorción Institucional:** Un overflow extremo post-clímax o una señal Diamante en suelo de pánico NO es un bloqueo permanente, sino **LA GRAN OPORTUNIDAD DE COMPRA GENERACIONAL** → La estación ordena a SIGMET emitir directiva de acumulación agresiva: `MKT_BUY_DIP_TACTICAL` o `MKT_ACCUMULATE_STRUCTURAL`.
 - **Criterio de Desactivación:** Descompresión sostenida a < 3σ durante N barras consecutivas.
 
 ## 9. TOP TRÍADAS OPERATIVAS Y SINGULARIDADES
 - Ranking de las 5 mejores tríadas alcistas (piso/rebote) y las 5 mejores bajistas (techo/defensiva):
   * `state_key`, HR %, Edge neto %, RR, N, p-value, Wilson 95% CI.
-  * Fase del ciclo y acción canónica recomendada ya precalculada.
+  * Fase del ciclo y acción canónica de mercado (`MKT_`) ya precalculada.
 ```
 
 ---
@@ -181,11 +190,13 @@ Evaluación formal y obligatoria de cada bin notable bajo 4 arquetipos:
 1. **Dato mata relato:** Cada número debe derivarse exclusivamente de las fuentes oficiales (1-9). Citar la fuente y escala correspondiente.
 2. **Cero derivación en el agente:** Toda directiva, fase y acción canónica debe estar resuelta en las tablas. Un agente no calcula polaridades en runtime.
 3. **Cero inventos de labels:** Copiar los labels D1 textualmente de `d1_labels_canonical.md`.
-4. **Poder de confirmación acoplado:** No reportar Rng% aislado sin calcular el slot modal y su $P_{\text{confirmación}} = \% \text{ masa}_{\text{modal}} \times HR_{\text{modal}}$.
-5. **D3 como amplificador en U:** Explicar el Squeeze en D3=0 como acumulador elástico para U-Turns y D3=4 como agotamiento.
-6. **Mitos vs Cuantitativo:** Completar la Sección 7 desmontando falsas narrativas bajo los 4 arquetipos.
-7. **Bidireccionalidad de Overflows y SIGMET:** El protocolo de escalación en la Sección 8.3 debe contemplar tanto el veto de riesgo inicial (`STK_BLOCK_CRISIS`) como la oportunidad de compra generacional (`STK_BUY_DIP_TACTICAL` / `STK_ACCUMULATE_STRUCTURAL`).
-8. **Gobierno de N honesto (§3.3):** Reportar ocurrencias reales $k/n$, fechas y Wilson CI para $N < 10$. Nunca descartar colas como ruido.
+4. **Ámbito de Mercado Obligatorio (MKT_):** En Capa 1 las directivas pertenecen exclusivamente al ámbito `MKT_`. **PROHIBIDO usar prefijo `STK_`**.
+5. **Tiers de Credibilidad de Opus (σ×N):** Clasificar obligatoriamente en `DIAMOND` ($N < 10$), `UNUSUAL_COMBO` ($N \in [10..29]$), `CONFIRMED_ALERT` ($N \ge 30$ alerta/extremo) o `WEATHER` ($N \ge 30$ central). **PROHIBIDO usar `ANECDOTAL`, `LOW`, `MODERATE`, `HIGH`, `ROBUST`**.
+6. **Poder de confirmación acoplado:** No reportar Rng% aislado sin calcular el slot modal y su $P_{\text{confirmación}} = \% \text{ masa}_{\text{modal}} \times HR_{\text{modal}}$.
+7. **D3 como amplificador en U:** Explicar el Squeeze en D3=0 como acumulador elástico para U-Turns y D3=4 como agotamiento.
+8. **Mitos vs Cuantitativo:** Completar la Sección 7 desmontando falsas narrativas bajo los 4 arquetipos.
+9. **Bidireccionalidad de Overflows y SIGMET:** El protocolo de escalación en la Sección 8.3 debe contemplar tanto el veto de riesgo inicial (`MKT_BLOCK_CRISIS`) como la oportunidad de compra generacional (`MKT_BUY_DIP_TACTICAL` / `MKT_ACCUMULATE_STRUCTURAL`).
+10. **Gobierno de N honesto (§3.3):** Reportar ocurrencias reales $k/n$, fechas y Wilson CI para $N < 10$. Nunca descartar colas como ruido.
 
 ---
 

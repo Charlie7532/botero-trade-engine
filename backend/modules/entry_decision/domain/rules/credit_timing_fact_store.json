@@ -1,5 +1,23 @@
 {
   "_documentation": {
+    "station_identity": {
+      "station": "credit",
+      "polarity": "INVERTED",
+      "cat": 1,
+      "profession": "Economic Health Canary — Maximum Asymmetry Floor Trigger at D2=0",
+      "inception_date": "see inception_policy.md",
+      "dsr_grade": "A",
+      "dsr_pvalue": 0.9509,
+      "auc_oos": 0.8387,
+      "shap_rank": 9,
+      "shap_value": 0.115
+    },
+    "tier_methodology": {
+      "EVENT": "N < 10. Historical record of individual significance. No composite EV weight. Active in alert channel.",
+      "TRANSITIONAL": "10 <= N < 30. Direction reliable, magnitude uncertain. Composite weight 0.5.",
+      "CONFIRMED": "N >= 30, D1 extreme (bins 0,1,4,5). Robust statistics. Composite weight 1.0.",
+      "BASELINE": "N >= 30, D1 central (bins 2,3). Ordinary market weather. Composite weight 1.0."
+    },
     "model_purpose": "METAR Station CREDIT Empirical Fact Store 2: Triad Timing & Multi-Scale Dual-Passage Engine. Evaluates every observed state triad (D1__D2__D3) across its official continuous market history (2007-04-11 to 2026-09-03, 4882 daily trading bars) without directional bias. Measures exact temporal turning-point timing (6-slot canonical geometry [t-2..t+2, ENTRE]) and forward Triple-Barrier first-passage returns independently for both market bottoms (MIN) and market tops (MAX). Pure empirical measurement data with zero narrative or qualitative judgment.",
     "data_sources": {
       "lake_path": "data/research/continuous_metar_lake.parquet",

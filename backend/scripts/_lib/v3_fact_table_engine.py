@@ -22,6 +22,7 @@ from typing import Dict, List, Optional, Tuple, Callable, Any
 
 import numpy as np
 import pandas as pd
+from scipy.stats import binomtest, beta as beta_dist
 
 root_dir = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(root_dir))
@@ -59,6 +60,162 @@ ZZ_PRIORS = {
     "zz50": {"p0": 0.50, "ev0": 0.0},
     "zz75": {"p0": 0.50, "ev0": 0.0},
 }
+
+# Sprint 2 de-clustering windows: P95 empirical resolution per scale
+SCALE_WINDOWS = {"zz25": 35, "zz50": 110, "zz75": 190}
+
+
+# ── Sprint 2 Statistical Governance Functions ────────────────────────────────
+
+def decluster_indices(indices: np.ndarray, window: int) -> np.ndarray:
+    """De-cluster indices by embargo: keep only entries separated by >= window bars."""
+    if len(indices) == 0:
+        return indices
+    result = [indices[0]]
+    for idx in indices[1:]:
+        if idx - result[-1] >= window:
+            result.append(idx)
+    return np.array(result)
+
+
+def clopper_pearson_ci(k: int, n: int, alpha: float = 0.05) -> Tuple[float, float]:
+    """Exact Clopper-Pearson confidence interval for binomial proportion."""
+    if n == 0:
+        return (0.0, 1.0)
+    lo = beta_dist.ppf(alpha / 2, k, n - k + 1) if k > 0 else 0.0
+    hi = beta_dist.ppf(1 - alpha / 2, k + 1, n - k) if k < n else 1.0
+    return (float(lo), float(hi))
+
+
+def benjamini_hochberg(p_values: List[float], q: float = 0.05) -> List[float]:
+    """Benjamini-Hochberg correction for multiple testing. Returns adjusted p-values."""
+    n = len(p_values)
+    if n == 0:
+        return []
+    sorted_indices = np.argsort(p_values)
+    sorted_pvals = np.array(p_values)[sorted_indices]
+    adjusted = np.zeros(n)
+    for i in range(n - 1, -1, -1):
+        rank = i + 1
+        adjusted_p = sorted_pvals[i] * n / rank
+        if i < n - 1:
+            adjusted_p = min(adjusted_p, adjusted[sorted_indices[i + 1]])
+        adjusted[sorted_indices[i]] = min(adjusted_p, 1.0)
+    return adjusted.tolist()
+
+
+def grade_state(n_resolved: int, lift: float, p_raw: float, rr: float) -> str:
+    """Canonical confidence tier §3.3. Defines permissible inference level."""
+    if n_resolved <= 2:  return "ANECDOTAL"
+    if n_resolved <= 5:  return "LOW"
+    if n_resolved <= 10: return "MODERATE"
+    if n_resolved <= 20: return "HIGH"
+    return "ROBUST"
+
+
+def rareza_tier(n: int) -> str:
+    """Canonical confidence tier §3.3 Protocolo Diamante."""
+    if n <= 2:  return "ANECDOTAL"
+    if n <= 5:  return "LOW"
+    if n <= 10: return "MODERATE"
+    if n <= 20: return "HIGH"
+    return "ROBUST"
+
+
+def compute_enriched_standard_metrics(
+    df_group: pd.DataFrame, fwd_col: str, baseline_hr: float,
+    window: int, m_weight: float = M_WEIGHT,
+) -> dict:
+    """Compute Standard Layer metrics WITH Sprint 2 statistical governance.
+
+    Combines V3 forward-return metrics with Sprint 2 enrichment:
+    - De-clustered independent N
+    - Clopper-Pearson CI95
+    - Binomial p-value (vs baseline)
+    - Lift vs baseline
+    - MAE/MFE (from forward returns as proxy)
+    - Grade and rarity tier
+    """
+    returns = df_group[fwd_col].dropna().values
+    n_tot = len(returns)
+    days = 1.0 if fwd_col == "fwd_1d" else (3.0 if fwd_col == "fwd_3d" else 5.0)
+
+    if n_tot == 0:
+        return {
+            "n_raw": 0, "n_independent": 0,
+            "p_bull": 0.50, "p_bear": 0.50,
+            "e_ret_max": 0.015, "e_ret_min": -0.015, "ev_net": 0.0,
+            "e_days": days, "ev_per_day": 0.0, "rr_asymmetry": 1.0,
+            "confidence_tier": "NONE",
+            "hr_independent": 0.50, "lift_vs_baseline": 0.0,
+            "ci95_lo": 0.0, "ci95_hi": 1.0,
+            "p_raw": 1.0, "grade": "ANECDOTAL", "tier_rareza": "ANECDOTAL",
+        }
+
+    # ── V3 Core Metrics (Bayesian shrinkage) ──
+    p0, ev0 = 0.50, 0.0
+    n_pos = int(np.sum(returns > 0))
+    p_bayesian = bayesian_shrink_p(n_pos, n_tot, p0, m_weight)
+    ev_sample = float(np.mean(returns))
+    ev_shrunk = bayesian_shrink_ev(ev_sample, n_tot, ev0, m_weight)
+
+    pos_rets = returns[returns > 0]
+    neg_rets = returns[returns < 0]
+    e_ret_max = float(np.mean(pos_rets)) if len(pos_rets) > 0 else 0.015
+    e_ret_min = float(np.mean(neg_rets)) if len(neg_rets) > 0 else -0.015
+    rr_asym = float(abs(e_ret_max / e_ret_min)) if abs(e_ret_min) > 1e-6 else 1.0
+
+    # ── Sprint 2 De-clustering ──
+    pos_indices = np.arange(n_tot)  # positional indices within group
+    declustered = decluster_indices(pos_indices, window)
+    n_independent = len(declustered)
+
+    if n_independent > 0:
+        hits_indep = (returns[declustered] > 0)
+        hr_indep = float(hits_indep.mean())
+        n_hits_indep = int(hits_indep.sum())
+    else:
+        hr_indep = float(n_pos / n_tot) if n_tot > 0 else 0.5
+        n_hits_indep = n_pos
+
+    # ── Sprint 2 Lift, CI95, p-value ──
+    hr_all = float(n_pos / n_tot) if n_tot > 0 else 0.5
+    lift = hr_indep - baseline_hr
+    ci95_lo, ci95_hi = clopper_pearson_ci(n_hits_indep, n_independent)
+
+    try:
+        if n_independent > 0:
+            bt = binomtest(n_hits_indep, n_independent, baseline_hr, alternative='two-sided')
+            p_raw = float(bt.pvalue)
+        else:
+            p_raw = 1.0
+    except Exception:
+        p_raw = 1.0
+
+    grade_val = grade_state(n_independent, lift, p_raw, rr_asym)
+    tier = rareza_tier(n_independent)
+
+    return {
+        "n_raw": n_tot,
+        "n_independent": n_independent,
+        "p_bull": round(p_bayesian, 4),
+        "p_bear": round(1.0 - p_bayesian, 4),
+        "e_ret_max": round(e_ret_max, 6),
+        "e_ret_min": round(e_ret_min, 6),
+        "ev_net": round(ev_shrunk, 6),
+        "e_days": days,
+        "ev_per_day": round(ev_shrunk / days, 6),
+        "rr_asymmetry": round(rr_asym, 4),
+        "confidence_tier": confidence_tier(n_tot),
+        # Sprint 2 enrichment
+        "hr_independent": round(hr_indep, 4),
+        "lift_vs_baseline": round(lift, 4),
+        "ci95_lo": round(ci95_lo, 4),
+        "ci95_hi": round(ci95_hi, 4),
+        "p_raw": round(p_raw, 6),
+        "grade": grade_val,
+        "tier_rareza": tier,
+    }
 
 
 def classify_value(val: float, edges: list, labels: list) -> str:
@@ -411,6 +568,7 @@ def load_spy_and_station_bars(store: TimescaleDataStore, ticker: str) -> Tuple[p
                 WHERE ticker IN ('SPY', 'HYG', 'LQD') AND timeframe = '1d'
                 ORDER BY time, ticker
             """, conn)
+            df_bars = df_bars.drop_duplicates(subset=['date', 'ticker'], keep='last')
             pivot_c = df_bars.pivot(index='date', columns='ticker', values='close').dropna()
             station_series = (pivot_c['HYG'] / pivot_c['LQD']).dropna()
             spy_c = pivot_c['SPY'].loc[station_series.index]
@@ -421,6 +579,7 @@ def load_spy_and_station_bars(store: TimescaleDataStore, ticker: str) -> Tuple[p
                 WHERE ticker IN ('SPY', '{ticker}') AND timeframe = '1d'
                 ORDER BY time, ticker
             """, conn)
+            df_bars = df_bars.drop_duplicates(subset=['date', 'ticker'], keep='last')
             pivot_c = df_bars.pivot(index='date', columns='ticker', values='close').dropna()
             station_series = pivot_c[ticker]
             spy_c = pivot_c['SPY']
@@ -529,6 +688,16 @@ def build_v3_dual_layer_fact_store(
             df_legs["start_date"] = pd.to_datetime(df_legs["start_timestamp"]).dt.date
         scale_dfs[scale] = df_legs
 
+    # ── Sprint 2: Compute baselines for forward returns ──
+    baselines = {}
+    for fwd_col, scale_name in [("fwd_1d", "zz25"), ("fwd_3d", "zz50"), ("fwd_5d", "zz75")]:
+        valid_returns = df_merged[fwd_col].dropna()
+        baselines[scale_name] = float((valid_returns > 0).mean()) if len(valid_returns) > 0 else 0.5
+    logger.info(f"Baselines: zz25={baselines['zz25']:.4f}, zz50={baselines['zz50']:.4f}, zz75={baselines['zz75']:.4f}")
+
+    # ── Sprint 2: State membership boolean for episode detection ──
+    all_state_keys = df_merged["state_key"].values
+
     # Build States
     state_groups = df_merged.groupby("state_key")
     final_states = {}
@@ -540,6 +709,17 @@ def build_v3_dual_layer_fact_store(
         pivot_name = df_group["pivot"].iloc[0] if "pivot" in df_group.columns else None
         dates_set = set(df_group["date_str"].values)
 
+        # ── Sprint 2: Population metadata ──
+        pct_tiempo = n_state / len(df_merged) * 100
+        state_bool = (all_state_keys == state_k).astype(int)
+        diff_ep = np.diff(np.concatenate(([0], state_bool, [0])))
+        episode_starts = np.where(diff_ep == 1)[0]
+        episode_ends = np.where(diff_ep == -1)[0] - 1
+        n_episodes = len(episode_starts)
+        durations = episode_ends - episode_starts + 1
+        duration_mean = float(durations.mean()) if len(durations) > 0 else 0
+        duration_max = int(durations.max()) if len(durations) > 0 else 0
+
         state_doc = {
             "n": int(n_state),
             "stats": {
@@ -548,11 +728,17 @@ def build_v3_dual_layer_fact_store(
                 "mean": round(float(np.mean(val_stats)), 4),
                 "std": round(float(np.std(val_stats)), 4) if n_state > 1 else 0.0,
             },
+            # Sprint 2: Population metadata
+            "n_episodes": n_episodes,
+            "pct_tiempo": round(pct_tiempo, 2),
+            "duration_mean": round(duration_mean, 1),
+            "duration_max": duration_max,
         }
 
-        zz25_std = compute_standard_scale_metrics(df_group, "fwd_1d")
-        zz50_std = compute_standard_scale_metrics(df_group, "fwd_3d")
-        zz75_std = compute_standard_scale_metrics(df_group, "fwd_5d")
+        # ── Standard Layer (enriched with Sprint 2 governance) ──
+        zz25_std = compute_enriched_standard_metrics(df_group, "fwd_1d", baselines["zz25"], SCALE_WINDOWS["zz25"])
+        zz50_std = compute_enriched_standard_metrics(df_group, "fwd_3d", baselines["zz50"], SCALE_WINDOWS["zz50"])
+        zz75_std = compute_enriched_standard_metrics(df_group, "fwd_5d", baselines["zz75"], SCALE_WINDOWS["zz75"])
 
         guidance, divergence_regime = determine_guidance_and_regime(
             zz25_std, zz50_std, zz75_std, d1_cat, n_state, pivot_name, pivot_overrides
@@ -564,7 +750,7 @@ def build_v3_dual_layer_fact_store(
         state_doc["zz50"] = zz50_std
         state_doc["zz75"] = zz75_std
 
-        # Kinematic Layer
+        # Kinematic Layer (unchanged — V3 core)
         dates_as_dates = {pd.Timestamp(ds).date() for ds in dates_set if pd.notna(ds)}
         kinematic = {}
         for scale in ["zz25", "zz50", "zz75"]:
@@ -592,6 +778,51 @@ def build_v3_dual_layer_fact_store(
         final_states[state_k] = state_doc
 
     final_states = {k: v for k, v in final_states.items() if v["n"] > 0}
+
+    # ── Sprint 2: Benjamini-Hochberg correction across all states ──
+    for scale_name in ["zz25", "zz50", "zz75"]:
+        p_raws = []
+        state_key_order = []
+        for sk, sv in final_states.items():
+            if scale_name in sv and "p_raw" in sv[scale_name]:
+                p_raws.append(sv[scale_name]["p_raw"])
+                state_key_order.append(sk)
+        if p_raws:
+            p_bh_corrected = benjamini_hochberg(p_raws)
+            for j, sk in enumerate(state_key_order):
+                final_states[sk][scale_name]["p_bh"] = round(p_bh_corrected[j], 6)
+
+    # ── Sprint 2: Caso de Estudio §3.3 for rare states (N < 21) ──
+    for state_k, state_doc in final_states.items():
+        n_total = state_doc["n"]
+        if n_total >= 21:
+            continue
+        for scale_name in ["zz25", "zz50", "zz75"]:
+            scale_data = state_doc.get(scale_name, {})
+            n_raw = scale_data.get("n_raw", 0)
+            if n_raw == 0 or n_raw >= 21:
+                continue
+            p_bull = scale_data.get("p_bull", 0.5)
+            ev_net = scale_data.get("ev_net", 0.0)
+            tier = scale_data.get("tier_rareza", "ANECDOTAL")
+            inferencia_desc = {
+                "ANECDOTAL": "Solo existencia del evento — REQUIERE caso de estudio individual",
+                "LOW": "Solo dirección — REQUIERE caso de estudio individual",
+                "MODERATE": "Dirección y magnitud preliminar",
+                "HIGH": "Intervalos estrechándose",
+                "ROBUST": "Inferencia estadística completa",
+            }.get(tier, "Inferencia preliminar")
+            sustento = f"p_bull={p_bull:.2f} con ev_net={ev_net:+.2%} en estado extremo N={n_raw} — candidato a señal de cola"
+            scale_data["caso_de_estudio_§3.3"] = {
+                "protocolo": "Rareza = riqueza. N bajo define nivel de INFERENCIA, no valor.",
+                "tasa_cruda": round(p_bull, 4),
+                "nivel_inferencia": tier,
+                "descripcion_inferencia": inferencia_desc,
+                "sustento": sustento,
+                "instruccion": "NO descartar. Analizar cada evento. Si el mecanismo es explicable, escalar a DIAMANTE_COLA con validación cruzada por confluencia.",
+            }
+
+    logger.info(f"States populated: {len(final_states)} (with Sprint 2 enrichment + kinematic layer)")
 
     fact_store = {
         "_documentation": {

@@ -190,7 +190,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     # 1. Station VIX: Crisis Panic Spike (VIX >= 28.0)
     try:
         vix_metar = get_vix_market_metar(as_of_date=as_of_date)
-        if vix_metar.vix_index_value >= 28.0 or vix_metar.operational_guidance == "MKT_MACRO_CIRCUIT_BREAKER":
+        if vix_metar.vix_index_value >= 28.0 or (vix_metar.sigma_depth_d1 is not None and vix_metar.sigma_depth_d1 >= 5.0):
             sigmets.append(
                 MarketSIGMET(
                     sigmet_id=f"SIGMET-VIX-{vix_metar.as_of_date.replace('-','')}-001",
@@ -461,5 +461,104 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
             sigmets.append(ovf)
     except Exception as e:
         _log_station_failure("DXY", e)
+    # ── FAMILY-LEVEL SIGMET: Cross-station causal phase hazards ──────────
+
+    try:
+        from backend.modules.entry_decision.domain.services.convergence_compositor import ConvergenceCompositor
+        compositor = ConvergenceCompositor()
+        report = compositor.compose(as_of_date=as_of_date)
+        family = report.family_sequence
+
+        if family:
+            phase = family.get("phase", "NEUTRAL")
+            ll_trap = family.get("ll_trap_veto", False)
+            hh_exit = family.get("hh_exit_amplify", False)
+            n_floor_trap = family.get("n_floor_trap", 0)
+            n_floor_structural = family.get("n_floor_structural", 0)
+            cat1_stress = family.get("cat1_stress_ratio", 0)
+            cat2_fear = family.get("cat2_fear_ratio", 0)
+            cat3_cap = family.get("cat3_capitulation_ratio", 0)
+
+            # SIGMET: Capitulation building with trap floors = dangerous
+            if phase == "CAPITULATION_BUILDING" and n_floor_trap >= 2:
+                sigmets.append(
+                    MarketSIGMET(
+                        sigmet_id=f"SIGMET-FAMILY-CAP-{as_of_date or 'LIVE'}-001",
+                        timestamp_utc=now_str,
+                        as_of_date=as_of_date or "LIVE",
+                        hazard_type="SIGMET_CAPITULATION_TRAP_FLOOR",
+                        severity="CRITICAL",
+                        station="FAMILY",
+                        title="Capitulation Building + Trap Floors — Structural Breakdown Risk",
+                        description=(
+                            f"Cross-station causal phase: {phase}. "
+                            f"CAT1_stress={cat1_stress:.0%}, CAT2_fear={cat2_fear:.0%}, CAT3_cap={cat3_cap:.0%}. "
+                            f"{n_floor_trap} stations show TRAP floors (P(HL)<0.45). "
+                            "This pattern precedes structural breakdowns, not recoveries."
+                        ),
+                        operational_action="URGENCY_EMERGENCY",
+                        is_active=True,
+                        telemetry_snapshot={
+                            "phase": phase, "n_floor_trap": n_floor_trap,
+                            "ll_trap_veto": ll_trap,
+                            "cat1_stress": cat1_stress, "cat2_fear": cat2_fear,
+                            "cat3_cap": cat3_cap,
+                        },
+                    )
+                )
+
+            # SIGMET: Capitulation resolving with structural floors = accumulation opportunity
+            elif phase == "CAPITULATION_RESOLVING" and n_floor_structural >= 2:
+                sigmets.append(
+                    MarketSIGMET(
+                        sigmet_id=f"SIGMET-FAMILY-ACCUM-{as_of_date or 'LIVE'}-001",
+                        timestamp_utc=now_str,
+                        as_of_date=as_of_date or "LIVE",
+                        hazard_type="SIGMET_CAPITULATION_RESOLVING_OPPORTUNITY",
+                        severity="WARNING",
+                        station="FAMILY",
+                        title="Capitulation Resolving + Structural Floors — Accumulation Opportunity",
+                        description=(
+                            f"Cross-station causal phase: {phase}. "
+                            f"CAT1_stress={cat1_stress:.0%}, CAT2_fear={cat2_fear:.0%}, CAT3_cap={cat3_cap:.0%}. "
+                            f"{n_floor_structural} stations show STRUCTURAL floors (P(HL)>0.55). "
+                            "Post-capitulation with structural support — historically favorable for accumulation."
+                        ),
+                        operational_action="URGENCY_HIGH",
+                        is_active=True,
+                        telemetry_snapshot={
+                            "phase": phase, "n_floor_structural": n_floor_structural,
+                            "cat1_stress": cat1_stress, "cat2_fear": cat2_fear,
+                            "cat3_cap": cat3_cap,
+                        },
+                    )
+                )
+
+            # SIGMET: HH exit amplify = ceiling trap across multiple stations
+            if hh_exit and phase in ("COMPLACENT_DISTRIBUTION", "NEUTRAL"):
+                sigmets.append(
+                    MarketSIGMET(
+                        sigmet_id=f"SIGMET-FAMILY-CEIL-{as_of_date or 'LIVE'}-001",
+                        timestamp_utc=now_str,
+                        as_of_date=as_of_date or "LIVE",
+                        hazard_type="SIGMET_CEILING_TRAP_DISTRIBUTION",
+                        severity="WARNING",
+                        station="FAMILY",
+                        title="Ceiling Trap + Complacent Distribution — Topping Pattern",
+                        description=(
+                            f"Phase: {phase}. Ceiling TRAP active (P(HH)>0.55 — Regla de Oro). "
+                            "Complacent stations at ceiling with structural exhaustion. "
+                            "Historically precedes distribution and correction."
+                        ),
+                        operational_action="URGENCY_HIGH",
+                        is_active=True,
+                        telemetry_snapshot={
+                            "phase": phase, "hh_exit_amplify": hh_exit,
+                            "n_ceiling_trap": family.get("n_ceiling_trap", 0),
+                        },
+                    )
+                )
+    except Exception as e:
+        _log_station_failure("FAMILY", e)
 
     return sigmets

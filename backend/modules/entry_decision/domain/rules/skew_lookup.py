@@ -6,7 +6,14 @@ from typing import Dict, Any, Optional
 
 from backend.modules.entry_decision.domain.rules.sigma_overflow import validate_overflow
 from backend.modules.entry_decision.domain.rules.metar_classifier import classify_bin, make_state_key, resolve_label
+from backend.modules.entry_decision.domain.rules.station_profiles import classify_tier
+from backend.modules.entry_decision.domain.rules.structural_guidance import (
+    StructuralMomentumGuidance, extract_structural_guidance,
+)
 
+from backend.modules.entry_decision.domain.rules.timing_context import (
+    TimingContext, get_timing_context,
+)
 FACT_STORE_PATH = Path(__file__).parent / "skew_fact_store.json"
 
 
@@ -32,15 +39,17 @@ class SkewStateGuidance:
     mean_val: float
     std_val: float
     divergence_regime: str
-    operational_guidance: str
     zz25: ScaleGuidance
     zz50: ScaleGuidance
     zz75: ScaleGuidance
     zigzag_kinematic: Optional[Dict[str, Any]] = None
+    structural: Optional[StructuralMomentumGuidance] = None
     sigma_depth_d1: Optional[float] = None
     sigma_depth_d2: Optional[float] = None
     sigma_depth_d3: Optional[float] = None
     overflow_flag: Optional[str] = None  # "UPPER"|"LOWER"|"MULTI"|None
+    tier: str = "BASELINE"  # v3: credibility tier from classify_tier()
+    timing: Optional[TimingContext] = None
 
     @property
     def bin(self) -> str:
@@ -60,7 +69,7 @@ class SkewStateGuidance:
             "mean_val": self.mean_val,
             "std_val": self.std_val,
             "divergence_regime": self.divergence_regime,
-            "operational_guidance": self.operational_guidance,
+            "timing": self.timing.to_dict() if self.timing else None,
             "zz25": self.zz25.__dict__,
             "zz50": self.zz50.__dict__,
             "zz75": self.zz75.__dict__,
@@ -74,6 +83,15 @@ class SkewStateGuidance:
             "primary_e_days": self.zz50.e_days,
             "primary_capital_velocity": self.zz50.ev_per_day,
             "zigzag_kinematic": self.zigzag_kinematic,
+            "structural": {
+                "p_continuation_hl": self.structural.p_continuation_hl,
+                "p_continuation_hh": self.structural.p_continuation_hh,
+                "structural_trend": self.structural.structural_trend,
+                "floor_type": self.structural.floor_type,
+                "ceiling_type": self.structural.ceiling_type,
+                "time_asymmetry": self.structural.time_asymmetry,
+                "is_fallback_l1": self.structural.is_fallback_l1,
+            } if self.structural else None,
             "sigma_depth_d1": self.sigma_depth_d1,
             "sigma_depth_d2": self.sigma_depth_d2,
             "sigma_depth_d3": self.sigma_depth_d3,
@@ -176,11 +194,12 @@ class SkewLookupAdapter:
             mean_val=stats.get("mean", 0.0),
             std_val=stats.get("std", 0.0),
             divergence_regime=state.get("divergence_regime", "NEUTRAL"),
-            operational_guidance=state.get("operational_guidance", "STK_HOLD_STABLE"),
+            timing=get_timing_context("skew", matched_key),
             zz25=_make_scale(state["zz25"]),
             zz50=_make_scale(state["zz50"]),
             zz75=_make_scale(state["zz75"]),
             zigzag_kinematic=state.get("zigzag_kinematic"),
+            structural=extract_structural_guidance(state.get("zigzag_kinematic")),
             sigma_depth_d1=d1_depth,
             sigma_depth_d2=d2_depth,
             sigma_depth_d3=d3_depth,

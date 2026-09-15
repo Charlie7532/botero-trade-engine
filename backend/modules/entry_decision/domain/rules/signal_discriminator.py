@@ -2,8 +2,8 @@
 Signal Discriminator — Pure Domain Rules
 ==========================================
 Classifies a station's current D1×D2×D3 state into signal families:
-  STRUCTURAL_FLOOR | MODERATE_FLOOR | PULLBACK | TRAP | NOISE
-  (Ceiling rules: Fase 2)
+  Floor:   STRUCTURAL_FLOOR | MODERATE_FLOOR | PULLBACK | TRAP | NOISE
+  Ceiling: STRUCTURAL_CEILING | MODERATE_CEILING | CORRECTION | BULL_TRAP | NOISE
 
 Combines:
   - Empirical D2 rules from signal_discriminator_rules.json
@@ -234,6 +234,172 @@ def classify_floor(
                 effective_confidence = _CONF_DEGRADE.get(effective_confidence, effective_confidence)
 
     return FloorSignal(
+        station=station,
+        state_key=f"{d1}__{d2}__{d3}",
+        d1=d1, d2=d2, d3=d3,
+        signal_class=signal_class,
+        confidence=confidence,
+        d3_effect=d3_effect,
+        rule_hr_zz75=rule_hr,
+        rule_sgs=rule_sgs,
+        rule_n_states=rule_n,
+        live_sgs=live_sgs,
+        live_canary_edge=live_canary_edge,
+        live_canary_n=live_canary_n,
+        live_timing_mode=live_timing_mode,
+        n_episodios=n_episodios,
+        effective_confidence=effective_confidence,
+    )
+
+
+@dataclass(frozen=True)
+class CeilingSignal:
+    """Classification of ceiling signal quality for a station state.
+
+    NOTE: Ceilings are inherently weaker than floors (distribution vs capitulation).
+    Maximum confidence for any ceiling is MODERATE (never HIGH).
+    """
+    station: str
+    state_key: str
+    d1: int
+    d2: int
+    d3: int
+
+    signal_class: str           # STRUCTURAL_CEILING | MODERATE_CEILING | CORRECTION | BULL_TRAP | NOISE
+    confidence: str
+    d3_effect: str
+
+    rule_hr_zz75: float
+    rule_sgs: float
+    rule_n_states: int
+
+    live_sgs: Optional[float]
+    live_canary_edge: Optional[float]
+    live_canary_n: int
+    live_timing_mode: str
+    n_episodios: int
+
+    effective_confidence: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "station": self.station,
+            "state_key": self.state_key,
+            "d1": self.d1, "d2": self.d2, "d3": self.d3,
+            "signal_class": self.signal_class,
+            "confidence": self.confidence,
+            "d3_effect": self.d3_effect,
+            "effective_confidence": self.effective_confidence,
+            "n_episodios": self.n_episodios,
+            "rule_hr_zz75": self.rule_hr_zz75,
+            "rule_sgs": self.rule_sgs,
+            "rule_n_states": self.rule_n_states,
+            "live_sgs": self.live_sgs,
+            "live_canary_edge": self.live_canary_edge,
+            "live_canary_n": self.live_canary_n,
+            "live_timing_mode": self.live_timing_mode,
+        }
+
+
+def classify_ceiling(
+    station: str,
+    d1: int,
+    d2: int,
+    d3: int,
+    timing: Optional[TimingContext] = None,
+) -> CeilingSignal:
+    """Classify a station's ceiling signal quality.
+
+    Uses medicion_max (proximity to zigzag peaks).
+    Complacent states (D1 <= 1) are the primary domain.
+    """
+    rules = _load_rules()
+    ceiling_rules = rules.get("ceiling_rules", {}).get(station, {})
+    d3_filters = rules.get("ceiling_d3_filters", {}).get(station, {})
+
+    d2_label = D2_LABELS.get(d2, f"UNKNOWN_{d2}")
+    d3_label = D3_LABELS.get(d3, f"UNKNOWN_{d3}")
+
+    # ── Step 1: D1 filter ──
+    d1_range = ceiling_rules.get("d1_range", [0, 1])
+    rule_n = 0
+    if d1 not in d1_range:
+        signal_class = "NOISE"
+        confidence = "INSUFFICIENT"
+        rule_hr = 0.0
+        rule_sgs = 0.0
+
+        if timing and timing.ceiling_sgs is not None:
+            fp_zz75 = timing.first_passage_ceiling.get("zz75")
+            if timing.ceiling_sgs > 0.30 and fp_zz75 and fp_zz75.hit_rate > 0.50:
+                signal_class = "STRUCTURAL_CEILING"
+                confidence = "LOW"
+                rule_hr = fp_zz75.hit_rate
+                rule_sgs = timing.ceiling_sgs
+    else:
+        # ── Step 2: D2-based rule lookup ──
+        by_d2 = ceiling_rules.get("by_d2", {})
+        d2_rule = by_d2.get(d2_label, {})
+
+        signal_class = d2_rule.get("signal_class", "NOISE")
+        confidence = d2_rule.get("confidence", "INSUFFICIENT")
+        rule_hr = d2_rule.get("hr_zz75", 0.0)
+        rule_sgs = d2_rule.get("sgs_median", 0.0)
+        rule_n = d2_rule.get("n_states", 0)
+
+    # ── Step 3: D3 stability filter ──
+    d3_filter = d3_filters.get(d3_label, {})
+    d3_effect = d3_filter.get("effect", "NEUTRAL")
+
+    if d3_effect == "DEGRADES":
+        effective_confidence = _CONF_DEGRADE.get(confidence, confidence)
+    elif d3_effect == "ENHANCES":
+        effective_confidence = _CONF_ENHANCE.get(confidence, confidence)
+    else:
+        effective_confidence = confidence
+
+    # Ceiling confidence cap: never exceed MODERATE
+    if effective_confidence == "HIGH":
+        effective_confidence = "MODERATE"
+
+    # ── Step 4: Live timing override ──
+    live_sgs = timing.ceiling_sgs if timing else None
+    live_canary_edge = timing.ceiling_canary_edge if timing else None
+    live_canary_n = timing.ceiling_canary_n if timing else 0
+    live_timing_mode = timing.ceiling_timing_mode if timing else "UNKNOWN"
+    n_episodios = timing.n_episodios if timing else 0
+
+    if timing and timing.first_passage_ceiling:
+        fp_zz75 = timing.first_passage_ceiling.get("zz75")
+        fp_zz25 = timing.first_passage_ceiling.get("zz25")
+        live_hr75 = fp_zz75.hit_rate if fp_zz75 else None
+        live_hr25 = fp_zz25.hit_rate if fp_zz25 else None
+
+        if live_hr75 is not None and live_hr25 is not None:
+            # ALWAYS classify from individual state data — the event is real
+            effective_sgs = live_sgs if live_sgs is not None else 0.0
+            if effective_sgs > 0.30:
+                signal_class = "STRUCTURAL_CEILING"
+            elif live_hr25 > 0.55 and live_hr75 < 0.55:
+                signal_class = "CORRECTION"
+            elif live_hr25 < 0.45 and live_hr75 < 0.45:
+                signal_class = "BULL_TRAP"
+            elif live_hr75 > 0.55:
+                signal_class = "MODERATE_CEILING"
+            else:
+                signal_class = "NOISE"
+            rule_hr = live_hr75
+            rule_sgs = effective_sgs
+
+            # Degrade confidence by N scarcity
+            if n_episodios < 5:
+                effective_confidence = _CONF_DEGRADE.get(
+                    _CONF_DEGRADE.get(effective_confidence, effective_confidence),
+                    effective_confidence)
+            elif n_episodios < 10:
+                effective_confidence = _CONF_DEGRADE.get(effective_confidence, effective_confidence)
+
+    return CeilingSignal(
         station=station,
         state_key=f"{d1}__{d2}__{d3}",
         d1=d1, d2=d2, d3=d3,

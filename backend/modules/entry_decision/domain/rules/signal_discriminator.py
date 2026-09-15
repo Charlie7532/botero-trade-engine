@@ -54,8 +54,9 @@ class FloorSignal:
     live_canary_edge: Optional[float]   # Canary edge from current timing context
     live_canary_n: int                  # N observations at t-1
     live_timing_mode: str               # ANTICIPATION | CONFIRMATION | NOISE
+    n_episodios: int                    # Episodes observed — scarcity indicator
 
-    # Effective confidence (after D3 filter)
+    # Effective confidence (after D3 filter + N scarcity)
     effective_confidence: str   # Final confidence after all filters
 
     def to_dict(self) -> Dict[str, Any]:
@@ -67,6 +68,7 @@ class FloorSignal:
             "confidence": self.confidence,
             "d3_effect": self.d3_effect,
             "effective_confidence": self.effective_confidence,
+            "n_episodios": self.n_episodios,
             "rule_hr_zz75": self.rule_hr_zz75,
             "rule_sgs": self.rule_sgs,
             "rule_n_states": self.rule_n_states,
@@ -179,19 +181,24 @@ def classify_floor(
 
     # When we have live timing, it has the INDIVIDUAL state's data,
     # which is more precise than the D2-group average from the rule.
-    # Use live data to correct/override the group-level classification.
-    if live_sgs is not None and timing:
+    #
+    # PRINCIPLE: The individual observation is a REAL EVENT that happened.
+    # Never kill the signal — classify from the actual data.
+    # Degrade confidence for low N to warn about scarcity, but preserve
+    # the mathematical observation intact.
+    n_episodios = timing.n_episodios if timing else 0
+
+    if timing and timing.first_passage_floor:
         fp_zz75 = timing.first_passage_floor.get("zz75")
         fp_zz25 = timing.first_passage_floor.get("zz25")
         live_hr75 = fp_zz75.hit_rate if fp_zz75 else None
         live_hr25 = fp_zz25.hit_rate if fp_zz25 else None
 
-        # Sufficient data threshold: at least 10 episodes to trust individual state
-        has_sufficient_data = timing.n_episodios >= 10
-
-        if has_sufficient_data and live_hr75 is not None and live_hr25 is not None:
-            # Re-classify from individual state data (overrides group rule)
-            if live_sgs > 0.30:
+        if live_hr75 is not None and live_hr25 is not None:
+            # ALWAYS classify from individual state data — the event is real
+            # live_sgs may be None if hr25=0 (division by zero) — treat as 0
+            effective_sgs = live_sgs if live_sgs is not None else 0.0
+            if effective_sgs > 0.30:
                 signal_class = "STRUCTURAL_FLOOR"
             elif live_hr25 > 0.55 and live_hr75 < 0.55:
                 signal_class = "PULLBACK"
@@ -205,10 +212,16 @@ def classify_floor(
                 signal_class = "NOISE"
             # Update the rule evidence with live data
             rule_hr = live_hr75
-            rule_sgs = live_sgs
-        elif not has_sufficient_data:
-            # Low N state — downgrade confidence regardless of group rule
-            effective_confidence = _CONF_DEGRADE.get(effective_confidence, effective_confidence)
+            rule_sgs = effective_sgs
+
+            # Degrade confidence by N scarcity — the signal is real but rare
+            if n_episodios < 5:
+                effective_confidence = _CONF_DEGRADE.get(
+                    _CONF_DEGRADE.get(effective_confidence, effective_confidence),
+                    effective_confidence)  # Two-tier downgrade for very rare
+            elif n_episodios < 10:
+                effective_confidence = _CONF_DEGRADE.get(effective_confidence, effective_confidence)
+            # n_episodios >= 10: full confidence from D3 filter, no further degradation
         else:
             # Has timing but missing scales — use group rule with override checks
             if signal_class == "NOISE" and live_sgs > 0.30:
@@ -234,5 +247,6 @@ def classify_floor(
         live_canary_edge=live_canary_edge,
         live_canary_n=live_canary_n,
         live_timing_mode=live_timing_mode,
+        n_episodios=n_episodios,
         effective_confidence=effective_confidence,
     )

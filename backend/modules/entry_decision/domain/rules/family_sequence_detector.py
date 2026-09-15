@@ -6,13 +6,20 @@ Two-layer intelligence for cross-station family analysis:
   Layer 1 (Per-Station):
     - Scale Gradient Score (SGS) from timing stores
     - Structural momentum (HH/HL/LH/LL) from fact store kinematic layer
-    - Floor/Ceiling type classification
+    - Floor/Ceiling type classification (from signal_discriminator)
+    - Accumulation/Distribution context (from signal_discriminator)
 
   Layer 2 (Cross-Station):
     - Inter-category sequencing: CAT1_MACRO → CAT2_SENTIMENT → CAT3_ACTION
     - Dynamic consensus ratios normalized by active stations
+    - Context consensus: accumulation/distribution across zones
     - Causal phase emission based on validated study
       (docs/research/04_conjuncion_multi_estacion/)
+
+V2 additions:
+  - Accumulation/distribution consensus from complacent+neutral zones
+  - New phases: ACCUMULATION_CONFIRMED, DISTRIBUTION_STEALTH
+  - Per-station context_class from classify_context()
 
 Clean Architecture: Pure Domain Rules. No I/O. Receives pre-computed data
 from compositor station_summaries and fact store lookups.
@@ -22,6 +29,8 @@ Empirical Foundation:
     (PF 4.91-6.49), VIX D2<0 = short weak
   - Macro-driven (CAT1→CAT2→CAT3) = 95% of validated signals
   - Structural momentum HH at ceiling = 90.2% fall probability (Regla de Oro)
+  - Accumulation in complacency: floor_hr=100%, EV=+0.066 (validated 306 states)
+  - Distribution forming: ceil_hr=100%, EV=-0.072 (validated 23 states)
 """
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Tuple
@@ -152,6 +161,16 @@ class FamilySequenceReport:
     n_ceiling_structural: int = 0  # Stations with ceiling_type=STRUCTURAL
     n_ceiling_trap: int = 0        # Stations with ceiling_type=TRAP
 
+    # Accumulation/Distribution context (from classify_context)
+    n_accumulation: int = 0        # Stations with ACCUMULATION_* in complacent/neutral
+    n_distribution: int = 0        # Stations with DISTRIBUTION_* in complacent/neutral
+    n_upleg: int = 0               # Stations in UPLEG (neutral zone)
+    n_downleg: int = 0             # Stations in DOWNLEG (neutral zone)
+    n_transition: int = 0          # Stations in TRANSITION
+
+    # Per-station context classification (signal_discriminator output)
+    station_context: Dict[str, str] = field(default_factory=dict)
+
     def to_dict(self) -> Dict[str, Any]:
         d = {
             "cat1_stress_ratio": round(self.cat1_stress_ratio, 4),
@@ -176,6 +195,12 @@ class FamilySequenceReport:
             "n_floor_trap": self.n_floor_trap,
             "n_ceiling_structural": self.n_ceiling_structural,
             "n_ceiling_trap": self.n_ceiling_trap,
+            "n_accumulation": self.n_accumulation,
+            "n_distribution": self.n_distribution,
+            "n_upleg": self.n_upleg,
+            "n_downleg": self.n_downleg,
+            "n_transition": self.n_transition,
+            "station_context": self.station_context,
         }
         return d
 
@@ -390,10 +415,34 @@ def detect_family_sequence(
     cat2_comp = _ratio(cat_complacent[Category.CAT2_SENTIMENT], cat_active[Category.CAT2_SENTIMENT])
     cat3_comp = _ratio(cat_complacent[Category.CAT3_ACTION], cat_active[Category.CAT3_ACTION])
 
-    # Phase detection (inter-category sequencing)
+    # Context classification from signal_discriminator (accumulation/leg)
+    n_accumulation = 0
+    n_distribution = 0
+    n_upleg = 0
+    n_downleg = 0
+    n_transition = 0
+    station_context: Dict[str, str] = {}
+
+    for station, summary in station_summaries.items():
+        ctx_class = summary.get("context_class")
+        if ctx_class:
+            station_context[station] = ctx_class
+            if ctx_class.startswith("ACCUMULATION"):
+                n_accumulation += 1
+            elif ctx_class.startswith("DISTRIBUTION"):
+                n_distribution += 1
+            elif ctx_class == "UPLEG":
+                n_upleg += 1
+            elif ctx_class == "DOWNLEG":
+                n_downleg += 1
+            elif ctx_class == "TRANSITION":
+                n_transition += 1
+
+    # Phase detection (inter-category sequencing + accumulation context)
     phase = _detect_phase(cat1_stress, cat2_fear, cat3_cap,
                           cat1_comp, cat2_comp, cat3_comp,
-                          vix_d2_building)
+                          vix_d2_building,
+                          n_accumulation, n_distribution)
 
     return FamilySequenceReport(
         cat1_stress_ratio=cat1_stress,
@@ -419,6 +468,12 @@ def detect_family_sequence(
         n_floor_trap=n_floor_trap,
         n_ceiling_structural=n_ceiling_structural,
         n_ceiling_trap=n_ceiling_trap,
+        n_accumulation=n_accumulation,
+        n_distribution=n_distribution,
+        n_upleg=n_upleg,
+        n_downleg=n_downleg,
+        n_transition=n_transition,
+        station_context=station_context,
     )
 
 
@@ -426,14 +481,19 @@ def _detect_phase(
     cat1_stress: float, cat2_fear: float, cat3_cap: float,
     cat1_comp: float, cat2_comp: float, cat3_comp: float,
     vix_d2_building: bool,
+    n_accumulation: int = 0,
+    n_distribution: int = 0,
 ) -> str:
-    """Detect causal phase from category ratios.
+    """Detect causal phase from category ratios + accumulation context.
 
     Based on validated study (timing_derisking_REPORT.md):
     - Macro-driven = CAT1 first, then CAT2, then CAT3 (95% of signals)
     - VIX D2>0 (building) = optimal timing for short
+
+    V2 additions:
+    - ACCUMULATION_CONFIRMED: >3 stations in accumulation, no stress
+    - DISTRIBUTION_STEALTH:   >2 stations in distribution, complacent
     """
-    # Stress thresholds: >= 0.5 means majority of category is stressed
     STRESS_THRESH = 0.50
     COMPLACENT_THRESH = 0.50
 
@@ -456,8 +516,16 @@ def _detect_phase(
     if cat1_stress >= STRESS_THRESH and cat2_fear < STRESS_THRESH:
         return "MACRO_PRECURSOR"
 
-    # Complacent side: distribution pattern
+    # Complacent side: check context FIRST (richer than binary ratio)
+    # Accumulation confirmed: multiple stations showing institutional buying
+    # with no stress present → market is loading underneath calm surface
+    if n_accumulation >= 4 and cat1_stress < STRESS_THRESH:
+        return "ACCUMULATION_CONFIRMED"
+
+    # Distribution stealth: stations in complacent zone but distribute
     if cat1_comp >= COMPLACENT_THRESH and cat2_comp >= COMPLACENT_THRESH:
+        if n_distribution >= 3:
+            return "DISTRIBUTION_STEALTH"
         return "COMPLACENT_DISTRIBUTION"
 
     return "NEUTRAL"

@@ -1,22 +1,33 @@
 {
   "_documentation": {
-    "model_purpose": "Empirical D1×D2×D3 signal discrimination rules for the 11 METAR stations",
+    "model_purpose": "Empirical D1×D2×D3 signal discrimination rules for the 11 METAR stations. V3: 7-condition concordance replaces deterministic thresholds.",
     "source": "Timing store cross-analysis, population: SP500 daily bars 2011-2026",
-    "methodology": "SGS = (HR_zz75 - HR_zz25) / HR_zz25; Canary = HR(t-1) - HR(ENTRE)",
+    "methodology": "V3 Concordance: 7 independent bearish votes classify signal quality. C1: RR<0.8 (43.6pp spread), C2: HR75<50% (34.1pp), C3: PF<1.0 (31.8pp), C4: SGS<-0.05 (14.3pp), C5: ceil_hr>0.60 dual_nature (63.3pp), C6: MFE<|MAE| (29.0pp), C7: pvalue>0.80 (17.5pp). Classification: 0/7=STRUCTURAL HIGH, 1/7=STRUCTURAL/MODERATE, 2/7=MODERATE/NOISE, 3-4/7=NOISE/PULLBACK, 5/7=TRAP MODERATE, 6-7/7=TRAP HIGH.",
     "signal_classes": {
-      "STRUCTURAL_FLOOR": "SGS > 30% OR HR_zz75 > 65% — patience rewarded",
-      "PULLBACK": "HR_zz25 > 55% but HR_zz75 < 55% — tactical bounce only",
-      "TRAP": "HR_zz25 < 45% AND HR_zz75 < 45% — everything loses",
-      "CANARY_ANTICIPATION": "t-1 edge > 15pp with n >= 5 — signal before pivot",
-      "NOISE": "No meaningful signal at any scale"
+      "STRUCTURAL_FLOOR": "Concordance 0-1/7 bearish — multi-scale convergent, real capitulation (median HR75=71.4%)",
+      "MODERATE_FLOOR": "Concordance 1-2/7 bearish — probable floor with caveats (median HR75=57.7%)",
+      "PULLBACK": "Concordance 2-3/7 — tactical bounce, ambiguous direction (median HR75=50.0%)",
+      "TRAP": "Concordance 5-7/7 bearish — false floor, distribution disguised (median HR75=25.0%)",
+      "NOISE": "Concordance 3-4/7 — insufficient conviction either way (median HR75=50.0%)",
+      "ACCUMULATION_STRUCTURAL": "Complacent zone: floor_hr>70%, ceil_hr<30% — institutional buying (N=135, floor_hr=100%)",
+      "DISTRIBUTION_FORMING": "Complacent zone: ceil_hr>70%, floor_hr<30% — institutional selling (N=23, ceil_hr=100%)",
+      "UPLEG": "Neutral zone: floor_hr > ceil_hr + 15% — continuation upward (N=338)",
+      "DOWNLEG": "Neutral zone: ceil_hr > floor_hr + 5% — continuation downward (N=50)"
     },
     "confidence_tiers": {
-      "HIGH": "n_states >= 5, avg_hr >= 70%, 0 pullbacks",
-      "MODERATE": "n_states >= 3, avg_hr >= 60%",
-      "LOW": "n_states >= 2, avg_hr >= 55%",
-      "INSUFFICIENT": "Not enough data or weak signal"
+      "HIGH": "Strong concordance agreement (0/7 or 6-7/7) + multi-scale STRUCTURAL pattern",
+      "MODERATE": "Clear concordance majority (1/7 or 5/7) or D2 velocity confirms direction",
+      "LOW": "Borderline concordance (2-4/7) or scale pattern is FLAT",
+      "INSUFFICIENT": "No timing data available — fallback to this JSON"
     },
-    "generated_at": "2026-09-15T01:58:00Z"
+    "coverage": {
+      "stress_states": "421 classified (concordance 7 conditions)",
+      "complacent_states": "306 classified (accumulation/distribution)",
+      "neutral_states": "462 classified (upleg/downleg/transition)",
+      "total": "1189 states (100% coverage)"
+    },
+    "generated_at": "2026-09-15T14:34:00Z",
+    "version": "V3"
   },
   "floor_rules": {
     "vix": {

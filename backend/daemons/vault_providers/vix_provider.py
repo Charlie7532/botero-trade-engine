@@ -54,7 +54,7 @@ class VIXProvider:
                 state_keys = [
                     ("vix:sigmet:MARKET", sigmet.state_key),
                     ("vix:regime:MARKET", sigmet.divergence_regime),
-                    ("vix:guidance:MARKET", sigmet.operational_guidance),
+                    ("vix:guidance:MARKET", sigmet.action_code),
                 ]
 
                 for key, state_label in state_keys:
@@ -71,7 +71,7 @@ class VIXProvider:
 
             logger.info(
                 f"📊 VIX METAR Vaulted: State={sigmet.state_key} | "
-                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.action_code}"
             )
 
             return {
@@ -80,7 +80,7 @@ class VIXProvider:
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "operational_guidance": sigmet.operational_guidance,
+                "action_code": sigmet.action_code,
                 "vix_value": sigmet.vix_index_value,
                 "vix_d3": sigmet.vix_velocity_3d,
             }

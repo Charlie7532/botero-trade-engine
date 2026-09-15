@@ -58,7 +58,7 @@ class YieldCurveProvider:
                 state_keys = [
                     ("yield_curve:sigmet:MARKET", sigmet.state_key),
                     ("yield_curve:regime:MARKET", sigmet.divergence_regime),
-                    ("yield_curve:guidance:MARKET", sigmet.operational_guidance),
+                    ("yield_curve:guidance:MARKET", sigmet.action_code),
                 ]
 
                 for key, state_label in state_keys:
@@ -79,7 +79,7 @@ class YieldCurveProvider:
 
             logger.info(
                 f"📊 Yield Curve METAR Vaulted: State={sigmet.state_key} | "
-                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.action_code}"
             )
 
             return {
@@ -88,7 +88,7 @@ class YieldCurveProvider:
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "operational_guidance": sigmet.operational_guidance,
+                "action_code": sigmet.action_code,
                 "spread_value": sigmet.spread_value,
                 "spread_d3": sigmet.spread_velocity_3d,
             }

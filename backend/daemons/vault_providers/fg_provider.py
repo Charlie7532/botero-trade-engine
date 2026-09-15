@@ -54,7 +54,7 @@ class FearGreedMETARProvider:
                 state_keys = [
                     ("fg:sigmet:MARKET", sigmet.state_key),
                     ("fg:regime:MARKET", sigmet.divergence_regime),
-                    ("fg:guidance:MARKET", sigmet.operational_guidance),
+                    ("fg:guidance:MARKET", sigmet.action_code),
                 ]
 
                 for key, state_label in state_keys:
@@ -71,7 +71,7 @@ class FearGreedMETARProvider:
 
             logger.info(
                 f"📊 FG METAR Vaulted: State={sigmet.state_key} | "
-                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.action_code}"
             )
 
             return {
@@ -80,7 +80,7 @@ class FearGreedMETARProvider:
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "operational_guidance": sigmet.operational_guidance,
+                "action_code": sigmet.action_code,
                 "fg_value": sigmet.fg_index_value,
                 "fg_d3": sigmet.fg_velocity_3d,
             }

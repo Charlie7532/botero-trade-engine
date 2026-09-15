@@ -111,7 +111,7 @@ class BSIProvider:
                 state_keys = [
                     ("bsi:entry_decision:MARKET", sigmet.state_key),
                     ("bsi:regime:MARKET", sigmet.divergence_regime),
-                    ("bsi:guidance:MARKET", sigmet.operational_guidance),
+                    ("bsi:guidance:MARKET", sigmet.action_code),
                 ]
 
                 for key, state_label in state_keys:
@@ -128,7 +128,7 @@ class BSIProvider:
 
             logger.info(
                 f"📊 BSI METAR Vaulted: State={sigmet.state_key} | "
-                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.action_code}"
             )
 
             return {
@@ -137,7 +137,7 @@ class BSIProvider:
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "operational_guidance": sigmet.operational_guidance,
+                "action_code": sigmet.action_code,
                 "bsi_value": sigmet.bsi_value,
                 "bsi_d3": sigmet.bsi_velocity_3d,
             }

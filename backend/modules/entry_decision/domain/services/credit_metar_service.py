@@ -16,6 +16,7 @@ import json
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.entry_decision.domain.rules.credit_lookup import credit_lookup, CreditLookupAdapter
+from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
 from backend.modules.shared.domain.entities.state_snapshot import StateSnapshot
 from backend.modules.shared.domain.ports.regime_state_port import RegimeStatePort
 
@@ -39,7 +40,7 @@ class MarketMETAR:
     velocity_vector: str
     n_samples: int
     divergence_regime: str
-    operational_guidance: str
+    action_code: str
     action_code: str
     p_bull_vector: list
     p_bear_vector: list
@@ -103,7 +104,7 @@ class MarketMETAR:
             f"    • R/R Asymmetry      : {self.rr_asymmetry_ratio:.2f}x\n\n"
             " 🎯 OPERATIONAL DIRECTIVES (UNIVERSAL TAXONOMY):\n"
             f"    • Action Code        : {self.action_code}\n"
-            f"    • Guidance Code      : {self.operational_guidance}\n"
+            f"    • Action Code      : {self.action_code}\n"
             "================================================================================"
         )
 
@@ -265,8 +266,7 @@ class CreditMetarService:
                 velocity_vector=guidance.velocity_vector,
                 n_samples=guidance.n,
                 divergence_regime=guidance.divergence_regime,
-                operational_guidance=guidance.operational_guidance,
-                action_code=action_code,
+                action_code=derive_action_code(guidance),
                 p_bull_vector=[guidance.zz25.p_bull, guidance.zz50.p_bull, guidance.zz75.p_bull],
                 p_bear_vector=[guidance.zz25.p_bear, guidance.zz50.p_bear, guidance.zz75.p_bear],
                 ev_net_vector=[guidance.zz25.ev_net, guidance.zz50.ev_net, guidance.zz75.ev_net],

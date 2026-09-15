@@ -58,7 +58,7 @@ class RotationProvider:
                 state_keys = [
                     ("rotation:entry_decision:MARKET", sigmet.state_key),
                     ("rotation:regime:MARKET", sigmet.divergence_regime),
-                    ("rotation:guidance:MARKET", sigmet.operational_guidance),
+                    ("rotation:guidance:MARKET", sigmet.action_code),
                 ]
 
                 for key, state_label in state_keys:
@@ -79,7 +79,7 @@ class RotationProvider:
 
             logger.info(
                 f"📊 Rotation METAR Vaulted: State={sigmet.state_key} | "
-                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.action_code}"
             )
 
             return {
@@ -88,7 +88,7 @@ class RotationProvider:
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "operational_guidance": sigmet.operational_guidance,
+                "action_code": sigmet.action_code,
                 "rotation_index": sigmet.rotation_index_value,
                 "rotation_d3": sigmet.rotation_velocity_3d,
             }

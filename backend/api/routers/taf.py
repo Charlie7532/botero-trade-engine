@@ -59,7 +59,7 @@ async def get_composite_taf(
     try:
         from backend.modules.entry_decision.domain.services.convergence_compositor import ConvergenceCompositor
         compositor = ConvergenceCompositor()
-        report = compositor.compose(as_of_date=as_of_date)
+        report = compositor.compute(as_of_date=as_of_date)
         
         cones = []
         for station, summary in report.station_summaries.items():

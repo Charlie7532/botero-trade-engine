@@ -148,7 +148,7 @@ class PCRProvider:
                 state_keys = [
                     ("pcr:sigmet:MARKET", sigmet.state_key),
                     ("pcr:regime:MARKET", sigmet.divergence_regime),
-                    ("pcr:guidance:MARKET", sigmet.operational_guidance),
+                    ("pcr:guidance:MARKET", sigmet.action_code),
                 ]
 
                 for key, state_label in state_keys:
@@ -169,7 +169,7 @@ class PCRProvider:
 
             logger.info(
                 f"📊 PCR METAR Vaulted: State={sigmet.state_key} | "
-                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.action_code}"
             )
 
             return {
@@ -178,7 +178,7 @@ class PCRProvider:
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "operational_guidance": sigmet.operational_guidance,
+                "action_code": sigmet.action_code,
                 "pcr_value": sigmet.pcr_index_value,
                 "pcr_d3": sigmet.pcr_velocity_3d,
             }

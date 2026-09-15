@@ -466,7 +466,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     try:
         from backend.modules.entry_decision.domain.services.convergence_compositor import ConvergenceCompositor
         compositor = ConvergenceCompositor()
-        report = compositor.compose(as_of_date=as_of_date)
+        report = compositor.compute(as_of_date=as_of_date)
         family = report.family_sequence
 
         if family:

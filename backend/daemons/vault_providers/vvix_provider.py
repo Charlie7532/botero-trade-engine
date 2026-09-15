@@ -54,7 +54,7 @@ class VVIXProvider:
                 state_keys = [
                     ("vvix:sigmet:MARKET", sigmet.state_key),
                     ("vvix:regime:MARKET", sigmet.divergence_regime),
-                    ("vvix:guidance:MARKET", sigmet.operational_guidance),
+                    ("vvix:guidance:MARKET", sigmet.action_code),
                 ]
 
                 for key, state_label in state_keys:
@@ -71,7 +71,7 @@ class VVIXProvider:
 
             logger.info(
                 f"📊 VVIX METAR Vaulted: State={sigmet.state_key} | "
-                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.action_code}"
             )
 
             return {
@@ -80,7 +80,7 @@ class VVIXProvider:
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "operational_guidance": sigmet.operational_guidance,
+                "action_code": sigmet.action_code,
                 "vvix_value": sigmet.vvix_index_value,
                 "vvix_d3": sigmet.vvix_velocity_3d,
             }

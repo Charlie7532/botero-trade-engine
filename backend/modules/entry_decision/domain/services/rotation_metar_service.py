@@ -17,6 +17,7 @@ import numpy as np
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.entry_decision.domain.rules.rotation_lookup import rotation_lookup, RotationLookupAdapter
+from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
 from backend.modules.shared.domain.entities.state_snapshot import StateSnapshot
 from backend.modules.shared.domain.ports.regime_state_port import RegimeStatePort
 
@@ -40,7 +41,7 @@ class MarketMETAR:
     velocity_vector: str
     n_samples: int
     divergence_regime: str
-    operational_guidance: str
+    action_code: str
     action_code: str
     p_bull_vector: list
     p_bear_vector: list
@@ -99,7 +100,7 @@ class MarketMETAR:
             f"    • R/R Asymmetry        : {self.rr_asymmetry_ratio:.2f}x\n\n"
             " 🎯 OPERATIONAL DIRECTIVES (UNIVERSAL TAXONOMY):\n"
             f"    • Action Code          : {self.action_code}\n"
-            f"    • Guidance Code        : {self.operational_guidance}\n"
+            f"    • Action Code        : {self.action_code}\n"
             "================================================================================"
         )
 
@@ -227,7 +228,7 @@ class RotationMetarService:
             vec = guidance.to_vector()
             now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-            action_code = guidance.operational_guidance
+            action_code = derive_action_code(guidance)
 
             if action_code == "MKT_ROTATION_DEFENSIVE_FREEZE":
                 market_status = "CRISIS_DEFENSIVE_FREEZE"
@@ -253,8 +254,7 @@ class RotationMetarService:
                 velocity_vector=guidance.velocity_vector,
                 n_samples=guidance.n,
                 divergence_regime=guidance.divergence_regime,
-                operational_guidance=guidance.operational_guidance,
-                action_code=action_code,
+                action_code=derive_action_code(guidance),
                 p_bull_vector=[guidance.zz25.p_bull, guidance.zz50.p_bull, guidance.zz75.p_bull],
                 p_bear_vector=[guidance.zz25.p_bear, guidance.zz50.p_bear, guidance.zz75.p_bear],
                 ev_net_vector=[guidance.zz25.ev_net, guidance.zz50.ev_net, guidance.zz75.ev_net],
@@ -280,7 +280,7 @@ class RotationMetarService:
                     state_keys = [
                         (self.REGIME_KEY, metar.state_key),
                         ("rotation:regime:MARKET", metar.divergence_regime),
-                        ("rotation:guidance:MARKET", metar.operational_guidance),
+                        ("rotation:guidance:MARKET", metar.action_code),
                     ]
                     for key, state_label in state_keys:
                         current = self._port.get_current(key)

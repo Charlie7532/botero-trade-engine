@@ -58,7 +58,7 @@ class SkewProvider:
                 state_keys = [
                     ("skew:sigmet:MARKET", sigmet.state_key),
                     ("skew:regime:MARKET", sigmet.divergence_regime),
-                    ("skew:guidance:MARKET", sigmet.operational_guidance),
+                    ("skew:guidance:MARKET", sigmet.action_code),
                 ]
 
                 for key, state_label in state_keys:
@@ -79,7 +79,7 @@ class SkewProvider:
 
             logger.info(
                 f"📊 SKEW METAR Vaulted: State={sigmet.state_key} | "
-                f"Regime={sigmet.divergence_regime} | Directive={sigmet.operational_guidance}"
+                f"Regime={sigmet.divergence_regime} | Directive={sigmet.action_code}"
             )
 
             return {
@@ -88,7 +88,7 @@ class SkewProvider:
                 "as_of_date": sigmet.as_of_date,
                 "state_key": sigmet.state_key,
                 "divergence_regime": sigmet.divergence_regime,
-                "operational_guidance": sigmet.operational_guidance,
+                "action_code": sigmet.action_code,
                 "skew_value": sigmet.skew_index_value,
                 "skew_d3": sigmet.skew_velocity_3d,
             }

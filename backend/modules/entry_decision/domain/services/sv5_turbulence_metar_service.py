@@ -15,6 +15,7 @@ import json
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.entry_decision.domain.rules.sv5_turbulence_lookup import sv5_turbulence_lookup
+from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
 
 
 class StrictDataPolicyError(Exception):
@@ -36,7 +37,7 @@ class MarketMETAR:
     velocity_vector: str
     n_samples: int
     divergence_regime: str
-    operational_guidance: str
+    action_code: str
     p_bull_vector: list
     p_bear_vector: list
     ev_net_vector: list
@@ -85,7 +86,7 @@ class MarketMETAR:
             f"    • Daily Rate (%/day): {self.primary_capital_velocity*100:+.4f}% / trading day (reaches 5.0% in {self.primary_e_days:.1f}d)\n"
             f"    • R/R Asymmetry     : {self.rr_asymmetry_ratio:.2f}x\n\n"
             " 🎯 OPERATIONAL DIRECTIVES (UNIVERSAL TAXONOMY):\n"
-            f"    • Taxonomy Code     : {self.operational_guidance}\n"
+            f"    • Action Code     : {self.action_code}\n"
             "================================================================================"
         )
 
@@ -183,7 +184,7 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
         clean_date = latest_date_str.replace("-", "")
         metar_id = f"METAR-SV5TURB-{clean_date}-001"
 
-        if guidance.operational_guidance == "STK_BLOCK_CRISIS":
+        if guidance.divergence_regime == "FULL_CONVERGENT_BEAR":
             status = "CRISIS_VETO"
         elif guidance.divergence_regime in ("TACTICAL_BOUNCE_ONLY", "TACTICAL_PULLBACK"):
             status = "RESTRICTED"
@@ -203,7 +204,7 @@ def get_sv5_turbulence_market_metar(as_of_date: Optional[str] = None) -> MarketM
             velocity_vector=guidance.velocity_vector,
             n_samples=guidance.n,
             divergence_regime=guidance.divergence_regime,
-            operational_guidance=guidance.operational_guidance,
+            action_code=derive_action_code(guidance),
             p_bull_vector=[guidance.zz25.p_bull, guidance.zz50.p_bull, guidance.zz75.p_bull],
             p_bear_vector=[guidance.zz25.p_bear, guidance.zz50.p_bear, guidance.zz75.p_bear],
             ev_net_vector=[guidance.zz25.ev_net, guidance.zz50.ev_net, guidance.zz75.ev_net],

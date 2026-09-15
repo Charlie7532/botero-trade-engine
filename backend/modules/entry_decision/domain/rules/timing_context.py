@@ -11,11 +11,18 @@ TimingContext is an AMPLIFIER — it does not replace the fact store's EV.
 It adds temporal depth: slot proximity, first passage quality, episode
 demographics, and overflow history.
 
+V2 Enrichments (Corriente A):
+  - Multi-scale first passage: zz25 + zz50 + zz75 (not just zz75)
+  - Scale Gradient Score (SGS): (HR_zz75 - HR_zz25) / HR_zz25
+    Classifies signal quality: STRUCTURAL (>30%), IMMEDIATE (~0%), TACTICAL (<-5%)
+  - Canary signals: t-1 slot edge over ENTRE baseline
+  - Signal mode: ANTICIPATION (t-1/t-2 active), CONFIRMATION (t+1/t+2), NOISE
+
 Clean Architecture: Pure Domain Rules. Reads JSON from disk (same pattern
 as lookup adapters). No network I/O, no infrastructure dependencies.
 """
-from dataclasses import dataclass
-from typing import Dict, Any, Optional
+from dataclasses import dataclass, field
+from typing import Dict, Any, Optional, List
 import json
 from pathlib import Path
 from functools import lru_cache
@@ -98,9 +105,34 @@ class TimingContext:
     ceiling_delta_medio: float
     ceiling_slots: Dict[str, TimingSlot]
 
-    # ── First Passage (best scale: zz75) ──
-    first_passage_zz75_floor: Optional[FirstPassage]
-    first_passage_zz75_ceiling: Optional[FirstPassage]
+    # ── First Passage — ALL 3 SCALES (V2) ──
+    first_passage_floor: Dict[str, FirstPassage] = field(default_factory=dict)   # {"zz25": ..., "zz50": ..., "zz75": ...}
+    first_passage_ceiling: Dict[str, FirstPassage] = field(default_factory=dict)
+
+    # ── Scale Gradient Score (V2) ──
+    floor_sgs: Optional[float] = None     # (HR_zz75 - HR_zz25) / HR_zz25  — >0.30=STRUCTURAL, <-0.05=TACTICAL
+    ceiling_sgs: Optional[float] = None
+
+    # ── Canary Signals (V2) ──
+    floor_canary_edge: Optional[float] = None    # HR_t-1 - HR_ENTRE (pp edge)
+    floor_canary_n: int = 0                       # N observations at t-1
+    ceiling_canary_edge: Optional[float] = None
+    ceiling_canary_n: int = 0
+
+    # ── Signal Classification (V2) ──
+    floor_signal_class: str = "UNKNOWN"   # "STRUCTURAL" | "TACTICAL" | "IMMEDIATE" | "UNKNOWN"
+    ceiling_signal_class: str = "UNKNOWN"
+    floor_timing_mode: str = "UNKNOWN"    # "ANTICIPATION" | "CONFIRMATION" | "NOISE" | "UNKNOWN"
+    ceiling_timing_mode: str = "UNKNOWN"
+
+    # Backward compatibility
+    @property
+    def first_passage_zz75_floor(self) -> Optional[FirstPassage]:
+        return self.first_passage_floor.get("zz75")
+
+    @property
+    def first_passage_zz75_ceiling(self) -> Optional[FirstPassage]:
+        return self.first_passage_ceiling.get("zz75")
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize for compositor report."""
@@ -135,18 +167,44 @@ class TimingContext:
             d["ceiling_t0_ev"] = ct0.ev
             d["ceiling_entre_ev"] = centre.ev
 
-        # First passage quality
-        if self.first_passage_zz75_floor:
-            fp = self.first_passage_zz75_floor
-            d["fp_floor_zz75"] = {
-                "profit_factor": fp.profit_factor,
-                "p_value": fp.p_value,
-                "ev": fp.ev,
-                "hit_rate": fp.hit_rate,
-                "mae_medio": fp.mae_medio,
-                "mfe_medio": fp.mfe_medio,
-                "bars_medio": fp.bars_medio,
-            }
+        # First passage quality — all 3 scales (V2)
+        for side, fp_dict in [("floor", self.first_passage_floor), ("ceiling", self.first_passage_ceiling)]:
+            for scale, fp in fp_dict.items():
+                d[f"fp_{side}_{scale}"] = {
+                    "hit_rate": fp.hit_rate,
+                    "hit_neto": fp.hit_neto,
+                    "ev": fp.ev,
+                    "ev_neto": fp.ev_neto,
+                    "profit_factor": fp.profit_factor,
+                    "rr_asymmetry": fp.rr_asymmetry,
+                    "mae_medio": fp.mae_medio,
+                    "mfe_medio": fp.mfe_medio,
+                    "bars_medio": fp.bars_medio,
+                    "p_value": fp.p_value,
+                }
+
+        # V2: Scale Gradient Score
+        d["floor_sgs"] = self.floor_sgs
+        d["ceiling_sgs"] = self.ceiling_sgs
+        d["floor_signal_class"] = self.floor_signal_class
+        d["ceiling_signal_class"] = self.ceiling_signal_class
+
+        # V2: Canary signals
+        d["floor_canary_edge"] = self.floor_canary_edge
+        d["floor_canary_n"] = self.floor_canary_n
+        d["ceiling_canary_edge"] = self.ceiling_canary_edge
+        d["ceiling_canary_n"] = self.ceiling_canary_n
+        d["floor_timing_mode"] = self.floor_timing_mode
+        d["ceiling_timing_mode"] = self.ceiling_timing_mode
+
+        # V2: Per-slot detail (for downstream analysis)
+        for side, slots in [("floor", self.floor_slots), ("ceiling", self.ceiling_slots)]:
+            for slot_name in ["t-2", "t-1", "t=0", "t+1", "t+2", "ENTRE"]:
+                s = slots.get(slot_name)
+                if s and s.n > 0:
+                    d[f"{side}_slot_{slot_name.replace('=','')}_hr"] = s.hit_rate
+                    d[f"{side}_slot_{slot_name.replace('=','')}_n"] = s.n
+
         return d
 
     @property
@@ -226,21 +284,91 @@ def _parse_first_passage(scale: str, raw: dict) -> Optional[FirstPassage]:
 
 
 def _parse_medicion(raw: dict) -> tuple:
-    """Parse medicion_min or medicion_max into (pct_en_rango, delta_medio, slots, fp_zz75)."""
+    """Parse medicion_min or medicion_max into full multi-scale metrics.
+
+    Returns:
+        (pct_en_rango, delta_medio, slots, first_passage_dict, sgs, canary_edge, canary_n, signal_class, timing_mode)
+    """
     resumen = raw.get("resumen_rango", {})
     pct_en_rango = resumen.get("pct_en_rango", 0.0)
     delta_medio = resumen.get("delta_medio", 0.0)
 
+    # ── Slots (all 6) ──
     slots_raw = raw.get("slots_zz25", {})
     slots = {}
     for slot_name in ["t-2", "t-1", "t=0", "t+1", "t+2", "ENTRE"]:
         if slot_name in slots_raw:
             slots[slot_name] = _parse_slot(slot_name, slots_raw[slot_name])
 
-    fp_raw = raw.get("first_passage", {}).get("zz75", {})
-    fp = _parse_first_passage("zz75", fp_raw)
+    # ── First Passage — ALL 3 SCALES (V2) ──
+    fp_dict: Dict[str, FirstPassage] = {}
+    fp_raw_all = raw.get("first_passage", {})
+    for scale in ["zz25", "zz50", "zz75"]:
+        fp_raw = fp_raw_all.get(scale, {})
+        fp = _parse_first_passage(scale, fp_raw)
+        if fp:
+            fp_dict[scale] = fp
 
-    return pct_en_rango, delta_medio, slots, fp
+    # ── Scale Gradient Score (V2) ──
+    sgs = None
+    fp_zz25 = fp_dict.get("zz25")
+    fp_zz75 = fp_dict.get("zz75")
+    if fp_zz25 and fp_zz75 and fp_zz25.hit_rate > 0:
+        sgs = round((fp_zz75.hit_rate - fp_zz25.hit_rate) / fp_zz25.hit_rate, 4)
+
+    # ── Signal Class from SGS ──
+    if sgs is not None:
+        if sgs > 0.30:
+            signal_class = "STRUCTURAL"   # Patience rewarded: zz75 >> zz25
+        elif sgs < -0.05:
+            signal_class = "TACTICAL"     # Scalp only: zz25 > zz75
+        else:
+            signal_class = "IMMEDIATE"    # Equal across scales: act now
+    else:
+        signal_class = "UNKNOWN"
+
+    # ── Canary Signal — t-1 edge over ENTRE (V2) ──
+    canary_edge = None
+    canary_n = 0
+    t_minus_1 = slots.get("t-1")
+    entre = slots.get("ENTRE")
+    if t_minus_1 and t_minus_1.n >= 3 and entre and entre.hit_rate is not None:
+        if t_minus_1.hit_rate is not None:
+            canary_edge = round(t_minus_1.hit_rate - entre.hit_rate, 4)
+            canary_n = t_minus_1.n
+
+    # ── Timing Mode from slots (V2) ──
+    # ANTICIPATION: t-1 or t-2 has strong edge (signal BEFORE the turn)
+    # CONFIRMATION: t+1 or t+2 has strong edge (signal AFTER the turn)
+    # NOISE: no meaningful slot edge
+    timing_mode = "NOISE"
+    t_minus_2 = slots.get("t-2")
+    t_plus_1 = slots.get("t+1")
+    t_plus_2 = slots.get("t+2")
+
+    # Check anticipation (pre-turn)
+    has_anticipation = False
+    if canary_edge is not None and canary_edge > 0.15 and canary_n >= 5:
+        has_anticipation = True
+    elif t_minus_2 and t_minus_2.n >= 5 and entre and entre.hit_rate is not None:
+        if t_minus_2.hit_rate is not None and (t_minus_2.hit_rate - entre.hit_rate) > 0.15:
+            has_anticipation = True
+
+    # Check confirmation (post-turn)
+    has_confirmation = False
+    if t_plus_1 and t_plus_1.n >= 5 and entre and entre.hit_rate is not None:
+        if t_plus_1.hit_rate is not None and (t_plus_1.hit_rate - entre.hit_rate) > 0.15:
+            has_confirmation = True
+
+    if has_anticipation and has_confirmation:
+        timing_mode = "ANTICIPATION"  # Both pre and post, but pre takes priority
+    elif has_anticipation:
+        timing_mode = "ANTICIPATION"
+    elif has_confirmation:
+        timing_mode = "CONFIRMATION"
+
+    return (pct_en_rango, delta_medio, slots, fp_dict,
+            sgs, canary_edge, canary_n, signal_class, timing_mode)
 
 
 # ── Public API ───────────────────────────────────────────────────────────
@@ -270,11 +398,15 @@ def get_timing_context(station: str, state_key: str) -> Optional[TimingContext]:
 
     # Floor (medicion_min)
     med_min = state_data.get("medicion_min", {})
-    floor_pct, floor_delta, floor_slots, fp_floor = _parse_medicion(med_min)
+    (floor_pct, floor_delta, floor_slots, floor_fps,
+     floor_sgs, floor_canary_edge, floor_canary_n,
+     floor_signal_class, floor_timing_mode) = _parse_medicion(med_min)
 
     # Ceiling (medicion_max)
     med_max = state_data.get("medicion_max", {})
-    ceil_pct, ceil_delta, ceil_slots, fp_ceil = _parse_medicion(med_max)
+    (ceil_pct, ceil_delta, ceil_slots, ceil_fps,
+     ceil_sgs, ceil_canary_edge, ceil_canary_n,
+     ceil_signal_class, ceil_timing_mode) = _parse_medicion(med_max)
 
     return TimingContext(
         station=station.lower(),
@@ -294,6 +426,20 @@ def get_timing_context(station: str, state_key: str) -> Optional[TimingContext]:
         ceiling_pct_en_rango=ceil_pct,
         ceiling_delta_medio=ceil_delta,
         ceiling_slots=ceil_slots,
-        first_passage_zz75_floor=fp_floor,
-        first_passage_zz75_ceiling=fp_ceil,
+        # V2: Multi-scale first passage
+        first_passage_floor=floor_fps,
+        first_passage_ceiling=ceil_fps,
+        # V2: Scale Gradient Score
+        floor_sgs=floor_sgs,
+        ceiling_sgs=ceil_sgs,
+        # V2: Canary signals
+        floor_canary_edge=floor_canary_edge,
+        floor_canary_n=floor_canary_n,
+        ceiling_canary_edge=ceil_canary_edge,
+        ceiling_canary_n=ceil_canary_n,
+        # V2: Signal classification
+        floor_signal_class=floor_signal_class,
+        ceiling_signal_class=ceil_signal_class,
+        floor_timing_mode=floor_timing_mode,
+        ceiling_timing_mode=ceil_timing_mode,
     )

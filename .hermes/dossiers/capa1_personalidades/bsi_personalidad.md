@@ -1,4 +1,4 @@
-# Ficha de Personalidad — BSI
+# Dossier de Personalidad V3 — BSI
 
 > **Módulo:** Capa 1 de 3 (Personalidades Individuales) · **Sistema:** METAR Hermes
 
@@ -27,25 +27,25 @@ Tabla empírica y probabilística de 6 filas obligatorias (Bins 0 a 5) con métr
 
 | D1 Bin | Label Canónico | N Episodios | HR zz25 (%) | Edge Neto (%) | EV zz25 (%) | Sesgo Probabilístico | Fase del Ciclo | Acción Canónica (Regla 20) | Juicio Contextual de Convicción |
 |:---:|:---|:---:|:---:|:---:|:---:|:---|:---|:---|:---|
-| 0 | `BREADTH_WASHED_OUT` | 239 | 54.0% | +0.1% | +0.28% | **Amplitud Destruida / 93.3% Rango de Suelo** | `Piso / Capitulación de Amplitud` | `STK_BUY_DIP_TACTICAL` | < 10% de acciones sobre su 20-DMA. Máxima precisión de localización de giros del sistema; preparar compras escalonadas. |
-| 1 | `OVERSOLD_BREADTH` | 990 | 56.8% | +2.9% | +0.46% | **Rebote de Amplitud en Expansión (+2.9% Edge)** | `Acumulación / Ensanchamiento` | `STK_ACCUMULATE_STRUCTURAL` | Operacionalmente superior a D1=0 por mayor N y edge confirmado. En zz75 el Hit Rate se expande al 65.2%. |
-| 2 | `NEUTRAL_LOW_BREADTH` | 1897 | 52.0% | -1.9% | +0.22% | **Amplitud Media-Baja** | `Participación Selectiva` | `STK_HOLD_STABLE` | 35-50% de componentes participando; selectividad en nombres individuales. |
-| 3 | `NEUTRAL_HIGH_BREADTH` | 1880 | 53.0% | -0.9% | +0.32% | **Amplitud Saludable** | `Mercado Amplio` | `STK_HOLD_STABLE` | 50-78% de componentes sobre media de 20 sesiones. Tendencia sana y diversificada. |
-| 4 | `EXPANSIVE_BREADTH` | 1051 | 53.3% | -0.6% | +0.30% | **Amplitud Fuerte** | `Impulso de Participación` | `STK_HOLD_STABLE` | Participación generalizada en la subida; continuar con asignación core. |
-| 5 | `HYPER_EXPANSIVE_BREADTH` | 264 | 54.2% | +0.3% | +0.33% | **Breadth Thrust / Impulso Masivo** | `Empuje Extremo de Amplitud` | `STK_HOLD_STABLE` | > 90% de stocks sobre media. Típicamente señala el arranque de un nuevo ciclo alcista, no un techo inmediato. |
+| 0 | `BREADTH_WASHED_OUT` | 239 | 54.0% | +0.1% | +0.28% | **Amplitud Destruida / 93.3% Rango de Suelo** | `Piso / Capitulación de Amplitud` | `MKT_BUY_DIP_TACTICAL` | < 10% de acciones sobre su 20-DMA. Máxima precisión de localización de giros del sistema; preparar compras escalonadas. |
+| 1 | `OVERSOLD_BREADTH` | 990 | 56.8% | +2.9% | +0.46% | **Rebote de Amplitud en Expansión (+2.9% Edge)** | `Acumulación / Ensanchamiento` | `MKT_ACCUMULATE_STRUCTURAL` | Operacionalmente superior a D1=0 por mayor N y edge confirmado. En zz75 el Hit Rate se expande al 65.2%. |
+| 2 | `NEUTRAL_LOW_BREADTH` | 1897 | 52.0% | -1.9% | +0.22% | **Amplitud Media-Baja** | `Participación Selectiva` | `MKT_HOLD_STABLE` | 35-50% de componentes participando; selectividad en nombres individuales. |
+| 3 | `NEUTRAL_HIGH_BREADTH` | 1880 | 53.0% | -0.9% | +0.32% | **Amplitud Saludable** | `Mercado Amplio` | `MKT_HOLD_STABLE` | 50-78% de componentes sobre media de 20 sesiones. Tendencia sana y diversificada. |
+| 4 | `EXPANSIVE_BREADTH` | 1051 | 53.3% | -0.6% | +0.30% | **Amplitud Fuerte** | `Impulso de Participación` | `MKT_HOLD_STABLE` | Participación generalizada en la subida; continuar con asignación core. |
+| 5 | `HYPER_EXPANSIVE_BREADTH` | 264 | 54.2% | +0.3% | +0.33% | **Breadth Thrust / Impulso Masivo** | `Empuje Extremo de Amplitud` | `MKT_HOLD_STABLE` | > 90% de stocks sobre media. Típicamente señala el arranque de un nuevo ciclo alcista, no un techo inmediato. |
 
 ### 2.2 Tríadas Singulares de Excepción (Moduladas por D2/D3 o |Edge| >= 10%)
 
 | State Key | Label D1 | D2 Kinematic | D3 Vol | Edge % | HR zz25 | RR | N | Tier Cred (§3.3) | Directiva Específica |
 |:---:|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---|
 
-| `0__0__3` | `BREADTH_WASHED_OUT` | `FAST_CRUSH_3D` | `VOL_ACCELERATING_EXPANSION` | +46.1% | 100.0% | 1.7 | 5 | `LOW` | **GATILLO DE REBOTE VIOLENTO (U-TURN):** Ejecutar compra inmediata `STK_BUY_DIP_TACTICAL`. |
-| `3__4__4` | `NEUTRAL_HIGH_BREADTH` | `FAST_SPIKE_3D` | `VOL_PEAK_DECELERATION` | +46.1% | 100.0% | 4.12 | 2 | `ANECDOTAL` | **SINGULARIDAD ALCISTA ALTA CONVICCIÓN (+46.1%):** Compra agresiva `STK_BUY_DIP_TACTICAL`. |
-| `5__4__3` | `HYPER_EXPANSIVE_BREADTH` | `FAST_SPIKE_3D` | `VOL_ACCELERATING_EXPANSION` | +46.1% | 100.0% | 2.95 | 2 | `ANECDOTAL` | **SINGULARIDAD ALCISTA ALTA CONVICCIÓN (+46.1%):** Compra agresiva `STK_BUY_DIP_TACTICAL`. |
-| `5__3__3` | `HYPER_EXPANSIVE_BREADTH` | `ACCELERATING_UP_3D` | `VOL_ACCELERATING_EXPANSION` | -33.9% | 20.0% | 0.62 | 5 | `LOW` | **DRENAJE DE LIQUIDEZ / TRAMPA (-33.9%):** Veto de entrada `STK_BLOCK_CRISIS`. |
-| `3__1__4` | `NEUTRAL_HIGH_BREADTH` | `DECELERATING_DOWN_3D` | `VOL_PEAK_DECELERATION` | +30.7% | 84.6% | 3.06 | 13 | `HIGH` | **SINGULARIDAD ALCISTA ALTA CONVICCIÓN (+30.7%):** Compra agresiva `STK_BUY_DIP_TACTICAL`. |
-| `2__4__4` | `NEUTRAL_LOW_BREADTH` | `FAST_SPIKE_3D` | `VOL_PEAK_DECELERATION` | -28.9% | 25.0% | 0.55 | 4 | `LOW` | **DRENAJE DE LIQUIDEZ / TRAMPA (-28.9%):** Veto de entrada `STK_BLOCK_CRISIS`. |
-| `3__1__1` | `NEUTRAL_HIGH_BREADTH` | `DECELERATING_DOWN_3D` | `VOL_MODERATE_COMPRESSION` | -22.3% | 31.6% | 0.67 | 19 | `HIGH` | **DRENAJE DE LIQUIDEZ / TRAMPA (-22.3%):** Veto de entrada `STK_BLOCK_CRISIS`. |
+| `0__0__3` | `BREADTH_WASHED_OUT` | `FAST_CRUSH_3D` | `VOL_ACCELERATING_EXPANSION` | +46.1% | 100.0% | 1.7 | 5 | `LOW` | **GATILLO DE REBOTE VIOLENTO (U-TURN):** Ejecutar compra inmediata `MKT_BUY_DIP_TACTICAL`. |
+| `3__4__4` | `NEUTRAL_HIGH_BREADTH` | `FAST_SPIKE_3D` | `VOL_PEAK_DECELERATION` | +46.1% | 100.0% | 4.12 | 2 | `ANECDOTAL` | **SINGULARIDAD ALCISTA ALTA CONVICCIÓN (+46.1%):** Compra agresiva `MKT_BUY_DIP_TACTICAL`. |
+| `5__4__3` | `HYPER_EXPANSIVE_BREADTH` | `FAST_SPIKE_3D` | `VOL_ACCELERATING_EXPANSION` | +46.1% | 100.0% | 2.95 | 2 | `ANECDOTAL` | **SINGULARIDAD ALCISTA ALTA CONVICCIÓN (+46.1%):** Compra agresiva `MKT_BUY_DIP_TACTICAL`. |
+| `5__3__3` | `HYPER_EXPANSIVE_BREADTH` | `ACCELERATING_UP_3D` | `VOL_ACCELERATING_EXPANSION` | -33.9% | 20.0% | 0.62 | 5 | `LOW` | **DRENAJE DE LIQUIDEZ / TRAMPA (-33.9%):** Veto de entrada `MKT_BLOCK_CRISIS`. |
+| `3__1__4` | `NEUTRAL_HIGH_BREADTH` | `DECELERATING_DOWN_3D` | `VOL_PEAK_DECELERATION` | +30.7% | 84.6% | 3.06 | 13 | `HIGH` | **SINGULARIDAD ALCISTA ALTA CONVICCIÓN (+30.7%):** Compra agresiva `MKT_BUY_DIP_TACTICAL`. |
+| `2__4__4` | `NEUTRAL_LOW_BREADTH` | `FAST_SPIKE_3D` | `VOL_PEAK_DECELERATION` | -28.9% | 25.0% | 0.55 | 4 | `LOW` | **DRENAJE DE LIQUIDEZ / TRAMPA (-28.9%):** Veto de entrada `MKT_BLOCK_CRISIS`. |
+| `3__1__1` | `NEUTRAL_HIGH_BREADTH` | `DECELERATING_DOWN_3D` | `VOL_MODERATE_COMPRESSION` | -22.3% | 31.6% | 0.67 | 19 | `HIGH` | **DRENAJE DE LIQUIDEZ / TRAMPA (-22.3%):** Veto de entrada `MKT_BLOCK_CRISIS`. |
 
 > 📌 **Regla de Lookup para el Agente (`A-Read`):**
 
@@ -105,8 +105,8 @@ El acoplamiento entre escalas distingue el ruido táctico del régimen duradero:
 | **zz50 (5.0%)** | 110 barras (P95) | 58.0% | 1.45% | Horizonte Intermedio / Swing Estructural |
 | **zz75 (7.5%)** | 190 barras (P95) | 61.6% | 2.66% | Régimen Primario de Mercado / Posicionamiento Core |
 
-- **Convergencia Estructural (zz25 + zz50 + zz75 alineados con EV creciente):** Señal mayor de fondo. Habilita acumulación a largo plazo (`STK_ACCUMULATE_STRUCTURAL`).
-- **Divergencia Táctica (zz25 desacoplado de zz75):** Rebote contratendencial o corrección técnica. Prohibido posicionar a largo plazo; operar exclusivamente rebotes tácticos ceñidos (`STK_BUY_DIP_TACTICAL`).
+- **Convergencia Estructural (zz25 + zz50 + zz75 alineados con EV creciente):** Señal mayor de fondo. Habilita acumulación a largo plazo (`MKT_ACCUMULATE_STRUCTURAL`).
+- **Divergencia Táctica (zz25 desacoplado de zz75):** Rebote contratendencial o corrección técnica. Prohibido posicionar a largo plazo; operar exclusivamente rebotes tácticos ceñidos (`MKT_BUY_DIP_TACTICAL`).
 - **Filtro de Operabilidad:** Razón Riesgo/Beneficio $RR = MFE / |MAE| \ge 1.0$. Si $RR < 1.0$, la combinación se considera matemáticamente no operable.
 
 ---
@@ -130,7 +130,7 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
-| 0 | `BREADTH_WASHED_OUT` | **Contrarian / Coherente** | Si el 95% de las acciones están cayendo bajo su media, hay que salirse porque nadie sostiene el mercado. | BSI < 10.3% tiene una precisión de localización de suelos de 93.3% (casi nunca falla en caer dentro de +/- 2 barras del suelo). El rebote inicial es violento. | **Preparar órdenes de compra escalonadas; el suelo físico está presente (STK_BUY_DIP_TACTICAL).** |
+| 0 | `BREADTH_WASHED_OUT` | **Contrarian / Coherente** | Si el 95% de las acciones están cayendo bajo su media, hay que salirse porque nadie sostiene el mercado. | BSI < 10.3% tiene una precisión de localización de suelos de 93.3% (casi nunca falla en caer dentro de +/- 2 barras del suelo). El rebote inicial es violento. | **Preparar órdenes de compra escalonadas; el suelo físico está presente (MKT_BUY_DIP_TACTICAL).** |
 | 5 | `HYPER_EXPANSIVE_BREADTH` | **Trampa Narrativa** | Amplitud > 90% es sobrecompra y el mercado va a colapsar. | Amplitud > 90% suele ser un 'Breadth Thrust' al inicio de un nuevo mercado alcista. | **No shortear un Breadth Thrust; comprar pullbacks.** |
 
 ---
@@ -159,8 +159,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 - **Alerta Amarilla (WARNING):** BSI < 15.0% o BSI > 85.0%.
 - **Alerta Roja (CRITICAL / EMERGENCY):** BSI < 10.3% (-2σ / Washed Out / Tier >= 1). Blowoff < 0.9%.
 - **Doble Naturaleza Operativa (Riesgo vs Oportunidad Generacional):**
-  * **Fase de Impacto Cinético Inicial (Caída libre / D2 expansivo):** `STK_BLOCK_CRISIS (si D2 es FAST_CRUSH_3D con liquidación masiva).`
-  * **Fase de Clímax, Capitulación o Absorción:** **LA GRAN OPORTUNIDAD DE COMPRA GENERACIONAL** → `STK_BUY_DIP_TACTICAL (en cuanto BSI comience a cruzar al alza desde < 10%).`
+  * **Fase de Impacto Cinético Inicial (Caída libre / D2 expansivo):** `MKT_BLOCK_CRISIS (si D2 es FAST_CRUSH_3D con liquidación masiva).`
+  * **Fase de Clímax, Capitulación o Absorción:** **LA GRAN OPORTUNIDAD DE COMPRA GENERACIONAL** → `MKT_BUY_DIP_TACTICAL (en cuanto BSI comience a cruzar al alza desde < 10%).`
 - **Criterio de Desactivación:** BSI recuperando > 35.0% de forma sostenida.
 
 ---
@@ -171,18 +171,18 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 
 | State Key | Label D1 | D2 Kinematic | D3 Vol | Edge % | HR zz25 | RR | N | Wilson 95% CI | Acción Recomendada |
 |:---:|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---|
-| `0__0__3` | `BREADTH_WASHED_OUT` | `FAST_CRUSH_3D` | `VOL_ACCELERATING_EXPANSION` | +46.1% | 100.0% | 1.7 | 5 | [56.6%, 100.0%] | `STK_BUY_DIP_TACTICAL` |
-| `3__4__4` | `NEUTRAL_HIGH_BREADTH` | `FAST_SPIKE_3D` | `VOL_PEAK_DECELERATION` | +46.1% | 100.0% | 4.12 | 2 | [34.2%, 100.0%] | `STK_ACCUMULATE_STRUCTURAL` |
-| `5__4__3` | `HYPER_EXPANSIVE_BREADTH` | `FAST_SPIKE_3D` | `VOL_ACCELERATING_EXPANSION` | +46.1% | 100.0% | 2.95 | 2 | [34.2%, 100.0%] | `STK_BUY_DIP_TACTICAL` |
-| `3__1__4` | `NEUTRAL_HIGH_BREADTH` | `DECELERATING_DOWN_3D` | `VOL_PEAK_DECELERATION` | +30.7% | 84.6% | 3.06 | 13 | [57.8%, 95.7%] | `STK_ACCUMULATE_STRUCTURAL` |
-| `0__2__4` | `BREADTH_WASHED_OUT` | `STABLE_CONTINUATION_3D` | `VOL_PEAK_DECELERATION` | +21.1% | 75.0% | 1.57 | 4 | [30.1%, 95.4%] | `STK_ACCUMULATE_STRUCTURAL` |
+| `0__0__3` | `BREADTH_WASHED_OUT` | `FAST_CRUSH_3D` | `VOL_ACCELERATING_EXPANSION` | +46.1% | 100.0% | 1.7 | 5 | [56.6%, 100.0%] | `MKT_BUY_DIP_TACTICAL` |
+| `3__4__4` | `NEUTRAL_HIGH_BREADTH` | `FAST_SPIKE_3D` | `VOL_PEAK_DECELERATION` | +46.1% | 100.0% | 4.12 | 2 | [34.2%, 100.0%] | `MKT_ACCUMULATE_STRUCTURAL` |
+| `5__4__3` | `HYPER_EXPANSIVE_BREADTH` | `FAST_SPIKE_3D` | `VOL_ACCELERATING_EXPANSION` | +46.1% | 100.0% | 2.95 | 2 | [34.2%, 100.0%] | `MKT_BUY_DIP_TACTICAL` |
+| `3__1__4` | `NEUTRAL_HIGH_BREADTH` | `DECELERATING_DOWN_3D` | `VOL_PEAK_DECELERATION` | +30.7% | 84.6% | 3.06 | 13 | [57.8%, 95.7%] | `MKT_ACCUMULATE_STRUCTURAL` |
+| `0__2__4` | `BREADTH_WASHED_OUT` | `STABLE_CONTINUATION_3D` | `VOL_PEAK_DECELERATION` | +21.1% | 75.0% | 1.57 | 4 | [30.1%, 95.4%] | `MKT_ACCUMULATE_STRUCTURAL` |
 
 ### 9.2 Top 5 Tríadas Bajistas / Defensivas (Techo / Preservación)
 
 | State Key | Label D1 | D2 Kinematic | D3 Vol | Edge % (MIN) | HR zz25 | RR | N | Wilson 95% CI | Acción Recomendada |
 |:---:|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---|
-| `1__4__2` | `OVERSOLD_BREADTH` | `FAST_SPIKE_3D` | `VOL_NEUTRAL_BASELINE` | -53.9% | 0.0% | 0.67 | 2 | [0.0%, 65.8%] | `STK_BLOCK_CRISIS` |
-| `5__4__0` | `HYPER_EXPANSIVE_BREADTH` | `FAST_SPIKE_3D` | `VOL_EXTREME_SQUEEZE` | -53.9% | 0.0% | 0.47 | 2 | [0.0%, 65.8%] | `STK_BLOCK_CRISIS` |
-| `5__4__1` | `HYPER_EXPANSIVE_BREADTH` | `FAST_SPIKE_3D` | `VOL_MODERATE_COMPRESSION` | -53.9% | 0.0% | 0.49 | 5 | [0.0%, 43.4%] | `STK_BLOCK_CRISIS` |
-| `5__3__3` | `HYPER_EXPANSIVE_BREADTH` | `ACCELERATING_UP_3D` | `VOL_ACCELERATING_EXPANSION` | -33.9% | 20.0% | 0.62 | 5 | [3.6%, 62.4%] | `STK_BLOCK_CRISIS` |
-| `2__4__4` | `NEUTRAL_LOW_BREADTH` | `FAST_SPIKE_3D` | `VOL_PEAK_DECELERATION` | -28.9% | 25.0% | 0.55 | 4 | [4.6%, 69.9%] | `STK_BLOCK_CRISIS` |
+| `1__4__2` | `OVERSOLD_BREADTH` | `FAST_SPIKE_3D` | `VOL_NEUTRAL_BASELINE` | -53.9% | 0.0% | 0.67 | 2 | [0.0%, 65.8%] | `MKT_BLOCK_CRISIS` |
+| `5__4__0` | `HYPER_EXPANSIVE_BREADTH` | `FAST_SPIKE_3D` | `VOL_EXTREME_SQUEEZE` | -53.9% | 0.0% | 0.47 | 2 | [0.0%, 65.8%] | `MKT_BLOCK_CRISIS` |
+| `5__4__1` | `HYPER_EXPANSIVE_BREADTH` | `FAST_SPIKE_3D` | `VOL_MODERATE_COMPRESSION` | -53.9% | 0.0% | 0.49 | 5 | [0.0%, 43.4%] | `MKT_BLOCK_CRISIS` |
+| `5__3__3` | `HYPER_EXPANSIVE_BREADTH` | `ACCELERATING_UP_3D` | `VOL_ACCELERATING_EXPANSION` | -33.9% | 20.0% | 0.62 | 5 | [3.6%, 62.4%] | `MKT_BLOCK_CRISIS` |
+| `2__4__4` | `NEUTRAL_LOW_BREADTH` | `FAST_SPIKE_3D` | `VOL_PEAK_DECELERATION` | -28.9% | 25.0% | 0.55 | 4 | [4.6%, 69.9%] | `MKT_BLOCK_CRISIS` |

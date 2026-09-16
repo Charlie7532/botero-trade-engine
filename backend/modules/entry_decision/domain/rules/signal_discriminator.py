@@ -1,6 +1,6 @@
 """
-Signal Discriminator — Pure Domain Rules (V3: 7-Condition Concordance)
-=====================================================================
+Signal Discriminator — Pure Domain Rules (V3: 7-Condition Concordance + HistoricalContext)
+=========================================================================================
 Classifies a station's current D1×D2×D3 state into signal families:
   Floor:   STRUCTURAL_FLOOR | MODERATE_FLOOR | PULLBACK | TRAP | NOISE
   Ceiling: STRUCTURAL_CEILING | MODERATE_CEILING | CORRECTION | BULL_TRAP | NOISE
@@ -35,6 +35,13 @@ N_episodios policy:
   n < 5:  signal is RARE — flag it, DON'T degrade. Rarity = purest expression.
   n >= 5: signal has adequate sample.
 
+Historical Context (Fact Store enrichment — V4 addition):
+  Attaches backward-looking zigzag context from the fact store.
+  Does NOT modify classification — purely additive for downstream consumers.
+  Fields: divergence_regime, down_accum_ret, down_ev_structural,
+          rr_asymmetry_75, cascade_small, cascade_large,
+          lift_vs_baseline, p_bull_75.
+
 Clean Architecture: Pure domain rule. No I/O except JSON load at import time.
 """
 from dataclasses import dataclass, field
@@ -52,6 +59,7 @@ from backend.modules.entry_decision.domain.rules.station_profiles import (
 RULES_PATH = Path(__file__).parent.parent.parent.parent.parent.parent / (
     ".agents/references/metar/signal_discriminator_rules.json"
 )
+FACT_STORE_DIR = Path(__file__).parent
 
 D2_LABELS = {0: "FAST_DOWN", 1: "DOWN", 2: "NEUTRAL", 3: "UP", 4: "FAST_UP"}
 D3_LABELS = {0: "VERY_STABLE", 1: "STABLE", 2: "NEUTRAL", 3: "VOLATILE", 4: "VERY_VOLATILE"}
@@ -287,6 +295,45 @@ def _concordance_to_class_and_confidence(
 # ── Dataclasses ──────────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
+class HistoricalContext:
+    """Fact store enrichment — backward-looking zigzag context.
+
+    From the fact store's dual-layer architecture:
+      Standard Layer:  p_bull_75, lift_vs_baseline, rr_asymmetry_75
+                       (forward probability trained on zigzag from pivot forward)
+      Kinematic Layer: down_accum_ret, down_ev_structural, cascade_small, cascade_large
+                       (backward structure trained on zigzag from point backward)
+      Regime:          divergence_regime (convergence/divergence classification)
+
+    Does NOT modify concordance classification. Enriches the signal for:
+      1. Urgency in extreme traps: concordance ≥ 6 + lift ≤ 0 → lethal trap (hr75=0%)
+      2. Market narrative: divergence_regime = STRUCTURAL_BULL_PULLBACK (good) vs
+         FULL_CONVERGENT_BULL (exhaustion)
+      3. BOS energy: down_accum_ret > 1.0% → bearish momentum not exhausted
+    """
+    divergence_regime: str           # STRUCTURAL_BULL_PULLBACK, FULL_CONVERGENT_BULL, etc.
+    down_accum_ret: float            # Bearish momentum accumulated (%), higher = more energy
+    down_ev_structural: float        # EV of bearish continuation (positive = bear continues)
+    rr_asymmetry_75: float           # Forward gain/loss ratio from fact store
+    cascade_small: Optional[float]   # Cascade rate of small legs (>0.50 = BOS risk)
+    cascade_large: Optional[float]   # Cascade rate of large legs (>0.56 = capitulation)
+    lift_vs_baseline: float          # Edge over unconditional (>0 = extended, <0 = depressed)
+    p_bull_75: float                 # Forward probability from fact store standard layer
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "divergence_regime": self.divergence_regime,
+            "down_accum_ret": self.down_accum_ret,
+            "down_ev_structural": self.down_ev_structural,
+            "rr_asymmetry_75": self.rr_asymmetry_75,
+            "cascade_small": self.cascade_small,
+            "cascade_large": self.cascade_large,
+            "lift_vs_baseline": self.lift_vs_baseline,
+            "p_bull_75": self.p_bull_75,
+        }
+
+
+@dataclass(frozen=True)
 class FloorSignal:
     """Classification of floor signal quality for a station state.
 
@@ -343,6 +390,9 @@ class FloorSignal:
     # Proximity context (from TimingContext, previously ignored)
     pct_en_rango: float         # % of time near a floor (0-100)
 
+    # Historical context (from fact store — enrichment, not classification)
+    historical_context: Optional[HistoricalContext] = None
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "station": self.station,
@@ -375,6 +425,7 @@ class FloorSignal:
             "composite_weight": self.composite_weight,
             "alert_priority": self.alert_priority,
             "pct_en_rango": self.pct_en_rango,
+            "historical_context": self.historical_context.to_dict() if self.historical_context else None,
         }
 
 
@@ -431,6 +482,9 @@ class CeilingSignal:
     # Proximity context
     pct_en_rango: float
 
+    # Historical context (from fact store — enrichment, not classification)
+    historical_context: Optional[HistoricalContext] = None
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "station": self.station,
@@ -463,6 +517,7 @@ class CeilingSignal:
             "composite_weight": self.composite_weight,
             "alert_priority": self.alert_priority,
             "pct_en_rango": self.pct_en_rango,
+            "historical_context": self.historical_context.to_dict() if self.historical_context else None,
         }
 
 
@@ -531,6 +586,9 @@ class ContextSignal:
     composite_weight: float
     alert_priority: str
 
+    # Historical context (from fact store — enrichment, not classification)
+    historical_context: Optional[HistoricalContext] = None
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "station": self.station,
@@ -558,6 +616,7 @@ class ContextSignal:
             "credibility_tier": self.credibility_tier,
             "composite_weight": self.composite_weight,
             "alert_priority": self.alert_priority,
+            "historical_context": self.historical_context.to_dict() if self.historical_context else None,
         }
 
 
@@ -570,6 +629,67 @@ def _load_rules() -> dict:
         return {}
     with open(RULES_PATH, encoding="utf-8") as f:
         return json.load(f)
+
+
+@lru_cache(maxsize=11)
+def _load_fact_store(station: str) -> dict:
+    """Load a station's fact store JSON. Cached per station (11 stations max)."""
+    path = FACT_STORE_DIR / f"{station}_fact_store.json"
+    if not path.exists():
+        return {}
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _get_historical_context(
+    station: str,
+    state_key: str,
+) -> Optional[HistoricalContext]:
+    """Extract HistoricalContext from the fact store for a given station state.
+
+    Returns None if the fact store or state is not found.
+    Does NOT affect classification — purely additive enrichment.
+    """
+    fstore = _load_fact_store(station)
+    if not fstore:
+        return None
+
+    fs_state = fstore.get("states", {}).get(state_key)
+    if not fs_state:
+        return None
+
+    # Standard layer (forward probability trained on zigzag from pivot forward)
+    zz75_std = fs_state.get("zz75", {})
+    p_bull_75 = zz75_std.get("p_bull", 0.5)
+    lift_vs_baseline = zz75_std.get("lift_vs_baseline", 0.0)
+    rr_asymmetry_75 = zz75_std.get("rr_asymmetry", 1.0)
+
+    # Kinematic layer (backward structure from zigzag from point backward)
+    zk25 = fs_state.get("zigzag_kinematic", {}).get("zz25", {})
+    sm = zk25.get("structural_momentum", {})
+    pld = zk25.get("prev_leg_domino", {})
+    terciles = pld.get("terciles_domino", {})
+
+    down_legs = sm.get("down_legs", {})
+    down_accum_ret = down_legs.get("mean_accum_ret", 0.0)
+    down_ev_structural = down_legs.get("ev_structural_pct", 0.0)
+
+    cascade_small = terciles.get("t1_small", {}).get("cascade_rate")
+    cascade_large = terciles.get("t3_large", {}).get("cascade_rate")
+
+    # Divergence regime
+    divergence_regime = fs_state.get("divergence_regime", "UNKNOWN")
+
+    return HistoricalContext(
+        divergence_regime=divergence_regime,
+        down_accum_ret=down_accum_ret,
+        down_ev_structural=down_ev_structural,
+        rr_asymmetry_75=rr_asymmetry_75,
+        cascade_small=cascade_small,
+        cascade_large=cascade_large,
+        lift_vs_baseline=lift_vs_baseline,
+        p_bull_75=p_bull_75,
+    )
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
@@ -719,6 +839,7 @@ def classify_floor(
             sgs = 0.0
 
         ctx = _get_station_context(station, d1, d2, d3, 0)
+        hctx = _get_historical_context(station, state_key)
         return FloorSignal(
             station=station, state_key=state_key,
             d1=d1, d2=d2, d3=d3,
@@ -734,6 +855,7 @@ def classify_floor(
             n_episodios=0, fire_rate_pct=0.0,
             d3_effect=d3_effect,
             pct_en_rango=0.0,
+            historical_context=hctx,
             **ctx,
         )
 
@@ -765,6 +887,7 @@ def classify_floor(
     is_rare = n_episodios < 5
 
     ctx = _get_station_context(station, d1, d2, d3, n_episodios)
+    hctx = _get_historical_context(station, state_key)
     return FloorSignal(
         station=station, state_key=state_key,
         d1=d1, d2=d2, d3=d3,
@@ -780,6 +903,7 @@ def classify_floor(
         n_episodios=n_episodios, fire_rate_pct=timing.fire_rate_pct,
         d3_effect=d3_effect,
         pct_en_rango=timing.floor_pct_en_rango,
+        historical_context=hctx,
         **ctx,
     )
 
@@ -827,6 +951,7 @@ def classify_ceiling(
             confidence = "MODERATE"
 
         ctx = _get_station_context(station, d1, d2, d3, 0)
+        hctx = _get_historical_context(station, state_key)
         return CeilingSignal(
             station=station, state_key=state_key,
             d1=d1, d2=d2, d3=d3,
@@ -842,6 +967,7 @@ def classify_ceiling(
             n_episodios=0, fire_rate_pct=0.0,
             d3_effect=d3_effect,
             pct_en_rango=0.0,
+            historical_context=hctx,
             **ctx,
         )
 
@@ -870,6 +996,7 @@ def classify_ceiling(
     is_rare = n_episodios < 5
 
     ctx = _get_station_context(station, d1, d2, d3, n_episodios)
+    hctx = _get_historical_context(station, state_key)
     return CeilingSignal(
         station=station, state_key=state_key,
         d1=d1, d2=d2, d3=d3,
@@ -885,6 +1012,7 @@ def classify_ceiling(
         n_episodios=n_episodios, fire_rate_pct=timing.fire_rate_pct,
         d3_effect=d3_effect,
         pct_en_rango=timing.ceiling_pct_en_rango,
+        historical_context=hctx,
         **ctx,
     )
 
@@ -984,6 +1112,7 @@ def classify_context(
         )
 
     ctx = _get_station_context(station, d1, d2, d3, n_episodios)
+    hctx = _get_historical_context(station, state_key)
     return ContextSignal(
         station=station, state_key=state_key,
         d1=d1, d2=d2, d3=d3,
@@ -995,6 +1124,7 @@ def classify_context(
         scale_gradient=scale_gradient, scale_pattern=scale_pattern,
         n_episodios=n_episodios, fire_rate_pct=timing.fire_rate_pct,
         is_rare=is_rare,
+        historical_context=hctx,
         **ctx,
     )
 

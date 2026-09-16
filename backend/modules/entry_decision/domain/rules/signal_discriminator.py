@@ -89,6 +89,115 @@ COMPLACENT_BINS: Dict[str, List[int]] = get_all_complacent_bins()
 #
 # Removed: pct_overflow (4.4pp — too weak to contribute)
 
+
+# ── D2/D3 Kinematic Modulation (from StationProfile §6 singularities) ──
+#
+# Post-concordance modulation: after the 7-condition concordance produces
+# a signal_class and confidence, D2/D3 singularities can promote or demote
+# the classification by one tier. These are station-specific anomalies
+# documented in V3 personality dossiers §6 and codified in StationProfile.
+#
+# Rules:
+#   - d2_floor_accelerator match → promote floor one tier (MODERATE→STRUCTURAL)
+#   - d2_floor_inhibitor match → demote floor one tier (STRUCTURAL→MODERATE)
+#   - d2_continuation_signal → not a floor/ceiling modulator (separate pathway)
+#   - D3 squeeze/exhaustion → informational flag, no tier change
+#     (concordance already captures D3 through metric distributions)
+
+_FLOOR_PROMOTION = {
+    "NOISE": "MODERATE_FLOOR",
+    "PULLBACK": "MODERATE_FLOOR",
+    "MODERATE_FLOOR": "STRUCTURAL_FLOOR",
+    "STRUCTURAL_FLOOR": "STRUCTURAL_FLOOR",  # already max
+    "TRAP": "TRAP",  # never promote a trap
+}
+
+_FLOOR_DEMOTION = {
+    "STRUCTURAL_FLOOR": "MODERATE_FLOOR",
+    "MODERATE_FLOOR": "PULLBACK",
+    "PULLBACK": "NOISE",
+    "NOISE": "NOISE",  # already min
+    "TRAP": "TRAP",  # traps stay traps
+}
+
+_CEILING_PROMOTION = {
+    "NOISE": "MODERATE_CEILING",
+    "CORRECTION": "MODERATE_CEILING",
+    "MODERATE_CEILING": "STRUCTURAL_CEILING",
+    "STRUCTURAL_CEILING": "STRUCTURAL_CEILING",
+    "BULL_TRAP": "BULL_TRAP",
+}
+
+_CEILING_DEMOTION = {
+    "STRUCTURAL_CEILING": "MODERATE_CEILING",
+    "MODERATE_CEILING": "CORRECTION",
+    "CORRECTION": "NOISE",
+    "NOISE": "NOISE",
+    "BULL_TRAP": "BULL_TRAP",
+}
+
+
+def _apply_d2d3_modulation(
+    station: str,
+    d2: int,
+    d3: int,
+    signal_class: str,
+    confidence: str,
+    conditions: list,
+    is_ceiling: bool,
+) -> tuple:
+    """Apply D2/D3 kinematic modulation from StationProfile singularities.
+
+    Returns (signal_class, confidence, conditions) — potentially modified.
+    Traps are NEVER promoted (empirically validated: traps at any D2 remain traps).
+    """
+    profile = get_station_profile(station)
+    if profile is None:
+        return signal_class, confidence, conditions
+
+    modulated = False
+
+    if not is_ceiling:
+        # Floor modulation
+        if profile.d2_floor_accelerator is not None and d2 == profile.d2_floor_accelerator:
+            new_class = _FLOOR_PROMOTION.get(signal_class, signal_class)
+            if new_class != signal_class:
+                conditions = list(conditions) + [
+                    f"D2_ACCEL:d2={d2}→promote ({signal_class}→{new_class})"
+                ]
+                signal_class = new_class
+                modulated = True
+
+        if profile.d2_floor_inhibitor is not None and d2 == profile.d2_floor_inhibitor:
+            new_class = _FLOOR_DEMOTION.get(signal_class, signal_class)
+            if new_class != signal_class:
+                conditions = list(conditions) + [
+                    f"D2_INHIB:d2={d2}→demote ({signal_class}→{new_class})"
+                ]
+                signal_class = new_class
+                modulated = True
+    else:
+        # Ceiling modulation (mirror: inhibitor promotes ceiling, accelerator demotes)
+        if profile.d2_floor_inhibitor is not None and d2 == profile.d2_floor_inhibitor:
+            # VIX D2=4 (FAST_SPIKE): inhibits floor but ACCELERATES ceiling
+            new_class = _CEILING_PROMOTION.get(signal_class, signal_class)
+            if new_class != signal_class:
+                conditions = list(conditions) + [
+                    f"D2_CEIL_ACCEL:d2={d2}→promote ({signal_class}→{new_class})"
+                ]
+                signal_class = new_class
+                modulated = True
+
+    # D3 informational flags (no tier change — already in concordance metrics)
+    if d3 == profile.d3_squeeze_bin:
+        conditions = list(conditions) if not isinstance(conditions, list) else conditions
+        conditions.append(f"D3_SQUEEZE:d3={d3} (coiled_spring)")
+    elif d3 == profile.d3_exhaustion_bin:
+        conditions = list(conditions) if not isinstance(conditions, list) else conditions
+        conditions.append(f"D3_EXHAUST:d3={d3} (absorption)")
+
+    return signal_class, confidence, conditions
+
 def _compute_floor_concordance(
     rr: float,
     hr75: float,
@@ -867,9 +976,12 @@ def classify_floor(
         score, hr75, sgs, is_ceiling=False,
     )
 
-    # D3 effect modulates confidence informationally
-    # (the concordance already captures D3 effects through the metrics)
-    # But we still report it for downstream consumers
+    # D2/D3 kinematic modulation (from StationProfile §6 singularities)
+    # Post-concordance: adjusts signal_class by one tier based on
+    # empirically documented D2 behavior (VIX/CREDIT absorption, ROTATION continuation)
+    signal_class, confidence, conditions = _apply_d2d3_modulation(
+        station, d2, d3, signal_class, confidence, conditions, is_ceiling=False,
+    )
 
     # Canary intelligence
     canary_edge = timing.floor_canary_edge
@@ -982,6 +1094,11 @@ def classify_ceiling(
     # Cap ceiling confidence at MODERATE
     if confidence == "HIGH":
         confidence = "MODERATE"
+
+    # D2/D3 kinematic modulation (from StationProfile §6 singularities)
+    signal_class, confidence, conditions = _apply_d2d3_modulation(
+        station, d2, d3, signal_class, confidence, conditions, is_ceiling=True,
+    )
 
     canary_edge = timing.ceiling_canary_edge
     canary_n = timing.ceiling_canary_n

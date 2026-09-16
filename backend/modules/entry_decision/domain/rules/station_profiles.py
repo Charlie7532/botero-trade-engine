@@ -42,6 +42,17 @@ class StationProfile:
     # in signal_discriminator.py and family_sequence_detector.py)
     stress_bins: Tuple[int, ...]       # D1 bins indicating market stress for this station
     complacent_bins: Tuple[int, ...]   # D1 bins indicating market complacency
+    # D2 kinematic singularities (from §6 of V3 dossiers)
+    # When station is in stress AND D2 hits these bins, the signal
+    # qualitatively changes. None = no special D2 behavior.
+    d2_floor_accelerator: Optional[int] = None   # D2 bin that accelerates floor (absorption)
+    d2_floor_inhibitor: Optional[int] = None     # D2 bin that inhibits floor (falling knife)
+    d2_continuation_signal: Optional[int] = None # D2 bin that confirms continuation
+    # D3 regime (universal across all stations but documented per-station)
+    # D3=0 (VOL_EXTREME_SQUEEZE) = coiled spring, U-Turn potential
+    # D3=4 (VOL_PEAK_DECEL) = institutional absorption, exhaustion U-Turn
+    d3_squeeze_bin: int = 0    # VOL_EXTREME_SQUEEZE
+    d3_exhaustion_bin: int = 4 # VOL_PEAK_DECEL
 
 
 # ── 11 Station Profiles ──────────────────────────────────────────────────
@@ -60,6 +71,8 @@ STATION_PROFILES = {
         sigmet_threshold=28.0,
         dsr_grade="A", dsr_pvalue=0.9947, auc_oos=0.8387, shap_rank=3, shap_value=0.4680,
         stress_bins=(4, 5), complacent_bins=(0, 1),
+        # VIX §6: D1=5+D2=0 (absorption→V-bounce), D1=5+D2=4 (falling knife→wait)
+        d2_floor_accelerator=0, d2_floor_inhibitor=4,
     ),
     "vvix": StationProfile(
         station="vvix",
@@ -138,6 +151,8 @@ STATION_PROFILES = {
         sigmet_threshold=0.85,  # Credit ratio < 0.85 = stress
         dsr_grade="A", dsr_pvalue=0.9509, auc_oos=0.8387, shap_rank=9, shap_value=0.1150,
         stress_bins=(0, 1), complacent_bins=(4, 5),
+        # CREDIT §6: D2=0 (absorption) → HR=80%, PF=51.33 (maximum asymmetry floor)
+        d2_floor_accelerator=0,
     ),
     "yield_curve": StationProfile(
         station="yield_curve",
@@ -164,6 +179,8 @@ STATION_PROFILES = {
         sigmet_threshold=-2.0,  # Extreme defensive rotation
         dsr_grade="B", dsr_pvalue=0.8750, auc_oos=0.8387, shap_rank=5, shap_value=0.1793,
         stress_bins=(0, 1), complacent_bins=(4, 5),
+        # ROTATION §6: D2=4 (FAST_SPIKE_3D) → HR=66.9%, Edge=+13.5% (offensive continuation)
+        d2_continuation_signal=4,
     ),
     "sv5_turbulence": StationProfile(
         station="sv5_turbulence",

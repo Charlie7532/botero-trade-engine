@@ -106,6 +106,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 0 | `EXTREME_CALM` | **Trampa Narrativa** | Baja turbulencia de volumen es señal de mercado plácido, seguro y sin riesgo. | D1=0 (< 2.30) coincide con distribución silenciosa institucional: las manos fuertes descargan posiciones sin levantar volumen agregado. Retorno neto inferior al benchmark. | **Régimen de fondo desfavorable; reducir tamaño de posición.** |
+| 1 | `INSTITUTIONAL_CALM` | **Motor de Deriva (silencio)** | Calma institucional = mercado estable; seguir en tendencia. | HR=53.2% a zz25, HR=53.9% a zz75. Edge leve. Calma institucional no tiene edge fuerte. | **Mantener sin urgencia; baja turbulencia es estado base (`MKT_HOLD_STABLE`).** |
+| 4 | `TURBULENCE` | **Contrarian (moderado)** | Turbulencia = caos; vender antes de que empeore. | HR=53.3% a zz25, HR=58.8% a zz75. A escala estructural, la turbulencia FAVORECE a compradores. El desorden institucional crea oportunidades. | **Evaluar para acumulación; turbulencia no es crisis — es reacomodación (`MKT_HOLD_STABLE`).** |
 | 5 | `EXTREME_TURBULENT` | **Coherente** | La turbulencia masiva de volumen es caos descontrolado donde nadie debe operar. | D1=5 (> 17.44) señala clímax de transferencia institucional: las manos débiles capitulan y las manos fuertes absorben. Edge alcista neto de +6.7% en suelos. | **Acompañar la absorción institucional compra táctica en corrección.** |
 
 ---

@@ -106,6 +106,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 0 | `EXTREME_CONFIDENCE` | **Contrarian / Coherente** | SKEW bajo significa que a nadie le importa el mercado y está descuidado. | SKEW D1=0 (< 114.67) es la única estación cuyo EV crece monotónicamente con la escala temporal: 67% en zz25 → 87% en zz50 → 94% en zz75. Marca acumulación estructural institucional de largo plazo. | **Acumulación estructural de alta convicción acumulación estructural.** |
+| 1 | `LOW_SKEW` | **Coherente (neutral)** | SKEW bajo = mercado sin protección de cola; peligro invisible. | HR=52.4% a zz25, HR=54.4% a zz75. Edge neutral. SKEW bajo es un estado pasivo sin implicaciones inmediatas. | **Sin acción; estado base sin señal direccional (`MKT_HOLD_STABLE`).** |
+| 4 | `HIGH_SKEW` | **Trampa Narrativa** | SKEW alto = cola pesada; el mercado va a crashear. | HR=54.5% a zz25, HR=60.1% a zz75 con +3.1% edge. SKEW alto es institucionales COMPRANDO protección, no vendiendo. | **Mantener; la demanda de protección de cola es combustible para acumulación (`MKT_HOLD_STABLE`).** |
 | 5 | `EXTREME_PARANOIA` | **Precursor / Coherente** | SKEW alto (> 145) significa que el crash ocurrirá hoy o mañana. | SKEW alto es un seguro comprado para los próximos 30-60 días. El mercado puede seguir subiendo mientras los institucionales se cubren. | **No salir en pánico, pero implementar coberturas y ceñir stops.** |
 
 ---

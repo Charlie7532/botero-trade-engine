@@ -106,6 +106,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 5 | `EXTREME_STRENGTH` | **Trampa Narrativa Clásica** | Un dólar fuerte es señal de economía estadounidense todopoderosa y por tanto las acciones deben subir. | DXY D1=5 (> 116.07) tiene un edge negativo masivo de -15.8% para la renta variable. Un dólar disparado drena liquidez global, aprieta las condiciones financieras y comprime beneficios de empresas multinacionales. | **Modo defensivo riguroso; prohibido acumular activos de riesgo con DXY en blowoff alcista.** |
+| 1 | `DOLLAR_WEAKNESS` | **Motor de Deriva (expansión)** | Dólar débil es neutral; no importa para equities. | HR=55.9% a zz25, HR=61.9% a zz75 con Edge +4.0%. Debilidad del dólar inyecta liquidez global y favorece fuertemente a equities. | **Mantener y acumular; la liquidez global favorece (`MKT_HOLD_STABLE`).** |
+| 4 | `DOLLAR_STRENGTH` | **Trampa Narrativa** | Dólar fuerte es señal de refugio; hay que comprar dólares y vender equities. | HR=52.3% a zz25, HR=53.8% a zz75. Edge neutral. La fortaleza del dólar NO es suficiente para justificar ventas. | **NO vender por fortaleza del dólar moderada; evaluación neutral (`MKT_HOLD_STABLE`).** |
 | 0 | `EXTREME_WEAKNESS` | **Contrarian** | Un dólar colapsando destruye el poder adquisitivo y hundirá a Wall Street. | DXY débil expande la liquidez global, impulsa los commodities y estimula las valoraciones bursátiles. | **Entorno favorable para activos de riesgo.** |
 
 ---

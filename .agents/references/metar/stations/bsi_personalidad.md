@@ -131,6 +131,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 0 | `BREADTH_WASHED_OUT` | **Contrarian / Coherente** | Si el 95% de las acciones están cayendo bajo su media, hay que salirse porque nadie sostiene el mercado. | BSI < 10.3% tiene una precisión de localización de suelos de 93.3% (casi nunca falla en caer dentro de +/- 2 barras del suelo). El rebote inicial es violento. | **Preparar órdenes de compra escalonadas; el suelo físico está presente (MKT_BUY_DIP_TACTICAL).** |
+| 1 | `OVERSOLD_BREADTH` | **Motor de Deriva (alcista)** | Amplitud sobrevendida sigue siendo peligrosa; el mercado va a seguir cayendo. | HR=55.8% a zz25, HR=58.3% a zz75 con Edge +2.9%. Operacionalmente superior a D1=0 por mayor N y edge confirmado. | **Acumulación gradual; la amplitud se está recuperando (`MKT_ACCUMULATE_STRUCTURAL`).** |
+| 4 | `EXPANSIVE_BREADTH` | **Coherente (neutral)** | Amplitud fuerte confirma tendencia; mantener posiciones. | HR=51.5% a zz25, HR=57.0% a zz75. Participación generalizada en la subida sin edge direccional fuerte. | **Mantener posiciones core sin cambios (`MKT_HOLD_STABLE`).** |
 | 5 | `HYPER_EXPANSIVE_BREADTH` | **Trampa Narrativa** | Amplitud > 90% es sobrecompra y el mercado va a colapsar. | Amplitud > 90% suele ser un 'Breadth Thrust' al inicio de un nuevo mercado alcista. | **No shortear un Breadth Thrust; comprar pullbacks.** |
 
 ---

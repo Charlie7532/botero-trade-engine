@@ -106,6 +106,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 0 | `EXTREME_STABILITY` | **Trampa Narrativa** | VVIX extremadamente bajo significa mercado aburrido sin volatilidad. | Extrema estabilidad (VVIX < 67.4) ocurre solo en 0.2% de las barras; es una compresión severa que precede a una expansión. | **Alerta de expansión inminente; no apalancar posiciones.** |
+| 1 | `STABILITY` | **Coherente (neutral)** | VVIX bajo = volatilidad estable; mercado previsible. | HR=53.5% a zz25, HR=55.6% a zz75. Edge neutral. Estabilidad de vol no genera señal operativa. | **Mantener; régimen estable sin catalizador (`MKT_HOLD_STABLE`).** |
+| 4 | `INSTABILITY` | **Trampa Narrativa** | VVIX alto = vol-de-vol = pánico de segundo orden; peligro extremo. | HR=54.2% a zz25, HR=56.9% a zz75. Edge neutral. La inestabilidad de vol NO predice dirección; solo indica transición de régimen. | **Mantener; evaluar contexto de VIX para discriminar. VVIX solo no es accionable (`MKT_HOLD_STABLE`).** |
 | 5 | `EXTREME_INSTABILITY` | **Coherente** | VVIX > 131 indica que el mercado de opciones está roto y no se puede operar. | Indica clímax de re-hedging de los creadores de mercado. Suele coincidir con capitulación rápida de 2 a 3 días. | **Preparar compras tácticas escalonadas ante el agotamiento de la inestabilidad.** |
 
 ---

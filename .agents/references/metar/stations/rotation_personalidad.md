@@ -107,6 +107,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 0 | `EXTREME_DEFENSIVE` | **Contrarian** | Cuando el dinero corre a Utilities y Staples, el mercado está herido de muerte. | ROTATION D1=0 tiene 72% de coincidencia con suelos de mercado (Rng% 72%). Marca la fase final de pánico donde todo lo cíclico se ha vendido y los defensivos hacen techo relativo. | **Preparar rotación hacia sectores cíclicos y beta alto compra táctica en corrección.** |
+| 1 | `DEFENSIVE` | **Motor de Deriva (flujo defensivo)** | Rotación defensiva = el mercado se está deteriorando. | HR=52.0% a zz25, HR=55.3% a zz75. Edge leve positivo. El flujo defensivo NO implica caída, sino reacomodación sectorial. | **Mantener con sesgo selectivo a sectores defensivos (`MKT_HOLD_STABLE`).** |
+| 4 | `OFFENSIVE` | **Motor de Deriva (expansión)** | Rotación ofensiva confirma tendencia alcista; comprar agresivamente. | HR=54.5% a zz25, HR=57.1% a zz75 con Edge +3.0%. Tendencia sostenida pero no explosiva. | **Mantener con sesgo a sectores cíclicos (`MKT_HOLD_STABLE`).** |
 | 4 | `OFFENSIVE (D2=4)` | **Coherente** | Tecnología subiendo demasiado rápido en 3 días es sobrecompra que debe corregir inmediatamente. | ROTATION D2=4 (FAST_SPIKE_3D) tiene HR=66.9%, Edge=+13.5% y PF=1.56. Confirma continuación alcista con fuerza institucional. | **Montarse a la tendencia en sectores líderes acumulación estructural.** |
 
 ---

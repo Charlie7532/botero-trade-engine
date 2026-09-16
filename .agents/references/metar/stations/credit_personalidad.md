@@ -106,6 +106,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 0 | `EXTREME_STRESS` | **Contrarian Supremo** | Cuando el crédito se congela, las acciones caerán indefinidamente; no tocar nada. | CREDIT D1=0 concentra 51.3% de masa en t=0. Cuando se combina con D2=0 (FAST_CRUSH_3D), alcanza HR=80.0%, Edge=+22.5%, EV=+2.18% y Profit Factor de 51.33. Es el mejor suelo del sistema. | **Comprar agresivamente el suelo de crédito.** |
+| 1 | `CREDIT_STRESS` | **Motor de Deriva (rebote)** | Estrés de crédito aún activo; mejor esperar a que se resuelva. | HR=56.8% a zz25, HR=57.5% a zz75 con Edge +6.1%. La absorción post-estrés genera el mayor edge de todo el sistema METAR. | **Acumulación post-estrés; el crédito se está normalizando (`MKT_ACCUMULATE_STRUCTURAL`).** |
+| 4 | `CREDIT_EXPANSION` | **Motor de Deriva (tendencia)** | Crédito fácil = burbuja que va a explotar; shortear. | HR=55.3% a zz25, HR=59.6% a zz75 con Edge +3.5%. La facilidad crediticia alimenta una tendencia sostenida, no colapso inmediato. | **Mantener exposición; el crédito fácil es combustible, no señal de techo (`MKT_HOLD_STABLE`).** |
 | 5 | `EXTREME_EASE` | **Trampa Narrativa** | Crédito ultra relajado es garantía eterna de mercado alcista sin fin. | El crédito ultra laxo suele preceder el inicio de ciclos de subida de tasas y ajuste de liquidez. | **Mantener posiciones pero auditar solvencia fundamental.** |
 
 ---

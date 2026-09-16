@@ -107,6 +107,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 5 | `EXTREME_GREED` | **Motor de Deriva / Trampa Narrativa** | Vender inmediatamente cuando otros son codiciosos (Warren Buffett coloquial). | FG D1=5 tiene 86.7% de su masa en ENTRE con retorno positivo fwd 20d (+0.81%). Vender en euforia temprana es sangrado de costo de oportunidad. | **Mantener posiciones en tendencia fuerte mantener posición; solo ceñir trailing stops.** |
+| 1 | `FEAR` | **Contrarian (acumulación)** | Miedo moderado = el mercado todavía puede caer más; esperar. | HR=54.6% a zz25, HR=59.5% a zz75. Edge positivo. El miedo moderado es combustible para rally, no para caída. | **Acumular en miedo moderado; la historia favorece a compradores (`MKT_ACCUMULATE_STRUCTURAL`).** |
+| 4 | `GREED` | **Coherente (neutral)** | Codicia = mercado sobrecomprado; vender. | HR=55.1% a zz25, HR=59.4% a zz75. Edge positivo moderado. Codicia NO es señal de venta — la tendencia se sostiene. | **Mantener; codicia moderada NO es señal de techo (`MKT_HOLD_STABLE`).** |
 | 0 | `EXTREME_FEAR` | **Contrarian Puro** | El miedo extremo paraliza el mercado; hay que esperar a que los problemas económicos se resuelvan. | FG D1=0 (< 8.0) produce un WR del 67.4% a 20 días vista con PF 2.30 y +3.12% a 40d (PF 3.06). | **Comprar agresivamente el pánico extremo.** |
 
 ---

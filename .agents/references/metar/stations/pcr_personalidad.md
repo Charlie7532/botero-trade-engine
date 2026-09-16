@@ -106,6 +106,8 @@ Evaluación formal bajo los 4 arquetipos institucionales:
 | Bin | Label | Arquetipo | El Mito Narrativo (La Prosa) | La Realidad Cuantitativa (El Verbo) | Directiva para el Agente |
 |:---:|:---|:---:|:---|:---|:---|
 | 0 | `EXTREME_CALL_EUPHORIA` | **Trampa Narrativa** | Mucha compra de calls garantiza que el mercado seguirá subiendo con fuerza. | PCR < 0.69 (Call Euphoria) marca techos de complacencia donde los creadores de mercado están short gamma y vulnerables a caídas. | **Cosechar beneficios parciales; prohibido comprar en euforia extrema.** |
+| 1 | `CALL_EUPHORIA` | **Trampa Narrativa** | Euforia de calls = sobrecompra; el mercado va a caer. | HR=55.3% a zz25, HR=56.9% a zz75. Edge neutral. La euforia de calls NO predice corrección inmediata. | **Mantener; la euforia de calls es ruido sin edge direccional (`MKT_HOLD_STABLE`).** |
+| 4 | `PUT_PANIC` | **Contrarian (acumulación)** | Put panic = hay que comprar puts y protegerse; vender equities. | HR=52.9% a zz25, HR=59.1% a zz75. A mayor escala, edge MEJORA. El pánico de puts es el mercado comprando seguro. | **Evaluar para acumulación en zz75; no vender por pánico de opciones (`MKT_BUY_DIP_TACTICAL`).** |
 | 5 | `EXTREME_PUT_PANIC` | **Contrarian** | Mucha compra de puts significa que las instituciones saben que el mercado se va a cero. | PCR > 1.31 es cobertura tardía/pánico minorista que marca suelos de corto plazo con altísimo Hit Rate de rebote. | **Activar gatillo de compra contra el consenso compra táctica en corrección.** |
 
 ---

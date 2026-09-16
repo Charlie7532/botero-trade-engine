@@ -925,7 +925,10 @@ def classify_floor(
     # ── Without timing: fall back to rules JSON ──
     if not timing or not timing.first_passage_floor:
         floor_rules = rules.get("floor_rules", {}).get(station, {})
-        d1_range = floor_rules.get("d1_range", [4, 5])
+        # Use StationProfile as canonical source for D1 range (polarity-aware)
+        # The JSON had d1_range=[4,5] for ALL stations — wrong for INVERTED ones
+        profile = get_station_profile(station)
+        d1_range = list(profile.stress_bins) if profile else floor_rules.get("d1_range", [4, 5])
         d2_label = D2_LABELS.get(d2, f"UNKNOWN_{d2}")
 
         if d1 in d1_range:
@@ -1036,7 +1039,10 @@ def classify_ceiling(
     # ── Without timing: fall back to rules JSON ──
     if not timing or not timing.first_passage_ceiling:
         ceiling_rules = rules.get("ceiling_rules", {}).get(station, {})
-        d1_range = ceiling_rules.get("d1_range", [0, 1])
+        # Use StationProfile as canonical source for D1 range (polarity-aware)
+        # The JSON had d1_range=[0,1] for ALL stations — wrong for INVERTED ones
+        profile = get_station_profile(station)
+        d1_range = list(profile.complacent_bins) if profile else ceiling_rules.get("d1_range", [0, 1])
         d2_label = D2_LABELS.get(d2, f"UNKNOWN_{d2}")
 
         if d1 in d1_range:

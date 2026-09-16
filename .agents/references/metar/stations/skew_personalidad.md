@@ -2,7 +2,7 @@
 
 > **Módulo:** Capa 1 de 3 (Personalidades Individuales) · **Sistema:** METAR Hermes · **Versión:** V3 (2026-09-16)
 
-> **Estación:** `skew` · **Polaridad Canónica:** `INVERTED` · **Rol:** `Confirmador de Largo Plazo (ACUMULACIÓN en D1=0) y Precursor de Riesgo de Cola (PARANOIA en D1=5).`
+> **Estación:** `skew` · **Polaridad Canónica:** `NORMAL` · **Rol:** `Confirmador de Largo Plazo (ACUMULACIÓN en D1=0) y Precursor de Riesgo de Cola (PARANOIA en D1=5).`
 
 > **Regla Anti-Derivación:** El agente NO calcula polaridades ni deduce direcciones en runtime; lee la decisión precomputada en esta ficha.
 
@@ -36,8 +36,8 @@ Tabla empírica y probabilística de 6 filas obligatorias (Bins 0 a 5) con métr
 
 ## 3. PROFESIÓN, POLARIDAD & SESGO MODAL DE TIMING
 
-- **Polaridad Canónica:** `INVERTED`
-  * *Regla:* Bin 0 = Estrés / Miedo / Descalabro (Suelo / Oportunidad); Bin 5 = Expansión / Facilidad.
+- **Polaridad Canónica:** `NORMAL`
+  * *Regla:* Bin 0 = Complacencia / Confianza (nadie compra protección); Bin 5 = Paranoia / Demanda de protección de cola (estrés latente).
 - **Profesión de la Estación:** `Confirmador de Largo Plazo (ACUMULACIÓN en D1=0) y Precursor de Riesgo de Cola (PARANOIA en D1=5).`
 
 ### 3.1 Geometría de Slots (zz25) y Poder de Confirmación en Slot Modal

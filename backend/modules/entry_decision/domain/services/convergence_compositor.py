@@ -39,6 +39,8 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 from backend.modules.entry_decision.domain.rules.timing_context import get_timing_context
 from backend.modules.entry_decision.domain.rules.signal_discriminator import (
     classify_context as _classify_context,
+    classify_floor as _classify_floor,
+    classify_ceiling as _classify_ceiling,
 )
 from backend.modules.entry_decision.domain.rules.family_sequence_detector import (
     detect_family_sequence, FamilySequenceReport,
@@ -506,6 +508,23 @@ class ConvergenceCompositor:
                 ctx_signal = _classify_context(code, d1_bin_int, d2_bin_int, d3_bin_int, _ctx_tc)
                 if ctx_signal:
                     station_summaries[code]["context_class"] = ctx_signal.signal_class
+
+            # F3-D: Signal Discriminator floor/ceiling quality
+            # Connects the 7-condition concordance framework (forward-looking
+            # evidence) to complement structural_guidance (backward-looking
+            # momentum). The discriminator handles zone routing internally
+            # (returns NOISE for non-stress bins), so we call for all stations.
+            if _ctx_tc:
+                floor_sig = _classify_floor(code, d1_bin_int, d2_bin_int, d3_bin_int, _ctx_tc)
+                if floor_sig and floor_sig.signal_class != "NOISE":
+                    station_summaries[code]["floor_quality"] = floor_sig.signal_class
+                    station_summaries[code]["floor_concordance"] = floor_sig.concordance_score
+                    station_summaries[code]["floor_confidence"] = floor_sig.confidence
+                ceil_sig = _classify_ceiling(code, d1_bin_int, d2_bin_int, d3_bin_int, _ctx_tc)
+                if ceil_sig and ceil_sig.signal_class != "NOISE":
+                    station_summaries[code]["ceiling_quality"] = ceil_sig.signal_class
+                    station_summaries[code]["ceiling_concordance"] = ceil_sig.concordance_score
+                    station_summaries[code]["ceiling_confidence"] = ceil_sig.confidence
 
         # ── Compute composites ───────────────────────────────────────
 

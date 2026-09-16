@@ -137,11 +137,17 @@ class FamilySequenceReport:
     n_tactical_rebound: int = 0    # Stations with TACTICAL_REBOUND_IN_BEAR
     n_structural_pullback: int = 0 # Stations with STRUCTURAL_BULL_PULLBACK
 
-    # Structural floor/ceiling consensus (E2.2)
+    # Structural floor/ceiling consensus (E2.2) — backward-looking (structural_guidance)
     n_floor_structural: int = 0    # Stations with floor_type=STRUCTURAL
     n_floor_trap: int = 0          # Stations with floor_type=TRAP
     n_ceiling_structural: int = 0  # Stations with ceiling_type=STRUCTURAL
     n_ceiling_trap: int = 0        # Stations with ceiling_type=TRAP
+
+    # Floor/ceiling quality (signal_discriminator concordance) — forward-looking evidence
+    n_fq_structural: int = 0       # Stations with floor_quality=STRUCTURAL_FLOOR
+    n_fq_trap: int = 0             # Stations with floor_quality=TRAP
+    n_cq_structural: int = 0       # Stations with ceiling_quality=STRUCTURAL_CEILING
+    n_cq_trap: int = 0             # Stations with ceiling_quality=BULL_TRAP
 
     # Accumulation/Distribution context (from classify_context)
     n_accumulation: int = 0        # Stations with ACCUMULATION_* in complacent/neutral
@@ -194,6 +200,10 @@ class FamilySequenceReport:
             "n_upleg": self.n_upleg,
             "n_downleg": self.n_downleg,
             "n_transition": self.n_transition,
+            "n_fq_structural": self.n_fq_structural,
+            "n_fq_trap": self.n_fq_trap,
+            "n_cq_structural": self.n_cq_structural,
+            "n_cq_trap": self.n_cq_trap,
             "station_context": self.station_context,
             "cooccurrence_conviction": self.cooccurrence_conviction,
             "active_pairs": self.active_pairs,
@@ -434,6 +444,23 @@ def detect_family_sequence(
             elif ctx_class == "TRANSITION":
                 n_transition += 1
 
+    # Floor/ceiling quality from signal_discriminator (forward-looking concordance)
+    n_fq_structural = 0
+    n_fq_trap = 0
+    n_cq_structural = 0
+    n_cq_trap = 0
+    for station, summary in station_summaries.items():
+        fq = summary.get("floor_quality", "")
+        if fq.startswith("STRUCTURAL"):
+            n_fq_structural += 1
+        elif fq == "TRAP":
+            n_fq_trap += 1
+        cq = summary.get("ceiling_quality", "")
+        if cq.startswith("STRUCTURAL"):
+            n_cq_structural += 1
+        elif cq == "BULL_TRAP":
+            n_cq_trap += 1
+
     # Phase detection (inter-category sequencing + accumulation context)
     phase = _detect_phase(cat1_stress, cat2_fear, cat3_cap,
                           cat1_comp, cat2_comp, cat3_comp,
@@ -477,6 +504,10 @@ def detect_family_sequence(
         n_upleg=n_upleg,
         n_downleg=n_downleg,
         n_transition=n_transition,
+        n_fq_structural=n_fq_structural,
+        n_fq_trap=n_fq_trap,
+        n_cq_structural=n_cq_structural,
+        n_cq_trap=n_cq_trap,
         station_context=station_context,
         cooccurrence_conviction=cooccurrence_conviction,
         active_pairs=active_pairs,

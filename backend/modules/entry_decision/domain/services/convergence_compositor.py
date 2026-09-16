@@ -37,6 +37,9 @@ import json
 from pathlib import Path
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.entry_decision.domain.rules.timing_context import get_timing_context
+from backend.modules.entry_decision.domain.rules.signal_discriminator import (
+    classify_context as _classify_context,
+)
 from backend.modules.entry_decision.domain.rules.family_sequence_detector import (
     detect_family_sequence, FamilySequenceReport,
 )
@@ -492,6 +495,17 @@ class ConvergenceCompositor:
                     # into crisis_alerts. Timing proximity is consumed by
                     # family_sequence_detector.py (F3-B) via station_summaries,
                     # not through the crisis channel.
+
+            # F3-C: Signal Discriminator context classification
+            # Wire classify_context() output into station_summaries so
+            # family_sequence_detector can count accumulation/distribution/legs.
+            # This was a broken link: family_detector read context_class but
+            # compositor never wrote it. Now the pipeline is complete.
+            _ctx_tc = tc if tc else get_timing_context(code, state_key)
+            if _ctx_tc:
+                ctx_signal = _classify_context(code, d1_bin_int, d2_bin_int, d3_bin_int, _ctx_tc)
+                if ctx_signal:
+                    station_summaries[code]["context_class"] = ctx_signal.signal_class
 
         # ── Compute composites ───────────────────────────────────────
 

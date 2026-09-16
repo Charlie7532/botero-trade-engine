@@ -171,6 +171,18 @@ class FamilySequenceReport:
     # Per-station context classification (signal_discriminator output)
     station_context: Dict[str, str] = field(default_factory=dict)
 
+    # Co-occurrence conviction (Phase 5 validated rules)
+    # R1: ≥3 floors AND 0 traps = STRUCTURAL (p=0.014, zz75 HR=66.5%)
+    # R3: n_upleg≥1 + n_floor_structural≥2 = MAX_CONVICTION (p=0.019, zz75 HR=71.2%)
+    # R7: n_floor_trap > n_floor_structural AND n_floor_trap≥2 = TRAP_DOMINANT (SGS=-0.162)
+    cooccurrence_conviction: str = "NONE"  # NONE | STRUCTURAL | MAX_CONVICTION | TRAP_DOMINANT
+
+    # Validated station pairs (Phase 5: cross-category pairs with p<0.05)
+    # VIX+SKEW both in stress: p=0.008, zz75 HR=87%, SGS=+0.218
+    # PCR+YIELD_CURVE both in stress: p=0.001, zz75 HR=79.2%, SGS=+0.221
+    # PCR+CREDIT both in stress: p=0.008, zz50 HR=88.2%
+    active_pairs: List[str] = field(default_factory=list)
+
     def to_dict(self) -> Dict[str, Any]:
         d = {
             "cat1_stress_ratio": round(self.cat1_stress_ratio, 4),
@@ -201,6 +213,8 @@ class FamilySequenceReport:
             "n_downleg": self.n_downleg,
             "n_transition": self.n_transition,
             "station_context": self.station_context,
+            "cooccurrence_conviction": self.cooccurrence_conviction,
+            "active_pairs": self.active_pairs,
         }
         return d
 
@@ -444,6 +458,14 @@ def detect_family_sequence(
                           vix_d2_building,
                           n_accumulation, n_distribution)
 
+    # Co-occurrence conviction (Phase 5 validated rules)
+    cooccurrence_conviction = _assess_cooccurrence(
+        n_floor_structural, n_floor_trap, n_upleg,
+    )
+
+    # Validated station pairs
+    active_pairs = _detect_validated_pairs(station_summaries)
+
     return FamilySequenceReport(
         cat1_stress_ratio=cat1_stress,
         cat2_fear_ratio=cat2_fear,
@@ -474,7 +496,88 @@ def detect_family_sequence(
         n_downleg=n_downleg,
         n_transition=n_transition,
         station_context=station_context,
+        cooccurrence_conviction=cooccurrence_conviction,
+        active_pairs=active_pairs,
     )
+
+
+# ── Co-occurrence Rules (Phase 5 validated) ──────────────────────────────
+
+
+def _assess_cooccurrence(
+    n_floor_structural: int,
+    n_floor_trap: int,
+    n_upleg: int,
+) -> str:
+    """Assess co-occurrence conviction from validated empirical rules.
+
+    Rules from Phase 5 multi-station co-occurrence study (Sep 2026):
+
+    R7: Trap dominant (n_trap > n_structural AND n_trap >= 2)
+        SGS = -0.162. HR: zz25=32.4%, zz50=32.4%, zz75=16.2%.
+        Anti-scalable — the larger the scale, the more destructive.
+        This is a SHORT signal, not a failed FLOOR.
+        Priority: checked FIRST (trap cancels everything).
+
+    R3: UPLEG + FLOOR + FLOOR (n_upleg >= 1 AND n_structural >= 2)
+        p=0.019 (zz50), p=0.039 (zz75). HR: zz50=71.2%, zz75=72.7%.
+        SGS = +0.151 — the highest of any pattern. Purely structural.
+        Context: neutral stations in upleg + stressed stations show real floor.
+
+    R1: Pure floor (n_structural >= 3 AND n_trap == 0)
+        p=0.045 (zz50), p=0.014 (zz75). HR: zz50=61.9%, zz75=66.5%.
+        SGS = +0.106. Signal strengthens with scale — confirmed structural.
+
+    Returns: TRAP_DOMINANT | MAX_CONVICTION | STRUCTURAL | NONE
+    """
+    # R7: Trap dominant — checked first (trap cancels everything)
+    if n_floor_trap > n_floor_structural and n_floor_trap >= 2:
+        return "TRAP_DOMINANT"
+
+    # R3: UPLEG + structural floors = maximum conviction
+    if n_upleg >= 1 and n_floor_structural >= 2:
+        return "MAX_CONVICTION"
+
+    # R1: Pure floor without any traps
+    if n_floor_structural >= 3 and n_floor_trap == 0:
+        return "STRUCTURAL"
+
+    return "NONE"
+
+
+# ── Validated Station Pairs ──────────────────────────────────────────────
+
+# Cross-category pairs with p < 0.05 at structural scale (zz75).
+# Source: Phase 5 co-occurrence study, First-Passage Triple Barrier.
+_VALIDATED_PAIRS: List[Tuple[str, str, str, float, float]] = [
+    # (station_a, station_b, pair_name, zz75_hr, zz75_p_value)
+    ("vix",  "skew",        "VIX_SKEW",        0.870, 0.008),
+    ("pcr",  "yield_curve", "PCR_YIELD_CURVE", 0.792, 0.001),
+    ("pcr",  "skew",        "PCR_SKEW",        0.796, 0.006),
+    ("pcr",  "credit",      "PCR_CREDIT",      0.824, 0.060),  # zz50 optimal (p=0.008)
+    ("fg",   "sv5_turbulence", "FG_SV5T",       0.750, 0.029),
+]
+
+
+def _detect_validated_pairs(
+    station_summaries: Dict[str, Any],
+) -> List[str]:
+    """Detect which validated station pairs are both in stress simultaneously.
+
+    A pair fires when BOTH stations have D1 in their respective stress bins.
+    Returns list of pair names that are active.
+    """
+    active = []
+    for sta, stb, pair_name, _, _ in _VALIDATED_PAIRS:
+        d1_a = station_summaries.get(sta, {}).get("d1_bin_numeric")
+        d1_b = station_summaries.get(stb, {}).get("d1_bin_numeric")
+        if d1_a is None or d1_b is None:
+            continue
+        stress_a = STATION_STRESS_BINS.get(sta, [])
+        stress_b = STATION_STRESS_BINS.get(stb, [])
+        if d1_a in stress_a and d1_b in stress_b:
+            active.append(pair_name)
+    return active
 
 
 def _detect_phase(

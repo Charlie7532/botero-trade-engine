@@ -36,6 +36,10 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
 
+from backend.modules.entry_decision.domain.rules.station_profiles import (
+    get_all_stress_bins, get_all_complacent_bins,
+)
+
 
 # ── Category Assignments (Validated by conjuncion_derisking study) ──────
 
@@ -58,34 +62,12 @@ STATION_CATEGORIES: Dict[str, Category] = {
 }
 
 # D1 bins considered "extreme" (bearish stress for the station)
-# Each station has specific bins that indicate stress direction
-STATION_STRESS_BINS: Dict[str, List[int]] = {
-    # VIX/VVIX/PCR/SKEW: high values = stress → bins 4,5
-    "vix": [4, 5], "vvix": [4, 5], "pcr": [4, 5], "skew": [4, 5],
-    # SV5_TURBULENCE: high = stress → bins 4,5
-    "sv5_turbulence": [4, 5],
-    # FG: low values = fear → bins 0,1
-    "fg": [0, 1],
-    # BSI: low values = weak breadth → bins 0,1
-    "bsi": [0, 1],
-    # Credit: low ratio = stress → bins 0,1
-    "credit": [0, 1],
-    # Yield Curve: low spread = inversion = stress → bins 0,1
-    "yield_curve": [0, 1],
-    # DXY: high = dollar strength = EM stress → bins 4,5
-    "dxy": [4, 5],
-}
+# Canonical source: station_profiles.py StationProfile.stress_bins
+STATION_STRESS_BINS: Dict[str, List[int]] = get_all_stress_bins()
 
 # D1 bins considered "extreme" on the complacent/optimistic side
-STATION_COMPLACENT_BINS: Dict[str, List[int]] = {
-    "vix": [0, 1], "vvix": [0, 1], "pcr": [0, 1], "skew": [0, 1],
-    "sv5_turbulence": [0, 1],
-    "fg": [4, 5],
-    "bsi": [4, 5],
-    "credit": [4, 5],
-    "yield_curve": [4, 5],
-    "dxy": [0, 1],
-}
+# Canonical source: station_profiles.py StationProfile.complacent_bins
+STATION_COMPLACENT_BINS: Dict[str, List[int]] = get_all_complacent_bins()
 
 
 # ── Output Dataclasses ──────────────────────────────────────────────────

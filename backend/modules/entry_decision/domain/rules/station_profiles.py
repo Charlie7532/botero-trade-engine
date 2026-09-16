@@ -38,6 +38,10 @@ class StationProfile:
     auc_oos: float
     shap_rank: int
     shap_value: float
+    # Zone bins — canonical source of truth (replaces hardcoded duplicates
+    # in signal_discriminator.py and family_sequence_detector.py)
+    stress_bins: Tuple[int, ...]       # D1 bins indicating market stress for this station
+    complacent_bins: Tuple[int, ...]   # D1 bins indicating market complacency
 
 
 # ── 11 Station Profiles ──────────────────────────────────────────────────
@@ -55,6 +59,7 @@ STATION_PROFILES = {
         confirmers=("bsi", "vvix"),
         sigmet_threshold=28.0,
         dsr_grade="A", dsr_pvalue=0.9947, auc_oos=0.8387, shap_rank=3, shap_value=0.4680,
+        stress_bins=(4, 5), complacent_bins=(0, 1),
     ),
     "vvix": StationProfile(
         station="vvix",
@@ -67,6 +72,7 @@ STATION_PROFILES = {
         confirmers=("sv5_turbulence",),
         sigmet_threshold=140.0,
         dsr_grade="B", dsr_pvalue=0.8790, auc_oos=0.8387, shap_rank=14, shap_value=0.0520,
+        stress_bins=(4, 5), complacent_bins=(0, 1),
     ),
     "bsi": StationProfile(
         station="bsi",
@@ -79,6 +85,7 @@ STATION_PROFILES = {
         confirmers=(),
         sigmet_threshold=5.0,  # BSI < 5% = breadth collapse
         dsr_grade="A", dsr_pvalue=0.9980, auc_oos=0.8387, shap_rank=1, shap_value=0.7770,
+        stress_bins=(0, 1), complacent_bins=(4, 5),
     ),
     "fg": StationProfile(
         station="fg",
@@ -91,6 +98,7 @@ STATION_PROFILES = {
         confirmers=("bsi",),
         sigmet_threshold=10.0,  # FG < 10 = extreme fear
         dsr_grade="A", dsr_pvalue=0.9620, auc_oos=0.8387, shap_rank=12, shap_value=0.0680,
+        stress_bins=(0, 1), complacent_bins=(4, 5),
     ),
     "pcr": StationProfile(
         station="pcr",
@@ -103,6 +111,7 @@ STATION_PROFILES = {
         confirmers=("fg",),
         sigmet_threshold=1.5,  # PCR > 1.5 = extreme put panic
         dsr_grade="B", dsr_pvalue=0.8610, auc_oos=0.8387, shap_rank=13, shap_value=0.0610,
+        stress_bins=(4, 5), complacent_bins=(0, 1),
     ),
     "skew": StationProfile(
         station="skew",
@@ -115,6 +124,7 @@ STATION_PROFILES = {
         confirmers=("vix",),
         sigmet_threshold=145.0,
         dsr_grade="B", dsr_pvalue=0.8540, auc_oos=0.8387, shap_rank=10, shap_value=0.1123,
+        stress_bins=(4, 5), complacent_bins=(0, 1),
     ),
     "credit": StationProfile(
         station="credit",
@@ -127,6 +137,7 @@ STATION_PROFILES = {
         confirmers=("vix", "bsi"),
         sigmet_threshold=0.85,  # Credit ratio < 0.85 = stress
         dsr_grade="A", dsr_pvalue=0.9509, auc_oos=0.8387, shap_rank=9, shap_value=0.1150,
+        stress_bins=(0, 1), complacent_bins=(4, 5),
     ),
     "yield_curve": StationProfile(
         station="yield_curve",
@@ -139,6 +150,7 @@ STATION_PROFILES = {
         confirmers=("credit",),
         sigmet_threshold=-0.5,  # Negative yield spread = inversion
         dsr_grade="A", dsr_pvalue=0.9680, auc_oos=0.8387, shap_rank=8, shap_value=0.1236,
+        stress_bins=(0, 1), complacent_bins=(4, 5),
     ),
     "rotation": StationProfile(
         station="rotation",
@@ -151,6 +163,7 @@ STATION_PROFILES = {
         confirmers=("bsi",),
         sigmet_threshold=-2.0,  # Extreme defensive rotation
         dsr_grade="B", dsr_pvalue=0.8750, auc_oos=0.8387, shap_rank=5, shap_value=0.1793,
+        stress_bins=(0, 1), complacent_bins=(4, 5),
     ),
     "sv5_turbulence": StationProfile(
         station="sv5_turbulence",
@@ -163,6 +176,7 @@ STATION_PROFILES = {
         confirmers=("bsi",),
         sigmet_threshold=14.87,  # SV5T P95 = institutional turbulence
         dsr_grade="B", dsr_pvalue=0.9170, auc_oos=0.8387, shap_rank=11, shap_value=0.0749,
+        stress_bins=(4, 5), complacent_bins=(0, 1),
     ),
     "dxy": StationProfile(
         station="dxy",
@@ -175,8 +189,21 @@ STATION_PROFILES = {
         confirmers=("credit",),
         sigmet_threshold=110.0,  # DXY > 110 = extreme dollar strength
         dsr_grade="B", dsr_pvalue=0.8500, auc_oos=0.8387, shap_rank=15, shap_value=0.0450,
+        stress_bins=(4, 5), complacent_bins=(0, 1),
     ),
 }
+
+
+# ── Derived bin dicts (backward-compatible access for consumers) ─────────
+
+def get_all_stress_bins() -> dict:
+    """Returns {station: list[int]} for all stations' stress bins."""
+    return {s: list(p.stress_bins) for s, p in STATION_PROFILES.items()}
+
+
+def get_all_complacent_bins() -> dict:
+    """Returns {station: list[int]} for all stations' complacent bins."""
+    return {s: list(p.complacent_bins) for s, p in STATION_PROFILES.items()}
 
 
 def get_station_profile(station: str) -> Optional[StationProfile]:

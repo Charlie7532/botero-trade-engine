@@ -53,6 +53,7 @@ from functools import lru_cache
 from backend.modules.entry_decision.domain.rules.timing_context import TimingContext
 from backend.modules.entry_decision.domain.rules.station_profiles import (
     get_station_profile, signal_router, StationProfile,
+    get_all_stress_bins, get_all_complacent_bins,
 )
 
 
@@ -65,18 +66,11 @@ D2_LABELS = {0: "FAST_DOWN", 1: "DOWN", 2: "NEUTRAL", 3: "UP", 4: "FAST_UP"}
 D3_LABELS = {0: "VERY_STABLE", 1: "STABLE", 2: "NEUTRAL", 3: "VOLATILE", 4: "VERY_VOLATILE"}
 
 # Zone bins per station — polarity-aware
+# Canonical source: station_profiles.py StationProfile.stress_bins / complacent_bins
 # STRESS = extreme values where floor/ceiling signals fire
 # COMPLACENT = opposite extreme where accumulation/distribution forms
-STRESS_BINS: Dict[str, List[int]] = {
-    "vix": [4, 5], "vvix": [4, 5], "pcr": [4, 5], "skew": [4, 5],
-    "sv5_turbulence": [4, 5], "fg": [0, 1], "bsi": [0, 1],
-    "credit": [0, 1], "yield_curve": [0, 1], "dxy": [4, 5], "rotation": [0, 1],
-}
-COMPLACENT_BINS: Dict[str, List[int]] = {
-    "vix": [0, 1], "vvix": [0, 1], "pcr": [0, 1], "skew": [0, 1],
-    "sv5_turbulence": [0, 1], "fg": [4, 5], "bsi": [4, 5],
-    "credit": [4, 5], "yield_curve": [4, 5], "dxy": [0, 1], "rotation": [4, 5],
-}
+STRESS_BINS: Dict[str, List[int]] = get_all_stress_bins()
+COMPLACENT_BINS: Dict[str, List[int]] = get_all_complacent_bins()
 
 
 # ── Concordance conditions (V3: 7 conditions) ──────────────────────────

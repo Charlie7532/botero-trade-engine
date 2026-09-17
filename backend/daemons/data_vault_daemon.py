@@ -1858,6 +1858,7 @@ def _get_neon_universe(store: TimescaleDataStore) -> list[str]:
             cur.execute("""
                 SELECT ticker FROM market.ticker_metadata
                 WHERE update_source = 'vault_ohlcv_bars'
+                  AND (industry IS DISTINCT FROM 'INDICATOR')
                 ORDER BY ticker
             """)
             return [row[0] for row in cur.fetchall()]
@@ -1885,7 +1886,6 @@ def drain_refresh_queue(store: TimescaleDataStore) -> dict:
         import backend.daemons.vault_providers.remaining_providers  # noqa: F401
         import backend.daemons.vault_providers.observer_provider  # noqa: F401
         import backend.daemons.vault_providers.sv5_turbulence_provider  # noqa: F401
-        import backend.daemons.vault_providers.cnn_fg_sp_provider  # noqa: F401
 
         adapter = VaultRefreshAdapter(store)
         pending = adapter.pending_requests(limit=20)
@@ -2232,13 +2232,8 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.warning(f"Volume breadth vault failed (non-critical): {e}")
         results["volume_breadth"] = {"status": "error", "error": str(e)}
 
-    # ── Tier 3b-ter2: CNN FG SPIndex — FG_SP Composite + 7 Sub-indicators (AFTER ohlcv) ──
-    try:
-        from backend.daemons.vault_providers.cnn_fg_sp_provider import CnnFgSpProvider
-        results["cnn_fg_sp"] = CnnFgSpProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"CNN FG_SP vault failed (non-critical): {e}")
-        results["cnn_fg_sp"] = {"status": "error", "error": str(e)}
+    # ── Tier 3b-ter2: CNN FG SPIndex (DEPRECATED: Orphaned synthetic experiment) ──
+    # Official Fear & Greed is ticker FG via vault_fear_greed(). Synthetic FG_SP is retired.
 
     # ── Tier 3b-quat: Sector Volume Breadth — SV5_{ETF}_{TH|FI|TW} (AFTER ohlcv) ──
     try:

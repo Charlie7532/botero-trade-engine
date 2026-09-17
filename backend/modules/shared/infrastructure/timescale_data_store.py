@@ -605,21 +605,34 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
     def upsert_ticker_metadata(
         self, ticker: str, sector: str,
         industry: str | None = None, market_cap_bucket: str | None = None,
+        update_source: str | None = None, release_cadence: str | None = None,
     ) -> None:
         """Insert or update sector/industry metadata for a ticker."""
         conn = self._conn()
         try:
             with conn.cursor() as cur:
+                # Safe defaults for INDICATOR vs STOCK/ETF
+                resolved_source = update_source
+                if resolved_source is None and industry == "INDICATOR":
+                    resolved_source = "none_historical_only"
+                elif resolved_source is None:
+                    resolved_source = "vault_ohlcv_bars"
+
+                resolved_cadence = release_cadence or "INTRADAY"
+
                 cur.execute(
                     """INSERT INTO market.ticker_metadata
-                         (ticker, sector, industry, market_cap_bucket)
-                       VALUES (%s, %s, %s, %s)
+                         (ticker, sector, industry, market_cap_bucket, update_source, release_cadence)
+                       VALUES (%s, %s, %s, %s, %s, %s)
                        ON CONFLICT (ticker) DO UPDATE SET
                          sector = EXCLUDED.sector,
                          industry = EXCLUDED.industry,
                          market_cap_bucket = EXCLUDED.market_cap_bucket,
+                         update_source = COALESCE(%s, market.ticker_metadata.update_source),
+                         release_cadence = COALESCE(%s, market.ticker_metadata.release_cadence),
                          updated_at = NOW()""",
-                    (ticker.upper(), sector, industry, market_cap_bucket),
+                    (ticker.upper(), sector, industry, market_cap_bucket, resolved_source, resolved_cadence,
+                     update_source, release_cadence),
                 )
             conn.commit()
         except Exception:

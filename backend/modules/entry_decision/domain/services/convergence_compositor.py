@@ -263,6 +263,9 @@ class ConvergenceReport:
     # Timing Context (F2: temporal intelligence from timing_fact_stores)
     n_timing_signal_stations: int          # Stations with has_timing_signal=True (floor/ceiling spread > 0.5%)
 
+    # Crisis Alerts (v3: EVENT/CRITICAL stations with extreme D1)
+    crisis_alerts: List[Dict[str, Any]] = field(default_factory=list)
+
     # Family Sequence (E2: cross-station causal phase detection)
     family_sequence: Optional[Dict[str, Any]] = None  # FamilySequenceReport.to_dict()
 
@@ -739,6 +742,7 @@ class ConvergenceCompositor:
             n_kinematic_bull_convergent=n_kinematic_bull,
             n_kinematic_bear_convergent=n_kinematic_bear,
             n_timing_signal_stations=n_timing_signal,
+            crisis_alerts=crisis_alerts,
             family_sequence=family_dict,
             station_summaries=station_summaries,
         )

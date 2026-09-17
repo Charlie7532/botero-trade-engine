@@ -89,6 +89,7 @@ class OHLCVProvider:
                 cur.execute("""
                     SELECT ticker FROM market.ticker_metadata
                     WHERE update_source = 'vault_ohlcv_bars'
+                      AND (industry IS DISTINCT FROM 'INDICATOR')
                     ORDER BY ticker
                 """)
                 tickers = [row[0] for row in cur.fetchall()]

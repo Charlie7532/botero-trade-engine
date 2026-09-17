@@ -83,6 +83,68 @@ MONITORED_NOTAM_STATIONS: List[str] = [
 ]
 
 
+def compute_station_staleness(
+    station: str,
+    latest_date: Optional[Any],
+    ref_date: Any,
+    cadence: str,
+    as_of_date: Optional[str] = None,
+) -> tuple[int, bool]:
+    """
+    Computes lag in trading days and staleness boolean according to institutional publication cadence.
+    Accommodates intraday, End-of-Day (EOD), and T-1 Federal Reserve release windows.
+
+    Returns:
+        (gap_bdays, is_stale)
+    """
+    if not latest_date:
+        return 0, False
+
+    import pandas as pd
+    import zoneinfo
+
+    now_ny = datetime.now(zoneinfo.ZoneInfo("America/New_York"))
+    is_live_today = (as_of_date is None) and (ref_date == now_ny.date())
+    hour_ny = now_ny.hour + now_ny.minute / 60.0
+
+    if is_live_today:
+        if cadence == "EOD" or station in ("CBOE_PCR", "CBOE_CPCE", "VVIX", "SKEW"):
+            # EOD indicators settle after market close (cutoff 18:00 ET).
+            # Before 18:00 ET, yesterday's closed session (T-1) is the official active data.
+            if hour_ny < 18.0:
+                prev_bdays = pd.bdate_range(end=ref_date, periods=2)
+                expected_date = prev_bdays[0].date() if len(prev_bdays) >= 2 else ref_date
+            else:
+                expected_date = ref_date
+        elif cadence == "T_MINUS_1_FED" or station in ("DFII10", "DFII5", "DGS10", "DGS2", "DTB3"):
+            # Fed H.15 releases previous day rates at 16:15 ET.
+            # Before 17:00 ET, T-2 is the official active observation.
+            if hour_ny < 17.0:
+                prev_bdays = pd.bdate_range(end=ref_date, periods=3)
+                expected_date = prev_bdays[0].date() if len(prev_bdays) >= 3 else ref_date
+            else:
+                prev_bdays = pd.bdate_range(end=ref_date, periods=2)
+                expected_date = prev_bdays[0].date() if len(prev_bdays) >= 2 else ref_date
+        else:
+            # INTRADAY / DERIVED_INTRADAY
+            # Before market open (09:30 ET), previous day close is the benchmark.
+            if hour_ny < 9.5:
+                prev_bdays = pd.bdate_range(end=ref_date, periods=2)
+                expected_date = prev_bdays[0].date() if len(prev_bdays) >= 2 else ref_date
+            else:
+                expected_date = ref_date
+    else:
+        # Historical as_of_date: session is closed, target is ref_date
+        expected_date = ref_date
+
+    if latest_date >= expected_date:
+        return 0, False
+
+    gap_bdays = max(0, len(pd.bdate_range(latest_date, expected_date)) - 1)
+    is_stale = gap_bdays >= 1
+    return gap_bdays, is_stale
+
+
 def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[OperationalNOTAM]:
     """
     Evaluates system operational status and returns all active Market NOTAMs.
@@ -121,10 +183,24 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
                 if pd.notna(r['max_date']):
                     station_dates[r['ticker']] = pd.Timestamp(r['max_date']).date()
 
+        # Load release cadences from ticker metadata
+        meta_query = f"""
+            SELECT ticker, release_cadence 
+            FROM market.ticker_metadata 
+            WHERE ticker IN ({stations_sql})
+        """
+        df_cadence = pd.read_sql(meta_query, engine)
+        station_cadence = {}
+        if not df_cadence.empty:
+            for _, r in df_cadence.iterrows():
+                if pd.notna(r['release_cadence']):
+                    station_cadence[r['ticker']] = str(r['release_cadence'])
+
         benchmark_date = station_dates.get("SPY", ref_date)
 
         for station in MONITORED_NOTAM_STATIONS:
             latest_date = station_dates.get(station)
+            cadence = station_cadence.get(station, "INTRADAY")
             if not latest_date:
                 notams.append(
                     OperationalNOTAM(
@@ -141,17 +217,14 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
                     )
                 )
             else:
-                # 1. Lag relative to market benchmark (SPY)
-                lag_vs_benchmark = max(0, len(pd.bdate_range(latest_date, benchmark_date)) - 1) if latest_date < benchmark_date else 0
-                
-                # 2. Lag relative to calendar date
-                lag_vs_calendar = max(0, len(pd.bdate_range(latest_date, ref_date)) - 1) if latest_date < ref_date else 0
-
-                # Outdated if it lags >= 1 trading day behind the SPY benchmark,
-                # or > 1 trading day behind calendar date (to accommodate intraday/pre-market).
-                is_stale = (lag_vs_benchmark >= 1) or (lag_vs_calendar > 1)
+                gap_bdays, is_stale = compute_station_staleness(
+                    station=station,
+                    latest_date=latest_date,
+                    ref_date=ref_date,
+                    cadence=cadence,
+                    as_of_date=as_of_date,
+                )
                 if is_stale:
-                    gap_bdays = max(lag_vs_benchmark, lag_vs_calendar)
                     is_critical = (
                         gap_bdays >= 2
                         or station in ["SPY", "VIX", "BSI", "CBOE_PCR", "DXY", "YIELD_SPREAD", "CREDIT_RATIO"]
@@ -166,7 +239,7 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
                             title=f"Station {station} Data Stale ({gap_bdays}d lag)",
                             description=(
                                 f"Latest {station} bar is from {latest_date}, {gap_bdays} trading session(s) "
-                                f"behind benchmark SPY ({benchmark_date}) / calendar ({today_str}). "
+                                f"behind expected release schedule ({cadence}) / calendar ({today_str}). "
                                 f"Station is outdated and flagged in NOTAM report."
                             ),
                             operational_action="MKT_MACRO_CIRCUIT_BREAKER" if station in ["SPY", "VIX"] else "BLOCK_STALE_STATION",
@@ -176,6 +249,7 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
                                 "latest_bar": str(latest_date),
                                 "benchmark_date": str(benchmark_date),
                                 "gap_trading_days": gap_bdays,
+                                "release_cadence": cadence,
                             }
                         )
                     )
@@ -281,6 +355,19 @@ def generate_notam_report(as_of_date: Optional[str] = None) -> Dict[str, Any]:
                 if pd.notna(r['max_date']):
                     station_dates[r['ticker']] = pd.Timestamp(r['max_date']).date()
 
+        # Load release cadences from ticker metadata
+        meta_query = f"""
+            SELECT ticker, release_cadence 
+            FROM market.ticker_metadata 
+            WHERE ticker IN ({stations_sql})
+        """
+        df_cadence = pd.read_sql(meta_query, engine)
+        station_cadence = {}
+        if not df_cadence.empty:
+            for _, r in df_cadence.iterrows():
+                if pd.notna(r['release_cadence']):
+                    station_cadence[r['ticker']] = str(r['release_cadence'])
+
         benchmark_date = station_dates.get("SPY", ref_date)
 
         station_telemetry: List[Dict[str, Any]] = []
@@ -288,6 +375,7 @@ def generate_notam_report(as_of_date: Optional[str] = None) -> Dict[str, Any]:
 
         for station in MONITORED_NOTAM_STATIONS:
             latest_date = station_dates.get(station)
+            cadence = station_cadence.get(station, "INTRADAY")
             if not latest_date:
                 telemetry_item = {
                     "station": station,
@@ -302,10 +390,13 @@ def generate_notam_report(as_of_date: Optional[str] = None) -> Dict[str, Any]:
                 station_telemetry.append(telemetry_item)
                 outdated_stations.append(telemetry_item)
             else:
-                lag_vs_benchmark = max(0, len(pd.bdate_range(latest_date, benchmark_date)) - 1) if latest_date < benchmark_date else 0
-                lag_vs_calendar = max(0, len(pd.bdate_range(latest_date, ref_date)) - 1) if latest_date < ref_date else 0
-                is_stale = (lag_vs_benchmark >= 1) or (lag_vs_calendar > 1)
-                gap_bdays = max(lag_vs_benchmark, lag_vs_calendar)
+                gap_bdays, is_stale = compute_station_staleness(
+                    station=station,
+                    latest_date=latest_date,
+                    ref_date=ref_date,
+                    cadence=cadence,
+                    as_of_date=as_of_date,
+                )
 
                 telemetry_item = {
                     "station": station,

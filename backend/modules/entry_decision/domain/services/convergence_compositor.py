@@ -269,6 +269,9 @@ class ConvergenceReport:
     # Family Sequence (E2: cross-station causal phase detection)
     family_sequence: Optional[Dict[str, Any]] = None  # FamilySequenceReport.to_dict()
 
+    # Data Freshness — stations lagging behind the report date
+    stale_stations: List[Dict[str, str]] = field(default_factory=list)  # [{station, as_of_date, lag}]
+
     # Station Details
     station_summaries: Dict[str, Any] = field(default_factory=dict)
 
@@ -459,6 +462,7 @@ class ConvergenceCompositor:
             # Station summary for report (using real values, not phantom defaults)
             station_summaries[code] = {
                 "state_key": state_key,
+                "as_of_date": str(data.get("as_of_date", ""))[:10],
                 "d1_bin": d1_bin_int,
                 "has_timing": timing_data is not None,
                 "action_code": data.get("action_code", ""),
@@ -698,10 +702,35 @@ class ConvergenceCompositor:
         else:
             confidence = "LOW"
 
-        # ── Assemble Report ──────────────────────────────────────────
-        sample_res = list(results.values())[0]
-        as_of = sample_res.get("as_of_date", "UNKNOWN")
-        ts_utc = sample_res.get("timestamp_utc", "")
+        # ── Data Freshness: as_of_date = mode of station dates ─────────
+        station_dates = {}
+        for code, res in results.items():
+            d = res.get("as_of_date", "")
+            if d and d != "UNKNOWN":
+                # Normalize: take just the date part (YYYY-MM-DD)
+                station_dates[code] = str(d)[:10]
+
+        if station_dates:
+            from collections import Counter
+            date_counts = Counter(station_dates.values())
+            as_of = date_counts.most_common(1)[0][0]  # Mode = most common date
+        else:
+            as_of = "UNKNOWN"
+
+        # Detect stale stations (behind the mode date)
+        stale_list = []
+        for code, d in station_dates.items():
+            if d < as_of:
+                from datetime import date as _date
+                lag = (_date.fromisoformat(as_of) - _date.fromisoformat(d)).days
+                stale_list.append({
+                    "station": code,
+                    "station_date": d,
+                    "report_date": as_of,
+                    "lag_days": lag,
+                })
+
+        ts_utc = list(results.values())[0].get("timestamp_utc", "") if results else ""
 
         t1 = time.time()
         exec_ms = round((t1 - t0) * 1000, 2)
@@ -745,4 +774,5 @@ class ConvergenceCompositor:
             crisis_alerts=crisis_alerts,
             family_sequence=family_dict,
             station_summaries=station_summaries,
+            stale_stations=stale_list,
         )

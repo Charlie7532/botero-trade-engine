@@ -208,6 +208,19 @@ def _apply_d2d3_modulation(
     elif d3 == profile.d3_exhaustion_bin:
         conditions = list(conditions) if not isinstance(conditions, list) else conditions
         conditions.append(f"D3_EXHAUST:d3={d3} (absorption)")
+        # B2: D3=4 (VOL_PEAK_DECEL) = internal vol exhaustion
+        # Floor: exhausted station = less reliable for continuation → demote 1 tier
+        # Ceiling: exhaustion near ceiling = ceiling confirmation → promote 1 tier
+        if not is_ceiling and signal_class != "TRAP":
+            new_class = _FLOOR_DEMOTION.get(signal_class, signal_class)
+            if new_class != signal_class:
+                conditions.append(f"D3_EXHAUST_DEMOTE:{signal_class}→{new_class}")
+                signal_class = new_class
+        elif is_ceiling and signal_class != "TRAP":
+            new_class = _CEILING_PROMOTION.get(signal_class, signal_class)
+            if new_class != signal_class:
+                conditions.append(f"D3_EXHAUST_CEIL_PROMOTE:{signal_class}→{new_class}")
+                signal_class = new_class
 
     return signal_class, confidence, conditions
 

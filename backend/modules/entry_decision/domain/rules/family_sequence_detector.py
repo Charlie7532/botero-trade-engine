@@ -633,13 +633,13 @@ def _detect_phase(
     if cat1_stress >= STRESS_THRESH and cat2_fear < STRESS_THRESH:
         return "MACRO_PRECURSOR"
 
-    # Only CAT2 stressed (fear without macro cause) → early warning
+    # Only CAT2 stressed (fear without macro cause) → sentiment early warning
     if cat2_fear >= STRESS_THRESH and cat1_stress < STRESS_THRESH:
-        return "EARLY_WARNING"
+        return "EARLY_WARNING_SENTIMENT"
 
-    # Only CAT3 stressed (action without fear or macro) → capitulation fragment
+    # Only CAT3 stressed (action without fear or macro) → action early warning
     if cat3_cap >= STRESS_THRESH and cat1_stress < STRESS_THRESH and cat2_fear < STRESS_THRESH:
-        return "EARLY_WARNING"
+        return "EARLY_WARNING_ACTION"
 
     # Complacent side: check context FIRST (richer than binary ratio)
     # Accumulation confirmed: multiple stations showing institutional buying

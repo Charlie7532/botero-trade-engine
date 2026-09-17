@@ -100,6 +100,9 @@ STATION_PROFILES = {
         sigmet_threshold=5.0,  # BSI < 5% = breadth collapse
         dsr_grade="A", dsr_pvalue=0.9980, auc_oos=0.8387, shap_rank=1, shap_value=0.7770,
         stress_bins=(0, 1), complacent_bins=(4, 5),
+        # B1: D2=0 (FAST_CRUSH_3D reversal) = breadth crush stops → buy dip
+        # Dossier §6: state 0__0__3 has EV=+46.1%, HR=100% (U-Turn trigger)
+        d2_floor_accelerator=0,
     ),
     "fg": StationProfile(
         station="fg",

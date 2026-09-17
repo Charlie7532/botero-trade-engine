@@ -169,12 +169,18 @@ def _apply_d2d3_modulation(
                 modulated = True
 
         if profile.d2_floor_inhibitor is not None and d2 == profile.d2_floor_inhibitor:
-            new_class = _FLOOR_DEMOTION.get(signal_class, signal_class)
-            if new_class != signal_class:
-                conditions = list(conditions) + [
-                    f"D2_INHIB:d2={d2}→demote ({signal_class}→{new_class})"
-                ]
+            # Apply demotion N times (d2_inhibitor_strength):
+            # VIX D2=4 = "falling knife, WAIT" → strength=2 (STRUCTURAL→PULLBACK)
+            original = signal_class
+            for _step in range(profile.d2_inhibitor_strength):
+                new_class = _FLOOR_DEMOTION.get(signal_class, signal_class)
+                if new_class == signal_class:
+                    break  # Can't demote further
                 signal_class = new_class
+            if signal_class != original:
+                conditions = list(conditions) + [
+                    f"D2_INHIB:d2={d2}×{profile.d2_inhibitor_strength}→demote ({original}→{signal_class})"
+                ]
                 modulated = True
     else:
         # Ceiling modulation (mirror: inhibitor promotes ceiling, accelerator demotes)
@@ -188,10 +194,17 @@ def _apply_d2d3_modulation(
                 signal_class = new_class
                 modulated = True
 
-    # D3 informational flags (no tier change — already in concordance metrics)
+    # D3 modulation — coiled spring promotes floor, exhaustion is informational
     if d3 == profile.d3_squeeze_bin:
         conditions = list(conditions) if not isinstance(conditions, list) else conditions
         conditions.append(f"D3_SQUEEZE:d3={d3} (coiled_spring)")
+        # G4: D3=0 squeeze promotes floor 1 tier (energy accumulation → amplified reversal)
+        # Only for floor signals — ceilings are diffuse and not amplified by vol squeeze
+        if not is_ceiling and signal_class != "TRAP":
+            new_class = _FLOOR_PROMOTION.get(signal_class, signal_class)
+            if new_class != signal_class:
+                conditions.append(f"D3_SQUEEZE_PROMOTE:{signal_class}→{new_class}")
+                signal_class = new_class
     elif d3 == profile.d3_exhaustion_bin:
         conditions = list(conditions) if not isinstance(conditions, list) else conditions
         conditions.append(f"D3_EXHAUST:d3={d3} (absorption)")
@@ -965,6 +978,29 @@ def classify_floor(
             **ctx,
         )
 
+    # ── D1 zone guard: floor signals only relevant in stress bins ──
+    profile = get_station_profile(station)
+    if profile and d1 not in profile.stress_bins:
+        ctx = _get_station_context(station, d1, d2, d3, 0)
+        hctx = _get_historical_context(station, state_key)
+        return FloorSignal(
+            station=station, state_key=state_key,
+            d1=d1, d2=d2, d3=d3,
+            signal_class="NOISE", confidence="INSUFFICIENT",
+            concordance_score=0, concordance_detail=("D1_NOT_IN_STRESS_ZONE",),
+            is_rare=False,
+            hr_zz75=0.0, hr_zz25=0.0, pf_zz75=0.0,
+            rr_asymmetry=0.0, sgs=0.0, pct_overflow=0.0,
+            mae_medio=0.0, mfe_medio=0.0,
+            canary_edge=None, canary_n=0,
+            timing_mode="FILTERED",
+            n_episodios=0, fire_rate_pct=0.0,
+            d3_effect=d3_effect,
+            pct_en_rango=0.0,
+            historical_context=hctx,
+            **ctx,
+        )
+
     # ── With timing: use concordance framework (7 conditions) ──
     hr75, hr25, pf75, rr75, sgs, mae, mfe, dual_hr75, pvalue = _extract_metrics_from_timing(
         timing, "floor"
@@ -1076,6 +1112,29 @@ def classify_ceiling(
             mae_medio=0.0, mfe_medio=0.0,
             canary_edge=None, canary_n=0,
             timing_mode="UNKNOWN",
+            n_episodios=0, fire_rate_pct=0.0,
+            d3_effect=d3_effect,
+            pct_en_rango=0.0,
+            historical_context=hctx,
+            **ctx,
+        )
+
+    # ── D1 zone guard: ceiling signals only relevant in complacent bins ──
+    profile = get_station_profile(station)
+    if profile and d1 not in profile.complacent_bins:
+        ctx = _get_station_context(station, d1, d2, d3, 0)
+        hctx = _get_historical_context(station, state_key)
+        return CeilingSignal(
+            station=station, state_key=state_key,
+            d1=d1, d2=d2, d3=d3,
+            signal_class="NOISE", confidence="INSUFFICIENT",
+            concordance_score=0, concordance_detail=("D1_NOT_IN_COMPLACENT_ZONE",),
+            is_rare=False,
+            hr_zz75=0.0, hr_zz25=0.0, pf_zz75=0.0,
+            rr_asymmetry=0.0, sgs=0.0, pct_overflow=0.0,
+            mae_medio=0.0, mfe_medio=0.0,
+            canary_edge=None, canary_n=0,
+            timing_mode="FILTERED",
             n_episodios=0, fire_rate_pct=0.0,
             d3_effect=d3_effect,
             pct_en_rango=0.0,

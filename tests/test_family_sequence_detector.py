@@ -208,11 +208,11 @@ class TestCategoryAssignment:
     """Verify all stations are correctly categorized."""
 
     def test_all_stations_mapped(self):
-        assert len(STATION_CATEGORIES) == 10
+        assert len(STATION_CATEGORIES) == 11
 
     def test_cat1_stations(self):
         cat1 = [s for s, c in STATION_CATEGORIES.items() if c == Category.CAT1_MACRO]
-        assert set(cat1) == {"credit", "yield_curve", "dxy"}
+        assert set(cat1) == {"credit", "yield_curve", "dxy", "rotation"}
 
     def test_cat2_stations(self):
         cat2 = [s for s, c in STATION_CATEGORIES.items() if c == Category.CAT2_SENTIMENT]

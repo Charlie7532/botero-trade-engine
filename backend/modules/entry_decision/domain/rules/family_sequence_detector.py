@@ -56,6 +56,7 @@ STATION_CATEGORIES: Dict[str, Category] = {
     "vvix":            Category.CAT2_SENTIMENT,
     "pcr":             Category.CAT2_SENTIMENT,
     "skew":            Category.CAT2_SENTIMENT,
+    "rotation":        Category.CAT1_MACRO,
     "bsi":             Category.CAT3_ACTION,
     "sv5_turbulence":  Category.CAT3_ACTION,
     "fg":              Category.CAT3_ACTION,
@@ -610,7 +611,7 @@ def _detect_phase(
     - ACCUMULATION_CONFIRMED: >3 stations in accumulation, no stress
     - DISTRIBUTION_STEALTH:   >2 stations in distribution, complacent
     """
-    STRESS_THRESH = 0.50
+    STRESS_THRESH = 0.34      # 1/3 minimum — allows 1-of-3 category detection
     COMPLACENT_THRESH = 0.50
 
     # All three categories stressed
@@ -632,6 +633,14 @@ def _detect_phase(
     if cat1_stress >= STRESS_THRESH and cat2_fear < STRESS_THRESH:
         return "MACRO_PRECURSOR"
 
+    # Only CAT2 stressed (fear without macro cause) → early warning
+    if cat2_fear >= STRESS_THRESH and cat1_stress < STRESS_THRESH:
+        return "EARLY_WARNING"
+
+    # Only CAT3 stressed (action without fear or macro) → capitulation fragment
+    if cat3_cap >= STRESS_THRESH and cat1_stress < STRESS_THRESH and cat2_fear < STRESS_THRESH:
+        return "EARLY_WARNING"
+
     # Complacent side: check context FIRST (richer than binary ratio)
     # Accumulation confirmed: multiple stations showing institutional buying
     # with no stress present → market is loading underneath calm surface
@@ -643,5 +652,10 @@ def _detect_phase(
         if n_distribution >= 3:
             return "DISTRIBUTION_STEALTH"
         return "COMPLACENT_DISTRIBUTION"
+
+    # Complacent drift: sentiment complacent without macro confirmation
+    # (euphoria phase where VIX/VVIX/PCR are low but macro isn't complacent yet)
+    if cat2_comp >= COMPLACENT_THRESH:
+        return "COMPLACENT_DRIFT"
 
     return "NEUTRAL"

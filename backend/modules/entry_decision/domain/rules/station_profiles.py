@@ -47,6 +47,7 @@ class StationProfile:
     # qualitatively changes. None = no special D2 behavior.
     d2_floor_accelerator: Optional[int] = None   # D2 bin that accelerates floor (absorption)
     d2_floor_inhibitor: Optional[int] = None     # D2 bin that inhibits floor (falling knife)
+    d2_inhibitor_strength: int = 1               # How many demotion steps (VIX=2: STRUCTURAL→PULLBACK)
     d2_continuation_signal: Optional[int] = None # D2 bin that confirms continuation
     # D3 regime (universal across all stations but documented per-station)
     # D3=0 (VOL_EXTREME_SQUEEZE) = coiled spring, U-Turn potential
@@ -71,8 +72,8 @@ STATION_PROFILES = {
         sigmet_threshold=28.0,
         dsr_grade="A", dsr_pvalue=0.9947, auc_oos=0.8387, shap_rank=3, shap_value=0.4680,
         stress_bins=(4, 5), complacent_bins=(0, 1),
-        # VIX §6: D1=5+D2=0 (absorption→V-bounce), D1=5+D2=4 (falling knife→wait)
-        d2_floor_accelerator=0, d2_floor_inhibitor=4,
+        # VIX §6: D1=5+D2=0 (absorption→V-bounce), D1=5+D2=4 (falling knife→WAIT)
+        d2_floor_accelerator=0, d2_floor_inhibitor=4, d2_inhibitor_strength=2,
     ),
     "vvix": StationProfile(
         station="vvix",
@@ -180,7 +181,8 @@ STATION_PROFILES = {
         dsr_grade="B", dsr_pvalue=0.8750, auc_oos=0.8387, shap_rank=5, shap_value=0.1793,
         stress_bins=(0, 1), complacent_bins=(4, 5),
         # ROTATION §6: D2=4 (FAST_SPIKE_3D) → HR=66.9%, Edge=+13.5% (offensive continuation)
-        d2_continuation_signal=4,
+        # From defensive position (D1=0,1), D2=4 spike = floor accelerator
+        d2_floor_accelerator=4, d2_continuation_signal=4,
     ),
     "sv5_turbulence": StationProfile(
         station="sv5_turbulence",

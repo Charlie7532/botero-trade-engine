@@ -60,7 +60,7 @@ def test_credit_metar_service_expansion(mock_store, mock_port):
 
         assert isinstance(metar, MarketMETAR)
         assert isinstance(metar.action_code, str)  # Universal taxonomy (Rule 20)
-        assert metar.action_code.startswith("MKT_") or metar.action_code.startswith("STK_")
+        assert metar.action_code.startswith("MKT_")  # METAR is always market-level
         assert metar.credit_ratio_value == pytest.approx(78.0 / 105.0, rel=1e-3)
         assert mock_port.commit_transition.called
         assert mock_port.commit_transition.call_args[1]["key"] == "credit:entry_decision:MARKET"

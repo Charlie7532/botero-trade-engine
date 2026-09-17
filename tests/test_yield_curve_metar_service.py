@@ -60,7 +60,7 @@ def test_yield_curve_metar_service_normal_steep(mock_store, mock_port):
 
         assert isinstance(metar, MarketMETAR)
         assert isinstance(metar.action_code, str)  # Universal taxonomy (Rule 20)
-        assert metar.action_code.startswith("MKT_") or metar.action_code.startswith("STK_")
+        assert metar.action_code.startswith("MKT_")  # METAR is always market-level
         assert metar.spread_value == pytest.approx(4.2 - 3.5, rel=1e-3)
         assert mock_port.commit_transition.called
         assert mock_port.commit_transition.call_args[1]["key"] == "yield_curve:entry_decision:MARKET"

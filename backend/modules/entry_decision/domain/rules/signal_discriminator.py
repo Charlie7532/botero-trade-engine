@@ -170,7 +170,7 @@ def _apply_d2d3_modulation(
 
         if profile.d2_floor_inhibitor is not None and d2 == profile.d2_floor_inhibitor:
             # Apply demotion N times (d2_inhibitor_strength):
-            # VIX D2=4 = "falling knife, WAIT" → strength=2 (STRUCTURAL→PULLBACK)
+            # VIX D2=4 = "falling knife, WAIT" → strength=3 (STRUCTURAL→NOISE)
             original = signal_class
             for _step in range(profile.d2_inhibitor_strength):
                 new_class = _FLOOR_DEMOTION.get(signal_class, signal_class)

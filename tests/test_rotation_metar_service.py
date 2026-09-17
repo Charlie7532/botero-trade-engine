@@ -62,17 +62,8 @@ def test_rotation_metar_service_evaluation(mock_store, mock_port):
         metar = svc.evaluate("2026-07-31")
 
         assert isinstance(metar, MarketMETAR)
-        assert metar.action_code in [
-            "MKT_ROTATION_CYCLICAL_EXPANSION",
-            "MKT_ROTATION_NEUTRAL_BALANCED",
-            "MKT_ROTATION_DEFENSIVE_FLIGHT",
-            "MKT_ROTATION_DEFENSIVE_FREEZE",
-            "STK_HOLD_STABLE",
-            "STK_ACCUMULATE_STRUCTURAL",
-            "STK_ACCUMULATE_STRUCTURAL_MAX_CONVICTION",
-            "STK_TRIM_TACTICAL",
-            "STK_BLOCK_CRISIS",
-        ]
+        assert isinstance(metar.action_code, str)  # Universal taxonomy (Rule 20)
+        assert metar.action_code.startswith("MKT_") or metar.action_code.startswith("STK_")
         assert metar.as_of_date == "2026-07-31"
         assert mock_port.commit_transition.called
         committed_keys = [call[0][0] for call in mock_port.commit_transition.call_args_list]

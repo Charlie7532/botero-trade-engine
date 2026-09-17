@@ -73,7 +73,8 @@ STATION_PROFILES = {
         dsr_grade="A", dsr_pvalue=0.9947, auc_oos=0.8387, shap_rank=3, shap_value=0.4680,
         stress_bins=(4, 5), complacent_bins=(0, 1),
         # VIX §6: D1=5+D2=0 (absorption→V-bounce), D1=5+D2=4 (falling knife→WAIT)
-        d2_floor_accelerator=0, d2_floor_inhibitor=4, d2_inhibitor_strength=2,
+        # strength=3: STRUCTURAL→MODERATE→PULLBACK→NOISE (dossier: "esperar", MKT_BLOCK_CRISIS)
+        d2_floor_accelerator=0, d2_floor_inhibitor=4, d2_inhibitor_strength=3,
     ),
     "vvix": StationProfile(
         station="vvix",

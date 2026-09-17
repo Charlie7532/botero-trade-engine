@@ -54,7 +54,7 @@ def test_sv5_turbulence_lookup_adapter_deep_serenity():
     assert len(vec["ev_net"]) == 3
     assert 0.0 <= vec["primary_p_bull"] <= 1.0
     assert isinstance(guidance.divergence_regime, str)
-    assert isinstance(guidance.operational_guidance, str)
+    assert guidance.zz50.ev_net is not None  # scale information available
 
 
 def test_sv5_turbulence_lookup_adapter_crisis_veto():

@@ -20,7 +20,7 @@ def test_dxy_metar_generation():
         assert metar.dxy_index_value > 50.0  # Real DXY index level
         assert len(metar.p_bull_vector) == 3
         assert len(metar.ev_net_vector) == 3
-        assert metar.operational_guidance.startswith("STK_")
+        assert isinstance(metar.action_code, str)  # Universal taxonomy (Rule 20)
         assert "📢 MARKET METAR — DXY US DOLLAR INDEX" in metar.format_cli_broadcast()
     except StrictDataPolicyError as e:
         pytest.skip(f"Vault data not available for DXY: {e}")

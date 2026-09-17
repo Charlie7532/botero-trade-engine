@@ -12,10 +12,13 @@ from backend.modules.entry_decision.domain.services.notam_incident_service impor
 
 def test_eod_station_intraday_tolerance():
     """EOD stations (CBOE_PCR, VVIX, SKEW) should not be stale on T if T-1 is present before 18:00 ET."""
-    today = date(2026, 9, 16)
-    yesterday = date(2026, 9, 15)
+    today = date.today()
+    # Previous business day
+    import pandas as pd
+    prev_bdays = pd.bdate_range(end=today, periods=2)
+    yesterday = prev_bdays[0].date() if len(prev_bdays) >= 2 else today
 
-    # For an EOD station, having yesterday's bar on day T (before 18:00 ET) is valid (lag=0, is_stale=False)
+    # For an EOD station, having yesterday's bar on day T is valid
     lag, is_stale = compute_station_staleness(
         station="CBOE_PCR",
         latest_date=yesterday,
@@ -28,13 +31,15 @@ def test_eod_station_intraday_tolerance():
 
 
 def test_t_minus_1_fed_tolerance():
-    """FRED T-1 stations (DFII10, DGS10) should not be stale on T if T-2 is present before 17:00 ET."""
-    today = date(2026, 9, 16) # Wednesday
-    two_days_ago = date(2026, 9, 14) # Monday
+    """FRED T-1 stations (DFII10, DGS10) should not be stale on T if T-2 is present."""
+    today = date.today()
+    import pandas as pd
+    prev_bdays = pd.bdate_range(end=today, periods=3)
+    two_bdays_ago = prev_bdays[0].date() if len(prev_bdays) >= 3 else today
 
     lag, is_stale = compute_station_staleness(
         station="DGS10",
-        latest_date=two_days_ago,
+        latest_date=two_bdays_ago,
         ref_date=today,
         cadence="T_MINUS_1_FED",
         as_of_date=None,

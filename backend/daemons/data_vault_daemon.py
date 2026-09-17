@@ -1596,9 +1596,16 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
 
     Stores as OHLCV bars in market.ohlcv_bars with open=high=low=close=value.
     """
-    if _already_vaulted_today(store, "cboe/indices", "BATCH_DONE"):
-        logger.info("📉 CBOE indices already vaulted today — skipping")
-        return {"status": "skipped", "reason": "already_today"}
+    # Only skip if both indices already have today's bar stored
+    ref_date = datetime.now(UTC).date()
+    last_skew = store.bars_last_date("SKEW", "1d")
+    last_vvix = store.bars_last_date("VVIX", "1d")
+    if last_skew and last_vvix:
+        d_skew = last_skew.date() if hasattr(last_skew, 'date') else last_skew
+        d_vvix = last_vvix.date() if hasattr(last_vvix, 'date') else last_vvix
+        if min(d_skew, d_vvix) >= ref_date:
+            logger.info("📉 CBOE indices already vaulted today — skipping")
+            return {"status": "skipped", "reason": "already_today"}
 
     import pandas as pd
     import requests
@@ -1650,7 +1657,6 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
 
             if df.empty:
                 logger.debug(f"CBOE {ticker}: already up to date")
-                stats["indices_updated"] += 1
                 continue
 
             store.save_bars(ticker, "1d", df)
@@ -1685,8 +1691,8 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
     except Exception as e:
         logger.debug(f"CBOE macro snapshot enrichment skipped: {e}")
 
-    # Mark done for today
-    if stats["indices_updated"] > 0:
+    # Mark done for today ONLY if new bars were actually stored
+    if stats["total_bars"] > 0:
         store.save_mcp_snapshot("cboe/indices", "BATCH_DONE", {
             "timestamp": datetime.now(UTC).isoformat(),
             **stats,

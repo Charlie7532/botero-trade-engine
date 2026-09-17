@@ -42,6 +42,13 @@ class StationProfile:
     # in signal_discriminator.py and family_sequence_detector.py)
     stress_bins: Tuple[int, ...]       # D1 bins indicating market stress for this station
     complacent_bins: Tuple[int, ...]   # D1 bins indicating market complacency
+    # Floor/Ceiling bins — where floor/ceiling signals physically fire.
+    # For most stations: floor_bins = stress_bins, ceiling_bins = complacent_bins.
+    # For SKEW: floor_bins = complacent_bins (D1=0,1 = put capitulation = floor),
+    #           ceiling_bins = stress_bins (D1=4,5 = peak insurance = ceiling).
+    # None = inherit from stress_bins/complacent_bins (backward-compatible).
+    floor_bins: Optional[Tuple[int, ...]] = None
+    ceiling_bins: Optional[Tuple[int, ...]] = None
     # D2 kinematic singularities (from §6 of V3 dossiers)
     # When station is in stress AND D2 hits these bins, the signal
     # qualitatively changes. None = no special D2 behavior.
@@ -52,8 +59,8 @@ class StationProfile:
     # D3 regime (universal across all stations but documented per-station)
     # D3=0 (VOL_EXTREME_SQUEEZE) = coiled spring, U-Turn potential
     # D3=4 (VOL_PEAK_DECEL) = institutional absorption, exhaustion U-Turn
-    d3_squeeze_bin: int = 0    # VOL_EXTREME_SQUEEZE
-    d3_exhaustion_bin: int = 4 # VOL_PEAK_DECEL
+    d3_squeeze_bin: Optional[int] = 0    # VOL_EXTREME_SQUEEZE
+    d3_exhaustion_bin: Optional[int] = 4 # VOL_PEAK_DECEL
 
 
 # ── 11 Station Profiles ──────────────────────────────────────────────────
@@ -133,16 +140,24 @@ STATION_PROFILES = {
     ),
     "skew": StationProfile(
         station="skew",
-        polarity="NORMAL",  # High SKEW = tail protection demand = bearish (STATIONS_HIGH_BEARISH)
+        polarity="NORMAL",  # High SKEW = institutional insurance bid / paranoia = STRESS; Low SKEW = put capitulation = FLOOR
         cat=2,
-        profession="Long-term Accumulation Confirmer + Tail Risk Precursor",
+        profession="Tail Risk Precursor (High=Peak Insurance / Ceiling) + Put Capitulation Floor (Low=Floor)",
         peak_ic_days=57,
         temporal_shape="MONOTONE_RISING",
         precursors=(),
         confirmers=("vix",),
-        sigmet_threshold=145.0,
+        sigmet_threshold=145.0,  # SIGMET fires on high SKEW (ceiling precursor)
         dsr_grade="B", dsr_pvalue=0.8540, auc_oos=0.8387, shap_rank=10, shap_value=0.1123,
         stress_bins=(4, 5), complacent_bins=(0, 1),
+        floor_bins=(0, 1),     # Put capitulation = bullish floor
+        ceiling_bins=(4, 5),   # Peak insurance = bearish ceiling
+        # SKEW §6: D2=0 (FAST_CRUSH: terminal put wash-out) → HR=88.9%, Fwd20d=+5.36% (floor accelerator)
+        d2_floor_accelerator=0,
+        # SKEW D3 kinematics: D3=4 is institutional absorption (+3.28% fwd20d), NOT exhaustion to demote;
+        # D3=0 is lethargy (+0.63% fwd20d), NOT coiled spring to promote. Relies on exact cell concordance.
+        d3_squeeze_bin=None,
+        d3_exhaustion_bin=None,
     ),
     "credit": StationProfile(
         station="credit",
@@ -227,6 +242,22 @@ def get_all_stress_bins() -> dict:
 def get_all_complacent_bins() -> dict:
     """Returns {station: list[int]} for all stations' complacent bins."""
     return {s: list(p.complacent_bins) for s, p in STATION_PROFILES.items()}
+
+
+def get_all_floor_bins() -> dict:
+    """Returns {station: list[int]} — bins where floor signals physically fire."""
+    return {
+        s: list(p.floor_bins if p.floor_bins is not None else p.stress_bins)
+        for s, p in STATION_PROFILES.items()
+    }
+
+
+def get_all_ceiling_bins() -> dict:
+    """Returns {station: list[int]} — bins where ceiling signals physically fire."""
+    return {
+        s: list(p.ceiling_bins if p.ceiling_bins is not None else p.complacent_bins)
+        for s, p in STATION_PROFILES.items()
+    }
 
 
 def get_station_profile(station: str) -> Optional[StationProfile]:

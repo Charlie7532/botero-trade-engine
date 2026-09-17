@@ -108,7 +108,7 @@ class SkewLookupAdapter:
         self.edges_d1 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d1", [114.67, 119.99, 130.28, 144.48, 159.31])
         self.edges_d2 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d2", [-11.62, -4.56, 4.57, 11.36])
         self.edges_d3 = doc.get("dimension_thresholds_definition", {}).get("skew_edges_d3", [0.0169, 0.1233, 1.0492, 1.8934])
-        self.labels_d1 = doc.get("dimension_thresholds_definition", {}).get("skew_labels_d1", ['EXTREME_CONFIDENCE', 'CONFIDENCE', 'NEUTRAL_CONFIDENT', 'NEUTRAL_PARANOID', 'PARANOIA', 'EXTREME_PARANOIA'])
+        self.labels_d1 = doc.get("dimension_thresholds_definition", {}).get("skew_labels_d1", ['EXTREME_PUT_CAPITULATION', 'PUT_CAPITULATION', 'PASSIVE_HEDGE', 'GUARDED_HEDGE', 'INSURANCE_BID', 'EXTREME_PEAK_INSURANCE'])
         self.labels_d2 = doc.get("dimension_thresholds_definition", {}).get("skew_labels_d2", ['FAST_CRUSH_3D', 'DECELERATING_DOWN_3D', 'STABLE_CONTINUATION_3D', 'ACCELERATING_UP_3D', 'FAST_SPIKE_3D'])
         self.labels_d3 = doc.get("dimension_thresholds_definition", {}).get("skew_labels_d3", ['VOL_EXTREME_SQUEEZE', 'VOL_MODERATE_COMPRESSION', 'VOL_NEUTRAL_BASELINE', 'VOL_ACCELERATING_EXPANSION', 'VOL_PEAK_DECELERATION'])
         self.states = self._data.get("states", {})

@@ -55,12 +55,12 @@
           159.306128
         ],
         "labels": [
-          "EXTREME_CONFIDENCE",
-          "CONFIDENCE",
-          "NEUTRAL_CONFIDENT",
-          "NEUTRAL_PARANOID",
-          "PARANOIA",
-          "EXTREME_PARANOIA"
+          "EXTREME_PUT_CAPITULATION",
+          "PUT_CAPITULATION",
+          "PASSIVE_HEDGE",
+          "GUARDED_HEDGE",
+          "INSURANCE_BID",
+          "EXTREME_PEAK_INSURANCE"
         ]
       },
       "d2": {
@@ -132,12 +132,12 @@
         1.8925485436182752
       ],
       "skew_labels_d1": [
-        "EXTREME_CONFIDENCE",
-        "CONFIDENCE",
-        "NEUTRAL_CONFIDENT",
-        "NEUTRAL_PARANOID",
-        "PARANOIA",
-        "EXTREME_PARANOIA"
+        "EXTREME_PUT_CAPITULATION",
+        "PUT_CAPITULATION",
+        "PASSIVE_HEDGE",
+        "GUARDED_HEDGE",
+        "INSURANCE_BID",
+        "EXTREME_PEAK_INSURANCE"
       ],
       "skew_labels_d2": [
         "FAST_CRUSH_3D",

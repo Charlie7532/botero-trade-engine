@@ -16,7 +16,7 @@ sys.path.insert(0, str(root_dir))
 from backend.scripts._lib.v3_fact_table_engine import build_v3_dual_layer_fact_store
 
 OUTPUT_PATH = root_dir / "modules/entry_decision/domain/rules/skew_fact_store.json"
-D1_LABELS = ["EXTREME_CONFIDENCE", "CONFIDENCE", "NEUTRAL_CONFIDENT", "NEUTRAL_PARANOID", "PARANOIA", "EXTREME_PARANOIA"]
+D1_LABELS = ["EXTREME_PUT_CAPITULATION", "PUT_CAPITULATION", "PASSIVE_HEDGE", "GUARDED_HEDGE", "INSURANCE_BID", "EXTREME_PEAK_INSURANCE"]
 
 SKEW_PIVOT_OVERRIDES = {
     "FALLING_KNIFE": {

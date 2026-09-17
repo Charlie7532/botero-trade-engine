@@ -34,7 +34,7 @@ Espacio teórico: 6 × 5 × 5 = **150 estados** por estación. En la práctica, 
 | **PCR** | EXTREME_CALL_EUPHORIA | CALL_EUPHORIA | NEUTRAL_CALL_BIAS | NEUTRAL_PUT_BIAS | PUT_PANIC | EXTREME_PUT_PANIC |
 | **F&G** | EXTREME_FEAR | FEAR | NEUTRAL_FEAR | NEUTRAL_GREED | GREED | EXTREME_GREED |
 | **SV5 Turb** | EXTREME_CALM | CALM | NEUTRAL_CALM | NEUTRAL_TURBULENT | TURBULENT | EXTREME_TURBULENT |
-| **SKEW** | EXTREME_CONFIDENCE | CONFIDENCE | NEUTRAL_CONFIDENT | NEUTRAL_PARANOID | PARANOIA | EXTREME_PARANOIA |
+| **SKEW** | EXTREME_PUT_CAPITULATION | PUT_CAPITULATION | PASSIVE_HEDGE | GUARDED_HEDGE | INSURANCE_BID | EXTREME_PEAK_INSURANCE |
 | **Credit** | EXTREME_STRESS | STRESS | NEUTRAL_TIGHT | NEUTRAL_LOOSE | EASE | EXTREME_EASE |
 | **Yield** | DEEP_INVERSION | MODERATE_INVERSION | FLAT_CURVE | NORMAL_CURVE | STEEPNING_CURVE | EXTREME_STEEPNING |
 | **Rotation** | EXTREME_DEFENSIVE | DEFENSIVE | NEUTRAL_DEFENSIVE | NEUTRAL_OFFENSIVE | OFFENSIVE | EXTREME_OFFENSIVE |
@@ -92,7 +92,7 @@ Bin 0 corresponde siempre al **valor más bajo** del indicador en expanding rank
 | F&G | Miedo extremo | Codicia extrema | ↑ = mejor (contrarian: peor) |
 | BSI (S5TW) | Breadth destruido | Breadth expansivo | ↑ = mejor |
 | PCR | Exceso de calls | Pánico en puts | ↑ = peor |
-| SKEW | Confianza | Paranoia | ↑ = peor |
+| SKEW | Capitulación de puts | Seguro extremo / paranoia | ↑ = peor (para equities) |
 | SV5 Turb | Calma | Turbulencia | ↑ = peor |
 | Rotation | Defensivo | Ofensivo | ↑ = risk-on |
 | Yield Spread | Inversión profunda | Curva empinada | ↑ = expansión |

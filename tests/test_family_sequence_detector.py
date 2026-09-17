@@ -176,6 +176,44 @@ class TestStationClassification:
         assert sfc.ceiling_type is None
         assert sfc.timing_mode == "NEUTRAL"
 
+    def test_skew_floor_timing_modes(self):
+        """SKEW at floor (D1=0): D2 in [0,1] is ANTICIPATION, D2 in [3,4] is CONFIRMATION."""
+        sfc_ant = _classify_station("skew", d1_bin=0, d2_bin=0)
+        assert sfc_ant.timing_mode == "ANTICIPATION"
+
+        sfc_conf = _classify_station("skew", d1_bin=0, d2_bin=4)
+        assert sfc_conf.timing_mode == "CONFIRMATION"
+
+    def test_skew_ceiling_timing_modes(self):
+        """SKEW at ceiling (D1=5): D2 in [3,4] is ANTICIPATION, D2 in [0,1] is CONFIRMATION."""
+        sfc_ant = _classify_station("skew", d1_bin=5, d2_bin=4)
+        assert sfc_ant.timing_mode == "ANTICIPATION"
+
+        sfc_conf = _classify_station("skew", d1_bin=5, d2_bin=0)
+        assert sfc_conf.timing_mode == "CONFIRMATION"
+
+    def test_divergent_pairs_vix_skew_and_pcr_skew(self):
+        """VIX_SKEW and PCR_SKEW fire when VIX/PCR in stress (D1=5) and SKEW in floor (D1=0)."""
+        sums = _neutral_summaries()
+        sums["vix"] = _make_summary(5, 2)
+        sums["pcr"] = _make_summary(5, 2)
+        sums["skew"] = _make_summary(0, 2)
+
+        report = detect_family_sequence(sums)
+        assert "VIX_SKEW" in report.active_pairs
+        assert "PCR_SKEW" in report.active_pairs
+
+    def test_divergent_pairs_silent_on_skew_stress(self):
+        """VIX_SKEW and PCR_SKEW must NOT fire when SKEW is also in stress (D1=5)."""
+        sums = _neutral_summaries()
+        sums["vix"] = _make_summary(5, 2)
+        sums["pcr"] = _make_summary(5, 2)
+        sums["skew"] = _make_summary(5, 2)
+
+        report = detect_family_sequence(sums)
+        assert "VIX_SKEW" not in report.active_pairs
+        assert "PCR_SKEW" not in report.active_pairs
+
 
 # ── Regla de Oro Tests ───────────────────────────────────────────────────
 

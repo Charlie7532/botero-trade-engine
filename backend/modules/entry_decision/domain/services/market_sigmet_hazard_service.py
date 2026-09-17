@@ -45,7 +45,7 @@ class MarketSIGMET:
     station: str       # "VIX", "VVIX", "PCR", "FG", "SV5_TURBULENCE", "SKEW", "CREDIT", "YIELD_CURVE", "ROTATION", "BSI"
     title: str
     description: str
-    operational_action: str  # Taxonomy code e.g. STK_BLOCK_CRISIS, STK_TRIM_TACTICAL
+    operational_action: str  # Taxonomy code e.g. MKT_BLOCK_CRISIS, MKT_TRIM_TACTICAL
     is_active: bool
     telemetry_snapshot: Dict[str, Any]
 
@@ -143,7 +143,7 @@ def _check_overflow_sigmet(station: str, metar: Any, now_str: str) -> Optional[M
             station=station,
             title=f"{station} Severe Blow-Off ({max_depth:.1f}σ ≥ 5σ)",
             description=f"{station} breached emergency limit with depth {max_depth:.1f}σ ({flag}).",
-            operational_action="STK_BLOCK_CRISIS",
+            operational_action="MKT_BLOCK_CRISIS",
             is_active=True,
             telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag, "tier": tier}
         )
@@ -157,7 +157,7 @@ def _check_overflow_sigmet(station: str, metar: Any, now_str: str) -> Optional[M
             station=station,
             title=f"{station} Extreme σ-Overflow ({max_depth:.1f}σ ≥ 4σ)",
             description=f"{station} breached extreme statistical limits with depth {max_depth:.1f}σ ({flag}).",
-            operational_action="STK_BLOCK_CRISIS",
+            operational_action="MKT_BLOCK_CRISIS",
             is_active=True,
             telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag, "tier": tier}
         )
@@ -171,7 +171,7 @@ def _check_overflow_sigmet(station: str, metar: Any, now_str: str) -> Optional[M
             station=station,
             title=f"{station} Moderate σ-Overflow ({max_depth:.1f}σ ≥ 3σ)",
             description=f"{station} breached statistical tail limit with depth {max_depth:.1f}σ ({flag}).",
-            operational_action="STK_HOLD_STABLE",
+            operational_action="MKT_HOLD_STABLE",
             is_active=True,
             telemetry_snapshot={"sigma_depth_d1": d1, "sigma_depth_d2": d2, "sigma_depth_d3": d3, "overflow_flag": flag, "tier": tier}
         )
@@ -226,7 +226,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="VVIX",
                     title="VVIX Vol-of-Vol Regime Transition (>= 120.0)",
                     description=f"VVIX index level ({vvix_metar.vvix_index_value:.2f}) indicates severe option tail-pricing turbulence.",
-                    operational_action="STK_HOLD_STABLE",
+                    operational_action="MKT_HOLD_STABLE",
                     is_active=True,
                     telemetry_snapshot={"vvix": vvix_metar.vvix_index_value, "vvix_d3": vvix_metar.vvix_velocity_3d}
                 )
@@ -251,7 +251,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="PCR",
                     title="CBOE Put/Call Ratio Extreme Panic (>= 1.20)",
                     description=f"PCR ratio ({pcr_metar.pcr_index_value:.2f}) shows extreme retail/institutional put buying.",
-                    operational_action="STK_HOLD_STABLE",
+                    operational_action="MKT_HOLD_STABLE",
                     is_active=True,
                     telemetry_snapshot={"pcr": pcr_metar.pcr_index_value, "pcr_d3": pcr_metar.pcr_velocity_3d}
                 )
@@ -276,7 +276,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="FG",
                     title="CNN Fear & Greed Extreme Capitulation (<= 15.0)",
                     description=f"Fear & Greed score ({fg_metar.fg_index_value:.1f}) indicates extreme market sentiment capitulation.",
-                    operational_action="STK_BUY_DIP_TACTICAL",
+                    operational_action="MKT_BUY_DIP_TACTICAL",
                     is_active=True,
                     telemetry_snapshot={"fg": fg_metar.fg_index_value, "fg_d3": fg_metar.fg_velocity_3d}
                 )
@@ -301,7 +301,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="SV5_TURBULENCE",
                     title="Institutional Volume Turbulence Crisis (>= 10.0)",
                     description=f"Volume turbulence ({turb_metar.turbulence_index_value:.2f}) in HIGH/CRISIS territory (>= 10.0). Institutional participation is erratic.",
-                    operational_action="STK_BLOCK_CRISIS",
+                    operational_action="MKT_BLOCK_CRISIS",
                     is_active=True,
                     telemetry_snapshot={"turbulence": turb_metar.turbulence_index_value, "turbulence_d3": turb_metar.turbulence_velocity_3d}
                 )
@@ -326,7 +326,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="SKEW",
                     title="Extreme CBOE SKEW Tail Risk Hedging",
                     description=f"SKEW index level ({skew_metar.skew_index_value:.2f}) indicates aggressive institutional OTM Put buying for tail protection.",
-                    operational_action="STK_HOLD_STABLE",
+                    operational_action="MKT_HOLD_STABLE",
                     is_active=True,
                     telemetry_snapshot={"skew": skew_metar.skew_index_value, "skew_d3": skew_metar.skew_velocity_3d}
                 )
@@ -351,7 +351,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="CREDIT",
                     title="Corporate Credit Freeze (HYG/LQD Compression)",
                     description=f"Credit ratio ({credit_metar.credit_ratio_value:.4f}) in EXTREME_STRESS zone with deteriorating velocity (Δ3d = {credit_metar.credit_velocity_3d:+.4f}).",
-                    operational_action="STK_BLOCK_CRISIS",
+                    operational_action="MKT_BLOCK_CRISIS",
                     is_active=True,
                     telemetry_snapshot={"credit_ratio": credit_metar.credit_ratio_value, "credit_d3": credit_metar.credit_velocity_3d}
                 )
@@ -376,7 +376,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="YIELD_CURVE",
                     title="Deep Yield Curve Inversion (P05 — Bottom 5%)",
                     description=f"Yield curve spread ({yc_metar.spread_value:+.4f}%) in DEEP_INVERSION (< -0.624, P05). Severe macro recession signal.",
-                    operational_action="STK_TRIM_TACTICAL",
+                    operational_action="MKT_TRIM_TACTICAL",
                     is_active=True,
                     telemetry_snapshot={"spread": yc_metar.spread_value}
                 )
@@ -401,7 +401,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="ROTATION",
                     title="Defensive Sector Rotation (P15 — Bottom 15%)",
                     description=f"Sector rotation index ({rot_metar.rotation_index_value:.4f}) in EXTREME_DEFENSIVE/DEFENSIVE_ROTATION zone (< -2.085, P15).",
-                    operational_action="STK_TRIM_TACTICAL",
+                    operational_action="MKT_TRIM_TACTICAL",
                     is_active=True,
                     telemetry_snapshot={"rotation_index": rot_metar.rotation_index_value, "rotation_d3": rot_metar.rotation_velocity_3d}
                 )
@@ -426,7 +426,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="BSI",
                     title="Tactical Breadth Washed Out (S5TW <= 11%)",
                     description=f"Tactical breadth level ({bsi_metar.bsi_value:.1f}%) in BREADTH_WASHED_OUT zone (bottom 2.28%) with shock velocity (Δ3d = {bsi_metar.bsi_velocity_3d:+.1f}pp).",
-                    operational_action="STK_BLOCK_CRISIS",
+                    operational_action="MKT_BLOCK_CRISIS",
                     is_active=True,
                     telemetry_snapshot={"bsi_value": bsi_metar.bsi_value, "bsi_d3": bsi_metar.bsi_velocity_3d}
                 )
@@ -451,7 +451,7 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
                     station="DXY",
                     title="Dollar Spike Liquidity Crisis (DXY σ+2 extreme)",
                     description=f"Dollar Index ({dxy_metar.dxy_index_value:.2f}) in EXTREME_STRENGTH zone (σ+2). Flight-to-safety USD surge compresses equity valuations and EM capital flows.",
-                    operational_action="STK_BLOCK_CRISIS",
+                    operational_action="MKT_BLOCK_CRISIS",
                     is_active=True,
                     telemetry_snapshot={"dxy": dxy_metar.dxy_index_value, "dxy_d3": dxy_metar.dxy_velocity_3d}
                 )

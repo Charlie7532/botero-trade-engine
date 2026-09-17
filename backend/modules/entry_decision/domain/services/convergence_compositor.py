@@ -138,7 +138,7 @@ SCALE_FACTORS = {
 # and were removed in v2 (31-Ago-2026, prompt_cierre_opus_v3 Fase 0.4).
 
 # Stations where high D1 values (bins 4, 5) mean market stress/bearish for equities
-STATIONS_HIGH_BEARISH = {"vix", "vvix", "pcr", "sv5_turbulence", "skew", "dxy"}
+STATIONS_HIGH_BEARISH = {"vix", "vvix", "pcr", "sv5_turbulence", "dxy", "skew"}
 
 # Stations where low D1 values (bins 0, 1) mean market stress/bearish for equities
 STATIONS_LOW_BEARISH = {"fg", "credit", "yield_curve", "rotation", "bsi"}
@@ -666,28 +666,28 @@ class ConvergenceCompositor:
 
         # Rarity override: if rarity is extreme, force WAIT
         if rarity_score >= 0.8:
-            unified_guidance = "STK_HOLD_STABLE"
+            unified_guidance = "MKT_HOLD_STABLE"
             guidance_horizon = "WAIT"
         elif "FLOOR_NOT_CONFIRMED__SV5_VETO" in cross_signals:
-            unified_guidance = "STK_HOLD_STABLE"
+            unified_guidance = "MKT_HOLD_STABLE"
             guidance_horizon = "WAIT"
         elif "D1_BEARISH_CONVERGENCE" in cross_signals:
-            unified_guidance = "STK_HOLD_STABLE"
+            unified_guidance = "MKT_HOLD_STABLE"
             guidance_horizon = "WAIT"
         elif "INSTITUTIONAL_DISTRIBUTION_BATTLE" in cross_signals:
-            unified_guidance = "STK_TRIM_TACTICAL"
+            unified_guidance = "MKT_TRIM_TACTICAL"
             guidance_horizon = "1D"
         elif "CONFIRMED_BUYABLE_DIP" in cross_signals:
-            unified_guidance = "STK_BUY_DIP_TACTICAL"
+            unified_guidance = "MKT_BUY_DIP_TACTICAL"
             guidance_horizon = "5D"
         elif bull_ratio_5d >= 0.70 and ev_contributing >= 3:
-            unified_guidance = "STK_ACCUMULATE_STRUCTURAL"
+            unified_guidance = "MKT_ACCUMULATE_STRUCTURAL"
             guidance_horizon = "5D"
         elif bull_ratio_1d >= 0.70 and ev_contributing >= 3:
-            unified_guidance = "STK_BUY_DIP_TACTICAL"
+            unified_guidance = "MKT_BUY_DIP_TACTICAL"
             guidance_horizon = "1D"
         else:
-            unified_guidance = "STK_HOLD_STABLE"
+            unified_guidance = "MKT_HOLD_STABLE"
             guidance_horizon = "3D"
 
         # ── Confidence (rarity-degraded) ─────────────────────────────

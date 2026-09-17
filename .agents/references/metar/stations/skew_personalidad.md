@@ -2,7 +2,7 @@
 
 > **Módulo:** Capa 1 de 3 (Personalidades Individuales) · **Sistema:** METAR Hermes · **Versión:** V3 (2026-09-16)
 
-> **Estación:** `skew` · **Polaridad Canónica:** `NORMAL` · **Rol:** `Confirmador de Largo Plazo (ACUMULACIÓN en D1=0) y Precursor de Riesgo de Cola (PARANOIA en D1=5).`
+> **Estación:** `skew` · **Polaridad Canónica:** `NORMAL` · **Rol:** `Confirmador de Suelo (ACUMULACIÓN en D1=0) y Precursor de Riesgo de Cola (EXTREME_PEAK_INSURANCE en D1=5).`
 
 > **Regla Anti-Derivación:** El agente NO calcula polaridades ni deduce direcciones en runtime; lee la decisión precomputada en esta ficha.
 
@@ -27,29 +27,29 @@ Tabla empírica y probabilística de 6 filas obligatorias (Bins 0 a 5) con métr
 
 | D1 Bin | Label Canónico | N Episodios | HR zz25 (%) | Edge Neto (%) | EV zz25 (%) | Sesgo Probabilístico | Fase del Ciclo |
 |:---:|:---|:---:|:---:|:---:|:---:|:---|:---|
-| 0 | `EXTREME_CONFIDENCE` | 52 | 67.3% | +11.3% | +1.06% | **Fuerte Convicción Estructural (+11.3% Edge)** | `Acumulación de Largo Plazo` |
-| 1 | `CONFIDENCE` | 164 | 52.4% | -3.6% | +0.16% | **Neutral Sólido** | `Construcción de Tendencia` |
-| 2 | `NEUTRAL_CONFIDENT` | 463 | 48.2% | -7.9% | +0.08% | **Neutral Débil** | `Régimen Benigno Estándar` |
-| 3 | `NEUTRAL_PARANOID` | 938 | 57.9% | +1.9% | +0.62% | **Cobertura Preventiva Ligera** | `Incipiente Cobertura de Cola` |
-| 4 | `PARANOIA` | 853 | 50.5% | -5.5% | +0.22% | **Paranoia de Mercado Activa** | `Protección de Portafolios` |
-| 5 | `EXTREME_PARANOIA` | 317 | 53.0% | -3.0% | +0.27% | **Pánico Latente de Cola Izquierda** | `Precursor de Riesgo de Cola` |
+| 0 | `EXTREME_PUT_CAPITULATION` | 52 | 67.3% | +11.3% | +1.06% | **Fuerte Convicción Estructural (+11.3% Edge)** | `Acumulación de Largo Plazo (Suelo de Crash)` |
+| 1 | `PUT_CAPITULATION` | 164 | 52.4% | -3.6% | +0.16% | **Neutral Sólido** | `Normalización Post-Estrés` |
+| 2 | `PASSIVE_HEDGE` | 463 | 48.2% | -7.9% | +0.08% | **Neutral Débil** | `Régimen Benigno / Cobertura Pasiva` |
+| 3 | `GUARDED_HEDGE` | 938 | 57.9% | +1.9% | +0.62% | **Cobertura Preventiva Ligera** | `Postura Vigilante / Demanda Cauta` |
+| 4 | `INSURANCE_BID` | 853 | 50.5% | -5.5% | +0.22% | **Demanda Activa de Cobertura de Cola** | `Compra Activa de Protección OTM` |
+| 5 | `EXTREME_PEAK_INSURANCE` | 317 | 53.0% | -3.0% | +0.27% | **Pánico Latente / Máxima Prima de Cola** | `Precursor de Riesgo de Cola / Fragilidad` |
 
 ## 3. PROFESIÓN, POLARIDAD & SESGO MODAL DE TIMING
 
 - **Polaridad Canónica:** `NORMAL`
-  * *Regla:* Bin 0 = Complacencia / Confianza (nadie compra protección); Bin 5 = Paranoia / Demanda de protección de cola (estrés latente).
-- **Profesión de la Estación:** `Confirmador de Largo Plazo (ACUMULACIÓN en D1=0) y Precursor de Riesgo de Cola (PARANOIA en D1=5).`
+  * *Regla:* Bin 0 = Capitulación de Puts (puts monetizadas/liquidadas tras crash → suelo alcista); Bin 5 = Máxima prima de seguro / paranoia de cola (fragilidad/alerta de techo).
+- **Profesión de la Estación:** `Tail Risk Precursor (High=Peak Insurance / Ceiling) + Put Capitulation Floor (Low=Floor)`
 
 ### 3.1 Geometría de Slots (zz25) y Poder de Confirmación en Slot Modal
 
 | Bin D1 | Masa t-2 (%) | Masa t-1 (%) | Masa t=0 (%) | Masa t+1 (%) | Masa t+2 (%) | Masa ENTRE (%) | Slot Modal | HR Modal | $P_{\text{confirmación}}$ | Rol Temporal |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 0 (`EXTREME_CONFIDENCE`) | 11.5% | 13.5% | 17.3% | 11.5% | 9.6% | 36.5% | `ENTRE` (36.5%) | 52.6% | **0.192** | **Proceso Lento / Runway** (entre pivotes) |
-| 1 (`CONFIDENCE`) | 7.3% | 12.2% | 14.0% | 9.1% | 8.5% | 48.8% | `ENTRE` (48.8%) | 40.0% | **0.195** | **Proceso Lento / Runway** (entre pivotes) |
-| 2 (`NEUTRAL_CONFIDENT`) | 5.4% | 9.3% | 9.7% | 5.8% | 3.5% | 66.3% | `ENTRE` (66.3%) | 41.4% | **0.274** | **Proceso Lento / Runway** (entre pivotes) |
-| 3 (`NEUTRAL_PARANOID`) | 4.4% | 7.1% | 7.6% | 5.1% | 4.1% | 71.7% | `ENTRE` (71.7%) | 56.9% | **0.408** | **Proceso Lento / Runway** (entre pivotes) |
-| 4 (`PARANOIA`) | 4.1% | 3.3% | 4.1% | 3.8% | 4.3% | 80.4% | `ENTRE` (80.4%) | 48.0% | **0.386** | **Proceso Lento / Runway** (entre pivotes) |
-| 5 (`EXTREME_PARANOIA`) | 4.1% | 4.1% | 4.1% | 3.5% | 2.2% | 82.0% | `ENTRE` (82.0%) | 48.8% | **0.401** | **Proceso Lento / Runway** (entre pivotes) |
+|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 0 (`EXTREME_PUT_CAPITULATION`) | 11.5% | 13.5% | 17.3% | 11.5% | 9.6% | 36.5% | `ENTRE` (36.5%) | 52.6% | **0.192** | **Proceso Lento / Runway** (entre pivotes) |
+| 1 (`PUT_CAPITULATION`) | 7.3% | 12.2% | 14.0% | 9.1% | 8.5% | 48.8% | `ENTRE` (48.8%) | 40.0% | **0.195** | **Proceso Lento / Runway** (entre pivotes) |
+| 2 (`PASSIVE_HEDGE`) | 5.4% | 9.3% | 9.7% | 5.8% | 3.5% | 66.3% | `ENTRE` (66.3%) | 41.4% | **0.274** | **Proceso Lento / Runway** (entre pivotes) |
+| 3 (`GUARDED_HEDGE`) | 4.4% | 7.1% | 7.6% | 5.1% | 4.1% | 71.7% | `ENTRE` (71.7%) | 56.9% | **0.408** | **Proceso Lento / Runway** (entre pivotes) |
+| 4 (`INSURANCE_BID`) | 4.1% | 3.3% | 4.1% | 3.8% | 4.3% | 80.4% | `ENTRE` (80.4%) | 48.0% | **0.386** | **Proceso Lento / Runway** (entre pivotes) |
+| 5 (`EXTREME_PEAK_INSURANCE`) | 4.1% | 4.1% | 4.1% | 3.5% | 2.2% | 82.0% | `ENTRE` (82.0%) | 48.8% | **0.401** | **Proceso Lento / Runway** (entre pivotes) |
 
 ### 3.2 Diagnóstico Físico de Masa en ENTRE (§3 Documento de Diseño)
 

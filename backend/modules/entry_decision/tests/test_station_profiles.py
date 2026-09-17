@@ -186,8 +186,9 @@ class TestStationProfiles:
         assert set(STATION_PROFILES.keys()) == expected
 
     def test_polarity_consistency(self):
-        """Polarity must match STATIONS_HIGH_BEARISH/LOW_BEARISH in compositor."""
-        high_bearish = {"vix", "vvix", "pcr", "sv5_turbulence", "skew", "dxy"}
+        """Polarity must match empirical ground-truth from Neon Vault data."""
+        high_bearish = {"vix", "vvix", "pcr", "sv5_turbulence", "dxy", "skew"}
+        low_bearish = {"bsi", "fg", "credit", "rotation"}
         for code, profile in STATION_PROFILES.items():
             if code in high_bearish:
                 assert profile.polarity == "NORMAL", f"{code} should be NORMAL (high=bearish)"

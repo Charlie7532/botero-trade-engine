@@ -38,6 +38,7 @@ from enum import Enum
 
 from backend.modules.entry_decision.domain.rules.station_profiles import (
     get_all_stress_bins, get_all_complacent_bins,
+    get_all_floor_bins, get_all_ceiling_bins,
 )
 
 
@@ -47,6 +48,7 @@ class Category(str, Enum):
     CAT1_MACRO = "CAT1_MACRO"          # Slow macro: credit, yield_curve, dxy
     CAT2_SENTIMENT = "CAT2_SENTIMENT"  # Derivative fear: vix, vvix, pcr, skew
     CAT3_ACTION = "CAT3_ACTION"        # Market action: bsi, sv5_turbulence, fg
+
 
 STATION_CATEGORIES: Dict[str, Category] = {
     "credit":          Category.CAT1_MACRO,
@@ -69,6 +71,10 @@ STATION_STRESS_BINS: Dict[str, List[int]] = get_all_stress_bins()
 # D1 bins considered "extreme" on the complacent/optimistic side
 # Canonical source: station_profiles.py StationProfile.complacent_bins
 STATION_COMPLACENT_BINS: Dict[str, List[int]] = get_all_complacent_bins()
+
+# Floor/Ceiling bins where signals physically fire (polarity & SKEW aware)
+STATION_FLOOR_BINS: Dict[str, List[int]] = get_all_floor_bins()
+STATION_CEILING_BINS: Dict[str, List[int]] = get_all_ceiling_bins()
 
 
 # ── Output Dataclasses ──────────────────────────────────────────────────
@@ -247,10 +253,10 @@ def _classify_station(
                     sm_ev_down = down.get("ev_structural_pct")
 
     # Floor type classification
-    stress_bins = STATION_STRESS_BINS.get(station, [])
-    complacent_bins = STATION_COMPLACENT_BINS.get(station, [])
+    floor_bins = STATION_FLOOR_BINS.get(station, STATION_STRESS_BINS.get(station, []))
+    ceiling_bins = STATION_CEILING_BINS.get(station, STATION_COMPLACENT_BINS.get(station, []))
 
-    if d1_bin in stress_bins:
+    if d1_bin in floor_bins:
         if sm_p_up is not None and sm_p_up < 0.45:
             floor_type = "TRAP"      # P(HL) < 0.45 → bear trap / false floor
         elif sm_p_up is not None and sm_p_up > 0.55:
@@ -258,7 +264,7 @@ def _classify_station(
         else:
             floor_type = "TACTICAL"   # Intermediate
 
-    if d1_bin in complacent_bins:
+    if d1_bin in ceiling_bins:
         if sm_p_down is not None and sm_p_down > 0.55:
             ceiling_type = "TRAP"      # P(HH) > 0.55 → Regla de Oro (90.2% fall)
         elif sm_p_down is not None and sm_p_down < 0.45:
@@ -267,22 +273,53 @@ def _classify_station(
             ceiling_type = "TACTICAL"
 
     # Timing mode from D2
-    # D2 bin 0,1 = negative velocity (building stress for inverted stations)
-    # D2 bin 3,4 = positive velocity (building stress for normal stations)
-    if d1_bin in stress_bins:
-        if d2_bin in [3, 4]:
-            timing_mode = "ANTICIPATION"   # Stress accelerating
-        elif d2_bin in [0, 1]:
-            timing_mode = "CONFIRMATION"   # Stress decelerating (past peak)
+    # At floor:
+    #   For low-floor stations (SKEW, or INVERTED stations where floor is at D1=0,1):
+    #     D2 in [0, 1] = falling deeper into capitulation (ANTICIPATION)
+    #     D2 in [3, 4] = rebounding UP out of capitulation (CONFIRMATION)
+    #   For high-floor stations (VIX, PCR where floor is at D1=4,5):
+    #     D2 in [3, 4] = panic accelerating (ANTICIPATION)
+    #     D2 in [0, 1] = panic decelerating / past peak (CONFIRMATION)
+    # At ceiling:
+    #   For high-ceiling stations (SKEW where ceiling is at D1=4,5):
+    #     D2 in [3, 4] = insurance bid accelerating (ANTICIPATION)
+    #     D2 in [0, 1] = insurance peak passed / crash unfolding (CONFIRMATION)
+    #   For low-ceiling stations (complacency at D1=0,1):
+    #     D2 in [0, 1] = complacency building (ANTICIPATION)
+    #     D2 in [3, 4] = complacency breaking (CONFIRMATION)
+    is_low_floor = any(b in (0, 1) for b in floor_bins)
+    is_high_ceiling = any(b in (4, 5) for b in ceiling_bins)
+
+    if d1_bin in floor_bins:
+        if is_low_floor:
+            if d2_bin in [0, 1]:
+                timing_mode = "ANTICIPATION"
+            elif d2_bin in [3, 4]:
+                timing_mode = "CONFIRMATION"
+            else:
+                timing_mode = "NEUTRAL"
         else:
-            timing_mode = "NEUTRAL"
-    elif d1_bin in complacent_bins:
-        if d2_bin in [0, 1]:
-            timing_mode = "ANTICIPATION"   # Complacency building
-        elif d2_bin in [3, 4]:
-            timing_mode = "CONFIRMATION"
+            if d2_bin in [3, 4]:
+                timing_mode = "ANTICIPATION"
+            elif d2_bin in [0, 1]:
+                timing_mode = "CONFIRMATION"
+            else:
+                timing_mode = "NEUTRAL"
+    elif d1_bin in ceiling_bins:
+        if is_high_ceiling:
+            if d2_bin in [3, 4]:
+                timing_mode = "ANTICIPATION"
+            elif d2_bin in [0, 1]:
+                timing_mode = "CONFIRMATION"
+            else:
+                timing_mode = "NEUTRAL"
         else:
-            timing_mode = "NEUTRAL"
+            if d2_bin in [0, 1]:
+                timing_mode = "ANTICIPATION"
+            elif d2_bin in [3, 4]:
+                timing_mode = "CONFIRMATION"
+            else:
+                timing_mode = "NEUTRAL"
     else:
         timing_mode = "NEUTRAL"
 
@@ -563,33 +600,39 @@ def _assess_cooccurrence(
 
 # Cross-category pairs with p < 0.05 at structural scale (zz75).
 # Source: Phase 5 co-occurrence study, First-Passage Triple Barrier.
-_VALIDATED_PAIRS: List[Tuple[str, str, str, float, float]] = [
-    # (station_a, station_b, pair_name, zz75_hr, zz75_p_value)
-    ("vix",  "skew",        "VIX_SKEW",        0.870, 0.008),
-    ("pcr",  "yield_curve", "PCR_YIELD_CURVE", 0.792, 0.001),
-    ("pcr",  "skew",        "PCR_SKEW",        0.796, 0.006),
-    ("pcr",  "credit",      "PCR_CREDIT",      0.824, 0.060),  # zz50 optimal (p=0.008)
-    ("fg",   "sv5_turbulence", "FG_SV5T",       0.750, 0.029),
+# pair_mode: "CO_STRESS" = both stations in stress_bins (default)
+#            "DIVERGENT" = station_a in stress_bins, station_b in FLOOR_bins (e.g. VIX/PCR panic + SKEW capitulation)
+_VALIDATED_PAIRS: List[Tuple[str, str, str, float, float, str]] = [
+    # (station_a, station_b, pair_name, zz75_hr, zz75_p_value, pair_mode)
+    ("vix",  "skew",        "VIX_SKEW",        0.870, 0.008, "DIVERGENT"),
+    ("pcr",  "yield_curve", "PCR_YIELD_CURVE", 0.792, 0.001, "CO_STRESS"),
+    ("pcr",  "skew",        "PCR_SKEW",        0.796, 0.006, "DIVERGENT"),
+    ("pcr",  "credit",      "PCR_CREDIT",      0.824, 0.060, "CO_STRESS"),  # zz50 optimal (p=0.008)
+    ("fg",   "sv5_turbulence", "FG_SV5T",       0.750, 0.029, "CO_STRESS"),
 ]
 
 
 def _detect_validated_pairs(
     station_summaries: Dict[str, Any],
 ) -> List[str]:
-    """Detect which validated station pairs are both in stress simultaneously.
+    """Detect which validated station pairs are active.
 
-    A pair fires when BOTH stations have D1 in their respective stress bins.
-    Returns list of pair names that are active.
+    For CO_STRESS pairs: BOTH stations have D1 in their respective stress_bins.
+    For DIVERGENT pairs: station_a in stress_bins, station_b in FLOOR_bins (e.g. panic in A + capitulation in B).
+    Returns list of active pair names.
     """
     active = []
-    for sta, stb, pair_name, _, _ in _VALIDATED_PAIRS:
+    for sta, stb, pair_name, _, _, pair_mode in _VALIDATED_PAIRS:
         d1_a = station_summaries.get(sta, {}).get("d1_bin_numeric")
         d1_b = station_summaries.get(stb, {}).get("d1_bin_numeric")
         if d1_a is None or d1_b is None:
             continue
         stress_a = STATION_STRESS_BINS.get(sta, [])
-        stress_b = STATION_STRESS_BINS.get(stb, [])
-        if d1_a in stress_a and d1_b in stress_b:
+        if pair_mode == "DIVERGENT":
+            bins_b = STATION_FLOOR_BINS.get(stb, [])
+        else:
+            bins_b = STATION_STRESS_BINS.get(stb, [])
+        if d1_a in stress_a and d1_b in bins_b:
             active.append(pair_name)
     return active
 

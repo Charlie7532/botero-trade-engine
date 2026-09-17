@@ -54,6 +54,7 @@ from backend.modules.entry_decision.domain.rules.timing_context import TimingCon
 from backend.modules.entry_decision.domain.rules.station_profiles import (
     get_station_profile, signal_router, StationProfile,
     get_all_stress_bins, get_all_complacent_bins,
+    get_all_floor_bins, get_all_ceiling_bins,
 )
 
 
@@ -66,11 +67,15 @@ D2_LABELS = {0: "FAST_DOWN", 1: "DOWN", 2: "NEUTRAL", 3: "UP", 4: "FAST_UP"}
 D3_LABELS = {0: "VERY_STABLE", 1: "STABLE", 2: "NEUTRAL", 3: "VOLATILE", 4: "VERY_VOLATILE"}
 
 # Zone bins per station — polarity-aware
-# Canonical source: station_profiles.py StationProfile.stress_bins / complacent_bins
-# STRESS = extreme values where floor/ceiling signals fire
+# Canonical source: station_profiles.py StationProfile.stress_bins / complacent_bins / floor_bins / ceiling_bins
+# STRESS = extreme values indicating market disorder
 # COMPLACENT = opposite extreme where accumulation/distribution forms
+# FLOOR = bins where floor signals physically fire (equals stress_bins except for SKEW)
+# CEILING = bins where ceiling signals physically fire (equals complacent_bins except for SKEW)
 STRESS_BINS: Dict[str, List[int]] = get_all_stress_bins()
 COMPLACENT_BINS: Dict[str, List[int]] = get_all_complacent_bins()
+FLOOR_BINS: Dict[str, List[int]] = get_all_floor_bins()
+CEILING_BINS: Dict[str, List[int]] = get_all_ceiling_bins()
 
 
 # ── Concordance conditions (V3: 7 conditions) ──────────────────────────
@@ -195,7 +200,7 @@ def _apply_d2d3_modulation(
                 modulated = True
 
     # D3 modulation — coiled spring promotes floor, exhaustion is informational
-    if d3 == profile.d3_squeeze_bin:
+    if profile.d3_squeeze_bin is not None and d3 == profile.d3_squeeze_bin:
         conditions = list(conditions) if not isinstance(conditions, list) else conditions
         conditions.append(f"D3_SQUEEZE:d3={d3} (coiled_spring)")
         # G4: D3=0 squeeze promotes floor 1 tier (energy accumulation → amplified reversal)
@@ -205,7 +210,7 @@ def _apply_d2d3_modulation(
             if new_class != signal_class:
                 conditions.append(f"D3_SQUEEZE_PROMOTE:{signal_class}→{new_class}")
                 signal_class = new_class
-    elif d3 == profile.d3_exhaustion_bin:
+    elif profile.d3_exhaustion_bin is not None and d3 == profile.d3_exhaustion_bin:
         conditions = list(conditions) if not isinstance(conditions, list) else conditions
         conditions.append(f"D3_EXHAUST:d3={d3} (absorption)")
         # B2: D3=4 (VOL_PEAK_DECEL) = internal vol exhaustion
@@ -951,10 +956,11 @@ def classify_floor(
     # ── Without timing: fall back to rules JSON ──
     if not timing or not timing.first_passage_floor:
         floor_rules = rules.get("floor_rules", {}).get(station, {})
-        # Use StationProfile as canonical source for D1 range (polarity-aware)
-        # The JSON had d1_range=[4,5] for ALL stations — wrong for INVERTED ones
+        # Use StationProfile as canonical source for D1 floor range (polarity & SKEW aware)
+        # For most stations: floor_bins = stress_bins. For SKEW: floor_bins = (0, 1)
         profile = get_station_profile(station)
-        d1_range = list(profile.stress_bins) if profile else floor_rules.get("d1_range", [4, 5])
+        floor_bins = profile.floor_bins if (profile and profile.floor_bins is not None) else (profile.stress_bins if profile else [4, 5])
+        d1_range = list(floor_bins)
         d2_label = D2_LABELS.get(d2, f"UNKNOWN_{d2}")
 
         if d1 in d1_range:
@@ -991,16 +997,17 @@ def classify_floor(
             **ctx,
         )
 
-    # ── D1 zone guard: floor signals only relevant in stress bins ──
+    # ── D1 zone guard: floor signals only relevant in floor bins ──
     profile = get_station_profile(station)
-    if profile and d1 not in profile.stress_bins:
+    floor_bins = profile.floor_bins if (profile and profile.floor_bins is not None) else (profile.stress_bins if profile else (4, 5))
+    if profile and d1 not in floor_bins:
         ctx = _get_station_context(station, d1, d2, d3, 0)
         hctx = _get_historical_context(station, state_key)
         return FloorSignal(
             station=station, state_key=state_key,
             d1=d1, d2=d2, d3=d3,
             signal_class="NOISE", confidence="INSUFFICIENT",
-            concordance_score=0, concordance_detail=("D1_NOT_IN_STRESS_ZONE",),
+            concordance_score=0, concordance_detail=("D1_NOT_IN_FLOOR_ZONE",),
             is_rare=False,
             hr_zz75=0.0, hr_zz25=0.0, pf_zz75=0.0,
             rr_asymmetry=0.0, sgs=0.0, pct_overflow=0.0,
@@ -1088,10 +1095,11 @@ def classify_ceiling(
     # ── Without timing: fall back to rules JSON ──
     if not timing or not timing.first_passage_ceiling:
         ceiling_rules = rules.get("ceiling_rules", {}).get(station, {})
-        # Use StationProfile as canonical source for D1 range (polarity-aware)
-        # The JSON had d1_range=[0,1] for ALL stations — wrong for INVERTED ones
+        # Use StationProfile as canonical source for D1 ceiling range (polarity & SKEW aware)
+        # For most stations: ceiling_bins = complacent_bins. For SKEW: ceiling_bins = (4, 5)
         profile = get_station_profile(station)
-        d1_range = list(profile.complacent_bins) if profile else ceiling_rules.get("d1_range", [0, 1])
+        ceiling_bins = profile.ceiling_bins if (profile and profile.ceiling_bins is not None) else (profile.complacent_bins if profile else [0, 1])
+        d1_range = list(ceiling_bins)
         d2_label = D2_LABELS.get(d2, f"UNKNOWN_{d2}")
 
         if d1 in d1_range:
@@ -1132,16 +1140,17 @@ def classify_ceiling(
             **ctx,
         )
 
-    # ── D1 zone guard: ceiling signals only relevant in complacent bins ──
+    # ── D1 zone guard: ceiling signals only relevant in ceiling bins ──
     profile = get_station_profile(station)
-    if profile and d1 not in profile.complacent_bins:
+    ceiling_bins = profile.ceiling_bins if (profile and profile.ceiling_bins is not None) else (profile.complacent_bins if profile else (0, 1))
+    if profile and d1 not in ceiling_bins:
         ctx = _get_station_context(station, d1, d2, d3, 0)
         hctx = _get_historical_context(station, state_key)
         return CeilingSignal(
             station=station, state_key=state_key,
             d1=d1, d2=d2, d3=d3,
             signal_class="NOISE", confidence="INSUFFICIENT",
-            concordance_score=0, concordance_detail=("D1_NOT_IN_COMPLACENT_ZONE",),
+            concordance_score=0, concordance_detail=("D1_NOT_IN_CEILING_ZONE",),
             is_rare=False,
             hr_zz75=0.0, hr_zz25=0.0, pf_zz75=0.0,
             rr_asymmetry=0.0, sgs=0.0, pct_overflow=0.0,
@@ -1242,13 +1251,20 @@ def classify_context(
       DOWNLEG: in neutral territory, ceil_hr > floor_hr = resistance active.
         The market is in a continuation downward. Ceilings hold, floors fail.
     """
-    stress_bins = STRESS_BINS.get(station, [])
-    complacent_bins = COMPLACENT_BINS.get(station, [])
+    # Exclusion logic:
+    # For normal stations: floor_bins == stress_bins == (4,5). (4,5) returns None.
+    #                      Bins (0,1) evaluate stealth accumulation (COMPLACENT).
+    # For SKEW: floor_bins == (0,1), stress_bins == (4,5).
+    #           Both extremes return None (delegated to classify_floor/classify_ceiling).
+    #           Bins (2,3) evaluate continuation legs (NEUTRAL).
+    floor_bins_list = FLOOR_BINS.get(station, STRESS_BINS.get(station, []))
+    stress_bins_list = STRESS_BINS.get(station, [])
 
-    # Determine zone
-    if d1 in stress_bins:
-        return None  # Use classify_floor/classify_ceiling for stress
-    elif d1 in complacent_bins:
+    if d1 in floor_bins_list or d1 in stress_bins_list:
+        return None  # Delegated to classify_floor or classify_ceiling
+
+    complacent_bins_list = COMPLACENT_BINS.get(station, [])
+    if d1 in complacent_bins_list:
         zone = "COMPLACENT"
     else:
         zone = "NEUTRAL"

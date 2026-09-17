@@ -24,7 +24,7 @@ from backend.modules.entry_decision.domain.services.convergence_compositor impor
 # ── 1. D1 Directional Vote Tests ──────────────────────────────────────────
 
 def test_d1_directional_vote_high_bearish():
-    """For high-bearish stations (VIX, VVIX, PCR, SV5, SKEW, DXY), bin >= 4 is bearish (-1), bin <= 1 is bullish (+1)."""
+    """For high-bearish stations (VIX, VVIX, PCR, SV5, DXY, SKEW), bin >= 4 is bearish (-1), bin <= 1 is bullish (+1)."""
     for st in STATIONS_HIGH_BEARISH:
         assert d1_directional_vote("4__2__1", st) == -1, f"Expected {st} bin 4 to vote -1"
         assert d1_directional_vote("5__0__0", st) == -1, f"Expected {st} bin 5 to vote -1"

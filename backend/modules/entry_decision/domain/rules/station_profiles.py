@@ -115,7 +115,7 @@ STATION_PROFILES = {
     "fg": StationProfile(
         station="fg",
         polarity="INVERTED",
-        cat=2,
+        cat=3,  # CAT3_ACTION: confirmador de bsi tras precursores vix/pcr (aligned with family_sequence)
         profession="Contrarian at Floors (EXTREME_FEAR=floor) + Inertia Engine at Ceilings",
         peak_ic_days=80,
         temporal_shape="PEAK_DECAY",

@@ -122,7 +122,7 @@ class TimingContext:
     # ── Signal Classification (V2) ──
     floor_signal_class: str = "UNKNOWN"   # "STRUCTURAL" | "TACTICAL" | "IMMEDIATE" | "UNKNOWN"
     ceiling_signal_class: str = "UNKNOWN"
-    floor_timing_mode: str = "UNKNOWN"    # "ANTICIPATION" | "CONFIRMATION" | "NOISE" | "UNKNOWN"
+    floor_timing_mode: str = "UNKNOWN"    # "ANTICIPATION" | "CONFIRMATION" | "CONTINUATION" | "NOISE" | "UNKNOWN"
     ceiling_timing_mode: str = "UNKNOWN"
 
     # Backward compatibility
@@ -315,6 +315,9 @@ def _parse_medicion(raw: dict) -> tuple:
     fp_zz75 = fp_dict.get("zz75")
     if fp_zz25 and fp_zz75 and fp_zz25.hit_rate > 0:
         sgs = round((fp_zz75.hit_rate - fp_zz25.hit_rate) / fp_zz25.hit_rate, 4)
+    elif fp_zz25 and fp_zz75 and fp_zz25.hit_rate == 0 and fp_zz75.hit_rate > 0:
+        # hr25=0, hr75>0: signal only fires at structural scale → definitionally STRUCTURAL
+        sgs = 10.0
 
     # ── Signal Class from SGS ──
     if sgs is not None:
@@ -337,16 +340,19 @@ def _parse_medicion(raw: dict) -> tuple:
             canary_edge = round(t_minus_1.hit_rate - entre.hit_rate, 4)
             canary_n = t_minus_1.n
 
-    # ── Timing Mode from slots (V2) ──
-    # ANTICIPATION: t-1 or t-2 has strong edge (signal BEFORE the turn)
-    # CONFIRMATION: t+1 or t+2 has strong edge (signal AFTER the turn)
-    # NOISE: no meaningful slot edge
+    # ── Timing Mode from slots + positional coherence (V3) ──
+    # Priority 1: per-slot evidence (for high-N states where individual slots have n≥5)
+    # Priority 2: positional coherence (pct_en_rango) for intermediate signals
+    # Three categories:
+    #   EN RANGO (≥60%): majority near turns → turn signal (ANTICIPATION/CONFIRMATION)
+    #   FUERA (<40%): majority away from turns → continuation/trend persistence
+    #   MIXTO (40-59%): genuinely ambiguous → NOISE
     timing_mode = "NOISE"
     t_minus_2 = slots.get("t-2")
     t_plus_1 = slots.get("t+1")
     t_plus_2 = slots.get("t+2")
 
-    # Check anticipation (pre-turn)
+    # Check anticipation (pre-turn) — per-slot evidence
     has_anticipation = False
     if canary_edge is not None and canary_edge > 0.15 and canary_n >= 5:
         has_anticipation = True
@@ -354,7 +360,7 @@ def _parse_medicion(raw: dict) -> tuple:
         if t_minus_2.hit_rate is not None and (t_minus_2.hit_rate - entre.hit_rate) > 0.15:
             has_anticipation = True
 
-    # Check confirmation (post-turn)
+    # Check confirmation (post-turn) — per-slot evidence
     has_confirmation = False
     if t_plus_1 and t_plus_1.n >= 5 and entre and entre.hit_rate is not None:
         if t_plus_1.hit_rate is not None and (t_plus_1.hit_rate - entre.hit_rate) > 0.15:
@@ -366,6 +372,17 @@ def _parse_medicion(raw: dict) -> tuple:
         timing_mode = "ANTICIPATION"
     elif has_confirmation:
         timing_mode = "CONFIRMATION"
+    elif pct_en_rango >= 60.0:
+        # Positional coherence: majority near turns → turn signal
+        # Determine direction from canary edge (even if n < 5)
+        if canary_edge is not None and canary_edge > 0.05:
+            timing_mode = "ANTICIPATION"
+        else:
+            # Default for near-turn coherence: signal arrives at/after turn
+            timing_mode = "CONFIRMATION"
+    elif pct_en_rango < 40.0:
+        # Majority away from turns → trend continuation signal (NOT noise)
+        timing_mode = "CONTINUATION"
 
     return (pct_en_rango, delta_medio, slots, fp_dict,
             sgs, canary_edge, canary_n, signal_class, timing_mode)

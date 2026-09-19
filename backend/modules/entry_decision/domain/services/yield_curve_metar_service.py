@@ -105,12 +105,16 @@ class MarketMETAR:
 class YieldCurveMetarService:
     """Domain service for generating Yield Curve Spread METARs."""
 
+    REGIME_KEY = "yield_curve:entry_decision:MARKET"
+
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
+        regime_state_port: Optional[Any] = None,
         yield_curve_lookup_adapter: Optional[YieldCurveLookupAdapter] = None,
     ):
         self._store = data_store or get_shared_store()
+        self._port = regime_state_port
         self._lookup = yield_curve_lookup_adapter or yield_curve_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
@@ -218,6 +222,20 @@ class YieldCurveMetarService:
                 market_status = "CLEAR"
 
             metar_id = f"METAR-YIELD-CURVE-{clean_date.replace('-', '')}-001"
+
+            if self._port:
+                try:
+                    from datetime import datetime, timezone
+                    clean_date_short = str(clean_date).split(" ")[0]
+                    ts_dt = datetime.strptime(clean_date_short, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                    self._port.commit_transition(
+                        key=self.REGIME_KEY,
+                        current_state=guidance.state_key,
+                        entered_at=ts_dt,
+                        trigger_event=f"SPREAD={spread_latest:.4f}, Δ3d={spread_delta_3d:+.4f}",
+                    )
+                except Exception:
+                    pass
 
             return MarketMETAR(
                 metar_id=metar_id,

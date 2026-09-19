@@ -233,7 +233,7 @@ async def get_all_metar_stations(
     )
 
     return {
-        "registered_count": len(indicators),
+        "registered_count": len(_STATION_MAP),
         "active_count": active,
         "metars": results
     }

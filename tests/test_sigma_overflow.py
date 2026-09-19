@@ -171,7 +171,7 @@ def test_sigmet_overflow_generation():
     assert sig_mod is not None
     assert sig_mod.hazard_type == "OVERFLOW_MODERADO"
     assert sig_mod.severity == "WARNING"
-    assert sig_mod.operational_action == "STK_HOLD_STABLE"
+    assert sig_mod.operational_action == "MKT_HOLD_STABLE"
 
     # 3. Extremo (4σ <= depth < 5σ: Tier 2)
     metar_ext = DummyMetar(4.5, None, None, "UPPER")
@@ -179,7 +179,7 @@ def test_sigmet_overflow_generation():
     assert sig_ext is not None
     assert sig_ext.hazard_type == "OVERFLOW_EXTREMO"
     assert sig_ext.severity == "CRITICAL"
-    assert sig_ext.operational_action == "STK_BLOCK_CRISIS"
+    assert sig_ext.operational_action == "MKT_BLOCK_CRISIS"
 
     # 3b. Blow-off Extreme (7σ <= depth < 10σ: Tier 4)
     metar_blowoff = DummyMetar(8.1, None, None, "UPPER")

@@ -95,12 +95,16 @@ class MarketMETAR:
 class RotationMetarService:
     """Domain service for generating Sector Rotation METARs."""
 
+    REGIME_KEY = "rotation:entry_decision:MARKET"
+
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
+        regime_state_port: Optional[Any] = None,
         rotation_lookup_adapter: Optional[RotationLookupAdapter] = None,
     ):
         self._store = data_store or get_shared_store()
+        self._port = regime_state_port
         self._lookup = rotation_lookup_adapter or rotation_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
@@ -252,6 +256,23 @@ class RotationMetarService:
             e_ret_max_zz75=guidance.zz75.e_ret_max,
             e_ret_min_zz75=guidance.zz75.e_ret_min,
             )
+
+            if self._port:
+                try:
+                    state_keys = [
+                        (self.REGIME_KEY, metar.state_key),
+                        ("rotation:regime:MARKET", metar.divergence_regime),
+                        ("rotation:guidance:MARKET", metar.action_code),
+                    ]
+                    for key, state_label in state_keys:
+                        current = self._port.get_current(key) if hasattr(self._port, "get_current") else None
+                        if current is None or getattr(current, "current_state", None) != state_label:
+                            trigger_msg = f"ROTATION_INDEX={metar.rotation_index_value:.4f}, d3={metar.rotation_velocity_3d:+.4f}"
+                            self._port.commit_transition(key, state_label, trigger=trigger_msg)
+                        elif hasattr(self._port, "increment_duration"):
+                            self._port.increment_duration(key)
+                except Exception:
+                    pass
 
             return metar
         finally:

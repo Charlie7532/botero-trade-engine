@@ -99,12 +99,16 @@ class MarketMETAR:
 class CreditMetarService:
     """Domain service for generating Credit Stress METARs."""
 
+    REGIME_KEY = "credit:entry_decision:MARKET"
+
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
+        regime_state_port: Optional[Any] = None,
         credit_lookup_adapter: Optional[CreditLookupAdapter] = None,
     ):
         self._store = data_store or get_shared_store()
+        self._port = regime_state_port
         self._lookup = credit_lookup_adapter or credit_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
@@ -212,7 +216,25 @@ class CreditMetarService:
 
             metar_id = f"METAR-CREDIT-{clean_date.replace('-', '')}-001"
 
-
+            if self._port:
+                try:
+                    from datetime import datetime, timezone
+                    clean_date_short = str(clean_date).split(" ")[0]
+                    ts_dt = datetime.strptime(clean_date_short, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                    self._port.commit_transition(
+                        key=self.REGIME_KEY,
+                        next_state=guidance.credit_bin,
+                        trigger=f"CREDIT_RATIO={credit_latest:.4f}, Δ3d={credit_delta_3d:+.4f}",
+                        timestamp=ts_dt,
+                        metadata={
+                            "action_code": derive_action_code(guidance),
+                            "credit_ratio": credit_latest,
+                            "delta_3d": credit_delta_3d,
+                            "state_key": guidance.state_key,
+                        },
+                    )
+                except Exception:
+                    pass
 
             return MarketMETAR(
                 metar_id=metar_id,

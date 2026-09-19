@@ -96,12 +96,16 @@ class MarketMETAR:
 class BSIMetarService:
     """Domain service for generating Breadth Shock Index METARs."""
 
+    REGIME_KEY = "bsi:entry_decision:MARKET"
+
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
+        regime_state_port: Optional[Any] = None,
         bsi_lookup_adapter: Optional[BSILookupAdapter] = None,
     ):
         self._store = data_store or get_shared_store()
+        self._port = regime_state_port
         self._lookup = bsi_lookup_adapter or bsi_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
@@ -205,7 +209,19 @@ class BSIMetarService:
 
             metar_id = f"METAR-BSI-{clean_date.replace('-', '')}-001"
 
-
+            if self._port:
+                try:
+                    from datetime import datetime, timezone
+                    clean_date_short = str(clean_date).split(" ")[0]
+                    ts_dt = datetime.strptime(clean_date_short, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                    self._port.commit_transition(
+                        key=self.REGIME_KEY,
+                        current_state=guidance.state_key,
+                        entered_at=ts_dt,
+                        trigger_event=f"S5TW={bsi_latest:.2f}%, d3={bsi_delta_3d:+.2f}pp",
+                    )
+                except Exception:
+                    pass
 
             return MarketMETAR(
                 metar_id=metar_id,

@@ -13,13 +13,11 @@ from dataclasses import dataclass, asdict
 from typing import Dict, Any, Optional
 import json
 
-from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.shared_store import get_shared_store
 from backend.modules.entry_decision.domain.rules.vix_lookup import vix_lookup
 from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
+from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
 
-class StrictDataPolicyError(Exception):
-    """Raised when required market data or Fact Store parameters are missing. Zero Fallbacks allowed."""
-    pass
 
 @dataclass(frozen=True)
 class MarketMETAR:
@@ -95,7 +93,7 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
     Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
     in Neon Vault, raises StrictDataPolicyError immediately.
     """
-    store = TimescaleDataStore()
+    store = get_shared_store()
     engine = store.engine
     try:
         import pandas as pd
@@ -177,7 +175,7 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
             )
 
         vec = guidance.to_vector()
-        now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        now_utc = f"{latest_date_str}T00:00:00Z"
 
         clean_date = latest_date_str.replace("-", "")
         metar_id = f"METAR-VIX-{clean_date}-001"
@@ -223,4 +221,4 @@ def get_vix_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
         )
 
     finally:
-        store.close()
+        pass  # shared pool — no close

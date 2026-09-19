@@ -2155,44 +2155,9 @@ def run_cycle(store: TimescaleDataStore) -> None:
     results["cboe"] = vault_cboe_indices(store)
     results["fear_greed"] = vault_fear_greed(store)
     results["portfolio"] = vault_portfolio_data(store)
-    try:
-        from backend.daemons.vault_providers.pcr_provider import PCRProvider
-        results["pcr_notam"] = PCRProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"PCR NOTAM vault failed (non-critical): {e}")
-        results["pcr_notam"] = {"status": "error", "error": str(e)}
-
-    # VIX METAR transitions
-    try:
-        from backend.daemons.vault_providers.vix_provider import VIXProvider
-        results["vix_metar"] = VIXProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"VIX METAR vault failed (non-critical): {e}")
-        results["vix_metar"] = {"status": "error", "error": str(e)}
-
-    # VVIX METAR transitions
-    try:
-        from backend.daemons.vault_providers.vvix_provider import VVIXProvider
-        results["vvix_metar"] = VVIXProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"VVIX METAR vault failed (non-critical): {e}")
-        results["vvix_metar"] = {"status": "error", "error": str(e)}
-
-    # SKEW METAR transitions
-    try:
-        from backend.daemons.vault_providers.skew_provider import SkewProvider
-        results["skew_metar"] = SkewProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"SKEW METAR vault failed (non-critical): {e}")
-        results["skew_metar"] = {"status": "error", "error": str(e)}
-
-    # FG METAR transitions
-    try:
-        from backend.daemons.vault_providers.fg_provider import FearGreedMETARProvider
-        results["fg_metar"] = FearGreedMETARProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"FG METAR vault failed (non-critical): {e}")
-        results["fg_metar"] = {"status": "error", "error": str(e)}
+    # NOTE: Individual METAR providers (VIX, VVIX, SKEW, FG, PCR) replaced by
+    # unified MetarCompositorProvider in Tier 3b (after synthetic_indicators).
+    # Single compositor pass handles all 11 stations + SIGMET + TAF.
 
     # ── Tier 2: Moderate (~1 min) ──
     results["finnhub"] = vault_finnhub_data(store, neon_tickers)
@@ -2286,45 +2251,15 @@ def run_cycle(store: TimescaleDataStore) -> None:
         logger.error(f"🚨 CRITICAL: Synthetic indicators provider crashed: {e}")
         results["synthetic_indicators"] = {"status": "error", "error": str(e)}
 
-    # DXY METAR transitions (needs DXY from ohlcv)
+    # DXY, Credit, Yield Curve, Rotation, BSI METAR providers REPLACED by unified
+    # MetarCompositorProvider — single compositor pass handles all 11 stations.
+    # ── Tier 3b-nov: Unified METAR Compositor (AFTER synthetic_indicators) ──
     try:
-        from backend.daemons.vault_providers.dxy_provider import DXYProvider
-        results["dxy_metar"] = DXYProvider().run_full(store)
+        from backend.daemons.vault_providers.metar_compositor_provider import MetarCompositorProvider
+        results["metar_compositor"] = MetarCompositorProvider().run_full(store)
     except Exception as e:
-        logger.warning(f"DXY METAR vault failed (non-critical): {e}")
-        results["dxy_metar"] = {"status": "error", "error": str(e)}
-
-    # Credit Stress METAR transitions (needs CREDIT_RATIO from synthetic_indicators)
-    try:
-        from backend.daemons.vault_providers.credit_provider import CreditProvider
-        results["credit_metar"] = CreditProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"Credit METAR vault failed (non-critical): {e}")
-        results["credit_metar"] = {"status": "error", "error": str(e)}
-
-    # Yield Curve METAR transitions (needs TNX/IRX from ohlcv)
-    try:
-        from backend.daemons.vault_providers.yield_curve_provider import YieldCurveProvider
-        results["yield_curve_metar"] = YieldCurveProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"Yield Curve METAR vault failed (non-critical): {e}")
-        results["yield_curve_metar"] = {"status": "error", "error": str(e)}
-
-    # Sector Rotation METAR transitions (needs sectors from ohlcv)
-    try:
-        from backend.daemons.vault_providers.rotation_provider import RotationProvider
-        results["rotation_metar"] = RotationProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"Rotation METAR vault failed (non-critical): {e}")
-        results["rotation_metar"] = {"status": "error", "error": str(e)}
-
-    # Breadth Shock Index (BSI) METAR transitions (needs S5TW from breadth)
-    try:
-        from backend.daemons.vault_providers.bsi_provider import BSIProvider
-        results["bsi_metar"] = BSIProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"BSI METAR vault failed (non-critical): {e}")
-        results["bsi_metar"] = {"status": "error", "error": str(e)}
+        logger.error(f"METAR Compositor vault failed: {e}")
+        results["metar_compositor"] = {"status": "error", "error": str(e)}
 
     # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)

@@ -159,3 +159,73 @@ def compute_composite_taf(cones: List[TafCone]) -> Dict[str, Any]:
         "n_convergent_bear": n_convergent_bear,
         "station_cones": {c.station: c.to_dict() for c in cones},
     }
+
+
+# ── Lookup adapter registry (lazy-loaded) ────────────────────────────
+_STATION_ADAPTERS: Dict[str, Any] = {}
+
+_ADAPTER_REGISTRY = {
+    "vix": ("backend.modules.entry_decision.domain.rules.vix_lookup", "vix_lookup"),
+    "vvix": ("backend.modules.entry_decision.domain.rules.vvix_lookup", "vvix_lookup"),
+    "pcr": ("backend.modules.entry_decision.domain.rules.pcr_lookup", "pcr_lookup"),
+    "fg": ("backend.modules.entry_decision.domain.rules.fg_lookup", "fg_lookup"),
+    "sv5_turbulence": ("backend.modules.entry_decision.domain.rules.sv5_turbulence_lookup", "sv5_turbulence_lookup"),
+    "skew": ("backend.modules.entry_decision.domain.rules.skew_lookup", "skew_lookup"),
+    "credit": ("backend.modules.entry_decision.domain.rules.credit_lookup", "credit_lookup"),
+    "yield_curve": ("backend.modules.entry_decision.domain.rules.yield_curve_lookup", "yield_curve_lookup"),
+    "rotation": ("backend.modules.entry_decision.domain.rules.rotation_lookup", "rotation_lookup"),
+    "bsi": ("backend.modules.entry_decision.domain.rules.bsi_lookup", "bsi_lookup"),
+    "dxy": ("backend.modules.entry_decision.domain.rules.dxy_lookup", "dxy_lookup"),
+}
+
+
+def _get_adapter(station: str):
+    """Lazy-load and cache a station's lookup adapter."""
+    if station not in _STATION_ADAPTERS:
+        entry = _ADAPTER_REGISTRY.get(station)
+        if not entry:
+            return None
+        import importlib
+        mod = importlib.import_module(entry[0])
+        _STATION_ADAPTERS[station] = getattr(mod, entry[1])
+    return _STATION_ADAPTERS[station]
+
+
+def compute_composite_taf_from_summaries(
+    station_summaries: Dict[str, Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Compute composite TAF from pre-computed station_summaries (from Compositor).
+
+    This avoids re-calling ConvergenceCompositor.compute(). Each station's
+    state_key is used to look up zz25/zz50/zz75 data from the in-memory
+    fact store adapters.
+
+    Args:
+        station_summaries: Dict mapping station code → station summary dict.
+                           Each must have a "state_key" field.
+    """
+    cones: List[TafCone] = []
+
+    for station, summary in station_summaries.items():
+        state_key = summary.get("state_key", "")
+        if not state_key:
+            continue
+
+        adapter = _get_adapter(station)
+        if adapter is None:
+            continue
+
+        state_data = adapter.states.get(state_key, {})
+        if not state_data:
+            continue
+
+        zz25 = state_data.get("zz25", {})
+        zz50 = state_data.get("zz50", {})
+        zz75 = state_data.get("zz75", {})
+        div = state_data.get("divergence_regime", "NEUTRAL")
+
+        cone = compute_taf_cone(station, state_key, zz25, zz50, zz75, div)
+        cones.append(cone)
+
+    return compute_composite_taf(cones)
+

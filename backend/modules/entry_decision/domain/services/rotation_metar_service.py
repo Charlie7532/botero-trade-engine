@@ -7,24 +7,17 @@ Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of the composite Rotation In
 Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
 raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
 Always includes exact UTC date and time.
-Persists StateSnapshot to RegimeStatePort under key 'rotation:entry_decision:MARKET'.
 """
-from datetime import datetime, timezone
 from dataclasses import dataclass, asdict
 from typing import Dict, Any, Optional
 import json
 import numpy as np
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.shared_store import get_shared_store
 from backend.modules.entry_decision.domain.rules.rotation_lookup import rotation_lookup, RotationLookupAdapter
 from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
-from backend.modules.shared.domain.entities.state_snapshot import StateSnapshot
-from backend.modules.shared.domain.ports.regime_state_port import RegimeStatePort
-
-
-class StrictDataPolicyError(Exception):
-    """Raised when required market data or Fact Store parameters are missing. Zero Fallbacks allowed."""
-    pass
+from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
 
 
 @dataclass(frozen=True)
@@ -41,7 +34,6 @@ class MarketMETAR:
     velocity_vector: str
     n_samples: int
     divergence_regime: str
-    action_code: str
     action_code: str
     p_bull_vector: list
     p_bear_vector: list
@@ -64,10 +56,6 @@ class MarketMETAR:
     @property
     def current_state(self) -> str:
         return self.rotation_bin
-
-    @property
-    def is_crisis_override(self) -> bool:
-        return self.action_code == "MKT_ROTATION_DEFENSIVE_FREEZE"
 
     def to_dict(self) -> Dict[str, Any]:
         """Returns full structured METAR payload as a dictionary."""
@@ -100,24 +88,19 @@ class MarketMETAR:
             f"    • R/R Asymmetry        : {self.rr_asymmetry_ratio:.2f}x\n\n"
             " 🎯 OPERATIONAL DIRECTIVES (UNIVERSAL TAXONOMY):\n"
             f"    • Action Code          : {self.action_code}\n"
-            f"    • Action Code        : {self.action_code}\n"
             "================================================================================"
         )
 
 
 class RotationMetarService:
-    """Domain service for generating Sector Rotation METARs and persisting state transitions."""
-
-    REGIME_KEY = "rotation:entry_decision:MARKET"
+    """Domain service for generating Sector Rotation METARs."""
 
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
-        regime_state_port: Optional[RegimeStatePort] = None,
         rotation_lookup_adapter: Optional[RotationLookupAdapter] = None,
     ):
-        self._store = data_store or TimescaleDataStore()
-        self._port = regime_state_port
+        self._store = data_store or get_shared_store()
         self._lookup = rotation_lookup_adapter or rotation_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
@@ -226,18 +209,14 @@ class RotationMetarService:
                 )
 
             vec = guidance.to_vector()
-            now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            now_utc_str = f"{clean_date}T00:00:00Z"
 
-            action_code = derive_action_code(guidance)
-
-            if action_code == "MKT_ROTATION_DEFENSIVE_FREEZE":
-                market_status = "CRISIS_DEFENSIVE_FREEZE"
-            elif action_code == "MKT_ROTATION_DEFENSIVE_FLIGHT":
-                market_status = "ELEVATED_DEFENSIVE_FLIGHT"
-            elif action_code == "MKT_ROTATION_CYCLICAL_EXPANSION":
-                market_status = "EXPANSIVE_RISK_ON"
+            if guidance.divergence_regime == "FULL_CONVERGENT_BEAR":
+                market_status = "CRISIS_VETO"
+            elif guidance.divergence_regime in ("TACTICAL_BOUNCE_ONLY", "TACTICAL_PULLBACK"):
+                market_status = "RESTRICTED"
             else:
-                market_status = "NORMAL_BALANCED"
+                market_status = "CLEAR"
 
             metar_id = f"METAR-ROTATION-{clean_date.replace('-', '')}-001"
 
@@ -274,27 +253,9 @@ class RotationMetarService:
             e_ret_min_zz75=guidance.zz75.e_ret_min,
             )
 
-            # Stateful-First Regime State Persistence
-            if self._port:
-                try:
-                    state_keys = [
-                        (self.REGIME_KEY, metar.state_key),
-                        ("rotation:regime:MARKET", metar.divergence_regime),
-                        ("rotation:guidance:MARKET", metar.action_code),
-                    ]
-                    for key, state_label in state_keys:
-                        current = self._port.get_current(key)
-                        if current is None or current.current_state != state_label:
-                            trigger_msg = f"ROTATION_INDEX={metar.rotation_index_value:.4f}, d3={metar.rotation_velocity_3d:+.4f}"
-                            self._port.commit_transition(key, state_label, trigger=trigger_msg)
-                        else:
-                            self._port.increment_duration(key)
-                except Exception:
-                    pass
-
             return metar
         finally:
-            self._store.close()
+            pass  # shared pool — no close
 
 
 def get_rotation_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:

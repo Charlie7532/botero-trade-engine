@@ -12,19 +12,17 @@ from datetime import datetime, timezone
 from dataclasses import dataclass, asdict
 from typing import Dict, Any, Optional, List
 
-from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.shared_store import get_shared_store
 from backend.modules.entry_decision.domain.rules.dxy_lookup import (
     dxy_lookup,
     DXYStateGuidance,
 )
 from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
+from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
 
 logger = logging.getLogger(__name__)
 
 
-class StrictDataPolicyError(Exception):
-    """Raised when Neon Vault lacks required DXY bar data."""
-    pass
 
 
 @dataclass(frozen=True)
@@ -97,7 +95,7 @@ def get_dxy_market_metar(as_of_date: Optional[str] = None) -> DXYMarketMETAR:
     Reads exclusively from Neon Vault market.ohlcv_bars.
     Raises StrictDataPolicyError if data is missing.
     """
-    store = TimescaleDataStore()
+    store = get_shared_store()
     engine = store.engine
     try:
         import pandas as pd
@@ -160,7 +158,7 @@ def get_dxy_market_metar(as_of_date: Optional[str] = None) -> DXYMarketMETAR:
             )
 
         vec = guidance.to_vector()
-        now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        now_utc = f"{latest_date_str}T00:00:00Z"
         clean_date = latest_date_str.replace("-", "")
         metar_id = f"METAR-DXY-{clean_date}-001"
 
@@ -205,4 +203,4 @@ def get_dxy_market_metar(as_of_date: Optional[str] = None) -> DXYMarketMETAR:
         )
 
     finally:
-        store.close()
+        pass  # shared pool — no close

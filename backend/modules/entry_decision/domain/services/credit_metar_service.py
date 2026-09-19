@@ -7,23 +7,16 @@ Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of the HYG/LQD ratio for ult
 Strict Data Policy: Zero Fallbacks. If a requested date is missing or not valid in Neon Vault,
 raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
 Always includes exact UTC date and time.
-Persists StateSnapshot to RegimeStatePort under key 'credit:entry_decision:MARKET'.
 """
-from datetime import datetime, timezone
 from dataclasses import dataclass, asdict
 from typing import Dict, Any, Optional
 import json
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.shared_store import get_shared_store
 from backend.modules.entry_decision.domain.rules.credit_lookup import credit_lookup, CreditLookupAdapter
 from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
-from backend.modules.shared.domain.entities.state_snapshot import StateSnapshot
-from backend.modules.shared.domain.ports.regime_state_port import RegimeStatePort
-
-
-class StrictDataPolicyError(Exception):
-    """Raised when required market data or Fact Store parameters are missing. Zero Fallbacks allowed."""
-    pass
+from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
 
 
 @dataclass(frozen=True)
@@ -40,7 +33,6 @@ class MarketMETAR:
     velocity_vector: str
     n_samples: int
     divergence_regime: str
-    action_code: str
     action_code: str
     p_bull_vector: list
     p_bear_vector: list
@@ -64,10 +56,6 @@ class MarketMETAR:
     @property
     def current_state(self) -> str:
         return self.credit_bin
-
-    @property
-    def is_crisis_override(self) -> bool:
-        return self.action_code == "MKT_CREDIT_FREEZE_EXTREME"
 
     def to_dict(self) -> Dict[str, Any]:
         """Returns full structured METAR payload as a dictionary."""
@@ -104,24 +92,19 @@ class MarketMETAR:
             f"    • R/R Asymmetry      : {self.rr_asymmetry_ratio:.2f}x\n\n"
             " 🎯 OPERATIONAL DIRECTIVES (UNIVERSAL TAXONOMY):\n"
             f"    • Action Code        : {self.action_code}\n"
-            f"    • Action Code      : {self.action_code}\n"
             "================================================================================"
         )
 
 
 class CreditMetarService:
-    """Domain service for generating Credit Stress METARs and persisting state transitions."""
-
-    REGIME_KEY = "credit:entry_decision:MARKET"
+    """Domain service for generating Credit Stress METARs."""
 
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
-        regime_state_port: Optional[RegimeStatePort] = None,
         credit_lookup_adapter: Optional[CreditLookupAdapter] = None,
     ):
-        self._store = data_store or TimescaleDataStore()
-        self._port = regime_state_port
+        self._store = data_store or get_shared_store()
         self._lookup = credit_lookup_adapter or credit_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
@@ -218,40 +201,18 @@ class CreditMetarService:
                 )
 
             vec = guidance.to_vector()
-            now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            now_utc_str = f"{clean_date}T00:00:00Z"
 
-            # Determine Universal Taxonomy Action Code
-            if guidance.credit_bin == "EXTREME_STRESS" or guidance.velocity_vector == "FAST_CRUSH_3D":
-                action_code = "MKT_CREDIT_FREEZE_EXTREME"
-                market_status = "CRISIS_CREDIT_FREEZE"
-            elif guidance.credit_bin in ("STRESS", "NEUTRAL_TIGHT") or guidance.velocity_vector == "DECELERATING_DOWN_3D":
-                action_code = "MKT_CREDIT_STRESS_ELEVATED"
-                market_status = "ELEVATED_STRESS"
+            if guidance.divergence_regime == "FULL_CONVERGENT_BEAR":
+                market_status = "CRISIS_VETO"
+            elif guidance.divergence_regime in ("TACTICAL_BOUNCE_ONLY", "TACTICAL_PULLBACK"):
+                market_status = "RESTRICTED"
             else:
-                action_code = "MKT_CREDIT_EXPANSION_STABLE"
-                market_status = "EXPANSIVE_STABLE"
+                market_status = "CLEAR"
 
             metar_id = f"METAR-CREDIT-{clean_date.replace('-', '')}-001"
 
-            # Stateful-First Persistence (Rule 15)
-            if self._port:
-                try:
-                    clean_date_short = str(clean_date).split(" ")[0]
-                    ts_dt = datetime.strptime(clean_date_short, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-                    self._port.commit_transition(
-                        key=self.REGIME_KEY,
-                        next_state=guidance.credit_bin,
-                        trigger=f"CREDIT_RATIO={credit_latest:.4f}, Δ3d={credit_delta_3d:+.4f}",
-                        timestamp=ts_dt,
-                        metadata={
-                            "action_code": action_code,
-                            "credit_ratio": credit_latest,
-                            "delta_3d": credit_delta_3d,
-                            "state_key": guidance.state_key,
-                        },
-                    )
-                except Exception:
-                    pass
+
 
             return MarketMETAR(
                 metar_id=metar_id,
@@ -287,7 +248,7 @@ class CreditMetarService:
             )
 
         finally:
-            self._store.close()
+            pass  # shared pool — no close
 
 
 def get_credit_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:

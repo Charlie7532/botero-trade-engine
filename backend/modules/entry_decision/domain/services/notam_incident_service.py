@@ -15,9 +15,7 @@ import json
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
 
-class StrictDataPolicyError(Exception):
-    """Raised when operational incident parameters cannot be evaluated."""
-    pass
+from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
 
 
 @dataclass(frozen=True)

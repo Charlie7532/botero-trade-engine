@@ -22,17 +22,18 @@ from dataclasses import dataclass, asdict, field
 from typing import Dict, Any, List, Optional
 import numpy as np
 
-from backend.modules.entry_decision.domain.services.vix_metar_service import get_vix_market_metar, StrictDataPolicyError as VIXError
-from backend.modules.entry_decision.domain.services.vvix_metar_service import get_vvix_market_metar, StrictDataPolicyError as VVIXError
-from backend.modules.entry_decision.domain.services.pcr_metar_service import get_pcr_market_metar, StrictDataPolicyError as PCRError
-from backend.modules.entry_decision.domain.services.fg_metar_service import get_fg_market_metar, StrictDataPolicyError as FGError
-from backend.modules.entry_decision.domain.services.sv5_turbulence_metar_service import get_sv5_turbulence_market_metar, StrictDataPolicyError as TurbError
-from backend.modules.entry_decision.domain.services.skew_metar_service import get_skew_market_metar, StrictDataPolicyError as SKEWError
-from backend.modules.entry_decision.domain.services.credit_metar_service import get_credit_market_metar, StrictDataPolicyError as CreditError
-from backend.modules.entry_decision.domain.services.yield_curve_metar_service import get_yield_curve_market_metar, StrictDataPolicyError as YieldCurveError
-from backend.modules.entry_decision.domain.services.rotation_metar_service import get_rotation_market_metar, StrictDataPolicyError as RotationError
-from backend.modules.entry_decision.domain.services.bsi_metar_service import get_bsi_market_metar, StrictDataPolicyError as BSIError
-from backend.modules.entry_decision.domain.services.dxy_metar_service import get_dxy_market_metar, StrictDataPolicyError as DXYError
+from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
+from backend.modules.entry_decision.domain.services.vix_metar_service import get_vix_market_metar
+from backend.modules.entry_decision.domain.services.vvix_metar_service import get_vvix_market_metar
+from backend.modules.entry_decision.domain.services.pcr_metar_service import get_pcr_market_metar
+from backend.modules.entry_decision.domain.services.fg_metar_service import get_fg_market_metar
+from backend.modules.entry_decision.domain.services.sv5_turbulence_metar_service import get_sv5_turbulence_market_metar
+from backend.modules.entry_decision.domain.services.skew_metar_service import get_skew_market_metar
+from backend.modules.entry_decision.domain.services.credit_metar_service import get_credit_market_metar
+from backend.modules.entry_decision.domain.services.yield_curve_metar_service import get_yield_curve_market_metar
+from backend.modules.entry_decision.domain.services.rotation_metar_service import get_rotation_market_metar
+from backend.modules.entry_decision.domain.services.bsi_metar_service import get_bsi_market_metar
+from backend.modules.entry_decision.domain.services.dxy_metar_service import get_dxy_market_metar
 import json
 from pathlib import Path
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
@@ -275,8 +276,15 @@ class ConvergenceReport:
     # Station Details
     station_summaries: Dict[str, Any] = field(default_factory=dict)
 
+    # Raw METAR snapshots — internal field for in-process consumption
+    # (SIGMET evaluator, unified weather endpoint). Excluded from to_dict()
+    # to avoid bloating the API response.
+    metar_snapshots: Dict[str, Dict[str, Any]] = field(default_factory=dict, repr=False)
+
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        d = asdict(self)
+        d.pop("metar_snapshots", None)
+        return d
 
 
 # ── Compositor ────────────────────────────────────────────────────────────
@@ -775,4 +783,5 @@ class ConvergenceCompositor:
             family_sequence=family_dict,
             station_summaries=station_summaries,
             stale_stations=stale_list,
+            metar_snapshots=results,
         )

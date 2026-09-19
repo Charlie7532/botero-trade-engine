@@ -5,25 +5,18 @@ Generates authoritative, zero-fallback BSI (S5TW Tactical Breadth) Market METARs
 Uses 3-Day Fast Kinematic Velocity (Delta 3d - 72h) of S5TW (% of S&P 500 above 20-DMA) for fast shock detection.
 Strict Data Policy: Zero Fallbacks. If a requested date is missing in Neon Vault,
 raises StrictDataPolicyError immediately with explicit 'METAR NOT AVAILABLE' message in English.
-Persists StateSnapshot to RegimeStatePort under key 'bsi:entry_decision:MARKET'.
 Follows Rules 15, 23, 24.
 """
-from datetime import datetime, timezone
 from dataclasses import dataclass, asdict
 from typing import Dict, Any, Optional
 import json
 import numpy as np
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.shared_store import get_shared_store
 from backend.modules.entry_decision.domain.rules.bsi_lookup import bsi_lookup, BSILookupAdapter
 from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
-from backend.modules.shared.domain.entities.state_snapshot import StateSnapshot
-from backend.modules.shared.domain.ports.regime_state_port import RegimeStatePort
-
-
-class StrictDataPolicyError(Exception):
-    """Raised when required market data or Fact Store parameters are missing. Zero Fallbacks allowed."""
-    pass
+from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
 
 
 @dataclass(frozen=True)
@@ -40,7 +33,6 @@ class MarketMETAR:
     velocity_vector: str
     n_samples: int
     divergence_regime: str
-    action_code: str
     action_code: str
     p_bull_vector: list
     p_bear_vector: list
@@ -63,10 +55,6 @@ class MarketMETAR:
     @property
     def current_state(self) -> str:
         return self.bsi_bin
-
-    @property
-    def is_crisis_override(self) -> bool:
-        return self.bsi_bin == "BREADTH_WASHED_OUT" or self.velocity_vector == "FAST_CRUSH_3D"
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -101,24 +89,19 @@ class MarketMETAR:
             f"    • R/R Asymmetry      : {self.rr_asymmetry_ratio:.2f}x\n\n"
             " 🎯 OPERATIONAL DIRECTIVES (UNIVERSAL TAXONOMY):\n"
             f"    • Action Code        : {self.action_code}\n"
-            f"    • Action Code      : {self.action_code}\n"
             "================================================================================"
         )
 
 
 class BSIMetarService:
-    """Domain service for generating Breadth Shock Index METARs and persisting state transitions."""
-
-    REGIME_KEY = "bsi:entry_decision:MARKET"
+    """Domain service for generating Breadth Shock Index METARs."""
 
     def __init__(
         self,
         data_store: Optional[TimescaleDataStore] = None,
-        regime_state_port: Optional[RegimeStatePort] = None,
         bsi_lookup_adapter: Optional[BSILookupAdapter] = None,
     ):
-        self._store = data_store or TimescaleDataStore()
-        self._port = regime_state_port
+        self._store = data_store or get_shared_store()
         self._lookup = bsi_lookup_adapter or bsi_lookup
 
     def evaluate(self, as_of_date: Optional[str] = None) -> MarketMETAR:
@@ -211,37 +194,18 @@ class BSIMetarService:
                 )
 
             vec = guidance.to_vector()
-            now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            now_utc_str = f"{clean_date}T00:00:00Z"
 
-            # Determine Universal Taxonomy Action Code
-            if guidance.bsi_bin == "BREADTH_WASHED_OUT" or guidance.velocity_vector == "FAST_CRUSH_3D":
-                action_code = "MKT_BREADTH_WASHED_OUT"
-                market_status = "CRISIS_BREADTH_WASH"
-            elif guidance.velocity_vector == "FAST_SPIKE_3D":
-                action_code = "MKT_BREADTH_SHOCK_REVERSAL"
-                market_status = "BREADTH_IMPULSE_SHOCK"
-            elif guidance.bsi_bin in ("HYPER_EXPANSIVE_BREADTH", "EXPANSIVE_BREADTH"):
-                action_code = "MKT_BREADTH_EXPANSIVE"
-                market_status = "EXPANSIVE_STABLE"
+            if guidance.divergence_regime == "FULL_CONVERGENT_BEAR":
+                market_status = "CRISIS_VETO"
+            elif guidance.divergence_regime in ("TACTICAL_BOUNCE_ONLY", "TACTICAL_PULLBACK"):
+                market_status = "RESTRICTED"
             else:
-                action_code = "MKT_BREADTH_NEUTRAL"
-                market_status = "NEUTRAL_STABLE"
+                market_status = "CLEAR"
 
             metar_id = f"METAR-BSI-{clean_date.replace('-', '')}-001"
 
-            # Stateful-First Persistence (Rule 15)
-            if self._port:
-                try:
-                    clean_date_short = str(clean_date).split(" ")[0]
-                    ts_dt = datetime.strptime(clean_date_short, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-                    self._port.commit_transition(
-                        key=self.REGIME_KEY,
-                        current_state=guidance.state_key,
-                        entered_at=ts_dt,
-                        trigger_event=f"S5TW={bsi_latest:.2f}%, d3={bsi_delta_3d:+.2f}pp",
-                    )
-                except Exception:
-                    pass
+
 
             return MarketMETAR(
                 metar_id=metar_id,
@@ -277,7 +241,7 @@ class BSIMetarService:
             )
 
         finally:
-            self._store.close()
+            pass  # shared pool — no close
 
 
 def get_bsi_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:

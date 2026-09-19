@@ -12,7 +12,8 @@ from typing import Optional
 from datetime import datetime
 
 from backend.modules.entry_decision.domain.services.taf_service import (
-    compute_taf_cone, compute_composite_taf, TafCone,
+    compute_taf_cone, compute_composite_taf, compute_composite_taf_from_summaries,
+    TafCone,
 )
 
 router = APIRouter(prefix="/api/taf", tags=["TAF — Terminal Market Forecast"])
@@ -60,31 +61,8 @@ async def get_composite_taf(
         from backend.modules.entry_decision.domain.services.convergence_compositor import ConvergenceCompositor
         compositor = ConvergenceCompositor()
         report = compositor.compute(as_of_date=as_of_date)
-        
-        cones = []
-        for station, summary in report.station_summaries.items():
-            state_key = summary.get("state_key", "")
-            # Extract zz25/50/75 from the station summary
-            # The summary doesn't contain full zz data, so we need to call lookups
-            mod_path, adapter_name, func_name = STATION_LOOKUPS.get(station, (None, None, None))
-            if not mod_path:
-                continue
-            import importlib
-            mod = importlib.import_module(mod_path)
-            adapter = getattr(mod, adapter_name)
-            # Re-derive from the state's fact store data
-            states = adapter.states
-            state_data = states.get(state_key, {})
-            if not state_data:
-                continue
-            zz25 = state_data.get("zz25", {})
-            zz50 = state_data.get("zz50", {})
-            zz75 = state_data.get("zz75", {})
-            div = state_data.get("divergence_regime", "NEUTRAL")
-            cone = compute_taf_cone(station, state_key, zz25, zz50, zz75, div)
-            cones.append(cone)
-        
-        composite = compute_composite_taf(cones)
+
+        composite = compute_composite_taf_from_summaries(report.station_summaries)
         composite["as_of_date"] = report.as_of_date
         composite["timestamp_utc"] = report.timestamp_utc
         return composite

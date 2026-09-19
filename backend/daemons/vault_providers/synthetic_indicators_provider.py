@@ -6,14 +6,14 @@ tickers in the Vault, so modules and the observatory can read them directly
 via store.load_bars() instead of computing on-the-fly.
 
 Indicators:
-  1. CREDIT_RATIO    = HYG / TLT           (Credit stress ratio)
+  1. CREDIT_RATIO    = HYG / LQD           (Credit stress ratio)
   2. YIELD_SPREAD    = TNX - IRX            (Yield curve spread: 10Y - 13W)
   3. ROTATION_INDEX  = z(XLY/XLP) + z(XLK/XLU)  (Sector rotation z-score)
 
 Storage: open=high=low=close=value, volume=0 (Rule 14)
 Midnight UTC timestamps enforced by TimescaleDataStore (Rule 18)
 
-EXECUTION ORDER: MUST run AFTER ohlcv_provider (needs HYG, TLT, TNX, IRX,
+EXECUTION ORDER: MUST run AFTER ohlcv_provider (needs HYG, LQD, TNX, IRX,
 XLY, XLP, XLK, XLU history).
 """
 import logging

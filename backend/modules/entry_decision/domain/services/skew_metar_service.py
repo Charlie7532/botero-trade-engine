@@ -13,16 +13,13 @@ from dataclasses import dataclass, asdict
 from typing import Dict, Any, Optional
 import json
 
-from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.infrastructure.shared_store import get_shared_store
 from backend.modules.entry_decision.domain.rules.skew_lookup import skew_lookup
 from backend.modules.entry_decision.domain.rules.action_code_resolver import derive_action_code
+from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
 from backend.modules.shared.domain.entities.state_snapshot import StateSnapshot
-from backend.modules.shared.domain.ports.regime_state_port import RegimeStatePort
 
 
-class StrictDataPolicyError(Exception):
-    """Raised when required market data or Fact Store parameters are missing. Zero Fallbacks allowed."""
-    pass
 
 
 @dataclass(frozen=True)
@@ -99,7 +96,7 @@ def get_skew_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
     Strict Data Policy: Zero Fallbacks. If a requested as_of_date is specified and does NOT exist
     in Neon Vault, raises StrictDataPolicyError immediately.
     """
-    store = TimescaleDataStore()
+    store = get_shared_store()
     engine = store.engine
     try:
         import pandas as pd
@@ -160,16 +157,14 @@ def get_skew_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
             )
 
         vec = guidance.to_vector()
-        now_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        now_utc_str = f"{clean_date}T00:00:00Z"
 
-        if skew_val >= 148.0 or (skew_val >= 140.0 and skew_d3 >= 6.67):
-            market_status = "CRISIS_TAIL_RISK_EXTREME"
-        elif skew_val >= 137.0:
-            market_status = "ELEVATED_TAIL_RISK"
-        elif skew_val <= 110.47:
-            market_status = "COMPLACENT"
+        if guidance.divergence_regime == "FULL_CONVERGENT_BEAR":
+            market_status = "CRISIS_VETO"
+        elif guidance.divergence_regime in ("TACTICAL_BOUNCE_ONLY", "TACTICAL_PULLBACK"):
+            market_status = "RESTRICTED"
         else:
-            market_status = "NORMAL_OPERATIONAL"
+            market_status = "CLEAR"
 
         metar_id = f"METAR-SKEW-{clean_date.replace('-', '')}-001"
 
@@ -206,4 +201,4 @@ def get_skew_market_metar(as_of_date: Optional[str] = None) -> MarketMETAR:
             e_ret_min_zz75=guidance.zz75.e_ret_min,
         )
     finally:
-        store.close()
+        pass  # shared pool — no close

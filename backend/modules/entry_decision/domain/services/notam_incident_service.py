@@ -103,7 +103,12 @@ def compute_station_staleness(
     import zoneinfo
 
     now_ny = datetime.now(zoneinfo.ZoneInfo("America/New_York"))
-    is_live_today = (as_of_date is None) and (ref_date == now_ny.date())
+    # Live mode: as_of_date is None AND ref_date is approximately "today"
+    # (within 1 day to handle UTC/ET evening mismatch when UTC date is tomorrow ET).
+    date_gap = abs((ref_date - now_ny.date()).days) if ref_date else 999
+    is_live_today = (as_of_date is None) and (date_gap <= 1)
+    if is_live_today:
+        ref_date = now_ny.date()
     hour_ny = now_ny.hour + now_ny.minute / 60.0
 
     if is_live_today:

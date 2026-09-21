@@ -12,6 +12,7 @@ from dataclasses import dataclass, asdict
 from typing import Dict, Any, List, Optional
 import json
 
+from backend.modules.shared.infrastructure.shared_store import get_shared_store
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
 
@@ -159,7 +160,7 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
     today_str = as_of_date if as_of_date else now_utc.strftime("%Y-%m-%d")
     notams: List[OperationalNOTAM] = []
 
-    store = TimescaleDataStore()
+    store = get_shared_store()
     engine = store.engine
     try:
         import pandas as pd
@@ -174,25 +175,27 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
             WHERE ticker IN ({stations_sql}) AND timeframe = '1d' {date_filter}
             GROUP BY ticker
         """
-        df_stations = pd.read_sql(query, engine)
-        station_dates = {}
-        if not df_stations.empty:
-            for _, r in df_stations.iterrows():
-                if pd.notna(r['max_date']):
-                    station_dates[r['ticker']] = pd.Timestamp(r['max_date']).date()
+        with engine.connect() as conn:
+            conn.exec_driver_sql("SET max_parallel_workers_per_gather = 0")
+            df_stations = pd.read_sql(query, conn)
+            station_dates = {}
+            if not df_stations.empty:
+                for _, r in df_stations.iterrows():
+                    if pd.notna(r['max_date']):
+                        station_dates[r['ticker']] = pd.Timestamp(r['max_date']).date()
 
-        # Load release cadences from ticker metadata
-        meta_query = f"""
-            SELECT ticker, release_cadence 
-            FROM market.ticker_metadata 
-            WHERE ticker IN ({stations_sql})
-        """
-        df_cadence = pd.read_sql(meta_query, engine)
-        station_cadence = {}
-        if not df_cadence.empty:
-            for _, r in df_cadence.iterrows():
-                if pd.notna(r['release_cadence']):
-                    station_cadence[r['ticker']] = str(r['release_cadence'])
+            # Load release cadences from ticker metadata
+            meta_query = f"""
+                SELECT ticker, release_cadence 
+                FROM market.ticker_metadata 
+                WHERE ticker IN ({stations_sql})
+            """
+            df_cadence = pd.read_sql(meta_query, conn)
+            station_cadence = {}
+            if not df_cadence.empty:
+                for _, r in df_cadence.iterrows():
+                    if pd.notna(r['release_cadence']):
+                        station_cadence[r['ticker']] = str(r['release_cadence'])
 
         benchmark_date = station_dates.get("SPY", ref_date)
 
@@ -319,7 +322,7 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
 
         return notams
     finally:
-        store.close()
+        pass  # shared pool — no close
 
 
 def generate_notam_report(as_of_date: Optional[str] = None) -> Dict[str, Any]:
@@ -332,7 +335,7 @@ def generate_notam_report(as_of_date: Optional[str] = None) -> Dict[str, Any]:
     now_str = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
     today_str = as_of_date if as_of_date else now_utc.strftime("%Y-%m-%d")
 
-    store = TimescaleDataStore()
+    store = get_shared_store()
     engine = store.engine
     try:
         import pandas as pd
@@ -346,25 +349,27 @@ def generate_notam_report(as_of_date: Optional[str] = None) -> Dict[str, Any]:
             WHERE ticker IN ({stations_sql}) AND timeframe = '1d' {date_filter}
             GROUP BY ticker
         """
-        df_stations = pd.read_sql(query, engine)
-        station_dates = {}
-        if not df_stations.empty:
-            for _, r in df_stations.iterrows():
-                if pd.notna(r['max_date']):
-                    station_dates[r['ticker']] = pd.Timestamp(r['max_date']).date()
+        with engine.connect() as conn:
+            conn.exec_driver_sql("SET max_parallel_workers_per_gather = 0")
+            df_stations = pd.read_sql(query, conn)
+            station_dates = {}
+            if not df_stations.empty:
+                for _, r in df_stations.iterrows():
+                    if pd.notna(r['max_date']):
+                        station_dates[r['ticker']] = pd.Timestamp(r['max_date']).date()
 
-        # Load release cadences from ticker metadata
-        meta_query = f"""
-            SELECT ticker, release_cadence 
-            FROM market.ticker_metadata 
-            WHERE ticker IN ({stations_sql})
-        """
-        df_cadence = pd.read_sql(meta_query, engine)
-        station_cadence = {}
-        if not df_cadence.empty:
-            for _, r in df_cadence.iterrows():
-                if pd.notna(r['release_cadence']):
-                    station_cadence[r['ticker']] = str(r['release_cadence'])
+            # Load release cadences from ticker metadata
+            meta_query = f"""
+                SELECT ticker, release_cadence 
+                FROM market.ticker_metadata 
+                WHERE ticker IN ({stations_sql})
+            """
+            df_cadence = pd.read_sql(meta_query, conn)
+            station_cadence = {}
+            if not df_cadence.empty:
+                for _, r in df_cadence.iterrows():
+                    if pd.notna(r['release_cadence']):
+                        station_cadence[r['ticker']] = str(r['release_cadence'])
 
         benchmark_date = station_dates.get("SPY", ref_date)
 
@@ -435,7 +440,7 @@ def generate_notam_report(as_of_date: Optional[str] = None) -> Dict[str, Any]:
             "fomc_blackout_active": any(b.incident_type == "NOTAM_FOMC_BLACKOUT" for b in bulletins),
         }
     finally:
-        store.close()
+        pass  # shared pool — no close
 
 
 def format_notam_report_broadcast(report: Dict[str, Any]) -> str:

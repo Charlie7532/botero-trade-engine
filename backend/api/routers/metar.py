@@ -331,3 +331,63 @@ async def get_unified_weather(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.get("/broadcast")
+async def get_broadcast_terminal(
+    as_of_date: Optional[str] = Query(None, description="Target date string YYYY-MM-DD"),
+):
+    """
+    Market Weather Observatory — Broadcast Terminal (text/plain).
+
+    Returns a formatted ASCII broadcast of the complete market weather
+    observatory including METAR, TAF, SIGMET, NOTAM, and situational
+    orientation. Designed for terminal/CLI consumption, logging, and
+    AI agent ingestion.
+    """
+    from fastapi.responses import PlainTextResponse
+    import time as _time
+    t0 = _time.time()
+
+    try:
+        from backend.modules.entry_decision.domain.services.convergence_compositor import ConvergenceCompositor
+        from backend.modules.entry_decision.domain.services.market_sigmet_hazard_service import (
+            evaluate_sigmets_from_metar_dicts,
+        )
+        from backend.modules.entry_decision.domain.services.taf_service import (
+            compute_composite_taf_from_summaries,
+        )
+        from backend.modules.entry_decision.domain.services.notam_incident_service import (
+            evaluate_operational_notams,
+        )
+        from backend.modules.entry_decision.domain.services.market_broadcast_formatter import (
+            format_market_broadcast,
+        )
+
+        # Single compositor call
+        compositor = ConvergenceCompositor()
+        report = compositor.compute(as_of_date=as_of_date)
+
+        # SIGMET from pre-computed METAR snapshots
+        sigmets = evaluate_sigmets_from_metar_dicts(
+            metar_dicts=report.metar_snapshots,
+            family_report=report.family_sequence,
+            as_of_date=report.as_of_date,
+        )
+
+        # TAF from station summaries
+        taf_composite = compute_composite_taf_from_summaries(report.station_summaries)
+
+        # NOTAM
+        try:
+            notams = evaluate_operational_notams(as_of_date=as_of_date)
+            notam_data = [n.to_dict() for n in notams]
+        except Exception:
+            notam_data = []
+
+        # Format broadcast
+        broadcast = format_market_broadcast(report, taf_composite, sigmets, notam_data)
+
+        return PlainTextResponse(content=broadcast)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

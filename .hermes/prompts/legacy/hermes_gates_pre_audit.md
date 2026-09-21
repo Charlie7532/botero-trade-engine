@@ -161,7 +161,7 @@ import scipy.stats
 
 def compute_dsr(returns: np.ndarray, n_trials: int = 1, periods_per_year: int = 252) -> float:
     """
-    Deflated Sharpe Ratio (López de Prado, 2018).
+    Deflated Sharpe Ratio (López de Prado, 2014 / Bailey & López de Prado, 2012).
 
     returns: array de retornos por trade o por periodo.
     n_trials: número de estrategias/configuraciones probadas (K).
@@ -178,29 +178,34 @@ def compute_dsr(returns: np.ndarray, n_trials: int = 1, periods_per_year: int = 
     if std_r == 0:
         return 0.0
 
-    # Sharpe Ratio anualizado
-    sr = (mean_r / std_r) * np.sqrt(periods_per_year)
+    # Sharpe por periodo (sin anualizar)
+    sr_1 = mean_r / std_r
+    # Sharpe anualizado
+    sr_ann = sr_1 * np.sqrt(periods_per_year)
 
     # Momentos de la distribución de retornos
     skew = scipy.stats.skew(returns)
     kurt = scipy.stats.kurtosis(returns, fisher=False)  # Pearson (normal=3)
 
-    # Varianza del estimador de Sharpe (Bailey & López de Prado, 2012)
-    var_sr = (1.0 - skew * sr + ((kurt - 1.0) / 4.0) * (sr ** 2)) / (n - 1)
-    if var_sr <= 0:
+    # Varianza asintótica del estimador por periodo (Bailey & López de Prado, 2012 eq. 10)
+    var_sr_1 = (1.0 - skew * sr_1 + ((kurt - 1.0) / 4.0) * (sr_1 ** 2)) / (n - 1)
+    if var_sr_1 <= 0:
         return 0.0
 
-    # SR* benchmark: Sharpe esperado del mejor de K ensayos bajo H0
+    # Varianza escalada al horizonte anualizado
+    var_sr_ann = periods_per_year * var_sr_1
+
+    # SR* benchmark: Sharpe anualizado esperado del mejor de K ensayos bajo H0
     if n_trials > 1:
         euler_mascheroni = 0.5772156649
         z1 = scipy.stats.norm.ppf(1.0 - 1.0 / n_trials)
         z2 = scipy.stats.norm.ppf(1.0 - 1.0 / (n_trials * np.e))
-        sr_star = np.sqrt(var_sr) * ((1.0 - euler_mascheroni) * z1 + euler_mascheroni * z2)
+        sr_star = np.sqrt(var_sr_ann) * ((1.0 - euler_mascheroni) * z1 + euler_mascheroni * z2)
     else:
         sr_star = 0.0
 
     # Probabilistic Sharpe Ratio deflactado
-    dsr = scipy.stats.norm.cdf((sr - sr_star) / np.sqrt(var_sr))
+    dsr = scipy.stats.norm.cdf((sr_ann - sr_star) / np.sqrt(var_sr_ann))
     return float(dsr)
 ```
 

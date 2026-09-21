@@ -206,6 +206,77 @@ def d1_directional_vote(state_key: str, station: Optional[str] = None) -> int:
     return 0
 
 
+# ── Situational Orientation Summaries ─────────────────────────────────────
+# Pure functions that translate compositor state into human-readable guidance.
+# No I/O, no decisions — just structured text for the broadcast layer.
+
+def _build_open_positions_summary(
+    guidance: str, causal_phase: str, family_report: 'FamilySequenceReport',
+    rarity_score: float, crisis_alerts: list,
+) -> str:
+    """Generate open positions guidance text from compositor state."""
+    parts = []
+
+    if guidance == "MKT_TRIM_TACTICAL":
+        parts.append("HARVEST: Consider tactical profit-taking (25%-33%) on extended positions.")
+        if family_report.n_cq_structural >= 3:
+            parts.append(f"Evidence: {family_report.n_cq_structural} stations show structural ceiling concordance.")
+        if family_report.hh_exit_amplify:
+            parts.append("Higher-high exit amplification active — momentum exhaustion detected.")
+    elif causal_phase == "CAPITULATION_BUILDING":
+        parts.append("PROTECT: Tighten trailing stops to 1.5×ATR. Capitulation sequence building across all families.")
+    elif causal_phase == "VOLATILITY_ACCELERATING":
+        parts.append("ALERT: Volatility accelerating. Monitor stops — kinematic shock possible.")
+    elif guidance == "MKT_HOLD_STABLE" and rarity_score >= 0.6:
+        parts.append("HOLD: Maintain positions. Extreme rarity territory — price discovery in progress.")
+    elif crisis_alerts:
+        n_critical = sum(1 for a in crisis_alerts if a.get("alert_priority") == "CRITICAL")
+        if n_critical >= 2:
+            parts.append(f"DEFENSIVE: {n_critical} stations in CRITICAL alert. Review stop levels on all positions.")
+        else:
+            parts.append("MONITOR: Crisis alerts present. No immediate action required but maintain vigilance.")
+    elif guidance in ("MKT_BUY_DIP_TACTICAL", "MKT_ACCUMULATE_STRUCTURAL"):
+        parts.append("HOLD: Structural support confirmed. Maintain conviction on thesis-aligned positions.")
+    else:
+        parts.append("STEADY: Market conditions within normal operating parameters. Continue plan execution.")
+
+    return " ".join(parts)
+
+
+def _build_new_allocations_summary(
+    guidance: str, horizon: str, causal_phase: str,
+    family_report: 'FamilySequenceReport', comp_ev5: float,
+) -> str:
+    """Generate new capital deployment guidance text from compositor state."""
+    parts = []
+
+    if guidance == "MKT_ACCUMULATE_STRUCTURAL":
+        parts.append("GREEN LIGHT: Structural accumulation conditions met.")
+        parts.append(f"Composite EV(5d)={comp_ev5:+.4f}. Deploy capital on approved candidates.")
+    elif guidance == "MKT_BUY_DIP_TACTICAL":
+        if causal_phase == "CAPITULATION_RESOLVING":
+            parts.append("EARLY ENTRY: Capitulation resolving with floor evidence. Staggered entry recommended.")
+        elif family_report.n_fq_structural >= 3:
+            parts.append(f"BUYABLE DIP: {family_report.n_fq_structural} stations confirm structural floor.")
+            parts.append("Deploy tactical positions with defined risk.")
+        else:
+            parts.append("TACTICAL BUY: Short-term dip opportunity. Size conservatively.")
+    elif guidance == "MKT_TRIM_TACTICAL":
+        parts.append("GROUND DELAY: New deployments paused. Market showing distribution/ceiling signals.")
+    elif causal_phase == "CAPITULATION_BUILDING":
+        parts.append("FULL STOP: Do not deploy new capital. Capitulation sequence in progress.")
+        parts.append("Wait for VIX D2 to resolve and floor concordance to emerge.")
+    elif horizon == "WAIT":
+        if family_report.n_distribution >= 3:
+            parts.append("PAUSE: Distribution dominant. Wait for absorption or clear floor formation.")
+        else:
+            parts.append("MONITORING: Market in transition. Wait for directional clarity before deploying.")
+    else:
+        parts.append("STANDARD OPS: No special conditions. Execute per department-specific criteria.")
+
+    return " ".join(parts)
+
+
 # ── Report Dataclass ──────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
@@ -269,6 +340,10 @@ class ConvergenceReport:
 
     # Family Sequence (E2: cross-station causal phase detection)
     family_sequence: Optional[Dict[str, Any]] = None  # FamilySequenceReport.to_dict()
+
+    # Situational Orientation (Bloque B V6: human-readable market guidance)
+    open_positions_summary: str = ""   # Guidance for open portfolio positions
+    new_allocations_summary: str = ""  # Guidance for deploying new capital
 
     # Data Freshness — stations lagging behind the report date
     stale_stations: List[Dict[str, str]] = field(default_factory=list)  # [{station, as_of_date, lag}]
@@ -670,7 +745,12 @@ class ConvergenceCompositor:
         if bear_vote_ratio >= 0.50 and active_count >= 4:
             cross_signals.append("D1_BEARISH_CONVERGENCE")
 
-        # ── Unified Guidance (rarity-aware) ──────────────────────────
+        # ── E2: Family Sequence Detection (moved before guidance) ────
+        family_report = detect_family_sequence(station_summaries)
+        family_dict = family_report.to_dict()
+        causal_phase = family_report.phase
+
+        # ── Unified Guidance (rarity-aware + formation-enriched) ──────
 
         # Rarity override: if rarity is extreme, force WAIT
         if rarity_score >= 0.8:
@@ -679,21 +759,47 @@ class ConvergenceCompositor:
         elif "FLOOR_NOT_CONFIRMED__SV5_VETO" in cross_signals:
             unified_guidance = "MKT_HOLD_STABLE"
             guidance_horizon = "WAIT"
+        elif causal_phase == "CAPITULATION_BUILDING":
+            # All 3 families stressed + VIX D2 building → crisis in progress
+            unified_guidance = "MKT_HOLD_STABLE"
+            guidance_horizon = "WAIT"
+            cross_signals.append("CAPITULATION_BUILDING")
         elif "D1_BEARISH_CONVERGENCE" in cross_signals:
             unified_guidance = "MKT_HOLD_STABLE"
             guidance_horizon = "WAIT"
+        elif family_report.n_cq_structural >= 3 or family_report.hh_exit_amplify:
+            # ≥3 stations with structural ceiling concordance or HH exit amplification
+            unified_guidance = "MKT_TRIM_TACTICAL"
+            guidance_horizon = "1D"
+            cross_signals.append("STRUCTURAL_CEILING_CONCORDANCE")
         elif "INSTITUTIONAL_DISTRIBUTION_BATTLE" in cross_signals:
             unified_guidance = "MKT_TRIM_TACTICAL"
             guidance_horizon = "1D"
+        elif family_report.n_fq_structural >= 3 and not family_report.ll_trap_veto:
+            # ≥3 stations with structural floor concordance and no trap veto
+            # (R1 from family_detector: p=0.014, zz75 HR=66.5%)
+            unified_guidance = "MKT_BUY_DIP_TACTICAL"
+            guidance_horizon = "5D"
+            cross_signals.append("STRUCTURAL_FLOOR_CONCORDANCE")
         elif "CONFIRMED_BUYABLE_DIP" in cross_signals:
             unified_guidance = "MKT_BUY_DIP_TACTICAL"
             guidance_horizon = "5D"
+        elif causal_phase == "CAPITULATION_RESOLVING" and family_report.n_fq_structural >= 2:
+            # Capitulation resolving + floor evidence → early accumulation
+            unified_guidance = "MKT_BUY_DIP_TACTICAL"
+            guidance_horizon = "5D"
+            cross_signals.append("CAPITULATION_RESOLVING_FLOOR")
         elif bull_ratio_5d >= 0.70 and ev_contributing >= 3:
             unified_guidance = "MKT_ACCUMULATE_STRUCTURAL"
             guidance_horizon = "5D"
         elif bull_ratio_1d >= 0.70 and ev_contributing >= 3:
             unified_guidance = "MKT_BUY_DIP_TACTICAL"
             guidance_horizon = "1D"
+        elif family_report.n_distribution >= 3 and family_report.n_accumulation == 0:
+            # Distribution without accumulation → defensive posture
+            unified_guidance = "MKT_HOLD_STABLE"
+            guidance_horizon = "WAIT"
+            cross_signals.append("DISTRIBUTION_DOMINANT")
         else:
             unified_guidance = "MKT_HOLD_STABLE"
             guidance_horizon = "3D"
@@ -743,9 +849,15 @@ class ConvergenceCompositor:
         t1 = time.time()
         exec_ms = round((t1 - t0) * 1000, 2)
 
-        # ── E2: Family Sequence Detection ─────────────────────────────
-        family_report = detect_family_sequence(station_summaries)
-        family_dict = family_report.to_dict()
+        # ── Situational Orientation Summaries ─────────────────────────
+        open_pos_summary = _build_open_positions_summary(
+            unified_guidance, causal_phase, family_report,
+            rarity_score, crisis_alerts,
+        )
+        new_alloc_summary = _build_new_allocations_summary(
+            unified_guidance, guidance_horizon, causal_phase,
+            family_report, comp_ev5,
+        )
 
         return ConvergenceReport(
             timestamp_utc=ts_utc,
@@ -781,6 +893,8 @@ class ConvergenceCompositor:
             n_timing_signal_stations=n_timing_signal,
             crisis_alerts=crisis_alerts,
             family_sequence=family_dict,
+            open_positions_summary=open_pos_summary,
+            new_allocations_summary=new_alloc_summary,
             station_summaries=station_summaries,
             stale_stations=stale_list,
             metar_snapshots=results,

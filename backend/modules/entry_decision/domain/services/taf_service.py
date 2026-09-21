@@ -126,16 +126,72 @@ def compute_taf_cone(
     )
 
 
+def _derive_composite_divergence_regime(cones: List[TafCone]) -> str:
+    """Synthesize per-station divergence_regime values into a composite market verdict.
+
+    Uses majority voting of the 6 possible fact-store regimes, weighted by the
+    EV acceleration vector to break ties.
+
+    Returns one of:
+      CONVERGENT_MOMENTUM_EXPANSION  — majority bull across all scales
+      CONVERGENT_CONTRACTION_EXHAUSTION — majority bear across all scales
+      STRUCTURAL_BULL_TACTICAL_DIP   — structural bull with tactical pullback
+      STRUCTURAL_BEAR_TACTICAL_BOUNCE — structural bear with tactical rebound
+      EQUILIBRIUM                     — no dominant regime (|ev_accel| < 0.005)
+    """
+    if not cones:
+        return "EQUILIBRIUM"
+
+    # Count per-station regimes
+    counts: Dict[str, int] = {}
+    for c in cones:
+        r = c.divergence_regime
+        counts[r] = counts.get(r, 0) + 1
+
+    n = len(cones)
+    n_bull = counts.get("FULL_CONVERGENT_BULL", 0)
+    n_bear = counts.get("FULL_CONVERGENT_BEAR", 0)
+    n_pullback = counts.get("STRUCTURAL_BULL_PULLBACK", 0)
+    n_rebound = counts.get("TACTICAL_REBOUND_IN_BEAR", 0)
+
+    # Majority threshold: > 40% of stations agreeing on one regime
+    threshold = 0.40
+
+    if n_bull / n >= threshold:
+        return "CONVERGENT_MOMENTUM_EXPANSION"
+    if n_bear / n >= threshold:
+        return "CONVERGENT_CONTRACTION_EXHAUSTION"
+    if (n_bull + n_pullback) / n >= threshold and n_pullback > 0:
+        return "STRUCTURAL_BULL_TACTICAL_DIP"
+    if (n_bear + n_rebound) / n >= threshold and n_rebound > 0:
+        return "STRUCTURAL_BEAR_TACTICAL_BOUNCE"
+
+    # Fallback: use aggregate EV acceleration as tiebreaker
+    avg_ev_accel = sum(c.ev_acceleration for c in cones) / n
+    if abs(avg_ev_accel) < 0.005:
+        return "EQUILIBRIUM"
+    elif avg_ev_accel > 0:
+        return "STRUCTURAL_BULL_TACTICAL_DIP"
+    else:
+        return "STRUCTURAL_BEAR_TACTICAL_BOUNCE"
+
+
 def compute_composite_taf(cones: List[TafCone]) -> Dict[str, Any]:
     """Aggregate individual station TAF cones into a composite market forecast.
 
     Returns a dict with:
     - Weighted averages of cone metrics
     - Station-by-station cone data
+    - Composite divergence regime (synthesized from per-station regimes)
     - Overall market forecast direction
     """
     if not cones:
-        return {"n_stations": 0, "composite_asymmetry": 1.0, "composite_convergence": 0.0}
+        return {
+            "n_stations": 0,
+            "composite_asymmetry": 1.0,
+            "composite_convergence": 0.0,
+            "composite_divergence_regime": "EQUILIBRIUM",
+        }
 
     n = len(cones)
     avg_asym = sum(c.cone_asymmetry for c in cones) / n
@@ -148,17 +204,22 @@ def compute_composite_taf(cones: List[TafCone]) -> Dict[str, Any]:
     n_convergent_bull = sum(1 for c in cones if c.divergence_regime == "FULL_CONVERGENT_BULL")
     n_convergent_bear = sum(1 for c in cones if c.divergence_regime == "FULL_CONVERGENT_BEAR")
 
+    # Composite divergence regime
+    composite_regime = _derive_composite_divergence_regime(cones)
+
     return {
         "n_stations": n,
         "composite_asymmetry": round(avg_asym, 4),
         "composite_convergence": round(avg_conv, 4),
         "composite_ev_acceleration": round(avg_ev_accel, 6),
+        "composite_divergence_regime": composite_regime,
         "n_bullish_scaling": n_bullish_scaling,
         "n_bearish_scaling": n_bearish_scaling,
         "n_convergent_bull": n_convergent_bull,
         "n_convergent_bear": n_convergent_bear,
         "station_cones": {c.station: c.to_dict() for c in cones},
     }
+
 
 
 # ── Lookup adapter registry (lazy-loaded) ────────────────────────────

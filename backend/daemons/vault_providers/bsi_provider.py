@@ -37,11 +37,10 @@ class BSIProvider:
         last_bsi = store.bars_last_date("BSI", "1d")
         last_s5tw = store.bars_last_date("S5TW", "1d")
 
-        # Only skip if already vaulted today AND BSI bars are fully synchronized with S5TW
+        # Only skip if BSI bars are fully synchronized with S5TW
         if last_bsi and last_s5tw and last_bsi >= last_s5tw:
-            if _already_vaulted_today(store, "bsi/sigmet", "MARKET"):
-                logger.info("📊 BSI Market METAR already vaulted today — skipping")
-                return {"status": "skipped", "reason": "already_today"}
+            logger.info(f"📊 BSI already up to date ({last_bsi} >= S5TW {last_s5tw}) — skipping")
+            return {"status": "skipped", "reason": "already_up_to_date"}
 
         return self._compute(store)
 

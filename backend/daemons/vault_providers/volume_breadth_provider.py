@@ -28,9 +28,11 @@ class VolumeBreadthProvider:
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> dict:
         """Calculate all three volume breadth indicators from SP500 OHLCV data."""
-        if _already_vaulted_today(store, "macro/volume_breadth", "SP500"):
-            logger.info("📊 Volume Breadth already vaulted today — skipping")
-            return {"status": "skipped", "reason": "already_today"}
+        last_sv5tw = store.bars_last_date("SV5TW", "1d")
+        last_spy = store.bars_last_date("SPY", "1d")
+        if last_sv5tw and last_spy and last_sv5tw >= last_spy:
+            logger.info(f"📊 Volume Breadth already up to date ({last_sv5tw} >= SPY {last_spy}) — skipping")
+            return {"status": "skipped", "reason": "already_up_to_date"}
 
         return self._compute_volume_breadth(store)
 
@@ -41,9 +43,20 @@ class VolumeBreadthProvider:
     def _compute_volume_breadth(self, store: TimescaleDataStore) -> dict:
         """Core volume breadth calculation logic."""
         try:
+            import pandas as pd
             from backend.modules.shared.domain.rules.volume_breadth_calculator import (
                 calculate_all_volume_breadth,
             )
+
+            last_spy = store.bars_last_date("SPY", "1d")
+            if not last_spy:
+                logger.warning("VolumeBreadth: SPY date not found")
+                return {"status": "error", "reason": "no_spy_date"}
+
+            last_sv5tw = store.bars_last_date("SV5TW", "1d")
+            if last_sv5tw and last_sv5tw >= last_spy:
+                logger.info(f"📊 Volume Breadth already up to date ({last_sv5tw} >= SPY {last_spy}) — skipping")
+                return {"status": "skipped", "reason": "already_up_to_date"}
 
             all_volumes = store.load_all_latest_volumes(days=300, sp500_only=True)
             if not all_volumes:
@@ -60,19 +73,21 @@ class VolumeBreadthProvider:
                 logger.warning("VolumeBreadth: insufficient history for MA calculation")
                 return {"status": "error", "reason": "insufficient_history"}
 
+            effective_date = pd.Timestamp(last_spy).tz_localize("UTC").normalize() if not hasattr(last_spy, "tzinfo") or not last_spy.tzinfo else pd.Timestamp(last_spy).tz_convert("UTC").normalize()
+
             n_constituents = len(all_volumes)
             snapshot = {
                 "sv5th": sv5th, "sv5fi": sv5fi, "sv5tw": sv5tw,
                 "tickers_counted": n_constituents,
+                "as_of_date": effective_date.strftime("%Y-%m-%d"),
                 "timestamp": datetime.now(UTC).isoformat(),
             }
             store.save_mcp_snapshot("macro/volume_breadth", "SP500", snapshot)
 
-            now = datetime.now(UTC)
             for ticker, value in [("SV5TH", sv5th), ("SV5FI", sv5fi), ("SV5TW", sv5tw)]:
                 if value is not None:
                     store.upsert_ohlcv_bar(
-                        ticker=ticker, timeframe="1d", time=now,
+                        ticker=ticker, timeframe="1d", time=effective_date,
                         open=value, high=value, low=value, close=value,
                         volume=n_constituents,
                     )

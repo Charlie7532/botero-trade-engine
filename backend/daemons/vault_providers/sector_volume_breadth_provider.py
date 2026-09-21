@@ -50,7 +50,18 @@ class SectorVolumeBreadthProvider:
 
 def _compute_and_store(store) -> dict:
     """Core logic: load SP500 volumes by sector, compute volume breadth, write bars."""
-    now = datetime.now(UTC)
+    import pandas as pd
+    last_spy = store.bars_last_date("SPY", "1d")
+    if not last_spy:
+        logger.warning("SectorVolumeBreadthProvider: SPY date not found")
+        return {"status": "error", "reason": "no_spy_date"}
+
+    effective_date = pd.Timestamp(last_spy).tz_localize("UTC").normalize() if not hasattr(last_spy, "tzinfo") or not last_spy.tzinfo else pd.Timestamp(last_spy).tz_convert("UTC").normalize()
+
+    last_sector_bar = store.bars_last_date("SV5_XLK_TW", "1d")
+    if last_sector_bar and last_sector_bar >= effective_date.date():
+        logger.info(f"📊 SectorVolumeBreadthProvider already up to date ({last_sector_bar} >= {effective_date.date()}) — skipping")
+        return {"status": "skipped", "reason": "already_up_to_date"}
 
     # Load volumes grouped by sector (need 300 days for 200-DMA)
     by_sector, sector_map = store.load_sp500_volumes_by_sector(days=300)
@@ -95,7 +106,7 @@ def _compute_and_store(store) -> dict:
             store.upsert_ohlcv_bar(
                 ticker=indicator_ticker,
                 timeframe="1d",
-                time=now,
+                time=effective_date,
                 open=breadth_pct,
                 high=breadth_pct,
                 low=breadth_pct,

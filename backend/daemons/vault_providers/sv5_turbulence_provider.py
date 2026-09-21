@@ -66,6 +66,15 @@ class SV5TurbulenceProvider:
 
             # time is the index; sort and take close values
             bars = bars.sort_index()
+            latest_dt = bars.index[-1]
+            import pandas as pd
+            effective_date = pd.Timestamp(latest_dt).tz_convert("UTC").normalize() if latest_dt.tzinfo else pd.Timestamp(latest_dt).tz_localize("UTC").normalize()
+
+            last_turb_date = store.bars_last_date("SV5_TURBULENCE", "1d")
+            if last_turb_date and last_turb_date >= effective_date.date():
+                logger.info(f"📊 SV5_TURBULENCE already up to date ({last_turb_date} >= {effective_date.date()}) — skipping")
+                return {"status": "skipped", "reason": "already_up_to_date"}
+
             closes = bars["close"].values[-(_WINDOW + 1):]
 
             # Compute daily diffs
@@ -81,11 +90,10 @@ class SV5TurbulenceProvider:
             sv5_turbulence = math.sqrt(variance)
 
             # Persist as pseudo-OHLCV (Rule 14: single-value → o=h=l=c=value, volume=0)
-            now = datetime.now(UTC)
             store.upsert_ohlcv_bar(
                 ticker="SV5_TURBULENCE",
                 timeframe="1d",
-                time=now,
+                time=effective_date,
                 open=sv5_turbulence,
                 high=sv5_turbulence,
                 low=sv5_turbulence,

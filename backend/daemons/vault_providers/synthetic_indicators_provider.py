@@ -58,29 +58,34 @@ class SyntheticIndicatorsProvider:
     # ──────────────────────────────────────────────────────────────────
     def _compute_credit_ratio(self, store: TimescaleDataStore) -> Dict[str, Any]:
         try:
-            if _already_vaulted_today(store, "derived/credit_ratio", "MARKET"):
-                logger.info("📊 CREDIT_RATIO already vaulted today — skipping")
-                return {"status": "skipped"}
-
-            start = (datetime.now(UTC) - timedelta(days=5)).date()
+            start = (datetime.now(UTC) - timedelta(days=10)).date()
             hyg = store.load_bars("HYG", "1d", start=start)
             lqd = store.load_bars("LQD", "1d", start=start)
 
             if hyg is None or lqd is None or len(hyg) == 0 or len(lqd) == 0:
                 return {"status": "error", "reason": "no_data"}
 
-            hyg_last = float(hyg.sort_index().iloc[-1]["close"])
-            lqd_last = float(lqd.sort_index().iloc[-1]["close"])
+            hyg_sorted = hyg.sort_index()
+            lqd_sorted = lqd.sort_index()
+            latest_dt = min(hyg_sorted.index[-1], lqd_sorted.index[-1])
+            effective_date = pd.Timestamp(latest_dt).tz_convert("UTC").normalize() if latest_dt.tzinfo else pd.Timestamp(latest_dt).tz_localize("UTC").normalize()
+
+            last_credit_date = store.bars_last_date("CREDIT_RATIO", "1d")
+            if last_credit_date and last_credit_date >= effective_date.date():
+                logger.info(f"📊 CREDIT_RATIO already up to date ({last_credit_date}) — skipping")
+                return {"status": "ok", "reason": "already_up_to_date"}
+
+            hyg_last = float(hyg_sorted.iloc[-1]["close"])
+            lqd_last = float(lqd_sorted.iloc[-1]["close"])
             if lqd_last == 0:
                 return {"status": "error", "reason": "lqd_zero"}
 
             credit_ratio = float(hyg_last / lqd_last)
 
-            now = datetime.now(UTC)
             store.upsert_ohlcv_bar(
                 ticker="CREDIT_RATIO",
                 timeframe="1d",
-                time=now,
+                time=effective_date,
                 open=credit_ratio,
                 high=credit_ratio,
                 low=credit_ratio,
@@ -93,14 +98,14 @@ class SyntheticIndicatorsProvider:
                 industry="INDICATOR",
                 market_cap_bucket=None,
             )
-            # Mark as vaulted today
             store.save_mcp_snapshot("derived/credit_ratio", "MARKET", {
                 "value": credit_ratio,
                 "hyg": hyg_last,
                 "lqd": lqd_last,
+                "as_of_date": effective_date.strftime("%Y-%m-%d"),
             })
-            logger.info(f"📊 CREDIT_RATIO vault: {credit_ratio:.4f} (HYG={hyg_last:.2f}, LQD={lqd_last:.2f})")
-            return {"status": "ok", "value": credit_ratio}
+            logger.info(f"📊 CREDIT_RATIO vault: {credit_ratio:.4f} (HYG={hyg_last:.2f}, LQD={lqd_last:.2f}, date={effective_date.date()})")
+            return {"status": "ok", "value": credit_ratio, "date": str(effective_date.date())}
 
         except Exception as e:
             logger.warning(f"CREDIT_RATIO vault failed: {e}")
@@ -113,18 +118,21 @@ class SyntheticIndicatorsProvider:
         try:
             import pandas as pd
             last_spread_date = store.bars_last_date("YIELD_SPREAD", "1d")
-            
-            # If already up to date with today or yesterday, check daily guard
+            last_tnx = store.bars_last_date("TNX", "1d")
+            last_irx = store.bars_last_date("IRX", "1d")
+
+            if last_spread_date and last_tnx and last_irx:
+                min_underlying = min(last_tnx, last_irx)
+                if last_spread_date >= min_underlying:
+                    logger.info(f"📊 YIELD_SPREAD already up to date ({last_spread_date}) — skipping")
+                    return {"status": "ok", "reason": "already_up_to_date"}
+
             if last_spread_date:
-                ref_date = datetime.now(UTC).date()
                 last_dt = last_spread_date.date() if isinstance(last_spread_date, datetime) else last_spread_date
-                bdays = max(0, len(pd.bdate_range(last_dt, ref_date)) - 1)
-                if bdays <= 1 and _already_vaulted_today(store, "derived/yield_spread", "MARKET"):
-                    logger.info("📊 YIELD_SPREAD already vaulted and fresh — skipping")
-                    return {"status": "skipped"}
                 start = last_dt + timedelta(days=1)
             else:
                 start = (datetime.now(UTC) - timedelta(days=30)).date()
+
             tnx = store.load_bars("TNX", "1d", start=start)
             irx = store.load_bars("IRX", "1d", start=start)
 
@@ -144,8 +152,8 @@ class SyntheticIndicatorsProvider:
                     logger.info("📊 YIELD_SPREAD using official FRED DGS10 - DTB3 series")
 
             if m.empty:
-                logger.warning(f"YIELD_SPREAD: No underlying yield bars found after {start}")
-                return {"status": "error", "reason": "no_underlying_data", "after_date": str(start)}
+                logger.info(f"YIELD_SPREAD: No new underlying yield bars found after {start} (market likely closed/weekend)")
+                return {"status": "ok", "reason": "already_up_to_date", "after_date": str(start)}
 
             # Compute spread for all new bars
             spread_series = m["tnx"] - m["irx"]
@@ -191,10 +199,6 @@ class SyntheticIndicatorsProvider:
     # ──────────────────────────────────────────────────────────────────
     def _compute_rotation_index(self, store: TimescaleDataStore) -> Dict[str, Any]:
         try:
-            if _already_vaulted_today(store, "derived/rotation_index", "MARKET"):
-                logger.info("📊 ROTATION_INDEX already vaulted today — skipping")
-                return {"status": "skipped"}
-
             # Need ~260 trading days for 252-day rolling z-score
             start = (datetime.now(UTC) - timedelta(days=400)).date()
             xly = store.load_bars("XLY", "1d", start=start)
@@ -213,6 +217,17 @@ class SyntheticIndicatorsProvider:
                 xlu["close"].rename("xlu"),
             ], axis=1).dropna().sort_index()
 
+            if m.empty:
+                return {"status": "error", "reason": "no_aligned_sector_data"}
+
+            latest_dt = m.index[-1]
+            effective_date = pd.Timestamp(latest_dt).tz_convert("UTC").normalize() if latest_dt.tzinfo else pd.Timestamp(latest_dt).tz_localize("UTC").normalize()
+
+            last_rot_date = store.bars_last_date("ROTATION_INDEX", "1d")
+            if last_rot_date and last_rot_date >= effective_date.date():
+                logger.info(f"📊 ROTATION_INDEX already up to date ({last_rot_date}) — skipping")
+                return {"status": "ok", "reason": "already_up_to_date"}
+
             r1 = m["xly"] / m["xlp"]
             r2 = m["xlk"] / m["xlu"]
             z1 = (r1 - r1.rolling(_ROTATION_WINDOW, min_periods=20).mean()) / r1.rolling(_ROTATION_WINDOW, min_periods=20).std()
@@ -221,11 +236,10 @@ class SyntheticIndicatorsProvider:
 
             rotation_value = float(rotation_series.iloc[-1])
 
-            now = datetime.now(UTC)
             store.upsert_ohlcv_bar(
                 ticker="ROTATION_INDEX",
                 timeframe="1d",
-                time=now,
+                time=effective_date,
                 open=rotation_value,
                 high=rotation_value,
                 low=rotation_value,
@@ -240,9 +254,10 @@ class SyntheticIndicatorsProvider:
             )
             store.save_mcp_snapshot("derived/rotation_index", "MARKET", {
                 "value": rotation_value,
+                "as_of_date": effective_date.strftime("%Y-%m-%d"),
             })
-            logger.info(f"📊 ROTATION_INDEX vault: {rotation_value:+.4f}")
-            return {"status": "ok", "value": rotation_value}
+            logger.info(f"📊 ROTATION_INDEX vault: {rotation_value:+.4f} (date={effective_date.date()})")
+            return {"status": "ok", "value": rotation_value, "date": str(effective_date.date())}
 
         except Exception as e:
             logger.warning(f"ROTATION_INDEX vault failed: {e}")

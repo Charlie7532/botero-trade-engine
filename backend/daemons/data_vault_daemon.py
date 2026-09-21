@@ -1358,7 +1358,13 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
         store.save_mcp_snapshot("macro/fear_greed", "MARKET", snapshot)
 
         # Build progressive OHLCV candle: open stays, high/low expand, close updates
-        today_str = datetime.now(UTC).strftime("%Y-%m-%d")
+        now_dt = datetime.now(UTC)
+        if now_dt.weekday() >= 5 or now_dt.hour < 13:
+            last_mkt_date = store.bars_last_date("SPY", "1d")
+            today_str = str(last_mkt_date) if last_mkt_date else now_dt.strftime("%Y-%m-%d")
+        else:
+            today_str = now_dt.strftime("%Y-%m-%d")
+
         store.upsert_ohlcv_bar_candle(
             ticker="FG", timeframe="1d",
             time=today_str, score=score,
@@ -1524,11 +1530,13 @@ def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
 
         # Write as OHLCV bars (OHLC all = close, volume=0) for continuity
         # with TradingView-imported historical data
-        now = datetime.now(UTC)
+        last_spy = store.bars_last_date("SPY", "1d")
+        import pandas as pd
+        effective_date = pd.Timestamp(last_spy).tz_localize("UTC").normalize() if not hasattr(last_spy, "tzinfo") or not last_spy.tzinfo else pd.Timestamp(last_spy).tz_convert("UTC").normalize()
         for ticker, value in [("S5TH", s5th), ("S5TW", s5tw), ("S5FI", s5fi), ("BSI", s5tw)]:
             if value is not None:
                 store.upsert_ohlcv_bar(
-                    ticker=ticker, timeframe="1d", time=now,
+                    ticker=ticker, timeframe="1d", time=effective_date,
                     open=value, high=value, low=value, close=value, volume=0,
                 )
                 store.upsert_ticker_metadata(

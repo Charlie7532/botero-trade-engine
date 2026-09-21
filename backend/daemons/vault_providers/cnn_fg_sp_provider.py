@@ -51,9 +51,11 @@ class CnnFgSpProvider:
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> dict:
         """Calculate and persist all 7 F&G sub-indicators + FG_SP composite."""
-        if _already_vaulted_today(store, "macro/cnn_fg_sp", "COMPOSITE"):
-            logger.info("📊 CNN FG_SP already vaulted today — skipping")
-            return {"status": "skipped", "reason": "already_today"}
+        last_fg_sp = store.bars_last_date("FG_SP", "1d")
+        last_spy = store.bars_last_date("SPY", "1d")
+        if last_fg_sp and last_spy and last_fg_sp >= last_spy:
+            logger.info(f"📊 CNN FG_SP already up to date ({last_fg_sp} >= SPY {last_spy}) — skipping")
+            return {"status": "skipped", "reason": "already_up_to_date"}
 
         return self._compute(store)
 
@@ -64,7 +66,18 @@ class CnnFgSpProvider:
     def _compute(self, store: TimescaleDataStore) -> dict:
         """Core daily computation & persistence."""
         try:
-            now = datetime.now(UTC)
+            import pandas as pd
+            last_spy = store.bars_last_date("SPY", "1d")
+            if not last_spy:
+                logger.warning("FG_SP Provider: SPY date not found")
+                return {"status": "error", "reason": "no_spy_date"}
+
+            effective_date = pd.Timestamp(last_spy).tz_localize("UTC").normalize() if not hasattr(last_spy, "tzinfo") or not last_spy.tzinfo else pd.Timestamp(last_spy).tz_convert("UTC").normalize()
+
+            last_fg_sp = store.bars_last_date("FG_SP", "1d")
+            if last_fg_sp and last_fg_sp >= effective_date.date():
+                logger.info(f"📊 FG_SP already up to date ({last_fg_sp} >= {effective_date.date()}) — skipping")
+                return {"status": "skipped", "reason": "already_up_to_date"}
 
             # ── 1. Load SP500 closes/volumes for Strength & Breadth ──
             all_closes = store.load_all_latest_closes(days=400, sp500_only=True)
@@ -124,7 +137,7 @@ class CnnFgSpProvider:
                     )
                     vol = n_constituents if ticker in ("FG_STRENGTH", "FG_BREADTH") else 0
                     store.upsert_ohlcv_bar(
-                        ticker=ticker, timeframe="1d", time=now,
+                        ticker=ticker, timeframe="1d", time=effective_date,
                         open=float(val), high=float(val), low=float(val), close=float(val),
                         volume=vol,
                     )
@@ -154,7 +167,7 @@ class CnnFgSpProvider:
                     industry="INDICATOR", market_cap_bucket=None,
                 )
                 store.upsert_ohlcv_bar(
-                    ticker="FG_SP", timeframe="1d", time=now,
+                    ticker="FG_SP", timeframe="1d", time=effective_date,
                     open=float(composite_score), high=float(composite_score),
                     low=float(composite_score), close=float(composite_score),
                     volume=len(today_scores),
@@ -166,7 +179,8 @@ class CnnFgSpProvider:
                 "sub_scores": today_scores,
                 "raw_today": raw_today,
                 "n_sub_indicators": len(today_scores),
-                "timestamp": now.isoformat(),
+                "as_of_date": effective_date.strftime("%Y-%m-%d"),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
             store.save_mcp_snapshot("macro/cnn_fg_sp", "COMPOSITE", snapshot)
 

@@ -35,9 +35,11 @@ class SectorCapBreadthProvider:
 
     def run_full(self, store) -> dict:
         """Run full sector cap breadth calculation."""
-        if _already_vaulted_today(store, "macro/sector_cap_breadth", "BATCH_DONE"):
-            logger.info("📊 Sector Cap Breadth already vaulted today — skipping")
-            return {"status": "skipped", "reason": "already_today"}
+        last_spy = store.bars_last_date("SPY", "1d")
+        last_bar = store.bars_last_date("S5CAP_XLK_TW", "1d")
+        if last_bar and last_spy and last_bar >= last_spy:
+            logger.info(f"📊 Sector Cap Breadth already up to date ({last_bar} >= SPY {last_spy}) — skipping")
+            return {"status": "skipped", "reason": "already_up_to_date"}
         return _compute_and_store(store)
 
     def run_ticker(self, store, ticker: str) -> dict:
@@ -47,8 +49,18 @@ class SectorCapBreadthProvider:
 
 def _compute_and_store(store) -> dict:
     """Core logic: load SP500 closes by sector, compute cap-weighted breadth, write bars."""
-    now = datetime.now(UTC)
-    today_str = now.strftime("%Y-%m-%d")
+    import pandas as pd
+    last_spy = store.bars_last_date("SPY", "1d")
+    if not last_spy:
+        logger.warning("SectorCapBreadthProvider: SPY date not found")
+        return {"status": "error", "reason": "no_spy_date"}
+
+    effective_date = pd.Timestamp(last_spy).tz_localize("UTC").normalize() if not hasattr(last_spy, "tzinfo") or not last_spy.tzinfo else pd.Timestamp(last_spy).tz_convert("UTC").normalize()
+
+    last_sector_bar = store.bars_last_date("S5CAP_XLK_TW", "1d")
+    if last_sector_bar and last_sector_bar >= effective_date.date():
+        logger.info(f"📊 SectorCapBreadthProvider already up to date ({last_sector_bar} >= {effective_date.date()}) — skipping")
+        return {"status": "skipped", "reason": "already_up_to_date"}
 
     # Load market caps from cache
     if os.path.exists(CACHE_FILE):
@@ -118,7 +130,7 @@ def _compute_and_store(store) -> dict:
             store.upsert_ohlcv_bar(
                 ticker=indicator_ticker,
                 timeframe="1d",
-                time=today_str,
+                time=effective_date,
                 open=breadth_pct,
                 high=breadth_pct,
                 low=breadth_pct,

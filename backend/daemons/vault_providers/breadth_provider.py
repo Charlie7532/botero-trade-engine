@@ -26,9 +26,8 @@ class BreadthProvider:
         last_s5tw = store.bars_last_date("S5TW", "1d")
         last_spy = store.bars_last_date("SPY", "1d")
         if last_s5tw and last_spy and last_s5tw >= last_spy:
-            if _already_vaulted_today(store, "macro/breadth", "SP500"):
-                logger.info("📊 Breadth already vaulted today — skipping")
-                return {"status": "skipped", "reason": "already_today"}
+            logger.info(f"📊 Breadth already up to date ({last_s5tw} >= SPY {last_spy}) — skipping")
+            return {"status": "skipped", "reason": "already_up_to_date"}
 
         return self._compute_breadth(store)
 
@@ -39,7 +38,18 @@ class BreadthProvider:
     def _compute_breadth(self, store: TimescaleDataStore) -> dict:
         """Core breadth calculation logic."""
         try:
+            import pandas as pd
             from backend.modules.shared.domain.rules.macro_trend_calculator import calculate_breadth
+
+            last_spy = store.bars_last_date("SPY", "1d")
+            if not last_spy:
+                logger.warning("Breadth: SPY date not found")
+                return {"status": "error", "reason": "no_spy_date"}
+
+            last_s5tw = store.bars_last_date("S5TW", "1d")
+            if last_s5tw and last_s5tw >= last_spy:
+                logger.info(f"📊 Breadth already up to date ({last_s5tw} >= SPY {last_spy}) — skipping")
+                return {"status": "skipped", "reason": "already_up_to_date"}
 
             all_closes = store.load_all_latest_closes(days=300, sp500_only=True)
             if not all_closes:
@@ -54,19 +64,21 @@ class BreadthProvider:
                 logger.warning("Breadth: insufficient history for MA calculation")
                 return {"status": "error", "reason": "insufficient_history"}
 
+            effective_date = pd.Timestamp(last_spy).tz_localize("UTC").normalize() if not hasattr(last_spy, "tzinfo") or not last_spy.tzinfo else pd.Timestamp(last_spy).tz_convert("UTC").normalize()
+
             n_constituents = len(all_closes)
             snapshot = {
                 "s5th": s5th, "s5tw": s5tw, "s5fi": s5fi,
                 "tickers_counted": n_constituents,
+                "as_of_date": effective_date.strftime("%Y-%m-%d"),
                 "timestamp": datetime.now(UTC).isoformat(),
             }
             store.save_mcp_snapshot("macro/breadth", "SP500", snapshot)
 
-            now = datetime.now(UTC)
             for ticker, value in [("S5TH", s5th), ("S5TW", s5tw), ("S5FI", s5fi), ("BSI", s5tw)]:
                 if value is not None:
                     store.upsert_ohlcv_bar(
-                        ticker=ticker, timeframe="1d", time=now,
+                        ticker=ticker, timeframe="1d", time=effective_date,
                         open=value, high=value, low=value, close=value,
                         volume=n_constituents,
                     )

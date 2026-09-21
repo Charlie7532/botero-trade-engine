@@ -31,9 +31,11 @@ class SectorVolumeIntensityProvider:
 
     def run_full(self, store) -> dict:
         """Run full VBI calculations."""
-        if _already_vaulted_today(store, "macro/sector_volume_intensity", "BATCH_DONE"):
-            logger.info("📊 Sector Volume Intensity already vaulted today — skipping")
-            return {"status": "skipped", "reason": "already_today"}
+        last_spy = store.bars_last_date("SPY", "1d")
+        last_bar = store.bars_last_date("VBI_XLK", "1d")
+        if last_bar and last_spy and last_bar >= last_spy:
+            logger.info(f"📊 Sector Volume Intensity already up to date ({last_bar} >= SPY {last_spy}) — skipping")
+            return {"status": "skipped", "reason": "already_up_to_date"}
         return _compute_and_store(store)
 
     def run_ticker(self, store, ticker: str) -> dict:
@@ -43,8 +45,18 @@ class SectorVolumeIntensityProvider:
 
 def _compute_and_store(store) -> dict:
     """Core logic: load SP500 volumes by sector, compute VBI Z-scores, write bars."""
-    now = datetime.now(UTC)
-    today_str = now.strftime("%Y-%m-%d")
+    import pandas as pd
+    last_spy = store.bars_last_date("SPY", "1d")
+    if not last_spy:
+        logger.warning("SectorVolumeIntensityProvider: SPY date not found")
+        return {"status": "error", "reason": "no_spy_date"}
+
+    effective_date = pd.Timestamp(last_spy).tz_localize("UTC").normalize() if not hasattr(last_spy, "tzinfo") or not last_spy.tzinfo else pd.Timestamp(last_spy).tz_convert("UTC").normalize()
+
+    last_vbi_bar = store.bars_last_date("VBI_XLK", "1d")
+    if last_vbi_bar and last_vbi_bar >= effective_date.date():
+        logger.info(f"📊 SectorVolumeIntensityProvider already up to date ({last_vbi_bar} >= {effective_date.date()}) — skipping")
+        return {"status": "skipped", "reason": "already_up_to_date"}
 
     # Load constituent volumes by sector (need 30-40 days for 20d standard deviation)
     by_sector, sector_map = store.load_sp500_volumes_by_sector(days=50)
@@ -91,7 +103,7 @@ def _compute_and_store(store) -> dict:
         store.upsert_ohlcv_bar(
             ticker=indicator_ticker,
             timeframe="1d",
-            time=today_str,
+            time=effective_date,
             open=vbi_val,
             high=vbi_val,
             low=vbi_val,

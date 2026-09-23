@@ -131,8 +131,11 @@ def compute_station_staleness(
                 expected_date = prev_bdays[0].date() if len(prev_bdays) >= 2 else ref_date
         else:
             # INTRADAY / DERIVED_INTRADAY
-            # Before market open (09:30 ET), previous day close is the benchmark.
-            if hour_ny < 9.5:
+            # The Vault daemon batch-ingests data post-close, not live intraday.
+            # Before 18:00 ET (post-close settlement), yesterday's close (T-1)
+            # is the most recent available bar. After 18:00 ET, today's bar
+            # should be present from the daemon run.
+            if hour_ny < 18.0:
                 prev_bdays = pd.bdate_range(end=ref_date, periods=2)
                 expected_date = prev_bdays[0].date() if len(prev_bdays) >= 2 else ref_date
             else:

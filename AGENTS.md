@@ -17,7 +17,8 @@ Algorithmic trading monorepo combining:
 - **Next.js 16 + PayloadCMS 3** (TypeScript) — trading dashboard UI + CMS admin at `src/`
 - **Python Trading Engine** — institutional-grade engine with MCP data pipelines at `backend/`
 - **8 MCP Servers** (~200+ tools) — Alpaca, GuruFocus, Finviz, Finnhub, FRED, Yahoo Finance, News, Unusual Whales
-- **Docker Compose** — orchestrates `web` (3000) and `api` (8000). PostgreSQL is **external**.
+- **Docker Compose** — orchestrates `web` (3000), `api` (8000), and `redis` (6379). PostgreSQL is **external**.
+- **Redis 7 Alpine** — optional L1 read cache in front of Neon PostgreSQL. Ephemeral (no persistence). If `REDIS_URL` is not set, the system works without it.
 
 Git remote: `https://github.com/Charlie7532/botero-trade-engine`
 
@@ -55,7 +56,7 @@ botero-trade/
 │   │   ├── execution/           # Paper Trading, Journal (Domain) + Broker adapters (Infra)
 │   │   ├── simulation/          # Backtester, Autopsy (Domain) + Backtrader (Infra)
 │   │   ├── volatility_regime/   # Vol Regime Classification (Pure Domain)
-│   │   └── shared/              # Cache Utils, Global Ports, Market Data entities
+│   │   └── shared/              # Redis L1 Cache, Global Ports, Market Data entities
 │   ├── _legacy/                 # Deprecated / Experimental code (LSTM, Sequence modeling)
 │   ├── daemons/                 # Background runners (Quality, Speculative — delivery mechanism)
 │   └── api/
@@ -220,6 +221,8 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 12. **Surgical changes.** Every changed line must trace directly to the user's request. Don't "improve" adjacent code, comments, or formatting. Match existing style. If you notice unrelated dead code, mention it — don't delete it. Remove only imports/variables/functions that YOUR changes made unused.
 
 13. **Vault-First data access.** Production modules (everything under `backend/modules/`) MUST read market data exclusively from `TimescaleDataStore` (Neon PostgreSQL). Direct calls to yfinance, requests, httpx, or any external API for market data are FORBIDDEN in modules. Only `backend/daemons/` and `backend/scripts/` may call external APIs. The Vault Daemon is the single writer; modules are readers only.
+
+    **Redis L1 Cache:** `TimescaleDataStore` and `PostgresRegimeStateAdapter` include an optional Redis read cache (`redis_cache.py`). Redis is an ephemeral acceleration layer — Neon remains the SSOT. If `REDIS_URL` is not set, all reads go directly to Neon. Cached data types: `mcp:{category}:{ticker}:latest` (JSON, 5min TTL), `bars:{ticker}:{tf}` (Feather, 1hr TTL), `regime:{key}:current` (JSON, 10min TTL). Write-through: writes always go to Neon first, then invalidate the cache key.
 
 - `backend/daemons/` — Delivery mechanism (daemon entry points). Not a Clean Architecture application layer — these are background runners equivalent to API routers.
 

@@ -115,6 +115,11 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                 )
             conn.commit()
             logger.info(f"TimescaleDB: {ticker}/{tf} — inserted {len(rows)} bars")
+            # L1 cache invalidation: stale bars for this ticker
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _cache.invalidate(f"bars:{ticker.upper()}:{tf}")
         except Exception as e:
             conn.rollback()
             logger.error(f"TimescaleDB: {ticker}/{tf} save_bars failed: {e}")
@@ -126,6 +131,16 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         self, ticker: str, tf: str,
         start: Optional[date] = None, end: Optional[date] = None,
     ) -> pd.DataFrame:
+        # L1 cache: only cache unfiltered loads (full history) — the most common pattern
+        _use_cache = (start is None and end is None)
+        if _use_cache:
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _hit = _cache.get_dataframe(f"bars:{ticker.upper()}:{tf}")
+                if _hit is not None:
+                    return _hit
+
         conn = self._conn()
         try:
             query = (
@@ -145,6 +160,14 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
             query += " ORDER BY time"
 
             df = pd.read_sql(query, self.engine, params=tuple(params), index_col="time", parse_dates=["time"])
+
+            # Populate L1 cache on miss (unfiltered only)
+            if _use_cache and not df.empty:
+                from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+                _cache = get_redis_cache()
+                if _cache:
+                    _cache.set_dataframe(f"bars:{ticker.upper()}:{tf}", df, ttl=3600)
+
             return df
         finally:
             self._put(conn)
@@ -253,6 +276,11 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                     )
             conn.commit()
             logger.debug(f"TimescaleDB: mcp/{category}/{ticker} — snapshot saved")
+            # L1 cache invalidation: stale snapshot for this key
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _cache.invalidate(f"mcp:{category}:{ticker.upper()}:latest")
         except Exception as e:
             conn.rollback()
             logger.error(f"TimescaleDB: mcp/{category}/{ticker} save failed: {e}")
@@ -278,6 +306,15 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
 
     def load_mcp_latest(self, category: str, ticker: str) -> Optional[Any]:
         """Load the most recent MCP snapshot regardless of date."""
+        # L1 cache: check Redis first
+        from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+        _cache = get_redis_cache()
+        _cache_key = f"mcp:{category}:{ticker.upper()}:latest"
+        if _cache:
+            _hit = _cache.get_json(_cache_key)
+            if _hit is not None:
+                return _hit
+
         conn = self._conn()
         try:
             with conn.cursor() as cur:
@@ -288,9 +325,14 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                     (category, ticker.upper()),
                 )
                 row = cur.fetchone()
-                return row[0] if row else None
+                result = row[0] if row else None
         finally:
             self._put(conn)
+
+        # Populate L1 on miss
+        if result is not None and _cache:
+            _cache.set_json(_cache_key, result, ttl=300)
+        return result
 
     def load_mcp_latest_with_age(
         self, category: str, ticker: str,

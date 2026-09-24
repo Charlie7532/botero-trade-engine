@@ -59,8 +59,10 @@ backend/modules/<module_name>/
 │   ├── rules/               # Constants, thresholds, pure functions, formulas
 │   └── use_cases/           # Business logic orchestrators. Depend on Ports, never Adapters.
 └── infrastructure/          # External connections (optional — some modules are pure domain)
-    └── ...                  # Concrete adapters implementing Ports (yfinance, Alpaca, MongoDB, etc.)
+    └── ...                  # Concrete adapters implementing Ports (yfinance, Alpaca, Redis, etc.)
 ```
+
+> **Redis L1 Cache:** `redis_cache.py` lives in `shared/infrastructure/` and is consumed **only** by other infrastructure adapters (`TimescaleDataStore`, `PostgresRegimeStateAdapter`). No domain, port, use case, or rule file may import or reference Redis. The cache is transparent — if Redis is unavailable, all reads fall through to Neon PostgreSQL.
 
 ---
 

@@ -89,6 +89,16 @@ class PostgresRegimeStateAdapter(RegimeStatePort):
         Production (reference_date=None): returns the row with closed_at IS NULL.
         Backtest (reference_date set): returns the row that was active at that date.
         """
+        # L1 cache: only cache production lookups (not backtest)
+        if reference_date is None:
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            _cache_key = f"regime:{key}:current"
+            if _cache:
+                _hit = _cache.get_json(_cache_key)
+                if _hit is not None:
+                    return self._snapshot_from_cache_dict(_hit)
+
         conn = self._conn()
         cur = conn.cursor()
 
@@ -121,7 +131,17 @@ class PostgresRegimeStateAdapter(RegimeStatePort):
         if not row:
             return None
 
-        return self._row_to_snapshot(row)
+        snapshot = self._row_to_snapshot(row)
+
+        # Populate L1 cache on miss (production path only)
+        if reference_date is None and snapshot is not None:
+            from dataclasses import asdict
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _cache.set_json(f"regime:{key}:current", asdict(snapshot), ttl=600)
+
+        return snapshot
 
     def load_history(
         self, key: str, start: datetime, end: datetime,
@@ -200,6 +220,11 @@ class PostgresRegimeStateAdapter(RegimeStatePort):
                 f"{previous_state or '(none)'}→{next_state} "
                 f"trigger={trigger}"
             )
+            # L1 cache invalidation
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _cache.invalidate(f"regime:{key}:current")
         except Exception:
             conn.rollback()
             raise
@@ -289,4 +314,34 @@ class PostgresRegimeStateAdapter(RegimeStatePort):
             duration_bars=row[5],
             trigger_event=row[6],
             metadata=meta,
+        )
+
+    @staticmethod
+    def _snapshot_from_cache_dict(d: dict) -> StateSnapshot:
+        """Reconstruct StateSnapshot from a JSON-deserialized dict.
+
+        datetime fields are stored as ISO strings in Redis and need
+        to be parsed back. Handles None values for optional fields.
+        """
+        from datetime import datetime as _dt
+
+        def _parse_dt(val):
+            if val is None:
+                return None
+            if isinstance(val, _dt):
+                return val
+            try:
+                return _dt.fromisoformat(val)
+            except (ValueError, TypeError):
+                return None
+
+        return StateSnapshot(
+            key=d["key"],
+            current_state=d["current_state"],
+            previous_state=d.get("previous_state"),
+            entered_at=_parse_dt(d["entered_at"]),
+            closed_at=_parse_dt(d.get("closed_at")),
+            duration_bars=int(d.get("duration_bars", 1)),
+            trigger_event=d.get("trigger_event"),
+            metadata=d.get("metadata"),
         )

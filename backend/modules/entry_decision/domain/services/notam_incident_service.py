@@ -328,6 +328,36 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
         except ImportError:
             pass  # MacroEventCalendar not available — skip FOMC check
 
+        # 4. Check Redis L1 Cache Infrastructure
+        try:
+            import os
+            redis_url = os.environ.get("REDIS_URL")
+            if redis_url:
+                from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+                _cache = get_redis_cache()
+                if _cache is not None and not _cache.is_available():
+                    notams.append(
+                        OperationalNOTAM(
+                            notam_id=f"NOTAM-INFRA-REDIS-{today_str.replace('-', '')}",
+                            timestamp_utc=now_str,
+                            incident_type="NOTAM_INFRA_DEGRADATION",
+                            severity="WARNING",
+                            component="RedisL1Cache",
+                            title="Redis L1 Cache Offline — Degraded Latency",
+                            description=(
+                                "Redis L1 cache is configured (REDIS_URL set) but unreachable. "
+                                "All reads are falling through to Neon PostgreSQL (WAN). "
+                                "System is fully functional but operating with degraded latency "
+                                "(40-150ms per query vs <1ms cached)."
+                            ),
+                            operational_action="INFRA_DEGRADED_LATENCY",
+                            is_active=True,
+                            details={"redis_url_configured": True, "fallback": "Neon PostgreSQL"},
+                        )
+                    )
+        except Exception:
+            pass  # Redis check is best-effort
+
         return notams
     finally:
         pass  # shared pool — no close

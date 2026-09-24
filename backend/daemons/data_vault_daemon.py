@@ -2055,6 +2055,24 @@ def _log_cycle_report(results: dict, store: Optional[TimescaleDataStore] = None)
     idx_series = _fmt(indices, "series", "", "d")
     lines.append(f"║    Market Indices {_status_icon(indices)}  {idx_series} series")
 
+    # ── Infrastructure ──
+    lines.append("║                                                          ║")
+    lines.append("║  🏗️  INFRASTRUCTURE                                      ║")
+    try:
+        from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+        _redis = get_redis_cache()
+        if _redis is None:
+            lines.append("║    Redis L1       ⏭️  disabled (REDIS_URL not set)")
+        elif _redis.is_available():
+            _rstats = _redis.stats()
+            _rkeys = _rstats.get("keys", "?")
+            _rmem = _rstats.get("used_memory_human", "?")
+            lines.append(f"║    Redis L1       ✅ connected ({_rkeys} keys, {_rmem})")
+        else:
+            lines.append("║    Redis L1       ❌ offline (fallback to Neon)")
+    except Exception:
+        lines.append("║    Redis L1       ⏭️  unavailable")
+
     # ── Composite Intelligence ──
     mh = results.get("market_health", {})
     lines.append("║                                                          ║")

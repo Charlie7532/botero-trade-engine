@@ -24,6 +24,8 @@ import logging
 import math
 import sys
 import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict
 from datetime import datetime, date, UTC
 from pathlib import Path
@@ -63,6 +65,7 @@ _FORCE_REFRESH = False
 
 # Persistent failure and retry tracker across cycles (Item/Station -> consecutive failure count)
 _RETRY_TRACKER: dict[str, int] = {}
+_retry_lock = threading.Lock()
 
 
 def _already_vaulted_today(store: TimescaleDataStore, category: str, ticker: str) -> bool:
@@ -2268,8 +2271,28 @@ def _log_cycle_report(results: dict, store: Optional[TimescaleDataStore] = None)
         logger.info(line)
 
 
+def _collect_futures(futures: dict, results: dict) -> None:
+    """Collect results from a ThreadPoolExecutor futures dict."""
+    for future in as_completed(futures):
+        key = futures[future]
+        try:
+            results[key] = future.result()
+        except Exception as e:
+            logger.warning(f"Provider '{key}' failed in thread: {e}")
+            results[key] = {"status": "error", "error": str(e)}
+
+
 def run_cycle(store: TimescaleDataStore) -> None:
-    """Run one full vault cycle — ALL data sources."""
+    """Run one full vault cycle — ALL data sources.
+
+    4-Lane parallel pipeline:
+      Step 0: VRR (serial, before everything)
+      Lane A: All external API fetchers in parallel (8 workers)
+      Lane B: Neon-only derivations in parallel (6 workers, post-OHLCV barrier)
+      Lane B2: Second-order derivations in parallel (3 workers, post-Lane B)
+      Lane C: Composite consumers (sequential, fast, order matters)
+      Lane D: Rate-limited externals in parallel (3 workers)
+    """
     interceptor = VaultInterceptor(store)
     ts = datetime.now(UTC).isoformat()
     logger.info(f"═══ Vault cycle started at {ts} ═══")
@@ -2277,156 +2300,135 @@ def run_cycle(store: TimescaleDataStore) -> None:
     neon_tickers = _get_neon_universe(store)
     logger.info(f"📊 Neon universe: {len(neon_tickers)} tickers")
 
+    # Pre-import all provider classes (avoid import inside threads)
+    from backend.daemons.vault_providers.channel_snapshot_provider import vault_channel_snapshots
+    from backend.daemons.vault_providers.sector_breadth_provider import SectorBreadthProvider
+    from backend.daemons.vault_providers.volume_breadth_provider import VolumeBreadthProvider
+    from backend.daemons.vault_providers.sector_volume_breadth_provider import SectorVolumeBreadthProvider
+    from backend.daemons.vault_providers.sector_cap_breadth_provider import SectorCapBreadthProvider
+    from backend.daemons.vault_providers.sector_volume_intensity_provider import SectorVolumeIntensityProvider
+    from backend.daemons.vault_providers.sv5_turbulence_provider import SV5TurbulenceProvider
+    from backend.daemons.vault_providers.synthetic_indicators_provider import SyntheticIndicatorsProvider
+    from backend.daemons.vault_providers.metar_compositor_provider import MetarCompositorProvider
+    from backend.daemons.vault_providers.observer_provider import ObserverProvider
+    from backend.daemons.vault_providers.triad_retrainer_provider import TriadRetrainerProvider
+    from backend.daemons.vault_providers.uw_gamma_provider import UWGammaProvider
+
     results = {}
 
-    # ── Tier 0: On-demand refresh requests (VRR) ──
+    # ── Step 0: On-demand refresh requests (VRR — serial, before everything) ──
     results["vrr"] = drain_refresh_queue(store)
 
-    # ── Tier 1: Instant + Decision-Critical (~15s) ──
-    results["vix_live"] = vault_vix_live(store)
-    results["fred_macro"] = vault_fred_macro(store)
-    results["cboe"] = vault_cboe_indices(store)
-    results["fear_greed"] = vault_fear_greed(store)
-    results["portfolio"] = vault_portfolio_data(store)
-    # NOTE: Individual METAR providers (VIX, VVIX, SKEW, FG, PCR) replaced by
-    # unified MetarCompositorProvider in Tier 3b (after synthetic_indicators).
-    # Single compositor pass handles all 11 stations + SIGMET + TAF.
+    # ── LANE A: All external API fetchers in parallel ──────────────────────
+    # 14 providers, 8 workers. I/O-bound — GIL not a factor.
+    # Providers are independent: no shared mutable state, each gets its own
+    # DB connection from ThreadedConnectionPool.
+    with _retry_lock:
+        pending_retries = [k for k, v in _RETRY_TRACKER.items() if v > 0 and k.isupper() and len(k) <= 6]
 
-    # ── Tier 2: Moderate (~1 min) ──
-    results["finnhub"] = vault_finnhub_data(store, neon_tickers)
-    results["sec_8k"] = vault_sec_8k_filings(store)
-    results["market_indices"] = vault_market_indices(store)
-    results["guru_picks"] = vault_guru_picks(store)
-    results["insider_activity"] = vault_insider_activity(store)
+    logger.info("⚡ Lane A: launching 14 external fetchers in parallel")
+    with ThreadPoolExecutor(max_workers=8, thread_name_prefix="vault-a") as pool:
+        futures = {
+            # Tier 1: Instant + Decision-Critical
+            pool.submit(vault_vix_live, store): "vix_live",
+            pool.submit(vault_fred_macro, store): "fred_macro",
+            pool.submit(vault_cboe_indices, store): "cboe",
+            pool.submit(vault_fear_greed, store): "fear_greed",
+            pool.submit(vault_portfolio_data, store): "portfolio",
+            # Tier 2: Moderate
+            pool.submit(vault_finnhub_data, store, neon_tickers): "finnhub",
+            pool.submit(vault_sec_8k_filings, store): "sec_8k",
+            pool.submit(vault_market_indices, store): "market_indices",
+            pool.submit(vault_guru_picks, store): "guru_picks",
+            pool.submit(vault_insider_activity, store): "insider_activity",
+            # Tier 3: Heavy
+            pool.submit(vault_ohlcv_bars, store, neon_tickers, retry_tickers=pending_retries): "ohlcv",
+            pool.submit(vault_gurufocus_screening, store, neon_tickers): "gurufocus",
+            pool.submit(vault_earnings_estimates, store, neon_tickers): "estimates",
+            pool.submit(vault_analyst_credibility, store, neon_tickers): "credibility",
+        }
+        _collect_futures(futures, results)
 
-    # ── Tier 3: Heavy (~5-20 min) ──
-    pending_retries = [k for k, v in _RETRY_TRACKER.items() if v > 0 and k.isupper() and len(k) <= 6]
-    results["ohlcv"] = vault_ohlcv_bars(store, neon_tickers, retry_tickers=pending_retries)
-    results["gurufocus"] = vault_gurufocus_screening(store, neon_tickers)
-    results["estimates"] = vault_earnings_estimates(store, neon_tickers)
-    results["credibility"] = vault_analyst_credibility(store, neon_tickers)
+    logger.info("⚡ Lane A complete")
 
-    # ── Tier 3a: Channel Snapshots (ONLY when new OHLCV bars inserted) ──
+    # ── BARRIER: OHLCV must be done before derivations ─────────────────────
     ohlcv_updated = results.get("ohlcv", {}).get("updated", 0)
+
+    # ── LANE B: Neon-only derivations in parallel (all need OHLCV) ─────────
+    # 6 providers, 6 workers. CPU-bound but short. Read from Neon, compute, write.
+    logger.info("⚡ Lane B: launching 6 Neon derivations in parallel")
+    with ThreadPoolExecutor(max_workers=6, thread_name_prefix="vault-b") as pool:
+        futures = {
+            pool.submit(vault_channel_snapshots, store, ohlcv_updated): "channel_snapshots",
+            pool.submit(vault_breadth_indicators, store): "breadth",
+            pool.submit(SectorBreadthProvider().run_full, store): "sector_breadth",
+            pool.submit(VolumeBreadthProvider().run_full, store): "volume_breadth",
+            pool.submit(SectorVolumeBreadthProvider().run_full, store): "sector_volume_breadth",
+            pool.submit(SyntheticIndicatorsProvider().run_full, store): "synthetic_indicators",
+        }
+        _collect_futures(futures, results)
+
+    # Check synthetic_indicators health (METAR depends on it)
+    synth_status = results.get("synthetic_indicators", {})
+    if synth_status.get("status") == "error":
+        logger.error(f"🚨 CRITICAL: Synthetic indicators FAILED — METAR stations will use stale data! Detail: {synth_status}")
+
+    logger.info("⚡ Lane B complete")
+
+    # ── LANE B2: Second-order derivations (need Lane B results) ────────────
+    # sector_cap needs sector_breadth, vol_intensity needs sector_vol_breadth,
+    # turbulence needs volume_breadth.
+    logger.info("⚡ Lane B2: launching 3 second-order derivations in parallel")
+    with ThreadPoolExecutor(max_workers=3, thread_name_prefix="vault-b2") as pool:
+        futures = {
+            pool.submit(SectorCapBreadthProvider().run_full, store): "sector_cap_breadth",
+            pool.submit(SectorVolumeIntensityProvider().run_full, store): "sector_volume_intensity",
+            pool.submit(SV5TurbulenceProvider().run_full, store): "sv5_turbulence",
+        }
+        _collect_futures(futures, results)
+
+    logger.info("⚡ Lane B2 complete")
+
+    # ── LANE C: Composite consumers (sequential — fast, order matters) ─────
+    # METAR needs synthetics, health needs breadth+FG, observer needs channels,
+    # triad needs METAR. These are fast (<5s each) and depend on prior lanes.
     try:
-        from backend.daemons.vault_providers.channel_snapshot_provider import (
-            vault_channel_snapshots,
-        )
-        results["channel_snapshots"] = vault_channel_snapshots(store, ohlcv_updated)
-    except Exception as e:
-        logger.warning(f"Channel snapshot vault failed (non-critical): {e}")
-        results["channel_snapshots"] = {"status": "error", "error": str(e)}
-
-    # ── Tier 3b: Breadth (MUST run AFTER ohlcv to use fresh closes) ──
-    results["breadth"] = vault_breadth_indicators(store)
-
-    # ── Tier 3b-bis: Sector Breadth (MUST run AFTER ohlcv, same dependency) ──
-    try:
-        from backend.daemons.vault_providers.sector_breadth_provider import SectorBreadthProvider
-        results["sector_breadth"] = SectorBreadthProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"Sector breadth vault failed (non-critical): {e}")
-        results["sector_breadth"] = {"status": "error", "error": str(e)}
-
-    # ── Tier 3b-ter: Volume Breadth — SV5TH/SV5FI/SV5TW (AFTER ohlcv) ──
-    try:
-        from backend.daemons.vault_providers.volume_breadth_provider import VolumeBreadthProvider
-        results["volume_breadth"] = VolumeBreadthProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"Volume breadth vault failed (non-critical): {e}")
-        results["volume_breadth"] = {"status": "error", "error": str(e)}
-
-    # ── Tier 3b-ter2: CNN FG SPIndex (DEPRECATED: Orphaned synthetic experiment) ──
-    # Official Fear & Greed is ticker FG via vault_fear_greed(). Synthetic FG_SP is retired.
-
-    # ── Tier 3b-quat: Sector Volume Breadth — SV5_{ETF}_{TH|FI|TW} (AFTER ohlcv) ──
-    try:
-        from backend.daemons.vault_providers.sector_volume_breadth_provider import SectorVolumeBreadthProvider
-        results["sector_volume_breadth"] = SectorVolumeBreadthProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"Sector volume breadth vault failed (non-critical): {e}")
-        results["sector_volume_breadth"] = {"status": "error", "error": str(e)}
-
-    # ── Tier 3b-quin: Sector Cap Breadth — S5CAP_{ETF}_{TH|FI|TW} (AFTER sector_breadth) ──
-    try:
-        from backend.daemons.vault_providers.sector_cap_breadth_provider import SectorCapBreadthProvider
-        results["sector_cap_breadth"] = SectorCapBreadthProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"Sector cap breadth vault failed (non-critical): {e}")
-        results["sector_cap_breadth"] = {"status": "error", "error": str(e)}
-
-    # ── Tier 3b-sex: Sector Volume Intensity — VBI_{ETF} (AFTER sector_volume_breadth) ──
-    try:
-        from backend.daemons.vault_providers.sector_volume_intensity_provider import SectorVolumeIntensityProvider
-        results["sector_volume_intensity"] = SectorVolumeIntensityProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"Sector volume intensity vault failed (non-critical): {e}")
-        results["sector_volume_intensity"] = {"status": "error", "error": str(e)}
-
-    # ── Tier 3b-sept: SV5_TURBULENCE — Institutional Volume Turbulence (AFTER volume_breadth) ──
-    try:
-        from backend.daemons.vault_providers.sv5_turbulence_provider import SV5TurbulenceProvider
-        results["sv5_turbulence"] = SV5TurbulenceProvider().run_full(store)
-    except Exception as e:
-        logger.warning(f"SV5_TURBULENCE vault failed (non-critical): {e}")
-        results["sv5_turbulence"] = {"status": "error", "error": str(e)}
-
-    # ── Tier 3b-oct: Synthetic Indicators — CREDIT_RATIO, YIELD_SPREAD, ROTATION_INDEX ──
-    # MANDATORY: Computes derived OHLCV bars from subyacentes (HYG/LQD, TNX/IRX, XLY/XLP/XLK/XLU).
-    # MUST run AFTER ohlcv (Tier 3) and BEFORE Credit/Yield/Rotation METAR providers.
-    try:
-        from backend.daemons.vault_providers.synthetic_indicators_provider import SyntheticIndicatorsProvider
-        results["synthetic_indicators"] = SyntheticIndicatorsProvider().run_full(store)
-        synth_status = results["synthetic_indicators"]
-        if synth_status.get("status") == "error":
-            logger.error(f"🚨 CRITICAL: Synthetic indicators FAILED — METAR stations will use stale data! Detail: {synth_status}")
-    except Exception as e:
-        logger.error(f"🚨 CRITICAL: Synthetic indicators provider crashed: {e}")
-        results["synthetic_indicators"] = {"status": "error", "error": str(e)}
-
-    # DXY, Credit, Yield Curve, Rotation, BSI METAR providers REPLACED by unified
-    # MetarCompositorProvider — single compositor pass handles all 11 stations.
-    # ── Tier 3b-nov: Unified METAR Compositor (AFTER synthetic_indicators) ──
-    try:
-        from backend.daemons.vault_providers.metar_compositor_provider import MetarCompositorProvider
         results["metar_compositor"] = MetarCompositorProvider().run_full(store)
     except Exception as e:
         logger.error(f"METAR Compositor vault failed: {e}")
         results["metar_compositor"] = {"status": "error", "error": str(e)}
 
-    # ── Tier 3c: Market Health (MUST run AFTER breadth + fear_greed + ohlcv) ──
     results["market_health"] = vault_market_health(store)
 
-    # ── Tier 3d: Unified Observer (MUST run AFTER channel_snapshots exist) ──
     try:
-        from backend.daemons.vault_providers.observer_provider import ObserverProvider
         results["observer"] = ObserverProvider().run_full(store)
     except Exception as e:
         logger.warning(f"Observer vault failed (non-critical): {e}")
         results["observer"] = {"status": "error", "error": str(e)}
 
-    # ── Tier 3e: Weekly Retraining of Triad Matrices (Runs Sundays or if >7d old) ──
     try:
-        from backend.daemons.vault_providers.triad_retrainer_provider import TriadRetrainerProvider
         results["triad_retraining"] = TriadRetrainerProvider().run_full(store)
     except Exception as e:
         logger.warning(f"Triad retrainer vault failed (non-critical): {e}")
         results["triad_retraining"] = {"status": "error", "error": str(e)}
 
-    # ── Tier 4: Very heavy + rate limited ──
-    results["yahoo"] = vault_yahoo_data(interceptor, neon_tickers)
-    results["uw"] = vault_uw_data(interceptor)
+    # ── LANE D: Rate-limited externals in parallel ─────────────────────────
+    # yahoo/uw/uw_gamma are heavy and rate-limited but independent of each other.
+    logger.info("⚡ Lane D: launching 3 rate-limited externals in parallel")
+    with ThreadPoolExecutor(max_workers=3, thread_name_prefix="vault-d") as pool:
+        uw_gamma_provider = UWGammaProvider()
+        futures = {
+            pool.submit(vault_yahoo_data, interceptor, neon_tickers): "yahoo",
+            pool.submit(vault_uw_data, interceptor): "uw",
+            pool.submit(uw_gamma_provider.run_full, store, tickers=neon_tickers): "uw_gamma",
+        }
+        _collect_futures(futures, results)
 
-    # ── Tier 4b: UW Gamma / Vol / Structure (Phase 1 unlock) ──
+    # TTL cleanup for UW Gamma (lightweight, runs after threads finish)
     try:
-        from backend.daemons.vault_providers.uw_gamma_provider import UWGammaProvider
-        uw_provider = UWGammaProvider()
-        results["uw_gamma"] = uw_provider.run_full(store, tickers=neon_tickers)
-        # TTL cleanup: purge UW snapshots older than 30 days (lightweight query)
-        uw_provider.purge_stale_snapshots(store, ttl_days=30)
-    except Exception as e:
-        logger.warning(f"UW Gamma vault failed (non-critical): {e}")
-        results["uw_gamma"] = {"status": "error", "error": str(e)}
+        uw_gamma_provider.purge_stale_snapshots(store, ttl_days=30)
+    except Exception:
+        pass  # non-critical cleanup
 
     _log_cycle_report(results, store=store)
 
@@ -2452,7 +2454,9 @@ def main():
 
     logger.info(f"Loop: {'one-shot' if args.loop <= 0 else f'{args.loop}s'}")
 
-    store = TimescaleDataStore()
+    # max_conn=12: supports 8 workers (Lane A) + 6 (Lane B) concurrently
+    # with connection reuse between lanes. Neon allows 450 connections.
+    store = TimescaleDataStore(max_conn=12)
 
     while True:
         run_cycle(store)

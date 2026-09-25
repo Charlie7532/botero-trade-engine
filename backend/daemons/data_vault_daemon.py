@@ -2125,21 +2125,20 @@ def _log_cycle_report(results: dict, store: Optional[TimescaleDataStore] = None)
     fg_src = fg.get("source", "—")
     lines.append(f"║    Fear & Greed   {_status_icon(fg)}  {fg_score:>6} (Δ{fg_delta}, src={fg_src})")
 
-    # PCR (from CBOE vault — value read from store)
-    cboe_pcr_bars = cboe.get("total_bars", 0)
-    if cboe_pcr_bars and cboe_pcr_bars > 0 and store:
+    # PCR (always read latest value from store — independent of this cycle's writes)
+    if store:
         try:
-            _pcr_last = store.bars_last_date("CBOE_PCR", "1d")
-            if _pcr_last:
-                _pcr_df = store.load_bars("CBOE_PCR", "1d")
-                _pcr_val = f"{_pcr_df['close'].iloc[-1]:.4f}" if _pcr_df is not None and not _pcr_df.empty else "—"
+            _pcr_df = store.load_bars("CBOE_PCR", "1d")
+            if _pcr_df is not None and not _pcr_df.empty:
+                _pcr_val = f"{_pcr_df['close'].iloc[-1]:.4f}"
+                _pcr_date = str(_pcr_df.index[-1].date())
+                lines.append(f"║    CBOE PCR       ✅  {_pcr_val:>6} ({_pcr_date})")
             else:
-                _pcr_val = "—"
+                lines.append(f"║    CBOE PCR       ⚠️       — (no data)")
         except Exception:
-            _pcr_val = "—"
-        lines.append(f"║    CBOE PCR       ✅  {_pcr_val:>6} (updated)")
+            lines.append(f"║    CBOE PCR       ⚠️       — (read error)")
     else:
-        lines.append(f"║    CBOE PCR       ⏭️       — (skipped)")
+        lines.append(f"║    CBOE PCR       ⏭️       — (no store)")
 
     # Global Breadth
     s5th = _fmt(breadth, "s5th", "%")

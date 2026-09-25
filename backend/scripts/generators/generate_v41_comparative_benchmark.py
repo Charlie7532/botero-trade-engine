@@ -10,7 +10,7 @@ from dotenv import load_dotenv; load_dotenv()
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.entry_decision.application.use_cases.quality_entry_gate import QualityEntryGate
-from backend.scripts.generate_v40_full_master_benchmark import load_data, SECTORS_11, compute_regime_stats, compute_yearly_stats
+from backend.scripts.generators.generate_v40_full_master_benchmark import load_data, SECTORS_11, compute_regime_stats, compute_yearly_stats
 
 def run_simulation(pivot, sec_pivot, macro_pivot, is_v41=True):
     gate = QualityEntryGate()

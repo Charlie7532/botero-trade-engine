@@ -28,7 +28,7 @@ def load_data(store):
               AND time >= '1999-12-15'
             ORDER BY time, ticker
         """, conn)
-        pivot = df_p.pivot(index='date', columns='ticker', values='close').ffill()
+        pivot = df_p.drop_duplicates(subset=['ticker', 'date'], keep='last').pivot(index='date', columns='ticker', values='close').ffill()
         
         sec_ind_tickers = []
         for s in SECTORS_11:
@@ -43,7 +43,7 @@ def load_data(store):
               AND time >= '1999-12-15'
             ORDER BY time, ticker
         """, conn)
-        sec_pivot = df_sectors.pivot(index='date', columns='ticker', values='close').ffill()
+        sec_pivot = df_sectors.drop_duplicates(subset=['ticker', 'date'], keep='last').pivot(index='date', columns='ticker', values='close').ffill()
         
         df_macro = pd.read_sql("""
             SELECT ticker, time::date as date, close 
@@ -53,7 +53,7 @@ def load_data(store):
               AND time >= '1999-12-15' 
             ORDER BY time
         """, conn)
-        macro_pivot = df_macro.pivot(index='date', columns='ticker', values='close').ffill().bfill()
+        macro_pivot = df_macro.drop_duplicates(subset=['ticker', 'date'], keep='last').pivot(index='date', columns='ticker', values='close').ffill().bfill()
         
         common_dates = pivot.index.intersection(sec_pivot.index).intersection(macro_pivot.index)
         return pivot.loc[common_dates], sec_pivot.loc[common_dates], macro_pivot.loc[common_dates]

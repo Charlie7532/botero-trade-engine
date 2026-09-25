@@ -109,8 +109,9 @@ def format_market_broadcast(
     if sigmets:
         for s in sigmets:
             sd = s.to_dict() if hasattr(s, 'to_dict') else s
+            act = sd.get('operational_action') or sd.get('action_code') or '?'
             lines.append(f"    🚨 [{sd.get('severity', '?')}] {sd.get('hazard_type', '?')}: {sd.get('title', '?')}")
-            lines.append(f"       Action: {sd.get('action_code', '?')}")
+            lines.append(f"       Action: {act}")
     else:
         lines.append("    ✅ No severe weather hazards detected.")
 

@@ -1326,11 +1326,12 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
         return {"status": "skipped", "reason": "off_hours_throttle"}
 
     try:
-        # ── Fallback chain: CNN API → GitHub CSV (Rule 10) ──
+        # ── Fallback chain: CNN API (2 attempts) → GitHub CSV (Rule 10) ──
         score, rating, hist_data, source = _fetch_fg_score_cnn()
 
         if score is None:
             score, rating, source = _fetch_fg_score_github(store)
+            hist_data = None
 
         if score is None:
             logger.warning("F&G: all sources failed")
@@ -1341,12 +1342,14 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
         prev_score = prev.get("score", score) if prev else score
         delta = round(score - prev_score, 2)
 
+        needs_revalidation = source != "cnn"
         snapshot = {
             "score": score,
             "rating": rating,
             "delta": delta,
             "previous_score": prev_score,
             "source": source,
+            "needs_revalidation": needs_revalidation,
             "previous_close": hist_data.get("previousClose", {}).get("score") if hist_data else None,
             "one_week_ago": hist_data.get("oneWeekAgo", {}).get("score") if hist_data else None,
             "one_month_ago": hist_data.get("oneMonthAgo", {}).get("score") if hist_data else None,
@@ -1389,29 +1392,40 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
 def _fetch_fg_score_cnn() -> tuple:
     """Primary: CNN Fear & Greed API (intra-day, real-time score).
 
+    Retries once with 2s backoff before giving up.
+
     Returns:
         (score, rating, hist_data, "cnn") on success.
         (None, None, None, None) on failure.
     """
-    try:
-        import requests as req
-        url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
-        headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
-        r = req.get(url, timeout=10, headers=headers)
-        r.raise_for_status()
-        data = r.json()
+    import requests as req
+    import time
 
-        fg = data.get("fear_and_greed", {})
-        score = fg.get("score")
-        if score is None:
-            return None, None, None, None
+    url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
+    headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
 
-        rating = fg.get("rating", "neutral")
-        hist_data = data.get("fear_and_greed_historical", {})
-        return float(score), rating, hist_data, "cnn"
-    except Exception as e:
-        logger.info(f"F&G CNN API failed ({e}) — falling back to GitHub CSV")
-        return None, None, None, None
+    for attempt in range(2):
+        try:
+            r = req.get(url, timeout=10, headers=headers)
+            r.raise_for_status()
+            data = r.json()
+
+            fg = data.get("fear_and_greed", {})
+            score = fg.get("score")
+            if score is None:
+                return None, None, None, None
+
+            rating = fg.get("rating", "neutral")
+            hist_data = data.get("fear_and_greed_historical", {})
+            return float(score), rating, hist_data, "cnn"
+        except Exception as e:
+            if attempt == 0:
+                logger.info(f"F&G CNN attempt 1 failed ({e}) — retrying in 2s")
+                time.sleep(2)
+            else:
+                logger.info(f"F&G CNN attempt 2 failed ({e}) — falling back to GitHub CSV")
+
+    return None, None, None, None
 
 
 def _fetch_fg_score_github(store: TimescaleDataStore) -> tuple:
@@ -1699,59 +1713,87 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
     # ── CBOE PCR — scrape daily Put/Call Ratio from CBOE market statistics ──
     # Source: https://www.cboe.com/markets/us/options/market-statistics/daily/
     # Table 0 contains pre-calculated ratios: TOTAL, INDEX, EQUITY, ETP PCR
-    # This replaces the legacy manual TradingView CSV export (sync_pcr.py).
-    try:
-        last_pcr = store.bars_last_date("CBOE_PCR", "1d")
-        pcr_date = last_pcr.date() if last_pcr and hasattr(last_pcr, 'date') else last_pcr
-        if not pcr_date or pcr_date < ref_date:
-            import requests
-            from bs4 import BeautifulSoup
+    # Sub-fallback: Table 1 has raw volumes — compute Put/Call from there.
+    # Retry: 1 retry with 2s backoff on HTTP failure.
+    last_pcr = store.bars_last_date("CBOE_PCR", "1d")
+    pcr_date = last_pcr.date() if last_pcr and hasattr(last_pcr, 'date') else last_pcr
+    if not pcr_date or pcr_date < ref_date:
+        import requests
+        from bs4 import BeautifulSoup
+        import time as _time
 
-            pcr_url = "https://www.cboe.com/markets/us/options/market-statistics/daily/"
-            pcr_resp = requests.get(
-                pcr_url,
-                headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"},
-                timeout=15,
-                allow_redirects=True,
-            )
-            pcr_resp.raise_for_status()
+        pcr_url = "https://www.cboe.com/markets/us/options/market-statistics/daily/"
+        pcr_headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
+        pcr_val = None
+        pcr_source = None
 
-            soup = BeautifulSoup(pcr_resp.text, "html.parser")
-            tables = soup.find_all("table")
+        for pcr_attempt in range(2):
+            try:
+                pcr_resp = requests.get(
+                    pcr_url, headers=pcr_headers, timeout=15, allow_redirects=True,
+                )
+                pcr_resp.raise_for_status()
 
-            if tables:
-                # Table 0 = Ratios table: [['Ratios', 'Value'], ['TOTAL PUT/CALL RATIO', '0.80'], ...]
-                ratio_table = tables[0]
-                rows = ratio_table.find_all("tr")
-                pcr_val = None
-                for row in rows:
+                soup = BeautifulSoup(pcr_resp.text, "html.parser")
+                tables = soup.find_all("table")
+
+                if not tables:
+                    logger.warning("CBOE PCR: no tables found on market statistics page")
+                    break
+
+                # ── Primary: Table 0 pre-calculated ratio ──
+                for row in tables[0].find_all("tr"):
                     cells = [td.get_text(strip=True) for td in row.find_all(["td", "th"])]
                     if len(cells) >= 2 and "TOTAL PUT/CALL RATIO" in cells[0].upper():
                         pcr_val = float(cells[1])
+                        pcr_source = "cboe_table0"
                         break
 
-                if pcr_val is not None and pcr_val > 0:
-                    import pandas as pd
-                    bar_ts = pd.Timestamp(ref_date, tz="UTC")
-                    df_pcr = pd.DataFrame({
-                        "open": [pcr_val],
-                        "high": [pcr_val],
-                        "low": [pcr_val],
-                        "close": [pcr_val],
-                        "volume": [0],
-                    }, index=pd.DatetimeIndex([bar_ts], name="timestamp"))
-                    store.save_bars("CBOE_PCR", "1d", df_pcr)
-                    stats["indices_updated"] += 1
-                    stats["total_bars"] += 1
-                    logger.info(f"📉 CBOE PCR: {pcr_val:.2f} stored for {ref_date} (scraped)")
+                # ── Sub-fallback: Table 1 raw volumes (SUM OF ALL PRODUCTS) ──
+                if pcr_val is None and len(tables) > 1:
+                    for row in tables[1].find_all("tr"):
+                        cells = [td.get_text(strip=True) for td in row.find_all(["td", "th"])]
+                        if len(cells) >= 3 and "VOLUME" in cells[0].upper():
+                            call_vol = int(cells[1].replace(",", ""))
+                            put_vol = int(cells[2].replace(",", ""))
+                            if call_vol > 0:
+                                pcr_val = round(put_vol / call_vol, 4)
+                                pcr_source = "cboe_computed"
+                                logger.info(
+                                    f"📉 CBOE PCR: Table 0 parse failed, computed from "
+                                    f"raw volumes (Put={put_vol}, Call={call_vol})"
+                                )
+                            break
+
+                if pcr_val is not None:
+                    break  # success, exit retry loop
+
+            except Exception as e:
+                if pcr_attempt == 0:
+                    logger.info(f"CBOE PCR attempt 1 failed ({e}) — retrying in 2s")
+                    _time.sleep(2)
                 else:
-                    logger.warning("CBOE PCR: could not parse TOTAL PUT/CALL RATIO from page")
-            else:
-                logger.warning("CBOE PCR: no tables found on market statistics page")
+                    logger.warning(f"CBOE PCR attempt 2 failed: {e}")
+
+        # ── Persist if we got a valid value ──
+        if pcr_val is not None and pcr_val > 0:
+            import pandas as pd
+            bar_ts = pd.Timestamp(ref_date, tz="UTC")
+            df_pcr = pd.DataFrame({
+                "open": [pcr_val],
+                "high": [pcr_val],
+                "low": [pcr_val],
+                "close": [pcr_val],
+                "volume": [0],
+            }, index=pd.DatetimeIndex([bar_ts], name="timestamp"))
+            store.save_bars("CBOE_PCR", "1d", df_pcr)
+            stats["indices_updated"] += 1
+            stats["total_bars"] += 1
+            logger.info(f"📉 CBOE PCR: {pcr_val:.4f} stored for {ref_date} [{pcr_source}]")
         else:
-            logger.debug("CBOE PCR: already up to date")
-    except Exception as e:
-        logger.warning(f"CBOE PCR scrape failed: {e}")
+            logger.warning("CBOE PCR: all extraction methods failed — skipping (NOTAM)")
+    else:
+        logger.debug("CBOE PCR: already up to date")
 
     # Mark done for today ONLY if new bars were actually stored
     if stats["total_bars"] > 0:

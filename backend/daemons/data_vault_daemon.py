@@ -1696,6 +1696,63 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
     except Exception as e:
         logger.debug(f"CBOE macro snapshot enrichment skipped: {e}")
 
+    # ── CBOE PCR — scrape daily Put/Call Ratio from CBOE market statistics ──
+    # Source: https://www.cboe.com/markets/us/options/market-statistics/daily/
+    # Table 0 contains pre-calculated ratios: TOTAL, INDEX, EQUITY, ETP PCR
+    # This replaces the legacy manual TradingView CSV export (sync_pcr.py).
+    try:
+        last_pcr = store.bars_last_date("CBOE_PCR", "1d")
+        pcr_date = last_pcr.date() if last_pcr and hasattr(last_pcr, 'date') else last_pcr
+        if not pcr_date or pcr_date < ref_date:
+            import requests
+            from bs4 import BeautifulSoup
+
+            pcr_url = "https://www.cboe.com/markets/us/options/market-statistics/daily/"
+            pcr_resp = requests.get(
+                pcr_url,
+                headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"},
+                timeout=15,
+                allow_redirects=True,
+            )
+            pcr_resp.raise_for_status()
+
+            soup = BeautifulSoup(pcr_resp.text, "html.parser")
+            tables = soup.find_all("table")
+
+            if tables:
+                # Table 0 = Ratios table: [['Ratios', 'Value'], ['TOTAL PUT/CALL RATIO', '0.80'], ...]
+                ratio_table = tables[0]
+                rows = ratio_table.find_all("tr")
+                pcr_val = None
+                for row in rows:
+                    cells = [td.get_text(strip=True) for td in row.find_all(["td", "th"])]
+                    if len(cells) >= 2 and "TOTAL PUT/CALL RATIO" in cells[0].upper():
+                        pcr_val = float(cells[1])
+                        break
+
+                if pcr_val is not None and pcr_val > 0:
+                    import pandas as pd
+                    bar_ts = pd.Timestamp(ref_date, tz="UTC")
+                    df_pcr = pd.DataFrame({
+                        "open": [pcr_val],
+                        "high": [pcr_val],
+                        "low": [pcr_val],
+                        "close": [pcr_val],
+                        "volume": [0],
+                    }, index=pd.DatetimeIndex([bar_ts], name="timestamp"))
+                    store.save_bars("CBOE_PCR", "1d", df_pcr)
+                    stats["indices_updated"] += 1
+                    stats["total_bars"] += 1
+                    logger.info(f"📉 CBOE PCR: {pcr_val:.2f} stored for {ref_date} (scraped)")
+                else:
+                    logger.warning("CBOE PCR: could not parse TOTAL PUT/CALL RATIO from page")
+            else:
+                logger.warning("CBOE PCR: no tables found on market statistics page")
+        else:
+            logger.debug("CBOE PCR: already up to date")
+    except Exception as e:
+        logger.warning(f"CBOE PCR scrape failed: {e}")
+
     # Mark done for today ONLY if new bars were actually stored
     if stats["total_bars"] > 0:
         store.save_mcp_snapshot("cboe/indices", "BATCH_DONE", {
@@ -1705,7 +1762,7 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
 
     logger.info(
         f"📉 CBOE vault: {stats['indices_updated']} indices, "
-        f"{stats['total_bars']} new bars (source: yfinance)"
+        f"{stats['total_bars']} new bars (source: yfinance + CBOE scrape)"
     )
     return {"status": "ok", **stats}
 

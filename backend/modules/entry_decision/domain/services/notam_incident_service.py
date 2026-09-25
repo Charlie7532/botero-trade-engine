@@ -71,8 +71,7 @@ MONITORED_NOTAM_STATIONS: List[str] = [
     "BSI",
     "CREDIT_RATIO",
     "ROTATION_INDEX",
-    # Underlying Breadth & Options Feeds
-    "CBOE_CPCE",
+    # Underlying Breadth Feeds
     "S5TH",
     "S5TW",
     "S5FI",
@@ -112,7 +111,7 @@ def compute_station_staleness(
     hour_ny = now_ny.hour + now_ny.minute / 60.0
 
     if is_live_today:
-        if cadence == "EOD" or station in ("CBOE_PCR", "CBOE_CPCE", "VVIX", "SKEW"):
+        if cadence == "EOD" or station in ("CBOE_PCR", "VVIX", "SKEW"):
             # EOD indicators settle after market close (cutoff 18:00 ET).
             # Before 18:00 ET, yesterday's closed session (T-1) is the official active data.
             if hour_ny < 18.0:

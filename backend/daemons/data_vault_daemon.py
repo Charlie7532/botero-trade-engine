@@ -1588,19 +1588,16 @@ def vault_market_health(store: TimescaleDataStore) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 10. CBOE INDICES — SKEW + VVIX (daily, authoritative source)
+# 10. CBOE INDICES — SKEW + VVIX (daily, yfinance as single source)
 # ═══════════════════════════════════════════════════════════════
 
 def vault_cboe_indices(store: TimescaleDataStore) -> dict:
     """
-    Download SKEW and VVIX historical data directly from CBOE
-    (Chicago Board Options Exchange) — the authoritative source.
+    Update SKEW and VVIX daily bars via yfinance (single source of truth).
 
-    Yahoo Finance delisted these tickers. CBOE publishes free daily CSVs
-    with full history back to 1990 (SKEW) and 2006 (VVIX).
-
-    On first run: backfills entire history.
-    On subsequent runs: only inserts new dates (ON CONFLICT DO NOTHING).
+    Historical seed data was imported from CBOE CSV files (SKEW back to 1990,
+    VVIX back to 2006). Daily updates use yfinance which provides same-day
+    data without the CDN lag that the CBOE CSV exhibits.
 
     Stores as OHLCV bars in market.ohlcv_bars with open=high=low=close=value.
     """
@@ -1616,79 +1613,79 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
             return {"status": "skipped", "reason": "already_today"}
 
     import pandas as pd
-    import requests
+    import yfinance as yf
 
-    CBOE_BASE = "https://cdn.cboe.com/api/global/us_indices/daily_prices"
-    indices = {
-        "SKEW": f"{CBOE_BASE}/SKEW_History.csv",
-        "VVIX": f"{CBOE_BASE}/VVIX_History.csv",
+    # yfinance ticker → vault ticker mapping
+    YF_CBOE = {
+        "^SKEW": "SKEW",
+        "^VVIX": "VVIX",
     }
 
-    stats = {"indices_updated": 0, "total_bars": 0}
+    stats = {"indices_updated": 0, "total_bars": 0, "source": "yfinance"}
 
-    for ticker, url in indices.items():
+    for yf_sym, vault_ticker in YF_CBOE.items():
         try:
-            resp = requests.get(url, timeout=15)
-            resp.raise_for_status()
+            t = yf.Ticker(yf_sym)
+            hist = t.history(period="5d")
 
-            df = pd.read_csv(
-                pd.io.common.StringIO(resp.text),
-                parse_dates=["DATE"],
-                dayfirst=False,
-            )
-
-            if df.empty:
-                logger.warning(f"CBOE {ticker}: empty CSV")
+            if hist.empty:
+                logger.warning(f"CBOE {vault_ticker}: yfinance returned empty for {yf_sym}")
                 continue
 
-            # Rename columns to OHLCV format (single value → all equal)
-            value_col = [c for c in df.columns if c != "DATE"][0]
-            df = df.rename(columns={"DATE": "timestamp", value_col: "close"})
-            df["open"] = df["close"]
-            df["high"] = df["close"]
-            df["low"] = df["close"]
-            df["volume"] = 0
+            if isinstance(hist.columns, pd.MultiIndex):
+                hist.columns = hist.columns.get_level_values(0)
 
-            # Set timezone-aware UTC index
-            df["timestamp"] = pd.to_datetime(df["timestamp"])
-            df = df.set_index("timestamp")
-            if df.index.tz is None:
+            # These are single-value indicators: open=high=low=close=value
+            close_vals = hist["Close"].dropna()
+            if close_vals.empty:
+                continue
+
+            df = pd.DataFrame({
+                "open": close_vals,
+                "high": close_vals,
+                "low": close_vals,
+                "close": close_vals,
+                "volume": 0,
+            }, index=close_vals.index)
+
+            # Normalize timezone
+            if df.index.tz is not None:
+                df.index = df.index.tz_convert("UTC")
+            else:
                 df.index = df.index.tz_localize("UTC")
-            df = df[["open", "high", "low", "close", "volume"]]
-            df.dropna(subset=["close"], inplace=True)
+            df.index.name = "timestamp"
 
             # Only insert dates we don't already have
-            last_date = store.bars_last_date(ticker, "1d")
+            last_date = store.bars_last_date(vault_ticker, "1d")
             if last_date:
                 cutoff = pd.Timestamp(last_date, tz="UTC")
                 df = df[df.index > cutoff]
 
             if df.empty:
-                logger.debug(f"CBOE {ticker}: already up to date")
+                logger.debug(f"CBOE {vault_ticker}: already up to date")
                 continue
 
-            store.save_bars(ticker, "1d", df)
+            store.save_bars(vault_ticker, "1d", df)
             stats["indices_updated"] += 1
             stats["total_bars"] += len(df)
-            logger.info(f"📉 CBOE {ticker}: {len(df)} new bars stored")
+            logger.info(f"📉 CBOE {vault_ticker}: {len(df)} new bars stored (yfinance)")
 
         except Exception as e:
-            logger.warning(f"CBOE {ticker} fetch failed: {e}")
+            logger.warning(f"CBOE {vault_ticker} fetch failed: {e}")
 
     # Also update the macro snapshot with today's close for quick access
     try:
-        for ticker in indices:
-            last = store.bars_last_date(ticker, "1d")
+        for vault_ticker in YF_CBOE.values():
+            last = store.bars_last_date(vault_ticker, "1d")
             if last:
-                bars = store.load_bars(ticker, "1d", start=last, end=last)
+                bars = store.load_bars(vault_ticker, "1d", start=last, end=last)
                 if not bars.empty:
                     close_val = float(bars["close"].iloc[-1])
-                    # Inject into macro/fred snapshot for backward compat
                     existing = store.load_mcp_snapshot(
                         "macro/fred", "SUMMARY", date.today().isoformat()
                     )
                     if existing and isinstance(existing, dict):
-                        existing[ticker] = {
+                        existing[vault_ticker] = {
                             "close": close_val,
                             "high": close_val,
                             "low": close_val,
@@ -1708,7 +1705,7 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
 
     logger.info(
         f"📉 CBOE vault: {stats['indices_updated']} indices, "
-        f"{stats['total_bars']} new bars"
+        f"{stats['total_bars']} new bars (source: yfinance)"
     )
     return {"status": "ok", **stats}
 

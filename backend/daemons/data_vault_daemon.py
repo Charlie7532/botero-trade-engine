@@ -2121,11 +2121,21 @@ def _log_cycle_report(results: dict, store: Optional[TimescaleDataStore] = None)
     fg_src = fg.get("source", "—")
     lines.append(f"║    Fear & Greed   {_status_icon(fg)}  {fg_score:>6} (Δ{fg_delta}, src={fg_src})")
 
-    # PCR NOTAM
-    pcr_notam = results.get("pcr_notam", {})
-    pcr_val = _fmt(pcr_notam, "pcr_value", "", ".4f")
-    pcr_state = pcr_notam.get("state_key", "—")
-    lines.append(f"║    PCR NOTAM      {_status_icon(pcr_notam)}  {pcr_val:>6} ({pcr_state})")
+    # PCR (from CBOE vault — value read from store)
+    cboe_pcr_bars = cboe.get("total_bars", 0)
+    if cboe_pcr_bars and cboe_pcr_bars > 0 and store:
+        try:
+            _pcr_last = store.bars_last_date("CBOE_PCR", "1d")
+            if _pcr_last:
+                _pcr_df = store.load_bars("CBOE_PCR", "1d")
+                _pcr_val = f"{_pcr_df['close'].iloc[-1]:.4f}" if _pcr_df is not None and not _pcr_df.empty else "—"
+            else:
+                _pcr_val = "—"
+        except Exception:
+            _pcr_val = "—"
+        lines.append(f"║    CBOE PCR       ✅  {_pcr_val:>6} (updated)")
+    else:
+        lines.append(f"║    CBOE PCR       ⏭️       — (skipped)")
 
     # Global Breadth
     s5th = _fmt(breadth, "s5th", "%")

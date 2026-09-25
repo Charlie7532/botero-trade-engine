@@ -1662,17 +1662,18 @@ def vault_cboe_indices(store: TimescaleDataStore) -> dict:
                 "volume": 0,
             }, index=close_vals.index)
 
-            # Normalize timezone
+            # Normalize timezone to midnight UTC (Rule 18: Vault Timestamp Standard)
             if df.index.tz is not None:
                 df.index = df.index.tz_convert("UTC")
             else:
                 df.index = df.index.tz_localize("UTC")
+            df.index = df.index.normalize()  # midnight UTC — matches Neon storage
             df.index.name = "timestamp"
 
             # Only insert dates we don't already have
             last_date = store.bars_last_date(vault_ticker, "1d")
             if last_date:
-                cutoff = pd.Timestamp(last_date, tz="UTC")
+                cutoff = pd.Timestamp(last_date, tz="UTC").normalize()
                 df = df[df.index > cutoff]
 
             if df.empty:

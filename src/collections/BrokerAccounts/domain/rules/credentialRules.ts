@@ -1,9 +1,4 @@
-import {
-  ALPACA_BASE_URLS,
-  IB_DEFAULT_HOST,
-  IB_DEFAULT_PORT_LIVE,
-  IB_DEFAULT_PORT_PAPER,
-} from './portfolioRules'
+import { ALPACA_BASE_URLS } from './portfolioRules'
 
 export type BrokerType = 'alpaca' | 'interactive_brokers'
 
@@ -13,8 +8,20 @@ export const BROKER_CREDENTIAL_PROFILES: Record<BrokerType, { coreFields: string
     advancedFields: ['alpacaBaseUrl'],
   },
   interactive_brokers: {
-    coreFields: ['ibAccountId'],
-    advancedFields: ['ibHost', 'ibPort', 'ibClientId'],
+    // OAuth 1.0a Extended (First Party) fields — see ib_adapter.py's module
+    // docstring. ibAccountId is which IB account to trade, unrelated to
+    // auth. ibDhPrime is a public Diffie-Hellman parameter (not a secret on
+    // its own), so it isn't in the encrypted set below.
+    coreFields: [
+      'ibAccountId',
+      'ibConsumerKeyPlaintext',
+      'ibConsumerKeyMasked',
+      'ibAccessTokenPlaintext',
+      'ibAccessTokenMasked',
+      'ibAccessTokenSecretPlaintext',
+      'ibAccessTokenSecretMasked',
+    ],
+    advancedFields: ['ibDhPrime', 'ibSignatureKeyPemPlaintext', 'ibEncryptionKeyPemPlaintext'],
   },
 }
 
@@ -34,10 +41,13 @@ export const EDITABLE_CREDENTIAL_FIELDS = [
   'apiKeyPlaintext',
   'secretKeyPlaintext',
   'alpacaBaseUrl',
-  'ibHost',
-  'ibPort',
   'ibAccountId',
-  'ibClientId',
+  'ibConsumerKeyPlaintext',
+  'ibAccessTokenPlaintext',
+  'ibAccessTokenSecretPlaintext',
+  'ibDhPrime',
+  'ibSignatureKeyPemPlaintext',
+  'ibEncryptionKeyPemPlaintext',
 ] as const
 
 export function requiresSecretKey(brokerType: BrokerType): boolean {
@@ -51,11 +61,9 @@ export function defaultConnectionValues(brokerType: BrokerType, environment: 'pa
     }
   }
 
-  return {
-    ibHost: IB_DEFAULT_HOST,
-    ibPort: environment === 'live' ? IB_DEFAULT_PORT_LIVE : IB_DEFAULT_PORT_PAPER,
-    ibClientId: 1,
-  }
+  // IB's OAuth credentials have no sensible defaults — every field is
+  // specific to the account that registered it in IB's portal.
+  return {}
 }
 
 export function maskCredentialValue(value: string): string {

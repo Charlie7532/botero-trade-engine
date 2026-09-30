@@ -20,8 +20,9 @@ import json
 import logging
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "backend"))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("GenerateMultiscaleEVDerived")
@@ -57,7 +58,7 @@ def shrink_cell(cell: dict, parent_cell: dict) -> dict:
         days_parent = parent.get(f"e_days_{scale_prefix}", 10.0)
 
         if n_tot > 0:
-            raw_p_bull = n_neg / n_tot
+            raw_p_bull = n_pos / n_tot  # P(ceiling / top MAX)
             e_max = sum_pos / n_pos if n_pos > 0 else e_max_parent
             e_min = sum_neg / n_neg if n_neg > 0 else e_min_parent
             e_days = e_days_raw
@@ -178,24 +179,24 @@ def main():
             "n": "Número total de observaciones empíricas procesadas en la celda",
             "is_rare_state": "Flag booleano de muestra baja (N < 30) preservado para eventos de cola / canarios en la mina",
 
-            "p_bull_25": "Probabilidad bayesiana ajustada de piso en escala 2.5%",
-            "p_bear_25": "Probabilidad bayesiana ajustada de techo/bajista en escala 2.5%",
+            "p_bull_25": "Probabilidad bayesiana ajustada de techo/alcista (MAX) en escala 2.5%",
+            "p_bear_25": "Probabilidad bayesiana ajustada de piso/bajista (MIN) en escala 2.5%",
             "e_ret_max_25": "Retorno medio esperado en operaciones alcistas escala 2.5%",
             "e_ret_min_25": "Retorno medio esperado en operaciones bajistas escala 2.5%",
             "ev_net_25": "Esperanza Matemática Neta escala 2.5%",
             "e_days_25": "Días promedio esperados hasta el pivote objetivo escala 2.5%",
             "ev_per_day_25": "Velocidad de Esperanza Matemática por día bloqueado escala 2.5%",
 
-            "p_bull_50": "Probabilidad bayesiana ajustada de piso en escala 5.0%",
-            "p_bear_50": "Probabilidad bayesiana ajustada de techo/bajista en escala 5.0%",
+            "p_bull_50": "Probabilidad bayesiana ajustada de techo/alcista (MAX) en escala 5.0%",
+            "p_bear_50": "Probabilidad bayesiana ajustada de piso/bajista (MIN) en escala 5.0%",
             "e_ret_max_50": "Retorno medio esperado en operaciones alcistas escala 5.0%",
             "e_ret_min_50": "Retorno medio esperado en operaciones bajistas escala 5.0%",
             "ev_net_50": "Esperanza Matemática Neta escala 5.0%",
             "e_days_50": "Días promedio esperados hasta el pivote objetivo escala 5.0%",
             "ev_per_day_50": "Velocidad de Esperanza Matemática por día bloqueado escala 5.0%",
 
-            "p_bull_75": "Probabilidad bayesiana ajustada de piso en escala 7.5%",
-            "p_bear_75": "Probabilidad bayesiana ajustada de techo/bajista en escala 7.5%",
+            "p_bull_75": "Probabilidad bayesiana ajustada de techo/alcista (MAX) en escala 7.5%",
+            "p_bear_75": "Probabilidad bayesiana ajustada de piso/bajista (MIN) en escala 7.5%",
             "e_ret_max_75": "Retorno medio esperado en operaciones alcistas escala 7.5%",
             "e_ret_min_75": "Retorno medio esperado en operaciones bajistas escala 7.5%",
             "ev_net_75": "Esperanza Matemática Neta escala 7.5%",

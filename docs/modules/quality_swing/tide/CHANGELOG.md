@@ -18,6 +18,31 @@
 
 ## Entries
 
+### [2026-09-30] P0 Bug Fix: Crossed p_bull Formula Resolution & Fact Store Regeneration
+
+**Topic:** Resolution of blocking bug P0 (`p_bull` crossed with `n_neg/n_tot` instead of `n_pos/n_tot`).
+
+**Key Changes:**
+- **Code Fix:** Restored `raw_p_bull = n_pos / n_tot` in `generate_tide_ev_real_derived.py` (L63) and `generate_multiscale_ev_derived.py` (L60).
+- **Semantics & Glossary:** Updated docstrings and `field_glossary` in generators and `rc_tide_ev_lookup.py` to correctly map `p_bull` = P(next pivot = MAX / ceiling) and `p_bear` = P(next pivot = MIN / floor).
+- **Hierarchy Resolution:** Enhanced sample count `n` check in `rc_tide_ev_lookup.py` across cell and scale level so exact L3 matching is preserved.
+- **Regeneration:** Regenerated `rc_tide_ev_derived.json` (245 L3 cells) and `rc_ev_multiscale_tree.json` (996 L3, 25,797 L6 cells).
+- **Verification:** Verified `T~|C~|~` returns `p_bull = 0.5444` and `ev_net = +0.0238`, eliminating EV inversion bias.
+
+---
+
+### [2026-09-28] Memory Rescue & Historical Continuity Handoff (`dda7ae62` & `68bcd487`)
+
+**Topic:** Consolidation of memory from historical development threads `dda7ae62-58b2-44b8-adf4-6d8b6e16bd19` (Real EV Model & Dual Confluence Gate) and `68bcd487-aebf-4bc0-8e5a-c2301a19c8ba` (Swing EV Decision Engine & Tide Architecture).
+
+**Key Findings & Rescue Items:**
+- **Master Memory Artifact Created:** [`THREAD_RESCUE_dda7ae62_68bcd487.md`](./THREAD_RESCUE_dda7ae62_68bcd487.md).
+- **Validated Decisions Reconfirmed:** Real EV point-in-time formula (\(R = P_{next}/P - 1\)), VIX 3D vs 4D experiment (VIX kept as Circuit Breaker, removed from state space), Trend Protection Gate for secular bull tides (`t_slope ≥ 0.05`), Markov transition calibration (90.8% hit rate at P≥90%), per-ticker Kelly scaling, and `tanh` VWAP drift modifier.
+- **Open Work Identified:** Task 1 (Taxonomy Unification 45 vs 180 states), Task 2 (Dynamic Duration \(e\_days\) and Capital Velocity), and Task 3 (Scaled Forensic Benchmark on 366+ tickers).
+- **Active Production Bug Identified:** `swing_gate.py` referencing nonexistent `_real_ev.fatigue_type` at lines 280 & 653 (`AttributeError` risk).
+
+---
+
 ### [2026-07-28] Architecture Approval: P-007 Vault Classified Columns Persistence
 
 **Topic:** Persisting discrete quantile classification columns (`tide_level`, `current_level`, `wave_level`, `vwap_bin`, `state_key_3d`) directly in `engine.channel_snapshots`.

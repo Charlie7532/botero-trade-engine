@@ -11,8 +11,9 @@ Output: backend/modules/quality_swing/domain/rules/rc_tide_ev_derived.json
 import sys, json, logging, datetime, subprocess
 from pathlib import Path
 
-root_dir = Path(__file__).resolve().parent.parent.parent
+root_dir = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(root_dir))
+sys.path.insert(0, str(root_dir / "backend"))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -60,7 +61,7 @@ def shrink_tide_cell(cell: dict, parent_cell: dict) -> dict:
         days_parent = parent.get(f"e_days_{scale}", 10.0)
 
         if n_tot > 0:
-            raw_p_bull = n_neg / n_tot  # P(floor / bottom MIN)
+            raw_p_bull = n_pos / n_tot  # P(ceiling / top MAX)
             e_max = sum_pos / n_pos if n_pos > 0 else e_max_parent
             e_min = sum_neg / n_neg if n_neg > 0 else e_min_parent
             e_days = e_days_raw
@@ -81,6 +82,8 @@ def shrink_tide_cell(cell: dict, parent_cell: dict) -> dict:
         rr_asymmetry = round(e_max / abs_min, 4)
 
         derived[scale] = {
+            "n": int(n),
+            "is_rare_state": n < 30,
             "p_bull": round(p_bull, 4),
             "p_bear": round(p_bear, 4),
             "e_ret_max": round(e_max, 4),
@@ -187,8 +190,8 @@ def main():
         "field_glossary": {
             "n": "Sample size for this state/level combination",
             "is_rare_state": "Flag booleano de muestra baja (N < 30) preservado para eventos de cola",
-            "p_bull": "P(next pivot = MIN). Probability of floor/bottom opportunity",
-            "p_bear": "P(next pivot = MAX). Probability of ceiling/top opportunity",
+            "p_bull": "P(next pivot = MAX). Probability of ceiling/top opportunity",
+            "p_bear": "P(next pivot = MIN). Probability of floor/bottom opportunity",
             "ev_net": "Real Expected Value: P(bull)*E[ret_max] + P(bear)*E[ret_min] - friction_bps",
             "e_ret_min": "Expected real drawdown % to next MIN pivot",
             "e_ret_max": "Expected real upside gain % to next MAX pivot",

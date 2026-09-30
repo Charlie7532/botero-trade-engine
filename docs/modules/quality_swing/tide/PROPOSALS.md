@@ -18,6 +18,10 @@
 | P-005 | [Nuevo Planteamiento Fact Generation (Coincidencia T/W/VWAP)](#p-005-nuevo-planteamiento-fact-generation) | 🟡 PENDIENTE CRÍTICO | HIGH |
 | P-006 | [Respaldo en DB de JSONs y Política de Fallback sobre Respaldo](#p-006-respaldo-en-db-de-jsons-y-politica-de-fallback-sobre-respaldo) | 🟡 PENDIENTE CRÍTICO | HIGH |
 | P-007 | [Persistencia de Columnas Clasificadas en ChannelSnapshots](#p-007-persistencia-de-columnas-clasificadas-en-channelsnapshots) | 🟢 APROBADO ARQUITECTURA | HIGH |
+| P-008 | [Heterogeneidad de Historial por Ticker](#p-008-heterogeneidad-de-historial-por-ticker) | 🟡 PENDIENTE (anotado 30-Sep) | HIGH |
+| P-009 | [Registro, Interpretación y Excepción de Overflow / Blowoff](#p-009-registro-interpretacion-y-excepcion-de-overflow--blowoff) | 🟡 PENDIENTE (anotado 30-Sep) | HIGH |
+| P-010 | [Migración de Hallazgos Existentes a las Nuevas Escalas/Formatos](#p-010-migracion-de-hallazgos-existentes-a-las-nuevas-escalasformatos) | 🟡 PENDIENTE (anotado 30-Sep) | HIGH |
+| **P0** | [Bug `p_bull` cruzado (bloquea todo Tide)](#p0-bug-p_bull-cruzado-bloqueante) | 🟢 RESUELTO (2026-09-30) | RESOLVED |
 
 ---
 
@@ -229,5 +233,66 @@ ADD COLUMN IF NOT EXISTS quantile_version VARCHAR(20) DEFAULT 'v1_2026';
 
 ---
 
-*Last updated: 2026-07-28T18:27Z*
-*Version: 1.3.0*
+## P-008: Heterogeneidad de Historial por Ticker
+
+**Status:** 🟡 PENDIENTE (anotado 2026-09-30) · **Priority:** HIGH
+
+### Problem
+Los tickers tienen historial de **distinta longitud e incepción** (IPOs, inclusiones en índices, cambios de perfil de volatilidad). Una escala Gaussiana **adaptativa per-ticker** exige una ventana de calibración; si el historial difiere:
+- Tickers jóvenes (COIN, ARM, PLTR…) tienen pocas barras → percentiles extremos **inestables**.
+- Tickers con **ruptura estructural** (TSLA pre/post S&P500, NVDA pre/post IA) tienen distribuciones **no estacionarias**.
+- Revolver el censo completo mezcla regímenes.
+
+### Open Questions
+- ¿Ventana: **censo completo** vs **rolling (3-5 años)** vs **expanding**?
+- ¿**N_min** de barras para calibrar un ticker? ¿Y si no lo alcanza → pooling a familia/clase de volatilidad?
+- ¿Tratar rupturas estructurales (retrain/re-anchor) o asumir estacionariedad?
+
+---
+
+## P-009: Registro, Interpretación y Excepción de Overflow / Blowoff
+
+**Status:** 🟡 PENDIENTE (anotado 2026-09-30) · **Priority:** HIGH
+
+### Problem
+Los **`overflow`** (valores que superan ±2σ) y los **`blowoff`** (tiers `T1..T5+`) deben: **registrarse, interpretarse y manejar su excepción**. Hoy:
+- En METAR existe la escala canónica `T1..T5+` en metadatos (`sigma_overflow.py`).
+- En **Tide/Wave/Multiscale NO está definido** cómo se registra el overflow en el state_key, cómo se interpreta (¿señal especial?), ni qué excepción/regla se activa.
+
+### Open Questions
+- ¿Overflow como **atributo del state_key** (como METAR) o **dimensión propia**?
+- ¿Cómo se interpreta: **ruptura de régimen / señal especial / blowoff parabólico (techo) / capitulación (piso)**?
+- ¿Qué **excepción**: se agrupa con el bin extremo, se **escinde a estado aparte**, o **dispara alerta**?
+- Alineación con **§3.3 (diamantes)** y con la regla *"señales especiales NO son ruido"*.
+
+---
+
+## P-010: Migración de Hallazgos Existentes a las Nuevas Escalas/Formatos
+
+**Status:** 🟡 PENDIENTE (anotado 2026-09-30) · **Priority:** HIGH
+
+### Problem
+Si cambian las escalas (7→6 bins) o el formato de llave (5→6 VWAP, per-ticker), **todos los hallazgos validados sobre las escalas viejas** quedan potencialmente inválidos o no comparables:
+- KI `ev-horizon-divergence` (80% acuerdo, FLOOR 31%, CEILING 29%) — referidos a las escalas **actuales**.
+- KI `zz-s5-breadth-coincidence` (62.4/77.1/85.0%) — referidos a `zz25/50/75`.
+- **Heatmap EV T×VWAP**, gradientes, y las reglas de decisión **D-001..D-015**.
+- Los **fact stores** y los **5 lookups** de `swing_gate.py`.
+
+### Open Questions
+- ¿Cómo se **traslada** un hallazgo de una escala a otra (remapeo de bins)? ¿Se **re-valida** o se asume?
+- ¿Qué hallazgos **sobreviven** el cambio de escala y cuáles hay que **re-medir**?
+- ¿Se mantiene un **puente de homologación viejo↔nuevo** (para no perder lo aprendido)?
+
+---
+
+## P0: Bug `p_bull` cruzado (BLOQUEANTE)
+
+**Status:** 🟢 RESUELTO (2026-09-30) · **Priority:** RESOLVED
+
+**Resolución:**
+Se corrigió la fórmula cruzada en `generate_tide_ev_real_derived.py` (L63) y `generate_multiscale_ev_derived.py` (L60), restituyendo `raw_p_bull = n_pos / n_tot = P(MAX)`. Se actualizaron docstrings/glosarios en ambos generadores y en `rc_tide_ev_lookup.py` (L33-34), se fortaleció la resolución de muestras `n` en la jerarquía L3/L2/L1, y se regeneraron exitosamente `rc_tide_ev_derived.json` y `rc_ev_multiscale_tree.json`. Verificación empírica confirmó `p_bull = 0.5444` en `T~|C~|~` (coincidencia exacta con `n_pos/n_tot`). Fact stores y downstream desbloqueados.
+
+---
+
+*Last updated: 2026-09-30T00:00Z*
+*Version: 1.4.0*

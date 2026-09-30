@@ -30,8 +30,8 @@ class RealEVSignal:
     signal: str             # "ACCUMULATE", "BUY_DIP", "NEUTRAL", "TRIM"
     action_code: str        # Taxonomy action code (e.g. STK_BUY_DIP_TACTICAL)
     
-    p_bull: float           # P(next = MIN / floor)
-    p_bear: float           # P(next = MAX / ceiling)
+    p_bull: float           # P(next = MAX / ceiling)
+    p_bear: float           # P(next = MIN / floor)
     ev: float               # Point-in-Time Real EV net
     sharpe: float           # Real EV / std(real_return)
     e_ret_min: float        # Expected real drawdown to next MIN pivot
@@ -140,8 +140,10 @@ def lookup_real_ev(
 
     # 1. Check L3
     if l3_key in l3_states:
-        lvl_data = l3_states[l3_key].get(level)
-        if lvl_data and lvl_data.get("n", 0) >= min_l3_samples:
+        cell = l3_states[l3_key]
+        lvl_data = cell.get(level)
+        cell_n = lvl_data.get("n", cell.get("n", 0)) if lvl_data else 0
+        if lvl_data and cell_n >= min_l3_samples:
             target_data = lvl_data
             fallback_level = "L3"
 
@@ -150,8 +152,10 @@ def lookup_real_ev(
         is_unobserved = True
         fallback_reason = f"UNOBSERVED_L3_FALLBACK_TO_L2 ({l3_key})"
         if l2_key in l2_states:
-            lvl_data = l2_states[l2_key].get(level)
-            if lvl_data and lvl_data.get("n", 0) >= 1:
+            cell = l2_states[l2_key]
+            lvl_data = cell.get(level)
+            cell_n = lvl_data.get("n", cell.get("n", 0)) if lvl_data else 0
+            if lvl_data and cell_n >= 1:
                 target_data = lvl_data
                 fallback_level = "L2"
                 matched_key = l2_key
@@ -160,8 +164,10 @@ def lookup_real_ev(
     if target_data is None:
         fallback_reason = f"UNOBSERVED_L2_FALLBACK_TO_L1 ({l2_key})"
         if l1_key in l1_states:
-            lvl_data = l1_states[l1_key].get(level)
-            if lvl_data and lvl_data.get("n", 0) >= 1:
+            cell = l1_states[l1_key]
+            lvl_data = cell.get(level)
+            cell_n = lvl_data.get("n", cell.get("n", 0)) if lvl_data else 0
+            if lvl_data and cell_n >= 1:
                 target_data = lvl_data
                 fallback_level = "L1"
                 matched_key = l1_key

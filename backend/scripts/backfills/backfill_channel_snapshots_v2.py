@@ -118,7 +118,7 @@ def _rolling_vwap(close: np.ndarray, high: np.ndarray, low: np.ndarray,
         vstd = np.sqrt(np.sum(vol_w * deviations ** 2) / total_vol)
 
         vwap_values[i] = vwap
-        vwap_stds[i] = max(vstd, 1e-8)
+        vwap_stds[i] = vstd
 
     return vwap_values, vwap_stds
 
@@ -256,10 +256,10 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
         s_curr = (price - curr_reg[idx]) / curr_std[idx]
         s_wave = (price - wave_reg[idx]) / wave_std[idx]
 
-        # VWAP sigmas
-        vs_tide = (price - vwap_tide[idx]) / vstd_tide[idx] if not np.isnan(vwap_tide[idx]) else 0.0
-        vs_curr = (price - vwap_curr[idx]) / vstd_curr[idx] if not np.isnan(vwap_curr[idx]) else 0.0
-        vs_wave = (price - vwap_wave[idx]) / vstd_wave[idx] if not np.isnan(vwap_wave[idx]) else 0.0
+        # VWAP sigmas — unified with compute_channel.py guard (vstd > 1e-4 else 0.0)
+        vs_tide = (price - vwap_tide[idx]) / vstd_tide[idx] if (not np.isnan(vwap_tide[idx]) and vstd_tide[idx] > 1e-4) else 0.0
+        vs_curr = (price - vwap_curr[idx]) / vstd_curr[idx] if (not np.isnan(vwap_curr[idx]) and vstd_curr[idx] > 1e-4) else 0.0
+        vs_wave = (price - vwap_wave[idx]) / vstd_wave[idx] if (not np.isnan(vwap_wave[idx]) and vstd_wave[idx] > 1e-4) else 0.0
 
         # Accelerations (slope diff vs previous bar)
         t_accel = tide_slope[idx] - tide_slope[idx - 1] if idx > start_idx and not np.isnan(tide_slope[idx - 1]) else 0.0

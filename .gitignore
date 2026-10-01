@@ -34,6 +34,7 @@ data/sim_7d_cache.json
 data/forensic_ml_dataset.csv
 data/forensic_signals.csv
 logs/*.log
+*.log
 
 # Cache (prevent orphan MCP cache at root)
 .cache/

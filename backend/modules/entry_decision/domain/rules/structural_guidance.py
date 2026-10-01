@@ -136,8 +136,8 @@ def extract_structural_guidance(
         if not sm or not isinstance(sm, dict):
             continue
 
-        up = sm.get("up_legs", {})
-        down = sm.get("down_legs", {})
+        up = sm.get("up_legs") or {}
+        down = sm.get("down_legs") or {}
 
         if p_hl is None and "p_continuation" in up:
             p_hl = up["p_continuation"]

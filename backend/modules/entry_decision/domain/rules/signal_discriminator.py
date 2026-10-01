@@ -800,11 +800,11 @@ def _get_historical_context(
 
     # Kinematic layer (backward structure from zigzag from point backward)
     zk25 = fs_state.get("zigzag_kinematic", {}).get("zz25", {})
-    sm = zk25.get("structural_momentum", {})
+    sm = zk25.get("structural_momentum") or {}
     pld = zk25.get("prev_leg_domino", {})
     terciles = pld.get("terciles_domino", {})
 
-    down_legs = sm.get("down_legs", {})
+    down_legs = sm.get("down_legs") or {}
     down_accum_ret = down_legs.get("mean_accum_ret", 0.0)
     down_ev_structural = down_legs.get("ev_structural_pct", 0.0)
 

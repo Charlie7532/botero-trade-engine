@@ -243,8 +243,8 @@ def _classify_station(
             scale_data = kinematic_data.get(scale, {})
             sm = scale_data.get("structural_momentum")
             if sm:
-                up = sm.get("up_legs", {})
-                down = sm.get("down_legs", {})
+                up = sm.get("up_legs") or {}
+                down = sm.get("down_legs") or {}
                 if sm_p_up is None and "p_continuation" in up:
                     sm_p_up = up["p_continuation"]
                     sm_ev_up = up.get("ev_structural_pct")

@@ -294,5 +294,41 @@ Se corrigió la fórmula cruzada en `generate_tide_ev_real_derived.py` (L63) y `
 
 ---
 
+## P-011: Evaluador General Tide (análogo al "evaluador continuo" de METAR)
+
+**Status:** 🟡 PENDIENTE (anotado 2026-09-30) · **Priority:** HIGH
+
+### Problem
+METAR tiene un **evaluador continuo** (validación empírica obligatoria: *"ninguna regla heurística se acepta sin validación en el evaluador continuo"*, `metar_architecture_and_signals_map.md` §5.1). Tide **no tiene un evaluador general equivalente**.
+
+### Open Questions
+- ¿Qué mide el evaluador Tide? (IC, EV_rel por decil, hit-rate, lift OOS, p_BH/DSR).
+- ¿Cada cuánto corre (semanal/mensual/por evento)?
+- ¿Promueve/demota señales como el de METAR?
+
+---
+
+## P-012: Herramienta Integradora de Dimensiones (candidato: "10-Station Model")
+
+**Status:** 🟡 PENDIENTE (anotado 2026-09-30 — **nombre por confirmar con el Arquitecto**) · **Priority:** HIGH
+
+### Contexto
+El Arquitecto recuerda *"otra herramienta que integra las dimensiones, determinante en las estaciones METAR — algo como «tristatate»"*.
+
+### Candidato identificado (búsqueda en repo)
+**`/root/botero-trade/.agents/references/metar/interactions.md`** — *"METAR Station Interactions — Cross-Station Intelligence (10-Station Model)"*:
+- **Metodología:** *Kinematic proximity tensor* (t_-1..t_-5) + Expanding Window D1 + SHAP TreeExplainer.
+- **Performance:** **AUC 0.8387 OOS** (Purged 5-Fold CV, Grade B validado).
+- **Naturaleza:** integra las **10 estaciones METAR** (VIX, VVIX, PCR, FG, SV5T, SKEW, CREDIT, YIELD, ROTATION, BSI) en espacio tensorial — **reemplaza la confluencia lineal** (que fracasó, lift −7.2%).
+- Otros candidatos: `metar_architecture_and_signals_map.md` §M1 *"Confluencia Vectorial Acoplada (D1×D2×D3)"*; composites `triple_fear.yaml`.
+
+### Open Questions
+- **Confirmar el nombre real** que recuerda el Arquitecto.
+- **✅ Herramienta LOCALIZADA (graphify, 01-Oct-2026):** `backend/scripts/trainers/train_kinematic_metar_gbm_shap.py` — el **trainer del modelo cross-station ("10-Station Model")**: `build_predictive_dataset()`, `train_segregated_gbm()`, **`PurgedKFold`** (purga + embargo), `evaluate_circuit_breakers()`, `generate_report()` (SHAP). **Es el INTEGRADOR real** que reemplaza la confluencia lineal (AUC 0.8387 OOS). Doc: `.agents/references/metar/interactions.md`.
+- **Contexto:** el Arquitecto había pedido **anotar este pendiente** ("construir una herramienta similar") — y **costó localizar la original** (el término "tristatate" no existe literal; se localizó vía `graphify explain/query`).
+- ¿Se construye un **"Tide Interactions"** análogo (integrar T × C × W × VWAP en tensor) para los regímenes?
+
+---
+
 *Last updated: 2026-09-30T00:00Z*
-*Version: 1.4.0*
+*Version: 1.5.0*

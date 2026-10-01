@@ -127,7 +127,7 @@ def _calc_vwap_with_std(
     deviations = typical - vwap
     vwap_std = float(np.sqrt(np.sum(vol * deviations ** 2) / total_vol))
 
-    return vwap, max(vwap_std, 1e-8)
+    return vwap, vwap_std
 
 
 def compute_channel_snapshot(
@@ -251,13 +251,13 @@ def compute_channel_snapshot(
 
     # VWAP sigmas
     snap.vwap_sigma_tide = round(
-        (price_now - vwap_t) / vstd_t if vstd_t > 0 else 0.0, 4
+        (price_now - vwap_t) / vstd_t if vstd_t > 1e-4 else 0.0, 4
     )
     snap.vwap_sigma_current = round(
-        (price_now - vwap_c) / vstd_c if vstd_c > 0 else 0.0, 4
+        (price_now - vwap_c) / vstd_c if vstd_c > 1e-4 else 0.0, 4
     )
     snap.vwap_sigma_wave = round(
-        (price_now - vwap_w) / vstd_w if vstd_w > 0 else 0.0, 4
+        (price_now - vwap_w) / vstd_w if vstd_w > 1e-4 else 0.0, 4
     )
 
     # VWAP spreads (% difference between VWAP levels)

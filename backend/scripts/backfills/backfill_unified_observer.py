@@ -22,6 +22,36 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
 
 
+# ── Per-column empirical bounds to prevent explosive numerical drift ──
+# Derived from empirical census across 4.4M bars (Neon SSOT):
+# - obs_recovery_score: naturally in [-1, +1]
+# - obs_velocity_norm:  p99=2.67, legitimate transitions reach up to ~10.0 (bound 20.0)
+# - obs_vel_svw:        p99.9=1.84, delta física máx ~6.4 (bound 10.0)
+# - obs_vel_tension_w:  p99.9=1.31, delta física máx ~6.4 (bound 10.0)
+# - obs_vel_sigma_c:    p99.9=1.62, legitimate reach up to ~3.9 (bound 5.0)
+# - obs_vel_rsi:        in RSI points (p50=1.65, p99=7.43, legitimate up to ~40.8, bound 50.0)
+# - obs_vel_conj_wt:    p99.9=0.86, legitimate reach up to 9.06 (bound 10.0)
+_BOUNDS = {
+    "obs_recovery_score":  1.0,
+    "obs_velocity_norm":  20.0,
+    "obs_vel_svw":        10.0,
+    "obs_vel_tension_w":  10.0,
+    "obs_vel_sigma_c":     5.0,
+    "obs_vel_rsi":        50.0,
+    "obs_vel_conj_wt":    10.0,
+}
+
+
+def _clamp_real(v, max_abs: float) -> float:
+    """Clamp subnormal floats (< 1e-30) and explosive floats (|v| > max_abs) to 0.0."""
+    if v is None:
+        return 0.0
+    fv = float(v)
+    if not np.isfinite(fv) or abs(fv) < 1e-30 or abs(fv) > max_abs:
+        return 0.0
+    return fv
+
+
 def main():
     store = TimescaleDataStore()
     conn = store._conn()
@@ -48,6 +78,12 @@ def main():
         conn.commit()
     logger.info("  Columns ready.")
 
+    # Check already completed tickers for idempotent resume
+    with conn.cursor() as cur:
+        cur.execute("SELECT DISTINCT ticker FROM engine.channel_snapshots WHERE obs_vel_svw IS NOT NULL;")
+        completed_tickers = set(r[0] for r in cur.fetchall())
+    logger.info(f"  {len(completed_tickers)} tickers already completed. They will be skipped.")
+
     # 2. Load all channel snapshots
     logger.info("Loading channel snapshots...")
     cs = pd.read_sql("""
@@ -63,6 +99,9 @@ def main():
     # 3. Compute Observer per ticker
     total_updated = 0
     for ticker in cs['ticker'].unique():
+        if ticker in completed_tickers:
+            continue
+
         tk = cs[cs['ticker'] == ticker].sort_values('timestamp').copy()
         if len(tk) < 100:
             logger.info(f"  {ticker}: skipping ({len(tk)} bars < 100)")
@@ -82,10 +121,15 @@ def main():
             # Convert numpy datetime64 to Python datetime for psycopg2
             py_ts = pd.Timestamp(ts).to_pydatetime()
             updates.append((
-                out.recovery_score, out.velocity_norm, out.state,
+                _clamp_real(out.recovery_score, _BOUNDS["obs_recovery_score"]),
+                _clamp_real(out.velocity_norm, _BOUNDS["obs_velocity_norm"]),
+                out.state,
                 out.kf_consensus,
-                out.vel_sigma_c, out.vel_svw, out.vel_tension_w,
-                out.vel_rsi, out.vel_conj_wt,
+                _clamp_real(out.vel_sigma_c, _BOUNDS["obs_vel_sigma_c"]),
+                _clamp_real(out.vel_svw, _BOUNDS["obs_vel_svw"]),
+                _clamp_real(out.vel_tension_w, _BOUNDS["obs_vel_tension_w"]),
+                _clamp_real(out.vel_rsi, _BOUNDS["obs_vel_rsi"]),
+                _clamp_real(out.vel_conj_wt, _BOUNDS["obs_vel_conj_wt"]),
                 ticker, py_ts,
             ))
 

@@ -44,26 +44,11 @@ RSI_WINDOW = 60   # Window for divergence/conviction analysis
 
 
 def get_stock_universe(store: TimescaleDataStore) -> list[str]:
-    """Get all stocks with >= MIN_BARS from Vault."""
+    """Get canonical universe (stocks + ETFs) from Vault."""
     conn = store._conn()
     try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT tm.ticker
-                FROM market.ticker_metadata tm
-                JOIN market.ohlcv_bars b ON b.ticker = tm.ticker AND b.timeframe = '1d'
-                WHERE tm.asset_type IN ('STOCK', 'ETF')
-                  AND tm.sector NOT IN ('Breadth','Options Flow','Sentiment','Commodities',
-                                        'Fixed Income','Currency','Yields','International',
-                                        'Volatility')
-                  AND tm.ticker NOT LIKE 'UW_%%'
-                  AND tm.industry NOT IN ('INDICATOR','Breadth Index')
-                  AND LENGTH(tm.ticker) <= 5
-                GROUP BY tm.ticker
-                HAVING COUNT(b.time) >= %s
-                ORDER BY tm.ticker
-            """, (MIN_BARS,))
-            return [r[0] for r in cur.fetchall()]
+        from backend.scripts._lib.universe import get_canonical_universe
+        return get_canonical_universe(conn, min_bars=MIN_BARS)
     finally:
         store._put(conn)
 

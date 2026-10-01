@@ -131,21 +131,14 @@ def main():
     conn = store._conn()
 
     try:
-        q_tickers = """
-            SELECT ticker, COALESCE(sector, 'UNCLASSIFIED') AS sector FROM market.ticker_metadata 
-            WHERE (industry IS NULL OR UPPER(industry) != 'INDICATOR')
-              AND (sector IS NULL OR UPPER(sector) NOT IN (
-                  'INDICATOR', 'VOLUME BREADTH', 'CAP-WEIGHTED BREADTH', 'OPTIONS FLOW', 
-                  'VOLATILITY', 'SENTIMENT', 'SHORT INTEREST', 'VOLUME INTENSITY', 
-                  'QQQ BREADTH', 'INDEX', 'YIELDS', 'BROAD MARKET', 'CURRENCY', 
-                  'COMMODITIES', 'FIXED INCOME', 'FEAR & GREED', 'BREADTH'
-              ))
-              AND ticker NOT IN ('VIX', 'VVIX', 'CBOE_PCR', 'FG', 'S5TH', 'S5FI', 'S5TW')
-        """
-        tickers_df = pd.read_sql(q_tickers, conn)
-        sector_map = dict(zip(tickers_df["ticker"], tickers_df["sector"]))
-        all_tickers = tickers_df["ticker"].tolist()
-        logger.info(f"Cargados {len(all_tickers)} activos del Vault clasificados por sectores GICS.")
+        from backend.scripts._lib.universe import get_canonical_universe
+        all_tickers = get_canonical_universe(conn)
+        placeholders = ",".join(f"'{t}'" for t in all_tickers)
+        q_meta = f"SELECT ticker, COALESCE(sector, 'UNCLASSIFIED') FROM market.ticker_metadata WHERE ticker IN ({placeholders})"
+        with conn.cursor() as cur:
+            cur.execute(q_meta)
+            sector_map = dict(cur.fetchall())
+        logger.info(f"Cargados {len(all_tickers)} activos canónicos del Vault clasificados por sectores GICS.")
 
         chunk_size = 50
         results = []

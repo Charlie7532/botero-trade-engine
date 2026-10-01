@@ -107,27 +107,14 @@ def zigzag_canonical(high: np.ndarray, low: np.ndarray, close: np.ndarray,
 # ═══════════════════════════════════════════════════════════════
 # Universe & DB helpers
 # ═══════════════════════════════════════════════════════════════
+from backend.scripts._lib.universe import get_canonical_universe
+
+
 def get_stock_universe(store: TimescaleDataStore) -> list[str]:
-    """Get S&P 500 stock universe from Vault."""
+    """Get canonical universe (stocks + ETFs) from Vault."""
     conn = store._conn()
     try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT tm.ticker
-                FROM market.ticker_metadata tm
-                JOIN market.ohlcv_bars b ON b.ticker = tm.ticker AND b.timeframe = '1d'
-                WHERE tm.asset_type = 'STOCK'
-                  AND tm.sector NOT IN ('Breadth','Options Flow','Sentiment','Commodities',
-                                        'Fixed Income','Currency','Yields','International',
-                                        'Broad Market','Volatility')
-                  AND tm.ticker NOT LIKE 'UW_%%'
-                  AND tm.industry NOT IN ('ETF','INDICATOR','Breadth Index','Equity Index')
-                  AND LENGTH(tm.ticker) <= 5
-                GROUP BY tm.ticker
-                HAVING COUNT(b.time) >= %s
-                ORDER BY tm.ticker
-            """, (MIN_BARS,))
-            return [r[0] for r in cur.fetchall()]
+        return get_canonical_universe(conn, min_bars=MIN_BARS)
     finally:
         store._put(conn)
 

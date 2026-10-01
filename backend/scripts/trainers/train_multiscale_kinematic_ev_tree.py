@@ -46,10 +46,10 @@ def classify_sigma_bin(val: float) -> str:
         return ">>"
 
 
-def classify_kinematic_trajectory(delta_svw: float) -> str:
-    if delta_svw > 0.30:
+def classify_kinematic_trajectory(delta_svw: float, lower: float = -0.058381, upper: float = 0.123438) -> str:
+    if delta_svw > upper:
         return "ABSORBING"
-    elif delta_svw < -0.30:
+    elif delta_svw < lower:
         return "EXHAUSTING"
     else:
         return "STABLE"
@@ -200,20 +200,22 @@ def main():
     conn = store._conn()
 
     try:
-        q_tickers = """
-            SELECT ticker FROM market.ticker_metadata 
-            WHERE (industry IS NULL OR UPPER(industry) != 'INDICATOR')
-              AND (sector IS NULL OR UPPER(sector) NOT IN (
-                  'INDICATOR', 'VOLUME BREADTH', 'CAP-WEIGHTED BREADTH', 'OPTIONS FLOW', 
-                  'VOLATILITY', 'SENTIMENT', 'SHORT INTEREST', 'VOLUME INTENSITY', 
-                  'QQQ BREADTH', 'INDEX', 'YIELDS', 'BROAD MARKET', 'CURRENCY', 
-                  'COMMODITIES', 'FIXED INCOME', 'FEAR & GREED', 'BREADTH'
-              ))
-              AND ticker NOT IN ('VIX', 'VVIX', 'CBOE_PCR', 'FG', 'S5TH', 'S5FI', 'S5TW')
-        """
-        tickers_df = pd.read_sql(q_tickers, conn)
-        all_tickers = tickers_df["ticker"].tolist()
-        logger.info(f"Cargados {len(all_tickers)} activos (Solo Acciones y ETFs) desde market.ticker_metadata.")
+        from backend.scripts._lib.universe import get_canonical_universe
+        all_tickers = get_canonical_universe(conn)
+        logger.info(f"Cargados {len(all_tickers)} activos (Acciones y ETFs canónicos) desde market.ticker_metadata.")
+
+        # Consultar umbrales de velocidad cinemática dinámicamente de Neon (P33 / P67)
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT percentile_cont(0.33) WITHIN GROUP (ORDER BY obs_vel_svw),
+                       percentile_cont(0.67) WITHIN GROUP (ORDER BY obs_vel_svw)
+                FROM engine.channel_snapshots
+                WHERE obs_vel_svw IS NOT NULL AND obs_vel_svw != 0.0;
+            """)
+            r_pct = cur.fetchone()
+            p33 = float(r_pct[0]) if r_pct and r_pct[0] is not None else -0.058381
+            p67 = float(r_pct[1]) if r_pct and r_pct[1] is not None else 0.123438
+        logger.info(f"Umbrales cinemáticos dinámicos calibrados: P33={p33:.6f}, P67={p67:.6f}")
 
         logger.info("Cargando pivotes ZigZag (2.5%, 5.0%, 7.5%) desde Neon Vault...")
         q_zz = """
@@ -242,7 +244,7 @@ def main():
 
             q_snaps = f"""
                 SELECT ticker, timestamp, tide_slope, current_slope, wave_slope,
-                       sigma_current, sigma_wave, vwap_sigma_wave
+                       sigma_current, sigma_wave, vwap_sigma_wave, obs_vel_svw
                 FROM engine.channel_snapshots
                 WHERE ticker IN ({placeholders}) AND timeframe = '1d'
                 ORDER BY ticker, timestamp
@@ -277,10 +279,12 @@ def main():
             df_merged["atr_raw"] = tr.groupby(df_merged["ticker"]).transform(lambda x: x.ewm(span=14, adjust=False).mean())
             df_merged["atr_pct"] = (df_merged["atr_raw"] / df_merged["close"]).fillna(0.01).clip(lower=0.005)
 
-            # Compute VWAP Sigma Wave Trajectory Delta (t-2 -> t0)
+            # Compute VWAP Sigma Wave Trajectory Delta (t-2 -> t0) with Kalman velocity fallback
             df_merged["vwap_sigma_wave_t2"] = df_merged.groupby("ticker")["vwap_sigma_wave"].shift(2)
-            df_merged["delta_svw"] = df_merged["vwap_sigma_wave"] - df_merged["vwap_sigma_wave_t2"].fillna(df_merged["vwap_sigma_wave"])
-            df_merged["kinematic_traj"] = df_merged["delta_svw"].apply(classify_kinematic_trajectory)
+            discrete_diff = (df_merged["vwap_sigma_wave"] - df_merged["vwap_sigma_wave_t2"]).fillna(0.0)
+            obs_clean = df_merged["obs_vel_svw"].replace(0.0, np.nan)
+            df_merged["delta_svw"] = obs_clean.fillna(discrete_diff)
+            df_merged["kinematic_traj"] = df_merged["delta_svw"].apply(lambda v: classify_kinematic_trajectory(v, lower=p33, upper=p67))
 
             # Match forward pivots for all 3 scales
             sub_zz25 = zz_25[zz_25['ticker'].isin(chunk_tickers)]
@@ -344,6 +348,11 @@ def main():
         raw_table = {
             "version": "v2_multiscale_kinematic_raw_2026",
             "friction_bps": DEFAULT_FRICTION_BPS,
+            "trajectory_thresholds": {
+                "lower": p33,
+                "upper": p67,
+                "source": "P33/P67 censo Kalman Neon"
+            },
             "n_samples_total": int(s0_acc.n),
             "s0_global": s0_fmt,
             "s1_full": s1_dict,

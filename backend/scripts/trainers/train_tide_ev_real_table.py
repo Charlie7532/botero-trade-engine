@@ -160,25 +160,12 @@ def match_forward_pivots(snap_df: pd.DataFrame, zz_df: pd.DataFrame) -> dict:
 
 
 def main():
-    logger.info("Iniciando Censo Empírico Bruto Tide EV (Acciones + ETFs)...")
     store = TimescaleDataStore()
     conn = store._conn()
-
     try:
-        q_tickers = """
-            SELECT ticker FROM market.ticker_metadata 
-            WHERE (industry IS NULL OR UPPER(industry) != 'INDICATOR')
-              AND (sector IS NULL OR UPPER(sector) NOT IN (
-                  'INDICATOR', 'VOLUME BREADTH', 'CAP-WEIGHTED BREADTH', 'OPTIONS FLOW', 
-                  'VOLATILITY', 'SENTIMENT', 'SHORT INTEREST', 'VOLUME INTENSITY', 
-                  'QQQ BREADTH', 'INDEX', 'YIELDS', 'BROAD MARKET', 'CURRENCY', 
-                  'COMMODITIES', 'FIXED INCOME', 'FEAR & GREED', 'BREADTH'
-              ))
-              AND ticker NOT IN ('VIX', 'VVIX', 'CBOE_PCR', 'FG', 'S5TH', 'S5FI', 'S5TW')
-        """
-        tickers_df = pd.read_sql(q_tickers, conn)
-        all_tickers = tickers_df["ticker"].tolist()
-        logger.info(f"Cargados {len(all_tickers)} activos (Solo Acciones y ETFs) desde market.ticker_metadata.")
+        from backend.scripts._lib.universe import get_canonical_universe
+        all_tickers = get_canonical_universe(conn)
+        logger.info(f"Cargados {len(all_tickers)} activos (Acciones y ETFs canónicos) desde market.ticker_metadata.")
 
         q_zz = """
             SELECT ticker, timestamp, tp_type, price, min_swing_pct

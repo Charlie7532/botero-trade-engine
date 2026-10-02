@@ -79,3 +79,6 @@ research/**/__pycache__/
 **/_deprecated/*.joblib
 **/_deprecated/*.csv
 **/_deprecated/*.parquet
+
+# Hermes Scratch
+.hermes/scratch/

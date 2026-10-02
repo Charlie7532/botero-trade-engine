@@ -78,30 +78,33 @@ def main():
         conn.commit()
     logger.info("  Columns ready.")
 
-    # Check already completed tickers for idempotent resume
+    # Query tickers that still have NULL obs_vel_svw
     with conn.cursor() as cur:
-        cur.execute("SELECT DISTINCT ticker FROM engine.channel_snapshots WHERE obs_vel_svw IS NOT NULL;")
-        completed_tickers = set(r[0] for r in cur.fetchall())
-    logger.info(f"  {len(completed_tickers)} tickers already completed. They will be skipped.")
+        cur.execute("SELECT DISTINCT ticker FROM engine.channel_snapshots WHERE obs_vel_svw IS NULL ORDER BY ticker;")
+        tickers_to_process = [r[0] for r in cur.fetchall()]
+    logger.info(f"  {len(tickers_to_process)} tickers have NULL obs_vel_svw: {tickers_to_process}")
 
-    # 2. Load all channel snapshots
-    logger.info("Loading channel snapshots...")
+    if not tickers_to_process:
+        logger.info("  All tickers already completed. Nothing to do.")
+        store._put(conn)
+        store.close()
+        return
+
+    # 2. Load channel snapshots for target tickers
+    logger.info("Loading channel snapshots for target tickers...")
     cs = pd.read_sql("""
         SELECT ticker, timestamp,
                sigma_current, vwap_sigma_wave, tension_wave,
                rsi_value, conj_wave_tide
         FROM engine.channel_snapshots
-        WHERE timeframe = '1d'
+        WHERE timeframe = '1d' AND ticker = ANY(%s)
         ORDER BY ticker, timestamp
-    """, conn)
+    """, conn, params=(tickers_to_process,))
     logger.info(f"  {len(cs):,} snapshots, {cs['ticker'].nunique()} tickers")
 
     # 3. Compute Observer per ticker
     total_updated = 0
-    for ticker in cs['ticker'].unique():
-        if ticker in completed_tickers:
-            continue
-
+    for ticker in tickers_to_process:
         tk = cs[cs['ticker'] == ticker].sort_values('timestamp').copy()
         if len(tk) < 100:
             logger.info(f"  {ticker}: skipping ({len(tk)} bars < 100)")

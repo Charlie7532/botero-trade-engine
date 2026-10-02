@@ -473,7 +473,9 @@ def get_feature_columns(df: pd.DataFrame) -> list[str]:
         'FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_',
         'MTF_', 'BA_', 'SIG_',
     )
-    # Excluded: best-effort Alpaca features with 10.7% coverage + temporal leakage.
+    # Excluded — TEMPORAL LEAKAGE: best-effort Alpaca features (10.7% coverage).
+    # fillna(0) creates a temporal proxy (pre-2021 vs post-2021).
+    # T4 ablation delta=+0.008 was noise (< combined σ). See [31e4f03].
     _EXCLUDED_BEST_EFFORT = {
         'VF_VWAPPremium_ZScore', 'VF_TradeCountRel_ZScore',
         'VF_VolPerTrade_ZScore', 'VF_TradeCountAccel_ZScore',

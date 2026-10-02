@@ -1285,10 +1285,13 @@ class QuantFeatureEngineer:
             'FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_',
             'MTF_', 'BA_', 'ST_', 'NP_',
         )
-        # Features excluded: consume best-effort Alpaca data (vwap/trade_count,
-        # 10.7% coverage). fillna(0) creates a temporal proxy — premium=0.0
-        # perfectly separates pre-2021 from post-2021. T4 ablation: 3/4 have
-        # zero importance, removing all 4 improves Sharpe +0.008, reduces σ.
+        # Features excluded — TEMPORAL LEAKAGE: consume best-effort Alpaca data
+        # (vwap/trade_count, 660K/6.2M = 10.7% coverage). fillna(0) creates a
+        # temporal proxy — premium=0.0 separates pre-2021 from post-2021 with
+        # 0.06% natural coincidence. T4 ablation (5×5 purged WF, 73 features):
+        # delta=+0.008 Sharpe — INDISTINGUISHABLE from noise (< combined σ).
+        # 3/4 features had zero importance; model already ignored them.
+        # Exclusion justified by leakage, not by ablation delta.  [31e4f03]
         _EXCLUDED_BEST_EFFORT = {
             'VF_VWAPPremium_ZScore',
             'VF_TradeCountRel_ZScore',

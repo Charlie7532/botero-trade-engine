@@ -1,8 +1,8 @@
 """
-Backfill trade_count + vwap — Alpaca → Neon
+Backfill trade_count — Alpaca → Neon
 ===============================================
-Updates existing OHLCV bars in Neon with trade_count and vwap
-from Alpaca SDK (yfinance doesn't provide these fields).
+Updates existing OHLCV bars in Neon with trade_count
+from Alpaca SDK (yfinance doesn't provide this field).
 
 Usage:
     python -m backend.scripts.backfill_trade_count --tickers SPY,QQQ,AAPL
@@ -10,7 +10,7 @@ Usage:
 
 Why:
     The 707K+ bars in Neon were downloaded via yfinance, which only provides
-    OHLCV. Alpaca provides trade_count (number of trades per bar) and VWAP.
+    OHLCV. Alpaca provides trade_count (number of trades per bar).
     trade_count enables Market Making estimation: avg_trade_size = volume/trade_count.
 """
 import argparse
@@ -64,7 +64,7 @@ def get_date_range(conn, ticker: str) -> tuple:
 
 
 def fetch_alpaca_bars(ticker: str, start, end) -> list[dict]:
-    """Fetch bars from Alpaca SDK with trade_count + vwap."""
+    """Fetch bars from Alpaca SDK with trade_count."""
     from alpaca.data.historical import StockHistoricalDataClient
     from alpaca.data.requests import StockBarsRequest
     from alpaca.data.timeframe import TimeFrame
@@ -92,28 +92,27 @@ def fetch_alpaca_bars(ticker: str, start, end) -> list[dict]:
     for bar in bars.data[ticker]:
         results.append({
             "time": bar.timestamp.date(),
-            "vwap": float(bar.vwap) if hasattr(bar, 'vwap') and bar.vwap else None,
             "trade_count": int(bar.trade_count) if hasattr(bar, 'trade_count') and bar.trade_count else None,
         })
     return results
 
 
 def update_bars(conn, ticker: str, bars: list[dict]) -> int:
-    """Update existing rows with trade_count + vwap."""
+    """Update existing rows with trade_count."""
     if not bars:
         return 0
 
     updated = 0
     with conn.cursor() as cur:
         for bar in bars:
-            if bar["trade_count"] is None and bar["vwap"] is None:
+            if bar["trade_count"] is None:
                 continue
             cur.execute(
                 """UPDATE market.ohlcv_bars
-                   SET trade_count = %s, vwap = %s
+                   SET trade_count = %s
                    WHERE ticker = %s AND timeframe = '1d'
                    AND time::date = %s""",
-                (bar["trade_count"], bar["vwap"], ticker, bar["time"]),
+                (bar["trade_count"], ticker, bar["time"]),
             )
             updated += cur.rowcount
     conn.commit()
@@ -153,7 +152,7 @@ def backfill_ticker(conn, ticker: str) -> int:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Backfill trade_count + vwap from Alpaca")
+    parser = argparse.ArgumentParser(description="Backfill trade_count from Alpaca")
     parser.add_argument("--tickers", help="Comma-separated tickers (e.g., SPY,QQQ,AAPL)")
     parser.add_argument("--all", action="store_true", help="Backfill ALL tickers with NULL trade_count")
     parser.add_argument("--batch", type=int, default=20, help="Max tickers per run (with --all)")

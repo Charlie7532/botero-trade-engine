@@ -1,7 +1,7 @@
 """
 OHLCV Provider — Stock/ETF daily bar updates
 ================================================
-Sources: yfinance (primary) + Alpaca (enrichment: vwap, trade_count)
+Sources: yfinance (primary) + Alpaca (enrichment: trade_count)
 Updates only tickers with update_source = 'vault_ohlcv_bars'.
 """
 import logging
@@ -64,7 +64,7 @@ class OHLCVProvider:
 
         logger.info(
             f"📈 OHLCV vault: {stats['updated']} tickers updated, "
-            f"{stats['enriched']} enriched with trade_count+vwap, "
+            f"{stats['enriched']} enriched with trade_count, "
             f"{len(stats.get('failed', {}))} failed"
         )
         return {"status": "ok", **stats}
@@ -152,7 +152,7 @@ class OHLCVProvider:
                     store.save_bars(ticker, "1d", df)
                     stats["updated"] += 1
 
-                    # Enrich with Alpaca trade_count + vwap
+                    # Enrich with Alpaca trade_count
                     self._enrich_alpaca(store, ticker, df, stats)
 
                 except Exception as e:
@@ -162,7 +162,7 @@ class OHLCVProvider:
         return stats
 
     def _enrich_alpaca(self, store, ticker, df, stats):
-        """Best-effort enrichment with Alpaca trade_count and vwap."""
+        """Best-effort enrichment with Alpaca trade_count."""
         import pandas as pd
         api_key = os.environ.get("ALPACA_API_KEY", "")
         if not api_key:
@@ -188,15 +188,14 @@ class OHLCVProvider:
                 try:
                     with conn.cursor() as cur:
                         for bar in alpaca_bars.data[ticker]:
-                            vwap = float(bar.vwap) if hasattr(bar, 'vwap') and bar.vwap else None
                             tc = int(bar.trade_count) if hasattr(bar, 'trade_count') and bar.trade_count else None
-                            if vwap or tc:
+                            if tc:
                                 cur.execute(
                                     """UPDATE market.ohlcv_bars
-                                       SET vwap = %s, trade_count = %s
+                                       SET trade_count = %s
                                        WHERE ticker = %s AND timeframe = '1d'
                                        AND time::date = %s""",
-                                    (vwap, tc, ticker, bar.timestamp.date()),
+                                    (tc, ticker, bar.timestamp.date()),
                                 )
                     conn.commit()
                     stats["enriched"] += 1

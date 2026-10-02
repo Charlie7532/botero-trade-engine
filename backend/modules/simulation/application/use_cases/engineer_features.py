@@ -1285,7 +1285,20 @@ class QuantFeatureEngineer:
             'FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_',
             'MTF_', 'BA_', 'ST_', 'NP_',
         )
-        return [c for c in self.df.columns if c.startswith(prefixes)]
+        # Features excluded: consume best-effort Alpaca data (vwap/trade_count,
+        # 10.7% coverage). fillna(0) creates a temporal proxy — premium=0.0
+        # perfectly separates pre-2021 from post-2021. T4 ablation: 3/4 have
+        # zero importance, removing all 4 improves Sharpe +0.008, reduces σ.
+        _EXCLUDED_BEST_EFFORT = {
+            'VF_VWAPPremium_ZScore',
+            'VF_TradeCountRel_ZScore',
+            'VF_VolPerTrade_ZScore',
+            'VF_TradeCountAccel_ZScore',
+        }
+        return [
+            c for c in self.df.columns
+            if c.startswith(prefixes) and c not in _EXCLUDED_BEST_EFFORT
+        ]
 
     def process_all_features(
         self,

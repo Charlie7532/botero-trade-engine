@@ -473,7 +473,13 @@ def get_feature_columns(df: pd.DataFrame) -> list[str]:
         'FD_', 'MS_', 'TS_', 'CS_', 'VF_', 'MC_', 'OV_', 'CAL_', 'IM_', 'RG_',
         'MTF_', 'BA_', 'SIG_',
     )
-    return [c for c in df.columns if c.startswith(prefixes)]
+    # Excluded: best-effort Alpaca features with 10.7% coverage + temporal leakage.
+    _EXCLUDED_BEST_EFFORT = {
+        'VF_VWAPPremium_ZScore', 'VF_TradeCountRel_ZScore',
+        'VF_VolPerTrade_ZScore', 'VF_TradeCountAccel_ZScore',
+    }
+    return [c for c in df.columns
+            if c.startswith(prefixes) and c not in _EXCLUDED_BEST_EFFORT]
 
 
 def _tf_to_minutes(tf: str) -> int:

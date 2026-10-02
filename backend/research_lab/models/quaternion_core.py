@@ -43,7 +43,6 @@ class MarketQuaternion:
 
         Args:
             df: DataFrame with columns [open, high, low, close, volume].
-                Optional: [vwap] (from Alpaca enrichment).
             include_derivatives: If True, add norm, deltas, rotation, etc.
             extras: Optional dict of {name: pd.Series} for additional
                 dimensions (e.g., {"vix_zscore": series, "skew_delta": series}).
@@ -56,17 +55,11 @@ class MarketQuaternion:
         # ── Prerequisite: True Range ──
         true_range = (df["high"] - df["low"]).clip(lower=1e-8)
 
-        # ── VWAP: use Alpaca's if available, else approximate ──
-        if "vwap" in df.columns and df["vwap"].notna().any():
-            vwap = df["vwap"].copy()
-            # Fill gaps with typical price approximation
-            typical = (df["high"] + df["low"] + df["close"]) / 3
-            vwap = vwap.fillna(typical)
-        else:
-            typical = (df["high"] + df["low"] + df["close"]) / 3
-            cum_vp = (typical * df["volume"]).rolling(20, min_periods=1).sum()
-            cum_vol = df["volume"].rolling(20, min_periods=1).sum().clip(lower=1)
-            vwap = cum_vp / cum_vol
+        # ── VWAP: rolling approximation from typical price ──
+        typical = (df["high"] + df["low"] + df["close"]) / 3
+        cum_vp = (typical * df["volume"]).rolling(20, min_periods=1).sum()
+        cum_vol = df["volume"].rolling(20, min_periods=1).sum().clip(lower=1)
+        vwap = cum_vp / cum_vol
 
         # ── Q_w: EQUILIBRIUM ──
         # Where is price relative to consensus (VWAP)?

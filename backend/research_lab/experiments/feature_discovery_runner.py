@@ -110,7 +110,7 @@ def build_enriched_features(
             logger.debug(f"QFE.extract_intermarket_features failed: {e}")
 
         # Merge QFE columns into quaternion DataFrame
-        original_cols = {"open", "high", "low", "close", "volume", "vwap", "trade_count"}
+        original_cols = {"open", "high", "low", "close", "volume"}
         new_cols = [c for c in qfe.df.columns if c not in original_cols]
         for col in new_cols:
             if col not in q.columns:

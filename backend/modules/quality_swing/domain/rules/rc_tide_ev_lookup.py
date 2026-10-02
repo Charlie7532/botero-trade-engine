@@ -42,6 +42,12 @@ class RealEVSignal:
     n_samples: int          # Sample size for this state/level
     is_rare_state: bool     # Low-N tail event flag
     
+    # Dynamic Fatigue Analysis — A1: contrato restaurado con defaults canónicos.
+    # La fatiga NO se calcula todavía en Tide (requiere fatigue_buckets en el Fact Store).
+    # El valor por defecto es un placeholder declarado, no una medición empírica.
+    fatigue_type: str = "STABLE"       # "ACCUMULATING", "FATIGUE_RISK", "STABLE"
+    fatigue_delta_ev: float = 0.0      # EV(run_bucket) - EV(bucket_1)
+    
     is_unobserved_state: bool = False
     fallback_reason: str = "EXACT_L3_MATCH"
     
@@ -228,6 +234,8 @@ def lookup_real_ev(
         ev_per_day=ev_per_day,
         n_samples=n_samples,
         is_rare_state=is_rare,
+        fatigue_type="STABLE",
+        fatigue_delta_ev=0.0,
         is_unobserved_state=is_unobserved,
         fallback_reason=fallback_reason,
     )

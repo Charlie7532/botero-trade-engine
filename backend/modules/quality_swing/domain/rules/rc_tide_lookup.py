@@ -204,8 +204,8 @@ def classify_tide_signal_from_features(identity: dict, direction: dict, turn_ris
                     sharpe_val = real_ev.sharpe
                     rr_asym_val = real_ev.rr_asymmetry
                     fatigue_val = real_ev.fatigue_type
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Tide EV enrichment failed for state_key={state_key}: {e}")
 
     features = TideFeatureVector(
         zone=identity["zone"],

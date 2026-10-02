@@ -504,7 +504,7 @@ os.makedirs("backend/modules/entry_decision/domain/rules", exist_ok=True)
 triad_table = {
     "version": "2.0",
     "generated_at": datetime.now(timezone.utc).isoformat(),
-    "generated_by": "backend/scripts/train_s5v_triad.py",
+    "generated_by": "backend/scripts/trainers/train_s5v_triad.py",
     "_metadata": {
         "shannon_mutual_info": {
             "R4_bot_5_0": 0.0427,
@@ -584,11 +584,11 @@ triad_table = {
     },
     "_pipeline_prerequisites": {
         "step_1_vault_ingestion": "python3 backend/scripts/populate_qqq_constituents.py",
-        "step_2_sector_breadth": "python3 backend/scripts/backfill_sector_breadth.py",
+        "step_2_sector_breadth": "python3 backend/scripts/backfills/backfill_sector_breadth.py",
         "step_3_volume_breadth": "python3 backend/scripts/fast_backfill_sv5.py",
-        "step_4_qqq_indicators": "python3 backend/scripts/generate_s5_qqq_indicators.py",
-        "step_5_feature_lake_snapshots": "python3 backend/scripts/backfill_channel_snapshots_v2.py",
-        "step_6_triad_training": "python3 backend/scripts/train_s5v_triad.py && python3 backend/scripts/train_s5_triad.py",
+        "step_4_qqq_indicators": "python3 backend/scripts/generators/generate_s5_qqq_indicators.py",
+        "step_5_feature_lake_snapshots": "python3 backend/scripts/backfills/backfill_channel_snapshots_v2.py",
+        "step_6_triad_training": "python3 backend/scripts/trainers/train_s5v_triad.py && python3 backend/scripts/trainers/train_s5_triad.py",
         "master_orchestrator": "python3 backend/scripts/master_retrain_pipeline.py",
         "validation_suite": "PYTHONPATH=. pytest"
     },
@@ -608,7 +608,7 @@ rel_path = "backend/modules/entry_decision/domain/rules/s5v_relative_modifier.js
 rel_output = {
     "version": "2.0",
     "generated_at": datetime.now(timezone.utc).isoformat(),
-    "generated_by": "backend/scripts/train_s5v_triad.py",
+    "generated_by": "backend/scripts/trainers/train_s5v_triad.py",
     "_metadata": {
         "purpose": (
             "Modificador relativo que ajusta las probabilidades de la Tríada S5V según "

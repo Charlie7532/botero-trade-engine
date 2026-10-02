@@ -1,7 +1,7 @@
 """
 OHLCV Provider — Stock/ETF daily bar updates
 ================================================
-Sources: yfinance (primary) + Alpaca (enrichment: trade_count)
+Sources: yfinance (primary)
 Updates only tickers with update_source = 'vault_ohlcv_bars'.
 """
 import logging
@@ -64,7 +64,6 @@ class OHLCVProvider:
 
         logger.info(
             f"📈 OHLCV vault: {stats['updated']} tickers updated, "
-            f"{stats['enriched']} enriched with trade_count, "
             f"{len(stats.get('failed', {}))} failed"
         )
         return {"status": "ok", **stats}
@@ -152,59 +151,12 @@ class OHLCVProvider:
                     store.save_bars(ticker, "1d", df)
                     stats["updated"] += 1
 
-                    # Enrich with Alpaca trade_count
-                    self._enrich_alpaca(store, ticker, df, stats)
-
                 except Exception as e:
                     stats["failed"][ticker] = str(e)
                     logger.warning(f"  {ticker} ({download_sym}) OHLCV update failed: {e}")
 
         return stats
 
-    def _enrich_alpaca(self, store, ticker, df, stats):
-        """Best-effort enrichment with Alpaca trade_count."""
-        import pandas as pd
-        api_key = os.environ.get("ALPACA_API_KEY", "")
-        if not api_key:
-            return
-        try:
-            from alpaca.data.historical import StockHistoricalDataClient
-            from alpaca.data.requests import StockBarsRequest
-            from alpaca.data.timeframe import TimeFrame
-
-            client = StockHistoricalDataClient(
-                api_key, os.environ.get("ALPACA_SECRET_KEY", "")
-            )
-            request = StockBarsRequest(
-                symbol_or_symbols=ticker,
-                timeframe=TimeFrame.Day,
-                start=df.index.min(),
-                end=df.index.max() + pd.Timedelta(days=1),
-                limit=10,
-            )
-            alpaca_bars = client.get_stock_bars(request)
-            if alpaca_bars and ticker in alpaca_bars.data:
-                conn = store._conn()
-                try:
-                    with conn.cursor() as cur:
-                        for bar in alpaca_bars.data[ticker]:
-                            tc = int(bar.trade_count) if hasattr(bar, 'trade_count') and bar.trade_count else None
-                            if tc:
-                                cur.execute(
-                                    """UPDATE market.ohlcv_bars
-                                       SET trade_count = %s
-                                       WHERE ticker = %s AND timeframe = '1d'
-                                       AND time::date = %s""",
-                                    (tc, ticker, bar.timestamp.date()),
-                                )
-                    conn.commit()
-                    stats["enriched"] += 1
-                except Exception:
-                    conn.rollback()
-                finally:
-                    store._put(conn)
-        except Exception:
-            pass
 
 
 # Auto-register on import

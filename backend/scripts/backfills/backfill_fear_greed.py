@@ -76,8 +76,6 @@ def main():
             score,   # low
             score,   # close
             0,       # volume
-            None,    # vwap
-            None,    # trade_count
         ))
 
     # Insert into PostgreSQL
@@ -87,7 +85,7 @@ def main():
             psycopg2.extras.execute_values(
                 cur,
                 """INSERT INTO market.ohlcv_bars
-                   (time, ticker, timeframe, open, high, low, close, volume, vwap, trade_count)
+                   (time, ticker, timeframe, open, high, low, close, volume)
                    VALUES %s
                    ON CONFLICT (ticker, timeframe, time) DO NOTHING""",
                 rows,

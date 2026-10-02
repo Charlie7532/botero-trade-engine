@@ -99,14 +99,13 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                     float(row["open"]), float(row["high"]),
                     float(row["low"]), float(row["close"]),
                     int(row.get("volume", 0)),
-                    int(row["trade_count"]) if "trade_count" in row and pd.notna(row.get("trade_count")) else None,
                 ))
 
             with conn.cursor() as cur:
                 psycopg2.extras.execute_values(
                     cur,
                     """INSERT INTO market.ohlcv_bars
-                       (time, ticker, timeframe, open, high, low, close, volume, trade_count)
+                       (time, ticker, timeframe, open, high, low, close, volume)
                        VALUES %s
                        ON CONFLICT (ticker, timeframe, time) DO NOTHING""",
                     rows,
@@ -143,7 +142,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         conn = self._conn()
         try:
             query = (
-                "SELECT time, open, high, low, close, volume, trade_count "
+                "SELECT time, open, high, low, close, volume "
                 "FROM market.ohlcv_bars "
                 "WHERE ticker = %s AND timeframe = %s"
             )

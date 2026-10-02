@@ -159,7 +159,7 @@ def main():
                 p = float(pct)
                 all_rows.append((
                     dt.date(), f"S5{suffix}", TIMEFRAME,
-                    p, p, p, p, int(n), None, None,
+                    p, p, p, p, int(n),
                 ))
 
     logger.info(f"  → {len(all_rows):,} global price breadth bars")
@@ -174,7 +174,7 @@ def main():
                 p = float(pct)
                 all_rows.append((
                     dt.date(), f"S5{suffix}", TIMEFRAME,
-                    p, p, p, p, int(n), None, None,
+                    p, p, p, p, int(n),
                 ))
     logger.info(f"  → {len(all_rows) - vol_count_before:,} global volume breadth bars")
 
@@ -202,7 +202,7 @@ def main():
                     p = float(pct)
                     all_rows.append((
                         dt.date(), f"S5_{etf}_{suffix}", TIMEFRAME,
-                        p, p, p, p, int(n), None, None,
+                        p, p, p, p, int(n),
                     ))
                     sector_count += 1
 
@@ -215,7 +215,7 @@ def main():
                     p = float(pct)
                     all_rows.append((
                         dt.date(), f"S5_{etf}_{suffix}", TIMEFRAME,
-                        p, p, p, p, int(n), None, None,
+                        p, p, p, p, int(n),
                     ))
                     sector_count += 1
 
@@ -247,7 +247,7 @@ def main():
                 psycopg2.extras.execute_values(
                     cur,
                     """INSERT INTO market.ohlcv_bars
-                       (time, ticker, timeframe, open, high, low, close, volume, vwap, trade_count)
+                       (time, ticker, timeframe, open, high, low, close, volume)
                        VALUES %s
                        ON CONFLICT (ticker, timeframe, time) DO NOTHING""",
                     batch,

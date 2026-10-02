@@ -121,7 +121,7 @@ def atomic_swap_bars(store: TimescaleDataStore, ticker: str, df: pd.DataFrame,
     conn = store._conn()
     try:
         # Prepare rows for market.ohlcv_bars
-        # (time, ticker, timeframe, open, high, low, close, volume, vwap, trade_count)
+        # (time, ticker, timeframe, open, high, low, close, volume)
         rows = []
         for ts, row in df.iterrows():
             py_ts = ts.to_pydatetime()
@@ -130,7 +130,7 @@ def atomic_swap_bars(store: TimescaleDataStore, ticker: str, df: pd.DataFrame,
             l = float(row["low"])
             c = float(row["close"])
             v = float(row["volume"])
-            rows.append((py_ts, ticker.upper(), "1d", o, h, l, c, v, None, None))
+            rows.append((py_ts, ticker.upper(), "1d", o, h, l, c, v))
 
         logger.info(f"[{ticker}] Starting atomic DB transaction (DELETE 3 tables + INSERT {len(rows):,} bars)...")
         with conn.cursor() as cur:
@@ -142,8 +142,8 @@ def atomic_swap_bars(store: TimescaleDataStore, ticker: str, df: pd.DataFrame,
             # Insert new bars
             execute_batch(cur, """
                 INSERT INTO market.ohlcv_bars
-                (time, ticker, timeframe, open, high, low, close, volume, vwap, trade_count)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (time, ticker, timeframe, open, high, low, close, volume)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, rows, page_size=1000)
 
             if fail_simulation == "db":

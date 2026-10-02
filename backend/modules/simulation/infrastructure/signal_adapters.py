@@ -825,7 +825,6 @@ class PatternSignalAdapter(SignalPort):
 
         super_candles = []
         # Select only OHLCV columns to avoid mixed-dtype iloc issues
-        # (historical data may have NaN in vwap/trade_count)
         ohlcv_cols = [c for c in ["open", "high", "low", "close", "volume"] if c in ohlc.columns]
         ohlc_clean = ohlc[ohlcv_cols]
         for g in range(n_groups):

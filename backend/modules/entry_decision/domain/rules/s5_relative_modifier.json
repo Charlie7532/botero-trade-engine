@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "generated_at": "2026-10-01T16:38:39.159932+00:00",
-  "generated_by": "backend/scripts/train_s5_triad.py",
+  "generated_by": "backend/scripts/trainers/train_s5_triad.py",
   "_metadata": {
     "purpose": "Modificador relativo para S5 Price Breadth. Mide la diferencia simple FI_sector - FI_spy (en puntos porcentuales). Si un sector tiene m\u00e1s stocks arriba de su MA50 que el SPY, se le da un boost al P_bot.",
     "formula": "rel_fi = S5_{ETF}_FI - S5FI (diferencia en pp)",

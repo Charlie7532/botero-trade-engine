@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "generated_at": "2026-10-01T16:39:59.424150+00:00",
-  "generated_by": "backend/scripts/train_s5v_triad.py",
+  "generated_by": "backend/scripts/trainers/train_s5v_triad.py",
   "_metadata": {
     "purpose": "Modificador relativo que ajusta las probabilidades de la Tr\u00edada S5V seg\u00fan cu\u00e1nto se desv\u00eda el volumen idiosincr\u00e1tico del sector respecto al Rest of Market (RoM). v2.0: normalizaci\u00f3n Z-Score per-sector + dimensi\u00f3n Rate of Change.",
     "rom_subtraction": {

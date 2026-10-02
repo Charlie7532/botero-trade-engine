@@ -43,8 +43,6 @@ class OHLCV:
     low: float
     close: float
     volume: float
-    vwap: float = 0.0
-    trade_count: int = 0
 
 
 @dataclass
@@ -119,7 +117,7 @@ class AlpacaMarketData:
             limit: Maximum bars
 
         Returns:
-            DataFrame with columns: Open, High, Low, Close, Volume, VWAP
+            DataFrame with columns: Open, High, Low, Close, Volume
         """
         try:
             from alpaca.data.requests import StockBarsRequest
@@ -161,8 +159,6 @@ class AlpacaMarketData:
                     "Low": bar.low,
                     "Close": bar.close,
                     "Volume": bar.volume,
-                    "VWAP": bar.vwap if hasattr(bar, 'vwap') else 0,
-                    "TradeCount": bar.trade_count if hasattr(bar, 'trade_count') else 0,
                 })
 
             df = pd.DataFrame(rows)

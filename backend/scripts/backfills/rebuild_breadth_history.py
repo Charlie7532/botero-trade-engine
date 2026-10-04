@@ -10,6 +10,7 @@ Parity with the providers (one bar per SPY session date d):
   - Constituents: asset_type='STOCK', update_source='vault_ohlcv_bars', and
       global (S5*, SV5*): 'SP500' in index_membership
       sector (S5_*, SV5_*, S5CAP_*, VBI_*): 'SP500' or 'QQQ' in index_membership, sector not null.
+      QQQ (S5_QQQ_*, SV5_QQQ_*): 'QQQ' in index_membership, sector not null (QQQ's own list).
   - Window: bars with time in (d - N calendar days, d], N=300 (VBI: 50) — provider `days=` lookback.
   - S5 / S5_{ETF} / S5CAP:  close[-1] > mean(last k closes), ticker counted if it has >= k bars
       in the window (macro_trend_calculator.calculate_breadth; cap version weights by mcap_cache.json).
@@ -20,11 +21,10 @@ Parity with the providers (one bar per SPY session date d):
   - BSI = S5TW (breadth_provider writes it), SV5_TURBULENCE = sample std of the last 10 daily
       changes of SV5TW (sv5_turbulence_provider), volume 0.
   - CREDIT_RATIO / ROTATION_INDEX: backfill_synthetic_indicators (depend on reloaded ETF closes).
-Inherited convention (backfill_breadth_history, which produced the existing history): global S5/SV5
-bars are emitted only when >= 100 tickers are counted.
+Inherited convention (the former backfill_breadth_history, now removed, which produced the original
+history): global S5/SV5 bars are emitted only when >= 100 tickers are counted.
 
 Write: per indicator ticker, one transaction: DELETE its 1d rows, INSERT the recomputed series.
-Tickers not produced by any provider (S5_QQQ_*, SV5_QQQ_*) are not touched.
 
 Usage:
   PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scripts/backfills/rebuild_breadth_history.py [--dry-run]
@@ -48,6 +48,7 @@ load_dotenv(root_dir / ".env")
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 from backend.modules.shared.domain.constants.sectors import (
     SECTOR_ETFS, BREADTH_MA_LENGTHS, VOLUME_BREADTH_MA_CONFIG, canonicalize,
+    SECTOR_BREADTH_TICKERS, QQQ_VOLUME_BREADTH_TICKERS,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -68,6 +69,7 @@ def load_constituents(store):
     try:
         q = """
             SELECT b.ticker, m.sector, ('SP500' = ANY(m.index_membership)) AS sp500,
+                   ('QQQ' = ANY(m.index_membership)) AS qqq,
                    b.time::date AS d, b.close, b.volume
             FROM market.ohlcv_bars b
             JOIN market.ticker_metadata m ON b.ticker = m.ticker
@@ -241,6 +243,22 @@ def main():
             n_vbi = vbi_any[tick_v].sum(axis=1)
             vbi = vbi_z[tick_v].mean(axis=1).round(2)
             series[f"VBI_{etf}"] = (vbi.where(n_vbi >= SECTOR_MIN_N).reindex(cal), n_vbi.reindex(cal))
+
+    # QQQ (own constituent list) — same frames as the sectors
+    qqq = [t for t in close_w.columns if bool(meta.loc[t, "qqq"]) and meta.loc[t, "sector"]]
+    qqq_v = [t for t in qqq if t in vol_w.columns]
+    n_q = p_any[qqq].sum(axis=1)
+    for key, sfx in SUFFIX.items():
+        v = pvalid[key][qqq]
+        tot = v.sum(axis=1)
+        pct = ((above[key][qqq] & v).sum(axis=1) / tot * 100).round(1)
+        series[SECTOR_BREADTH_TICKERS["QQQ"][key]] = (pct.where((n_q >= SECTOR_MIN_N) & (tot > 0)).reindex(cal), n_q.reindex(cal))
+    n_qv = v_any[qqq_v].sum(axis=1)
+    for key, sfx in SUFFIX.items():
+        v = vvalid[key][qqq_v]
+        tot = v.sum(axis=1)
+        pct = ((vflag[key][qqq_v] & v).sum(axis=1) / tot * 100).round(1)
+        series[QQQ_VOLUME_BREADTH_TICKERS[key]] = (pct.where((n_qv >= SECTOR_MIN_N) & (tot > 0)).reindex(cal), n_qv.reindex(cal))
 
     # SV5_TURBULENCE from the recomputed SV5TW bar series
     sv5tw = series["SV5TW"][0].dropna()

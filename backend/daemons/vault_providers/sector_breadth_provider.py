@@ -106,6 +106,23 @@ def _compute_and_store(store) -> dict:
             )
             written += 1
 
+    # QQQ breadth over QQQ's own constituent list (S5_QQQ_TH/FI/TW)
+    qqq = store.load_index_constituents("QQQ")
+    qqq_closes = {t: c for closes in by_sector.values() for t, c in closes.items() if t in qqq}
+    if len(qqq_closes) >= 10:
+        for timeframe_key, indicator_ticker in SECTOR_BREADTH_TICKERS["QQQ"].items():
+            breadth_pct = calculate_breadth(qqq_closes, BREADTH_MA_LENGTHS[timeframe_key])
+            if breadth_pct is None:
+                continue
+            store.upsert_ohlcv_bar(
+                ticker=indicator_ticker, timeframe="1d", time=effective_date,
+                open=breadth_pct, high=breadth_pct, low=breadth_pct, close=breadth_pct,
+                volume=len(qqq_closes),
+            )
+            written += 1
+    else:
+        skipped += 1
+
     logger.info(
         f"✅ SectorBreadthProvider: wrote {written} breadth bars, "
         f"skipped {skipped} sectors (insufficient constituents)"

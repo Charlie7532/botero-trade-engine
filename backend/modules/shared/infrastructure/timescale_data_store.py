@@ -521,7 +521,9 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         self, days: int = 300,
     ) -> tuple[dict[str, dict[str, list[float]]], dict[str, str]]:
         """
-        Load SP500 volumes grouped by sector for sector volume breadth.
+        Load SP500 + QQQ volumes grouped by sector for sector volume breadth.
+        Same constituent set as load_sp500_closes_by_sector (sector breadth mixes
+        both indices, decided in e695de3).
 
         Returns:
             Tuple of:
@@ -538,7 +540,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                        WHERE b.timeframe = '1d'
                          AND b.time >= NOW() - INTERVAL '%s days'
                          AND m.asset_type = 'STOCK'
-                         AND 'SP500' = ANY(m.index_membership)
+                         AND ('SP500' = ANY(m.index_membership) OR 'QQQ' = ANY(m.index_membership))
                          AND m.update_source = 'vault_ohlcv_bars'
                          AND m.sector IS NOT NULL
                          AND b.volume > 0
@@ -665,11 +667,14 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                     resolved_source = "vault_ohlcv_bars"
 
                 resolved_cadence = release_cadence or "INTRADAY"
+                # Column default is 'STOCK'; ETFs/indicators must not inherit it.
+                # Set on INSERT only, so existing rows (e.g. INDEX) keep their asset_type.
+                asset_type = industry if industry in ("ETF", "INDICATOR") else "STOCK"
 
                 cur.execute(
                     """INSERT INTO market.ticker_metadata
-                         (ticker, sector, industry, market_cap_bucket, update_source, release_cadence)
-                       VALUES (%s, %s, %s, %s, %s, %s)
+                         (ticker, sector, industry, market_cap_bucket, update_source, release_cadence, asset_type)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s)
                        ON CONFLICT (ticker) DO UPDATE SET
                          sector = EXCLUDED.sector,
                          industry = EXCLUDED.industry,
@@ -677,7 +682,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                          update_source = COALESCE(%s, market.ticker_metadata.update_source),
                          release_cadence = COALESCE(%s, market.ticker_metadata.release_cadence),
                          updated_at = NOW()""",
-                    (ticker.upper(), sector, industry, market_cap_bucket, resolved_source, resolved_cadence,
+                    (ticker.upper(), sector, industry, market_cap_bucket, resolved_source, resolved_cadence, asset_type,
                      update_source, release_cadence),
                 )
             conn.commit()
@@ -721,6 +726,23 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                         sector_map[ticker] = sector
                         by_sector.setdefault(sector, {}).setdefault(ticker, []).append(float(close))
                 return by_sector, sector_map
+        finally:
+            self._put(conn)
+
+    def load_index_constituents(self, index: str) -> set[str]:
+        """Tickers whose index_membership contains `index` (e.g. 'QQQ'), same
+        STOCK / vault_ohlcv_bars filter as the sector loaders."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """SELECT ticker FROM market.ticker_metadata
+                       WHERE %s = ANY(index_membership)
+                         AND asset_type = 'STOCK'
+                         AND update_source = 'vault_ohlcv_bars'""",
+                    (index,),
+                )
+                return {row[0] for row in cur.fetchall()}
         finally:
             self._put(conn)
 

@@ -20,6 +20,7 @@ from backend.modules.shared.domain.rules.volume_breadth_calculator import (
 from backend.modules.shared.domain.constants.sectors import (
     SECTOR_ETFS,
     SECTOR_VOLUME_BREADTH_TICKERS,
+    QQQ_VOLUME_BREADTH_TICKERS,
     VOLUME_BREADTH_MA_CONFIG,
     canonicalize,
 )
@@ -114,6 +115,29 @@ def _compute_and_store(store) -> dict:
                 volume=n_constituents,
             )
             written += 1
+
+    # QQQ volume breadth over QQQ's own constituent list (SV5_QQQ_TH/FI/TW)
+    qqq = store.load_index_constituents("QQQ")
+    qqq_volumes = {t: v for vols in by_sector.values() for t, v in vols.items() if t in qqq}
+    if len(qqq_volumes) >= 10:
+        for timeframe_key, indicator_ticker in QQQ_VOLUME_BREADTH_TICKERS.items():
+            config = VOLUME_BREADTH_MA_CONFIG[timeframe_key]
+            breadth_pct = calculate_volume_breadth(
+                qqq_volumes,
+                fast_length=config["fast"],
+                slow_length=config["slow"],
+                fast_type=config["fast_type"],
+            )
+            if breadth_pct is None:
+                continue
+            store.upsert_ohlcv_bar(
+                ticker=indicator_ticker, timeframe="1d", time=effective_date,
+                open=breadth_pct, high=breadth_pct, low=breadth_pct, close=breadth_pct,
+                volume=len(qqq_volumes),
+            )
+            written += 1
+    else:
+        skipped += 1
 
     # Mark as done for idempotency guard
     store.save_mcp_snapshot("macro/sector_volume_breadth", "BATCH_DONE", {

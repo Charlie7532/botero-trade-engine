@@ -168,6 +168,15 @@ ALL_SECTOR_VOLUME_BREADTH_TICKERS: list[str] = [
     t for d in SECTOR_VOLUME_BREADTH_TICKERS.values() for t in d.values()
 ]
 
+# QQQ volume breadth over QQQ's own constituent list (index_membership 'QQQ').
+# Same nested-MA semantics as the sector SV5. Not a GICS sector, so it is kept
+# out of SECTOR_VOLUME_BREADTH_TICKERS (iterated by sector in the backfills).
+QQQ_VOLUME_BREADTH_TICKERS: dict[str, str] = {
+    "structural": "SV5_QQQ_TH",
+    "intermediate": "SV5_QQQ_FI",
+    "tactical": "SV5_QQQ_TW",
+}
+
 # Volume breadth MA lengths — nested design:
 #   tactical:     EMA(5)   vs SMA(20)
 #   intermediate: SMA(20)  vs SMA(50)

@@ -18,6 +18,8 @@ Statistical basis:
     68% of prices within ±1σ → normal fluctuation
     95% within ±2σ → entry at -1.5σ to -2σ = 2.5th-16th percentile
 """
+from typing import Optional
+
 import numpy as np
 
 
@@ -62,31 +64,57 @@ def linreg_channel(close: np.ndarray, window: int) -> tuple[float, float, float]
     return reg_line, slope_norm, max(residual_std, 1e-8)
 
 
+def calc_vwap_with_std(
+    close: np.ndarray,
+    high: np.ndarray,
+    low: np.ndarray,
+    volume: np.ndarray,
+    window: int,
+) -> tuple[Optional[float], Optional[float]]:
+    """CANONICAL VWAP kernel: VWAP + volume-weighted standard deviation.
+
+    Single source of truth for the VWAP math. Do not re-implement elsewhere.
+
+    Returns (None, None) when uncomputable (fewer than `window` bars, or the
+    window carries no volume). Never fabricates a level (no typical[-1]).
+
+    Bar Taxonomy & C2 Behavior:
+        - Zero-volume bars weigh 0, so they are excluded per bar automatically.
+        - C2 (O=H=L=C, vol > 0): typical=(H+L+C)/3 == C, so the VWAP is exact.
+          CARENCIA: C2 bars provide no intraday range (H - L = 0). Any feature
+          relying on High - Low (ATR, Parkinson vol) MUST exclude C2 bars.
+    """
+    if len(close) < window:
+        return None, None
+
+    vol = volume[-window:]
+    total_vol = vol.sum()
+
+    if total_vol <= 0:
+        return None, None
+
+    typical = (close[-window:] + high[-window:] + low[-window:]) / 3.0
+    vwap = float(np.sum(typical * vol) / total_vol)
+    deviations = typical - vwap
+    vwap_std = float(np.sqrt(np.sum(vol * deviations ** 2) / total_vol))
+
+    return vwap, vwap_std
+
+
 def calc_vwap(
     close: np.ndarray,
     high: np.ndarray,
     low: np.ndarray,
     volume: np.ndarray,
     window: int = 20,
-) -> float:
-    """Rolling VWAP over last `window` bars.
+) -> Optional[float]:
+    """Rolling VWAP over last `window` bars (level only).
 
-    Args:
-        close, high, low, volume: Price/volume arrays.
-        window: Lookback period (default 20).
-
-    Returns:
-        VWAP value for the last `window` bars.
+    Delegates to calc_vwap_with_std. Returns None when uncomputable —
+    callers must handle None (formerly returned typical[-1] / close[-1],
+    a fabricated level).
     """
-    if len(close) < window:
-        return close[-1] if len(close) > 0 else 0.0
-
-    typical = (close[-window:] + high[-window:] + low[-window:]) / 3.0
-    vol = volume[-window:]
-    total_vol = vol.sum()
-    if total_vol <= 0:
-        return typical[-1]
-    return float(np.sum(typical * vol) / total_vol)
+    return calc_vwap_with_std(close, high, low, volume, window)[0]
 
 
 def sigma_position(current_price: float, reg_value: float, residual_std: float) -> float:

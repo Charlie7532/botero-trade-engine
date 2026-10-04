@@ -120,7 +120,7 @@ class RegressionChannelIntelligence:
             result.sigma_wave = round(snapshot.sigma_wave, 2)
             result.wave_slope = round(snapshot.wave_slope, 4)
             result.slope_conjugation = round(snapshot.conj_wave_tide, 4)
-            result.vwap = round(snapshot.vwap_wave, 2)
+            result.vwap = round(snapshot.vwap_wave, 2) if snapshot.vwap_wave is not None else None
             result.below_vwap = snapshot.below_all_vwaps
             result.fear_level = snapshot.fear_level
             result.fear_label = snapshot.fear_label
@@ -165,8 +165,8 @@ class RegressionChannelIntelligence:
                 close[:idx + 1], high[:idx + 1], low[:idx + 1], volume[:idx + 1],
                 self.VWAP_WINDOW,
             )
-            result.vwap = round(vwap_val, 2)
-            result.below_vwap = current_price < vwap_val
+            result.vwap = round(vwap_val, 2) if vwap_val is not None else None
+            result.below_vwap = (current_price < vwap_val) if vwap_val is not None else None
 
             # LAYER 4: FEAR/GREED
             bias = compute_ticker_fear_level(ohlc, idx, self.LONG_WINDOW, short_window)

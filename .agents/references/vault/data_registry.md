@@ -18,6 +18,34 @@
 
 ---
 
+## Bar Taxonomy, C2 Policy & Carencia Declaration
+
+### Classification (Strict OHLC and Volume)
+- **C1 (Placeholder)**: $O=H=L=C \land Volume = 0$. Uncomputable in VWAP / level families (`vwap_tide`, `vwap_sigma_*`, spreads, composite flags) $\longrightarrow$ strictly `NULL`.
+- **C2 (Close-only / Single-Price Execution)**: $O=H=L=C \land Volume > 0$. Real transacted executions (closing auctions, single block crosses, low-float trades). **Preserved intact and computed normally**.
+- **C3 (Range with Zero Volume)**: $Volume = 0 \land H > L$. Range real, missing volume reporting.
+- **C4 (Physically Invalid)**: $O$ or $C$ outside $[L, H]$ or $H < L$, **with relative excursion > 1e-6**. Excursions $\le$ 1e-6 are float comparison noise and are treated as CLEAN.
+  - Measured 2026-10-04 (canonical universe, 566 tickers): close-side excursions = 2,429 noise + 1 real (max 0.43%); open-side = 0 noise + 603 real (max 8.22%), **all in 2026** — partial intraday bars persisted as daily closes (2026-09-16: 530/563 tickers with volume < 25% of their 20d median). C4 under-detects partial bars (it only catches those whose open fell outside the partial range); volume ratio is the complementary detector.
+
+### C2 Mathematical Justification (Empirically Measured)
+1. **$Volume > 0 \implies \sum Vol > 0$**: The denominator of VWAP is strictly positive; no division by zero or fabricated dispersion ($vstd := 1.0$).
+2. **$Typical = \frac{H+L+C}{3} = Close$**: The VWAP **does** use High and Low (through `typical`), but for C2 $H=L=C$, so the typical price equals the close and the VWAP $\frac{\sum (Close \times Vol)}{\sum Vol}$ is exact.
+3. **Regression on transacted price**: The linear regression channel operates strictly on `close`, which is an authentic transacted and quoted market price.
+4. **Where the missing intraday range DOES matter**: `zigzag_canonical` (→ `engine.zigzag_points`, which feeds EV-tree labels) uses High for peaks and Low for valleys. On a C2 bar the pivot price falls on the close and the intraday extreme is lost. Regression and VWAP families are unaffected.
+
+### Mandatory Carencia Declaration
+> **A C2 bar provides zero intraday range ($High - Low = 0$). Any future feature or indicator based on $High - Low$ (such as ATR, Parkinson Volatility $\frac{(\ln(H/L))^2}{4 \ln 2}$, Garman-Klass, or Rogers-Satchell) MUST explicitly exclude or filter C2 bars to prevent artificial volatility collapse ($0.0$). Zigzag pivots located on C2 bars carry close, not the true extreme.**
+
+### C2 Census (measured 2026-10-04, canonical universe: `industry <> 'INDICATOR' AND asset_type IN ('STOCK','ETF') AND ticker NOT LIKE 'UW_%' AND LENGTH(ticker) <= 5 AND bars >= 250` → 566 tickers, 4,746,864 bars)
+- C2 bars: **23,603**; **92.8% occur before 2000**; median volume **14,600** shares.
+- (Supersedes a previous figure of 1,355 / 83.5% post-2000 / median 1,000, which was computed with a wrong filter `industry IN ('STOCK','ETF')` that matched only 47 tickers.)
+
+### Pre-Tape Boundary (Per-Ticker, Measured)
+- C2 is empirically concentrated pre-2000, but a calendar year is still **not** a valid cut: the pre-tape boundary differs per ticker (IPO, listing venue, mergers, spin-offs).
+- Pre-tape boundaries are **strictly per-ticker** and must be evaluated by measurement (% of bars with $Volume > 0$, annual trading density in the rolling window, and scale ratio continuity $< 3.0$), never by a fixed calendar year.
+
+---
+
 ## S5 Market Breadth (3 tickers)
 
 % of SP500 constituents trading above their Moving Average.

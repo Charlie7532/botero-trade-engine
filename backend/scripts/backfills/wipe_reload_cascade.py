@@ -217,10 +217,18 @@ def rebuild_snapshots(store: TimescaleDataStore, ticker: str, df: pd.DataFrame) 
         s_curr = (price - curr_reg[idx]) / curr_std[idx]
         s_wave = (price - wave_reg[idx]) / wave_std[idx]
 
-        # VWAP sigmas — guarded with vstd > 1e-4 (CR-1 safe)
-        vs_tide = (price - vwap_tide[idx]) / vstd_tide[idx] if (not np.isnan(vwap_tide[idx]) and vstd_tide[idx] > 1e-4) else 0.0
-        vs_curr = (price - vwap_curr[idx]) / vstd_curr[idx] if (not np.isnan(vwap_curr[idx]) and vstd_curr[idx] > 1e-4) else 0.0
-        vs_wave = (price - vwap_wave[idx]) / vstd_wave[idx] if (not np.isnan(vwap_wave[idx]) and vstd_wave[idx] > 1e-4) else 0.0
+        # VWAP sigmas — guarded with vstd > 1e-4 else None
+        vs_tide = (price - vwap_tide[idx]) / vstd_tide[idx] if (not np.isnan(vwap_tide[idx]) and not np.isnan(vstd_tide[idx]) and vstd_tide[idx] > 1e-4) else None
+        vs_curr = (price - vwap_curr[idx]) / vstd_curr[idx] if (not np.isnan(vwap_curr[idx]) and not np.isnan(vstd_curr[idx]) and vstd_curr[idx] > 1e-4) else None
+        vs_wave = (price - vwap_wave[idx]) / vstd_wave[idx] if (not np.isnan(vwap_wave[idx]) and not np.isnan(vstd_wave[idx]) and vstd_wave[idx] > 1e-4) else None
+
+        vs_tide_val = round(float(vs_tide), 4) if vs_tide is not None else None
+        vs_curr_val = round(float(vs_curr), 4) if vs_curr is not None else None
+        vs_wave_val = round(float(vs_wave), 4) if vs_wave is not None else None
+
+        tension_tide = round(float(s_tide - vs_tide), 4) if vs_tide is not None else None
+        tension_current = round(float(s_curr - vs_curr), 4) if vs_curr is not None else None
+        tension_wave = round(float(s_wave - vs_wave), 4) if vs_wave is not None else None
 
         t_accel = tide_slope[idx] - tide_slope[idx - 1] if idx > start_idx and not np.isnan(tide_slope[idx - 1]) else 0.0
         c_accel = curr_slope[idx] - curr_slope[idx - 1] if idx > start_idx and not np.isnan(curr_slope[idx - 1]) else 0.0
@@ -257,11 +265,18 @@ def rebuild_snapshots(store: TimescaleDataStore, ticker: str, df: pd.DataFrame) 
         else:
             regime = "FLAT"
 
-        vt = float(vwap_tide[idx]) if not np.isnan(vwap_tide[idx]) else price
-        vc = float(vwap_curr[idx]) if not np.isnan(vwap_curr[idx]) else price
-        vw = float(vwap_wave[idx]) if not np.isnan(vwap_wave[idx]) else price
+        vt = round(float(vwap_tide[idx]), 2) if not np.isnan(vwap_tide[idx]) else None
+        vc = round(float(vwap_curr[idx]), 2) if not np.isnan(vwap_curr[idx]) else None
+        vw = round(float(vwap_wave[idx]), 2) if not np.isnan(vwap_wave[idx]) else None
 
-        comp = float(wave_std[idx]) / float(tide_std[idx]) if tide_std[idx] > 0.01 else 0.0
+        vw_spread_tc = round(float((vt - vc) / max(abs(vt), 1e-8) * 100), 4) if (vt is not None and vc is not None) else None
+        vw_spread_tw = round(float((vt - vw) / max(abs(vt), 1e-8) * 100), 4) if (vt is not None and vw is not None) else None
+        vw_spread_cw = round(float((vc - vw) / max(abs(vc), 1e-8) * 100), 4) if (vc is not None and vw is not None) else None
+
+        below_all = bool(price < vt and price < vc and price < vw) if (vt is not None and vc is not None and vw is not None) else None
+        above_all = bool(price > vt and price > vc and price > vw) if (vt is not None and vc is not None and vw is not None) else None
+
+        comp = round(float(wave_std[idx]) / float(tide_std[idx]), 4) if tide_std[idx] > 1e-8 else None
 
         cs_val = float(curr_slope[idx])
         sl = classify_slopes(ts_val, cs_val, ws_val)
@@ -289,8 +304,8 @@ def rebuild_snapshots(store: TimescaleDataStore, ticker: str, df: pd.DataFrame) 
             round(float(s_tide), 4), round(float(s_curr), 4), round(float(s_wave), 4),
             round(float(tide_reg[idx]), 2), round(float(curr_reg[idx]), 2), round(float(wave_reg[idx]), 2),
             round(float(tide_std[idx]), 4), round(float(curr_std[idx]), 4), round(float(wave_std[idx]), 4),
-            round(float(vs_tide), 4), round(float(vs_curr), 4), round(float(vs_wave), 4),
-            round(float(vt), 2), round(float(vc), 2), round(float(vw), 2),
+            vs_tide_val, vs_curr_val, vs_wave_val,
+            vt, vc, vw,
             round(float(ts_val), 6), round(float(cs_val), 6), round(float(ws_val), 6),
             round(float(t_accel), 6), round(float(c_accel), 6), round(float(w_accel), 6),
             round(float(ws_val - cs_val), 6),
@@ -299,18 +314,18 @@ def rebuild_snapshots(store: TimescaleDataStore, ticker: str, df: pd.DataFrame) 
             round(float(s_tide - s_curr), 4),
             round(float(s_tide - s_wave), 4),
             round(float(s_curr - s_wave), 4),
-            round(float((vt - vc) / max(abs(vt), 1e-8) * 100), 4),
-            round(float((vt - vw) / max(abs(vt), 1e-8) * 100), 4),
-            round(float((vc - vw) / max(abs(vc), 1e-8) * 100), 4),
+            vw_spread_tc,
+            vw_spread_tw,
+            vw_spread_cw,
             int(fear_level), fear_label, regime,
             bool(w_flip), int(w_flip_dir),
             round(float(vol_ratio[idx]), 2),
-            bool(price < vt and price < vc and price < vw),
-            bool(price > vt and price > vc and price > vw),
-            round(float(s_tide - vs_tide), 4),
-            round(float(s_curr - vs_curr), 4),
-            round(float(s_wave - vs_wave), 4),
-            round(float(comp), 4),
+            below_all,
+            above_all,
+            tension_tide,
+            tension_current,
+            tension_wave,
+            comp,
             round(float(rsi_val), 1),
             round(float(div_str), 4),
             round(float(conv), 4),
@@ -427,15 +442,16 @@ def rebuild_observer(store: TimescaleDataStore, ticker: str) -> int:
         )
 
         updates = []
-        for ts, out in zip(tk["timestamp"].values, outputs):
+        for ts, out, v_raw in zip(tk["timestamp"].values, outputs, tk["vwap_sigma_wave"].values):
             py_ts = pd.Timestamp(ts).to_pydatetime()
+            vel_svw_val = _clamp_real(out.vel_svw, _BOUNDS["obs_vel_svw"]) if pd.notna(v_raw) else None
             updates.append((
                 _clamp_real(out.recovery_score, _BOUNDS["obs_recovery_score"]),
                 _clamp_real(out.velocity_norm, _BOUNDS["obs_velocity_norm"]),
                 out.state,
                 out.kf_consensus,
                 _clamp_real(out.vel_sigma_c, _BOUNDS["obs_vel_sigma_c"]),
-                _clamp_real(out.vel_svw, _BOUNDS["obs_vel_svw"]),
+                vel_svw_val,
                 _clamp_real(out.vel_tension_w, _BOUNDS["obs_vel_tension_w"]),
                 _clamp_real(out.vel_rsi, _BOUNDS["obs_vel_rsi"]),
                 _clamp_real(out.vel_conj_wt, _BOUNDS["obs_vel_conj_wt"]),

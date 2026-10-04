@@ -23,11 +23,12 @@ Performance per bar:
 No external dependencies beyond numpy.
 """
 import numpy as np
+from typing import Optional
 
 from backend.modules.shared.domain.entities.channel_snapshot import ChannelSnapshot
 from backend.modules.shared.domain.rules.regression_channel import (
     linreg_channel,
-    calc_vwap,
+    calc_vwap_with_std,
     sigma_position,
 )
 from backend.modules.shared.domain.rules.cycle_detection import detect_dominant_cycle
@@ -100,34 +101,8 @@ def _compute_vol_ratio(close: np.ndarray, volume: np.ndarray, idx: int) -> float
     return avg_up / avg_down if avg_down > 0 else 2.0
 
 
-def _calc_vwap_with_std(
-    close: np.ndarray,
-    high: np.ndarray,
-    low: np.ndarray,
-    volume: np.ndarray,
-    window: int,
-) -> tuple[float, float]:
-    """VWAP + volume-weighted standard deviation.
-
-    Returns:
-        (vwap_value, vwap_std) — std used for sigma_vwap computation.
-    """
-    if len(close) < window:
-        val = close[-1] if len(close) > 0 else 0.0
-        return val, 1.0
-
-    typical = (close[-window:] + high[-window:] + low[-window:]) / 3.0
-    vol = volume[-window:]
-    total_vol = vol.sum()
-
-    if total_vol <= 0:
-        return float(typical[-1]), 1.0
-
-    vwap = float(np.sum(typical * vol) / total_vol)
-    deviations = typical - vwap
-    vwap_std = float(np.sqrt(np.sum(vol * deviations ** 2) / total_vol))
-
-    return vwap, vwap_std
+# VWAP math lives in regression_channel.calc_vwap_with_std (single kernel).
+_calc_vwap_with_std = calc_vwap_with_std
 
 
 def compute_channel_snapshot(
@@ -144,6 +119,13 @@ def compute_channel_snapshot(
 
     This is the SINGLE entry point for all regression + VWAP computations.
     Call this ONCE per bar, pass the result to all downstream consumers.
+
+    Design Notes:
+        - Regression family uses Close only. VWAP family uses High/Low through
+          typical=(H+L+C)/3 (exact for C2, where H=L=C). No dimension here uses
+          the intraday range H-L. zigzag_canonical (separate) does use H/L.
+        - Pre-tape boundary is strictly per-ticker and detected dynamically via
+          empirical volume density and continuity, not by an arbitrary calendar year.
 
     Args:
         close: Full array of closing prices.
@@ -245,39 +227,55 @@ def compute_channel_snapshot(
     vwap_c, vstd_c = _calc_vwap_with_std(pw, hw, lw, vw, current_window)
     vwap_w, vstd_w = _calc_vwap_with_std(pw, hw, lw, vw, wave_window)
 
-    snap.vwap_tide = round(vwap_t, 2)
-    snap.vwap_current = round(vwap_c, 2)
-    snap.vwap_wave = round(vwap_w, 2)
+    snap.vwap_tide = round(vwap_t, 2) if vwap_t is not None else None
+    snap.vwap_current = round(vwap_c, 2) if vwap_c is not None else None
+    snap.vwap_wave = round(vwap_w, 2) if vwap_w is not None else None
 
-    # VWAP sigmas
-    snap.vwap_sigma_tide = round(
-        (price_now - vwap_t) / vstd_t if vstd_t > 1e-4 else 0.0, 4
+    # VWAP sigmas — guarded with vstd > 1e-4 and isfinite (NULL if uncomputable)
+    snap.vwap_sigma_tide = (
+        round((price_now - vwap_t) / vstd_t, 4)
+        if (vwap_t is not None and vstd_t is not None and np.isfinite(vstd_t) and vstd_t > 1e-4)
+        else None
     )
-    snap.vwap_sigma_current = round(
-        (price_now - vwap_c) / vstd_c if vstd_c > 1e-4 else 0.0, 4
+    snap.vwap_sigma_current = (
+        round((price_now - vwap_c) / vstd_c, 4)
+        if (vwap_c is not None and vstd_c is not None and np.isfinite(vstd_c) and vstd_c > 1e-4)
+        else None
     )
-    snap.vwap_sigma_wave = round(
-        (price_now - vwap_w) / vstd_w if vstd_w > 1e-4 else 0.0, 4
+    snap.vwap_sigma_wave = (
+        round((price_now - vwap_w) / vstd_w, 4)
+        if (vwap_w is not None and vstd_w is not None and np.isfinite(vstd_w) and vstd_w > 1e-4)
+        else None
     )
 
     # VWAP spreads (% difference between VWAP levels)
-    snap.vwap_spread_tide_current = round(
-        (vwap_t - vwap_c) / max(abs(vwap_t), 1e-8) * 100, 4
+    snap.vwap_spread_tide_current = (
+        round((vwap_t - vwap_c) / max(abs(vwap_t), 1e-8) * 100, 4)
+        if (vwap_t is not None and vwap_c is not None)
+        else None
     )
-    snap.vwap_spread_tide_wave = round(
-        (vwap_t - vwap_w) / max(abs(vwap_t), 1e-8) * 100, 4
+    snap.vwap_spread_tide_wave = (
+        round((vwap_t - vwap_w) / max(abs(vwap_t), 1e-8) * 100, 4)
+        if (vwap_t is not None and vwap_w is not None)
+        else None
     )
-    snap.vwap_spread_current_wave = round(
-        (vwap_c - vwap_w) / max(abs(vwap_c), 1e-8) * 100, 4
+    snap.vwap_spread_current_wave = (
+        round((vwap_c - vwap_w) / max(abs(vwap_c), 1e-8) * 100, 4)
+        if (vwap_c is not None and vwap_w is not None)
+        else None
     )
 
     # Composite VWAP flags
-    snap.below_all_vwaps = (
-        price_now < vwap_t and price_now < vwap_c and price_now < vwap_w
-    )
-    snap.above_all_vwaps = (
-        price_now > vwap_t and price_now > vwap_c and price_now > vwap_w
-    )
+    if vwap_t is not None and vwap_c is not None and vwap_w is not None:
+        snap.below_all_vwaps = (
+            price_now < vwap_t and price_now < vwap_c and price_now < vwap_w
+        )
+        snap.above_all_vwaps = (
+            price_now > vwap_t and price_now > vwap_c and price_now > vwap_w
+        )
+    else:
+        snap.below_all_vwaps = None
+        snap.above_all_vwaps = None
 
     # ══════════════════════════════════════════════════════════
     # DERIVED: Fear/Greed, Regime, Volume
@@ -293,17 +291,29 @@ def compute_channel_snapshot(
     # ══════════════════════════════════════════════════════════
     # TENSIONS: Reg σ minus VWAP σ (Wyckoff cross-type)
     # ══════════════════════════════════════════════════════════
-    snap.tension_tide = round(snap.sigma_tide - snap.vwap_sigma_tide, 4)
-    snap.tension_current = round(snap.sigma_current - snap.vwap_sigma_current, 4)
-    snap.tension_wave = round(snap.sigma_wave - snap.vwap_sigma_wave, 4)
+    snap.tension_tide = (
+        round(snap.sigma_tide - snap.vwap_sigma_tide, 4)
+        if snap.vwap_sigma_tide is not None else None
+    )
+    snap.tension_current = (
+        round(snap.sigma_current - snap.vwap_sigma_current, 4)
+        if snap.vwap_sigma_current is not None else None
+    )
+    snap.tension_wave = (
+        round(snap.sigma_wave - snap.vwap_sigma_wave, 4)
+        if snap.vwap_sigma_wave is not None else None
+    )
 
     # ══════════════════════════════════════════════════════════
     # COMPRESSION RATIO (Mandelbrot squeeze)
     # ══════════════════════════════════════════════════════════
-    snap.compression_ratio = round(
-        snap.residual_std_wave / snap.residual_std_tide
-        if snap.residual_std_tide > 0.01 else 0.0,
-        4,
+    # Raw (unrounded) stds — same inputs as the cascade. The former absolute
+    # cutoff `residual_std_tide > 0.01 else 0.0` fabricated 0.0 for low-priced
+    # bars (measured 2026-10-04: below $0.01 the ratio is well-defined,
+    # p50=0.365, max=1.455). NULL only at linreg_channel's 1e-8 floor
+    # (zero residuals → ratio undefined).
+    snap.compression_ratio = (
+        round(wave_std / tide_std, 4) if tide_std > 1e-8 else None
     )
 
     # ══════════════════════════════════════════════════════════

@@ -9,6 +9,7 @@ output into the canonical signal format (1=long, -1=short, 0=flat).
 """
 import logging
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -1285,8 +1286,8 @@ class RegressionChannelAdapter(SignalPort):
 
     @staticmethod
     def _calc_vwap(close: np.ndarray, high: np.ndarray, low: np.ndarray,
-                   volume: np.ndarray, window: int = 20) -> float:
-        """Delegated to quality_swing/domain/rules/regression_channel.py."""
+                   volume: np.ndarray, window: int = 20) -> Optional[float]:
+        """Delegated to quality_swing/domain/rules/regression_channel.py. None = no volume in window."""
         from backend.modules.quality_swing.domain.rules.regression_channel import calc_vwap
         return calc_vwap(close, high, low, volume, window)
 
@@ -1320,7 +1321,10 @@ class RegressionChannelAdapter(SignalPort):
             prev_vwap = self._calc_vwap(
                 close[:i], high_arr[:i], low_arr[:i], vol_arr[:i], 20
             ) if i > 20 else vwap
-            vwap_cross_up = close[i - 1] < prev_vwap and current_price >= vwap if i > 0 else False
+            vwap_cross_up = (
+                close[i - 1] < prev_vwap and current_price >= vwap
+                if (i > 0 and prev_vwap is not None and vwap is not None) else False
+            )
 
             if shallow_bear and at_extreme and short_turning and (below_vwap or vwap_cross_up):
                 confidence = round(min(abs(sigma_position) / 3.0 + 0.3, 1.0), 2)
@@ -1368,7 +1372,7 @@ class RegressionChannelAdapter(SignalPort):
             vwap = self._calc_vwap(
                 close[:i + 1], high_arr[:i + 1], low_arr[:i + 1], vol_arr[:i + 1], 20
             )
-            below_vwap = current_price < vwap
+            below_vwap = (current_price < vwap) if vwap is not None else False
 
             # ── REGIME from long slope ──
             if slope_long > 0.01:

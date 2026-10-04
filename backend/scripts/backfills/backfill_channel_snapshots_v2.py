@@ -109,8 +109,8 @@ def _rolling_vwap(close: np.ndarray, high: np.ndarray, low: np.ndarray,
         total_vol = vol_w.sum()
 
         if total_vol <= 0:
-            vwap_values[i] = tp_w[-1]
-            vwap_stds[i] = 1.0
+            vwap_values[i] = np.nan
+            vwap_stds[i] = np.nan
             continue
 
         vwap = np.sum(tp_w * vol_w) / total_vol
@@ -256,10 +256,18 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
         s_curr = (price - curr_reg[idx]) / curr_std[idx]
         s_wave = (price - wave_reg[idx]) / wave_std[idx]
 
-        # VWAP sigmas — unified with compute_channel.py guard (vstd > 1e-4 else 0.0)
-        vs_tide = (price - vwap_tide[idx]) / vstd_tide[idx] if (not np.isnan(vwap_tide[idx]) and vstd_tide[idx] > 1e-4) else 0.0
-        vs_curr = (price - vwap_curr[idx]) / vstd_curr[idx] if (not np.isnan(vwap_curr[idx]) and vstd_curr[idx] > 1e-4) else 0.0
-        vs_wave = (price - vwap_wave[idx]) / vstd_wave[idx] if (not np.isnan(vwap_wave[idx]) and vstd_wave[idx] > 1e-4) else 0.0
+        # VWAP sigmas — guarded with vstd > 1e-4 else None
+        vs_tide = (price - vwap_tide[idx]) / vstd_tide[idx] if (not np.isnan(vwap_tide[idx]) and not np.isnan(vstd_tide[idx]) and vstd_tide[idx] > 1e-4) else None
+        vs_curr = (price - vwap_curr[idx]) / vstd_curr[idx] if (not np.isnan(vwap_curr[idx]) and not np.isnan(vstd_curr[idx]) and vstd_curr[idx] > 1e-4) else None
+        vs_wave = (price - vwap_wave[idx]) / vstd_wave[idx] if (not np.isnan(vwap_wave[idx]) and not np.isnan(vstd_wave[idx]) and vstd_wave[idx] > 1e-4) else None
+
+        vs_tide_val = round(float(vs_tide), 4) if vs_tide is not None else None
+        vs_curr_val = round(float(vs_curr), 4) if vs_curr is not None else None
+        vs_wave_val = round(float(vs_wave), 4) if vs_wave is not None else None
+
+        tension_tide = round(float(s_tide - vs_tide), 4) if vs_tide is not None else None
+        tension_current = round(float(s_curr - vs_curr), 4) if vs_curr is not None else None
+        tension_wave = round(float(s_wave - vs_wave), 4) if vs_wave is not None else None
 
         # Accelerations (slope diff vs previous bar)
         t_accel = tide_slope[idx] - tide_slope[idx - 1] if idx > start_idx and not np.isnan(tide_slope[idx - 1]) else 0.0
@@ -299,13 +307,20 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
         else:
             regime = "FLAT"
 
-        # VWAP spreads
-        vt = float(vwap_tide[idx]) if not np.isnan(vwap_tide[idx]) else price
-        vc = float(vwap_curr[idx]) if not np.isnan(vwap_curr[idx]) else price
-        vw = float(vwap_wave[idx]) if not np.isnan(vwap_wave[idx]) else price
+        # VWAP levels, spreads, and flags
+        vt = round(float(vwap_tide[idx]), 2) if not np.isnan(vwap_tide[idx]) else None
+        vc = round(float(vwap_curr[idx]), 2) if not np.isnan(vwap_curr[idx]) else None
+        vw = round(float(vwap_wave[idx]), 2) if not np.isnan(vwap_wave[idx]) else None
+
+        vw_spread_tc = round(float((vt - vc) / max(abs(vt), 1e-8) * 100), 4) if (vt is not None and vc is not None) else None
+        vw_spread_tw = round(float((vt - vw) / max(abs(vt), 1e-8) * 100), 4) if (vt is not None and vw is not None) else None
+        vw_spread_cw = round(float((vc - vw) / max(abs(vc), 1e-8) * 100), 4) if (vc is not None and vw is not None) else None
+
+        below_all = bool(price < vt and price < vc and price < vw) if (vt is not None and vc is not None and vw is not None) else None
+        above_all = bool(price > vt and price > vc and price > vw) if (vt is not None and vc is not None and vw is not None) else None
 
         # Compression
-        comp = float(wave_std[idx]) / float(tide_std[idx]) if tide_std[idx] > 0.01 else 0.0
+        comp = round(float(wave_std[idx]) / float(tide_std[idx]), 4) if tide_std[idx] > 1e-8 else None
 
         # w_duration (sequential)
         cs_val = float(curr_slope[idx])
@@ -337,8 +352,8 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
             round(float(s_tide), 4), round(float(s_curr), 4), round(float(s_wave), 4),
             round(float(tide_reg[idx]), 2), round(float(curr_reg[idx]), 2), round(float(wave_reg[idx]), 2),
             round(float(tide_std[idx]), 4), round(float(curr_std[idx]), 4), round(float(wave_std[idx]), 4),
-            round(float(vs_tide), 4), round(float(vs_curr), 4), round(float(vs_wave), 4),
-            round(float(vt), 2), round(float(vc), 2), round(float(vw), 2),
+            vs_tide_val, vs_curr_val, vs_wave_val,
+            vt, vc, vw,
             round(float(ts), 6), round(float(cs_val), 6), round(float(ws), 6),
             round(float(t_accel), 6), round(float(c_accel), 6), round(float(w_accel), 6),
             round(float(ws - cs_val), 6),  # conj_wave_current
@@ -347,18 +362,18 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
             round(float(s_tide - s_curr), 4),  # spread_tide_current
             round(float(s_tide - s_wave), 4),  # spread_tide_wave
             round(float(s_curr - s_wave), 4),  # spread_current_wave
-            round(float((vt - vc) / max(abs(vt), 1e-8) * 100), 4),  # vwap_spread_tide_current
-            round(float((vt - vw) / max(abs(vt), 1e-8) * 100), 4),  # vwap_spread_tide_wave
-            round(float((vc - vw) / max(abs(vc), 1e-8) * 100), 4),  # vwap_spread_current_wave
+            vw_spread_tc,  # vwap_spread_tide_current
+            vw_spread_tw,  # vwap_spread_tide_wave
+            vw_spread_cw,  # vwap_spread_current_wave
             int(fear_level), fear_label, regime,
             bool(w_flip), int(w_flip_dir),
             round(float(vol_ratio[idx]), 2),
-            bool(price < vt and price < vc and price < vw),  # below_all_vwaps
-            bool(price > vt and price > vc and price > vw),  # above_all_vwaps
-            round(float(s_tide - vs_tide), 4),  # tension_tide
-            round(float(s_curr - vs_curr), 4),  # tension_current
-            round(float(s_wave - vs_wave), 4),  # tension_wave
-            round(float(comp), 4),
+            below_all,  # below_all_vwaps
+            above_all,  # above_all_vwaps
+            tension_tide,  # tension_tide
+            tension_current,  # tension_current
+            tension_wave,  # tension_wave
+            comp,
             round(float(rsi_val), 1),
             round(float(div_str), 4),
             round(float(conv), 4),

@@ -2,6 +2,7 @@
 Price Analysis Module — Models (Value Objects)
 """
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -111,8 +112,8 @@ class RCIntelligenceResult:
     # Empirical: PANIC P(↑)=47.6%, GREED P(↑)=40.4%
 
     # ── VWAP Reference ──
-    vwap: float = 0.0                   # 20-bar VWAP (institutional fair price)
-    below_vwap: bool = False            # Discount vs institutional consensus
+    vwap: Optional[float] = None        # 20-bar VWAP (institutional fair price); None = no volume in window
+    below_vwap: Optional[bool] = None   # Discount vs institutional consensus; None = uncomputable
 
     # ── Volume Confirmation ──
     vol_up_down_ratio: float = 1.0      # Volume on UP days / DOWN days (5 bars)

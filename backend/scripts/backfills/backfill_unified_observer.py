@@ -11,6 +11,7 @@ Run once after deploying the Observer module:
 from dotenv import load_dotenv
 load_dotenv()
 
+from typing import Optional
 import numpy as np
 import pandas as pd
 import logging
@@ -42,13 +43,13 @@ _BOUNDS = {
 }
 
 
-def _clamp_real(v, max_abs: float) -> float:
-    """Clamp subnormal floats (< 1e-30) and explosive floats (|v| > max_abs) to 0.0."""
+def _clamp_real(v, max_abs: float) -> Optional[float]:
+    """Clamp subnormal floats (< 1e-30) and explosive floats (|v| > max_abs) to None."""
     if v is None:
-        return 0.0
+        return None
     fv = float(v)
     if not np.isfinite(fv) or abs(fv) < 1e-30 or abs(fv) > max_abs:
-        return 0.0
+        return None
     return fv
 
 
@@ -120,16 +121,17 @@ def main():
 
         # 4. Batch update
         updates = []
-        for ts, out in zip(tk['timestamp'].values, outputs):
+        for ts, out, v_raw in zip(tk['timestamp'].values, outputs, tk['vwap_sigma_wave'].values):
             # Convert numpy datetime64 to Python datetime for psycopg2
             py_ts = pd.Timestamp(ts).to_pydatetime()
+            vel_svw_val = _clamp_real(out.vel_svw, _BOUNDS["obs_vel_svw"]) if pd.notna(v_raw) else None
             updates.append((
                 _clamp_real(out.recovery_score, _BOUNDS["obs_recovery_score"]),
                 _clamp_real(out.velocity_norm, _BOUNDS["obs_velocity_norm"]),
                 out.state,
                 out.kf_consensus,
                 _clamp_real(out.vel_sigma_c, _BOUNDS["obs_vel_sigma_c"]),
-                _clamp_real(out.vel_svw, _BOUNDS["obs_vel_svw"]),
+                vel_svw_val,
                 _clamp_real(out.vel_tension_w, _BOUNDS["obs_vel_tension_w"]),
                 _clamp_real(out.vel_rsi, _BOUNDS["obs_vel_rsi"]),
                 _clamp_real(out.vel_conj_wt, _BOUNDS["obs_vel_conj_wt"]),

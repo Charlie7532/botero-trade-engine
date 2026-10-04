@@ -17,6 +17,7 @@ Pipeline position: PIEZA 1 of 4
   4. Production Gate → GO/NO-GO + sizing
 """
 from dataclasses import dataclass, asdict
+from typing import Optional
 
 
 @dataclass
@@ -61,14 +62,14 @@ class ChannelSnapshot:
     # Price distance from VWAP in VWAP-std units.
     # Captures institutional flow (volume-weighted) vs statistical position.
     # Pattern inverted vs regression: short VWAP is STRONGEST (not long).
-    vwap_sigma_tide: float = 0.0    # vs 240-bar VWAP  ★ MODERATE
-    vwap_sigma_current: float = 0.0 # vs 60-bar VWAP   ★ MODERATE (88% tickers)
-    vwap_sigma_wave: float = 0.0    # vs cycle VWAP    ★★ STRONG (RSI only)
+    vwap_sigma_tide: Optional[float] = None    # vs 240-bar VWAP  ★ MODERATE
+    vwap_sigma_current: Optional[float] = None # vs 60-bar VWAP   ★ MODERATE (88% tickers)
+    vwap_sigma_wave: Optional[float] = None    # vs cycle VWAP    ★★ STRONG (RSI only)
 
     # ── 3 VWAP Values ───────────────────────────────────────
-    vwap_tide: float = 0.0
-    vwap_current: float = 0.0
-    vwap_wave: float = 0.0
+    vwap_tide: Optional[float] = None
+    vwap_current: Optional[float] = None
+    vwap_wave: Optional[float] = None
 
     # ── 3 Slopes (normalized % of mean price per bar) ────────
     tide_slope: float = 0.0         # Macro direction
@@ -97,9 +98,9 @@ class ChannelSnapshot:
 
     # ── 3 VWAP Spreads ──────────────────────────────────────
     # Percentage difference between VWAP levels.
-    vwap_spread_tide_current: float = 0.0
-    vwap_spread_tide_wave: float = 0.0
-    vwap_spread_current_wave: float = 0.0
+    vwap_spread_tide_current: Optional[float] = None
+    vwap_spread_tide_wave: Optional[float] = None
+    vwap_spread_current_wave: Optional[float] = None
 
     # ── Derived from slopes (0 recalculation) ────────────────
     fear_level: int = 2             # 0=GREED → 5=PANIC (contrarian)
@@ -115,21 +116,21 @@ class ChannelSnapshot:
                                     # > 1.0 = accumulation, < 1.0 = distribution
 
     # ── Composite Flags ──────────────────────────────────────
-    below_all_vwaps: bool = False   # Price below all 3 VWAPs = institutional discount
-    above_all_vwaps: bool = False   # Price above all 3 VWAPs = anti-signal (WR=38.6%)
+    below_all_vwaps: Optional[bool] = None   # Price below all 3 VWAPs = institutional discount
+    above_all_vwaps: Optional[bool] = None   # Price above all 3 VWAPs = anti-signal (WR=38.6%)
 
     # ── 3 Tensions: Reg σ minus VWAP σ (Wyckoff cross-type) ──
     # Positive tension = price above regression but BELOW vwap → stealth distribution
     # Negative tension = price below regression but ABOVE vwap → institutional accumulation
     # Triple tension agreement (all 3 negative) = strong institutional support (v15 Part 3)
-    tension_tide: float = 0.0       # sigma_tide - vwap_sigma_tide
-    tension_current: float = 0.0    # sigma_current - vwap_sigma_current
-    tension_wave: float = 0.0       # sigma_wave - vwap_sigma_wave
+    tension_tide: Optional[float] = None       # sigma_tide - vwap_sigma_tide
+    tension_current: Optional[float] = None    # sigma_current - vwap_sigma_current
+    tension_wave: Optional[float] = None       # sigma_wave - vwap_sigma_wave
 
     # ── Compression Ratio (Mandelbrot squeeze) ───────────────
     # Low ratio = wave channel compressed inside tide = squeeze → breakout imminent
     # residual_std_wave / residual_std_tide (v15 Part 8)
-    compression_ratio: float = 0.0
+    compression_ratio: Optional[float] = None
 
     # ── Dual Probability Features (Fase 0 validated) ──────────
     vol_surge: float = 1.0              # Volume / SMA(volume, 20)

@@ -13,6 +13,7 @@ rule (unified_observer.py). Writes directly to Vault.
 import logging
 import math
 from datetime import datetime, UTC
+from typing import Optional
 import numpy as np
 
 from backend.daemons.vault_providers import register_provider
@@ -41,13 +42,13 @@ _BOUNDS = {
 }
 
 
-def _clamp_real(v, max_abs: float) -> float:
-    """Clamp subnormal floats (< 1e-30) and explosive floats (|v| > max_abs) to 0.0."""
+def _clamp_real(v, max_abs: float) -> Optional[float]:
+    """Clamp subnormal floats (< 1e-30) and explosive floats (|v| > max_abs) to None."""
     if v is None:
-        return 0.0
+        return None
     fv = float(v)
     if not math.isfinite(fv) or abs(fv) < 1e-30 or abs(fv) > max_abs:
-        return 0.0
+        return None
     return fv
 
 
@@ -211,6 +212,8 @@ class ObserverProvider:
 
         # Persist the latest bar's Observer output
         latest_ts = rows[-1]['timestamp']
+        last_v_raw = rows[-1].get('vwap_sigma_wave')
+        vel_svw_val = _clamp_real(last_output.vel_svw, _BOUNDS["obs_vel_svw"]) if last_v_raw is not None else None
         with conn.cursor() as cur:
             cur.execute("""
                 UPDATE engine.channel_snapshots
@@ -230,7 +233,7 @@ class ObserverProvider:
                 last_output.state,
                 last_output.kf_consensus,
                 _clamp_real(last_output.vel_sigma_c, _BOUNDS["obs_vel_sigma_c"]),
-                _clamp_real(last_output.vel_svw, _BOUNDS["obs_vel_svw"]),
+                vel_svw_val,
                 _clamp_real(last_output.vel_tension_w, _BOUNDS["obs_vel_tension_w"]),
                 _clamp_real(last_output.vel_rsi, _BOUNDS["obs_vel_rsi"]),
                 _clamp_real(last_output.vel_conj_wt, _BOUNDS["obs_vel_conj_wt"]),

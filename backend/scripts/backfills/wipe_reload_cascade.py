@@ -23,8 +23,11 @@ Usage:
   PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scripts/backfills/wipe_reload_cascade.py --tickers IBM,XOM,MCD,WMT
   PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scripts/backfills/wipe_reload_cascade.py --test-failure-download AAPL
   PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scripts/backfills/wipe_reload_cascade.py --test-failure-db AAPL
+  # Universe (canonical STOCK/ETF set), resumable; download-only fills the parquet cache, no DB writes:
+  PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scripts/backfills/wipe_reload_cascade.py --universe --cache-dir DIR --download-only
+  PYTHONPATH=/root/botero-trade backend/.venv/bin/python backend/scripts/backfills/wipe_reload_cascade.py --universe --cache-dir DIR --results FILE.jsonl
 """
-import os, sys, time, logging, argparse
+import os, sys, time, json, logging, argparse
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
@@ -57,17 +60,45 @@ from backend.scripts.backfills.backfill_channel_snapshots_v2 import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("wipe_reload_cascade")
 
+from backend.daemons.vault_providers.ohlcv_provider import SOURCE_TICKER_MAP, _drop_unfinished_session
 
-def download_and_validate(ticker: str, fail_simulation: Optional[str] = None) -> pd.DataFrame:
+# Family truncations approved and executed 2026-10-03 (ticker_data_healer audit): history before
+# these dates belongs to a different entity/scale under the same symbol. A reload must not restore it.
+FAMILY_TRUNCATIONS = {
+    "HUBB": "1994-10-31",
+    "SW": "2024-06-21",
+    "FERG": "2021-03-08",
+    "AMCR": "2019-06-11",
+    "CRH": "1992-06-08",
+}
+
+# Canonical universe (data_registry): STOCK/ETF, no UW_ pseudo-tickers, symbol <= 5 chars, >= 250 bars.
+UNIVERSE_SQL = """
+    SELECT m.ticker FROM market.ticker_metadata m
+    JOIN market.ohlcv_bars b ON b.ticker = m.ticker AND b.timeframe = '1d'
+    WHERE m.industry IS DISTINCT FROM 'INDICATOR' AND m.asset_type IN ('STOCK','ETF')
+      AND LEFT(m.ticker, 3) <> 'UW_' AND LENGTH(m.ticker) <= 5
+    GROUP BY m.ticker HAVING COUNT(*) >= 250 ORDER BY m.ticker
+"""
+
+
+def download_and_validate(ticker: str, fail_simulation: Optional[str] = None,
+                          cache_dir: Optional[Path] = None) -> pd.DataFrame:
     """Download full history and validate in-memory.
     No database connection or transaction is active during this step.
+    With cache_dir, the validated frame is read from / written to {cache_dir}/{ticker}.parquet.
     """
     if fail_simulation == "download":
         raise ConnectionError(f"[INJECTED FAILURE] Network timeout while downloading {ticker}")
 
+    cache_file = cache_dir / f"{ticker}.parquet" if cache_dir else None
+    if cache_file is not None and cache_file.exists():
+        df = pd.read_parquet(cache_file)
+        logger.info(f"[{ticker}] Loaded from cache: {len(df):,} bars {df.index.min().date()}..{df.index.max().date()}")
+        return df
+
     logger.info(f"[{ticker}] Downloading max history via Yahoo Finance (auto_adjust=True)...")
-    # yfinance symbol translation if needed
-    yf_symbol = ticker.replace(".", "-")
+    yf_symbol = SOURCE_TICKER_MAP.get(ticker, ticker.replace(".", "-"))
     df = yf.download(yf_symbol, period="max", interval="1d", auto_adjust=True, progress=False)
 
     if df is None or df.empty:
@@ -106,8 +137,20 @@ def download_and_validate(ticker: str, fail_simulation: Optional[str] = None) ->
     df = df[~df.index.duplicated(keep="last")]
     df = df.sort_index()
 
+    # Never persist a session bar captured before the session was final (partial intraday bar)
+    df = _drop_unfinished_session(df)
+
+    # Honor approved family truncations
+    if ticker in FAMILY_TRUNCATIONS:
+        cut = pd.Timestamp(FAMILY_TRUNCATIONS[ticker], tz="UTC")
+        logger.info(f"[{ticker}] Family truncation: dropping {int((df.index < cut).sum()):,} bars before {cut.date()}")
+        df = df[df.index >= cut]
+
     if len(df) < MIN_BARS:
         raise ValueError(f"[{ticker}] Insufficient bars: {len(df)} < {MIN_BARS}")
+
+    if cache_file is not None:
+        df.to_parquet(cache_file)
 
     logger.info(f"[{ticker}] Validated in-memory: {len(df):,} bars from {df.index.min().date()} to {df.index.max().date()}")
     return df
@@ -492,7 +535,8 @@ def invalidate_cache(ticker: str):
         logger.warning(f"[{ticker}] Redis cache invalidation error (non-fatal): {e}")
 
 
-def wipe_reload_cascade(ticker: str, fail_simulation: Optional[str] = None) -> Dict[str, Any]:
+def wipe_reload_cascade(ticker: str, fail_simulation: Optional[str] = None,
+                        cache_dir: Optional[Path] = None) -> Dict[str, Any]:
     """Execute complete Wipe & Reload Cascade for a single ticker."""
     t0 = time.time()
     ticker = ticker.upper()
@@ -501,7 +545,7 @@ def wipe_reload_cascade(ticker: str, fail_simulation: Optional[str] = None) -> D
 
     try:
         # Step 1: Download & validate in-memory (network completely outside DB transaction)
-        df = download_and_validate(ticker, fail_simulation=fail_simulation)
+        df = download_and_validate(ticker, fail_simulation=fail_simulation, cache_dir=cache_dir)
 
         # Step 2: Atomic Swap (DELETE 3 tables + INSERT bars -> COMMIT / ROLLBACK)
         bars_count = atomic_swap_bars(store, ticker, df, fail_simulation=fail_simulation)
@@ -533,13 +577,72 @@ def wipe_reload_cascade(ticker: str, fail_simulation: Optional[str] = None) -> D
         store.close()
 
 
+def run_universe(cache_dir: Path, download_only: bool, results_path: Optional[Path],
+                 shard: tuple = (0, 1)) -> None:
+    """Resumable universe run. Tickers already SUCCESS in results_path are skipped.
+    shard=(i, n) processes every n-th ticker starting at i."""
+    store = TimescaleDataStore()
+    try:
+        conn = store._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(UNIVERSE_SQL)
+                tickers = [r[0] for r in cur.fetchall()]
+        finally:
+            store._put(conn)
+    finally:
+        store.close()
+    tickers = tickers[shard[0]::shard[1]]
+    logger.info(f"Universe: {len(tickers)} tickers (shard {shard[0]}/{shard[1]})")
+
+    if download_only:
+        failed = {}
+        for i, t in enumerate(tickers, 1):
+            try:
+                download_and_validate(t, cache_dir=cache_dir)
+            except Exception as e:
+                failed[t] = str(e)
+                logger.error(f"[{t}] download failed: {e}")
+            if i % 50 == 0:
+                logger.info(f"Download progress {i}/{len(tickers)} (failed {len(failed)})")
+        (cache_dir / "_download_failures.json").write_text(json.dumps(failed, indent=1))
+        logger.info(f"Download-only finished: {len(tickers) - len(failed)} ok, {len(failed)} failed")
+        return
+
+    done = set()
+    if results_path and results_path.exists():
+        for line in results_path.read_text().splitlines():
+            rec = json.loads(line)
+            if rec.get("status") == "SUCCESS":
+                done.add(rec["ticker"])
+    todo = [t for t in tickers if t not in done]
+    logger.info(f"Rebuild: {len(todo)} pending ({len(done)} already SUCCESS)")
+    for i, t in enumerate(todo, 1):
+        try:
+            rec = wipe_reload_cascade(t, cache_dir=cache_dir)
+        except Exception as e:
+            rec = {"ticker": t, "status": "FAILED", "error": str(e)}
+        if results_path:
+            with results_path.open("a") as fh:
+                fh.write(json.dumps(rec, default=str) + "\n")
+        logger.info(f"Rebuild progress {i}/{len(todo)}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Atomic Wipe & Reload Cascade for Vault tickers")
     parser.add_argument("--ticker", type=str, help="Single ticker symbol")
     parser.add_argument("--tickers", type=str, help="Comma-separated ticker list")
+    parser.add_argument("--universe", action="store_true", help="Canonical STOCK/ETF universe")
+    parser.add_argument("--cache-dir", type=str, help="Parquet download cache directory")
+    parser.add_argument("--download-only", action="store_true", help="Fill the cache, no DB writes (with --universe)")
+    parser.add_argument("--results", type=str, help="JSONL results file (resume key, with --universe)")
+    parser.add_argument("--shard", type=str, default="0/1", help="i/n: process every n-th universe ticker from i")
     parser.add_argument("--test-failure-download", type=str, help="Run failure injection test during download")
     parser.add_argument("--test-failure-db", type=str, help="Run failure injection test during DB transaction")
     args = parser.parse_args()
+    cache_dir = Path(args.cache_dir) if args.cache_dir else None
+    if cache_dir:
+        cache_dir.mkdir(parents=True, exist_ok=True)
 
     if args.test_failure_download:
         ticker = args.test_failure_download.upper()
@@ -561,14 +664,20 @@ def main():
             logger.info(f"TEST PASSED: Caught expected error: {e}")
             sys.exit(0)
 
+    elif args.universe:
+        if cache_dir is None:
+            parser.error("--universe requires --cache-dir")
+        run_universe(cache_dir, args.download_only, Path(args.results) if args.results else None,
+                     tuple(int(x) for x in args.shard.split("/")))
+
     elif args.ticker:
-        res = wipe_reload_cascade(args.ticker)
+        res = wipe_reload_cascade(args.ticker, cache_dir=cache_dir)
         print(res)
 
     elif args.tickers:
         tickers = [t.strip().upper() for t in args.tickers.split(",") if t.strip()]
         for t in tickers:
-            res = wipe_reload_cascade(t)
+            res = wipe_reload_cascade(t, cache_dir=cache_dir)
             print(res)
     else:
         parser.print_help()

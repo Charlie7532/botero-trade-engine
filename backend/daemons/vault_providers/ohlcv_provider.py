@@ -6,12 +6,19 @@ Updates only tickers with update_source = 'vault_ohlcv_bars'.
 """
 import logging
 import os
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, time as dtime, UTC
+from zoneinfo import ZoneInfo
 
 from backend.daemons.vault_providers import register_provider
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
 logger = logging.getLogger(__name__)
+
+# Partial-bar guard (audit 2026-10-04: 2026-09-16 bar persisted intraday for 530/563 tickers,
+# median volume 4.3% of the 20d median). Decisions, not measurements:
+_ET = ZoneInfo("America/New_York")
+SESSION_FINAL_ET = dtime(18, 0)   # a session's daily bar is accepted only after 18:00 ET of that date
+OVERLAP_DAYS = 7                  # calendar days re-fetched each run to heal bars stored before final
 
 # Reuse the daemon's daily guard
 from backend.daemons.data_vault_daemon import _already_vaulted_today
@@ -120,10 +127,31 @@ class OHLCVProvider:
                     if not last:
                         continue
 
-                    start_str = (last + timedelta(days=1)).strftime("%Y-%m-%d")
+                    start_str = (last - timedelta(days=OVERLAP_DAYS)).strftime("%Y-%m-%d")
                     df = yf.download(download_sym, start=start_str, interval="1d",
                                      progress=False, auto_adjust=True)
-                    if df.empty:
+                    if not df.empty:
+                        if isinstance(df.columns, pd.MultiIndex):
+                            df = df.xs(download_sym, level=1, axis=1)
+                        df.columns = [c.lower() for c in df.columns]
+                        required = ["open", "high", "low", "close", "volume"]
+                        available = [c for c in required if c in df.columns]
+                        df = df[available].copy()
+                        if df.index.tz is not None:
+                            df.index = df.index.tz_convert("UTC")
+                        else:
+                            df.index = df.index.tz_localize("UTC")
+                        df.index = df.index.normalize()
+                        df.index.name = "timestamp"
+                        df.dropna(subset=["open", "high", "low", "close"], inplace=True)
+                        df = df[~df.index.duplicated(keep="last")]
+                        df = _drop_unfinished_session(df)
+
+                    last_ts = pd.Timestamp(last).tz_localize("UTC")
+                    new = df[df.index > last_ts] if not df.empty else df
+                    revised = _revised_bars(store, ticker, df[df.index <= last_ts]) if not df.empty else df
+
+                    if new.empty and revised.empty:
                         last_date = last.date() if hasattr(last, 'date') else last
                         ref_date = datetime.now(UTC).date()
                         if last_date < ref_date:
@@ -132,23 +160,12 @@ class OHLCVProvider:
                                 stats["failed"][ticker] = f"No data from feed ({download_sym}), {bdays}d lag"
                         continue
 
-                    if isinstance(df.columns, pd.MultiIndex):
-                        df = df.xs(download_sym, level=1, axis=1)
-                    df.columns = [c.lower() for c in df.columns]
-                    required = ["open", "high", "low", "close", "volume"]
-                    available = [c for c in required if c in df.columns]
-                    df = df[available].copy()
-                    if df.index.tz is not None:
-                        df.index = df.index.tz_convert("UTC")
-                    else:
-                        df.index = df.index.tz_localize("UTC")
-                    df.index.name = "timestamp"
-                    df.dropna(subset=["open", "high", "low", "close"], inplace=True)
-
-                    if df.empty:
-                        continue
-
-                    store.save_bars(ticker, "1d", df)
+                    if not revised.empty:
+                        store.save_bars(ticker, "1d", revised, overwrite=True)
+                        _invalidate_snapshots_from(store, ticker, revised.index.min())
+                        logger.info(f"  {ticker}: overwrote {len(revised)} revised bar(s) from {revised.index.min().date()}")
+                    if not new.empty:
+                        store.save_bars(ticker, "1d", new)
                     stats["updated"] += 1
 
                 except Exception as e:
@@ -156,6 +173,45 @@ class OHLCVProvider:
                     logger.warning(f"  {ticker} ({download_sym}) OHLCV update failed: {e}")
 
         return stats
+
+
+def _drop_unfinished_session(df):
+    """Drop bars whose session date is today (ET) before SESSION_FINAL_ET, or in the future."""
+    now_et = datetime.now(_ET)
+    last_final = now_et.date() if now_et.time() >= SESSION_FINAL_ET else now_et.date() - timedelta(days=1)
+    return df[df.index.date <= last_final]
+
+
+def _revised_bars(store: TimescaleDataStore, ticker: str, fresh):
+    """Fresh bars already stored whose volume differs from the stored one (partial or revised).
+
+    Volume is the comparison key on purpose: a dividend re-adjustment rescales prices but
+    not volume, so it does not trigger an overwrite of recent bars onto a new price scale.
+    """
+    if fresh.empty:
+        return fresh
+    stored = store.load_bars(ticker, "1d", start=fresh.index.min().date())
+    if stored.empty:
+        return fresh.iloc[0:0]
+    sidx = stored.index.tz_localize("UTC") if stored.index.tz is None else stored.index.tz_convert("UTC")
+    stored_vol = stored["volume"].set_axis(sidx.normalize())
+    common = fresh.index.intersection(stored_vol.index)
+    changed = [ts for ts in common if int(fresh.at[ts, "volume"]) != int(stored_vol.at[ts])]
+    return fresh.loc[changed]
+
+
+def _invalidate_snapshots_from(store: TimescaleDataStore, ticker: str, ts) -> None:
+    """Delete channel snapshots from ts on, so the incremental snapshot provider recomputes them."""
+    conn = store._conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM engine.channel_snapshots WHERE ticker = %s AND timeframe = '1d' AND timestamp >= %s",
+                (ticker.upper(), ts.to_pydatetime()),
+            )
+        conn.commit()
+    finally:
+        store._put(conn)
 
 
 

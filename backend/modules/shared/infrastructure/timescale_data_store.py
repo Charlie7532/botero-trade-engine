@@ -76,9 +76,15 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
 
     # ── OHLCV Bars ────────────────────────────────────────
 
-    def save_bars(self, ticker: str, tf: str, df: pd.DataFrame) -> None:
+    def save_bars(self, ticker: str, tf: str, df: pd.DataFrame, overwrite: bool = False) -> None:
+        """Insert bars. overwrite=True replaces existing rows (revised/partial bars)."""
         if df.empty:
             return
+        conflict_sql = (
+            "DO UPDATE SET open = EXCLUDED.open, high = EXCLUDED.high, low = EXCLUDED.low, "
+            "close = EXCLUDED.close, volume = EXCLUDED.volume"
+            if overwrite else "DO NOTHING"
+        )
 
         # VAULT STANDARD (Rule 18): daily bars always use midnight UTC timestamps
         if tf == "1d":
@@ -104,10 +110,10 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
             with conn.cursor() as cur:
                 psycopg2.extras.execute_values(
                     cur,
-                    """INSERT INTO market.ohlcv_bars
+                    f"""INSERT INTO market.ohlcv_bars
                        (time, ticker, timeframe, open, high, low, close, volume)
                        VALUES %s
-                       ON CONFLICT (ticker, timeframe, time) DO NOTHING""",
+                       ON CONFLICT (ticker, timeframe, time) {conflict_sql}""",
                     rows,
                     page_size=1000,
                 )

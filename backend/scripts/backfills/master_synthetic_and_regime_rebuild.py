@@ -3,10 +3,10 @@ Master Script: Regeneración Histórica Completa de Data Sintética y Regímenes
 ========================================================================================
 Ejecuta la secuencia integral aprobada:
   1. Purga de barras de fin de semana (ohlcv_bars) y transiciones residuales (regime_states).
-  2. Regeneración desde cero de CREDIT_RATIO, YIELD_SPREAD, ROTATION_INDEX.
-  3. Regeneración de amplitud sectorial de precios (S5_*).
-  4. Regeneración de amplitud de volumen (SV5_*).
-  5. Sincronización y recálculo de BSI y SV5_TURBULENCE.
+  2. Regeneración desde cero de YIELD_SPREAD.
+  3. Reconstrucción de toda la amplitud con paridad de providers (rebuild_breadth_history.py):
+     S5/SV5/BSI/SV5_TURBULENCE global, S5/SV5/S5CAP/VBI sectorial, S5_QQQ/SV5_QQQ,
+     CREDIT_RATIO y ROTATION_INDEX. (Las antiguas fases 4 y 5 quedaron integradas aquí.)
   6. Recálculo Total 1993-2026 del Régimen de Volatilidad (Quality & Speculative).
   7. Re-anclaje de estados activos de telemetría METAR al viernes 2026-09-18.
   8. Certificación y auditoría de integridad Cero Discrepancias.
@@ -101,16 +101,16 @@ def fase_1_purga_fin_de_semana():
 
 def fase_2_regeneracion_ratios_sinteticos(store: TimescaleDataStore):
     logger.info("=" * 70)
-    logger.info("FASE 2: Regeneración desde Cero de Ratios y Spreads Sintéticos")
+    logger.info("FASE 2: Regeneración desde Cero de YIELD_SPREAD")
     logger.info("=" * 70)
 
     conn = get_pg_conn()
     cur = conn.cursor()
 
-    # Clean slate para los 3 indicadores sintéticos
+    # CREDIT_RATIO / ROTATION_INDEX los reescribe rebuild_breadth_history (fase 3).
     cur.execute("""
         DELETE FROM market.ohlcv_bars
-        WHERE ticker IN ('CREDIT_RATIO', 'YIELD_SPREAD', 'ROTATION_INDEX')
+        WHERE ticker = 'YIELD_SPREAD'
           AND timeframe = '1d';
     """)
     logger.info(f"  • Barras anteriores purgadas para clean-slate: {cur.rowcount}")
@@ -118,108 +118,24 @@ def fase_2_regeneracion_ratios_sinteticos(store: TimescaleDataStore):
     cur.close()
     conn.close()
 
-    from backend.scripts.backfills.backfill_synthetic_indicators import (
-        backfill_credit_ratio,
-        backfill_yield_spread,
-        backfill_rotation_index,
-    )
-
-    n_credit = backfill_credit_ratio(store)
-    logger.info(f"  • CREDIT_RATIO regenerado al 100%: {n_credit} barras")
+    from backend.scripts.backfills.backfill_synthetic_indicators import backfill_yield_spread
 
     n_yield = backfill_yield_spread(store)
     logger.info(f"  • YIELD_SPREAD regenerado al 100%: {n_yield} barras")
 
-    n_rotation = backfill_rotation_index(store)
-    logger.info(f"  • ROTATION_INDEX regenerado al 100%: {n_rotation} barras")
-
     logger.info("✅ FASE 2 completada con éxito.")
 
 
-def fase_3_regeneracion_sector_breadth():
+def fase_3_reconstruccion_amplitud():
     logger.info("=" * 70)
-    logger.info("FASE 3: Regeneración de Amplitud Sectorial de Precios (S5_*)")
+    logger.info("FASE 3: Reconstrucción de Amplitud (rebuild_breadth_history.py)")
     logger.info("=" * 70)
 
-    from backend.scripts.backfills.backfill_sector_breadth import main as run_sector_breadth
-    run_sector_breadth()
+    import subprocess
+    script = PROJECT_ROOT / "backend" / "scripts" / "backfills" / "rebuild_breadth_history.py"
+    subprocess.run([sys.executable, str(script)], check=True,
+                   env=dict(os.environ, PYTHONPATH=str(PROJECT_ROOT)))
     logger.info("✅ FASE 3 completada con éxito.")
-
-
-def fase_4_regeneracion_volume_breadth():
-    logger.info("=" * 70)
-    logger.info("FASE 4: Regeneración de Amplitud de Volumen (SV5_*)")
-    logger.info("=" * 70)
-
-    from backend.daemons.vault_providers.volume_breadth_provider import VolumeBreadthProvider
-    from backend.daemons.vault_providers.sector_volume_breadth_provider import SectorVolumeBreadthProvider
-    from backend.daemons.vault_providers.sector_cap_breadth_provider import SectorCapBreadthProvider
-    from backend.daemons.vault_providers.sector_volume_intensity_provider import SectorVolumeIntensityProvider
-
-    store = TimescaleDataStore()
-    try:
-        res_vb = VolumeBreadthProvider().run_full(store)
-        logger.info(f"  • VolumeBreadthProvider: {res_vb}")
-
-        res_svb = SectorVolumeBreadthProvider().run_full(store)
-        logger.info(f"  • SectorVolumeBreadthProvider: {res_svb}")
-
-        res_scb = SectorCapBreadthProvider().run_full(store)
-        logger.info(f"  • SectorCapBreadthProvider: {res_scb}")
-
-        res_svi = SectorVolumeIntensityProvider().run_full(store)
-        logger.info(f"  • SectorVolumeIntensityProvider: {res_svi}")
-    finally:
-        store.close()
-
-    logger.info("✅ FASE 4 completada con éxito.")
-
-
-def fase_5_sincronizacion_bsi_y_turbulence(store: TimescaleDataStore):
-    logger.info("=" * 70)
-    logger.info("FASE 5: Sincronización y Recálculo de BSI y SV5_TURBULENCE")
-    logger.info("=" * 70)
-
-    from backend.daemons.vault_providers.bsi_provider import BSIProvider
-    from backend.daemons.vault_providers.sv5_turbulence_provider import SV5TurbulenceProvider
-
-    # 1. BSI
-    res_bsi = BSIProvider().run_full(store)
-    logger.info(f"  • Sincronización BSI: {res_bsi}")
-
-    # 2. SV5_TURBULENCE
-    conn = get_pg_conn()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM market.ohlcv_bars WHERE ticker = 'SV5_TURBULENCE' AND timeframe = '1d';")
-    logger.info(f"  • SV5_TURBULENCE anteriores borrados para recálculo completo: {cur.rowcount}")
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    sv5tw = store.load_bars("SV5TW", "1d")
-    if sv5tw is not None and len(sv5tw) >= 10:
-        delta = sv5tw["close"].diff()
-        rolling_std = delta.rolling(window=10, min_periods=5).std().dropna()
-        records = [
-            ("SV5_TURBULENCE", "1d", ts, float(val), float(val), float(val), float(val), 0)
-            for ts, val in rolling_std.items()
-        ]
-        from psycopg2.extras import execute_batch
-        conn = store._conn()
-        try:
-            cur = conn.cursor()
-            execute_batch(cur, """
-                INSERT INTO market.ohlcv_bars (ticker, timeframe, time, open, high, low, close, volume)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (ticker, timeframe, time) DO UPDATE
-                SET close = EXCLUDED.close;
-            """, records)
-            conn.commit()
-            logger.info(f"  • SV5_TURBULENCE recalculado al 100%: {len(records)} barras insertadas")
-        finally:
-            store._put(conn)
-
-    logger.info("✅ FASE 5 completada con éxito.")
 
 
 def fase_6_recalculo_total_regimenes_volatilidad():
@@ -358,11 +274,7 @@ def main():
         if args.from_phase <= 2:
             fase_2_regeneracion_ratios_sinteticos(store)
         if args.from_phase <= 3:
-            fase_3_regeneracion_sector_breadth()
-        if args.from_phase <= 4:
-            fase_4_regeneracion_volume_breadth()
-        if args.from_phase <= 5:
-            fase_5_sincronizacion_bsi_y_turbulence(store)
+            fase_3_reconstruccion_amplitud()
         if args.from_phase <= 6:
             fase_6_recalculo_total_regimenes_volatilidad()
         if args.from_phase <= 7:

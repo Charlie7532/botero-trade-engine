@@ -1500,89 +1500,7 @@ def _fetch_fg_score_github(store: TimescaleDataStore) -> tuple:
         return None, None, None
 
 
-# ═══════════════════════════════════════════════════════════════
-# 9. MARKET BREADTH — S5TH / S5TW / S5FI (daily, calculated from OHLCV)
-#    EXECUTION ORDER: MUST run AFTER vault_ohlcv_bars() so breadth
-#    is computed from today's closes, not yesterday's.
-# ═══════════════════════════════════════════════════════════════
-
-def vault_breadth_indicators(store: TimescaleDataStore) -> dict:
-    """Calculate S5TH, S5TW, and S5FI from existing OHLCV bars. Runs 1x/day.
-
-    Only uses stocks marked as SP500 members (asset_type='STOCK' + index_membership contains 'SP500').
-    Writes results as OHLCV bars to maintain continuity with TradingView-imported historical data.
-    """
-    last_s5tw = store.bars_last_date("S5TW", "1d")
-    last_spy = store.bars_last_date("SPY", "1d")
-    if last_s5tw and last_spy and last_s5tw >= last_spy:
-        if _already_vaulted_today(store, "macro/breadth", "SP500"):
-            logger.info("📊 Breadth already vaulted today — skipping")
-            return {"status": "skipped", "reason": "already_today"}
-
-    try:
-        from backend.modules.shared.domain.rules.macro_trend_calculator import calculate_breadth
-
-        # 300 calendar days ≈ 210 trading days — enough for 200-DMA
-        all_closes = store.load_all_latest_closes(days=300, sp500_only=True)
-        if not all_closes:
-            logger.warning("Breadth: no SP500 OHLCV data available")
-            return {"status": "error", "reason": "no_data"}
-
-        s5th = calculate_breadth(all_closes, ma_length=200)
-        s5tw = calculate_breadth(all_closes, ma_length=20)
-        s5fi = calculate_breadth(all_closes, ma_length=50)
-
-        if s5th is None and s5tw is None and s5fi is None:
-            logger.warning("Breadth: insufficient history for MA calculation")
-            return {"status": "error", "reason": "insufficient_history"}
-
-        snapshot = {
-            "s5th": s5th,
-            "s5tw": s5tw,
-            "s5fi": s5fi,
-            "tickers_counted": len(all_closes),
-            "timestamp": datetime.now(UTC).isoformat(),
-        }
-        store.save_mcp_snapshot("macro/breadth", "SP500", snapshot)
-
-        # Write as OHLCV bars (OHLC all = close, volume=0) for continuity
-        # with TradingView-imported historical data
-        last_spy = store.bars_last_date("SPY", "1d")
-        import pandas as pd
-        effective_date = pd.Timestamp(last_spy).tz_localize("UTC").normalize() if not hasattr(last_spy, "tzinfo") or not last_spy.tzinfo else pd.Timestamp(last_spy).tz_convert("UTC").normalize()
-        for ticker, value in [("S5TH", s5th), ("S5TW", s5tw), ("S5FI", s5fi), ("BSI", s5tw)]:
-            if value is not None:
-                store.upsert_ohlcv_bar(
-                    ticker=ticker, timeframe="1d", time=effective_date,
-                    open=value, high=value, low=value, close=value, volume=0,
-                )
-                store.upsert_ticker_metadata(
-                    ticker=ticker,
-                    sector="Breadth",
-                    industry="INDICATOR",
-                    market_cap_bucket=None,
-                )
-
-        # Trigger BSI METAR generation and regime transition immediately with breadth update
-        try:
-            from backend.daemons.vault_providers.bsi_provider import BSIProvider
-            bsi_res = BSIProvider().run_full(store)
-            logger.info(f"📊 BSI Provider executed in direct cascade with breadth update: {bsi_res.get('status')}")
-        except Exception as bsi_err:
-            logger.warning(f"BSI cascade execution failed: {bsi_err}")
-
-        s5th_str = f"{s5th:.1f}%" if s5th is not None else "N/A"
-        s5tw_str = f"{s5tw:.1f}%" if s5tw is not None else "N/A"
-        s5fi_str = f"{s5fi:.1f}%" if s5fi is not None else "N/A"
-        logger.info(
-            f"📊 Breadth vault: S5TH={s5th_str} S5TW={s5tw_str} S5FI={s5fi_str} BSI={s5tw_str} "
-            f"({len(all_closes)} SP500 tickers)"
-        )
-        return {"status": "ok", "s5th": s5th, "s5tw": s5tw, "s5fi": s5fi, "bsi": s5tw}
-
-    except Exception as e:
-        logger.warning(f"Breadth vault failed (non-critical): {e}")
-        return {"status": "error", "error": str(e)}
+# 9. MARKET BREADTH — S5TH / S5TW / S5FI / BSI: BreadthProvider (vault_providers/breadth_provider.py).
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -2301,6 +2219,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
 
     # Pre-import all provider classes (avoid import inside threads)
     from backend.daemons.vault_providers.channel_snapshot_provider import vault_channel_snapshots
+    from backend.daemons.vault_providers.breadth_provider import BreadthProvider
     from backend.daemons.vault_providers.sector_breadth_provider import SectorBreadthProvider
     from backend.daemons.vault_providers.volume_breadth_provider import VolumeBreadthProvider
     from backend.daemons.vault_providers.sector_volume_breadth_provider import SectorVolumeBreadthProvider
@@ -2359,7 +2278,7 @@ def run_cycle(store: TimescaleDataStore) -> None:
     with ThreadPoolExecutor(max_workers=6, thread_name_prefix="vault-b") as pool:
         futures = {
             pool.submit(vault_channel_snapshots, store, ohlcv_updated): "channel_snapshots",
-            pool.submit(vault_breadth_indicators, store): "breadth",
+            pool.submit(BreadthProvider().run_full, store): "breadth",
             pool.submit(SectorBreadthProvider().run_full, store): "sector_breadth",
             pool.submit(VolumeBreadthProvider().run_full, store): "volume_breadth",
             pool.submit(SectorVolumeBreadthProvider().run_full, store): "sector_volume_breadth",

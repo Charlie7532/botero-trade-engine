@@ -39,7 +39,6 @@ Se ejecutan cuando hay una nueva señal, cambio de población, o auditoría.
 |:-------|:----------|
 | `generate_cascade_calibration.py` | Calibración de z-score empírico y terciles asimétricos para cascadas |
 | `generate_clean_intelligence_references.py` | Genera referencias cuantitativas limpias para las 10 estaciones METAR |
-| `generate_s5_qqq_indicators.py` | Genera indicadores de breadth S5_QQQ y SV5_QQQ (1999-2026) |
 | `generate_zigzag_spectrum_json.py` | Espectro multi-activo ZigZag breadth (SPY, QQQ, 11 sectores ETF) |
 
 > **Nota:** Los evaluadores principales (`evaluador_vela_a_vela.py`, `validador_oos.py`, `recompute_triad_v2.py`, `audit_overflow_v2.py`) están en `research/01_señales_entry_exit/`, no aquí.

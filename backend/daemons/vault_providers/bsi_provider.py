@@ -69,7 +69,7 @@ class BSIProvider:
             "high": s5tw_bars["close"],
             "low": s5tw_bars["close"],
             "close": s5tw_bars["close"],
-            "volume": 0,
+            "volume": s5tw_bars["volume"],
         }, index=s5tw_bars.index)
         store.save_bars("BSI", "1d", df_sync)
         store.upsert_ticker_metadata(ticker="BSI", sector="Breadth", industry="INDICATOR")

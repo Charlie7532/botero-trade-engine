@@ -52,9 +52,9 @@
 
 | Ticker | MA Length | Timeframe | Bars | Range | Interpretation |
 |---|---:|---|---:|---|---|
-| `S5TH` | 200d | Structural | 11,483 | 1980→2026 | Long-term market health. <30=bear, >65=bull |
-| `S5FI` | 50d | Intermediate | 11,633 | 1980→2026 | Medium-term trend. <25=oversold, >75=overbought |
-| `S5TW` | 20d | Tactical | 11,663 | 1980→2026 | Short-term momentum. <20=extreme fear, >80=extreme greed |
+| `S5TH` | 200d | Structural | 11,533 | 1980→2026 | Long-term market health. <30=bear, >65=bull |
+| `S5FI` | 50d | Intermediate | 11,683 | 1980→2026 | Medium-term trend. <25=oversold, >75=overbought |
+| `S5TW` | 20d | Tactical | 11,713 | 1980→2026 | Short-term momentum. <20=extreme fear, >80=extreme greed |
 
 **Provider:** `breadth_provider.py` → `calculate_breadth(all_closes, ma_length)`.
 
@@ -66,9 +66,9 @@
 
 | Ticker | Volume MAs | Timeframe | Bars | Range | Interpretation |
 |---|---|---|---:|---|---|
-| `SV5TH` | SMA(50,vol) > SMA(200,vol) | Structural | 6,940 | 1999→2026 | Long-term institutional commitment |
-| `SV5FI` | SMA(20,vol) > SMA(50,vol) | Intermediate | 6,940 | 1999→2026 | Medium-term institutional flows |
-| `SV5TW` | EMA(5,vol) > SMA(20,vol) | Tactical | 6,940 | 1999→2026 | Short-term institutional activity |
+| `SV5TH` | SMA(50,vol) > SMA(200,vol) | Structural | 11,533 | 1980→2026 | Long-term institutional commitment |
+| `SV5FI` | SMA(20,vol) > SMA(50,vol) | Intermediate | 11,683 | 1980→2026 | Medium-term institutional flows |
+| `SV5TW` | EMA(5,vol) > SMA(20,vol) | Tactical | 11,713 | 1980→2026 | Short-term institutional activity |
 
 **Provider:** `volume_breadth_provider.py` → `calculate_all_volume_breadth(all_volumes)`.
 
@@ -80,7 +80,7 @@ Per-sector breadth for 11 GICS sectors + QQQ. Pattern: `S5_{ETF}_{TH|FI|TW}`.
 
 | Sectors | TH/FI/TW per sector | Total | Range |
 |---|---:|---:|---|
-| XLK, XLC, XLF, XLI, XLV, XLP, XLU, XLRE, XLB, XLE, XLY, QQQ | 3 each | 36 | 1972→2026 (varies) |
+| XLK, XLC, XLF, XLI, XLV, XLP, XLU, XLRE, XLB, XLE, XLY, QQQ | 3 each | 36 | 1972→2026 (~5,566-13,698 bars) |
 
 **Gate usage:** `sec_th`, `sec_fi`, `sec_tw` dicts for sector-level regime classification and sector selection.
 **Provider:** `sector_breadth_provider.py`.
@@ -93,7 +93,7 @@ Per-sector volume breadth. Pattern: `SV5_{ETF}_{TH|FI|TW}`.
 
 | Sectors | TH/FI/TW per sector | Total | Range |
 |---|---:|---:|---|
-| XLK, XLC, XLF, XLI, XLV, XLP, XLU, XLRE, XLB, XLE, XLY, QQQ | 3 each | 36 | 1999→2026 |
+| XLK, XLC, XLF, XLI, XLV, XLP, XLU, XLRE, XLB, XLE, XLY, QQQ | 3 each | 36 | 1972→2026 (~5,566-13,698 bars) |
 
 **Gate usage:** `sec_v_tw`, `sec_v_fi` dicts for institutional volume filters and Weinstein Smart Veto.
 **Provider:** `sector_volume_breadth_provider.py`.
@@ -106,7 +106,7 @@ Cap-weighted sector breadth (large-cap influence). Pattern: `S5CAP_{ETF}_{TH|FI|
 
 | Sectors covered | TH/FI/TW per sector | Total | Range |
 |---|---:|---:|---|
-| XLK, XLC, XLF, XLI, XLV, XLP, XLU, XLRE, XLB, XLE, XLY (11 sectors) | 3 each | 33 | 1999→2026 (varies) |
+| XLK, XLC, XLF, XLI, XLV, XLP, XLU, XLRE, XLB, XLE, XLY (11 sectors) | 3 each | 33 | 1972→2026 (~5,566-13,698 bars) |
 
 **Provider:** `sector_cap_breadth_provider.py`.
 

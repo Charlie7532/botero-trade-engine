@@ -249,21 +249,22 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
 
     | Family | Tickers | Bars each | Range | Interpretation |
     |---|---:|---:|---|---|
-    | **S5 Market** (S5TH/FI/TW) | 3 | ~11,500 | 1980→2026 | % SP500 above 200d/50d/20d MA. TH=structural, FI=intermediate, TW=tactical |
-    | **SV5 Market** (SV5TH/FI/TW) | 3 | 6,933 | 1999→2026 | % SP500 with vol MA crossover. TH=50v>200v, FI=20v>50v, TW=EMA5v>20v |
-    | **S5 Sector** (S5_{ETF}_{TH\|FI\|TW}) | 36 | ~6,900-13,600 | 1972→2026 | Per-sector breadth for 11 sectors + QQQ |
-    | **SV5 Sector** (SV5_{ETF}_{TH\|FI\|TW}) | 36 | 6,933 | 1999→2026 | Per-sector volume breadth |
-    | **S5CAP Sector** (S5CAP_{ETF}_{TH\|FI\|TW}) | 21 | 6,794 | 1999→2026 | Cap-weighted sector breadth (7 sectors) |
-    | **Volatility** | 4 | varies | 1990→2026 | VIX, VVIX, SKEW, SV5_TURBULENCE |
+    | **S5 Market** (S5TH/FI/TW) | 3 | ~11,530-11,710 | 1980→2026 | % SP500 above 200d/50d/20d MA. TH=structural, FI=intermediate, TW=tactical |
+    | **SV5 Market** (SV5TH/FI/TW) | 3 | ~11,530-11,710 | 1980→2026 | % SP500 with vol MA crossover. TH=50v>200v, FI=20v>50v, TW=EMA5v>20v |
+    | **S5 Sector** (S5_{ETF}_{TH\|FI\|TW}) | 36 | ~5,566-13,698 | 1972→2026 | Per-sector breadth for 11 sectors + QQQ |
+    | **SV5 Sector** (SV5_{ETF}_{TH\|FI\|TW}) | 36 | ~5,566-13,698 | 1972→2026 | Per-sector volume breadth for 11 sectors + QQQ |
+    | **S5CAP Sector** (S5CAP_{ETF}_{TH\|FI\|TW}) | 33 | ~5,566-13,698 | 1972→2026 | Cap-weighted sector breadth (11 sectors) |
+    | **VBI Sector** (VBI_{ETF}) | 11 | ~5,566-13,698 | 1972→2026 | Volume Intensity Z-score (11 sectors) |
+    | **Volatility** | 4 | varies | 1980→2026 | VIX, VVIX, SKEW, SV5_TURBULENCE (~11,700 bars) |
     | **Sentiment** (FG) | 1 | 3,872 | 2011→2026 | CNN Fear & Greed. 0=fear, 100=greed |
     | **Options** (CBOE_PCR) | 1 | 4,924 | 2006→2026 | Put/Call ratio. High=fear |
-    | **Credit** (CREDIT_RATIO) | 1 | ~4,800 | 2007→2026 | HYG/LQD ratio. Synthetic METAR station. Low=stress |
+    | **Credit** (CREDIT_RATIO) | 1 | ~4,900 | 2007→2026 | HYG/LQD ratio. Synthetic METAR station. Low=stress |
     | **Yields** (YIELD_SPREAD) | 1 | ~16,100 | 1962→2026 | TNX−IRX (10Y−13W). Synthetic METAR station. Negative=inverted |
-    | **Rotation** (ROTATION_INDEX) | 1 | ~6,900 | 1999→2026 | z(XLY/XLP)+z(XLK/XLU). Synthetic METAR station. Negative=defensive |
+    | **Rotation** (ROTATION_INDEX) | 1 | ~6,987 | 1999→2026 | z(XLY/XLP)+z(XLK/XLU). Synthetic METAR station. Negative=defensive |
     | **Indices** (SPX, NDQ, TNX) | 3 | varies | 1927→2026 | S&P500, Nasdaq, 10Y yield |
     | **ETFs** (SPY, QQQ, XL*, IWM, DIA) | 15 | ~2,000-8,400 | 1993→2026 | Sector + market ETFs. Real OHLCV |
     | **SP500 Stocks** | ~500 | ~1,000-16,000 | varies | Full constituents. Real OHLCV |
-    | **TOTAL** | ~628 | **~5.80M bars** | | |
+    | **TOTAL** | ~630 | **~5.80M bars** | | |
 
     **Key derived indicators:**
 

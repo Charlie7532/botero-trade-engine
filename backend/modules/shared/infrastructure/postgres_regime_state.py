@@ -220,14 +220,18 @@ class PostgresRegimeStateAdapter(RegimeStatePort):
                 f"{previous_state or '(none)'}→{next_state} "
                 f"trigger={trigger}"
             )
-            # L1 cache invalidation
+        except Exception:
+            conn.rollback()
+            raise
+
+        # L1 cache invalidation (safe after commit)
+        try:
             from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
             _cache = get_redis_cache()
             if _cache:
                 _cache.invalidate(f"regime:{key}:current")
-        except Exception:
-            conn.rollback()
-            raise
+        except Exception as ce:
+            logger.warning(f"L1 cache invalidation failed for regime:{key}:current: {ce}")
 
     def increment_duration(self, key: str) -> None:
         """Increment duration_bars by 1 for the active state.

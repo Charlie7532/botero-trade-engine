@@ -85,13 +85,16 @@ class RedisCache:
             if raw is None:
                 return None
             return json.loads(raw)
-        except (self._redis.ConnectionError, self._redis.TimeoutError, OSError) as e:
+        except (self._redis.RedisError, OSError) as e:
             logger.warning(f"Redis get_json failed ({e}) — falling back to Neon")
             self._available = False
             return None
         except (json.JSONDecodeError, ValueError):
             # Corrupted cache entry — delete and miss
-            self._client.delete(key)
+            try:
+                self._client.delete(key)
+            except Exception:
+                pass
             return None
 
     def set_json(self, key: str, value: Any, ttl: int = 300) -> None:
@@ -101,7 +104,7 @@ class RedisCache:
         try:
             raw = json.dumps(value, default=str)
             self._client.setex(key, ttl, raw)
-        except (self._redis.ConnectionError, self._redis.TimeoutError, OSError) as e:
+        except (self._redis.RedisError, OSError) as e:
             logger.warning(f"Redis set_json failed ({e})")
             self._available = False
 
@@ -123,7 +126,7 @@ class RedisCache:
             elif "index" in df.columns:
                 df = df.set_index("index")
             return df
-        except (self._redis.ConnectionError, self._redis.TimeoutError, OSError) as e:
+        except (self._redis.RedisError, OSError) as e:
             logger.warning(f"Redis get_dataframe failed ({e}) — falling back to Neon")
             self._available = False
             return None
@@ -145,7 +148,7 @@ class RedisCache:
             df_out = df.reset_index()
             df_out.to_feather(buf)
             self._client.setex(key, ttl, buf.getvalue())
-        except (self._redis.ConnectionError, self._redis.TimeoutError, OSError) as e:
+        except (self._redis.RedisError, OSError) as e:
             logger.warning(f"Redis set_dataframe failed ({e})")
             self._available = False
         except Exception as e:
@@ -160,7 +163,8 @@ class RedisCache:
             return
         try:
             self._client.delete(key)
-        except (self._redis.ConnectionError, self._redis.TimeoutError, OSError):
+        except (self._redis.RedisError, OSError) as e:
+            logger.warning(f"Redis invalidate failed ({e})")
             self._available = False
 
     def invalidate_pattern(self, pattern: str) -> None:
@@ -175,7 +179,8 @@ class RedisCache:
                     self._client.delete(*keys)
                 if cursor == 0:
                     break
-        except (self._redis.ConnectionError, self._redis.TimeoutError, OSError):
+        except (self._redis.RedisError, OSError) as e:
+            logger.warning(f"Redis invalidate_pattern failed ({e})")
             self._available = False
 
     # ── Diagnostics ────────────────────────────────────────────────────
@@ -221,6 +226,13 @@ def get_redis_cache() -> Optional[RedisCache]:
         with _lock:
             if _instance is None:
                 url = os.environ.get("REDIS_URL")
+                if not url:
+                    try:
+                        from dotenv import load_dotenv
+                        load_dotenv()
+                        url = os.environ.get("REDIS_URL")
+                    except ImportError:
+                        pass
                 if not url:
                     return None
                 try:

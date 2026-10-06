@@ -119,17 +119,21 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                 )
             conn.commit()
             logger.info(f"TimescaleDB: {ticker}/{tf} — inserted {len(rows)} bars")
-            # L1 cache invalidation: stale bars for this ticker
-            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
-            _cache = get_redis_cache()
-            if _cache:
-                _cache.invalidate(f"bars:{ticker.upper()}:{tf}")
         except Exception as e:
             conn.rollback()
             logger.error(f"TimescaleDB: {ticker}/{tf} save_bars failed: {e}")
             raise
         finally:
             self._put(conn)
+
+        # L1 cache invalidation: stale bars for this ticker (safe after Neon commit)
+        try:
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _cache.invalidate(f"bars:{ticker.upper()}:{tf}")
+        except Exception as ce:
+            logger.warning(f"L1 cache invalidation failed for {ticker}/{tf}: {ce}")
 
     def load_bars(
         self, ticker: str, tf: str,
@@ -280,17 +284,21 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                     )
             conn.commit()
             logger.debug(f"TimescaleDB: mcp/{category}/{ticker} — snapshot saved")
-            # L1 cache invalidation: stale snapshot for this key
-            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
-            _cache = get_redis_cache()
-            if _cache:
-                _cache.invalidate(f"mcp:{category}:{ticker.upper()}:latest")
         except Exception as e:
             conn.rollback()
             logger.error(f"TimescaleDB: mcp/{category}/{ticker} save failed: {e}")
             raise
         finally:
             self._put(conn)
+
+        # L1 cache invalidation: stale snapshot for this key (safe after Neon commit)
+        try:
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _cache.invalidate(f"mcp:{category}:{ticker.upper()}:latest")
+        except Exception as ce:
+            logger.warning(f"L1 cache invalidation failed for mcp/{category}/{ticker}: {ce}")
 
     def load_mcp_snapshot(self, category: str, ticker: str, dt: str) -> Optional[Any]:
         conn = self._conn()

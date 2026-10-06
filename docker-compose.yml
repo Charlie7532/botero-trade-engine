@@ -10,6 +10,10 @@ services:
       --maxmemory-policy allkeys-lru
       --save ""
       --appendonly no
+      --rename-command CONFIG ""
+      --rename-command REPLICAOF ""
+      --rename-command SLAVEOF ""
+      --rename-command MODULE ""
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]

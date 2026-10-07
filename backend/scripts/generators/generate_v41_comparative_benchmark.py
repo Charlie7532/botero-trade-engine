@@ -6,6 +6,7 @@ against Version 40 Baseline across 26.5 years (6,653 trading days).
 """
 
 import os, sys, pandas as pd, numpy as np
+from pathlib import Path
 from dotenv import load_dotenv; load_dotenv()
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
@@ -147,12 +148,19 @@ def main():
     # ─────────────────────────────────────────────────────────
     # GENERATE MARKDOWN COMPARATIVE ARTIFACT
     # ─────────────────────────────────────────────────────────
-    art_path = "/root/.gemini/antigravity-ide/brain/747582b8-bd87-4653-8f63-949c0849b8a4/reporte_comparativo_v40_vs_v41.md"
+    out_dir = Path(__file__).resolve().parents[3] / "data" / "research" / "benchmarks" / "vintage_V-C"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    art_path = str(out_dir / "reporte_comparativo_v40_vs_v41.md")
     
+    n_days = len(df_v40)
+    d_min = df_v40['date'].min()
+    d_max = df_v40['date'].max()
+
     md = "# 📊 INFORME BENCHMARK COMPARATIVO — VERSIÓN 40 vs VERSIÓN 41 (2000–2026)\n\n"
     md += "> [!IMPORTANT]\n"
-    md += "> Auditoría empírica completa sobre **26.5 años (6,653 días de trading contiguos)**.\n"
-    md += "> Comparación directa entre **Versión 40 (Baseline)** y **Versión 41 (SV5_SHOCK Volume Risk Modifiers)**.\n\n"
+    md += f"> Auditoría empírica completa sobre **{n_days:,} días de trading contiguos ({d_min} a {d_max})**.\n"
+    md += "> Comparación directa entre **Versión 40 (Baseline)** y **Versión 41 (SV5_SHOCK Volume Risk Modifiers)**.\n"
+    md += "> **Vintage:** V-C (Series homogéneas EMA5 + barras curadas post-rebuild 2026-10-04).\n\n"
     
     md += "## 🏆 Resumen General de Desempeño\n\n"
     md += "| Métrica Global | Versión 40 (Baseline) | Versión 41 (Auditada) | SPY Benchmark | Delta V41 vs V40 |\n"

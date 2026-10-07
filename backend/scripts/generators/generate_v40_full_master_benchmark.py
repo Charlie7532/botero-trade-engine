@@ -10,6 +10,7 @@ Includes:
 """
 
 import os, sys, pandas as pd, numpy as np
+from pathlib import Path
 from dotenv import load_dotenv; load_dotenv()
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
@@ -312,13 +313,20 @@ def main():
     # ─────────────────────────────────────────────────────────
     # WRITE MARKDOWN ARTIFACT
     # ─────────────────────────────────────────────────────────
-    art_path = "/root/.gemini/antigravity-ide/brain/747582b8-bd87-4653-8f63-949c0849b8a4/reporte_maestro_v40_auditado.md"
-    art_path_comp = "/root/.gemini/antigravity-ide/brain/747582b8-bd87-4653-8f63-949c0849b8a4/tablas_comparativas_v40_audited.md"
+    out_dir = Path(__file__).resolve().parents[3] / "data" / "research" / "benchmarks" / "vintage_V-C"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    art_path = str(out_dir / "reporte_maestro_v40_auditado.md")
+    art_path_comp = str(out_dir / "tablas_comparativas_v40_audited.md")
     
+    n_days = len(df_v40_std)
+    d_min = df_v40_std['date'].min()
+    d_max = df_v40_std['date'].max()
+
     md = f"# 📊 REPORTES DE BENCHMARK MAESTRO V40 — AUDITORÍA INTEGRAL (2000 - 2026)\n\n"
     md += f"> [!IMPORTANT]\n"
-    md += f"> Este informe consolida la auditoría cuantitativa del **Quality Entry Gate V40** ejecutado sobre el histórico continuo de 26.5 años (6,653 días de mercado, 2000–2026).\n"
-    md += f"> Incorpora la arquitectura **Vault-First** con contingencia **SV5_SHOCK** para protección anti-fallos en episodios de degradación de data macro/VIX.\n\n"
+    md += f"> Este informe consolida la auditoría cuantitativa del **Quality Entry Gate V40** ejecutado sobre el histórico continuo de **{n_days:,} días de mercado ({d_min} a {d_max})**.\n"
+    md += f"> Incorpora la arquitectura **Vault-First** con contingencia **SV5_SHOCK** para protección anti-fallos en episodios de degradación de data macro/VIX.\n"
+    md += f"> **Vintage:** V-C (Series homogéneas EMA5 + barras curadas post-rebuild 2026-10-04).\n\n"
     
     md += "## 📈 Summary de Performance Global\n\n"
     md += "| Métrica | V40 Estándar (VIX + SV5_SHOCK) | V40 Contingencia (Sin VIX) | SPY Benchmark | Audit Diff |\n"

@@ -9,6 +9,7 @@ Generates:
 """
 
 import os, sys, json, pandas as pd, numpy as np
+from pathlib import Path
 from dotenv import load_dotenv; load_dotenv()
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
@@ -231,13 +232,17 @@ def main():
         alpha_str = f"**{y.alpha:+6.2f}%**" if y.alpha >= 0 else f"{y.alpha:+6.2f}%"
         md_out += f"| **{y.year}** | **{y.v39_ret:+6.2f}%** | {y.spy_ret:+6.2f}% | {alpha_str} | **{y.end_shares:7.2f} acc** |\n"
         
-    with open("/root/.gemini/antigravity-ide/brain/747582b8-bd87-4653-8f63-949c0849b8a4/tablas_comparativas_v39.md", "w") as f:
+    out_dir = Path(__file__).resolve().parents[3] / "data" / "research" / "benchmarks" / "vintage_V-C"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    art_path = str(out_dir / "tablas_comparativas_v39.md")
+
+    with open(art_path, "w") as f:
         f.write(md_out)
         
     print("\n" + "="*115)
     print("      📊 BENCHMARK MAESTRO V39 PROCESADO Y GUARDADO EN ARTIFACT")
     print("="*115)
-    print("📌 Se ha generado el archivo: tablas_comparativas_v39.md")
+    print(f"📌 Se ha generado el archivo: {art_path}")
 
 if __name__ == "__main__":
     main()

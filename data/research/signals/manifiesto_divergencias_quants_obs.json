@@ -1,87 +1,87 @@
 {
- "fecha": "2026-08-30",
+ "fecha": "2026-10-07",
  "builder": "generate_quants_obs.py (producción)",
  "principio": "fidelidad como detector, no como meta",
  "columnas": [
   {
    "columna": "pivot_date",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0543,
+   "categoria": "C"
   },
   {
    "columna": "pivot_year",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.9053,
+   "categoria": "C"
   },
   {
    "columna": "pivot_decade",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.9924,
+   "categoria": "C"
   },
   {
    "columna": "pivot_type",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.9773,
+   "categoria": "C"
   },
   {
    "columna": "leg_bear",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.9773,
+   "categoria": "C"
   },
   {
    "columna": "next_bear",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.9773,
+   "categoria": "C"
   },
   {
    "columna": "cascade_50",
-   "match": 0.9994,
-   "categoria": "OK"
+   "match": 0.5896,
+   "categoria": "C"
   },
   {
    "columna": "cascade_75",
-   "match": 0.9994,
-   "categoria": "OK"
+   "match": 0.697,
+   "categoria": "C"
   },
   {
    "columna": "abs_prev_leg_return",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0006,
+   "categoria": "C"
   },
   {
    "columna": "prev_leg_return",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0006,
+   "categoria": "C"
   },
   {
    "columna": "prev_leg_duration",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.2064,
+   "categoria": "C"
   },
   {
    "columna": "duration_bars",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.2172,
+   "categoria": "C"
   },
   {
    "columna": "daily_return_pct",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0,
+   "categoria": "C"
   },
   {
    "columna": "vix_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0562,
+   "categoria": "C"
   },
   {
    "columna": "vix_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0568,
+   "categoria": "C"
   },
   {
    "columna": "vix_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0543,
+   "categoria": "C"
   },
   {
    "columna": "vix_sk",
@@ -90,27 +90,27 @@
   },
   {
    "columna": "vix_d1_vote",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.7866,
+   "categoria": "C"
   },
   {
    "columna": "vix_zk_pbull",
-   "match": 0.1214,
+   "match": 0.0069,
    "categoria": "C"
   },
   {
    "columna": "vix_zk_pbear",
-   "match": 0.1214,
+   "match": 0.0069,
    "categoria": "C"
   },
   {
    "columna": "vix_zz25_pbull",
-   "match": 0.0113,
+   "match": 0.0013,
    "categoria": "C"
   },
   {
    "columna": "vix_zz25_pbear",
-   "match": 0.0113,
+   "match": 0.0013,
    "categoria": "C"
   },
   {
@@ -120,343 +120,343 @@
   },
   {
    "columna": "vix_n",
-   "match": 0.0082,
+   "match": 0.0038,
    "categoria": "C"
   },
   {
    "columna": "vvix_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.423,
+   "categoria": "C"
   },
   {
    "columna": "vvix_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.423,
+   "categoria": "C"
   },
   {
    "columna": "vvix_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.423,
+   "categoria": "C"
   },
   {
    "columna": "vvix_sk",
-   "match": 0.4189,
+   "match": 0.4198,
    "categoria": "C"
   },
   {
    "columna": "vvix_d1_vote",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.822,
+   "categoria": "C"
   },
   {
    "columna": "vvix_zk_pbull",
-   "match": 0.5138,
+   "match": 0.4255,
    "categoria": "C"
   },
   {
    "columna": "vvix_n",
-   "match": 0.4679,
+   "match": 0.423,
    "categoria": "C"
   },
   {
    "columna": "pcr_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.4274,
+   "categoria": "C"
   },
   {
    "columna": "pcr_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.4274,
+   "categoria": "C"
   },
   {
    "columna": "pcr_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.4261,
+   "categoria": "C"
   },
   {
    "columna": "pcr_sk",
-   "match": 0.4233,
+   "match": 0.4236,
    "categoria": "C"
   },
   {
    "columna": "pcr_d1_vote",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.7456,
+   "categoria": "C"
   },
   {
    "columna": "pcr_zk_pbull",
-   "match": 0.466,
+   "match": 0.4312,
    "categoria": "C"
   },
   {
    "columna": "pcr_n",
-   "match": 0.4528,
+   "match": 0.4249,
    "categoria": "C"
   },
   {
    "columna": "fg_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.6427,
+   "categoria": "C"
   },
   {
    "columna": "fg_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.6458,
+   "categoria": "C"
   },
   {
    "columna": "fg_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.642,
+   "categoria": "C"
   },
   {
    "columna": "fg_sk",
-   "match": 0.6421,
+   "match": 0.6345,
    "categoria": "C"
   },
   {
    "columna": "fg_d1_vote",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.8415,
+   "categoria": "C"
   },
   {
    "columna": "fg_zk_pbull",
-   "match": 0.7233,
+   "match": 0.6458,
    "categoria": "C"
   },
   {
    "columna": "fg_n",
-   "match": 0.678,
+   "match": 0.6408,
    "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0,
+   "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0,
+   "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0006,
+   "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_sk",
-   "match": 0.1365,
+   "match": 0.0,
    "categoria": "B"
   },
   {
    "columna": "sv5_turbulence_d1_vote",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.4975,
+   "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_zk_pbull",
-   "match": 0.2201,
+   "match": 0.0032,
    "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_n",
-   "match": 0.1623,
+   "match": 0.0019,
    "categoria": "C"
   },
   {
    "columna": "skew_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0556,
+   "categoria": "C"
   },
   {
    "columna": "skew_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0562,
+   "categoria": "C"
   },
   {
    "columna": "skew_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0556,
+   "categoria": "C"
   },
   {
    "columna": "skew_sk",
-   "match": 0.0025,
+   "match": 0.0013,
    "categoria": "A"
   },
   {
    "columna": "skew_d1_vote",
-   "match": 0.3742,
+   "match": 0.3592,
    "categoria": "A"
   },
   {
    "columna": "skew_zk_pbull",
-   "match": 0.0516,
+   "match": 0.0183,
    "categoria": "A"
   },
   {
    "columna": "skew_zk_pbear",
-   "match": 0.0516,
+   "match": 0.0183,
    "categoria": "A"
   },
   {
    "columna": "skew_zz25_pbull",
-   "match": 0.0075,
+   "match": 0.0019,
    "categoria": "A"
   },
   {
    "columna": "skew_zz25_pbear",
-   "match": 0.0075,
+   "match": 0.0019,
    "categoria": "A"
   },
   {
    "columna": "skew_ev_net",
-   "match": 0.0025,
+   "match": 0.0013,
    "categoria": "A"
   },
   {
    "columna": "skew_n",
-   "match": 0.005,
+   "match": 0.0063,
    "categoria": "A"
   },
   {
    "columna": "credit_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.4261,
+   "categoria": "C"
   },
   {
    "columna": "credit_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.4261,
+   "categoria": "C"
   },
   {
    "columna": "credit_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.4261,
+   "categoria": "C"
   },
   {
    "columna": "credit_sk",
-   "match": 0.4245,
+   "match": 0.4261,
    "categoria": "C"
   },
   {
    "columna": "credit_d1_vote",
-   "match": 0.8245,
+   "match": 0.8062,
    "categoria": "C"
   },
   {
    "columna": "credit_zk_pbull",
-   "match": 0.4881,
+   "match": 0.4362,
    "categoria": "C"
   },
   {
    "columna": "credit_n",
-   "match": 0.4623,
+   "match": 0.435,
    "categoria": "C"
   },
   {
    "columna": "yield_curve_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0556,
+   "categoria": "C"
   },
   {
    "columna": "yield_curve_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0549,
+   "categoria": "C"
   },
   {
    "columna": "yield_curve_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0543,
+   "categoria": "C"
   },
   {
    "columna": "yield_curve_sk",
-   "match": 0.0013,
+   "match": 0.0,
    "categoria": "B"
   },
   {
    "columna": "yield_curve_d1_vote",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.8813,
+   "categoria": "C"
   },
   {
    "columna": "yield_curve_zk_pbull",
-   "match": 0.2667,
+   "match": 0.0158,
    "categoria": "C"
   },
   {
    "columna": "yield_curve_zk_pbear",
-   "match": 0.2667,
+   "match": 0.0158,
    "categoria": "C"
   },
   {
    "columna": "yield_curve_zz25_pbull",
-   "match": 0.0239,
+   "match": 0.0019,
    "categoria": "C"
   },
   {
    "columna": "yield_curve_zz25_pbear",
-   "match": 0.0239,
+   "match": 0.0019,
    "categoria": "C"
   },
   {
    "columna": "yield_curve_ev_net",
-   "match": 0.0233,
+   "match": 0.0,
    "categoria": "C"
   },
   {
    "columna": "yield_curve_n",
-   "match": 0.0245,
+   "match": 0.0069,
    "categoria": "C"
   },
   {
    "columna": "rotation_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.1351,
+   "categoria": "C"
   },
   {
    "columna": "rotation_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.1376,
+   "categoria": "C"
   },
   {
    "columna": "rotation_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.1376,
+   "categoria": "C"
   },
   {
    "columna": "rotation_sk",
-   "match": 0.1327,
+   "match": 0.1332,
    "categoria": "B"
   },
   {
    "columna": "rotation_d1_vote",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.7973,
+   "categoria": "C"
   },
   {
    "columna": "rotation_zk_pbull",
-   "match": 0.4,
+   "match": 0.1465,
    "categoria": "B"
   },
   {
    "columna": "rotation_n",
-   "match": 0.1987,
+   "match": 0.137,
    "categoria": "C"
   },
   {
    "columna": "bsi_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0032,
+   "categoria": "C"
   },
   {
    "columna": "bsi_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0101,
+   "categoria": "C"
   },
   {
    "columna": "bsi_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0006,
+   "categoria": "C"
   },
   {
    "columna": "bsi_sk",
@@ -465,227 +465,227 @@
   },
   {
    "columna": "bsi_d1_vote",
-   "match": 0.7308,
+   "match": 0.4205,
    "categoria": "A"
   },
   {
    "columna": "bsi_zk_pbull",
-   "match": 0.1421,
+   "match": 0.0038,
    "categoria": "C"
   },
   {
    "columna": "bsi_zk_pbear",
-   "match": 0.1421,
+   "match": 0.0038,
    "categoria": "C"
   },
   {
    "columna": "bsi_zz25_pbull",
-   "match": 0.0252,
+   "match": 0.0013,
    "categoria": "C"
   },
   {
    "columna": "bsi_zz25_pbear",
-   "match": 0.0252,
+   "match": 0.0013,
    "categoria": "C"
   },
   {
    "columna": "bsi_ev_net",
-   "match": 0.0082,
+   "match": 0.0,
    "categoria": "C"
   },
   {
    "columna": "bsi_n",
-   "match": 0.0358,
+   "match": 0.0051,
    "categoria": "C"
   },
   {
    "columna": "dxy_val",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0915,
+   "categoria": "C"
   },
   {
    "columna": "dxy_vel",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0903,
+   "categoria": "C"
   },
   {
    "columna": "dxy_vol",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0903,
+   "categoria": "C"
   },
   {
    "columna": "dxy_sk",
-   "match": 0.1994,
+   "match": 0.0467,
    "categoria": "C"
   },
   {
    "columna": "dxy_d1_vote",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.6408,
+   "categoria": "C"
   },
   {
    "columna": "dxy_zk_pbull",
-   "match": 0.8478,
+   "match": 0.0922,
    "categoria": "C"
   },
   {
    "columna": "dxy_zk_pbear",
-   "match": 0.8478,
+   "match": 0.0922,
    "categoria": "C"
   },
   {
    "columna": "dxy_zz25_pbull",
-   "match": 0.7962,
+   "match": 0.0467,
    "categoria": "C"
   },
   {
    "columna": "dxy_zz25_pbear",
-   "match": 0.7962,
+   "match": 0.0467,
    "categoria": "C"
   },
   {
    "columna": "dxy_ev_net",
-   "match": 0.7962,
+   "match": 0.0467,
    "categoria": "C"
   },
   {
    "columna": "dxy_n",
-   "match": 0.7962,
+   "match": 0.0676,
    "categoria": "C"
   },
   {
    "columna": "d1_bear_5",
-   "match": 0.6126,
+   "match": 0.3952,
    "categoria": "A"
   },
   {
    "columna": "mean_zk_pbull_A",
-   "match": 0.0082,
+   "match": 0.0,
    "categoria": "B"
   },
   {
    "columna": "mean_zk_pbull_11",
-   "match": 0.0006,
+   "match": 0.0,
    "categoria": "B"
   },
   {
    "columna": "rotation_zk_pbear",
-   "match": 0.4,
+   "match": 0.1465,
    "categoria": "B"
   },
   {
    "columna": "rotation_zz25_pbull",
-   "match": 0.1805,
+   "match": 0.1383,
    "categoria": "C"
   },
   {
    "columna": "rotation_zz25_pbear",
-   "match": 0.1805,
+   "match": 0.1383,
    "categoria": "C"
   },
   {
    "columna": "rotation_ev_net",
-   "match": 0.1484,
+   "match": 0.1332,
    "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_zk_pbear",
-   "match": 0.2201,
+   "match": 0.0032,
    "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_zz25_pbull",
-   "match": 0.144,
+   "match": 0.0006,
    "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_zz25_pbear",
-   "match": 0.144,
+   "match": 0.0006,
    "categoria": "C"
   },
   {
    "columna": "sv5_turbulence_ev_net",
-   "match": 0.1409,
+   "match": 0.0,
    "categoria": "C"
   },
   {
    "columna": "vvix_zk_pbear",
-   "match": 0.5138,
+   "match": 0.4255,
    "categoria": "C"
   },
   {
    "columna": "vvix_zz25_pbull",
-   "match": 0.4472,
+   "match": 0.4236,
    "categoria": "C"
   },
   {
    "columna": "vvix_zz25_pbear",
-   "match": 0.4472,
+   "match": 0.4236,
    "categoria": "C"
   },
   {
    "columna": "vvix_ev_net",
-   "match": 0.422,
+   "match": 0.4198,
    "categoria": "C"
   },
   {
    "columna": "pcr_zk_pbear",
-   "match": 0.466,
+   "match": 0.4312,
    "categoria": "C"
   },
   {
    "columna": "pcr_zz25_pbull",
-   "match": 0.4497,
+   "match": 0.4249,
    "categoria": "C"
   },
   {
    "columna": "pcr_zz25_pbear",
-   "match": 0.4497,
+   "match": 0.4249,
    "categoria": "C"
   },
   {
    "columna": "pcr_ev_net",
-   "match": 0.4296,
+   "match": 0.4236,
    "categoria": "C"
   },
   {
    "columna": "credit_zk_pbear",
-   "match": 0.4881,
+   "match": 0.4362,
    "categoria": "C"
   },
   {
    "columna": "credit_zz25_pbull",
-   "match": 0.4308,
+   "match": 0.4324,
    "categoria": "C"
   },
   {
    "columna": "credit_zz25_pbear",
-   "match": 0.4308,
+   "match": 0.4324,
    "categoria": "C"
   },
   {
    "columna": "credit_ev_net",
-   "match": 0.4289,
+   "match": 0.4261,
    "categoria": "C"
   },
   {
    "columna": "fg_zk_pbear",
-   "match": 0.7233,
+   "match": 0.6458,
    "categoria": "C"
   },
   {
    "columna": "fg_zz25_pbull",
-   "match": 0.6887,
+   "match": 0.642,
    "categoria": "C"
   },
   {
    "columna": "fg_zz25_pbear",
-   "match": 0.6887,
+   "match": 0.642,
    "categoria": "C"
   },
   {
    "columna": "fg_ev_net",
-   "match": 0.6484,
+   "match": 0.6345,
    "categoria": "C"
   },
   {
@@ -695,8 +695,8 @@
   },
   {
    "columna": "z_dom",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.0006,
+   "categoria": "C"
   },
   {
    "columna": "cascade_conviction",
@@ -705,8 +705,8 @@
   },
   {
    "columna": "next_leg_direction",
-   "match": 1.0,
-   "categoria": "OK"
+   "match": 0.9773,
+   "categoria": "C"
   }
  ]
 }

@@ -430,14 +430,23 @@ def main():
     if ref is not None:
         print(f"\n{'='*100}\nMANIFIESTO DE FIDELIDAD (vs one-off 17-Ago) — detector, no meta")
         print(f"{'='*100}")
+        if len(ref) != len(df):
+            print(f"⚠️ Población difiere: ref={len(ref)} vs df={len(df)} (purgado canónico 1584). "
+                  f"Evaluando fidelidad en los primeros {min(len(df), len(ref))} registros alineados.")
+            ref_slice = ref.iloc[:min(len(df), len(ref))].reset_index(drop=True)
+            df_slice = df.iloc[:min(len(df), len(ref))].reset_index(drop=True)
+        else:
+            ref_slice = ref
+            df_slice = df
+
         manifest = []
         n_ok = 0
         for col in ref_cols:
             if col == "pivot_date":
-                match = float((pd.to_datetime(df[col]).dt.normalize() ==
-                               pd.to_datetime(ref[col]).dt.normalize()).mean())
+                match = float((pd.to_datetime(df_slice[col]).dt.normalize() ==
+                               pd.to_datetime(ref_slice[col]).dt.normalize()).mean())
             else:
-                match = _match_col(df[col], ref[col])
+                match = _match_col(df_slice[col], ref_slice[col])
             cat = CAT_ESPERADAS.get(col)
             if match >= 0.999:
                 n_ok += 1

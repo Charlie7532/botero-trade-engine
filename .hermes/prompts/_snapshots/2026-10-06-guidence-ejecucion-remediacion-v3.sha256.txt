@@ -1,0 +1,1 @@
+767c04a687d1cbe12460c99606d055ce72cef2e09013937ef56f60171a500f8b  .hermes/prompts/2026-10-06-guidence-ejecucion-remediacion-v3.md

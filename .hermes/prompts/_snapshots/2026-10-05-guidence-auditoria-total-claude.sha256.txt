@@ -1,0 +1,1 @@
+c30140e05761a88f80d9e8c01cb68be16de591ac91988b571a13196d1843fb90  .hermes/prompts/2026-10-05-guidence-auditoria-total-claude.md

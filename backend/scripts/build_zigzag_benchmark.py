@@ -87,29 +87,12 @@ def zigzag(close: np.ndarray, min_pct: float = 0.03):
 
 
 # ═══════════════════════════════════════════════════════════════
-# STEP 1: CREATE TABLE + COMPUTE ZIGZAG
+# STEP 1: COMPUTE ZIGZAG (ISOLATED LOCAL BENCHMARK)
 # ═══════════════════════════════════════════════════════════════
-def build_zigzag_table(store):
-    p("STEP 1: CREATE TABLE engine.zigzag_points")
-    
-    with store.engine.connect() as conn:
-        conn.execute(sa_text("""
-            CREATE TABLE IF NOT EXISTS engine.zigzag_points (
-                id SERIAL PRIMARY KEY,
-                ticker VARCHAR(10) NOT NULL,
-                timestamp TIMESTAMPTZ NOT NULL,
-                tp_type VARCHAR(3) NOT NULL,
-                price DOUBLE PRECISION NOT NULL,
-                min_swing_pct DOUBLE PRECISION NOT NULL,
-                swing_return DOUBLE PRECISION,
-                swing_days INTEGER,
-                swing_speed DOUBLE PRECISION,
-                UNIQUE(ticker, timestamp, tp_type, min_swing_pct)
-            )
-        """))
-        conn.execute(sa_text("DELETE FROM engine.zigzag_points"))
-        conn.commit()
-    print("  Table created and cleared.")
+def build_zigzag_table(store) -> pd.DataFrame:
+    p("STEP 1: COMPUTE BENCHMARK ZIGZAG (ISOLATED LOCAL PARQUET)")
+    cache_path = root_dir / ".cache/benchmark_zigzag_points.parquet"
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
     
     # Load OHLCV
     ohlcv = pd.read_sql("""
@@ -119,7 +102,7 @@ def build_zigzag_table(store):
     """, store.engine)
     print(f"  OHLCV loaded: {len(ohlcv):,d} rows")
     
-    total_points = 0
+    all_rows = []
     
     for ticker in TICKERS:
         tk_data = ohlcv[ohlcv['ticker'] == ticker].sort_values('timestamp').reset_index(drop=True)
@@ -161,26 +144,31 @@ def build_zigzag_table(store):
                 })
             
             if rows:
-                df_rows = pd.DataFrame(rows)
-                df_rows.to_sql('zigzag_points', store.engine, schema='engine',
-                              if_exists='append', index=False)
-                total_points += len(rows)
-                
+                all_rows.extend(rows)
                 mins = sum(1 for r in rows if r['tp_type'] == 'MIN')
                 maxs = sum(1 for r in rows if r['tp_type'] == 'MAX')
                 print(f"  {ticker} ({min_sw*100:.0f}%): {mins} MIN + {maxs} MAX = {len(rows)} points")
     
-    print(f"\n  TOTAL: {total_points:,d} zigzag points stored")
-    return total_points
+    df_all = pd.DataFrame(all_rows)
+    df_all.to_parquet(cache_path, index=False)
+    print(f"\n  TOTAL: {len(df_all):,d} benchmark zigzag points computed and cached to {cache_path}")
+    return df_all
 
 
 # ═══════════════════════════════════════════════════════════════
 # STEP 2: SUMMARY STATISTICS
 # ═══════════════════════════════════════════════════════════════
-def zigzag_summary(store):
+def zigzag_summary(store, df_zz: pd.DataFrame = None):
     p("STEP 2: ZIGZAG SUMMARY BY CALIBRATION")
     
-    zz = pd.read_sql("SELECT * FROM engine.zigzag_points ORDER BY ticker, timestamp", store.engine)
+    if df_zz is not None:
+        zz = df_zz
+    else:
+        cache_path = root_dir / ".cache/benchmark_zigzag_points.parquet"
+        if cache_path.exists():
+            zz = pd.read_parquet(cache_path)
+        else:
+            zz = pd.read_sql("SELECT * FROM engine.zigzag_points ORDER BY ticker, timestamp", store.engine)
     
     for sw in SWING_PCTS:
         sub = zz[zz['min_swing_pct'] == sw]
@@ -217,17 +205,25 @@ def zigzag_summary(store):
 # ═══════════════════════════════════════════════════════════════
 # STEP 3: ORTHOGONAL DIMENSION DISCOVERY
 # ═══════════════════════════════════════════════════════════════
-def orthogonal_discovery(store):
+def orthogonal_discovery(store, df_zz: pd.DataFrame = None):
     p("STEP 3: ORTHOGONAL DIMENSION DISCOVERY")
     print("  Which features move BEFORE the turning point?")
     print("  (= the features that should PREDICT, not confirm)")
     
     # Load zigzag 5% turning points
-    zz = pd.read_sql("""
-        SELECT * FROM engine.zigzag_points 
-        WHERE min_swing_pct = 0.05 
-        ORDER BY ticker, timestamp
-    """, store.engine)
+    if df_zz is not None:
+        zz = df_zz
+    else:
+        cache_path = root_dir / ".cache/benchmark_zigzag_points.parquet"
+        if cache_path.exists():
+            zz = pd.read_parquet(cache_path)
+        else:
+            zz = pd.read_sql("""
+                SELECT * FROM engine.zigzag_points 
+                WHERE min_swing_pct = 0.05 
+                ORDER BY ticker, timestamp
+            """, store.engine)
+    zz = zz[zz['min_swing_pct'] == 0.05].sort_values(['ticker', 'timestamp'])
     
     # Load signal tape (has all features)
     tape = pd.read_sql("SELECT * FROM engine.signal_tape ORDER BY ticker, timestamp", store.engine)
@@ -360,9 +356,9 @@ def main():
     
     store = TimescaleDataStore()
     
-    build_zigzag_table(store)
-    zigzag_summary(store)
-    orthogonal_discovery(store)
+    df_zz = build_zigzag_table(store)
+    zigzag_summary(store, df_zz)
+    orthogonal_discovery(store, df_zz)
     
     store.close()
     

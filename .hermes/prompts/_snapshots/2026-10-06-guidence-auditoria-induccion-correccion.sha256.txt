@@ -1,0 +1,1 @@
+1ac0b8a8216181dc5d5c8b6bae6029f717296ef4e3f219e78d761b9f4eae1a9e  .hermes/prompts/2026-10-06-guidence-auditoria-induccion-correccion.md

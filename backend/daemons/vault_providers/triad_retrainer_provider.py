@@ -19,14 +19,20 @@ from backend.modules.shared.infrastructure.timescale_data_store import Timescale
 
 logger = logging.getLogger(__name__)
 
-# Paths to triad JSON artifacts
-TRIAD_DIR = "/root/botero-trade/backend/modules/entry_decision/domain/rules"
-S5V_JSON = os.path.join(TRIAD_DIR, "s5v_triad_table.json")
-S5_JSON = os.path.join(TRIAD_DIR, "s5_triad_table.json")
+from pathlib import Path
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+TRIAD_DIR = REPO_ROOT / "backend/modules/entry_decision/domain/rules"
+S5V_JSON = TRIAD_DIR / "s5v_triad_table.json"
+S5_JSON = TRIAD_DIR / "s5_triad_table.json"
 
 
 def _is_retrain_due() -> bool:
-    """Check if retraining is due (Sunday OR any JSON artifact > 7 days old)."""
+    """Check if retraining is due (Sunday OR any JSON artifact > 7 days old).
+    Controlled by ENABLE_TRIAD_AUTORETRAIN (default: False) to prevent uncontrolled background overwrites.
+    """
+    if os.getenv("ENABLE_TRIAD_AUTORETRAIN", "false").lower() not in ("true", "1", "yes"):
+        return False
+
     now = datetime.now(UTC)
     # Sunday is weekday 6
     if now.weekday() == 6:
@@ -52,8 +58,8 @@ class TriadRetrainerProvider:
     def run_full(self, store: TimescaleDataStore, **kwargs) -> dict:
         """Run weekly retraining if due."""
         if not _is_retrain_due():
-            logger.info("🧠 Triad Retraining: Not due today (runs Sundays or when >7 days old) — skipping")
-            return {"status": "skipped", "reason": "not_due"}
+            logger.info("🧠 Triad Retraining: Automatic retraining disabled or not due (controlled by ENABLE_TRIAD_AUTORETRAIN) — skipping")
+            return {"status": "skipped", "reason": "not_due_or_disabled"}
 
         if _already_vaulted_today(store, "macro/triad_retraining", "WEEKLY_DONE"):
             logger.info("🧠 Triad Retraining already completed today — skipping")
@@ -73,8 +79,8 @@ class TriadRetrainerProvider:
         try:
             # 1. Retrain S5 Price Triad
             res_s5 = subprocess.run(
-                [sys.executable, "/root/botero-trade/backend/scripts/trainers/train_s5_triad.py"],
-                cwd="/root/botero-trade",
+                [sys.executable, str(REPO_ROOT / "backend/scripts/trainers/train_s5_triad.py")],
+                cwd=str(REPO_ROOT),
                 capture_output=True,
                 text=True,
                 timeout=300,
@@ -85,8 +91,8 @@ class TriadRetrainerProvider:
                 
             # 2. Retrain S5V Volume Triad
             res_s5v = subprocess.run(
-                [sys.executable, "/root/botero-trade/backend/scripts/trainers/train_s5v_triad.py"],
-                cwd="/root/botero-trade",
+                [sys.executable, str(REPO_ROOT / "backend/scripts/trainers/train_s5v_triad.py")],
+                cwd=str(REPO_ROOT),
                 capture_output=True,
                 text=True,
                 timeout=300,

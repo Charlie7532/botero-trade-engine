@@ -25,6 +25,9 @@ Inyectar la memoria completa del subsistema **Tide** para continuarlo sin perder
   - **Research 6-level:** `T+++…T−−−` × `C+++…C−−−` × 5 bins = **180 estados** (`rc_tide_derived.json`).
 - **Modelo de Valor Esperado (EV):** `E[R|S_t]` (retorno real punto-en-tiempo, **sin "retorno fantasma"**: `R = Price(P_next)/Close(t) − 1`), `L0` baseline incondicional (nulo), `Ω = 1/σ²` (certidumbre), `Kelly f*` (half-Kelly per-ticker), `e_days` (duración dinámica al próximo pivote ZigZag), `EV_per_day` (velocidad de capital), `RR_asym` (asimetría up/down).
 - **Cadena de datos (Vault-First):** Neon `market.ohlcv_bars` → `engine.channel_snapshots` (213.100 snapshots clasificados, 72 columnas) → `generate_per_ticker_fact_tables.py` → `engine.ticker_fact_states` + `engine.ticker_fact_baselines` → `rc_swing_ev_decision_engine.py`.
+  > 📝 **NOTA ADITIVA DE AUDITORÍA (2026-10-02):**
+  > - **Cifras actualizadas de producción:** A fecha 2026-10-02, `engine.channel_snapshots` contiene **4.594.499 filas** y **79 columnas** (frente a 213.100 / 72 reportados originalmente el 28-Sep).
+  > - **Baseline de ejecución:** El commit baseline de ejecución al arrancar es **`7a64cb2`** (post-purga `vwap`/`trade_count` en `market.ohlcv_bars`).
 - **Regla de arquitectura (17-Sep):** las estaciones/gates emiten **HECHOS** (`p_bull`, `ev`, `n`), **nunca directivas** dentro del store de hechos; la estrategia final la determina el **régimen (nivel 3)**.
 - **Gates duros validados:** `VIX Circuit Breaker` (VIX ≥ 28.0 AND T < −0.05 → `EXIT_CRISIS`; VIX se quitó como dimensión de estado, quedó como gate) y `Trend Protection Gate` (bloquea HARVEST en bull secular `t_slope ≥ 0.05` salvo `σVw ≥ 1.50`, por "Buyback Slippage").
 
@@ -62,10 +65,18 @@ Inyectar la memoria completa del subsistema **Tide** para continuarlo sin perder
    Efecto: (a) la alerta `REAL_EV` **nunca se emite** (el `try/except` la traga); (b) en la rama TRIM, cuando `_real_ev.ev > -0.0020`, **L653 lanza `AttributeError`**.
    Nota: `RealWaveEVSignal` (usado en L330) **sí** tiene `fatigue_type` → esa línea está sana. El problema es solo `_real_ev`.
    *(Es la misma familia de bug que rompía 4 tests en ago-2026: `hazard_alarm` en `RealEVSignal`.)*
+   > 📝 **NOTA ADITIVA DE AUDITORÍA (2026-10-02):**
+   > - **Estado:** Pasa de `🔴 BUG LATENTE VIVO` a `🟡 EN CIERRE POR ADJUDICACIÓN A1 (2026-10-02)`.
+   > - **Resolución:** Se restauró el contrato canónico en `RealEVSignal` con defaults declarados (`fatigue_type: str = "STABLE"`, `fatigue_delta_ev: float = 0.0`), desbloqueando la emisión de alertas `REAL_EV` (1 emitida en live) y evitando el crash en `swing_entry_rules.py:115` y `swing_gate.py:653`.
+   > - **Decisiones abiertas pendientes de adjudicación:** (1) Tratamiento de `except Exception: pass` en `rc_tide_lookup.py:206`; (2) Signo del umbral en `swing_gate.py:653` (`-0.0020` vs `+0.0020`).
 2. ⚠️ **DTO nuevo sin cablear:** `tide_route_guidance.py` (`TideRouteGuidance` con `hazard_alarm`, códigos `STK_T_*`, `URGENCY_*`, `HAZARD_*`) es **aspiracional** — solo lo importan scripts de train/eval, **ningún módulo de producción**.
 3. ⚠️ **Test desaparecido:** `test_tide_guidance.py` **ya no existe** en el repo (solo el `.pyc`); `git log --all` no registra commit. La suite **no protege** esta clase de error de contrato de DTO.
+   > 📝 **NOTA ADITIVA DE AUDITORÍA (2026-10-02):**
+   > - **Test restaurado:** Se implementó `tests/test_tide_guidance.py` con 8 pruebas de contrato activas protegiendo contra regresiones en `RealEVSignal`, `RealWaveEVSignal`, `swing_gate.py`, `swing_entry_rules.py` y `rc_tide_lookup.py`.
 4. 📊 **Tablas vs doc (drift):** `rc_tide_ev_derived.json` tiene **245 L3 / 49 L2 / 7 L1 / 8 L0**; el `README` v1.0 declara **180 L3**. `rc_tide_derived.json` = 180 estados.
 5. 📉 **I/O subutilizado:** el pipeline Tide usa **3 de 72 columnas (4.2%)** de `engine.channel_snapshots`; señales ya persistidas (RSI Intelligence, Kalman Velocity, Wave Duration) **no se consumen**.
+   > 📝 **NOTA ADITIVA DE AUDITORÍA (2026-10-02):**
+   > - **Censo actualizado:** Con 79 columnas actuales en `engine.channel_snapshots`, el pipeline Tide consume 3 de 79 columnas (3.8%).
 
 ---
 
@@ -136,6 +147,13 @@ Antes de diagnosticar nada, **levanta TODO el texto de los hilos de trabajo** y 
 3. `len(rc_tide_ev_derived.json["l3_full_state"])` → **245** (no 180 como dice el README → drift).
 4. `test_tide_guidance.py` presente en el repo → **NO** (solo `.pyc`).
 5. `grep -n "_real_ev.fatigue_type" swing_gate.py` → líneas **280 y 653**.
+
+> 📝 **RESULTADOS DE RE-EJECUCIÓN DEL AUTOTEST §8 (2026-10-02, HEAD 7a64cb2 + A1):**
+> 1. `'fatigue_type' in RealEVSignal.__dataclass_fields__` → **True** (contrato restaurado con defaults canónicos).
+> 2. `'fatigue_type' in RealWaveEVSignal.__dataclass_fields__` → **True** (confirmada simetría bilateral con Wave).
+> 3. `len(rc_tide_ev_derived.json["l3_full_state"])` → **245** (confirmado drift vs 180 histórico).
+> 4. `test_tide_guidance.py` presente en el repo → **True** (restaurado formalmente y pasando 8/8 tests de contrato).
+> 5. `grep -n "_real_ev.fatigue_type" swing_gate.py` → líneas **280 y 653** (operando sin excepción).
 
 Si alguna respuesta NO coincide, **detente y corrige la lectura antes de continuar** — un valor distinto puede ser dato nuevo; repórtalo, no lo ignores.
 

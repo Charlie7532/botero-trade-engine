@@ -68,16 +68,7 @@ def linreg_channel(close: np.ndarray, window: int):
     return reg_line, slope_norm, max(residual_std, 1e-8)
 
 
-def calc_vwap(close, high, low, volume, window=20):
-    """Production VWAP."""
-    if len(close) < window:
-        return close[-1] if len(close) > 0 else 0.0
-    typical = (close[-window:] + high[-window:] + low[-window:]) / 3.0
-    vol = volume[-window:]
-    total_vol = vol.sum()
-    if total_vol <= 0:
-        return typical[-1]
-    return float(np.sum(typical * vol) / total_vol)
+from backend.modules.shared.domain.rules.regression_channel import calc_vwap_with_std, calc_vwap
 
 
 def sigma(price, reg_value, residual_std):

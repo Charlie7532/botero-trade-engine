@@ -30,9 +30,9 @@ def obs():
 
 
 def test_esquema_165_columnas(obs):
-    """Esquema auditado: 1,590 pivotes × 165 columnas (v9: 143 base + 22 precursores
+    """Esquema auditado: 1,584 pivotes canónicos limpios × 165 columnas (v9: 143 base + 22 precursores
     _sk_t1/_sk_t2 por estación, añadidos el 28-Ago-2026)."""
-    assert obs.shape == (1590, 165), f"esquema inesperado: {obs.shape}"
+    assert obs.shape == (1584, 165), f"esquema inesperado: {obs.shape}"
     for col in ("pivot_date", "pivot_type", "cascade_conviction_50",
                 "n_stations_a", "duration_bars", "daily_return_pct",
                 "d1_bear_5", "z_bear", "z_dom", "cascade_conviction"):

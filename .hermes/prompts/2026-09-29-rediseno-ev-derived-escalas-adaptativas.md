@@ -1,7 +1,7 @@
 # PROMPT DE DISEÑO — REDISEÑO DE LA SERIE `ev_derived.json` CON ESCALAS GAUSSIANAS ADAPTATIVAS POR TICKER
 
 **Destino:** Agente de Diseño y Arquitectura Cuantitativa (Antigravity: Gemini / Claude guiada)  
-**Fecha:** 2026-09-29 (actualizado 2026-09-30 post-fix `e2a2ada`)  
+**Fecha:** 2026-09-29 (actualizado 2026-09-30 post-fix `e2a2ada`; nota aditiva 2026-10-02; **alineación a decisiones adjudicadas 2026-10-03, rev. `eef0a8e`**; registro σ corregido (D-REG) y overflow en todas las dimensiones (D-OVERFLOW), 2026-10-03 — ver §0-bis)  
 **Preparado por:** Hermes (Auditoría, Enriquecimiento Fáctico y Estructuración de Prompts)  
 **Naturaleza:** Prompt de **DISEÑO ARQUITECTÓNICO + ANÁLISIS METROLÓGICO** (no implementa código de producción). Su salida son **dos artefactos formales**: (1) el documento de **DISEÑO (D)** y (2) el **PROMPT DE CONSTRUCCIÓN (P)** listo para despacho autónomo.  
 
@@ -15,9 +15,40 @@ Rediseñar y definir la arquitectura de una **nueva serie de Fact Stores `ev_der
 2. **Transferencia metrológica desde las estaciones METAR**: esquemas de datos autodescriptivos (Rule 21), formato vectorial numérico de estados (Rule 24), gestión canónica de overflow ($T1..T5$ en metadatos sin alterar el espacio de estados base), y política de **diamantes estadísticos** ($N < 21$ preservados y catalogados, nunca descartados).
 3. **Aprovechamiento de ventajas estructurales de Tide y Wave sobre METAR**: mayor densidad combinatoria ($216$ estados L3 en Tide con nuevo esquema D1×D1×D1 vs $\sim 150$ en METAR), ergodicidad local y repetición natural de estados cinemáticos a lo largo de ciclos de mercado.
 4. **Tratamiento homogéneo de señales especiales y confluencia de regímenes**: tratar las configuraciones extremas no como ruido de cola descartable, sino como insumos determinísticos de regímenes de mercado (`market.regime_states` vía `RegimeStatePort`, Rule 15 y 16), convergiendo limpiamente con la telemetría METAR.
-5. **Saneamiento integral de la deuda de esquemas y bugs de runtime**: corregir el desfase de documentación en los generadores actuales (donde se declaran "180 estados" habiendo 245 reales en v1), unificar la jerarquía de rollups (invertida entre Tide L3 $\to$ L0 y Wave L1 $\to$ L3), y resolver el `AttributeError` activo de `fatigue_type` en `swing_gate.py`.
+5. **Saneamiento integral de la deuda de esquemas y bugs de runtime**: corregir el desfase de documentación en los generadores actuales (donde se declaran "180 estados" habiendo 245 reales en v1), unificar la jerarquía de rollups (invertida entre Tide L3 $\to$ L0 y Wave L1 $\to$ L3)~~, y resolver el `AttributeError` activo de `fatigue_type` en `swing_gate.py`~~. **[03-Oct]** El `AttributeError` quedó cerrado el 02-Oct (A1 + D-1, ver §1.5); la fatiga queda **fuera** de este diseño (D-FAT).
 
 **Entregable = DOS piezas:** **(D)** el documento de DISEÑO formal y **(P)** el PROMPT DE CONSTRUCCIÓN self-contained.
+
+> 📝 **NOTA ADITIVA DE AUDITORÍA Y ESTADO DE FASE 1 (2026-10-02):**
+> 1. **Evaluación de Guidance Completada:** Este prompt de diseño cuenta con auditoría formal (`.hermes/prompts/2026-10-02-guidance-revision-prompt-tide.md`) con 5 hallazgos fácticos confirmados y 3 ajustes sugeridos aprobados para la Fase 1 del plan de rediseño.
+> 2. **Estado del Bug de Contrato `fatigue_type`:** El `AttributeError` mencionado en el §0 punto 5 fue resuelto el 2026-10-02 mediante la adjudicación de la Opción A1 (restauración de contrato con defaults canónicos `STABLE`/`0.0` en `RealEVSignal`), permitiendo la emisión normal de alertas `REAL_EV` y ejecución limpia de `SwingGate.evaluate()`.
+> 3. **Distinción Crítica de Objetos VWAP (Regla Anti-Confusión):**
+>    - `channel_snapshots.vwap_*` (`vwap_tide`, `vwap_current`, `vwap_wave`, `vwap_sigma_wave`): Corresponden al **VWAP rodante del canal de regresión** en `engine.channel_snapshots`. Se mantienen **100% INTACTOS** y constituyen la dimensión empírica de bandas para el cálculo de EV.
+>    - `market.ohlcv_bars.vwap`: Columna escalar diaria de Alpaca **RETIRADA** del Vault el 2026-10-02 (commit `7c75c8d`). No tiene ninguna relación con los canales ni con las dimensiones del EV.
+
+## 0-bis. ALINEACIÓN A DECISIONES ADJUDICADAS (2026-10-03, rev. `eef0a8e`)
+
+> **Convención:** el texto ~~tachado~~ quedó obsoleto o contradice una decisión ya tomada; el texto vigente aparece a su lado marcado **[03-Oct]**. Ninguna decisión nueva se introduce aquí: solo se registran las ya dialogadas.
+
+| ID | Asunto | Estado vigente | Origen |
+|:--|:--|:--|:--|
+| **A1** | Contrato `RealEVSignal` | ✅ `fatigue_type="STABLE"`, `fatigue_delta_ev=0.0` restaurados (defaults). Cierra el crash | 02-Oct |
+| **D-1** | `except: pass` en `rc_tide_lookup.py:207` | ✅ Opción (b): `logger.warning(...)` y continuar | 02-Oct |
+| **D-2** | Umbral `swing_gate.py:653` (`ev <= -0.0020`) | ✅ Se conserva (no es error de signo) | 02-Oct |
+| **D-FAT** | Fatiga en Tide EV | ✅ Placeholders interpretativos **fuera** del Fact Store (patrón Rotación). Su interpretación es un workstream separado, posterior a la calibración. **Hoy la señal es inerte:** `rc_tide_ev_lookup.py:237` emite siempre `"STABLE"` | 02-Oct |
+| **D-FAM** | Familia | ✅ **F2 sectorial**, llave = ETF de `SECTOR_ETFS` vía `canonicalize()`, población = `load_sp500_closes_by_sector()` (la misma que mide `S5_{ETF}_*`). Ver §2.4 | 02-Oct / 03-Oct |
+| **D-CAL** | Calibración per-ticker | ✅ **Opción A** (cuantiles empíricos directos) + **C** (shrinkage) solo para tickers jóvenes | 02-Oct |
+| **D-K** | Shrinkage | ✅ `K = 252`, target = `Q_sector` (`Q_global` si el ticker no tiene sector) | 02-Oct |
+| **R1** | Universo EV | ✅ SPY y los ETFs **entran** al entrenamiento EV | 01-Oct |
+| **D-ETF** | Lookup de los 11 SPDR sectoriales | ✅ Cada SPDR lee la tabla de su propio sector (`XLK` → `sectors["XLK"]`) sin aportar al pool | 03-Oct |
+| **D-SIGMA** | σ-index 5-bin | ✅ **Ratificado** `+3,+2,0,−2,−3` (consistencia posicional) | 03-Oct |
+| **Censo** | `engine.channel_snapshots` | 4,594,499 filas · 79 columnas · 566 tickers · `obs_vel_svw` en 566/566 | medido 03-Oct |
+| **D-SCOPE-Q** | Alcance de la normalización per-ticker | ✅ **Per-ticker en las 8 dimensiones de cuantil:** T, C, W, VWAP (6-bin) y ~~σVc, σc, σVw, ΔσVw~~ **[03-Oct · D-REG]** σVc, σc, σw, σVw (5-bin). Per-ticker es la **normalización**; el **pool** sigue siendo F2 sectorial | 03-Oct (desarrolla D-CAL) |
+| **D-SCOPE-V** | Umbral de vel y traj | ✅ **Per-ticker** y **único** para ambos (3 estados con umbral propio, no escala de 6 bins). El método queda abierto para (D), con condiciones (§2.0-ter) | 03-Oct (desarrolla R3, 01-Oct) |
+| **D-REG** | Registro de dimensiones σ | ✅ **Corregido a lo que usa el código** (verificación V1–V6, §2.0-bis nota 6–7): el Multiscale s1 es `T\|C\|W\|σc\|σw\|σVw#traj`. **ΔσVw no existe** (sale del registro); **σw (`sigma_wave`) entra** en la fila 8; σVc la usa **solo Wave**. Siguen siendo 10 dimensiones. VWAP (fila 4) y σVw (fila 7) son **la misma fuente (`vwap_sigma_wave`) con dos binnings** (6-bin Tide / 5-bin Multiscale) | 03-Oct |
+| **D-OVERFLOW** | Overflow | ✅ **Se identifica en TODAS las dimensiones** (8 de cuantil + vel/traj), al alza (`UPPER`) y a la baja (`LOWER`). Un overflow en cualquier dimensión es un movimiento de mercado de primer orden: es **información**, no un bloqueo automático. Ver §10.1 | 03-Oct |
+
+> ~~⚠️ **PENDIENTE DE ACLARACIÓN (no adjudicado aquí):** alcance per-ticker de σVc, σc, σVw, ΔσVw y del umbral vel/traj. Las marcas ⚠️**[A2]** en §2.0-bis, §2.0-ter y §2.3 señalan el texto afectado.~~ **[03-Oct]** Resuelto por D-SCOPE-Q y D-SCOPE-V.
 
 ---
 
@@ -33,7 +64,7 @@ La auditoría directa sobre el repositorio arroja la siguiente realidad estructu
 | **Tide EV** | `rc_tide_ev_derived.json` | `T{level}\|C{level}\|{vwap_bin}` | **245** L3 (7×7×5)<br>**49** L2<br>**7** L1<br>**1** L0 | **216** L3 (6×6×6)<br>**36** L2<br>**6** L1<br>**1** L0 | **4,554,321** en raw table | `n`, `is_rare_state`, `std_return`, `zz25\|zz50\|zz75` (cada uno con `p_bull`, `p_bear`, `e_ret_max`, `e_ret_min`, `ev_net`, `e_days`, `ev_per_day`, `rr_asymmetry`), `ev_net_global`, `sharpe` |
 | **Tide Clásico** | `rc_tide_derived.json` | `T{level}\|C{level}\|{vwap_bin}` | **180** (6 T × 6 C × 5 VWAP) | *(sin cambio planificado)* | $\sim 765,000$ | `identity`, `frequency`, `direction`, `composition`, `turn_risk` (bottom/top 25/50/75), `runs`, `predictive`, `reading` |
 | **Wave EV** | `rc_wave_ev_derived.json`<br>`rc_wave_ev_3scales_derived.json` | `L1:W{slope}\|σVc:{bin}\|σc:{bin}\|vel:{trend}` | **444** L1<br>**30** L2<br>**5** L3<br>*(=479 total)* | *(TBD — edges gaussianos)* | Variable por micro-ola | `n`, `is_rare_state`, `p_bull`, `p_bear`, `e_ret_min`, `e_ret_max`, `ev`, `sharpe`, `e_days`, `rr_asymmetry`, `ev_per_day`, `fatigue_buckets` |
-| **Multiscale** | `rc_ev_multiscale_tree.json` | `T{..}\|C{..}\|W{..}\|σVc\|σVw\|ΔσVw#FATIGUE` | **25,797** s1_full<br>**996** s3_triad | *(se regenera tras Tide+Wave)* | **791,120** total | `n`, `is_rare_state`, `p_bull_25`, `ev_net_25`, … (flatten per-scale), `ev_net_global`, `std_return`, `sharpe`, `rr_asymmetry` |
+| **Multiscale** | `rc_ev_multiscale_tree.json` | ~~`T{..}\|C{..}\|W{..}\|σVc\|σVw\|ΔσVw#FATIGUE`~~ **[03-Oct · D-REG]** `T{..}\|C{..}\|W{..}\|σc\|σw\|σVw#traj` (JSON: `T\|C\|W\|sc\|sw\|svw#traj`) | **25,797** s1_full<br>**996** s3_triad | *(se regenera tras Tide+Wave)* | **791,120** total | `n`, `is_rare_state`, `p_bull_25`, `ev_net_25`, … (flatten per-scale), `ev_net_global`, `std_return`, `sharpe`, `rr_asymmetry` |
 | **Normativa Global** | `rc_vol_normalized_thresholds.json` | Percentiles empíricos globales para slopes y vwap | — | *(reemplazado por ticker_gaussian_profiles.json)* | **4,577,585** censo 100% | `tide_slope_norm`, `current_slope_norm`, `wave_slope_norm`, `vwap_sigma_wave`, `rsi_value`, `kalman_velocity` |
 
 #### Hallazgos y Correcciones Fácticas Críticas:
@@ -82,7 +113,7 @@ La deuda técnica no reside únicamente en la generación del JSON, sino en toda
   ├── Lee rc_tide_ev_derived.json
   ├── Resuelve L3 -> fallback L2 -> L1 -> L0
   ├── ✅ CORREGIDO (commit e2a2ada): Docstring actualizado a p_bull = P(MAX)
-  └── Emite: RealEVSignal (CARECE de atributo fatigue_type)
+  └── Emite: RealEVSignal (~~CARECE de atributo fatigue_type~~ **[03-Oct]** incluye `fatigue_type="STABLE"` / `fatigue_delta_ev=0.0` desde A1 — valor constante)
 ```
 
 ---
@@ -101,19 +132,20 @@ En `backend/modules/quality_swing/application/use_cases/swing_gate.py`, la evalu
 
 ---
 
-### 1.5. Bug Activo de Fatiga (`AttributeError` en Producción)
+### 1.5. ~~Bug Activo de Fatiga (`AttributeError` en Producción)~~ **[03-Oct] ✅ Bug de contrato `fatigue_type` — CERRADO (A1 + D-1, 02-Oct)**
 
-En `swing_gate.py`, existen referencias erróneas al atributo `fatigue_type` en `_real_ev`:
-- **Línea 280:** `fatigue={_real_ev.fatigue_type}` $\to$ Falla silenciosamente atrapado por el bloque `try...except` (L283).
+En `swing_gate.py`, ~~existen~~ **existían** referencias ~~erróneas~~ al atributo `fatigue_type` en `_real_ev` (el refactor `9823194` lo había eliminado de `RealEVSignal`):
+- **Línea 280:** `fatigue={_real_ev.fatigue_type}` $\to$ ~~Falla silenciosamente atrapado por el bloque `try...except` (L283).~~ **[03-Oct]** Funciona: la alerta `REAL_EV` se emite.
 - **Línea 330:** `fatigue={_real_wave_ev.fatigue_type}` $\to$ Funciona correctamente (`RealWaveEVSignal` sí lo implementa).
-- **Línea 653:** `if _real_ev and (_real_ev.ev <= -0.0020 or _real_ev.fatigue_type == "FATIGUE_RISK"):` $\to$ **CRASH POTENCIAL EN RUNTIME**. No está dentro de un bloque `try...except`. Si se evalúa la condición de TRIM con `_real_ev` activo, arroja `AttributeError: 'RealEVSignal' object has no attribute 'fatigue_type'`.
+- **Línea 653:** `if _real_ev and (_real_ev.ev <= -0.0020 or _real_ev.fatigue_type == "FATIGUE_RISK"):` $\to$ ~~**CRASH POTENCIAL EN RUNTIME**. No está dentro de un bloque `try...except`. Si se evalúa la condición de TRIM con `_real_ev` activo, arroja `AttributeError: 'RealEVSignal' object has no attribute 'fatigue_type'`.~~ **[03-Oct]** Sin crash. El umbral `-0.0020` se conserva (D-2). La rama `FATIGUE_RISK` nunca se activa porque el valor es constante `"STABLE"`.
+- **[03-Oct]** `rc_tide_lookup.py:207-208`: el `except Exception: pass` que ocultó el bug ahora registra `logger.warning` (D-1).
 
 **Conflicto de Vocabularios de Fatiga:**
 - **Wave EV (`RealWaveEVSignal`):** Usa `ACCUMULATING`, `FATIGUE_RISK`, `STABLE` (derivado de longitud de racha en micro-olas).
 - **Multiscale (`MultiscaleEVKinematicSignal`):** Usa `kinematic_trajectory` con valores `ABSORBING` ($\Delta\sigma_{vw} > 0.30$), `EXHAUSTING` ($\Delta\sigma_{vw} < -0.30$), `STABLE`.
-- **Tide EV (`RealEVSignal`):** No implementa fatiga.
+- **Tide EV (`RealEVSignal`):** ~~No implementa fatiga.~~ **[03-Oct]** Atributo presente con valor constante `"STABLE"` (placeholder; `rc_tide_ev_lookup.py:237`).
 
-El rediseño debe resolver este desacople: unificar la taxonomía de fatiga o dotar a `RealEVSignal` de un atributo homogéneo.
+~~El rediseño debe resolver este desacople: unificar la taxonomía de fatiga o dotar a `RealEVSignal` de un atributo homogéneo.~~ **[03-Oct] D-FAT:** la fatiga (y cualquier guidance/calificación predeterminada) queda **fuera** del Fact Store v2. Su interpretación es un workstream separado, posterior a la calibración, y **no forma parte de este diseño**. El conflicto de vocabularios Wave/Multiscale se registra como hecho, no se resuelve aquí.
 
 ---
 
@@ -159,7 +191,7 @@ El análisis de escalas gaussianas (artefacto `analisis_escalas_gaussianas_tide.
 1. **T slope → D1 (6 bins):** Captura el gradiente máximo de EV en la zona neutra (T~→T+ = +0.0139). El plateau T+/T++ (ΔEV = −0.0002) confirma que fusionar bins no pierde señal.
 2. **C slope → D1 (6 bins):** Mismo argumento. Distribución casi simétrica (skew IQR = 1.033).
 3. **VWAP sigma_wave → D1 (6 bins):** Corrección crítica de la distribución patológica (bin `>>` = 34.6% de la población). El EV relativo es perfectamente monotónico por VWAP.
-4. **Espacio de estados resultante:** 6 × 6 × 6 = **216 estados L3** (vs 245 actual). Densidad muestral: ~21,085 obs/celda (+13% vs actual). Con pooling F1: 4,554,321 / 216 = ~21,085.
+4. **Espacio de estados resultante:** 6 × 6 × 6 = **216 estados L3** (vs 245 actual). Densidad muestral: ~21,085 obs/celda (+13% vs actual). ~~Con pooling F1: 4,554,321 / 216 = ~21,085.~~ **[03-Oct]** Familia adjudicada **F2** (D-FAM): 604–3,208 obs/celda por sector (ver §2.4).
 5. **Formato de llave:** La llave cambia de formato para acomodar los 6 bins VWAP. Los 5 lookups de `swing_gate.py` se adaptan como parte de la migración v2.
 6. **Percentiles gaussianos canónicos (D1):** `[0.0228, 0.1587, 0.5000, 0.8413, 0.9772]` — 5 edges, 6 bins.
 7. **σ-Index firmado como sistema de naming** (propuesta del Arquitecto, 30-Sep-2026): Los bins se identifican por enteros con signo que representan σ: `+3, +2, +1, −1, −2, −3` (6-bin, sin 0) y `+3, +2, 0, −2, −3` (5-bin, con 0 = centro). Los labels son **posicionalmente consistentes** entre esquemas: ±3 siempre significa "más allá de ±2σ", ±2 siempre significa "entre ±1σ y ±2σ". La única diferencia es que 6-bin subdivide el centro (±1σ) en dos bins (±1), mientras 5-bin lo unifica como 0. Ver §10.5 (PC-06) para detalles.
@@ -181,20 +213,22 @@ El diseño debe descomponer y formalizar esta directiva:
 | 1 | **T** (tide_slope_norm) | `slope_norm` Tide 240d | Tide, Multiscale s1/s3 | 7 | Cuantil empírico (p2.5–p97.5) | `±3,±2,±1` | **6-bin gaussiano** |
 | 2 | **C** (current_slope_norm) | `slope_norm` Current 60d | Tide, Multiscale s1/s3 | 7 | Cuantil empírico (p2.5–p97.5) | `±3,±2,±1` | **6-bin gaussiano** |
 | 3 | **W** (wave_slope_norm) | `slope_norm` Wave 15d | Wave (L3/L2/L1), Multiscale s1/s3 | 6¹ | Cuantil empírico (p2.5–p97.5) | `±3,±2,±1` | **6-bin gaussiano** |
-| 4 | **VWAP** (vwap_sigma_wave) | `sigma_vwap` (σ vs VWAP Wave) | Tide² | 5 | Estático fijo (±0.30, ±1.0) | `±3,±2,±1` | **6-bin gaussiano** |
-| 5 | **σVc** | `sigma_vwap_current` | Wave (L2/L1) | 5 | Cuantil empírico (p2.5–p97.5) | `±3,±2,0` | **5-bin gaussiano** |
-| 6 | **σc** | `sigma_current` | Wave (L1) | 5 | Cuantil empírico (p2.5–p97.5) | `±3,±2,0` | **5-bin gaussiano** |
-| 7 | **σVw** | `sigma_vwap_wave` | Multiscale s1 (dim 4) | 5 | Cuantil empírico (p2.5–p97.5) | `±3,±2,0` | **5-bin gaussiano** |
-| 8 | **ΔσVw** | `delta_sigma_vwap_wave` | Multiscale s1 (dim 5) | 5 | Cuantil empírico (p2.5–p97.5) | `±3,±2,0` | **5-bin gaussiano** |
+| 4 | **VWAP** (vwap_sigma_wave) | ~~`sigma_vwap`~~ **[03-Oct]** `vwap_sigma_wave` (σ vs VWAP Wave) — **misma fuente que la fila 7** | Tide² | 5 | Estático fijo (±0.30, ±1.0) | `±3,±2,±1` | **6-bin gaussiano** |
+| 5 | **σVc** | ~~`sigma_vwap_current`~~ **[03-Oct]** `vwap_sigma_current` | Wave (L2/L1) **[03-Oct]** — solo Wave; el Multiscale no la usa | 5 | ~~Cuantil empírico (p2.5–p97.5)~~ **[03-Oct]** Estático fijo (±0.3, ±1.0) | `±3,±2,0` | **5-bin gaussiano** |
+| 6 | **σc** | `sigma_current` | Wave (L1) **[03-Oct]** + Multiscale s1 (`sc`) | 5 | ~~Cuantil empírico (p2.5–p97.5)~~ **[03-Oct]** Estático fijo (±0.3, ±1.0) | `±3,±2,0` | **5-bin gaussiano** |
+| 7 | **σVw** | ~~`sigma_vwap_wave`~~ **[03-Oct]** `vwap_sigma_wave` — **misma fuente que la fila 4**, binning distinto | Multiscale s1 ~~(dim 4)~~ **[03-Oct]** (`svw`) | 5 | ~~Cuantil empírico (p2.5–p97.5)~~ **[03-Oct]** Estático fijo (±0.3, ±1.0) | `±3,±2,0` | **5-bin gaussiano** |
+| 8 | ~~**ΔσVw**~~ **[03-Oct · D-REG] σw** | ~~`delta_sigma_vwap_wave`~~ **[03-Oct]** `sigma_wave` (σ vs canal de regresión Wave) | Multiscale s1 ~~(dim 5)~~ **[03-Oct]** (`sw`) | 5 | ~~Cuantil empírico (p2.5–p97.5)~~ **[03-Oct]** Estático fijo (±0.3, ±1.0) | `±3,±2,0` | **5-bin gaussiano** |
 | 9 | **vel** (vel_σVw) | `vel_svw` (velocidad de σVw) | Wave (L1, dim 3) | 3 | **Direccional** (threshold ±0.091) | `+1,0,−1` | **3-estado sign-index** |
 | 10 | **traj** (#FATIGUE) | `delta_svw` (Δ de σVw) | Multiscale s1/s3 (sufijo #) | 3 | **Direccional** (threshold ±0.30) | `+1,0,−1` | **3-estado sign-index** |
 
 > **Notas verificadas:**
 > 1. W en Wave EV tiene 6 bins (sin `W~`); W en Multiscale s3 tiene 7 bins (`W~` presente). Ambos migran a 6-bin gaussiano v2.
 > 2. VWAP aparece solo en Tide EV, no en Wave ni Multiscale.
-> 3. **⚠️ Corrección crítica:** ΔσVw (dim 5, 5-bin cuantil `<</</../>/>>`) y traj/FATIGUE (sufijo #, 3-estado `ABSORBING/STABLE/EXHAUSTING`) son **dimensiones separadas** derivadas de variables relacionadas pero con binning distinto. ΔσVw usa cuantiles empíricos; FATIGUE usa threshold fijo ±0.30 sobre `delta_svw`.
-> 4. Las dimensiones cuantiles (filas 1–8) reciben escalas gaussianas per-ticker (σ-index firmado). Las dimensiones direccionales (filas 9–10) preservan su threshold fijo — son derivadas, no cuantiles.
-> 5. El Multiscale s1_full tiene 7 dimensiones efectivas: T×C×W×σVc×σVw×ΔσVw × FATIGUE (6 cuantiles + 1 direccional). El s3_triad colapsa a 4: T×C×W × FATIGUE.
+> 3. ~~**⚠️ Corrección crítica:** ΔσVw (dim 5, 5-bin cuantil `<</</../>/>>`) y traj/FATIGUE (sufijo #, 3-estado `ABSORBING/STABLE/EXHAUSTING`) son **dimensiones separadas** derivadas de variables relacionadas pero con binning distinto. ΔσVw usa cuantiles empíricos; FATIGUE usa threshold fijo ±0.30 sobre `delta_svw`.~~ **[03-Oct · D-REG]** Retirada: ΔσVw no existe. La única derivada de σVw en el Multiscale es `obs_vel_svw` → sufijo `#traj` (fila 10).
+> 4. Las dimensiones cuantiles (filas 1–8) reciben escalas gaussianas per-ticker (σ-index firmado). ~~Las dimensiones direccionales (filas 9–10) preservan su threshold fijo — son derivadas, no cuantiles.~~ **[03-Oct] D-SCOPE-V:** las direccionales (filas 9–10) siguen siendo de 3 estados, pero con **umbral per-ticker y único para ambas** (ver §2.0-ter).
+> 5. El Multiscale s1_full tiene 7 dimensiones efectivas: ~~T×C×W×σVc×σVw×ΔσVw~~ **[03-Oct]** T×C×W×σc×σw×σVw × FATIGUE (6 cuantiles + 1 direccional). El s3_triad colapsa a 4: T×C×W × FATIGUE.
+> 6. **[03-Oct] Hecho verificado:** VWAP (fila 4, Tide) y σVw (fila 7, Multiscale) leen la **misma columna** `vwap_sigma_wave` (`train_tide_ev_real_table.py` L242 y `train_multiscale_kinematic_ev_tree.py` L310). Es una sola distribución por ticker: los edges de 6 bins y los de 5 bins salen de ella. **[03-Oct] Verificación V1–V6:** la columna contiene la variable correcta. En SPY (n=8,231): corr con `sigma_wave` = +0.516, con `sigma_tide` = +0.438, con `sigma_current` = +0.720; en el pooled (TABLESAMPLE 3 %, n=137,981): +0.515 / +0.594 / +0.717. El −0.97 / +0.995 de un chequeo previo era un artefacto de n=4 (las 4 últimas barras de SPY). Las 3 σ del Multiscale son L308 `sigma_current` (σc), L309 `sigma_wave` (σw) y L310 `vwap_sigma_wave` (σVw). `delta_sigma_vwap_wave` no existe; `vol_adj_delta` existe pero es velocidad Kalman/vol 20d y el trainer no la lee.
+> 7. **[03-Oct] Escala v1 de las σ:** las 5 σ (filas 4–8) se binarizan en v1 con umbrales **fijos** `±0.3 / ±1.0` — trainer Multiscale `classify_sigma_bin` L36-46, `rc_multiscale_ev_lookup.py` `_bin_sigma` L118-125, `rc_wave_lookup.py` `_SIGMA_BINS`, trainer Tide `classify_sigma` L46-57. Ninguna es cuantil empírico en v1.
 
 ### 2.0-ter. Auditoría de Umbrales de Velocidad — vel (Wave) y traj/FATIGUE (Multiscale) (01-Oct-2026)
 
@@ -205,16 +239,18 @@ El diseño debe descomponer y formalizar esta directiva:
 | Aspecto | vel (Wave) | traj/FATIGUE (Multiscale) |
 |:--------|:-----------|:--------------------------|
 | **Clasificador** | `_classify_vel_svw()` en `rc_wave_lookup.py` L206 | `classify_kinematic_trajectory()` en `rc_multiscale_ev_lookup.py` L88 |
-| **Umbral hardcoded** | `(-0.091, 0.091)` — `rc_wave_lookup.py` L174 | `±0.30` — `rc_multiscale_ev_lookup.py` L50 |
-| **Umbral vivo (si aplica)** | `(-0.058381, 0.123438)` — `rc_wave_derived.json` vel_thresholds | ❌ Ninguno — ±0.30 es el ÚNICO |
-| **Carga dinámica** | ✅ `_load_wave()` L229-234 sobreescribe desde `vel_thresholds` en metadata | ❌ No hay carga dinámica |
-| **Calibración** | P33/P67 de `obs_vel_svw` (Kalman) excl. zeros — `train_wave_table.py` L535-553 | Sin calibración empírica documentada |
-| **Trainer: variable** | `obs_vel_svw` (Kalman) directo de DB | `σVw_t0 - σVw_{t-2}` (diferencia de posición, no Kalman) — `train_multiscale_kinematic_ev_tree.py` L282 |
-| **Producción: variable** | `_vel_svw` = `obs_vel_svw` (Kalman) — `swing_gate.py` L806,L150 | `_vel_svw` = **misma variable** — `swing_gate.py` L297 |
+| **Umbral hardcoded** | `(-0.091, 0.091)` — `rc_wave_lookup.py` L174 (fallback) | `±0.30` — `rc_multiscale_ev_lookup.py` ~~L50~~ **[03-Oct] L88-91** (producción) |
+| **Umbral vivo (si aplica)** | `(-0.058381, 0.123438)` — `rc_wave_derived.json` vel_thresholds | ~~❌ Ninguno — ±0.30 es el ÚNICO~~ **[03-Oct]** En producción: `±0.30`. En el trainer: P33/P67 dinámicos (ver fila "Trainer") |
+| **Carga dinámica** | ✅ `_load_wave()` L229-234 sobreescribe desde `vel_thresholds` en metadata | ❌ No hay carga dinámica en el lookup |
+| **Calibración** | P33/P67 de `obs_vel_svw` (Kalman) excl. zeros — `train_wave_table.py` L535-553 | ~~Sin calibración empírica documentada~~ **[03-Oct]** El trainer calcula P33/P67 globales (L216-218) y los escribe en el JSON (L352-353), pero `rc_ev_multiscale_tree.json` no se regeneró tras ese cambio (último commit `e2a2ada`, 30-Sep) |
+| **Trainer: variable** | `obs_vel_svw` (Kalman) directo de DB | ~~`σVw_t0 - σVw_{t-2}` (diferencia de posición, no Kalman) — `train_multiscale_kinematic_ev_tree.py` L282~~ **[03-Oct]** `obs_vel_svw` (Kalman); si vale 0/NaN cae a `σVw_t − σVw_{t−2}` (L283-286, commit `65c72f4`) |
+| **Producción: variable** | `_vel_svw` = `obs_vel_svw` (Kalman) — `swing_gate.py` L806,L150 | `_vel_svw` = **misma variable** — `swing_gate.py` L297 (se pasa con el nombre de parámetro `delta_svw`) |
 
 **Percentiles LIVE de `obs_vel_svw` (Kalman) — medido contra `engine.channel_snapshots`:**
 ```
-P33 = -0.130758    P50 = -0.004765    P67 = +0.120383    (N = 405, excluyendo zeros)
+~~P33 = -0.130758    P50 = -0.004765    P67 = +0.120383    (N = 405, excluyendo zeros)~~
+[03-Oct] Censo post-backfill (medido 02-Oct, pooled global, 566 tickers, 1962→2026):
+P33 = -0.127343    P50 = -0.004666    P67 = +0.121747    (N = 4,581,546)
 ```
 
 **Diagnóstico (3 defectos verificados):**
@@ -231,13 +267,18 @@ P33 = -0.130758    P50 = -0.004765    P67 = +0.120383    (N = 405, excluyendo ze
 
 1. **Umbral ÚNICO canónico:** vel (Wave) y traj (Multiscale) deben compartir el mismo umbral calibrado a la misma variable. Si la variable es `obs_vel_svw` (Kalman), el umbral debe ser P33/P67 de `obs_vel_svw` — no ±0.30.
 2. **Eliminar train-serve skew:** El trainer del Multiscale debe usar `obs_vel_svw` (Kalman), no `σVw_t - σVw_{t-2}`, para alinear con producción.
-3. **Per-ticker adaptativo (opcional):** Si vel/traj adoptan tratamiento gaussiano, los thresholds salen de `ticker_gaussian_profiles.json` (P33/P67 per-ticker). Si se mantiene como 3-estado con threshold fijo, el threshold debe ser empírico global (P33/P67 del censo).
+3. ~~⚠️**[A2]** **Per-ticker adaptativo (opcional):** *(R1/R3 01-Oct: «¡Debe calcularse per ticker!» para la velocidad — alcance general pendiente de aclaración, ver §0-bis)* Si vel/traj adoptan tratamiento gaussiano, los thresholds salen de `ticker_gaussian_profiles.json` (P33/P67 per-ticker). Si se mantiene como 3-estado con threshold fijo, el threshold debe ser empírico global (P33/P67 del censo).~~ **[03-Oct] D-SCOPE-V — umbral per-ticker, único para vel y traj, 3 estados.** El método queda abierto para el documento (D) con dos condiciones obligatorias:
+   - **(a) Comparar las dos opciones con su coste**, declarando ambas aunque se elija una: (i) **P33/P67 propio** de `obs_vel_svw` por ticker (calibración nueva) vs (ii) **derivado de la σVw ya normalizada per-ticker** (reutiliza el perfil existente).
+   - **(b) Un solo umbral para vel y traj.** En producción ambas consumen `obs_vel_svw` (Kalman) y hoy usan umbrales distintos: Wave `(-0.058381, +0.123438)` vivo (fallback `±0.091`) vs Multiscale `±0.30` en el lookup. Ese es el defecto de umbral dual documentado en el Diagnóstico 1 y la Directiva 1 de esta sección, y debe quedar cerrado en el diseño.
+   - El umbral global del censo (P33 = −0.127, P67 = +0.122) queda solo como referencia.
 4. **vel sigue siendo 3-estado** — lo que cambia es la calibración del umbral, no la dimensionalidad.
 5. **`vel_thresholds` debe propagarse** a `rc_wave_ev_derived.json` — hoy solo está en `rc_wave_derived.json`.
 
-**⚠️ Defecto RAÍZ de la dimensión de velocidad (verificado 01-Oct-2026):**
+**~~⚠️ Defecto RAÍZ~~ [03-Oct] ✅ RESUELTO — Defecto raíz de la dimensión de velocidad (verificado 01-Oct-2026; cerrado por el backfill):**
 
-`obs_vel_svw` existe en solo **17 de 562 tickers** (3.0%) en `engine.channel_snapshots`. Los 17 tickers son: AAPL, AMZN, COST, HD, HON, IBM, JNJ, JPM, MCD, MRK, MSFT, PEP, PG, QQQ, SPY, WMT, XOM. El rango de datos es **2026-07-15 a 2026-10-01** (~78 días, 422 observaciones totales, ~25 barras/ticker). El Observer (Kalman) no se backfilleó sobre el universo.
+~~`obs_vel_svw` existe en solo **17 de 562 tickers** (3.0%) en `engine.channel_snapshots`. Los 17 tickers son: AAPL, AMZN, COST, HD, HON, IBM, JNJ, JPM, MCD, MRK, MSFT, PEP, PG, QQQ, SPY, WMT, XOM. El rango de datos es **2026-07-15 a 2026-10-01** (~78 días, 422 observaciones totales, ~25 barras/ticker). El Observer (Kalman) no se backfilleó sobre el universo.~~
+
+**[03-Oct]** Backfill del Observer completo: `obs_vel_svw` no-NULL en **4,594,499 filas / 566 de 566 tickers** (1962→2026). La cobertura parcial de 17 tickers / 422 obs ya no existe. Las consecuencias (a), (b) y (e) quedan superadas por el censo; (c) deja de aplicar porque ya no hay NULL. **(d) — train-serve skew del Multiscale — sigue abierta, en otra forma:** el trainer ya usa Kalman (`65c72f4`), pero el lookup de producción clasifica con `±0.30` mientras el trainer calibra con P33/P67, y el JSON no fue regenerado. *(No re-verificado hoy: que `_load_observer_velocities` reciba valores no nulos en producción para todo el universo.)*
 
 **Consecuencias verificadas:**
 
@@ -251,11 +292,11 @@ P33 = -0.130758    P50 = -0.004765    P67 = +0.120383    (N = 405, excluyendo ze
 
 **Directivas propuestas (a adjudicar por el Arquitecto — NO decidir):**
 
-1. Ejecutar el backfill del Observer sobre los 562 tickers × histórico completo.
-2. Recalcular P33/P67 sobre el CENSO (post-backfill).
-3. Unificar el umbral de vel (Wave) y traj (Multiscale) — es la misma variable.
-4. Propagar `vel_thresholds` a `rc_wave_ev_derived.json`.
-5. Mientras no exista backfill, la calibración de la velocidad no puede ser per-ticker.
+1. ~~Ejecutar el backfill del Observer sobre los 562 tickers × histórico completo.~~ **[03-Oct] ✅ Hecho** (566/566).
+2. ~~Recalcular P33/P67 sobre el CENSO (post-backfill).~~ **[03-Oct] ✅ Medido** (pooled global, ver arriba). La calibración final es per-ticker (D-SCOPE-V).
+3. Unificar el umbral de vel (Wave) y traj (Multiscale) — es la misma variable. **[03-Oct]** Obligatorio en (D) (D-SCOPE-V, condición b).
+4. Propagar `vel_thresholds` a `rc_wave_ev_derived.json`. *(abierto)*
+5. ~~Mientras no exista backfill, la calibración de la velocidad no puede ser per-ticker.~~ **[03-Oct]** Obsoleto: el backfill existe; la calibración per-ticker es factible (min 110 / mediana 7,900 barras por ticker).
 
 > **Nota de trazabilidad del umbral fallback:** `rc_wave_ev_lookup.py` importa `_classify_vel_svw` DE `rc_wave_lookup.py` (L98), que carga `rc_wave_derived.json`. Este archivo SÍ contiene `vel_thresholds = {lower: -0.058381, upper: 0.123438}`, y `_load_wave()` (L229-234) los sobreescribe al fallback `(-0.091, 0.091)` de L174. Por tanto, **en flujo normal el umbral vivo funciona** — el fallback stale `(-0.091, 0.091)` solo se activa si `rc_wave_derived.json` no se carga.
 
@@ -264,7 +305,12 @@ P33 = -0.130758    P50 = -0.004765    P67 = +0.120383    (N = 405, excluyendo ze
 La **Regla S1 de `gaussian_scale_policy.md`** prohíbe el uso de fórmulas paramétricas ($\mu \pm k\sigma$) sobre series financieras no normales con colas pesadas. La calibración per-ticker debe basarse en **cuantiles empíricos** sobre el histórico disponible del activo en el Neon Vault.
 
 Se deben evaluar formalmente 3 formulaciones matemáticas. **Los edges para T, C y VWAP son los 5 percentiles D1 gaussianos canónicos** `[0.0228, 0.1587, 0.5000, 0.8413, 0.9772]` generando **6 bins** cada uno:
-- **Opción A (Cuantiles Empíricos Per-Ticker Directos):** Para cada ticker $i$ y canal $k \in \{T, C, W, VWAP\}$, calcular el vector de percentiles empíricos D1 sobre su propia serie histórica:
+
+> **[03-Oct] D-SCOPE-Q:** el conjunto calibrado per-ticker son las **8 dimensiones de cuantil**. Las de 6 bins (T, C, W, VWAP) usan los 5 percentiles de arriba. Las de 5 bins (~~σVc, σc, σVw, ΔσVw~~ **[03-Oct · D-REG]** σVc, σc, σw, σVw) usan 4 **cortes**: `[0.0228, 0.1587, 0.8413, 0.9772]`, sin la mediana, porque el bin `0` es el centro unificado ±1σ (mapping del §10.5). La normalización es per-ticker; el conteo EV se agrega por pool F2 (§2.4).
+>
+> **[03-Oct] D-OVERFLOW:** el perfil guarda las **7 anclas** `[0.00135, 0.0228, 0.1587, 0.5000, 0.8413, 0.9772, 0.99865]` para **todas** las variables, también las de 5 bins y `obs_vel_svw` (vel/traj). El z-score de overflow (`compute_empirical_z`, `sigma_overflow.py` L241-279) exige las 7, P50 incluida. En las de 5 bins, P50 se guarda para el z-score pero **no** actúa como corte de bin.
+
+- **Opción A (Cuantiles Empíricos Per-Ticker Directos):** Para cada ticker $i$ y canal ~~$k \in \{T, C, W, VWAP\}$~~ **[03-Oct]** ~~$k \in \{T, C, W, VWAP, \sigma_{Vc}, \sigma_c, \sigma_{Vw}, \Delta\sigma_{Vw}\}$~~ **[03-Oct · D-REG]** $k \in \{T, C, W, VWAP, \sigma_{Vc}, \sigma_c, \sigma_w, \sigma_{Vw}\}$, calcular el vector de percentiles empíricos D1 sobre su propia serie histórica:
   $$\mathbf{Q}_i = \text{Quantile}\left( X_{i,k}, [0.0228, 0.1587, 0.5000, 0.8413, 0.9772] \right)$$
 - **Opción B (Transformada Gaussiana Canónica vía Percentile Rank / Probability Integral Transform):**
   Calcular el rank empírico $U_{i,t} = \frac{\text{Rank}(X_{i,t})}{N_i + 1}$ y mapearlo a normalidad estándar:
@@ -273,6 +319,8 @@ Se deben evaluar formalmente 3 formulaciones matemáticas. **Los edges para T, C
 - **Opción C (Regularización Bayesiana / Shrinkage de Umbrales):**
   $$\mathbf{Q}_{i, \text{shrunk}} = \frac{N_i}{N_i + K} \mathbf{Q}_i + \frac{K}{N_i + K} \mathbf{Q}_{\text{global}}$$
   Evita que activos con pocas muestras ($N_i < 1,000$ barras) sufran distorsión en sus percentiles extremos.
+
+> **[03-Oct] ✅ ADJUDICADO (D-CAL / D-K, 02-Oct):** **Opción A** para todos los tickers + **Opción C** solo para tickers jóvenes ($N_i < 252$), con $K = 252$ y target ~~$\mathbf{Q}_{\text{global}}$~~ **$\mathbf{Q}_{\text{sector}}$** ($\mathbf{Q}_{\text{global}}$ si el ticker no tiene sector). Hoy un solo ticker queda bajo 252 snapshots: **SNDK (111)**. La Opción B queda descartada.
 
 ### 2.2. Momento y Pipeline de Transformación
 La observación individual $(X_{i,t})$ se normaliza contra el perfil adaptativo del ticker **en tiempo de entrenamiento** *antes* de mapearla al estado discreto.
@@ -290,7 +338,7 @@ Definir la estructura del archivo de calibración persistente:
       "scale_type": "D1_gaussian_6bin",
       "percentiles": [0.0228, 0.1587, 0.5000, 0.8413, 0.9772],
       "overflow_anchors": [0.00135, 0.99865],
-      "n_tickers": 531
+      "n_tickers": 566
     },
     "profiles": {
       "SPY": {
@@ -305,11 +353,13 @@ Definir la estructura del archivo de calibración persistente:
     }
   }
   ```
-  > **Nota:** Los 7 percentile anchors (P0.135 a P99.865) cubren ±3σ: los 5 internos (P2.28–P97.72) definen los 6 bins D1; los 2 extremos (P0.135 y P99.865) habilitan el cálculo de z-score de overflow (ver §10.1, PC-02). Se incluyen `inception_date`, `n_bars`, `min_valid_date` para la política de inception (ver §10.2, PC-03).
+  > **Nota:** Los 7 percentile anchors (P0.135 a P99.865) cubren ±3σ: los 5 internos (P2.28–P97.72) definen los 6 bins D1; los 2 extremos (P0.135 y P99.865) habilitan el cálculo de z-score de overflow (ver §10.1, PC-02). **[03-Oct] D-OVERFLOW:** las 7 anclas se guardan en **todas** las variables del perfil, no solo en las 4 del ejemplo. Se incluyen `inception_date`, `n_bars`, `min_valid_date` para la política de inception (ver §10.2, PC-03).
 - **Ubicación en Clean Architecture:** `backend/modules/quality_swing/domain/rules/ticker_gaussian_profiles.json`.
 - **Gobernanza:** Archivo estático versionado en git, regenerado mediante script por evento o cadencia trimestral.
 - **Ruta canónica:** `backend/modules/quality_swing/domain/rules/ticker_gaussian_profiles.json`.
 
+> ~~⚠️**[A2] — la columna "Calibración" de las filas 5–10 está pendiente de aclaración del Arquitecto (ver §0-bis); no se modifica hasta entonces.**~~ **[03-Oct]** Filas 5–10 actualizadas según D-SCOPE-Q / D-SCOPE-V. El esquema JSON de arriba muestra solo 4 dimensiones: el perfil v2 debe incluir también ~~σVc, σc y ΔσVw (σVw comparte columna con VWAP, ver §2.0-bis nota 6)~~ **[03-Oct · D-REG]** `vwap_sigma_current` (σVc), `sigma_current` (σc) y `sigma_wave` (σw), y el umbral vel/traj en la forma que resulte del método elegido. **σVw no lleva entrada propia porque es la misma fuente que VWAP:** una sola entrada `vwap_sigma_wave` con 7 anclas alimenta **dos binnings** (6-bin para VWAP en Tide; 5-bin para σVw en Multiscale). No son dos entradas que coinciden por casualidad. Regla del esquema: **una entrada por columna fuente**, y cada dimensión declara qué columna lee. **[03-Oct] D-OVERFLOW:** se añade `obs_vel_svw` con 7 anclas para detectar overflow en vel/traj.
+>
 > **⚠️ Auditoría de cobertura dimensional (01-Oct-2026):** El schema actual define anchors per-ticker para **4 de 10 dimensiones** del sistema. Las 6 restantes NO tienen entrada en el perfil ni scope declarado. Esta tabla documenta el estado y la decisión de scope por dimensión:
 
 **Tabla de Scope por Dimensión (verificada contra §2.0-bis):**
@@ -319,13 +369,13 @@ Definir la estructura del archivo de calibración persistente:
 | 1 | **T** (tide_slope_norm) | 6-bin | **Per-ticker** | ✅ 7 anchors (p0.135–p99.865) | `channel_snapshots` (8K+ barras/ticker) | Variable de escala → cuantiles empíricos per-ticker (Rule S1) |
 | 2 | **C** (current_slope_norm) | 6-bin | **Per-ticker** | ✅ 7 anchors | Ídem | Ídem |
 | 3 | **W** (wave_slope_norm) | 6-bin | **Per-ticker** | ✅ 7 anchors | Ídem | Ídem |
-| 4 | **VWAP** (vwap_sigma_wave) | 6-bin | **Per-ticker** | ✅ 7 anchors | Ídem | Ídem |
-| 5 | **σVc** | 5-bin | **Global** | ❌ No incluido | `rc_vol_normalized_thresholds.json` (4.57M obs) | Censo completo ya disponible; per-ticker posible pero no prioritario |
-| 6 | **σc** | 5-bin | **Global** | ❌ No incluido | Ídem | Ídem |
-| 7 | **σVw** | 5-bin | **Global** | ❌ No incluido | Ídem | Ídem |
-| 8 | **ΔσVw** | 5-bin | **Global** | ❌ No incluido | Ídem | Ídem |
-| 9 | **vel** (vel_σVw) | 3-estado | **Global** (P33/P67) | ❌ No aplica (no cuantil) | `obs_vel_svw` Kalman (422 obs, 17 tickers — ver §2.0-ter) | Threshold direccional, no cuantil percentil |
-| 10 | **traj** (#FATIGUE) | 3-estado | **Global** (±0.30 hardcoded) | ❌ No aplica (no cuantil) | Sin calibración empírica (ver §2.0-ter) | Threshold direccional prestado de VWAP position |
+| 4 | **VWAP** (vwap_sigma_wave) | 6-bin | **Per-ticker** | ✅ 7 anchors **[03-Oct]** (entrada compartida con la fila 7) | Ídem | Ídem |
+| 5 | **σVc** | 5-bin | ~~**Global**~~ **[03-Oct] Per-ticker** | ~~❌ No incluido~~ ~~✅ 4 edges D1 5-bin (P2.28/P15.87/P84.13/P97.72)~~ **[03-Oct · D-OVERFLOW]** ✅ 7 anchors (4 cortes 5-bin + P50 + P0.135/P99.865) | ~~`rc_vol_normalized_thresholds.json` (4.57M obs)~~ `channel_snapshots.vwap_sigma_current` | ~~Censo completo ya disponible; per-ticker posible pero no prioritario~~ D-SCOPE-Q |
+| 6 | **σc** | 5-bin | ~~**Global**~~ **[03-Oct] Per-ticker** | ✅ Ídem | `channel_snapshots.sigma_current` | D-SCOPE-Q |
+| 7 | **σVw** | 5-bin | ~~**Global**~~ **[03-Oct] Per-ticker** | ✅ ~~Ídem (misma distribución que la fila 4)~~ **[03-Oct · D-REG]** La misma entrada `vwap_sigma_wave` que la fila 4, con binning 5-bin | `channel_snapshots.vwap_sigma_wave` | D-SCOPE-Q |
+| 8 | ~~**ΔσVw**~~ **[03-Oct · D-REG] σw** | 5-bin | ~~**Global**~~ **[03-Oct] Per-ticker** | ✅ Ídem (7 anchors) | ~~Derivada de `vwap_sigma_wave`~~ **[03-Oct]** `channel_snapshots.sigma_wave` | D-SCOPE-Q · D-REG |
+| 9 | **vel** (vel_σVw) | 3-estado | ~~**Global** (P33/P67)~~ **[03-Oct] Per-ticker, umbral único con traj** | Según el método elegido en (D) **[03-Oct · D-OVERFLOW]** + 7 anchors de `obs_vel_svw` para overflow | `obs_vel_svw` Kalman (~~422 obs, 17 tickers~~ **[03-Oct]** 4,594,499 filas, 566 tickers — ver §2.0-ter) | ~~Threshold direccional, no cuantil percentil~~ D-SCOPE-V (3 estados, no escala gaussiana) |
+| 10 | **traj** (#FATIGUE) | 3-estado | ~~**Global** (±0.30 hardcoded)~~ **[03-Oct] Per-ticker, mismo umbral que vel** | Según el método elegido en (D) **[03-Oct · D-OVERFLOW]** + las mismas anclas de `obs_vel_svw` | ~~Sin calibración empírica (ver §2.0-ter)~~ Misma variable que vel en producción | ~~Threshold direccional prestado de VWAP position~~ D-SCOPE-V; cierra el defecto de umbral dual |
 
 > **Naturaleza de los valores de ejemplo (SPY):** Los valores de percentiles en el ejemplo JSON anterior (L276-279) son **ILUSTRATIVOS, NO medidos**. SPY tiene 8,231 barras en `engine.channel_snapshots` (1994-01-18 a 2026-10-01) → la calibración real es factible pero NO se ha ejecutado. Los valores deben reemplazarse por cifras medidas cuando se implemente el calibrador.
 
@@ -337,11 +387,34 @@ Una vez clasificada la observación en su estado relativo, se acumula en el Fact
 | Modelo de Familia | Definición Operativa | Pros | Contras | Densidad Muestral Esperada ($N$ medio / celda, 216 estados) |
 |---|---|---|---|:---:|
 | **F1: Pooling Universal (Estado Compartido)** | Un único pool de **216** estados donde cada ticker entra con su estado normalizado per-ticker. | Máximo soporte muestral; varianza mínima en probabilidades; respeta Rule 14. | Asume que un bin 5 normalizado tiene idéntico payoff en Utilities que en Tech. | **$\sim 21,100$** obs / celda ($4.55\text{M} / 216$) |
-| **F2: Clustering por Sector GICS (11 Sectores)** | 11 tablas independientes (o dimensión sectorial en llave). | Captura dinámicas macrosectoriales y rotación. | Fragmentación: $216 \times 11 = 2,376$ celdas. Incrementa estados raros. | **$\sim 1,916$** obs / celda |
+| **F2: Clustering por Sector GICS (11 Sectores)** | 11 tablas independientes (o dimensión sectorial en llave). | Captura dinámicas macrosectoriales y rotación. | Fragmentación: $216 \times 11 = 2,376$ celdas. Incrementa estados raros. | ~~**$\sim 1,916$** obs / celda~~ **[03-Oct] 604–3,208** (medido) |
 | **F3: Clases de Volatilidad (4 Cuartiles ATR%)** | Tickers agrupados en: LOW_VOL, MED_VOL, HIGH_VOL, ULTRA_VOL según su mediana de `atr_pct`. | Agrupa activos con cinemática similar sin sesgo por industria. | Fronteras de cuartil arbitrarias; saltos de clase en rebalanceos. | **$\sim 5,270$** obs / celda |
 | **F4: Per-Ticker Puro (Sin Pooling)** | Cada ticker tiene su propia tabla de 216 estados. | Máxima especificidad. | **Estadísticamente inviable:** 500 tickers $\times$ 9,000 barras $\to$ $N$ insuficiente en colas ($< 20$ obs/celda). Ruido total. | **$< 20$** obs / celda (Inviable) |
 
-**El diseño debe fundamentar la elección (o combinación híbrida de F1 + modificadores de F2/F3).**
+~~**El diseño debe fundamentar la elección (o combinación híbrida de F1 + modificadores de F2/F3).**~~
+
+**[03-Oct] ✅ ADJUDICADO — D-FAM = F2 sectorial, alineado con el Rotation Gate y el S5 sectorial:**
+- **Llave del pool:** el ETF sectorial de `SECTOR_ETFS` (`XLK…XLC`), obtenido con `canonicalize(ticker_metadata.sector)` — SSOT `backend/modules/shared/domain/constants/sectors.py`. Prohibido crear un mapeo nuevo.
+- **Población del pool:** exactamente la de `TimescaleDataStore.load_sp500_closes_by_sector()` (`asset_type='STOCK'` ∧ `SP500|QQQ ∈ index_membership` ∧ `update_source='vault_ohlcv_bars'`), que es la que mide `S5_{ETF}_{TH|FI|TW}` (`daemons/vault_providers/sector_breadth_provider.py:63-74`).
+- **Fuera del pool sectorial (51 tickers):** entran al entrenamiento EV (R1) y aportan **solo al pool global**: 38 sin sector canónico (30 con `sector='ETF'`, más SPY, DBA, HYG, UUP, TLT, LQD, EPP, MCHI) y 13 con sector pero fuera del filtro de Rotación (RSPT/RSPH/RSPF/RSPD/RSPS/RSPN/RSPG/RSPU, QQQ, AVB, EQR, CTRA, EA).
+- **D-ETF:** cada SPDR sectorial (`XLK…XLC`) lee en el lookup la tabla de su propio sector, sin aportar al pool.
+- `S5_QQQ_*` es un grupo de amplitud, no un sector GICS → no forma pool.
+
+| ETF | Canónico | Tickers | N obs | Obs/216 |
+|:--|:--|--:|--:|--:|
+| XLI | Industrials | 75 | 693,121 | 3,208 |
+| XLK | Technology | 90 | 627,548 | 2,905 |
+| XLF | Financials | 71 | 580,200 | 2,686 |
+| XLV | Healthcare | 61 | 517,512 | 2,395 |
+| XLY | Consumer Discretionary | 56 | 431,282 | 1,996 |
+| XLP | Consumer Staples | 36 | 374,354 | 1,733 |
+| XLU | Utilities | 31 | 343,701 | 1,591 |
+| XLRE | Real Estate | 30 | 234,862 | 1,087 |
+| XLE | Energy | 21 | 193,409 | 895 |
+| XLB | Materials | 20 | 179,355 | 830 |
+| XLC | Communication Services | 24 | 130,577 | 604 |
+| **Pool sectorial** | | **515** | **4,305,921** | |
+| **Solo global** | | **51** | 288,578 | |
 
 ### 2.5. Preservaciones Obligatorias
 - **Escalas ZigZag canónicas:** Mantener intactas `zz25` (2.5%), `zz50` (5.0%) y `zz75` (7.5%).
@@ -400,7 +473,7 @@ Documento Markdown estructurado que contenga:
 - **Definición operativa y cuantitativa de "Familia"** con la distribución esperada de muestras por celda.
 - **Especificación de persistencia** (`ticker_gaussian_profiles.json`), protocolo de regeneración y costos computacionales.
 - **Matriz de decisiones arquitectónicas:** Tabla con Opción Elegida, Alternativa Descartada, Justificación Matemática y Riesgo Aceptado.
-- **Plan de migración y mitigación de fallos:** Estrategia para los 5 lookups de `swing_gate.py` y resolución del bug `fatigue_type`.
+- **Plan de migración y mitigación de fallos:** Estrategia para los 5 lookups de `swing_gate.py`~~ y resolución del bug `fatigue_type`~~. **[03-Oct]** Bug cerrado (§1.5); fatiga fuera de alcance (D-FAT).
 
 ### Artefacto 2: PROMPT DE CONSTRUCCIÓN AUTÓNOMO (P)
 Prompt de ejecución self-contained listo para despachar al agente implementador, conteniendo:
@@ -433,7 +506,7 @@ Prompt de ejecución self-contained listo para despachar al agente implementador
 | `backend/modules/quality_swing/domain/rules/rc_wave_ev_lookup.py` | Adaptador Wave EV | Implementación de `fatigue_type` (`ACCUMULATING`, `FATIGUE_RISK`). |
 | `backend/modules/quality_swing/domain/rules/rc_ev_multiscale_tree.json` | Árbol multiescala 6D | Estructura de 25,797 estados y sufijos `#FATIGUE`. |
 | `backend/modules/quality_swing/domain/rules/rc_multiscale_ev_lookup.py` | Adaptador Multiescala | Función `classify_kinematic_trajectory` (`ABSORBING`, `EXHAUSTING`). |
-| `backend/modules/quality_swing/application/use_cases/swing_gate.py` | Caso de uso orquestador | L280, L330, L653: Bug de `fatigue_type` e integración de 5 lookups. |
+| `backend/modules/quality_swing/application/use_cases/swing_gate.py` | Caso de uso orquestador | L280, L330, L653: ~~Bug de~~ referencias a `fatigue_type` (**[03-Oct]** bug cerrado) e integración de 5 lookups. |
 | `docs/research/01_señales_entry_exit/medicion_vix_crisis_spike.json` | Auditoría de señal VIX | Datos empíricos de las 171 alertas globales y tasa de acierto. |
 | `backend/scripts/per_ticker_turn_forensics.py` | Script forense per-ticker | Análisis de LIFT empírico sobre pivotes ZigZag individuales. |
 
@@ -442,12 +515,13 @@ Prompt de ejecución self-contained listo para despachar al agente implementador
 ## 6. LÍMITES DEL SCOPE
 
 ### Lo que este diseño DEBE hacer:
-- ✅ Preservar las variables dimensionales establecidas: Tide (`T|C|σVw`), Wave (`W|σVc|σc|vel`), Multiscale (6D + Fatiga).
+- ✅ Preservar las variables dimensionales establecidas: Tide (`T|C|σVw`), Wave (`W|σVc|σc|vel`), Multiscale (6D + Fatiga) **[03-Oct · D-REG]** = `T|C|W|σc|σw|σVw#traj`.
 - ✅ Preservar mandatoriamente las 3 escalas ZigZag canónicas: `zz25`, `zz50` y `zz75`.
 - ✅ Diseñar un mecanismo adaptativo basado en cuantiles empíricos (Regla S1), erradicando fórmulas paramétricas $\mu \pm k\sigma$.
 - ✅ Establecer una política explícita de Diamantes Estadísticos para $N < 21$ (conservar, etiquetar rareza, nunca descartar).
 - ✅ Unificar o armonizar la jerarquía de niveles rollups entre Tide y Wave.
-- ✅ Diseñar la solución formal al bug de `fatigue_type` en `swing_gate.py`.
+- ~~✅ Diseñar la solución formal al bug de `fatigue_type` en `swing_gate.py`.~~ **[03-Oct]** Bug cerrado (A1 + D-1). Fatiga fuera del Fact Store (D-FAT).
+- ✅ **[03-Oct]** Usar F2 con llave ETF vía `canonicalize()` y la población de `load_sp500_closes_by_sector()` (§2.4).
 - ✅ Definir la estrategia de despliegue como **serie versionada con puntero atómico** (v2 se genera → se valida → se activa atómicamente al mover el puntero, sin ventana dual de dos vivos).
 - ✅ Adoptar el espacio 6×6×6 = **216 estados L3** con escala D1 gaussiana para T, C y VWAP.
 - ✅ Declarar tesis MOMENTUM y emitir campo `ev_rel` (EV relativo a L0) en el Fact Store.
@@ -459,6 +533,8 @@ Prompt de ejecución self-contained listo para despachar al agente implementador
 - ❌ NO proponer modelos paramétricos gaussianos teóricos que asuman normalidad en variables con colas pesadas.
 - ❌ NO eliminar estados con bajo $N$.
 - ❌ NO recalibrar umbrales D-001..D-015 sobre las escalas viejas (son throwaway — se recalibran con el sistema nuevo).
+- ❌ **[03-Oct]** NO diseñar la interpretación de la fatiga ni incluir guidance/calificaciones predeterminadas en el Fact Store (D-FAT).
+- ❌ **[03-Oct]** NO crear mapeos sector→ETF propios (SSOT: `constants/sectors.py`).
 
 ---
 
@@ -470,7 +546,11 @@ El trabajo se considerará completo y aprobado únicamente cuando:
 - [ ] Se defina la estructura exacta del archivo de calibración `ticker_gaussian_profiles.json`.
 - [ ] Esté formalizada la definición de **"Familia"** con sustento cuantitativo de densidad muestral ($N/\text{celda}$).
 - [ ] Se documente la transición de 245 estados (v1, 7×7×5) a **216 estados** (v2, 6×6×6 D1 gaussiano) y la armonización de jerarquías Tide vs Wave.
-- [ ] Se proponga una solución integral al bug de runtime `fatigue_type` en `swing_gate.py`.
+- [ ] ~~Se proponga una solución integral al bug de runtime `fatigue_type` en `swing_gate.py`.~~ **[03-Oct]** El Fact Store v2 no contiene campos interpretativos de fatiga (D-FAT).
+- [ ] **[03-Oct]** Los pools sectoriales usan llave ETF y la población de Rotación/S5 (§2.4).
+- [ ] **[03-Oct]** El perfil per-ticker cubre las 8 dimensiones de cuantil (D-SCOPE-Q) **del registro corregido** (D-REG): T, C, W, VWAP, σVc, σc, σw, σVw. Hay una entrada por columna fuente y cada dimensión declara la columna que lee.
+- [ ] **[03-Oct]** vel y traj comparten un único umbral per-ticker, y el documento compara las dos opciones de método con su coste (D-SCOPE-V).
+- [ ] **[03-Oct]** Todas las variables del perfil (incluida `obs_vel_svw`) guardan 7 anclas. El detector de overflow devuelve, **por dimensión**, `(dimensión, z, UPPER/LOWER, tier T1–T5)` sin alterar el espacio de estados (D-OVERFLOW).
 - [ ] Se analicen exhaustivamente los **8 lentes obligatorios** de la Sección 3.
 - [ ] El Prompt de Construcción **(P)** contenga un banco de comandos de verificación Bash ejecutables y criterios atómicos.
 
@@ -500,12 +580,13 @@ Antes de concluir la propuesta, el agente debe ejecutar y verificar estos comand
    # Salida esperada: Líneas 29 y 253-254 utilizando el clasificador global
    ```
 
-4. **Verificar existencia del bug de `fatigue_type` en `swing_gate.py`:**
+4. ~~**Verificar existencia del bug de `fatigue_type` en `swing_gate.py`:**~~ **[03-Oct] Verificar que el contrato `fatigue_type` sigue restaurado (regresión del bug cerrado):**
    ```bash
    grep -c "fatigue_type" backend/modules/quality_swing/domain/rules/rc_tide_ev_lookup.py
-   # Salida esperada: 0 (RealEVSignal no tiene fatigue_type)
+   # ~~Salida esperada: 0 (RealEVSignal no tiene fatigue_type)~~
+   # [03-Oct] Salida esperada: 2 (L48 campo con default "STABLE"; L237 constructor)
    grep -n "fatigue_type" backend/modules/quality_swing/application/use_cases/swing_gate.py
-   # Salida esperada: Líneas 280, 330 y 653 (L653 susceptible a crash directo)
+   # Salida esperada: Líneas 280, 330 y 653 (~~L653 susceptible a crash directo~~ [03-Oct] sin crash)
    ```
 
 5. **Verificar edge global empírico del VIX ($P97.72 = 40.7336$):**
@@ -538,17 +619,29 @@ Antes de concluir la propuesta, el agente debe ejecutar y verificar estos comand
 | D-SIGMA | σ-Index firmado | ✅ **+3,+2,+1,−1,−2,−3** (6-bin) / **+3,+2,0,−2,−3** (5-bin) | Resuelve ambigüedad dirección/magnitud de METAR 0-5; labels posicionalmente consistentes entre esquemas; corrige bug T~ (§10.5) |
 | D-DEPLOY | Estrategia de despliegue | ✅ **Serie versionada + puntero atómico** | No paralelo dual ni reemplazo destructivo |
 | D-UMBRALES | D-001..D-015 | ✅ **Throwaway** | Se recalibran sobre el sistema nuevo |
+| **[03-Oct]** D-SIGMA (ratificación) | 5-bin | ✅ `+3,+2,0,−2,−3` **ratificado** | Ratificado por el Arquitecto el 03-Oct |
+| **[03-Oct]** R1 | Universo EV | ✅ SPY y los ETFs entran | 01-Oct |
+| **[03-Oct]** A1 / D-1 / D-2 | Bug `fatigue_type` | ✅ Contrato restaurado · `except` con logging · umbral L653 conservado | 02-Oct |
+| **[03-Oct]** D-FAM | Familia | ✅ **F2**, llave ETF, población Rotación/S5 | §2.4 |
+| **[03-Oct]** D-CAL | Calibración | ✅ **A** + **C** solo para jóvenes | §2.1 |
+| **[03-Oct]** D-K | Shrinkage | ✅ `K=252`, target `Q_sector` | §2.1 |
+| **[03-Oct]** D-FAT | Fatiga | ✅ Fuera del Fact Store; workstream separado | §1.5 |
+| **[03-Oct]** D-ETF | Lookup de los SPDR sectoriales | ✅ Cada uno lee su propio sector | §2.4 |
+| **[03-Oct]** D-SCOPE-Q | Alcance per-ticker | ✅ 8 dimensiones de cuantil; el pool sigue siendo F2 | §2.1, §2.3 |
+| **[03-Oct]** D-SCOPE-V | Umbral vel/traj | ✅ Per-ticker y único; método abierto en (D) con 2 condiciones | §2.0-ter |
+| **[03-Oct]** D-REG | Registro σ | ✅ Multiscale = `σc\|σw\|σVw`; ΔσVw sale, σw entra; VWAP y σVw = misma fuente con dos binnings | §2.0-bis notas 6–7 |
+| **[03-Oct]** D-OVERFLOW | Overflow | ✅ En **todas** las dimensiones, UPPER y LOWER; es información, no bloqueo automático | §10.1 |
 
 ### 9.2. Decisiones PENDIENTES para el Documento de Diseño (D)
 
 El documento **(D)** debe cerrar respondiendo con claridad prístina a las preguntas restantes:
 
-1. **¿Qué es formalmente "Familia"?**  
-   Declarar si se adopta el pooling universal normalizado (F1), clustering sectorial (F2), o clases de volatilidad por cuartiles ATR (F3), sustentando el balance entre especificidad y significancia estadística ($N/\text{celda}$, ahora sobre 216 estados).
-2. **¿Opción A, B o C para la calibración per-ticker?**  
-   Evaluar cuantiles directos (A), Probability Integral Transform (B), o shrinkage bayesiano (C). Considerar la tensión IC global (+0.412) vs per-ticker (+0.371).
-3. **¿Cómo se resuelve `fatigue_type`?**  
-   Dictaminar si Tide EV incorpora una matriz de rachas cinemáticas o si se estandariza una propiedad unificada en el contrato de dominio para subsanar de inmediato el bug de runtime.
+1. ~~**¿Qué es formalmente "Familia"?**  
+   Declarar si se adopta el pooling universal normalizado (F1), clustering sectorial (F2), o clases de volatilidad por cuartiles ATR (F3), sustentando el balance entre especificidad y significancia estadística ($N/\text{celda}$, ahora sobre 216 estados).~~ **[03-Oct] ✅ ADJUDICADA → D-FAM (F2).**
+2. ~~**¿Opción A, B o C para la calibración per-ticker?**  
+   Evaluar cuantiles directos (A), Probability Integral Transform (B), o shrinkage bayesiano (C). Considerar la tensión IC global (+0.412) vs per-ticker (+0.371).~~ **[03-Oct] ✅ ADJUDICADA → D-CAL (A + C para jóvenes), D-K.**
+3. ~~**¿Cómo se resuelve `fatigue_type`?**  
+   Dictaminar si Tide EV incorpora una matriz de rachas cinemáticas o si se estandariza una propiedad unificada en el contrato de dominio para subsanar de inmediato el bug de runtime.~~ **[03-Oct] ✅ ADJUDICADA → A1 + D-1 (bug) y D-FAT (fatiga fuera del Fact Store).**
 4. **¿Cuál es el estatus de las cifras de validación?**  
    Confirmar que la alerta de 134/171 falsos positivos y el edge 40.7 quedan plenamente sustentados por `medicion_vix_crisis_spike.json` y `sigma_overflow.py`, eliminando cualquier catalogación de rumor provisional.
 
@@ -562,24 +655,26 @@ El documento **(D)** debe cerrar respondiendo con claridad prístina a las pregu
 
 **Gap:** Con D1 6-bin, un `T+3` a +2.3σ y uno a +8σ reciben el **mismo bin y el mismo EV**. METAR resuelve esto con una capa paralela graduada T1–T5 (3σ a ≥10σ) en `sigma_overflow.py` — Tide no tiene nada equivalente.
 
+> **[03-Oct] D-OVERFLOW (Arquitecto):** el alcance **no se limita a slopes**. El overflow se identifica en **todas** las dimensiones: T, C, W, VWAP, σVc, σc, σw, σVw y vel/traj (`obs_vel_svw`), al alza y a la baja. Un overflow en cualquiera de ellas es un movimiento de mercado de primer orden al analizar la señal, el stock o el ETF.
+
 **Evidencia:**
 - `sigma_overflow.py` L303–349: `validate_overflow()` retorna `(sigma_depth, "UPPER"/"LOWER"/None)`.
 - `classify_overflow_tier()` L352–380: escala T1 (3–4σ WARNING) → T5 (≥10σ SYSTEMIC).
 - `STATION_EMPIRICAL_EDGES` contiene P0.135 y P99.865 (±3σ) para el cálculo de z-score → **Tide NO tiene estos anclas en `ticker_gaussian_profiles.json`**.
 
 **Lo que falta:**
-1. `ticker_gaussian_profiles.json` debe incluir las anclas **P0.135 y P99.865** (±3σ) además de los 5 edges D1 (P2.28 a P97.72). Sin ellas, no se puede calcular z-score de overflow.
-2. Función `validate_slope_overflow(ticker, channel, slope_norm)` análoga a `validate_overflow()`.
-3. Campos `sigma_depth` + `overflow_flag` en `RealEVSignal` para que `swing_gate.py` pueda distinguir T+3 moderado de T+3 extremo.
-4. Protocolo operacional: T1 → mantener, T2 → bloquear entradas, T3+ → circuit breaker.
+1. `ticker_gaussian_profiles.json` debe incluir las anclas **P0.135 y P99.865** (±3σ) además de los 5 edges D1 (P2.28 a P97.72). Sin ellas, no se puede calcular z-score de overflow. **[03-Oct]** Las 7 anclas van en **todas** las variables (P50 incluida en las de 5 bins, y `obs_vel_svw`), ver §2.1.
+2. Función ~~`validate_slope_overflow(ticker, channel, slope_norm)`~~ **[03-Oct]** `validate_dimension_overflow(ticker, dim, value)`, análoga a `validate_overflow()`.
+3. Campos `sigma_depth` + `overflow_flag` en `RealEVSignal` para que `swing_gate.py` pueda distinguir T+3 moderado de T+3 extremo. **[03-Oct]** Como lista **por dimensión**: `(dimensión, z, UPPER/LOWER, tier)`. La dirección se conserva porque su lectura depende de la dimensión (p. ej. UPPER en T ≠ LOWER en VWAP/σVw).
+4. ~~Protocolo operacional: T1 → mantener, T2 → bloquear entradas, T3+ → circuit breaker.~~ **[03-Oct] Pendiente de diseño (D).** Ese es el protocolo **de mercado** de METAR y no se hereda para stock/ETF: un overflow es información de primer orden (p. ej. un LOWER en VWAP puede ser capitulación) y no se convierte en bloqueo automático. El documento (D) debe proponer cómo se consume, y medir la co-ocurrencia de overflows entre dimensiones.
 
-**Acción recomendada:** Incorporar al Prompt de Construcción (P) la creación de una capa paralela de overflow adaptada a slopes. No modifica el Fact Store — opera sobre z-score crudo.
+**Acción recomendada:** Incorporar al Prompt de Construcción (P) la creación de una capa paralela de overflow adaptada a ~~slopes~~ **[03-Oct]** todas las dimensiones. No modifica el Fact Store — opera sobre z-score crudo.
 
 ---
 
 ### 10.2. 🔴 PC-03: Política de Inception No Definida para Tickers (P0)
 
-**Gap:** METAR tiene `inception_policy.md` estricta: "una estación NO existe antes de su `fecha_inicio_valida`". Para Tide con ~531 tickers, los cuantiles per-ticker de IPOs recientes o tickers con historial corto serán ruidosos.
+**Gap:** METAR tiene `inception_policy.md` estricta: "una estación NO existe antes de su `fecha_inicio_valida`". Para Tide con ~~aprox. 531~~ **[03-Oct] 566** tickers, los cuantiles per-ticker de IPOs recientes o tickers con historial corto serán ruidosos.
 
 **Evidencia:**
 - `inception_policy.md` L11: "Cualquier disparo con fecha < `fecha_inicio_valida` se EXCLUYE".
@@ -588,7 +683,7 @@ El documento **(D)** debe cerrar respondiendo con claridad prístina a las pregu
 
 **Lo que falta:**
 1. **Inception per-ticker:** `ticker_gaussian_profiles.json` debe incluir `inception_date` y `n_bars`.
-2. **Umbral mínimo:** definir `N_min` de barras para confiar en cuantiles per-ticker (propuesta: 252 barras = 1 año). Para tickers con N < N_min, usar shrinkage al perfil global o del sector.
+2. **Umbral mínimo:** definir `N_min` de barras para confiar en cuantiles per-ticker (propuesta: 252 barras = 1 año). Para tickers con N < N_min, usar shrinkage ~~al perfil global o del sector~~ **[03-Oct]** al perfil del sector (D-K, `K=252`; global solo si el ticker no tiene sector).
 3. **Filtro pre-inception:** observaciones anteriores al inception del ticker se excluyen del conteo EV.
 4. **Fórmula:** `fecha_valida(ticker) = max(inception_date(ticker), primera_barra_en_vault(ticker) + N_min_warmup)`.
 
@@ -681,7 +776,7 @@ Label auxiliar (humano):             "T+3|C+1|V-2"
 | Familia | Dimensiones | Escala σ-index | Valores | Ejemplo de clave |
 |:--------|:------------|:--------------:|:--------|:-----------------|
 | **Cuantil 6-bin** | T, C, VWAP (v2) | `+3,+2,+1,−1,−2,−3` | Cuantiles gaussianos D1, sin neutro | `T+3`, `V-2` |
-| **Cuantil 5-bin** | σVc, σc (Wave) | `+3,+2,0,−2,−3` | Cuantiles gaussianos D1, con centro | `σVc+2`, `σc0` |
+| **Cuantil 5-bin** | σVc, σc (Wave) **[03-Oct]** + ~~σVw, ΔσVw (Multiscale)~~ **[03-Oct · D-REG]** σc, σw, σVw (Multiscale), según el registro canónico §2.0-bis filas 5–8 | `+3,+2,0,−2,−3` (**ratificado 03-Oct**) | Cuantiles gaussianos D1, con centro | `σVc+2`, `σc0` |
 | **Direccional 3-estado** | vel (Wave), traj/FATIGUE (Multiscale) | `+1, 0, −1` | Signo de dirección, no cuantiles | `vel+1` = ▲, `vel0` = ~, `vel-1` = ▼ |
 
 **Regla:** El σ-index firmado (`±2/±3`) aplica **exclusivamente** a las dimensiones basadas en cuantiles empíricos. Las dimensiones de 3 estados direccionales (`vel`: `{▼, ~, ▲}`; `traj/FATIGUE`: `{ABSORBING, STABLE, EXHAUSTING}`) usan un **sign-index** `{−1, 0, +1}` como alias numérico:
@@ -801,7 +896,7 @@ Los labels textuales se preservan como **campo auxiliar humanamente legible** en
 
 ### 10.11. 🟡 PC-11: Cadencia de Recalibración No Definida (P2)
 
-**Gap:** METAR tiene Rule S6/S8 con cadencia mensual. Para `ticker_gaussian_profiles.json` con 531 tickers, no hay cadencia definida.
+**Gap:** METAR tiene Rule S6/S8 con cadencia mensual. Para `ticker_gaussian_profiles.json` con ~~531~~ **[03-Oct] 566** tickers, no hay cadencia definida.
 
 **Propuesta:**
 - **Trimestral:** regeneración completa de perfiles per-ticker.
@@ -848,9 +943,9 @@ Transferir el protocolo de METAR (`fact_store_v3_architecture.md` §3.3) con tie
 | 11-20 | HIGH | 20% |
 | 21+ | ROBUST | 0% (datos propios) |
 
-### PT-04: Capa Paralela de Overflow para Slopes
+### PT-04: Capa Paralela de Overflow para ~~Slopes~~ **[03-Oct]** Todas las Dimensiones
 
-Ver PC-02. Transferir la arquitectura de `sigma_overflow.py` adaptada a pendientes per-ticker, con anclas P0.135/P99.865 en el perfil de calibración.
+Ver PC-02. Transferir la arquitectura de `sigma_overflow.py` adaptada a ~~pendientes per-ticker~~ **[03-Oct · D-OVERFLOW]** todas las dimensiones per-ticker, con ~~anclas P0.135/P99.865~~ las 7 anclas en el perfil de calibración.
 
 ### PT-05: Inception Policy Adaptada a Tickers
 

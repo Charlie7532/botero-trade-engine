@@ -28,6 +28,8 @@ la síntesis cuantitativa de 27.5 años (1999 - 2026):
      Backtest: +6.60 acciones solo, +84.79 combinado con H1a.
 """
 
+import json
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 from backend.modules.shared.domain.constants.sectors import SECTOR_ETFS, SECTOR_CAP_WEIGHTS
 
@@ -48,9 +50,9 @@ class QualityEntryGate:
         "TW": [16.7, 41.9, 75.0, 90.0]
     }
     SV5_EDGES = {
-        "TH": [17.5, 32.5, 60.5, 81.2],
-        "FI": [19.0, 33.3, 59.3, 77.8],
-        "TW": [15.8, 30.2, 55.3, 75.0]
+        "TH": [24.6, 37.2, 58.0, 73.8],
+        "FI": [27.0, 37.8, 55.5, 68.4],
+        "TW": [23.9, 34.5, 50.8, 65.4]
     }
     LABELS = ["<<", "<", "~", ">", ">>"]
 
@@ -65,14 +67,47 @@ class QualityEntryGate:
         "<<|<<|<<|>|>>|>>|+"
     }
 
-    # V40: SV5StdVIX threshold — empirically validated as VIX contingency (90.1% recovery)
-    SV5_STD_VIX_CRASH_THRESHOLD = 10.0
+    @staticmethod
+    def _load_turbulence_thresholds() -> tuple[float, float, float]:
+        """Dynamically load empirical thresholds from sv5_turbulence_fact_store.json (Rule 21).
+        
+        Returns:
+            (crash_thresh, high_thresh, extreme_thresh) from fact store operational_thresholds.
+            Explicitly declared fallback for offline/cold-start: (11.21, 8.82, 12.06).
+        """
+        DECLARED_FALLBACK = (11.21, 8.82, 12.06)
+        fact_path = Path(__file__).resolve().parent.parent / "rules" / "sv5_turbulence_fact_store.json"
+        try:
+            if fact_path.exists():
+                with open(fact_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                doc = data.get("_documentation", {})
+                op_thresh = doc.get("operational_thresholds", {})
+                if op_thresh:
+                    crash_thresh = float(op_thresh.get("crash_threshold", DECLARED_FALLBACK[0]))
+                    high_thresh = float(op_thresh.get("high_threshold", DECLARED_FALLBACK[1]))
+                    extreme_thresh = float(op_thresh.get("extreme_threshold", DECLARED_FALLBACK[2]))
+                    return crash_thresh, high_thresh, extreme_thresh
+                
+                # Fallback to taxonomy value edges
+                edges = doc.get("taxonomy", {}).get("d1", {}).get("value_edges", [])
+                if len(edges) >= 5:
+                    crash_thresh = round(float(edges[3]), 2)  # +1sigma edge
+                    high_thresh = DECLARED_FALLBACK[1]
+                    extreme_thresh = DECLARED_FALLBACK[2]
+                    return crash_thresh, high_thresh, extreme_thresh
+        except Exception:
+            pass
+        return DECLARED_FALLBACK
 
-    # V41: SV5_TURBULENCE Risk Modifiers — Empirically validated thresholds (P75 & P90)
-    SV5_TURBULENCE_HIGH_THRESHOLD = 8.90
-    SV5_TURBULENCE_EXTREME_THRESHOLD = 12.80
-    SV5_SHOCK_HIGH_THRESHOLD = 8.90  # Alias for backward compatibility
-    SV5_SHOCK_EXTREME_THRESHOLD = 12.80  # Alias for backward compatibility
+    # V40/V41: Dynamic empirical thresholds loaded from sv5_turbulence_fact_store.json
+    _CRASH_TH, _HIGH_TH, _EXTREME_TH = _load_turbulence_thresholds.__func__()
+    SV5_STD_VIX_CRASH_THRESHOLD = _CRASH_TH
+    SV5_TURBULENCE_HIGH_THRESHOLD = _HIGH_TH
+    SV5_TURBULENCE_EXTREME_THRESHOLD = _EXTREME_TH
+    SV5_SHOCK_HIGH_THRESHOLD = _HIGH_TH  # Alias for backward compatibility
+    SV5_SHOCK_EXTREME_THRESHOLD = _EXTREME_TH  # Alias for backward compatibility
+
 
     def __init__(self, min_regime_days: int = 20):
         self.min_regime_days = min_regime_days
@@ -547,9 +582,9 @@ class QualityEntryGate:
         if tot_w > 0:
             target = {s: w / tot_w for s, w in target.items()}
 
-        # V41 SV5_TURBULENCE Institutional Volume Risk Modifiers:
-        # 1. RECUPERACION + SV5_TURBULENCE > 8.90 (P75) -> 0.50x risk factor (mitigates false bull-market rallies)
-        # 2. RE_ACUMULACION_ALCISTA + 8.90 <= SV5_TURBULENCE < 12.80 (P75-P90) -> 0.75x risk factor (mitigates covert institutional distribution)
+        # V41 SV5_TURBULENCE Institutional Volume Risk Modifiers (Dynamic from Fact Store):
+        # 1. RECUPERACION + SV5_TURBULENCE > HIGH_THRESHOLD (P75 ~8.82) -> 0.50x risk factor (mitigates false bull-market rallies)
+        # 2. RE_ACUMULACION_ALCISTA + HIGH_THRESHOLD <= SV5_TURBULENCE < EXTREME_THRESHOLD (P75-P90 ~8.82-12.06) -> 0.75x risk factor
         if sv5_turbulence is None and sv5_shock is not None:
             sv5_turbulence = sv5_shock
 

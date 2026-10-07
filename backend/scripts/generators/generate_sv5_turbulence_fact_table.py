@@ -66,7 +66,20 @@ def main():
         pivot_fn=turb_pivot_fn,
         pivot_overrides=TURB_PIVOT_OVERRIDES,
         intermarket_notes={
-            "turbulence_spike": "Institutional Volume Disruption > 10.0 -> Liquidity Stress",
+            "turbulence_spike": "Institutional Volume Disruption > crash_threshold (11.21) -> Liquidity Stress",
+        },
+        operational_thresholds={
+            "crash_threshold": 11.21,
+            "high_threshold": 8.82,
+            "extreme_threshold": 12.06,
+            "empirical_quantiles": {
+                "p50": 6.58,
+                "p75": 8.82,
+                "p84_1sigma": 11.21,
+                "p90": 12.06,
+                "p95": 14.75,
+            },
+            "source": "empirical_quantiles_sv5_turbulence (Rule 21 Standard)",
         },
         output_path=OUTPUT_PATH,
     )

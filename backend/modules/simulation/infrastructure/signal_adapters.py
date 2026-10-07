@@ -1293,8 +1293,8 @@ class RegressionChannelAdapter(SignalPort):
 
     def _check_rc_entry(
         self, regime: str, sigma_position: float, slope_long: float,
-        slope_short: float, below_vwap: bool, close: np.ndarray, i: int,
-        high_arr: np.ndarray, low_arr: np.ndarray, vol_arr: np.ndarray, vwap: float,
+        slope_short: float, below_vwap: Optional[bool], close: np.ndarray, i: int,
+        high_arr: np.ndarray, low_arr: np.ndarray, vol_arr: np.ndarray, vwap: Optional[float],
     ) -> tuple[int, float]:
         """Entry logic (signal=+1). Returns (signal, confidence).
 
@@ -1307,9 +1307,9 @@ class RegressionChannelAdapter(SignalPort):
             hookup = close[i] > close[i - 1] if i > 0 else False
             current_price = close[i]
 
-            if at_support and below_vwap and hookup:
+            if at_support and (below_vwap is True) and hookup:
                 depth = min(abs(sigma_position) / 2.0, 1.0)
-                vwap_discount = min(abs(vwap - current_price) / vwap * 100, 1.0) if vwap > 0 else 0
+                vwap_discount = min(abs(vwap - current_price) / vwap * 100, 1.0) if (vwap is not None and vwap > 0) else 0
                 confidence = round(min(depth * 0.4 + vwap_discount * 0.3 + min(slope_long / 0.05, 1.0) * 0.3, 1.0), 2)
                 return 1, confidence
 
@@ -1326,7 +1326,7 @@ class RegressionChannelAdapter(SignalPort):
                 if (i > 0 and prev_vwap is not None and vwap is not None) else False
             )
 
-            if shallow_bear and at_extreme and short_turning and (below_vwap or vwap_cross_up):
+            if shallow_bear and at_extreme and short_turning and (below_vwap is True or vwap_cross_up):
                 confidence = round(min(abs(sigma_position) / 3.0 + 0.3, 1.0), 2)
                 return 1, confidence
 
@@ -1372,7 +1372,7 @@ class RegressionChannelAdapter(SignalPort):
             vwap = self._calc_vwap(
                 close[:i + 1], high_arr[:i + 1], low_arr[:i + 1], vol_arr[:i + 1], 20
             )
-            below_vwap = (current_price < vwap) if vwap is not None else False
+            below_vwap = (current_price < vwap) if vwap is not None else None
 
             # ── REGIME from long slope ──
             if slope_long > 0.01:

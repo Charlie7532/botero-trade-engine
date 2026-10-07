@@ -1,0 +1,1 @@
+60af207c7dacc35b1e7e78f1f458af1bb535cb8bdb53cef531b863d07b24e375  .hermes/prompts/2026-10-05-homogeneizacion-sv5-zigzag-v2.md

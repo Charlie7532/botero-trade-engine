@@ -6,12 +6,13 @@ import numpy as np
 import pandas as pd
 
 from backend.modules.shared.domain.entities.zigzag_leg import ZigzagLeg
+from backend.modules.shared.domain.ports.zigzag_leg_port import ZigzagLegPort
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
 logger = logging.getLogger(__name__)
 
 
-class ZigzagLegRepository:
+class ZigzagLegRepository(ZigzagLegPort):
     """
     Repositorio de infraestructura para consultar y guardar tramos de ZigZag en Neon Vault.
     Clean Architecture: Infrastructure Adapter.
@@ -91,60 +92,6 @@ class ZigzagLegRepository:
         """Obtiene el último tramo confirmado para un ticker y escala."""
         legs = self.get_confirmed_legs(ticker, scale, as_of_date)
         return legs[-1] if legs else None
-
-    def save_legs(self, legs: List[ZigzagLeg]) -> int:
-        """Guarda o actualiza tramos de ZigZag en Neon Vault (UPSERT)."""
-        if not legs:
-            return 0
-
-        conn = self.store._conn()
-        try:
-            sql = """
-                INSERT INTO market.zigzag_legs (
-                    ticker, scale, leg_id,
-                    start_timestamp, start_type, start_price,
-                    end_timestamp, end_type, end_price,
-                    confirmed_at_timestamp, status,
-                    prev_leg_return, prev_leg_duration
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (ticker, scale, leg_id) DO UPDATE SET
-                    start_price = EXCLUDED.start_price,
-                    end_price = EXCLUDED.end_price,
-                    confirmed_at_timestamp = EXCLUDED.confirmed_at_timestamp,
-                    status = EXCLUDED.status,
-                    prev_leg_return = EXCLUDED.prev_leg_return,
-                    prev_leg_duration = EXCLUDED.prev_leg_duration;
-            """
-
-            tuples = [
-                (
-                    l.ticker,
-                    l.scale,
-                    l.leg_id,
-                    l.start_timestamp,
-                    l.start_type,
-                    l.start_price,
-                    l.end_timestamp,
-                    l.end_type,
-                    l.end_price,
-                    l.confirmed_at_timestamp,
-                    l.status,
-                    l.prev_leg_return,
-                    l.prev_leg_duration,
-                )
-                for l in legs
-            ]
-
-            with conn.cursor() as cur:
-                cur.executemany(sql, tuples)
-            conn.commit()
-            return len(legs)
-        except Exception as e:
-            conn.rollback()
-            logger.error(f"❌ Error al guardar {len(legs)} tramos de ZigZag: {e}")
-            raise
-        finally:
-            self.store._put(conn)
 
     def get_confirmed_legs_with_indicators(
         self,

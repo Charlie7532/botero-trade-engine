@@ -26,7 +26,6 @@ from backend.modules.entry_decision.domain.services.vix_metar_service import get
 from backend.modules.entry_decision.domain.services.vvix_metar_service import get_vvix_market_metar
 from backend.modules.entry_decision.domain.services.pcr_metar_service import get_pcr_market_metar
 from backend.modules.entry_decision.domain.services.fg_metar_service import get_fg_market_metar
-from backend.modules.entry_decision.domain.services.sv5_turbulence_metar_service import get_sv5_turbulence_market_metar
 from backend.modules.entry_decision.domain.services.skew_metar_service import get_skew_market_metar
 from backend.modules.entry_decision.domain.services.credit_metar_service import get_credit_market_metar
 from backend.modules.entry_decision.domain.services.yield_curve_metar_service import get_yield_curve_market_metar
@@ -290,26 +289,6 @@ def evaluate_sigmets_from_metar_dicts(
         except Exception as e:
             _log_station_failure("FG", e)
 
-    # 5. SV5_TURBULENCE
-    turb = metar_dicts.get("sv5_turbulence")
-    if turb:
-        try:
-            turb_val = turb.get("turbulence_index_value", 0.0)
-            if turb_val >= 10.0:
-                sigmets.append(MarketSIGMET(
-                    sigmet_id=f"SIGMET-TURB-{str(turb.get('as_of_date','')).replace('-','')}-001",
-                    timestamp_utc=now_str, as_of_date=turb.get("as_of_date", ""),
-                    hazard_type="SIGMET_INSTITUTIONAL_VOLUME_TURBULENCE", severity="CRITICAL",
-                    station="SV5_TURBULENCE", title="Institutional Volume Turbulence Crisis (>= 10.0)",
-                    description=f"Volume turbulence ({turb_val:.2f}) in HIGH/CRISIS territory (>= 10.0). Institutional participation is erratic.",
-                    operational_action="MKT_BLOCK_CRISIS", is_active=True,
-                    telemetry_snapshot={"turbulence": turb_val, "turbulence_d3": turb.get("turbulence_velocity_3d")}
-                ))
-            ovf = _check_overflow_sigmet("SV5_TURBULENCE", _ns(turb), now_str)
-            if ovf:
-                sigmets.append(ovf)
-        except Exception as e:
-            _log_station_failure("SV5_TURBULENCE", e)
 
     # 6. SKEW
     skew = metar_dicts.get("skew")
@@ -633,30 +612,6 @@ def evaluate_market_sigmets(as_of_date: Optional[str] = None) -> List[MarketSIGM
     except Exception as e:
         _log_station_failure("FG", e)
 
-    # 5. Station SV5_TURBULENCE: Institutional Volume Turbulence Surge (>= 10.0)
-    try:
-        turb_metar = get_sv5_turbulence_market_metar(as_of_date=as_of_date)
-        if turb_metar.turbulence_index_value >= 10.0:
-            sigmets.append(
-                MarketSIGMET(
-                    sigmet_id=f"SIGMET-TURB-{turb_metar.as_of_date.replace('-','')}-001",
-                    timestamp_utc=now_str,
-                    as_of_date=turb_metar.as_of_date,
-                    hazard_type="SIGMET_INSTITUTIONAL_VOLUME_TURBULENCE",
-                    severity="CRITICAL",
-                    station="SV5_TURBULENCE",
-                    title="Institutional Volume Turbulence Crisis (>= 10.0)",
-                    description=f"Volume turbulence ({turb_metar.turbulence_index_value:.2f}) in HIGH/CRISIS territory (>= 10.0). Institutional participation is erratic.",
-                    operational_action="MKT_BLOCK_CRISIS",
-                    is_active=True,
-                    telemetry_snapshot={"turbulence": turb_metar.turbulence_index_value, "turbulence_d3": turb_metar.turbulence_velocity_3d}
-                )
-            )
-        ovf = _check_overflow_sigmet("SV5_TURBULENCE", turb_metar, now_str)
-        if ovf:
-            sigmets.append(ovf)
-    except Exception as e:
-        _log_station_failure("SV5_TURBULENCE", e)
 
     # 6. Station SKEW: Extreme Tail Risk Hedging (SKEW >= 145.0)
     try:

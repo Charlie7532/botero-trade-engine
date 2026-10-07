@@ -607,6 +607,7 @@ def build_v3_dual_layer_fact_store(
     pivot_fn: Optional[Callable[[pd.DataFrame], pd.Series]] = None,
     pivot_overrides: Optional[dict] = None,
     intermarket_notes: Optional[dict] = None,
+    operational_thresholds: Optional[dict] = None,
     output_path: Optional[Path] = None,
 ) -> dict:
     """
@@ -831,6 +832,7 @@ def build_v3_dual_layer_fact_store(
             "return_formula_standard": "R_fwd = (Close_{t+k} - Close_t) / Close_t for k in [1, 3, 5] — Bayesian Laplace Shrinkage m=10",
             "return_formula_kinematic": "R_net = log(P_end / P_start) * 100 on pure confirmed Neon Vault ZigZag legs (SPY) — Bayesian Laplace Shrinkage m=10",
             "intermarket_mechanics": intermarket_notes or {},
+            **({"operational_thresholds": operational_thresholds} if operational_thresholds else {}),
             "dual_layer_architecture": {
                 "standard_layer": "zz25/zz50/zz75 — fwd_1d/3d/5d bar returns with Bayesian Shrinkage m=10 and confidence_tier. Compatible with convergence_compositor.py.",
                 "kinematic_layer": "zigzag_kinematic.zz25/zz50/zz75 — Physical ZigZag leg metrics + structural_momentum. Bayesian regularized.",

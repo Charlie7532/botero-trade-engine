@@ -237,11 +237,12 @@ def evaluate_operational_notams(as_of_date: Optional[str] = None) -> List[Operat
                         gap_bdays >= 2
                         or station in ["SPY", "VIX", "BSI", "CBOE_PCR", "DXY", "YIELD_SPREAD", "CREDIT_RATIO"]
                     )
+                    inc_type = "NOTAM_VAULT_STALE" if (station == "SPY" or gap_bdays >= 2) else "NOTAM_STALE_DATA"
                     notams.append(
                         OperationalNOTAM(
                             notam_id=f"NOTAM-STALE-{station}-{today_str.replace('-','')}",
                             timestamp_utc=now_str,
-                            incident_type="NOTAM_STALE_DATA",
+                            incident_type=inc_type,
                             severity="CRITICAL" if is_critical else "WARNING",
                             component=f"VaultStation.{station}",
                             title=f"Station {station} Data Stale ({gap_bdays}d lag)",

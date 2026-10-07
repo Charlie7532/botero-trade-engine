@@ -1,0 +1,1 @@
+26bf6dcf990e8dcea5a27a14068ff9426290f103abc76197bce1bff41af9bf50  .hermes/prompts/2026-10-06-guidence-ejecucion-concreta.md

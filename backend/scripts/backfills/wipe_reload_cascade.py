@@ -273,10 +273,12 @@ def rebuild_snapshots(store: TimescaleDataStore, ticker: str, df: pd.DataFrame) 
         tension_current = round(float(s_curr - vs_curr), 4) if vs_curr is not None else None
         tension_wave = round(float(s_wave - vs_wave), 4) if vs_wave is not None else None
 
-        t_accel = tide_slope[idx] - tide_slope[idx - 1] if idx > start_idx and not np.isnan(tide_slope[idx - 1]) else 0.0
-        c_accel = curr_slope[idx] - curr_slope[idx - 1] if idx > start_idx and not np.isnan(curr_slope[idx - 1]) else 0.0
-        w_accel = wave_slope[idx] - wave_slope[idx - 1] if idx > start_idx and not np.isnan(wave_slope[idx - 1]) else 0.0
+        # Accelerations (slope diff vs previous bar)
+        t_accel = round(float(tide_slope[idx] - tide_slope[idx - 1]), 6) if idx > start_idx and not np.isnan(tide_slope[idx - 1]) else None
+        c_accel = round(float(curr_slope[idx] - curr_slope[idx - 1]), 6) if idx > start_idx and not np.isnan(curr_slope[idx - 1]) else None
+        w_accel = round(float(wave_slope[idx] - wave_slope[idx - 1]), 6) if idx > start_idx and not np.isnan(wave_slope[idx - 1]) else None
 
+        # Wave flip
         w_flip = False
         w_flip_dir = 0
         if idx > start_idx and not np.isnan(wave_slope[idx - 1]):
@@ -286,7 +288,7 @@ def rebuild_snapshots(store: TimescaleDataStore, ticker: str, df: pd.DataFrame) 
 
         ts_val = float(tide_slope[idx])
         ws_val = float(wave_slope[idx])
-        if ts_val < -0.02 and ws_val < -0.05 and t_accel < 0:
+        if ts_val < -0.02 and ws_val < -0.05 and (t_accel is not None and t_accel < 0):
             fear_level, fear_label = 5, "PANIC"
         elif ts_val < -0.01 and ws_val <= 0.02:
             fear_level, fear_label = 4, "FEAR"
@@ -294,9 +296,9 @@ def rebuild_snapshots(store: TimescaleDataStore, ticker: str, df: pd.DataFrame) 
             fear_level, fear_label = 3, "ANXIETY"
         elif -0.01 <= ts_val <= 0.01:
             fear_level, fear_label = 2, "NEUTRAL"
-        elif ts_val > 0.01 and ws_val > 0.02 and t_accel <= 0:
+        elif ts_val > 0.01 and ws_val > 0.02 and (t_accel is not None and t_accel <= 0):
             fear_level, fear_label = 1, "CONFIDENCE"
-        elif ts_val > 0.02 and ws_val > 0.05 and t_accel > 0:
+        elif ts_val > 0.02 and ws_val > 0.05 and (t_accel is not None and t_accel > 0):
             fear_level, fear_label = 0, "EUPHORIA"
         else:
             fear_level, fear_label = 2, "NEUTRAL"

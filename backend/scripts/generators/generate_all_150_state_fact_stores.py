@@ -15,7 +15,7 @@ import sys
 import logging
 from pathlib import Path
 
-root_dir = Path(__file__).resolve().parent.parent.parent
+root_dir = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(root_dir))
 
 from backend.scripts.generators.generate_vix_fact_table import main as retrain_vix

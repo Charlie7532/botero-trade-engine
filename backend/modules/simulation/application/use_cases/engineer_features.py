@@ -106,8 +106,7 @@ class QuantFeatureEngineer:
         # --- B1: VWAP Z-Score (Distancia institucional al precio justo) ---
         typical_price = (df['high'] + df['low'] + df['close']) / 3.0
         cum_vp = (typical_price * df['volume']).rolling(vwap_window).sum()
-        cum_vol = df['volume'].rolling(vwap_window).sum()
-        vwap = cum_vp / cum_vol.clip(lower=1.0)
+        vwap = (cum_vp / cum_vol).where(cum_vol > 0, np.nan)
 
         vwap_diff = df['close'] - vwap
         vwap_std = vwap_diff.rolling(vwap_window).std().clip(lower=1e-8)

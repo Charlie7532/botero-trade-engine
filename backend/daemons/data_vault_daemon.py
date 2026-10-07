@@ -1282,7 +1282,18 @@ def vault_ohlcv_bars(store: TimescaleDataStore, tickers: list[str], retry_ticker
     try:
         from backend.daemons.vault_providers.ohlcv_provider import OHLCVProvider
         provider = OHLCVProvider()
-        return provider.run_full(store, tickers=tickers, retry_tickers=retry_tickers or [])
+        result = provider.run_full(store, tickers=tickers, retry_tickers=retry_tickers or [])
+
+        # F4.3: Hook post-ingesta — sync SPY zigzag legs automatically
+        if result.get("status") == "ok" or result.get("updated", 0) > 0:
+            try:
+                from backend.daemons.zigzag_legs_daemon import sync_ticker_zigzag_legs
+                logger.info("⚡ Post-ingesta hook: Syncing SPY zigzag legs...")
+                sync_ticker_zigzag_legs(store, "SPY")
+            except Exception as e_zz:
+                logger.warning(f"Post-ingesta SPY zigzag sync warning: {e_zz}")
+
+        return result
     except Exception as e:
         logger.error(f"vault_ohlcv_bars failed: {e}")
         return {"status": "error", "error": str(e), "updated": 0, "enriched": 0, "failed": {}}

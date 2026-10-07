@@ -76,13 +76,15 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
 
     # ── OHLCV Bars ────────────────────────────────────────
 
-    def save_bars(self, ticker: str, tf: str, df: pd.DataFrame, overwrite: bool = False) -> None:
+    def save_bars(self, ticker: str, tf: str, df: pd.DataFrame, overwrite: bool = False, bar_status: Optional[str] = None) -> None:
         """Insert bars. overwrite=True replaces existing rows (revised/partial bars)."""
         if df.empty:
             return
         conflict_sql = (
             "DO UPDATE SET open = EXCLUDED.open, high = EXCLUDED.high, low = EXCLUDED.low, "
-            "close = EXCLUDED.close, volume = EXCLUDED.volume"
+            "close = EXCLUDED.close, volume = EXCLUDED.volume, "
+            "bar_status = COALESCE(EXCLUDED.bar_status, market.ohlcv_bars.bar_status), "
+            "ingested_at = NOW()"
             if overwrite else "DO NOTHING"
         )
 
@@ -99,22 +101,26 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         conn = self._conn()
         try:
             rows = []
+            has_status_col = "bar_status" in df.columns
             for ts, row in df.iterrows():
+                row_status = str(row["bar_status"]) if has_status_col and pd.notna(row["bar_status"]) else bar_status
                 rows.append((
                     ts, ticker.upper(), tf,
                     float(row["open"]), float(row["high"]),
                     float(row["low"]), float(row["close"]),
                     int(row.get("volume", 0)),
+                    row_status,
                 ))
 
             with conn.cursor() as cur:
                 psycopg2.extras.execute_values(
                     cur,
                     f"""INSERT INTO market.ohlcv_bars
-                       (time, ticker, timeframe, open, high, low, close, volume)
+                       (time, ticker, timeframe, open, high, low, close, volume, bar_status, ingested_at)
                        VALUES %s
                        ON CONFLICT (ticker, timeframe, time) {conflict_sql}""",
                     rows,
+                    template="(%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())",
                     page_size=1000,
                 )
             conn.commit()
@@ -189,6 +195,21 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                 cur.execute(
                     "SELECT MAX(time)::date FROM market.ohlcv_bars "
                     "WHERE ticker = %s AND timeframe = %s",
+                    (ticker.upper(), tf),
+                )
+                row = cur.fetchone()
+                return row[0] if row and row[0] else None
+        finally:
+            self._put(conn)
+
+    def bars_oldest_non_final_date(self, ticker: str, tf: str) -> Optional[date]:
+        """Return the oldest bar date with bar_status = 'PRELIMINARY'."""
+        conn = self._conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT MIN(time)::date FROM market.ohlcv_bars "
+                    "WHERE ticker = %s AND timeframe = %s AND bar_status = 'PRELIMINARY'",
                     (ticker.upper(), tf),
                 )
                 row = cur.fetchone()
@@ -300,7 +321,9 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         except Exception as ce:
             logger.warning(f"L1 cache invalidation failed for mcp/{category}/{ticker}: {ce}")
 
-    def load_mcp_snapshot(self, category: str, ticker: str, dt: str) -> Optional[Any]:
+    def load_mcp_snapshot(self, category: str, ticker: str, dt: Optional[str] = None) -> Optional[Any]:
+        if dt is None:
+            return self.load_mcp_latest(category, ticker)
         conn = self._conn()
         try:
             with conn.cursor() as cur:
@@ -569,8 +592,10 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
     def upsert_ohlcv_bar(
         self, ticker: str, timeframe: str, time,
         open: float, high: float, low: float, close: float, volume: int = 0,
+        bar_status: Optional[str] = None,
+        overwrite: bool = True,
     ) -> None:
-        """Insert a single OHLCV bar, skip if already exists."""
+        """Insert or update a single OHLCV bar."""
         # VAULT STANDARD (Rule 18): daily bars always use midnight UTC timestamps
         if timeframe == "1d":
             ts = pd.Timestamp(time)
@@ -579,14 +604,21 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
             else:
                 time = ts.normalize().tz_localize("UTC")
         conn = self._conn()
+        conflict_action = (
+            "DO UPDATE SET open = EXCLUDED.open, high = EXCLUDED.high, low = EXCLUDED.low, "
+            "close = EXCLUDED.close, volume = EXCLUDED.volume, "
+            "bar_status = COALESCE(EXCLUDED.bar_status, market.ohlcv_bars.bar_status), "
+            "ingested_at = NOW()"
+            if overwrite else "DO NOTHING"
+        )
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """INSERT INTO market.ohlcv_bars
-                       (time, ticker, timeframe, open, high, low, close, volume)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                       ON CONFLICT (ticker, timeframe, time) DO NOTHING""",
-                    (time, ticker.upper(), timeframe, open, high, low, close, volume),
+                    f"""INSERT INTO market.ohlcv_bars
+                       (time, ticker, timeframe, open, high, low, close, volume, bar_status, ingested_at)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                       ON CONFLICT (ticker, timeframe, time) {conflict_action}""",
+                    (time, ticker.upper(), timeframe, open, high, low, close, volume, bar_status),
                 )
             conn.commit()
         except Exception as e:

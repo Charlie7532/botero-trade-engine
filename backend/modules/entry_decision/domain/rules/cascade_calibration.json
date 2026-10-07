@@ -1,8 +1,8 @@
 {
   "_documentation": {
     "model_purpose": "Cascade Conviction Z-Score Calibration & Asymmetric Tercile Edges",
-    "sample_size_pivots": 1589,
-    "updated_at": "2026-08-16T16:29:22Z"
+    "sample_size_pivots": 1583,
+    "updated_at": "2026-10-07T02:39:18Z"
   },
   "type_mask": {
     "MIN": {
@@ -36,20 +36,20 @@
     }
   },
   "d1_bear_5": {
-    "mean": 0.41,
-    "std": 0.3206
+    "mean": 0.3729,
+    "std": 0.3194
   },
   "domino_zz25": {
-    "mean": 0.0532,
-    "std": 0.035
+    "mean": 0.0525,
+    "std": 0.0271
   },
   "domino_zz50": {
     "mean": 0.1003,
-    "std": 0.0643
+    "std": 0.0566
   },
   "tercile_edges": [
-    -0.387,
-    0.302
+    -0.427,
+    0.311
   ],
   "baseline_ic_in_sample": {
     "cascade_50": 0.4155,
@@ -62,5 +62,5 @@
     "cascade_50to75": 0.3388
   },
   "decay_threshold": 0.1,
-  "last_checked": "2026-08-17T05:36:03Z"
+  "last_checked": null
 }

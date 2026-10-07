@@ -270,9 +270,9 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
         tension_wave = round(float(s_wave - vs_wave), 4) if vs_wave is not None else None
 
         # Accelerations (slope diff vs previous bar)
-        t_accel = tide_slope[idx] - tide_slope[idx - 1] if idx > start_idx and not np.isnan(tide_slope[idx - 1]) else 0.0
-        c_accel = curr_slope[idx] - curr_slope[idx - 1] if idx > start_idx and not np.isnan(curr_slope[idx - 1]) else 0.0
-        w_accel = wave_slope[idx] - wave_slope[idx - 1] if idx > start_idx and not np.isnan(wave_slope[idx - 1]) else 0.0
+        t_accel = round(float(tide_slope[idx] - tide_slope[idx - 1]), 6) if idx > start_idx and not np.isnan(tide_slope[idx - 1]) else None
+        c_accel = round(float(curr_slope[idx] - curr_slope[idx - 1]), 6) if idx > start_idx and not np.isnan(curr_slope[idx - 1]) else None
+        w_accel = round(float(wave_slope[idx] - wave_slope[idx - 1]), 6) if idx > start_idx and not np.isnan(wave_slope[idx - 1]) else None
 
         # Wave flip
         w_flip = False
@@ -285,7 +285,7 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
         # Fear/Regime
         ts = float(tide_slope[idx])
         ws = float(wave_slope[idx])
-        if ts < -0.02 and ws < -0.05 and t_accel < 0:
+        if ts < -0.02 and ws < -0.05 and (t_accel is not None and t_accel < 0):
             fear_level, fear_label = 5, "PANIC"
         elif ts < -0.01 and ws <= 0.02:
             fear_level, fear_label = 4, "FEAR"
@@ -293,9 +293,9 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
             fear_level, fear_label = 3, "ANXIETY"
         elif -0.01 <= ts <= 0.01:
             fear_level, fear_label = 2, "NEUTRAL"
-        elif ts > 0.01 and ws > 0.02 and t_accel <= 0:
+        elif ts > 0.01 and ws > 0.02 and (t_accel is not None and t_accel <= 0):
             fear_level, fear_label = 1, "CONFIDENCE"
-        elif ts > 0.02 and ws > 0.05 and t_accel > 0:
+        elif ts > 0.02 and ws > 0.05 and (t_accel is not None and t_accel > 0):
             fear_level, fear_label = 0, "GREED"
         else:
             fear_level, fear_label = 2, "NEUTRAL"
@@ -341,7 +341,9 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
         geo = compute_geometric_features(
             s_tide, s_curr, s_wave,
             ts, curr_slope[idx], ws,
-            t_accel, c_accel, w_accel,
+            t_accel if t_accel is not None else 0.0,
+            c_accel if c_accel is not None else 0.0,
+            w_accel if w_accel is not None else 0.0,
             slope_stds=None,
         )
 
@@ -355,7 +357,9 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
             vs_tide_val, vs_curr_val, vs_wave_val,
             vt, vc, vw,
             round(float(ts), 6), round(float(cs_val), 6), round(float(ws), 6),
-            round(float(t_accel), 6), round(float(c_accel), 6), round(float(w_accel), 6),
+            round(float(t_accel), 6) if t_accel is not None else None,
+            round(float(c_accel), 6) if c_accel is not None else None,
+            round(float(w_accel), 6) if w_accel is not None else None,
             round(float(ws - cs_val), 6),  # conj_wave_current
             round(float(ws - ts), 6),      # conj_wave_tide
             round(float(cs_val - ts), 6),  # conj_current_tide

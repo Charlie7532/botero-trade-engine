@@ -80,6 +80,9 @@ def ensure_schema(store: TimescaleDataStore):
         store._put(conn)
 
 
+from backend.modules.shared.domain.rules.zigzag_core import compute_zigzag_legs
+
+
 def compute_confirmed_legs_for_ticker_scale(
     ticker: str,
     dates,
@@ -90,97 +93,17 @@ def compute_confirmed_legs_for_ticker_scale(
     scale_name: str,
     thres: float,
 ) -> list:
-    n = len(dates)
-    if n < 10:
-        return []
+    return compute_zigzag_legs(
+        dates=dates,
+        opens=opens,
+        highs=highs,
+        lows=lows,
+        closes=closes,
+        scale_name=scale_name,
+        min_pct=thres,
+        ticker=ticker,
+    )
 
-    legs = []
-    mode = 0  # 0 = init, +1 = searching High, -1 = searching Low
-    
-    extreme_price = None
-    extreme_idx = None
-    
-    start_type = None
-    start_price = None
-    start_idx = None
-
-    for i in range(n):
-        c_high = float(highs[i])
-        c_low = float(lows[i])
-        c_close = float(closes[i])
-
-        if mode == 0:
-            extreme_price = c_close
-            extreme_idx = i
-            start_price = c_close
-            start_idx = i
-            mode = 1
-            start_type = "MIN"
-            continue
-
-        if mode == 1:  # Moving UP (building peak High)
-            if c_high > extreme_price:
-                extreme_price = c_high
-                extreme_idx = i
-
-            # Check if price dropped by thres from peak High
-            if c_low <= extreme_price * (1.0 - thres):
-                end_price = extreme_price
-                end_idx = extreme_idx
-                end_type = "MAX"
-
-                legs.append({
-                    "ticker": ticker,
-                    "scale": scale_name,
-                    "start_timestamp": dates[start_idx],
-                    "start_type": start_type,
-                    "start_price": round(float(start_price), 4),
-                    "end_timestamp": dates[end_idx],
-                    "end_type": end_type,
-                    "end_price": round(float(end_price), 4),
-                    "confirmed_at_timestamp": dates[i],
-                    "status": "CONFIRMED",
-                })
-
-                mode = -1
-                start_type = "MAX"
-                start_price = end_price
-                start_idx = end_idx
-                extreme_price = c_low
-                extreme_idx = i
-
-        elif mode == -1:  # Moving DOWN (building valley Low)
-            if c_low < extreme_price:
-                extreme_price = c_low
-                extreme_idx = i
-
-            # Check if price rose by thres from valley Low
-            if c_high >= extreme_price * (1.0 + thres):
-                end_price = extreme_price
-                end_idx = extreme_idx
-                end_type = "MIN"
-
-                legs.append({
-                    "ticker": ticker,
-                    "scale": scale_name,
-                    "start_timestamp": dates[start_idx],
-                    "start_type": start_type,
-                    "start_price": round(float(start_price), 4),
-                    "end_timestamp": dates[end_idx],
-                    "end_type": end_type,
-                    "end_price": round(float(end_price), 4),
-                    "confirmed_at_timestamp": dates[i],
-                    "status": "CONFIRMED",
-                })
-
-                mode = 1
-                start_type = "MIN"
-                start_price = end_price
-                start_idx = end_idx
-                extreme_price = c_high
-                extreme_idx = i
-
-    return legs
 
 
 def sync_ticker_zigzag_legs(store: TimescaleDataStore, ticker: str, rebuild: bool = False):

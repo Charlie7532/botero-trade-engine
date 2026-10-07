@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-root_dir = Path(__file__).resolve().parent.parent.parent
+root_dir = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(root_dir))
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
@@ -124,7 +124,7 @@ def main():
                 lookup_fn = getattr(adapter, method_name)
                 res = lookup_fn(val=float(val), d3_speed=float(vel), vol_norm=float(vol), vol_d3=float(vol))
                 if res and res.state_key:
-                    votes[code] = d1_directional_vote(res.state_key)
+                    votes[code] = d1_directional_vote(res.state_key, station=code)
             except Exception:
                 continue
 

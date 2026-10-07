@@ -16,10 +16,14 @@ Four-Channel Architecture (v3.1 — signal_router with kinematic anomaly):
 
 Clean Architecture: Pure Domain Service reading exclusively from Neon Vault via METAR services.
 """
+import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, asdict, field
-from typing import Dict, Any, List, Optional
+from datetime import datetime, timezone, date
+from pathlib import Path
+from typing import Dict, Any, List, Optional, Union
+import json
 import numpy as np
 
 from backend.modules.entry_decision.domain.exceptions import StrictDataPolicyError
@@ -34,10 +38,29 @@ from backend.modules.entry_decision.domain.services.yield_curve_metar_service im
 from backend.modules.entry_decision.domain.services.rotation_metar_service import get_rotation_market_metar
 from backend.modules.entry_decision.domain.services.bsi_metar_service import get_bsi_market_metar
 from backend.modules.entry_decision.domain.services.dxy_metar_service import get_dxy_market_metar
-import json
-from pathlib import Path
-from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.domain.ports.zigzag_leg_port import ZigzagLegPort
 from backend.modules.entry_decision.domain.rules.timing_context import get_timing_context
+
+logger = logging.getLogger(__name__)
+
+
+def _parse_as_of_dt(as_of: Optional[Union[str, datetime]]) -> Optional[datetime]:
+    """Parse and normalize an as_of parameter to an end-of-day UTC datetime."""
+    if as_of is None:
+        return None
+    if isinstance(as_of, datetime):
+        return as_of.astimezone(timezone.utc) if as_of.tzinfo else as_of.replace(tzinfo=timezone.utc)
+    if isinstance(as_of, str):
+        as_of_clean = as_of.strip()
+        if not as_of_clean:
+            return None
+        if len(as_of_clean) == 10 and as_of_clean.count("-") == 2:
+            dt = datetime.strptime(as_of_clean, "%Y-%m-%d")
+            return dt.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+        dt = datetime.fromisoformat(as_of_clean.replace("Z", "+00:00"))
+        return dt.astimezone(timezone.utc) if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    return None
+
 from backend.modules.entry_decision.domain.rules.signal_discriminator import (
     classify_context as _classify_context,
     classify_floor as _classify_floor,
@@ -368,8 +391,38 @@ class ConvergenceCompositor:
     """Pure domain service for multi-station METAR convergence analysis.
     Implements dual-channel architecture: Signal (rarity) vs. Statistic (EV)."""
 
-    def __init__(self, max_workers: int = 10):
+    def __init__(
+        self,
+        max_workers: int = 10,
+        leg_repo: Optional[ZigzagLegPort] = None,
+        data_store: Optional[Any] = None,
+    ):
         self.max_workers = max_workers
+        self._leg_repo = leg_repo
+        self._data_store = data_store
+
+    def _get_leg_repo(self) -> Optional[ZigzagLegPort]:
+        if self._leg_repo is not None:
+            return self._leg_repo
+        try:
+            from backend.modules.shared.infrastructure.repositories.zigzag_leg_repository import ZigzagLegRepository
+            store = self._get_data_store()
+            self._leg_repo = ZigzagLegRepository(store)
+            return self._leg_repo
+        except Exception as e:
+            logger.warning("Could not initialize default ZigzagLegRepository: %s", e)
+            return None
+
+    def _get_data_store(self) -> Optional[Any]:
+        if self._data_store is not None:
+            return self._data_store
+        try:
+            from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+            self._data_store = TimescaleDataStore()
+            return self._data_store
+        except Exception as e:
+            logger.warning("Could not initialize default TimescaleDataStore: %s", e)
+            return None
 
     def _fetch_station(self, code: str, fn: Any, as_of_date: Optional[str]) -> tuple:
         try:
@@ -380,12 +433,14 @@ class ConvergenceCompositor:
 
     def compute(
         self,
-        as_of_date: Optional[str] = None,
+        as_of_date: Optional[Union[str, datetime]] = None,
         prev_leg_return: Optional[float] = None,
         prev_leg_return_zz50: Optional[float] = None,
         pivot_type: Optional[str] = None,
     ) -> ConvergenceReport:
         t0 = time.time()
+        as_of_dt = _parse_as_of_dt(as_of_date)
+        as_of_str = as_of_dt.strftime("%Y-%m-%d") if as_of_dt else (as_of_date if isinstance(as_of_date, str) else None)
 
         stations = [
             ("vix", get_vix_market_metar),
@@ -406,7 +461,7 @@ class ConvergenceCompositor:
         blind = []
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             futures = [
-                executor.submit(self._fetch_station, code, fn, as_of_date)
+                executor.submit(self._fetch_station, code, fn, as_of_str)
                 for code, fn in stations
             ]
             for f in futures:
@@ -636,21 +691,20 @@ class ConvergenceCompositor:
 
         # ── Channel 4: Cascade Conviction (Empirically Validated & Type-Masked) ─────
         if pivot_type is None or prev_leg_return is None or prev_leg_return_zz50 is None:
-            try:
-                from backend.modules.shared.infrastructure.repositories.zigzag_leg_repository import ZigzagLegRepository
-                store = TimescaleDataStore()
-                repo = ZigzagLegRepository(store)
-                legs25 = repo.get_confirmed_legs("SPY", "zz25")
-                if legs25:
-                    if prev_leg_return is None:
-                        prev_leg_return = legs25[-1].prev_leg_return
-                    if pivot_type is None:
-                        pivot_type = legs25[-1].start_type
-                legs50 = repo.get_confirmed_legs("SPY", "zz50")
-                if prev_leg_return_zz50 is None and legs50:
-                    prev_leg_return_zz50 = legs50[-1].prev_leg_return
-            except Exception:
-                pass
+            repo = self._get_leg_repo()
+            if repo is not None:
+                try:
+                    legs25 = repo.get_confirmed_legs("SPY", "zz25", as_of_date=as_of_dt)
+                    if legs25:
+                        if prev_leg_return is None:
+                            prev_leg_return = legs25[-1].prev_leg_return
+                        if pivot_type is None:
+                            pivot_type = legs25[-1].start_type
+                    legs50 = repo.get_confirmed_legs("SPY", "zz50", as_of_date=as_of_dt)
+                    if prev_leg_return_zz50 is None and legs50:
+                        prev_leg_return_zz50 = legs50[-1].prev_leg_return
+                except Exception as e:
+                    logger.warning("Error fetching confirmed zigzag legs (as_of_date=%s): %s", as_of_dt, e)
 
         if pivot_type is None or pivot_type not in ("MIN", "MAX"):
             pivot_type = "MIN"
@@ -715,13 +769,18 @@ class ConvergenceCompositor:
 
         # SPY effort/result check
         try:
-            store = TimescaleDataStore()
-            df_spy = store.load_bars("SPY", "1d")
-            if not df_spy.empty and len(df_spy) >= 4:
-                spy_ret_3d = float(df_spy.iloc[-1]['close'] / df_spy.iloc[-4]['close'] - 1.0)
+            store = self._get_data_store()
+            if store is not None:
+                end_date = as_of_dt.date() if as_of_dt else None
+                df_spy = store.load_bars("SPY", "1d", end=end_date)
+                if not df_spy.empty and len(df_spy) >= 4:
+                    spy_ret_3d = float(df_spy.iloc[-1]['close'] / df_spy.iloc[-4]['close'] - 1.0)
+                else:
+                    spy_ret_3d = 0.0
             else:
                 spy_ret_3d = 0.0
-        except Exception:
+        except Exception as e:
+            logger.warning("Error computing SPY 3d return (as_of_date=%s): %s", as_of_dt, e)
             spy_ret_3d = 0.0
 
         sv5_data = results.get("sv5_turbulence", {})

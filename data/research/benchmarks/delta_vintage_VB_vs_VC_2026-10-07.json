@@ -1,0 +1,125 @@
+{
+  "metadata": {
+    "title": "Benchmark Delta Audit: Vintage V-B vs Vintage V-C",
+    "phase": "F5.2",
+    "date": "2026-10-07",
+    "signatures": {
+      "quants_obs_pkl": "41b3323cda65d23435bbdcf91bb8f4416dc966511a8dbe211226347987ed9076",
+      "s5_triad_table_json": "c52dd43a931d5e583fb3f6b77b753a86744b22a4594b8e3a34a5343d5ca74cd4",
+      "s5v_triad_table_json": "e48eef9bf2f58d59047bf8b3a75c74f82d8f6489ad0fb82ae128b6e4e6cc3855",
+      "sv5_turbulence_fact_store_json": "8f729a6045485379ff4e11d2dc58c442e76f55d92a1b4f82aa041315e7d96ca4",
+      "git_baseline_commit": "dc39ba6",
+      "execution_timestamp": "2026-10-07T15:44:47.067474+00:00"
+    }
+  },
+  "control_arm_common_window": {
+    "description": "Isolates pure DATA cleaning effect by evaluating identical 6,653 days window (2000-01-03 to 2026-06-16)",
+    "days": 6653,
+    "v40_baseline": {
+      "shares_vb": 459.36,
+      "shares_vc": 473.31,
+      "delta_shares_data_effect": 13.95,
+      "delta_pct_data_effect": 3.04,
+      "max_dd_vb": -42.74,
+      "max_dd_vc": -42.74
+    },
+    "v41_active": {
+      "shares_vb": 426.89,
+      "shares_vc": 422.22,
+      "delta_shares_data_effect": -4.67,
+      "delta_pct_data_effect": -1.09,
+      "max_dd_vb": -41.97,
+      "max_dd_vc": -41.97
+    },
+    "comparison_v41_vs_v40": {
+      "delta_shares_vb": -32.46,
+      "delta_shares_vc": -51.09,
+      "dd_improvement_pp": 0.77
+    }
+  },
+  "full_extension_vc": {
+    "description": "Full production dataset after 2026-10-04 rebuild (2000-01-03 to 2026-10-06)",
+    "days": 6730,
+    "v40_shares": 460.87,
+    "v41_shares": 411.12,
+    "delta_v41_vs_v40": -49.75,
+    "max_dd_v40": -42.74,
+    "max_dd_v41": -41.97,
+    "dd_improvement_pp": 0.77,
+    "contingency_protection_pct": 96.9
+  },
+  "regime_deltas_full_window": [
+    {
+      "regime": "MERCADO_SANO",
+      "days": 4322,
+      "ret_v40_pct": 854.61,
+      "ret_v41_pct": 854.61,
+      "delta_pct": 0.0,
+      "wr_pct": 55.3,
+      "pf": 1.21
+    },
+    {
+      "regime": "DISTRIBUCION_PRE_CRASH",
+      "days": 806,
+      "ret_v40_pct": 16.6,
+      "ret_v41_pct": 16.6,
+      "delta_pct": 0.0,
+      "wr_pct": 52.5,
+      "pf": 1.09
+    },
+    {
+      "regime": "PISO_GENERACIONAL",
+      "days": 623,
+      "ret_v40_pct": 188.88,
+      "ret_v41_pct": 188.88,
+      "delta_pct": 0.0,
+      "wr_pct": 53.0,
+      "pf": 1.24
+    },
+    {
+      "regime": "RE_ACUMULACION_ALCISTA",
+      "days": 524,
+      "ret_v40_pct": 29.78,
+      "ret_v41_pct": 25.04,
+      "delta_pct": -4.74,
+      "wr_pct": 53.9,
+      "pf": 1.25
+    },
+    {
+      "regime": "NORMAL",
+      "days": 211,
+      "ret_v40_pct": -0.47,
+      "ret_v41_pct": -0.47,
+      "delta_pct": 0.0,
+      "wr_pct": 52.0,
+      "pf": 1.02
+    },
+    {
+      "regime": "PULLBACK_ALCISTA",
+      "days": 97,
+      "ret_v40_pct": 14.41,
+      "ret_v41_pct": 14.41,
+      "delta_pct": 0.0,
+      "wr_pct": 64.4,
+      "pf": 2.08
+    },
+    {
+      "regime": "RECUPERACION",
+      "days": 95,
+      "ret_v40_pct": 14.87,
+      "ret_v41_pct": 9.98,
+      "delta_pct": -4.89,
+      "wr_pct": 50.6,
+      "pf": 1.22
+    },
+    {
+      "regime": "CRASH_SISTEMICO",
+      "days": 52,
+      "ret_v40_pct": 0.0,
+      "ret_v41_pct": 0.0,
+      "delta_pct": 0.0,
+      "wr_pct": 0.0,
+      "pf": 1.0
+    }
+  ]
+}

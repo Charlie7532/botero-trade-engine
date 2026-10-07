@@ -318,9 +318,9 @@ def main():
     art_path = str(out_dir / "reporte_maestro_v40_auditado.md")
     art_path_comp = str(out_dir / "tablas_comparativas_v40_audited.md")
     
-    n_days = len(df_v40_std)
-    d_min = df_v40_std['date'].min()
-    d_max = df_v40_std['date'].max()
+    n_days = len(df_std)
+    d_min = df_std['date'].min()
+    d_max = df_std['date'].max()
 
     md = f"# 📊 REPORTES DE BENCHMARK MAESTRO V40 — AUDITORÍA INTEGRAL (2000 - 2026)\n\n"
     md += f"> [!IMPORTANT]\n"

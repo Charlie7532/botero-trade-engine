@@ -8,20 +8,23 @@ import logging
 import os
 from datetime import datetime, timedelta, time as dtime, UTC
 from zoneinfo import ZoneInfo
+import numpy as np
+import pandas as pd
+import yfinance as yf
 
 from backend.daemons.vault_providers import register_provider
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
 
 logger = logging.getLogger(__name__)
 
-# Partial-bar guard (audit 2026-10-04: 2026-09-16 bar persisted intraday for 530/563 tickers,
-# median volume 4.3% of the 20d median). Decisions, not measurements:
+# Partial-bar guard (audit 2026-10-04 / 2026-10-06)
 _ET = ZoneInfo("America/New_York")
-SESSION_FINAL_ET = dtime(18, 0)   # a session's daily bar is accepted only after 18:00 ET of that date
+SESSION_FINAL_ET = dtime(18, 0)   # a session's daily bar is FINAL only after 18:00 ET of that date
 OVERLAP_DAYS = 7                  # calendar days re-fetched each run to heal bars stored before final
 
 # Reuse the daemon's daily guard
 from backend.daemons.data_vault_daemon import _already_vaulted_today
+
 
 
 # Ticker translation map for external feeds (Yahoo Finance, etc.)
@@ -117,6 +120,9 @@ class OHLCVProvider:
         except ImportError:
             return {"updated": 0, "enriched": 0, "failed": {}}
 
+        min_dirty_date = None
+        revised_tickers_count = 0
+
         batch_size = 20
         for i in range(0, len(tickers), batch_size):
             batch = tickers[i:i + batch_size]
@@ -127,7 +133,16 @@ class OHLCVProvider:
                     if not last:
                         continue
 
-                    start_str = (last - timedelta(days=OVERLAP_DAYS)).strftime("%Y-%m-%d")
+                    # State-governed window:
+                    # If there are PRELIMINARY bars, rewind to the oldest non-final bar.
+                    # Otherwise, use standard OVERLAP_DAYS.
+                    oldest_prelim = store.bars_oldest_non_final_date(ticker, "1d")
+                    if oldest_prelim:
+                        start_date = min(oldest_prelim - timedelta(days=1), last - timedelta(days=OVERLAP_DAYS))
+                    else:
+                        start_date = last - timedelta(days=OVERLAP_DAYS)
+
+                    start_str = start_date.strftime("%Y-%m-%d")
                     df = yf.download(download_sym, start=start_str, interval="1d",
                                      progress=False, auto_adjust=True)
                     if not df.empty:
@@ -146,6 +161,7 @@ class OHLCVProvider:
                         df.dropna(subset=["open", "high", "low", "close"], inplace=True)
                         df = df[~df.index.duplicated(keep="last")]
                         df = _drop_unfinished_session(df)
+                        df = _tag_bar_status(df)
 
                     last_ts = pd.Timestamp(last).tz_localize("UTC")
                     new = df[df.index > last_ts] if not df.empty else df
@@ -161,42 +177,137 @@ class OHLCVProvider:
                         continue
 
                     if not revised.empty:
+                        rev_min_dt = revised.index.min().date()
+                        min_dirty_date = rev_min_dt if min_dirty_date is None else min(min_dirty_date, rev_min_dt)
+                        revised_tickers_count += 1
                         store.save_bars(ticker, "1d", revised, overwrite=True)
                         _invalidate_snapshots_from(store, ticker, revised.index.min())
                         logger.info(f"  {ticker}: overwrote {len(revised)} revised bar(s) from {revised.index.min().date()}")
                     if not new.empty:
                         store.save_bars(ticker, "1d", new)
+                        logger.info(f"  {ticker}: inserted {len(new)} new bar(s) up to {new.index.max().date()}")
                     stats["updated"] += 1
 
                 except Exception as e:
                     stats["failed"][ticker] = str(e)
                     logger.warning(f"  {ticker} ({download_sym}) OHLCV update failed: {e}")
 
+        if min_dirty_date is not None:
+            store.save_mcp_snapshot("ohlcv/dirty_range", "PENDING", {
+                "dirty_from": min_dirty_date.isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
+                "tickers_revised_count": revised_tickers_count,
+            })
+            logger.info(f"🚨 Recorded dirty range for downstream breadth propagation from {min_dirty_date}")
+
         return stats
 
 
 def _drop_unfinished_session(df):
-    """Drop bars whose session date is today (ET) before SESSION_FINAL_ET, or in the future."""
+    """Drop future-dated bars beyond today's calendar date in New York."""
+    if df.empty:
+        return df
     now_et = datetime.now(_ET)
-    last_final = now_et.date() if now_et.time() >= SESSION_FINAL_ET else now_et.date() - timedelta(days=1)
-    return df[df.index.date <= last_final]
+    today_et = now_et.date()
+    return df[df.index.date <= today_et]
+
+
+def _tag_bar_status(df):
+    """Tag each bar as 'FINAL' or 'PRELIMINARY' based on market session timing."""
+    if df.empty:
+        return df
+    df = df.copy()
+    now_et = datetime.now(_ET)
+    today_et = now_et.date()
+    is_after_final = now_et.time() >= SESSION_FINAL_ET
+
+    statuses = []
+    for ts in df.index:
+        bar_date = ts.date()
+        if bar_date < today_et:
+            statuses.append("FINAL")
+        elif bar_date == today_et:
+            statuses.append("FINAL" if is_after_final else "PRELIMINARY")
+        else:
+            statuses.append("PRELIMINARY")
+    df["bar_status"] = statuses
+    return df
 
 
 def _revised_bars(store: TimescaleDataStore, ticker: str, fresh):
-    """Fresh bars already stored whose volume differs from the stored one (partial or revised).
+    """Fresh bars already stored that require revision/overwrite.
 
-    Volume is the comparison key on purpose: a dividend re-adjustment rescales prices but
-    not volume, so it does not trigger an overwrite of recent bars onto a new price scale.
+    Triggers an overwrite if:
+    1. The stored bar has bar_status == 'PRELIMINARY' (consolidation of partial session).
+    2. The fresh volume differs from stored volume (excluding uniform splits).
+    3. The fresh close differs from stored close by > 0.05% without an overarching split.
     """
     if fresh.empty:
         return fresh
-    stored = store.load_bars(ticker, "1d", start=fresh.index.min().date())
-    if stored.empty:
+
+    min_date = fresh.index.min().date()
+    conn = store._conn()
+    stored_rows = {}
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """SELECT time, close, volume, bar_status 
+                   FROM market.ohlcv_bars 
+                   WHERE ticker = %s AND timeframe = '1d' AND time >= %s""",
+                (ticker.upper(), min_date),
+            )
+            for t, c, v, st in cur.fetchall():
+                ts = pd.Timestamp(t).tz_convert("UTC").normalize() if t.tzinfo else pd.Timestamp(t).tz_localize("UTC").normalize()
+                stored_rows[ts] = {"close": float(c), "volume": int(v) if v is not None else 0, "status": st}
+    finally:
+        store._put(conn)
+
+    if not stored_rows:
         return fresh.iloc[0:0]
-    sidx = stored.index.tz_localize("UTC") if stored.index.tz is None else stored.index.tz_convert("UTC")
-    stored_vol = stored["volume"].set_axis(sidx.normalize())
-    common = fresh.index.intersection(stored_vol.index)
-    changed = [ts for ts in common if int(fresh.at[ts, "volume"]) != int(stored_vol.at[ts])]
+
+    common = [ts for ts in fresh.index if ts in stored_rows]
+    if not common:
+        return fresh.iloc[0:0]
+
+    # Calculate price ratios to detect potential stock splits
+    price_ratios = []
+    for ts in common:
+        s_c = stored_rows[ts]["close"]
+        f_c = float(fresh.at[ts, "close"])
+        if s_c > 0:
+            price_ratios.append(f_c / s_c)
+
+    # Median ratio across the window (if e.g. 0.5 or 2.0 with tight variance -> uniform split/dividend)
+    median_ratio = float(np.median(price_ratios)) if price_ratios else 1.0
+    is_uniform_rescaling = len(price_ratios) >= 2 and all(abs(r - median_ratio) < 0.001 for r in price_ratios) and abs(median_ratio - 1.0) > 0.01
+
+    changed = []
+    for ts in common:
+        st_data = stored_rows[ts]
+        f_vol = int(fresh.at[ts, "volume"])
+        f_close = float(fresh.at[ts, "close"])
+        s_vol = st_data["volume"]
+        s_close = st_data["close"]
+        s_status = st_data["status"]
+
+        # Case 1: Was PRELIMINARY -> must be overwritten with consolidated data
+        if s_status == "PRELIMINARY":
+            changed.append(ts)
+            continue
+
+        # Case 2: Volume revised
+        if f_vol != s_vol and not is_uniform_rescaling:
+            changed.append(ts)
+            continue
+
+        # Case 3: Price revised (idiosyncratic, not uniform split)
+        if s_close > 0:
+            ratio = f_close / s_close
+            # If not a uniform rescaling across all bars, any price difference > 0.05% is a revision
+            if not is_uniform_rescaling and abs(ratio - 1.0) > 0.0005:
+                changed.append(ts)
+                continue
+
     return fresh.loc[changed]
 
 

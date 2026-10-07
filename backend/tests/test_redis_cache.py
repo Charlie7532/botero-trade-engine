@@ -292,3 +292,91 @@ class TestRegimeStateCacheRoundtrip:
         # entered_at is parsed from ISO string
         assert reconstructed.entered_at.year == 2025
         assert reconstructed.entered_at.month == 6
+
+
+class TestTimescaleDataStoreL1CacheInvalidation:
+    """Test L1 cache invalidation when saving bars (Rule 13 write-through)."""
+
+    def test_upsert_ohlcv_bar_invalidates_cache(self):
+        """upsert_ohlcv_bar calls cache.invalidate(f'bars:{ticker}:{timeframe}')."""
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+        mock_cache = MagicMock()
+
+        store = TimescaleDataStore.__new__(TimescaleDataStore)
+        store._conn = MagicMock(return_value=mock_conn)
+        store._put = MagicMock()
+
+        with patch("backend.modules.shared.infrastructure.redis_cache.get_redis_cache", return_value=mock_cache):
+            store.upsert_ohlcv_bar(
+                ticker="AAPL",
+                timeframe="1d",
+                time="2026-10-07T00:00:00+00:00",
+                open=150.0,
+                high=155.0,
+                low=149.0,
+                close=154.0,
+                volume=1000000,
+            )
+
+        mock_cache.invalidate.assert_called_once_with("bars:AAPL:1d")
+
+    def test_upsert_ohlcv_bar_candle_invalidates_cache(self):
+        """upsert_ohlcv_bar_candle calls cache.invalidate(f'bars:{ticker}:{timeframe}')."""
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+        mock_cache = MagicMock()
+
+        store = TimescaleDataStore.__new__(TimescaleDataStore)
+        store._conn = MagicMock(return_value=mock_conn)
+        store._put = MagicMock()
+
+        with patch("backend.modules.shared.infrastructure.redis_cache.get_redis_cache", return_value=mock_cache):
+            store.upsert_ohlcv_bar_candle(
+                ticker="VIX",
+                timeframe="1d",
+                time="2026-10-07T00:00:00+00:00",
+                score=18.5,
+                volume=0,
+            )
+
+        mock_cache.invalidate.assert_called_once_with("bars:VIX:1d")
+
+    def test_upsert_bar_cache_invalidation_failure_is_non_fatal(self):
+        """If Redis invalidation fails, database operation still succeeds."""
+        from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+        mock_cache = MagicMock()
+        mock_cache.invalidate.side_effect = Exception("Redis connection lost")
+
+        store = TimescaleDataStore.__new__(TimescaleDataStore)
+        store._conn = MagicMock(return_value=mock_conn)
+        store._put = MagicMock()
+
+        with patch("backend.modules.shared.infrastructure.redis_cache.get_redis_cache", return_value=mock_cache):
+            # Should not raise exception
+            store.upsert_ohlcv_bar(
+                ticker="SPY",
+                timeframe="1d",
+                time="2026-10-07T00:00:00+00:00",
+                open=500.0,
+                high=505.0,
+                low=498.0,
+                close=502.0,
+                volume=50000000,
+            )
+
+        mock_conn.commit.assert_called_once()
+

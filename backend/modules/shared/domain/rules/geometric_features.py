@@ -26,17 +26,17 @@ import numpy as np
 
 
 def compute_geometric_features(
-    sigma_tide: float,
-    sigma_current: float,
-    sigma_wave: float,
-    tide_slope: float,
-    current_slope: float,
-    wave_slope: float,
-    tide_accel: float,
-    current_accel: float,
-    wave_accel: float,
+    sigma_tide: float | None,
+    sigma_current: float | None,
+    sigma_wave: float | None,
+    tide_slope: float | None,
+    current_slope: float | None,
+    wave_slope: float | None,
+    tide_accel: float | None = None,
+    current_accel: float | None = None,
+    wave_accel: float | None = None,
     slope_stds: dict[str, float] | None = None,
-) -> tuple[float, float, float, float, float]:
+) -> tuple[float | None, float | None, float | None, float | None, float | None]:
     """Compute 5 geometric features from channel snapshot fields.
 
     Args:
@@ -49,13 +49,24 @@ def compute_geometric_features(
 
     Returns:
         (state_norm, velocity_align, exit_align, accel_align, phase_angle)
+        Any feature whose required inputs are None/NaN returns None.
     """
     # ── 1. State Norm: magnitude of sigma vector ─────────────
     # How far are we from the channel center across all 3 horizons?
-    # Large norm = price deeply displaced from all regressions.
-    state_norm = float(np.sqrt(
-        sigma_tide ** 2 + sigma_current ** 2 + sigma_wave ** 2
-    ))
+    if (
+        sigma_tide is None
+        or sigma_current is None
+        or sigma_wave is None
+        or np.isnan(sigma_tide)
+        or np.isnan(sigma_current)
+        or np.isnan(sigma_wave)
+    ):
+        state_norm = None
+    else:
+        state_norm = round(
+            float(np.sqrt(sigma_tide ** 2 + sigma_current ** 2 + sigma_wave ** 2)),
+            4,
+        )
 
     # ── 2-4. Velocity vectors (normalized slopes) ────────────
     if slope_stds is not None:
@@ -65,43 +76,68 @@ def compute_geometric_features(
     else:
         std_t = std_c = std_w = 1.0
 
-    velocity = np.array([
-        tide_slope / std_t,
-        current_slope / std_c,
-        wave_slope / std_w,
-    ])
+    has_slopes = (
+        tide_slope is not None
+        and current_slope is not None
+        and wave_slope is not None
+        and not np.isnan(tide_slope)
+        and not np.isnan(current_slope)
+        and not np.isnan(wave_slope)
+    )
 
-    # Ideal entry direction: all slopes declining → price falling toward us
-    ideal_entry = np.array([-1.0, -1.0, -1.0])
+    if has_slopes:
+        velocity = np.array([
+            tide_slope / std_t,
+            current_slope / std_c,
+            wave_slope / std_w,
+        ])
+        ideal_entry = np.array([-1.0, -1.0, -1.0])
+        ideal_exit = np.array([1.0, 1.0, 1.0])
 
-    # Ideal exit direction: all slopes rising → price moving away
-    ideal_exit = np.array([1.0, 1.0, 1.0])
+        velocity_align = _cosine(velocity, ideal_entry)
+        if velocity_align is not None:
+            velocity_align = round(velocity_align, 4)
+
+        exit_align = _cosine(velocity, ideal_exit)
+        if exit_align is not None:
+            exit_align = round(exit_align, 4)
+
+        phase_angle = round(float(np.arctan2(wave_slope / std_w, tide_slope / std_t)), 4)
+    else:
+        velocity = None
+        velocity_align = None
+        exit_align = None
+        phase_angle = None
 
     # Acceleration vector (also normalized)
-    accel = np.array([
-        tide_accel / std_t,
-        current_accel / std_c,
-        wave_accel / std_w,
-    ])
+    has_accel = (
+        velocity is not None
+        and tide_accel is not None
+        and current_accel is not None
+        and wave_accel is not None
+        and not np.isnan(tide_accel)
+        and not np.isnan(current_accel)
+        and not np.isnan(wave_accel)
+    )
 
-    velocity_align = _cosine(velocity, ideal_entry)
-    exit_align = _cosine(velocity, ideal_exit)
-    accel_align = _cosine(velocity, accel)
-
-    # ── 5. Phase Angle: arctan2(wave, tide) ──────────────────
-    # Where is the wave relative to the tide in the slope plane?
-    # Near 0 = aligned. Near ±π = counter-trending.
-    phase_angle = float(np.arctan2(
-        wave_slope / std_w,
-        tide_slope / std_t,
-    ))
+    if has_accel:
+        accel = np.array([
+            tide_accel / std_t,
+            current_accel / std_c,
+            wave_accel / std_w,
+        ])
+        accel_align = _cosine(velocity, accel)
+        if accel_align is not None:
+            accel_align = round(accel_align, 4)
+    else:
+        accel_align = None
 
     return (
-        round(state_norm, 4),
-        round(velocity_align, 4),
-        round(exit_align, 4),
-        round(accel_align, 4),
-        round(phase_angle, 4),
+        state_norm,
+        velocity_align,
+        exit_align,
+        accel_align,
+        phase_angle,
     )
 
 

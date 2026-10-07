@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-10-07T12:40:14.473477+00:00",
+  "generated_at": "2026-10-07T13:50:20.164418+00:00",
   "generated_by": "backend/scripts/trainers/train_s5_triad.py",
   "_metadata": {
     "purpose": "Modificador relativo para S5 Price Breadth. Mide la diferencia simple FI_sector - FI_spy (en puntos porcentuales). Si un sector tiene m\u00e1s stocks arriba de su MA50 que el SPY, se le da un boost al P_bot.",
@@ -37,58 +37,58 @@
   "bins": {
     "<<": {
       "n": 3316,
-      "P_bot_2_5": 0.2892,
-      "P_top_2_5": 0.1586,
+      "P_bot_2_5": 0.288,
+      "P_top_2_5": 0.1583,
       "P_bot_5_0": 0.1387,
       "P_top_5_0": 0.044,
-      "P_bot_7_5": 0.0805,
+      "P_bot_7_5": 0.0808,
       "P_top_7_5": 0.0139,
-      "bot_factor": 1.872,
-      "top_factor": 0.588
+      "bot_factor": 1.869,
+      "top_factor": 0.589
     },
     "<": {
       "n": 14797,
       "P_bot_2_5": 0.2369,
-      "P_top_2_5": 0.1637,
-      "P_bot_5_0": 0.1124,
-      "P_top_5_0": 0.0517,
-      "P_bot_7_5": 0.0625,
-      "P_top_7_5": 0.0201,
-      "bot_factor": 1.517,
-      "top_factor": 0.691
+      "P_top_2_5": 0.1644,
+      "P_bot_5_0": 0.1123,
+      "P_top_5_0": 0.052,
+      "P_bot_7_5": 0.0622,
+      "P_top_7_5": 0.0203,
+      "bot_factor": 1.513,
+      "top_factor": 0.696
     },
     "~": {
       "n": 38743,
-      "P_bot_2_5": 0.1837,
-      "P_top_2_5": 0.1941,
-      "P_bot_5_0": 0.0743,
-      "P_top_5_0": 0.0818,
-      "P_bot_7_5": 0.0398,
-      "P_top_7_5": 0.0439,
-      "bot_factor": 1.003,
-      "top_factor": 1.094
+      "P_bot_2_5": 0.1841,
+      "P_top_2_5": 0.1939,
+      "P_bot_5_0": 0.0746,
+      "P_top_5_0": 0.0816,
+      "P_bot_7_5": 0.0403,
+      "P_top_7_5": 0.0437,
+      "bot_factor": 1.005,
+      "top_factor": 1.092
     },
     ">": {
       "n": 15176,
-      "P_bot_2_5": 0.1431,
-      "P_top_2_5": 0.208,
-      "P_bot_5_0": 0.0396,
-      "P_top_5_0": 0.092,
-      "P_bot_7_5": 0.0152,
-      "P_top_7_5": 0.0542,
-      "bot_factor": 0.534,
-      "top_factor": 1.23
+      "P_bot_2_5": 0.1432,
+      "P_top_2_5": 0.2077,
+      "P_bot_5_0": 0.04,
+      "P_top_5_0": 0.0917,
+      "P_bot_7_5": 0.0153,
+      "P_top_7_5": 0.0543,
+      "bot_factor": 0.539,
+      "top_factor": 1.228
     },
     ">>": {
       "n": 2644,
-      "P_bot_2_5": 0.1479,
+      "P_bot_2_5": 0.1494,
       "P_top_2_5": 0.2349,
       "P_bot_5_0": 0.0371,
-      "P_top_5_0": 0.1067,
+      "P_top_5_0": 0.1063,
       "P_bot_7_5": 0.0132,
       "P_top_7_5": 0.0635,
-      "bot_factor": 0.501,
-      "top_factor": 1.426
+      "bot_factor": 0.5,
+      "top_factor": 1.423
     }
   }
 }

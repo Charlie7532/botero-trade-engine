@@ -341,9 +341,9 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
         geo = compute_geometric_features(
             s_tide, s_curr, s_wave,
             ts, curr_slope[idx], ws,
-            t_accel if t_accel is not None else 0.0,
-            c_accel if c_accel is not None else 0.0,
-            w_accel if w_accel is not None else 0.0,
+            t_accel,
+            c_accel,
+            w_accel,
             slope_stds=None,
         )
 
@@ -385,7 +385,11 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
             round(float(conv), 4) if conv is not None else None,
             float(k['kalman_velocity']) if k.get('kalman_velocity') is not None else None,
             float(k['vol_adj_delta']) if k.get('vol_adj_delta') is not None else None,
-            float(geo[0]), float(geo[1]), float(geo[2]), float(geo[3]), float(geo[4]),
+            float(geo[0]) if geo[0] is not None else None,
+            float(geo[1]) if geo[1] is not None else None,
+            float(geo[2]) if geo[2] is not None else None,
+            float(geo[3]) if geo[3] is not None else None,
+            float(geo[4]) if geo[4] is not None else None,
             round(float(vol_surge[idx]), 4),
             int(w_dur),
         )

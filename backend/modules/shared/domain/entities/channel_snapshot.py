@@ -152,11 +152,11 @@ class ChannelSnapshot:
     # ── 5 Geometric Features (3D vector projections) ─────────
     # Slopes are normalized by their rolling σ BEFORE vector construction
     # to prevent wave_slope variance from dominating (LdP audit correction).
-    geo_state_norm: float = 0.0     # ‖σ_vector‖ = √(σ_tide² + σ_current² + σ_wave²)
-    geo_velocity_align: float = 0.0 # cos(velocity_norm, ideal_entry_direction)
-    geo_exit_align: float = 0.0     # cos(velocity_norm, ideal_exit_direction)
-    geo_accel_align: float = 0.0    # cos(velocity_norm, acceleration_norm)
-    geo_phase_angle: float = 0.0    # arctan2(wave_slope_norm, tide_slope_norm)
+    geo_state_norm: float | None = None     # ‖σ_vector‖ = √(σ_tide² + σ_current² + σ_wave²)
+    geo_velocity_align: float | None = None # cos(velocity_norm, ideal_entry_direction)
+    geo_exit_align: float | None = None     # cos(velocity_norm, ideal_exit_direction)
+    geo_accel_align: float | None = None    # cos(velocity_norm, acceleration_norm)
+    geo_phase_angle: float | None = None    # arctan2(wave_slope_norm, tide_slope_norm)
 
     def to_dict(self) -> dict:
         """Serialize to dict for DB storage or JSON."""

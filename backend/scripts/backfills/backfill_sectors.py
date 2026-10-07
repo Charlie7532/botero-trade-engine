@@ -20,16 +20,16 @@ logger = logging.getLogger(__name__)
 
 
 def _classify_market_cap(cap: int | None) -> str:
-    """Classify market cap into buckets."""
+    """Classify market cap into buckets (Uppercase canonical standard)."""
     if cap is None:
-        return "unknown"
+        return "UNKNOWN"
     if cap >= 200_000_000_000:
-        return "mega"
+        return "MEGA"
     if cap >= 10_000_000_000:
-        return "large"
+        return "LARGE"
     if cap >= 2_000_000_000:
-        return "mid"
-    return "small"
+        return "MID"
+    return "SMALL"
 
 
 def main():

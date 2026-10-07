@@ -264,13 +264,13 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     | **Indices** (SPX, NDQ, TNX) | 3 | varies | 1927→2026 | S&P500, Nasdaq, 10Y yield |
     | **ETFs** (SPY, QQQ, XL*, IWM, DIA) | 15 | ~2,000-8,400 | 1993→2026 | Sector + market ETFs. Real OHLCV |
     | **SP500 Stocks** | ~500 | ~1,000-16,000 | varies | Full constituents. Real OHLCV |
-    | **TOTAL** | ~630 | **~5.80M bars** | | |
+    | **TOTAL** | ~752 | **~6.48M bars** | | |
 
     **Key derived indicators:**
 
     | Ticker | Formula | Interpretation | Thresholds |
     |---|---|---|---|
-    | `SV5_TURBULENCE` | `std(Δ_SV5TW, 10d)` | Institutional volume turbulence. How erratically institutional participation changes | P50=5.97, **>10=crisis proxy** (V40 VIX fallback), P90=12.66, P95=14.87 |
+    | `SV5_TURBULENCE` | `std(Δ_SV5TW, 10d)` | Institutional volume turbulence. How erratically institutional participation changes | P50=6.58, P75=8.82, P84.13=11.21 (+1σ crash threshold), P90=12.06, P95=14.75 |
     | `VIX` | CBOE implied vol | Options market fear gauge | <20=calm, 20-28=elevated, **>28=panic** (V36 redirect) |
     | `VVIX` | Vol-of-vol | VIX instability | >120=regime transition |
     | `SKEW` | Tail risk | OTM put demand | >140=tail hedging active |

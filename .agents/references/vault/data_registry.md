@@ -131,13 +131,14 @@ Volume Intensity per sector ETF. Pattern: `VBI_{ETF}`.
 | `VIX` | CBOE implied vol (SPX options) | ~19,440 | 1990→2026 | <20=calm, 20-28=elevated, **>28=panic** |
 | `VVIX` | Vol-of-vol (VIX options) | 5,083 | 2006→2026 | >120=VIX regime transition |
 | `SKEW` | OTM put demand / tail risk | 9,208 | 1990→2026 | >140=institutional tail hedging |
-| `SV5_TURBULENCE` | `std(Δ_SV5TW, 10d)` — Institutional Vol | 6,930 | 1999→2026 | P50=5.97, **>10=crisis proxy**, P90=12.66, P95=14.87 |
+| `SV5_TURBULENCE` | `std(Δ_SV5TW, 10d)` — Institutional Vol | 11,704 | 1993→2026 | P50=6.58, P75=8.82 (high), P84.13=11.21 (+1σ crash), P90=12.06 (extreme), P95=14.75 |
 
 **SV5_TURBULENCE interpretation:**
-- `< 6` (P50): Normal institutional activity — calm market
-- `6-10`: Elevated but manageable institutional volatility
-- **`> 10`**: Institutional panic — used as VIX fallback in V36 redirect (96.9% recovery)
-- `> 13` (P90+): Extreme institutional shock (crashes, capitulations)
+- `< 6.58` (P50): Normal institutional activity — calm market
+- `6.58 - 8.82`: Elevated but manageable institutional volatility
+- `8.82 - 11.21` (P75 to +1σ): High volume turbulence (Quality Entry Gate 0.50x risk factor in RECUPERACION)
+- `11.21 - 12.06` (+1σ to P90): Extreme turbulence / VIX crash fallback
+- `> 12.06` (P90+): Extreme institutional volume shock (crashes, capitulations)
 
 **Provider:** `sv5_turbulence_provider.py`.
 
@@ -262,7 +263,7 @@ Real OHLCV with trade volume.
 ## SP500 Stocks (~500 tickers)
 
 Full SP500 constituents with real OHLCV. ~1,000 to 16,000 bars each.
-**Total: ~5.85M bars across all tickers.**
+**Total: ~6.48M bars across all 752 tickers.**
 
 ---
 

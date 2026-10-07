@@ -627,6 +627,15 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         finally:
             self._put(conn)
 
+        # L1 cache invalidation: stale bars for this ticker (safe after Neon commit)
+        try:
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _cache.invalidate(f"bars:{ticker.upper()}:{timeframe}")
+        except Exception as ce:
+            logger.warning(f"L1 cache invalidation failed for {ticker}/{timeframe}: {ce}")
+
     def upsert_ohlcv_bar_candle(
         self, ticker: str, timeframe: str, time,
         score: float, volume: int = 0,
@@ -668,6 +677,15 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
             )
         finally:
             self._put(conn)
+
+        # L1 cache invalidation: stale bars for this ticker (safe after Neon commit)
+        try:
+            from backend.modules.shared.infrastructure.redis_cache import get_redis_cache
+            _cache = get_redis_cache()
+            if _cache:
+                _cache.invalidate(f"bars:{ticker.upper()}:{timeframe}")
+        except Exception as ce:
+            logger.warning(f"L1 cache invalidation failed for {ticker}/{timeframe}: {ce}")
 
     # ── Ticker Metadata ───────────────────────────────────
 

@@ -34,17 +34,18 @@ class SV5TurbulenceProvider:
 
     def run_full(self, store: TimescaleDataStore, **kwargs) -> dict:
         """Compute SV5_TURBULENCE from the last 11 SV5TW daily bars."""
-        if _already_vaulted_today(store, "derived/sv5_turbulence", "MARKET"):
+        force = kwargs.get("force", False)
+        if not force and _already_vaulted_today(store, "derived/sv5_turbulence", "MARKET"):
             logger.info("📊 SV5_TURBULENCE already vaulted today — skipping")
             return {"status": "skipped", "reason": "already_today"}
 
-        return self._compute_sv5_turbulence(store)
+        return self._compute_sv5_turbulence(store, force=force)
 
     def run_ticker(self, store: TimescaleDataStore, ticker: str) -> dict:
         """SV5_TURBULENCE is market-wide — falls back to run_full."""
         return self.run_full(store)
 
-    def _compute_sv5_turbulence(self, store: TimescaleDataStore) -> dict:
+    def _compute_sv5_turbulence(self, store: TimescaleDataStore, force: bool = False) -> dict:
         """Core SV5_TURBULENCE computation.
 
         SV5_TURBULENCE = std(Δ_SV5TW, window=10)
@@ -71,7 +72,7 @@ class SV5TurbulenceProvider:
             effective_date = pd.Timestamp(latest_dt).tz_convert("UTC").normalize() if latest_dt.tzinfo else pd.Timestamp(latest_dt).tz_localize("UTC").normalize()
 
             last_turb_date = store.bars_last_date("SV5_TURBULENCE", "1d")
-            if last_turb_date and last_turb_date >= effective_date.date():
+            if not force and last_turb_date and last_turb_date >= effective_date.date():
                 logger.info(f"📊 SV5_TURBULENCE already up to date ({last_turb_date} >= {effective_date.date()}) — skipping")
                 return {"status": "skipped", "reason": "already_up_to_date"}
 
@@ -99,6 +100,7 @@ class SV5TurbulenceProvider:
                 low=sv5_turbulence,
                 close=sv5_turbulence,
                 volume=0,
+                overwrite=True,
             )
 
             # Ensure ticker metadata exists (idempotent upsert)
@@ -109,13 +111,22 @@ class SV5TurbulenceProvider:
                 market_cap_bucket=None,
             )
 
+            # Save snapshot for audit and already_vaulted_today check
+            store.save_mcp_snapshot("derived/sv5_turbulence", "MARKET", {
+                "sv5_turbulence": sv5_turbulence,
+                "window": _WINDOW,
+                "last_sv5tw": float(closes[-1]),
+                "as_of_date": effective_date.strftime("%Y-%m-%d"),
+                "timestamp": datetime.now(UTC).isoformat(),
+            })
+
             logger.info(
                 f"📊 SV5_TURBULENCE vault: {sv5_turbulence:.2f} "
                 f"(window={_WINDOW}d, last SV5TW={closes[-1]:.1f}%)"
             )
 
             return {
-                "status": "success",
+                "status": "ok",
                 "sv5_turbulence": sv5_turbulence,
                 "bars_computed": 1,
             }

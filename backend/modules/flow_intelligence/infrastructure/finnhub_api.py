@@ -342,6 +342,9 @@ class FinnhubIntelligence:
             ]
 
         except Exception as e:
+            if "429" in str(e) or getattr(e, "status_code", None) == 429:
+                logger.warning(f"Finnhub rate limit (429) hit for news {ticker}")
+                raise
             logger.error(f"Error news {ticker}: {e}")
             return []
 

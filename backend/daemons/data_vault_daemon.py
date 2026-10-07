@@ -250,14 +250,21 @@ def vault_finnhub_data(store: TimescaleDataStore, tickers: list[str]) -> dict:
             logger.info(f"📅 Finnhub earnings: {len(events)} events (next 14 days)")
 
         # 2. News for active tickers (cap at 30 to respect rate limits)
+        import time
         news_tickers = tickers[:30]
         for ticker in news_tickers:
+            if _already_vaulted_today(store, "finnhub/news", ticker):
+                continue
             try:
                 news = fh.get_recent_news(ticker, days_back=1, max_headlines=10)
                 if news:
                     store.save_mcp_snapshot("finnhub/news", ticker, news)
                     stats["news"] += 1
+                time.sleep(1.0)  # Finnhub Free tier pacing (60 req/min burst safe)
             except Exception as e:
+                if "429" in str(e) or getattr(e, "status_code", None) == 429:
+                    logger.warning("Finnhub rate limit reached (429) — pausing news batch for this cycle")
+                    break
                 logger.debug(f"  {ticker} news failed: {e}")
 
         logger.info(
@@ -2036,6 +2043,8 @@ def _log_cycle_report(results: dict, store: Optional[TimescaleDataStore] = None)
     fg = results.get("fear_greed", {})
     breadth = results.get("breadth", {})
     sector_b = results.get("sector_breadth", {})
+    vol_b = results.get("volume_breadth", {})
+    sv5_turb = results.get("sv5_turbulence", {})
     cboe = results.get("cboe", {})
     fred = results.get("fred_macro", {})
     indices = results.get("market_indices", {})
@@ -2074,6 +2083,25 @@ def _log_cycle_report(results: dict, store: Optional[TimescaleDataStore] = None)
     s5fi = _fmt(breadth, "s5fi", "%")
     s5tw = _fmt(breadth, "s5tw", "%")
     lines.append(f"║    Breadth        {_status_icon(breadth)}  S5TH={s5th} S5FI={s5fi} S5TW={s5tw}")
+
+    # Volume Breadth
+    sv5th = _fmt(vol_b, "sv5th", "%")
+    sv5fi = _fmt(vol_b, "sv5fi", "%")
+    sv5tw = _fmt(vol_b, "sv5tw", "%")
+    lines.append(f"║    Volume Breadth {_status_icon(vol_b)}  SV5TH={sv5th} SV5FI={sv5fi} SV5TW={sv5tw}")
+
+    # SV5 Turbulence
+    turb_val = _fmt(sv5_turb, "sv5_turbulence", "", ".2f")
+    turb_icon = _status_icon(sv5_turb)
+    if turb_val == "—" and store:
+        try:
+            _turb_df = store.load_bars("SV5_TURBULENCE", "1d")
+            if _turb_df is not None and not _turb_df.empty:
+                turb_val = f"{_turb_df['close'].iloc[-1]:.2f}"
+                turb_icon = "✅"
+        except Exception:
+            pass
+    lines.append(f"║    SV5 Turbulence {turb_icon}  {turb_val:>6} (std10d ΔSV5TW)")
 
     # Sector Breadth
     sb_written = _fmt(sector_b, "written", "", "d")

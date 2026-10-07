@@ -264,7 +264,7 @@ Credentials leaking into LLM context = credentials leaking to the world. Treat t
     | **Indices** (SPX, NDQ, TNX) | 3 | varies | 1927→2026 | S&P500, Nasdaq, 10Y yield |
     | **ETFs** (SPY, QQQ, XL*, IWM, DIA) | 15 | ~2,000-8,400 | 1993→2026 | Sector + market ETFs. Real OHLCV |
     | **SP500 Stocks** | ~500 | ~1,000-16,000 | varies | Full constituents. Real OHLCV |
-    | **TOTAL** | ~752 | **~6.48M bars** | | |
+    | **TOTAL** | 753 | **6.68M bars** (6,679,478) | | |
 
     **Key derived indicators:**
 

@@ -225,3 +225,24 @@ def compute_zigzag(
         )
     else:
         raise ValueError(f"Unsupported mode: {mode}. Must be 'legs' or 'points'.")
+
+
+def compute_zigzag_series(prices: pd.Series, pct_threshold: float) -> pd.Series:
+    """
+    Compute zigzag turning points returning a Series aligned with prices.index:
+      +1 for TOP / MAX
+      -1 for BOTTOM / MIN
+       0 for neutral bars
+    Uses canonical compute_zigzag_points with threshold conversion.
+    """
+    pivots = pd.Series(0, index=prices.index, dtype=int)
+    n = len(prices)
+    if n < 10:
+        return pivots
+
+    min_pct = pct_threshold / 100.0 if pct_threshold > 1.0 else pct_threshold
+    vals = prices.values.astype(float)
+    pts = compute_zigzag_points(high=vals, low=vals, close=vals, min_pct=min_pct)
+    for idx, p_type, _ in pts:
+        pivots.iloc[idx] = 1 if p_type == "MAX" else -1
+    return pivots

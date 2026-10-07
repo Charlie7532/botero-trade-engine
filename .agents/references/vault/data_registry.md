@@ -263,7 +263,7 @@ Real OHLCV with trade volume.
 ## SP500 Stocks (~500 tickers)
 
 Full SP500 constituents with real OHLCV. ~1,000 to 16,000 bars each.
-**Total: ~6.48M bars across all 752 tickers.**
+**Total: 6.68M bars (6,679,478) across all 753 tickers.**
 
 ---
 

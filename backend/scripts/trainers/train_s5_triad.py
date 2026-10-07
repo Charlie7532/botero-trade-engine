@@ -236,38 +236,8 @@ for tier_name, etfs in TIERS.items():
 SPY_S5 = {"structural": "S5TH", "intermediate": "S5FI", "tactical": "S5TW"}
 
 
-# ── Helpers ──
-def compute_zigzag(prices: pd.Series, pct_threshold: float) -> pd.Series:
-    """Compute zigzag turning points. Returns Series: 1=TOP, -1=BOTTOM, 0=nothing."""
-    n = len(prices)
-    if n < 10:
-        return pd.Series(0, index=prices.index)
-    threshold = pct_threshold / 100.0
-    direction = 1
-    last_pivot_price = prices.iloc[0]
-    last_pivot_idx = 0
-    pivots = pd.Series(0, index=prices.index)
-    for i in range(1, n):
-        price = prices.iloc[i]
-        if direction == 1:
-            if price >= last_pivot_price:
-                last_pivot_price = price
-                last_pivot_idx = i
-            elif price <= last_pivot_price * (1 - threshold):
-                pivots.iloc[last_pivot_idx] = 1
-                last_pivot_price = price
-                last_pivot_idx = i
-                direction = -1
-        else:
-            if price <= last_pivot_price:
-                last_pivot_price = price
-                last_pivot_idx = i
-            elif price >= last_pivot_price * (1 + threshold):
-                pivots.iloc[last_pivot_idx] = -1
-                last_pivot_price = price
-                last_pivot_idx = i
-                direction = 1
-    return pivots
+# ── Helpers (Canonical ZigZag Kernel) ──
+from backend.modules.shared.domain.rules.zigzag_core import compute_zigzag_series as compute_zigzag
 
 
 def make_near_flags(zz: pd.Series, window: int) -> tuple[pd.Series, pd.Series]:

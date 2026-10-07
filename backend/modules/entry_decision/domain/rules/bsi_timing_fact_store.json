@@ -1,23 +1,5 @@
 {
   "_documentation": {
-    "station_identity": {
-      "station": "bsi",
-      "polarity": "INVERTED",
-      "cat": 3,
-      "profession": "Maximum Precision Floor Locator (93.3% in-range)",
-      "inception_date": "see inception_policy.md",
-      "dsr_grade": "A",
-      "dsr_pvalue": 0.998,
-      "auc_oos": 0.8387,
-      "shap_rank": 1,
-      "shap_value": 0.777
-    },
-    "tier_methodology": {
-      "EVENT": "N < 10. Historical record of individual significance. No composite EV weight. Active in alert channel.",
-      "TRANSITIONAL": "10 <= N < 30. Direction reliable, magnitude uncertain. Composite weight 0.5.",
-      "CONFIRMED": "N >= 30, D1 extreme (bins 0,1,4,5). Robust statistics. Composite weight 1.0.",
-      "BASELINE": "N >= 30, D1 central (bins 2,3). Ordinary market weather. Composite weight 1.0."
-    },
     "model_purpose": "METAR Station BSI Empirical Fact Store 2: Triad Timing & Multi-Scale Dual-Passage Engine. Evaluates every observed state triad (D1__D2__D3) across its official continuous market history (1993-01-29 to 2026-09-03, 8457 daily trading bars) without directional bias. Measures exact temporal turning-point timing (6-slot canonical geometry [t-2..t+2, ENTRE]) and forward Triple-Barrier first-passage returns independently for both market bottoms (MIN) and market tops (MAX). Pure empirical measurement data with zero narrative or qualitative judgment.",
     "data_sources": {
       "lake_path": "data/research/continuous_metar_lake.parquet",
@@ -48,10 +30,10 @@
           0.9772
         ],
         "value_edges": [
-          10.3,
-          34.5,
-          60.0,
-          77.9,
+          10.4,
+          34.2,
+          60.05,
+          78.0,
           89.7
         ],
         "labels": [
@@ -73,10 +55,10 @@
           0.9772
         ],
         "value_edges": [
-          -31.98416,
-          -13.900000000000004,
-          13.299999999999997,
-          33.400000000000006
+          -32.1,
+          -13.9,
+          13.100000000000001,
+          33.3
         ],
         "labels": [
           "FAST_CRUSH_3D",
@@ -96,10 +78,10 @@
           0.9772
         ],
         "value_edges": [
-          0.011648912215806825,
-          0.10033233606460544,
-          0.9574502980338819,
-          1.7017349214167905
+          0.011993959108083272,
+          0.10084394194391734,
+          0.9530623002809627,
+          1.7009445744554208
         ],
         "labels": [
           "VOL_EXTREME_SQUEEZE",
@@ -113,23 +95,23 @@
     },
     "dimension_thresholds_definition": {
       "bsi_edges_d1": [
-        10.3,
-        34.5,
-        60.0,
-        77.9,
+        10.4,
+        34.2,
+        60.05,
+        78.0,
         89.7
       ],
       "bsi_edges_d2": [
-        -31.98416,
-        -13.900000000000004,
-        13.299999999999997,
-        33.400000000000006
+        -32.1,
+        -13.9,
+        13.100000000000001,
+        33.3
       ],
       "bsi_edges_d3": [
-        0.011648912215806825,
-        0.10033233606460544,
-        0.9574502980338819,
-        1.7017349214167905
+        0.011993959108083272,
+        0.10084394194391734,
+        0.9530623002809627,
+        1.7009445744554208
       ],
       "bsi_labels_d1": [
         "BREADTH_WASHED_OUT",
@@ -227,8 +209,8 @@
   "coverage_start": "1993-01-29",
   "coverage_end": "2026-09-03",
   "sample_size_bars": 8457,
-  "states_registered": 112,
-  "states_populated": 112,
+  "states_registered": 113,
+  "states_populated": 111,
   "baselines": {
     "zz25": {
       "min_hit": 0.5391,
@@ -1733,7 +1715,7 @@
         "resumen_rango": {
           "n_en_rango": 45,
           "pct_en_rango": 90.0,
-          "delta_medio": 1.1,
+          "delta_medio": 1.0,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
@@ -1745,18 +1727,18 @@
             "bars": 3.2
           },
           "t-1": {
-            "n": 14,
-            "pct": 28.0,
-            "hit_rate": 0.643,
-            "ev": 0.004,
-            "bars": 3.4
+            "n": 13,
+            "pct": 26.0,
+            "hit_rate": 0.615,
+            "ev": 0.0031,
+            "bars": 3.6
           },
           "t=0": {
-            "n": 21,
-            "pct": 42.0,
-            "hit_rate": 0.619,
-            "ev": 0.0112,
-            "bars": 4.1
+            "n": 22,
+            "pct": 44.0,
+            "hit_rate": 0.636,
+            "ev": 0.0114,
+            "bars": 4.0
           },
           "t+1": {
             "n": 4,
@@ -2951,9 +2933,9 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 68,
-          "pct_en_rango": 94.44,
-          "delta_medio": 0.7,
+          "n_en_rango": 69,
+          "pct_en_rango": 95.83,
+          "delta_medio": 0.6,
           "delta_mediana": 0.0
         },
         "slots_zz25": {
@@ -2965,11 +2947,11 @@
             "bars": 2.7
           },
           "t-1": {
-            "n": 17,
-            "pct": 23.61,
-            "hit_rate": 0.471,
-            "ev": -0.0017,
-            "bars": 2.5
+            "n": 18,
+            "pct": 25.0,
+            "hit_rate": 0.444,
+            "ev": -0.0024,
+            "bars": 2.6
           },
           "t=0": {
             "n": 37,
@@ -2993,11 +2975,11 @@
             "bars": 7.0
           },
           "ENTRE": {
-            "n": 4,
-            "pct": 5.56,
-            "hit_rate": 0.5,
-            "ev": -0.004,
-            "bars": 7.0
+            "n": 3,
+            "pct": 4.17,
+            "hit_rate": 0.667,
+            "ev": -0.0011,
+            "bars": 8.0
           }
         },
         "first_passage": {
@@ -3072,11 +3054,11 @@
         },
         "slots_zz25": {
           "t-2": {
-            "n": 6,
-            "pct": 8.33,
-            "hit_rate": 0.167,
-            "ev": -0.0109,
-            "bars": 8.2
+            "n": 7,
+            "pct": 9.72,
+            "hit_rate": 0.286,
+            "ev": -0.0075,
+            "bars": 7.6
           },
           "t-1": {
             "n": 15,
@@ -3100,11 +3082,11 @@
             "bars": 1.8
           },
           "t+2": {
-            "n": 5,
-            "pct": 6.94,
-            "hit_rate": 0.8,
-            "ev": 0.0038,
-            "bars": 2.6
+            "n": 4,
+            "pct": 5.56,
+            "hit_rate": 0.75,
+            "ev": 0.0016,
+            "bars": 2.2
           },
           "ENTRE": {
             "n": 11,
@@ -3309,9 +3291,9 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 7,
-          "pct_en_rango": 63.64,
-          "delta_medio": 1.9,
+          "n_en_rango": 8,
+          "pct_en_rango": 72.73,
+          "delta_medio": 1.7,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
@@ -3337,10 +3319,10 @@
             "bars": 2.7
           },
           "t+1": {
-            "n": 1,
-            "pct": 9.09,
+            "n": 2,
+            "pct": 18.18,
             "hit_rate": 0.0,
-            "ev": -0.016,
+            "ev": -0.0205,
             "bars": 2.0
           },
           "t+2": {
@@ -3351,11 +3333,11 @@
             "bars": 2.0
           },
           "ENTRE": {
-            "n": 4,
-            "pct": 36.36,
+            "n": 3,
+            "pct": 27.27,
             "hit_rate": 0.0,
-            "ev": -0.0289,
-            "bars": 4.5
+            "ev": -0.0302,
+            "bars": 5.3
           }
         },
         "first_passage": {
@@ -3666,6 +3648,24 @@
         }
       }
     },
+    "1__0__0": {
+      "poblacion": {
+        "barras": 0,
+        "fire_rate_pct": 0.0,
+        "n_episodios": 0,
+        "duracion_media": 0.0,
+        "duracion_max": 0
+      },
+      "overflows": {
+        "n_episodios_tier_gte_1": 0,
+        "pct_episodios_overflow": 0.0,
+        "max_tier_d1": 0,
+        "max_tier_d2": 0,
+        "max_tier_d3": 0
+      },
+      "medicion_min": null,
+      "medicion_max": null
+    },
     "1__0__1": {
       "poblacion": {
         "barras": 17,
@@ -3799,7 +3799,7 @@
         "resumen_rango": {
           "n_en_rango": 5,
           "pct_en_rango": 29.41,
-          "delta_medio": 4.6,
+          "delta_medio": 4.4,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -3927,39 +3927,39 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 50,
-          "pct_en_rango": 60.98,
-          "delta_medio": 3.6,
+          "n_en_rango": 49,
+          "pct_en_rango": 59.76,
+          "delta_medio": 3.5,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 7,
-            "pct": 8.54,
-            "hit_rate": 0.571,
-            "ev": -0.0012,
-            "bars": 6.1
+            "n": 6,
+            "pct": 7.32,
+            "hit_rate": 0.667,
+            "ev": 0.0043,
+            "bars": 7.0
           },
           "t-1": {
-            "n": 17,
-            "pct": 20.73,
-            "hit_rate": 0.588,
-            "ev": 0.0051,
-            "bars": 6.1
+            "n": 19,
+            "pct": 23.17,
+            "hit_rate": 0.526,
+            "ev": 0.0017,
+            "bars": 5.5
           },
           "t=0": {
-            "n": 26,
-            "pct": 31.71,
-            "hit_rate": 0.846,
-            "ev": 0.0216,
+            "n": 23,
+            "pct": 28.05,
+            "hit_rate": 0.913,
+            "ev": 0.0251,
             "bars": 2.3
           },
           "t+1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 1.22,
+            "hit_rate": 0.0,
+            "ev": -0.0104,
+            "bars": 35.0
           },
           "t+2": {
             "n": 0,
@@ -3969,11 +3969,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 32,
-            "pct": 39.02,
-            "hit_rate": 0.375,
-            "ev": -0.0048,
-            "bars": 11.5
+            "n": 33,
+            "pct": 40.24,
+            "hit_rate": 0.394,
+            "ev": -0.0042,
+            "bars": 10.3
           }
         },
         "first_passage": {
@@ -4041,53 +4041,53 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 31,
-          "pct_en_rango": 37.8,
-          "delta_medio": 4.1,
+          "n_en_rango": 29,
+          "pct_en_rango": 35.37,
+          "delta_medio": 4.3,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 12,
-            "pct": 14.63,
-            "hit_rate": 0.25,
-            "ev": -0.011,
-            "bars": 3.1
+            "n": 11,
+            "pct": 13.41,
+            "hit_rate": 0.182,
+            "ev": -0.0151,
+            "bars": 3.3
           },
           "t-1": {
             "n": 4,
             "pct": 4.88,
             "hit_rate": 0.75,
-            "ev": 0.0064,
-            "bars": 1.8
+            "ev": 0.0102,
+            "bars": 1.2
           },
           "t=0": {
-            "n": 6,
-            "pct": 7.32,
-            "hit_rate": 0.667,
-            "ev": -0.0031,
-            "bars": 2.7
-          },
-          "t+1": {
-            "n": 4,
-            "pct": 4.88,
-            "hit_rate": 0.0,
-            "ev": -0.0184,
-            "bars": 6.2
-          },
-          "t+2": {
             "n": 5,
             "pct": 6.1,
-            "hit_rate": 0.4,
-            "ev": -0.0087,
-            "bars": 9.0
+            "hit_rate": 0.6,
+            "ev": -0.0078,
+            "bars": 3.0
+          },
+          "t+1": {
+            "n": 5,
+            "pct": 6.1,
+            "hit_rate": 0.2,
+            "ev": -0.0106,
+            "bars": 5.2
+          },
+          "t+2": {
+            "n": 4,
+            "pct": 4.88,
+            "hit_rate": 0.25,
+            "ev": -0.0161,
+            "bars": 9.8
           },
           "ENTRE": {
-            "n": 51,
-            "pct": 62.2,
-            "hit_rate": 0.392,
-            "ev": -0.0048,
-            "bars": 8.7
+            "n": 53,
+            "pct": 64.63,
+            "hit_rate": 0.415,
+            "ev": -0.0039,
+            "bars": 8.5
           }
         },
         "first_passage": {
@@ -4285,10 +4285,10 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 19,
-          "pct_en_rango": 47.5,
-          "delta_medio": 4.1,
-          "delta_mediana": 3.0
+          "n_en_rango": 20,
+          "pct_en_rango": 50.0,
+          "delta_medio": 4.0,
+          "delta_mediana": 2.5
         },
         "slots_zz25": {
           "t-2": {
@@ -4320,18 +4320,18 @@
             "bars": 13.0
           },
           "t+2": {
-            "n": 6,
-            "pct": 15.0,
-            "hit_rate": 0.333,
-            "ev": -0.0078,
-            "bars": 5.7
+            "n": 7,
+            "pct": 17.5,
+            "hit_rate": 0.286,
+            "ev": -0.0099,
+            "bars": 6.9
           },
           "ENTRE": {
-            "n": 21,
-            "pct": 52.5,
-            "hit_rate": 0.381,
-            "ev": -0.0061,
-            "bars": 9.4
+            "n": 20,
+            "pct": 50.0,
+            "hit_rate": 0.4,
+            "ev": -0.0053,
+            "bars": 9.2
           }
         },
         "first_passage": {
@@ -4415,10 +4415,10 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 3,
-          "pct_en_rango": 37.5,
-          "delta_medio": 8.6,
-          "delta_mediana": 3.5
+          "n_en_rango": 4,
+          "pct_en_rango": 50.0,
+          "delta_medio": 3.8,
+          "delta_mediana": 2.0
         },
         "slots_zz25": {
           "t-2": {
@@ -4429,11 +4429,11 @@
             "bars": null
           },
           "t-1": {
-            "n": 1,
-            "pct": 12.5,
-            "hit_rate": 1.0,
-            "ev": 0.012,
-            "bars": 1.0
+            "n": 2,
+            "pct": 25.0,
+            "hit_rate": 0.5,
+            "ev": 0.0043,
+            "bars": 18.0
           },
           "t=0": {
             "n": 2,
@@ -4457,11 +4457,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 5,
-            "pct": 62.5,
-            "hit_rate": 0.2,
-            "ev": -0.0095,
-            "bars": 19.8
+            "n": 4,
+            "pct": 50.0,
+            "hit_rate": 0.25,
+            "ev": -0.011,
+            "bars": 16.0
           }
         },
         "first_passage": {
@@ -4531,7 +4531,7 @@
         "resumen_rango": {
           "n_en_rango": 4,
           "pct_en_rango": 50.0,
-          "delta_medio": 3.5,
+          "delta_medio": 3.0,
           "delta_mediana": 2.5
         },
         "slots_zz25": {
@@ -5019,7 +5019,7 @@
         "resumen_rango": {
           "n_en_rango": 17,
           "pct_en_rango": 33.33,
-          "delta_medio": 5.6,
+          "delta_medio": 5.3,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -5045,18 +5045,18 @@
             "bars": 2.3
           },
           "t+1": {
-            "n": 3,
-            "pct": 5.88,
-            "hit_rate": 0.667,
-            "ev": 0.0041,
+            "n": 2,
+            "pct": 3.92,
+            "hit_rate": 1.0,
+            "ev": 0.0207,
             "bars": 2.0
           },
           "t+2": {
-            "n": 2,
-            "pct": 3.92,
-            "hit_rate": 0.5,
-            "ev": -0.0038,
-            "bars": 5.5
+            "n": 3,
+            "pct": 5.88,
+            "hit_rate": 0.333,
+            "ev": -0.0122,
+            "bars": 4.3
           },
           "ENTRE": {
             "n": 34,
@@ -5147,8 +5147,8 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 121,
-          "pct_en_rango": 69.54,
+          "n_en_rango": 122,
+          "pct_en_rango": 70.11,
           "delta_medio": 2.6,
           "delta_mediana": 1.0
         },
@@ -5161,25 +5161,25 @@
             "bars": 5.0
           },
           "t-1": {
-            "n": 38,
-            "pct": 21.84,
-            "hit_rate": 0.684,
-            "ev": 0.0116,
+            "n": 39,
+            "pct": 22.41,
+            "hit_rate": 0.692,
+            "ev": 0.0118,
             "bars": 5.2
           },
           "t=0": {
             "n": 43,
             "pct": 24.71,
             "hit_rate": 0.814,
-            "ev": 0.0148,
-            "bars": 4.0
+            "ev": 0.0152,
+            "bars": 4.1
           },
           "t+1": {
             "n": 17,
             "pct": 9.77,
             "hit_rate": 0.647,
-            "ev": 0.0078,
-            "bars": 5.5
+            "ev": 0.0083,
+            "bars": 5.6
           },
           "t+2": {
             "n": 0,
@@ -5189,10 +5189,10 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 53,
-            "pct": 30.46,
-            "hit_rate": 0.415,
-            "ev": -0.0032,
+            "n": 52,
+            "pct": 29.89,
+            "hit_rate": 0.404,
+            "ev": -0.0041,
             "bars": 9.7
           }
         },
@@ -5261,9 +5261,9 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 74,
-          "pct_en_rango": 42.53,
-          "delta_medio": 5.0,
+          "n_en_rango": 75,
+          "pct_en_rango": 43.1,
+          "delta_medio": 4.8,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -5282,32 +5282,32 @@
             "bars": 2.3
           },
           "t=0": {
-            "n": 15,
-            "pct": 8.62,
-            "hit_rate": 0.333,
-            "ev": -0.0021,
-            "bars": 4.5
+            "n": 13,
+            "pct": 7.47,
+            "hit_rate": 0.385,
+            "ev": 0.0015,
+            "bars": 4.4
           },
           "t+1": {
-            "n": 15,
-            "pct": 8.62,
-            "hit_rate": 0.4,
-            "ev": -0.0076,
-            "bars": 2.9
+            "n": 16,
+            "pct": 9.2,
+            "hit_rate": 0.312,
+            "ev": -0.0127,
+            "bars": 3.1
           },
           "t+2": {
-            "n": 17,
-            "pct": 9.77,
-            "hit_rate": 0.529,
-            "ev": -0.0036,
-            "bars": 3.6
+            "n": 19,
+            "pct": 10.92,
+            "hit_rate": 0.526,
+            "ev": -0.0029,
+            "bars": 3.7
           },
           "ENTRE": {
-            "n": 100,
-            "pct": 57.47,
-            "hit_rate": 0.35,
-            "ev": -0.0081,
-            "bars": 8.5
+            "n": 99,
+            "pct": 56.9,
+            "hit_rate": 0.354,
+            "ev": -0.0079,
+            "bars": 8.6
           }
         },
         "first_passage": {
@@ -5505,9 +5505,9 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 23,
-          "pct_en_rango": 41.82,
-          "delta_medio": 5.8,
+          "n_en_rango": 24,
+          "pct_en_rango": 43.64,
+          "delta_medio": 5.3,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -5533,11 +5533,11 @@
             "bars": 3.0
           },
           "t+1": {
-            "n": 7,
-            "pct": 12.73,
-            "hit_rate": 0.571,
-            "ev": 0.0,
-            "bars": 3.6
+            "n": 8,
+            "pct": 14.55,
+            "hit_rate": 0.5,
+            "ev": -0.0053,
+            "bars": 3.5
           },
           "t+2": {
             "n": 5,
@@ -5547,11 +5547,11 @@
             "bars": 8.0
           },
           "ENTRE": {
-            "n": 32,
-            "pct": 58.18,
-            "hit_rate": 0.281,
-            "ev": -0.0111,
-            "bars": 9.8
+            "n": 31,
+            "pct": 56.36,
+            "hit_rate": 0.29,
+            "ev": -0.0101,
+            "bars": 10.0
           }
         },
         "first_passage": {
@@ -5635,18 +5635,18 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 5,
-          "pct_en_rango": 62.5,
-          "delta_medio": 2.1,
-          "delta_mediana": 1.5
+          "n_en_rango": 4,
+          "pct_en_rango": 50.0,
+          "delta_medio": 2.8,
+          "delta_mediana": 2.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 12.5,
-            "hit_rate": 0.0,
-            "ev": -0.0256,
-            "bars": 5.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t-1": {
             "n": 2,
@@ -5677,11 +5677,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 3,
-            "pct": 37.5,
-            "hit_rate": 0.333,
-            "ev": -0.0036,
-            "bars": 12.0
+            "n": 4,
+            "pct": 50.0,
+            "hit_rate": 0.25,
+            "ev": -0.0091,
+            "bars": 10.2
           }
         },
         "first_passage": {
@@ -6123,9 +6123,9 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 54,
-          "pct_en_rango": 78.26,
-          "delta_medio": 2.7,
+          "n_en_rango": 55,
+          "pct_en_rango": 79.71,
+          "delta_medio": 1.7,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
@@ -6137,18 +6137,18 @@
             "bars": 3.0
           },
           "t-1": {
-            "n": 16,
-            "pct": 23.19,
-            "hit_rate": 0.688,
-            "ev": 0.0117,
-            "bars": 5.2
+            "n": 15,
+            "pct": 21.74,
+            "hit_rate": 0.733,
+            "ev": 0.0137,
+            "bars": 5.5
           },
           "t=0": {
-            "n": 24,
-            "pct": 34.78,
-            "hit_rate": 0.833,
-            "ev": 0.0175,
-            "bars": 4.7
+            "n": 25,
+            "pct": 36.23,
+            "hit_rate": 0.8,
+            "ev": 0.0161,
+            "bars": 4.6
           },
           "t+1": {
             "n": 8,
@@ -6158,18 +6158,18 @@
             "bars": 6.0
           },
           "t+2": {
-            "n": 4,
-            "pct": 5.8,
-            "hit_rate": 0.75,
-            "ev": 0.0179,
-            "bars": 4.0
+            "n": 5,
+            "pct": 7.25,
+            "hit_rate": 0.6,
+            "ev": 0.0111,
+            "bars": 10.2
           },
           "ENTRE": {
-            "n": 15,
-            "pct": 21.74,
-            "hit_rate": 0.467,
-            "ev": 0.0031,
-            "bars": 11.7
+            "n": 14,
+            "pct": 20.29,
+            "hit_rate": 0.5,
+            "ev": 0.0045,
+            "bars": 10.1
           }
         },
         "first_passage": {
@@ -6239,7 +6239,7 @@
         "resumen_rango": {
           "n_en_rango": 30,
           "pct_en_rango": 43.48,
-          "delta_medio": 6.6,
+          "delta_medio": 5.5,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -6251,17 +6251,17 @@
             "bars": 4.6
           },
           "t-1": {
-            "n": 13,
-            "pct": 18.84,
-            "hit_rate": 0.462,
-            "ev": -0.0014,
-            "bars": 4.0
+            "n": 12,
+            "pct": 17.39,
+            "hit_rate": 0.417,
+            "ev": -0.0031,
+            "bars": 4.2
           },
           "t=0": {
-            "n": 2,
-            "pct": 2.9,
+            "n": 3,
+            "pct": 4.35,
             "hit_rate": 1.0,
-            "ev": 0.0202,
+            "ev": 0.0196,
             "bars": 1.0
           },
           "t+1": {
@@ -6367,39 +6367,39 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 210,
-          "pct_en_rango": 72.16,
-          "delta_medio": 2.0,
+          "n_en_rango": 211,
+          "pct_en_rango": 72.51,
+          "delta_medio": 1.9,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 24,
-            "pct": 8.25,
-            "hit_rate": 0.375,
-            "ev": -0.0031,
-            "bars": 7.1
+            "n": 25,
+            "pct": 8.59,
+            "hit_rate": 0.36,
+            "ev": -0.0045,
+            "bars": 7.7
           },
           "t-1": {
-            "n": 49,
-            "pct": 16.84,
-            "hit_rate": 0.429,
-            "ev": -0.0007,
-            "bars": 3.5
+            "n": 50,
+            "pct": 17.18,
+            "hit_rate": 0.42,
+            "ev": -0.0013,
+            "bars": 3.6
           },
           "t=0": {
-            "n": 73,
-            "pct": 25.09,
-            "hit_rate": 0.726,
-            "ev": 0.0121,
+            "n": 70,
+            "pct": 24.05,
+            "hit_rate": 0.743,
+            "ev": 0.0129,
             "bars": 3.9
           },
           "t+1": {
-            "n": 46,
-            "pct": 15.81,
-            "hit_rate": 0.609,
-            "ev": 0.0049,
-            "bars": 5.6
+            "n": 48,
+            "pct": 16.49,
+            "hit_rate": 0.583,
+            "ev": 0.0039,
+            "bars": 5.4
           },
           "t+2": {
             "n": 18,
@@ -6409,11 +6409,11 @@
             "bars": 6.7
           },
           "ENTRE": {
-            "n": 81,
-            "pct": 27.84,
-            "hit_rate": 0.481,
-            "ev": -0.0008,
-            "bars": 10.1
+            "n": 80,
+            "pct": 27.49,
+            "hit_rate": 0.5,
+            "ev": 0.0003,
+            "bars": 10.0
           }
         },
         "first_passage": {
@@ -6483,7 +6483,7 @@
         "resumen_rango": {
           "n_en_rango": 146,
           "pct_en_rango": 50.17,
-          "delta_medio": 4.5,
+          "delta_medio": 4.1,
           "delta_mediana": 2.0
         },
         "slots_zz25": {
@@ -6495,32 +6495,32 @@
             "bars": 5.0
           },
           "t-1": {
-            "n": 44,
-            "pct": 15.12,
-            "hit_rate": 0.705,
-            "ev": 0.0091,
+            "n": 43,
+            "pct": 14.78,
+            "hit_rate": 0.721,
+            "ev": 0.0097,
             "bars": 3.0
           },
           "t=0": {
             "n": 33,
             "pct": 11.34,
             "hit_rate": 0.667,
-            "ev": 0.0089,
-            "bars": 3.8
+            "ev": 0.0086,
+            "bars": 3.7
           },
           "t+1": {
-            "n": 28,
-            "pct": 9.62,
-            "hit_rate": 0.429,
-            "ev": -0.004,
-            "bars": 3.7
+            "n": 29,
+            "pct": 9.97,
+            "hit_rate": 0.414,
+            "ev": -0.0045,
+            "bars": 3.6
           },
           "t+2": {
             "n": 26,
             "pct": 8.93,
             "hit_rate": 0.346,
-            "ev": -0.0095,
-            "bars": 3.5
+            "ev": -0.0094,
+            "bars": 3.3
           },
           "ENTRE": {
             "n": 145,
@@ -6625,25 +6625,25 @@
             "bars": 5.0
           },
           "t-1": {
-            "n": 12,
-            "pct": 18.46,
-            "hit_rate": 0.583,
-            "ev": 0.0128,
-            "bars": 4.5
+            "n": 13,
+            "pct": 20.0,
+            "hit_rate": 0.615,
+            "ev": 0.0136,
+            "bars": 4.2
           },
           "t=0": {
             "n": 14,
             "pct": 21.54,
-            "hit_rate": 0.786,
-            "ev": 0.0166,
-            "bars": 2.2
+            "hit_rate": 0.714,
+            "ev": 0.0136,
+            "bars": 2.4
           },
           "t+1": {
-            "n": 10,
-            "pct": 15.38,
-            "hit_rate": 0.4,
-            "ev": -0.007,
-            "bars": 6.5
+            "n": 9,
+            "pct": 13.85,
+            "hit_rate": 0.444,
+            "ev": -0.0046,
+            "bars": 7.0
           },
           "t+2": {
             "n": 2,
@@ -6656,7 +6656,7 @@
             "n": 17,
             "pct": 26.15,
             "hit_rate": 0.529,
-            "ev": 0.0035,
+            "ev": 0.003,
             "bars": 7.2
           }
         },
@@ -6727,7 +6727,7 @@
         "resumen_rango": {
           "n_en_rango": 42,
           "pct_en_rango": 64.62,
-          "delta_medio": 4.0,
+          "delta_medio": 3.8,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
@@ -6739,17 +6739,17 @@
             "bars": 2.0
           },
           "t-1": {
-            "n": 9,
-            "pct": 13.85,
-            "hit_rate": 0.667,
-            "ev": -0.0015,
+            "n": 10,
+            "pct": 15.38,
+            "hit_rate": 0.7,
+            "ev": 0.0006,
             "bars": 1.8
           },
           "t=0": {
-            "n": 13,
-            "pct": 20.0,
-            "hit_rate": 0.462,
-            "ev": -0.0044,
+            "n": 12,
+            "pct": 18.46,
+            "hit_rate": 0.417,
+            "ev": -0.0071,
             "bars": 2.8
           },
           "t+1": {
@@ -6770,7 +6770,7 @@
             "n": 23,
             "pct": 35.38,
             "hit_rate": 0.261,
-            "ev": -0.0139,
+            "ev": -0.0135,
             "bars": 8.0
           }
         },
@@ -6971,7 +6971,7 @@
         "resumen_rango": {
           "n_en_rango": 5,
           "pct_en_rango": 55.56,
-          "delta_medio": 4.6,
+          "delta_medio": 4.9,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
@@ -6990,18 +6990,18 @@
             "bars": 5.7
           },
           "t=0": {
-            "n": 1,
-            "pct": 11.11,
-            "hit_rate": 1.0,
-            "ev": 0.0262,
-            "bars": 5.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t+1": {
-            "n": 1,
-            "pct": 11.11,
+            "n": 2,
+            "pct": 22.22,
             "hit_rate": 1.0,
-            "ev": 0.0137,
-            "bars": 9.0
+            "ev": 0.0199,
+            "bars": 7.0
           },
           "t+2": {
             "n": 0,
@@ -7701,8 +7701,8 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 42,
-          "pct_en_rango": 68.85,
+          "n_en_rango": 41,
+          "pct_en_rango": 67.21,
           "delta_medio": 3.3,
           "delta_mediana": 1.0
         },
@@ -7736,18 +7736,18 @@
             "bars": 3.8
           },
           "t+2": {
-            "n": 4,
-            "pct": 6.56,
-            "hit_rate": 0.25,
-            "ev": -0.0137,
-            "bars": 11.8
+            "n": 3,
+            "pct": 4.92,
+            "hit_rate": 0.333,
+            "ev": -0.0048,
+            "bars": 15.0
           },
           "ENTRE": {
-            "n": 19,
-            "pct": 31.15,
-            "hit_rate": 0.158,
-            "ev": -0.0151,
-            "bars": 9.5
+            "n": 20,
+            "pct": 32.79,
+            "hit_rate": 0.15,
+            "ev": -0.0164,
+            "bars": 9.2
           }
         },
         "first_passage": {
@@ -7831,10 +7831,10 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 20,
-          "pct_en_rango": 80.0,
-          "delta_medio": 2.0,
-          "delta_mediana": 2.0
+          "n_en_rango": 21,
+          "pct_en_rango": 84.0,
+          "delta_medio": 1.7,
+          "delta_mediana": 1.0
         },
         "slots_zz25": {
           "t-2": {
@@ -7845,11 +7845,11 @@
             "bars": 1.5
           },
           "t-1": {
-            "n": 5,
-            "pct": 20.0,
-            "hit_rate": 0.6,
-            "ev": 0.0028,
-            "bars": 2.6
+            "n": 4,
+            "pct": 16.0,
+            "hit_rate": 0.5,
+            "ev": -0.0027,
+            "bars": 2.0
           },
           "t=0": {
             "n": 3,
@@ -7859,11 +7859,11 @@
             "bars": 3.0
           },
           "t+1": {
-            "n": 4,
-            "pct": 16.0,
-            "hit_rate": 0.75,
-            "ev": 0.0075,
-            "bars": 7.2
+            "n": 6,
+            "pct": 24.0,
+            "hit_rate": 0.667,
+            "ev": 0.0054,
+            "bars": 7.3
           },
           "t+2": {
             "n": 6,
@@ -7873,11 +7873,11 @@
             "bars": 8.2
           },
           "ENTRE": {
-            "n": 5,
-            "pct": 20.0,
-            "hit_rate": 0.4,
-            "ev": -0.0009,
-            "bars": 7.2
+            "n": 4,
+            "pct": 16.0,
+            "hit_rate": 0.5,
+            "ev": 0.0045,
+            "bars": 6.5
           }
         },
         "first_passage": {
@@ -7966,11 +7966,11 @@
             "bars": 2.2
           },
           "t=0": {
-            "n": 5,
-            "pct": 20.0,
-            "hit_rate": 0.6,
-            "ev": 0.0131,
-            "bars": 3.2
+            "n": 4,
+            "pct": 16.0,
+            "hit_rate": 0.75,
+            "ev": 0.0227,
+            "bars": 2.8
           },
           "t+1": {
             "n": 3,
@@ -7980,11 +7980,11 @@
             "bars": 2.7
           },
           "t+2": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 4.0,
+            "hit_rate": 0.0,
+            "ev": -0.025,
+            "bars": 5.0
           },
           "ENTRE": {
             "n": 10,
@@ -8077,8 +8077,8 @@
         "resumen_rango": {
           "n_en_rango": 8,
           "pct_en_rango": 88.89,
-          "delta_medio": 0.9,
-          "delta_mediana": 1.0
+          "delta_medio": 0.8,
+          "delta_mediana": 0.0
         },
         "slots_zz25": {
           "t-2": {
@@ -8096,18 +8096,18 @@
             "bars": 1.0
           },
           "t=0": {
-            "n": 4,
-            "pct": 44.44,
-            "hit_rate": 0.75,
-            "ev": 0.013,
+            "n": 5,
+            "pct": 55.56,
+            "hit_rate": 0.6,
+            "ev": 0.0065,
             "bars": 2.2
           },
           "t+1": {
-            "n": 2,
-            "pct": 22.22,
-            "hit_rate": 0.5,
-            "ev": -0.004,
-            "bars": 4.5
+            "n": 1,
+            "pct": 11.11,
+            "hit_rate": 1.0,
+            "ev": 0.0116,
+            "bars": 7.0
           },
           "t+2": {
             "n": 0,
@@ -8790,6 +8790,24 @@
         }
       }
     },
+    "2__0__0": {
+      "poblacion": {
+        "barras": 0,
+        "fire_rate_pct": 0.0,
+        "n_episodios": 0,
+        "duracion_media": 0.0,
+        "duracion_max": 0
+      },
+      "overflows": {
+        "n_episodios_tier_gte_1": 0,
+        "pct_episodios_overflow": 0.0,
+        "max_tier_d1": 0,
+        "max_tier_d2": 0,
+        "max_tier_d3": 0
+      },
+      "medicion_min": null,
+      "medicion_max": null
+    },
     "2__0__1": {
       "poblacion": {
         "barras": 8,
@@ -8807,10 +8825,10 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 5,
-          "pct_en_rango": 62.5,
-          "delta_medio": 2.4,
-          "delta_mediana": 1.5
+          "n_en_rango": 6,
+          "pct_en_rango": 75.0,
+          "delta_medio": 1.9,
+          "delta_mediana": 0.5
         },
         "slots_zz25": {
           "t-2": {
@@ -8828,11 +8846,11 @@
             "bars": 1.0
           },
           "t=0": {
-            "n": 3,
-            "pct": 37.5,
-            "hit_rate": 0.667,
-            "ev": 0.0134,
-            "bars": 6.0
+            "n": 4,
+            "pct": 50.0,
+            "hit_rate": 0.5,
+            "ev": 0.0038,
+            "bars": 5.2
           },
           "t+1": {
             "n": 0,
@@ -8849,11 +8867,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 3,
-            "pct": 37.5,
-            "hit_rate": 0.667,
-            "ev": 0.0093,
-            "bars": 7.3
+            "n": 2,
+            "pct": 25.0,
+            "hit_rate": 1.0,
+            "ev": 0.0264,
+            "bars": 9.5
           }
         },
         "first_passage": {
@@ -8921,17 +8939,17 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 4,
-          "pct_en_rango": 50.0,
-          "delta_medio": 2.6,
-          "delta_mediana": 2.5
+          "n_en_rango": 5,
+          "pct_en_rango": 62.5,
+          "delta_medio": 2.4,
+          "delta_mediana": 2.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 12.5,
+            "n": 2,
+            "pct": 25.0,
             "hit_rate": 1.0,
-            "ev": 0.0267,
+            "ev": 0.0257,
             "bars": 3.0
           },
           "t-1": {
@@ -8963,11 +8981,11 @@
             "bars": 4.0
           },
           "ENTRE": {
-            "n": 4,
-            "pct": 50.0,
-            "hit_rate": 0.5,
-            "ev": -0.0025,
-            "bars": 8.8
+            "n": 3,
+            "pct": 37.5,
+            "hit_rate": 0.333,
+            "ev": -0.0116,
+            "bars": 10.7
           }
         },
         "first_passage": {
@@ -9053,30 +9071,30 @@
         "resumen_rango": {
           "n_en_rango": 30,
           "pct_en_rango": 68.18,
-          "delta_medio": 3.9,
+          "delta_medio": 3.6,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 5,
-            "pct": 11.36,
-            "hit_rate": 0.4,
-            "ev": -0.0069,
-            "bars": 6.0
+            "n": 4,
+            "pct": 9.09,
+            "hit_rate": 0.5,
+            "ev": -0.009,
+            "bars": 7.0
           },
           "t-1": {
-            "n": 5,
-            "pct": 11.36,
-            "hit_rate": 0.6,
-            "ev": 0.0088,
-            "bars": 6.0
+            "n": 7,
+            "pct": 15.91,
+            "hit_rate": 0.429,
+            "ev": -0.0017,
+            "bars": 6.7
           },
           "t=0": {
-            "n": 17,
-            "pct": 38.64,
-            "hit_rate": 0.706,
-            "ev": 0.0129,
-            "bars": 3.6
+            "n": 16,
+            "pct": 36.36,
+            "hit_rate": 0.75,
+            "ev": 0.0155,
+            "bars": 3.5
           },
           "t+1": {
             "n": 3,
@@ -9096,8 +9114,8 @@
             "n": 14,
             "pct": 31.82,
             "hit_rate": 0.429,
-            "ev": -0.0037,
-            "bars": 8.9
+            "ev": -0.0016,
+            "bars": 8.2
           }
         },
         "first_passage": {
@@ -9165,18 +9183,18 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 22,
-          "pct_en_rango": 50.0,
-          "delta_medio": 4.5,
-          "delta_mediana": 2.5
+          "n_en_rango": 21,
+          "pct_en_rango": 47.73,
+          "delta_medio": 4.4,
+          "delta_mediana": 3.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 6,
-            "pct": 13.64,
-            "hit_rate": 0.5,
-            "ev": 0.0039,
-            "bars": 3.0
+            "n": 5,
+            "pct": 11.36,
+            "hit_rate": 0.4,
+            "ev": 0.0049,
+            "bars": 3.2
           },
           "t-1": {
             "n": 1,
@@ -9207,11 +9225,11 @@
             "bars": 9.7
           },
           "ENTRE": {
-            "n": 22,
-            "pct": 50.0,
-            "hit_rate": 0.364,
-            "ev": -0.0076,
-            "bars": 6.7
+            "n": 23,
+            "pct": 52.27,
+            "hit_rate": 0.391,
+            "ev": -0.0073,
+            "bars": 6.5
           }
         },
         "first_passage": {
@@ -9297,7 +9315,7 @@
         "resumen_rango": {
           "n_en_rango": 15,
           "pct_en_rango": 46.88,
-          "delta_medio": 6.0,
+          "delta_medio": 6.8,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -9409,9 +9427,9 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 10,
-          "pct_en_rango": 31.25,
-          "delta_medio": 4.9,
+          "n_en_rango": 9,
+          "pct_en_rango": 28.12,
+          "delta_medio": 5.1,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -9437,11 +9455,11 @@
             "bars": null
           },
           "t+1": {
-            "n": 1,
-            "pct": 3.12,
-            "hit_rate": 0.0,
-            "ev": -0.0243,
-            "bars": 13.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t+2": {
             "n": 6,
@@ -9451,11 +9469,11 @@
             "bars": 11.3
           },
           "ENTRE": {
-            "n": 22,
-            "pct": 68.75,
-            "hit_rate": 0.273,
-            "ev": -0.0131,
-            "bars": 7.0
+            "n": 23,
+            "pct": 71.88,
+            "hit_rate": 0.261,
+            "ev": -0.0136,
+            "bars": 7.3
           }
         },
         "first_passage": {
@@ -10027,9 +10045,9 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 20,
-          "pct_en_rango": 42.55,
-          "delta_medio": 7.3,
+          "n_en_rango": 21,
+          "pct_en_rango": 44.68,
+          "delta_medio": 7.7,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -10041,25 +10059,25 @@
             "bars": 9.4
           },
           "t-1": {
-            "n": 1,
-            "pct": 2.13,
+            "n": 2,
+            "pct": 4.26,
             "hit_rate": 1.0,
             "ev": 0.0227,
-            "bars": 5.0
+            "bars": 9.5
           },
           "t=0": {
-            "n": 8,
-            "pct": 17.02,
-            "hit_rate": 0.5,
-            "ev": 0.0032,
-            "bars": 4.6
+            "n": 9,
+            "pct": 19.15,
+            "hit_rate": 0.444,
+            "ev": 0.0047,
+            "bars": 4.4
           },
           "t+1": {
-            "n": 6,
-            "pct": 12.77,
-            "hit_rate": 0.5,
-            "ev": -0.0026,
-            "bars": 5.5
+            "n": 5,
+            "pct": 10.64,
+            "hit_rate": 0.6,
+            "ev": 0.0011,
+            "bars": 6.2
           },
           "t+2": {
             "n": 0,
@@ -10069,11 +10087,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 27,
-            "pct": 57.45,
-            "hit_rate": 0.481,
-            "ev": 0.0023,
-            "bars": 11.4
+            "n": 26,
+            "pct": 55.32,
+            "hit_rate": 0.462,
+            "ev": 0.0001,
+            "bars": 11.3
           }
         },
         "first_passage": {
@@ -10141,8 +10159,8 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 11,
-          "pct_en_rango": 23.4,
+          "n_en_rango": 10,
+          "pct_en_rango": 21.28,
           "delta_medio": 7.9,
           "delta_mediana": 4.0
         },
@@ -10176,17 +10194,17 @@
             "bars": 10.5
           },
           "t+2": {
-            "n": 3,
-            "pct": 6.38,
-            "hit_rate": 0.667,
-            "ev": 0.0143,
-            "bars": 8.7
+            "n": 2,
+            "pct": 4.26,
+            "hit_rate": 1.0,
+            "ev": 0.0332,
+            "bars": 7.0
           },
           "ENTRE": {
-            "n": 36,
-            "pct": 76.6,
-            "hit_rate": 0.417,
-            "ev": -0.0045,
+            "n": 37,
+            "pct": 78.72,
+            "hit_rate": 0.405,
+            "ev": -0.005,
             "bars": 10.3
           }
         },
@@ -10271,39 +10289,39 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 120,
-          "pct_en_rango": 47.81,
-          "delta_medio": 7.2,
+          "n_en_rango": 122,
+          "pct_en_rango": 48.61,
+          "delta_medio": 7.1,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 21,
-            "pct": 8.37,
-            "hit_rate": 0.429,
+            "n": 23,
+            "pct": 9.16,
+            "hit_rate": 0.435,
             "ev": -0.0039,
-            "bars": 5.2
+            "bars": 5.9
           },
           "t-1": {
-            "n": 36,
-            "pct": 14.34,
-            "hit_rate": 0.611,
-            "ev": 0.0043,
-            "bars": 6.0
+            "n": 33,
+            "pct": 13.15,
+            "hit_rate": 0.606,
+            "ev": 0.0039,
+            "bars": 5.8
           },
           "t=0": {
-            "n": 37,
-            "pct": 14.74,
-            "hit_rate": 0.784,
-            "ev": 0.0167,
-            "bars": 5.0
+            "n": 40,
+            "pct": 15.94,
+            "hit_rate": 0.75,
+            "ev": 0.015,
+            "bars": 6.0
           },
           "t+1": {
             "n": 25,
             "pct": 9.96,
-            "hit_rate": 0.84,
-            "ev": 0.0184,
-            "bars": 9.2
+            "hit_rate": 0.8,
+            "ev": 0.0166,
+            "bars": 9.4
           },
           "t+2": {
             "n": 1,
@@ -10313,11 +10331,11 @@
             "bars": 3.0
           },
           "ENTRE": {
-            "n": 131,
-            "pct": 52.19,
-            "hit_rate": 0.481,
-            "ev": -0.0006,
-            "bars": 11.0
+            "n": 129,
+            "pct": 51.39,
+            "hit_rate": 0.496,
+            "ev": 0.0002,
+            "bars": 10.7
           }
         },
         "first_passage": {
@@ -10385,8 +10403,8 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 71,
-          "pct_en_rango": 28.29,
+          "n_en_rango": 74,
+          "pct_en_rango": 29.48,
           "delta_medio": 6.9,
           "delta_mediana": 4.0
         },
@@ -10399,11 +10417,11 @@
             "bars": 5.8
           },
           "t-1": {
-            "n": 10,
-            "pct": 3.98,
-            "hit_rate": 0.7,
-            "ev": 0.0117,
-            "bars": 5.7
+            "n": 9,
+            "pct": 3.59,
+            "hit_rate": 0.778,
+            "ev": 0.0153,
+            "bars": 5.8
           },
           "t=0": {
             "n": 8,
@@ -10413,25 +10431,25 @@
             "bars": 5.8
           },
           "t+1": {
-            "n": 13,
-            "pct": 5.18,
-            "hit_rate": 0.462,
-            "ev": -0.0051,
-            "bars": 3.9
+            "n": 14,
+            "pct": 5.58,
+            "hit_rate": 0.5,
+            "ev": -0.0028,
+            "bars": 5.6
           },
           "t+2": {
-            "n": 24,
-            "pct": 9.56,
-            "hit_rate": 0.375,
-            "ev": -0.0083,
-            "bars": 7.6
+            "n": 27,
+            "pct": 10.76,
+            "hit_rate": 0.407,
+            "ev": -0.0056,
+            "bars": 7.7
           },
           "ENTRE": {
-            "n": 180,
-            "pct": 71.71,
-            "hit_rate": 0.361,
-            "ev": -0.0055,
-            "bars": 9.7
+            "n": 177,
+            "pct": 70.52,
+            "hit_rate": 0.35,
+            "ev": -0.0062,
+            "bars": 9.6
           }
         },
         "first_passage": {
@@ -10515,25 +10533,25 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 42,
-          "pct_en_rango": 34.71,
-          "delta_medio": 7.9,
+          "n_en_rango": 41,
+          "pct_en_rango": 33.88,
+          "delta_medio": 8.1,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
             "n": 11,
             "pct": 9.09,
-            "hit_rate": 0.818,
-            "ev": 0.0127,
-            "bars": 9.9
+            "hit_rate": 0.727,
+            "ev": 0.0068,
+            "bars": 9.0
           },
           "t-1": {
-            "n": 20,
-            "pct": 16.53,
-            "hit_rate": 0.65,
-            "ev": 0.0042,
-            "bars": 8.2
+            "n": 19,
+            "pct": 15.7,
+            "hit_rate": 0.632,
+            "ev": 0.0032,
+            "bars": 8.4
           },
           "t=0": {
             "n": 9,
@@ -10557,11 +10575,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 79,
-            "pct": 65.29,
-            "hit_rate": 0.494,
-            "ev": -0.0011,
-            "bars": 8.6
+            "n": 80,
+            "pct": 66.12,
+            "hit_rate": 0.512,
+            "ev": -0.0,
+            "bars": 8.7
           }
         },
         "first_passage": {
@@ -10629,18 +10647,18 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 40,
-          "pct_en_rango": 33.06,
-          "delta_medio": 7.1,
+          "n_en_rango": 43,
+          "pct_en_rango": 35.54,
+          "delta_medio": 7.2,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 0.83,
-            "hit_rate": 0.0,
-            "ev": -0.0216,
-            "bars": 2.0
+            "n": 3,
+            "pct": 2.48,
+            "hit_rate": 0.667,
+            "ev": 0.0135,
+            "bars": 3.0
           },
           "t-1": {
             "n": 4,
@@ -10652,30 +10670,30 @@
           "t=0": {
             "n": 8,
             "pct": 6.61,
-            "hit_rate": 0.75,
-            "ev": 0.0156,
-            "bars": 4.0
-          },
-          "t+1": {
-            "n": 13,
-            "pct": 10.74,
-            "hit_rate": 0.538,
-            "ev": 0.0039,
+            "hit_rate": 0.625,
+            "ev": 0.0096,
             "bars": 5.8
           },
+          "t+1": {
+            "n": 12,
+            "pct": 9.92,
+            "hit_rate": 0.583,
+            "ev": 0.0067,
+            "bars": 5.5
+          },
           "t+2": {
-            "n": 14,
-            "pct": 11.57,
-            "hit_rate": 0.429,
-            "ev": -0.002,
-            "bars": 7.1
+            "n": 16,
+            "pct": 13.22,
+            "hit_rate": 0.438,
+            "ev": -0.0018,
+            "bars": 7.8
           },
           "ENTRE": {
-            "n": 81,
-            "pct": 66.94,
-            "hit_rate": 0.358,
-            "ev": -0.0051,
-            "bars": 9.1
+            "n": 78,
+            "pct": 64.46,
+            "hit_rate": 0.346,
+            "ev": -0.0059,
+            "bars": 9.0
           }
         },
         "first_passage": {
@@ -10759,18 +10777,18 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 5,
-          "pct_en_rango": 20.83,
-          "delta_medio": 11.2,
+          "n_en_rango": 6,
+          "pct_en_rango": 25.0,
+          "delta_medio": 11.1,
           "delta_mediana": 7.5
         },
         "slots_zz25": {
           "t-2": {
-            "n": 2,
-            "pct": 8.33,
-            "hit_rate": 0.5,
-            "ev": -0.0006,
-            "bars": 11.5
+            "n": 3,
+            "pct": 12.5,
+            "hit_rate": 0.333,
+            "ev": -0.0134,
+            "bars": 9.3
           },
           "t-1": {
             "n": 2,
@@ -10801,11 +10819,11 @@
             "bars": 4.0
           },
           "ENTRE": {
-            "n": 19,
-            "pct": 79.17,
-            "hit_rate": 0.579,
-            "ev": 0.0041,
-            "bars": 9.9
+            "n": 18,
+            "pct": 75.0,
+            "hit_rate": 0.611,
+            "ev": 0.0065,
+            "bars": 10.2
           }
         },
         "first_passage": {
@@ -11005,8 +11023,8 @@
         "resumen_rango": {
           "n_en_rango": 7,
           "pct_en_rango": 29.17,
-          "delta_medio": 9.4,
-          "delta_mediana": 5.5
+          "delta_medio": 6.5,
+          "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
@@ -11119,7 +11137,7 @@
         "resumen_rango": {
           "n_en_rango": 5,
           "pct_en_rango": 20.83,
-          "delta_medio": 7.8,
+          "delta_medio": 7.5,
           "delta_mediana": 6.5
         },
         "slots_zz25": {
@@ -11247,9 +11265,9 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 49,
-          "pct_en_rango": 35.51,
-          "delta_medio": 7.7,
+          "n_en_rango": 48,
+          "pct_en_rango": 34.78,
+          "delta_medio": 7.3,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -11261,38 +11279,38 @@
             "bars": 4.4
           },
           "t-1": {
-            "n": 14,
-            "pct": 10.14,
-            "hit_rate": 0.357,
-            "ev": -0.0074,
-            "bars": 4.0
+            "n": 15,
+            "pct": 10.87,
+            "hit_rate": 0.333,
+            "ev": -0.0091,
+            "bars": 3.9
           },
           "t=0": {
-            "n": 7,
-            "pct": 5.07,
-            "hit_rate": 0.714,
-            "ev": 0.0137,
-            "bars": 3.4
+            "n": 6,
+            "pct": 4.35,
+            "hit_rate": 0.667,
+            "ev": 0.012,
+            "bars": 3.0
           },
           "t+1": {
-            "n": 11,
-            "pct": 7.97,
-            "hit_rate": 0.636,
-            "ev": 0.0065,
-            "bars": 5.8
+            "n": 9,
+            "pct": 6.52,
+            "hit_rate": 0.778,
+            "ev": 0.0129,
+            "bars": 6.1
           },
           "t+2": {
-            "n": 10,
-            "pct": 7.25,
-            "hit_rate": 0.6,
-            "ev": 0.005,
-            "bars": 9.9
+            "n": 11,
+            "pct": 7.97,
+            "hit_rate": 0.545,
+            "ev": 0.0017,
+            "bars": 9.3
           },
           "ENTRE": {
-            "n": 89,
-            "pct": 64.49,
-            "hit_rate": 0.382,
-            "ev": -0.0006,
+            "n": 90,
+            "pct": 65.22,
+            "hit_rate": 0.389,
+            "ev": -0.0001,
             "bars": 12.3
           }
         },
@@ -11361,25 +11379,25 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 48,
-          "pct_en_rango": 34.78,
-          "delta_medio": 6.8,
+          "n_en_rango": 52,
+          "pct_en_rango": 37.68,
+          "delta_medio": 6.9,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 7,
-            "pct": 5.07,
-            "hit_rate": 0.429,
-            "ev": -0.0083,
-            "bars": 7.6
+            "n": 8,
+            "pct": 5.8,
+            "hit_rate": 0.5,
+            "ev": -0.0011,
+            "bars": 10.6
           },
           "t-1": {
-            "n": 12,
-            "pct": 8.7,
-            "hit_rate": 0.833,
-            "ev": 0.0194,
-            "bars": 5.2
+            "n": 13,
+            "pct": 9.42,
+            "hit_rate": 0.846,
+            "ev": 0.0204,
+            "bars": 5.0
           },
           "t=0": {
             "n": 11,
@@ -11389,25 +11407,25 @@
             "bars": 4.1
           },
           "t+1": {
-            "n": 10,
-            "pct": 7.25,
-            "hit_rate": 0.5,
-            "ev": -0.0003,
-            "bars": 3.2
+            "n": 9,
+            "pct": 6.52,
+            "hit_rate": 0.444,
+            "ev": -0.0039,
+            "bars": 3.3
           },
           "t+2": {
-            "n": 8,
-            "pct": 5.8,
-            "hit_rate": 0.375,
-            "ev": -0.0071,
-            "bars": 14.4
+            "n": 11,
+            "pct": 7.97,
+            "hit_rate": 0.455,
+            "ev": -0.0034,
+            "bars": 11.3
           },
           "ENTRE": {
-            "n": 90,
-            "pct": 65.22,
-            "hit_rate": 0.422,
-            "ev": -0.0042,
-            "bars": 11.8
+            "n": 86,
+            "pct": 62.32,
+            "hit_rate": 0.407,
+            "ev": -0.0052,
+            "bars": 11.9
           }
         },
         "first_passage": {
@@ -11491,53 +11509,53 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 264,
-          "pct_en_rango": 42.79,
-          "delta_medio": 7.0,
+          "n_en_rango": 262,
+          "pct_en_rango": 42.46,
+          "delta_medio": 6.9,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 52,
-            "pct": 8.43,
-            "hit_rate": 0.442,
-            "ev": -0.0012,
-            "bars": 5.9
+            "n": 49,
+            "pct": 7.94,
+            "hit_rate": 0.408,
+            "ev": -0.0031,
+            "bars": 6.0
           },
           "t-1": {
-            "n": 41,
-            "pct": 6.65,
-            "hit_rate": 0.488,
-            "ev": 0.0004,
-            "bars": 5.8
+            "n": 40,
+            "pct": 6.48,
+            "hit_rate": 0.5,
+            "ev": 0.0019,
+            "bars": 5.5
           },
           "t=0": {
-            "n": 54,
-            "pct": 8.75,
-            "hit_rate": 0.685,
-            "ev": 0.009,
-            "bars": 5.0
+            "n": 55,
+            "pct": 8.91,
+            "hit_rate": 0.691,
+            "ev": 0.0093,
+            "bars": 5.3
           },
           "t+1": {
-            "n": 62,
-            "pct": 10.05,
-            "hit_rate": 0.516,
-            "ev": 0.0021,
-            "bars": 7.8
+            "n": 63,
+            "pct": 10.21,
+            "hit_rate": 0.508,
+            "ev": 0.0014,
+            "bars": 7.9
           },
           "t+2": {
             "n": 55,
             "pct": 8.91,
-            "hit_rate": 0.6,
-            "ev": 0.0051,
-            "bars": 7.5
+            "hit_rate": 0.618,
+            "ev": 0.0062,
+            "bars": 7.4
           },
           "ENTRE": {
-            "n": 353,
-            "pct": 57.21,
+            "n": 355,
+            "pct": 57.54,
             "hit_rate": 0.479,
             "ev": 0.0011,
-            "bars": 11.4
+            "bars": 11.3
           }
         },
         "first_passage": {
@@ -11605,52 +11623,52 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 226,
-          "pct_en_rango": 36.63,
-          "delta_medio": 7.0,
+          "n_en_rango": 225,
+          "pct_en_rango": 36.47,
+          "delta_medio": 6.9,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 38,
-            "pct": 6.16,
-            "hit_rate": 0.711,
-            "ev": 0.0094,
-            "bars": 5.7
-          },
-          "t-1": {
-            "n": 48,
-            "pct": 7.78,
-            "hit_rate": 0.688,
-            "ev": 0.01,
+            "n": 39,
+            "pct": 6.32,
+            "hit_rate": 0.718,
+            "ev": 0.0101,
             "bars": 5.5
           },
+          "t-1": {
+            "n": 47,
+            "pct": 7.62,
+            "hit_rate": 0.723,
+            "ev": 0.0116,
+            "bars": 4.6
+          },
           "t=0": {
-            "n": 53,
-            "pct": 8.59,
-            "hit_rate": 0.755,
-            "ev": 0.0144,
+            "n": 52,
+            "pct": 8.43,
+            "hit_rate": 0.75,
+            "ev": 0.0141,
             "bars": 4.9
           },
           "t+1": {
-            "n": 44,
-            "pct": 7.13,
-            "hit_rate": 0.682,
-            "ev": 0.007,
-            "bars": 7.6
+            "n": 42,
+            "pct": 6.81,
+            "hit_rate": 0.643,
+            "ev": 0.0052,
+            "bars": 7.7
           },
           "t+2": {
-            "n": 43,
-            "pct": 6.97,
-            "hit_rate": 0.442,
-            "ev": -0.0068,
-            "bars": 5.6
+            "n": 45,
+            "pct": 7.29,
+            "hit_rate": 0.489,
+            "ev": -0.0046,
+            "bars": 6.2
           },
           "ENTRE": {
-            "n": 391,
-            "pct": 63.37,
-            "hit_rate": 0.338,
-            "ev": -0.0073,
+            "n": 392,
+            "pct": 63.53,
+            "hit_rate": 0.334,
+            "ev": -0.0075,
             "bars": 11.3
           }
         },
@@ -11735,39 +11753,39 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 74,
-          "pct_en_rango": 38.54,
-          "delta_medio": 8.4,
+          "n_en_rango": 75,
+          "pct_en_rango": 39.06,
+          "delta_medio": 7.8,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 10,
-            "pct": 5.21,
-            "hit_rate": 0.4,
-            "ev": -0.0079,
-            "bars": 6.0
+            "n": 11,
+            "pct": 5.73,
+            "hit_rate": 0.364,
+            "ev": -0.0081,
+            "bars": 5.6
           },
           "t-1": {
-            "n": 20,
-            "pct": 10.42,
-            "hit_rate": 0.6,
-            "ev": 0.0048,
-            "bars": 4.5
+            "n": 19,
+            "pct": 9.9,
+            "hit_rate": 0.579,
+            "ev": 0.0038,
+            "bars": 4.3
           },
           "t=0": {
-            "n": 7,
-            "pct": 3.65,
-            "hit_rate": 0.571,
-            "ev": 0.0022,
-            "bars": 4.9
+            "n": 6,
+            "pct": 3.12,
+            "hit_rate": 0.667,
+            "ev": 0.0076,
+            "bars": 5.5
           },
           "t+1": {
-            "n": 27,
-            "pct": 14.06,
-            "hit_rate": 0.481,
-            "ev": -0.0028,
-            "bars": 4.1
+            "n": 29,
+            "pct": 15.1,
+            "hit_rate": 0.448,
+            "ev": -0.0047,
+            "bars": 4.0
           },
           "t+2": {
             "n": 10,
@@ -11777,11 +11795,11 @@
             "bars": 7.4
           },
           "ENTRE": {
-            "n": 118,
-            "pct": 61.46,
-            "hit_rate": 0.458,
-            "ev": 0.0003,
-            "bars": 11.7
+            "n": 117,
+            "pct": 60.94,
+            "hit_rate": 0.47,
+            "ev": 0.0009,
+            "bars": 11.9
           }
         },
         "first_passage": {
@@ -11849,25 +11867,25 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 76,
-          "pct_en_rango": 39.58,
-          "delta_medio": 7.9,
+          "n_en_rango": 75,
+          "pct_en_rango": 39.06,
+          "delta_medio": 7.6,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 12,
-            "pct": 6.25,
-            "hit_rate": 0.583,
-            "ev": 0.0039,
-            "bars": 4.2
+            "n": 13,
+            "pct": 6.77,
+            "hit_rate": 0.615,
+            "ev": 0.0071,
+            "bars": 5.0
           },
           "t-1": {
             "n": 17,
             "pct": 8.85,
             "hit_rate": 0.941,
-            "ev": 0.0246,
-            "bars": 5.6
+            "ev": 0.0234,
+            "bars": 5.4
           },
           "t=0": {
             "n": 15,
@@ -11877,11 +11895,11 @@
             "bars": 5.2
           },
           "t+1": {
-            "n": 25,
-            "pct": 13.02,
-            "hit_rate": 0.68,
-            "ev": 0.008,
-            "bars": 5.5
+            "n": 23,
+            "pct": 11.98,
+            "hit_rate": 0.696,
+            "ev": 0.0087,
+            "bars": 5.7
           },
           "t+2": {
             "n": 7,
@@ -11891,11 +11909,11 @@
             "bars": 9.1
           },
           "ENTRE": {
-            "n": 116,
-            "pct": 60.42,
-            "hit_rate": 0.336,
-            "ev": -0.0067,
-            "bars": 11.5
+            "n": 117,
+            "pct": 60.94,
+            "hit_rate": 0.333,
+            "ev": -0.0069,
+            "bars": 11.3
           }
         },
         "first_passage": {
@@ -11981,8 +11999,8 @@
         "resumen_rango": {
           "n_en_rango": 7,
           "pct_en_rango": 30.43,
-          "delta_medio": 10.4,
-          "delta_mediana": 8.0
+          "delta_medio": 10.0,
+          "delta_mediana": 7.0
         },
         "slots_zz25": {
           "t-2": {
@@ -12095,7 +12113,7 @@
         "resumen_rango": {
           "n_en_rango": 10,
           "pct_en_rango": 43.48,
-          "delta_medio": 9.2,
+          "delta_medio": 9.1,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -12121,18 +12139,18 @@
             "bars": 3.7
           },
           "t+1": {
-            "n": 2,
-            "pct": 8.7,
-            "hit_rate": 0.5,
-            "ev": 0.0059,
-            "bars": 5.0
+            "n": 3,
+            "pct": 13.04,
+            "hit_rate": 0.667,
+            "ev": 0.0185,
+            "bars": 7.3
           },
           "t+2": {
-            "n": 2,
-            "pct": 8.7,
+            "n": 1,
+            "pct": 4.35,
             "hit_rate": 1.0,
-            "ev": 0.0374,
-            "bars": 7.0
+            "ev": 0.031,
+            "bars": 2.0
           },
           "ENTRE": {
             "n": 13,
@@ -12488,11 +12506,11 @@
             "bars": 1.0
           },
           "t=0": {
-            "n": 1,
-            "pct": 2.86,
-            "hit_rate": 1.0,
-            "ev": 0.0209,
-            "bars": 5.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t+1": {
             "n": 1,
@@ -12502,11 +12520,11 @@
             "bars": 5.0
           },
           "t+2": {
-            "n": 8,
-            "pct": 22.86,
-            "hit_rate": 0.5,
-            "ev": 0.0036,
-            "bars": 5.9
+            "n": 9,
+            "pct": 25.71,
+            "hit_rate": 0.556,
+            "ev": 0.0055,
+            "bars": 5.8
           },
           "ENTRE": {
             "n": 23,
@@ -12711,9 +12729,9 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 79,
-          "pct_en_rango": 41.8,
-          "delta_medio": 4.8,
+          "n_en_rango": 81,
+          "pct_en_rango": 42.86,
+          "delta_medio": 4.7,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -12732,11 +12750,11 @@
             "bars": 2.8
           },
           "t=0": {
-            "n": 5,
-            "pct": 2.65,
-            "hit_rate": 0.8,
-            "ev": 0.016,
-            "bars": 3.2
+            "n": 4,
+            "pct": 2.12,
+            "hit_rate": 0.75,
+            "ev": 0.0136,
+            "bars": 3.0
           },
           "t+1": {
             "n": 18,
@@ -12746,17 +12764,17 @@
             "bars": 3.9
           },
           "t+2": {
-            "n": 34,
-            "pct": 17.99,
-            "hit_rate": 0.471,
-            "ev": 0.0005,
+            "n": 37,
+            "pct": 19.58,
+            "hit_rate": 0.459,
+            "ev": -0.0004,
             "bars": 6.9
           },
           "ENTRE": {
-            "n": 110,
-            "pct": 58.2,
-            "hit_rate": 0.509,
-            "ev": 0.0012,
+            "n": 108,
+            "pct": 57.14,
+            "hit_rate": 0.519,
+            "ev": 0.0017,
             "bars": 9.8
           }
         },
@@ -12827,22 +12845,22 @@
         "resumen_rango": {
           "n_en_rango": 78,
           "pct_en_rango": 41.27,
-          "delta_medio": 5.8,
+          "delta_medio": 5.7,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 17,
-            "pct": 8.99,
-            "hit_rate": 0.765,
-            "ev": 0.0116,
-            "bars": 5.8
+            "n": 16,
+            "pct": 8.47,
+            "hit_rate": 0.75,
+            "ev": 0.0109,
+            "bars": 5.9
           },
           "t-1": {
-            "n": 20,
-            "pct": 10.58,
-            "hit_rate": 0.6,
-            "ev": 0.0035,
+            "n": 21,
+            "pct": 11.11,
+            "hit_rate": 0.619,
+            "ev": 0.0044,
             "bars": 3.4
           },
           "t=0": {
@@ -12855,9 +12873,9 @@
           "t+1": {
             "n": 14,
             "pct": 7.41,
-            "hit_rate": 0.214,
-            "ev": -0.0143,
-            "bars": 4.9
+            "hit_rate": 0.286,
+            "ev": -0.0108,
+            "bars": 6.6
           },
           "t+2": {
             "n": 2,
@@ -12869,9 +12887,9 @@
           "ENTRE": {
             "n": 111,
             "pct": 58.73,
-            "hit_rate": 0.333,
-            "ev": -0.0084,
-            "bars": 10.3
+            "hit_rate": 0.324,
+            "ev": -0.0088,
+            "bars": 10.1
           }
         },
         "first_passage": {
@@ -12957,7 +12975,7 @@
         "resumen_rango": {
           "n_en_rango": 31,
           "pct_en_rango": 60.78,
-          "delta_medio": 2.7,
+          "delta_medio": 2.3,
           "delta_mediana": 2.0
         },
         "slots_zz25": {
@@ -13071,23 +13089,23 @@
         "resumen_rango": {
           "n_en_rango": 25,
           "pct_en_rango": 49.02,
-          "delta_medio": 5.6,
+          "delta_medio": 5.3,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 6,
-            "pct": 11.76,
-            "hit_rate": 0.333,
-            "ev": -0.0053,
-            "bars": 8.3
+            "n": 5,
+            "pct": 9.8,
+            "hit_rate": 0.4,
+            "ev": -0.006,
+            "bars": 3.0
           },
           "t-1": {
-            "n": 11,
-            "pct": 21.57,
-            "hit_rate": 0.636,
-            "ev": 0.0116,
-            "bars": 3.5
+            "n": 12,
+            "pct": 23.53,
+            "hit_rate": 0.667,
+            "ev": 0.0125,
+            "bars": 5.6
           },
           "t=0": {
             "n": 7,
@@ -13113,9 +13131,9 @@
           "ENTRE": {
             "n": 26,
             "pct": 50.98,
-            "hit_rate": 0.269,
-            "ev": -0.0119,
-            "bars": 9.3
+            "hit_rate": 0.231,
+            "ev": -0.0128,
+            "bars": 9.5
           }
         },
         "first_passage": {
@@ -13701,11 +13719,11 @@
             "bars": 2.0
           },
           "t-1": {
-            "n": 2,
-            "pct": 5.13,
-            "hit_rate": 0.5,
-            "ev": -0.0297,
-            "bars": 1.0
+            "n": 3,
+            "pct": 7.69,
+            "hit_rate": 0.667,
+            "ev": -0.0107,
+            "bars": 1.7
           },
           "t=0": {
             "n": 0,
@@ -13715,11 +13733,11 @@
             "bars": null
           },
           "t+1": {
-            "n": 7,
-            "pct": 17.95,
-            "hit_rate": 0.714,
-            "ev": 0.0124,
-            "bars": 3.4
+            "n": 6,
+            "pct": 15.38,
+            "hit_rate": 0.667,
+            "ev": 0.0097,
+            "bars": 2.5
           },
           "t+2": {
             "n": 6,
@@ -13732,8 +13750,8 @@
             "n": 20,
             "pct": 51.28,
             "hit_rate": 0.5,
-            "ev": 0.0019,
-            "bars": 7.6
+            "ev": 0.002,
+            "bars": 7.9
           }
         },
         "first_passage": {
@@ -13803,8 +13821,8 @@
         "resumen_rango": {
           "n_en_rango": 23,
           "pct_en_rango": 58.97,
-          "delta_medio": 2.7,
-          "delta_mediana": 2.0
+          "delta_medio": 2.6,
+          "delta_mediana": 1.0
         },
         "slots_zz25": {
           "t-2": {
@@ -13829,25 +13847,25 @@
             "bars": 2.2
           },
           "t+1": {
-            "n": 2,
-            "pct": 5.13,
-            "hit_rate": 0.5,
-            "ev": -0.0077,
-            "bars": 4.0
+            "n": 3,
+            "pct": 7.69,
+            "hit_rate": 0.333,
+            "ev": -0.0142,
+            "bars": 3.7
           },
           "t+2": {
-            "n": 1,
-            "pct": 2.56,
-            "hit_rate": 0.0,
-            "ev": -0.0286,
-            "bars": 9.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "ENTRE": {
             "n": 16,
             "pct": 41.03,
             "hit_rate": 0.125,
-            "ev": -0.0191,
-            "bars": 8.8
+            "ev": -0.0192,
+            "bars": 9.2
           }
         },
         "first_passage": {
@@ -15397,7 +15415,7 @@
         "resumen_rango": {
           "n_en_rango": 4,
           "pct_en_rango": 21.05,
-          "delta_medio": 9.2,
+          "delta_medio": 8.9,
           "delta_mediana": 8.0
         },
         "slots_zz25": {
@@ -15641,7 +15659,7 @@
         "resumen_rango": {
           "n_en_rango": 38,
           "pct_en_rango": 32.2,
-          "delta_medio": 10.4,
+          "delta_medio": 10.5,
           "delta_mediana": 7.0
         },
         "slots_zz25": {
@@ -15753,9 +15771,9 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 41,
-          "pct_en_rango": 34.75,
-          "delta_medio": 8.3,
+          "n_en_rango": 42,
+          "pct_en_rango": 35.59,
+          "delta_medio": 8.4,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -15784,22 +15802,22 @@
             "n": 12,
             "pct": 10.17,
             "hit_rate": 0.75,
-            "ev": 0.0088,
-            "bars": 5.1
+            "ev": 0.0093,
+            "bars": 5.2
           },
           "t+2": {
-            "n": 14,
-            "pct": 11.86,
-            "hit_rate": 0.714,
-            "ev": 0.0106,
-            "bars": 10.8
+            "n": 15,
+            "pct": 12.71,
+            "hit_rate": 0.733,
+            "ev": 0.0115,
+            "bars": 8.9
           },
           "ENTRE": {
-            "n": 77,
-            "pct": 65.25,
-            "hit_rate": 0.351,
-            "ev": -0.0072,
-            "bars": 13.2
+            "n": 76,
+            "pct": 64.41,
+            "hit_rate": 0.342,
+            "ev": -0.0077,
+            "bars": 13.6
           }
         },
         "first_passage": {
@@ -15885,8 +15903,8 @@
         "resumen_rango": {
           "n_en_rango": 14,
           "pct_en_rango": 22.22,
-          "delta_medio": 9.5,
-          "delta_mediana": 8.0
+          "delta_medio": 10.0,
+          "delta_mediana": 7.0
         },
         "slots_zz25": {
           "t-2": {
@@ -15999,7 +16017,7 @@
         "resumen_rango": {
           "n_en_rango": 27,
           "pct_en_rango": 42.86,
-          "delta_medio": 6.8,
+          "delta_medio": 7.1,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -16243,16 +16261,16 @@
         "resumen_rango": {
           "n_en_rango": 7,
           "pct_en_rango": 53.85,
-          "delta_medio": 8.7,
+          "delta_medio": 8.6,
           "delta_mediana": 2.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 7.69,
-            "hit_rate": 0.0,
-            "ev": -0.0254,
-            "bars": 1.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t-1": {
             "n": 0,
@@ -16269,11 +16287,11 @@
             "bars": null
           },
           "t+1": {
-            "n": 2,
-            "pct": 15.38,
+            "n": 3,
+            "pct": 23.08,
             "hit_rate": 0.0,
-            "ev": -0.0246,
-            "bars": 3.5
+            "ev": -0.0248,
+            "bars": 2.7
           },
           "t+2": {
             "n": 4,
@@ -16373,8 +16391,8 @@
         "resumen_rango": {
           "n_en_rango": 4,
           "pct_en_rango": 12.12,
-          "delta_medio": 14.5,
-          "delta_mediana": 10.0
+          "delta_medio": 13.7,
+          "delta_mediana": 8.0
         },
         "slots_zz25": {
           "t-2": {
@@ -16487,7 +16505,7 @@
         "resumen_rango": {
           "n_en_rango": 10,
           "pct_en_rango": 30.3,
-          "delta_medio": 14.0,
+          "delta_medio": 13.6,
           "delta_mediana": 9.0
         },
         "slots_zz25": {
@@ -16729,25 +16747,25 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 55,
-          "pct_en_rango": 30.56,
-          "delta_medio": 12.1,
-          "delta_mediana": 6.5
+          "n_en_rango": 53,
+          "pct_en_rango": 29.44,
+          "delta_medio": 11.9,
+          "delta_mediana": 7.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 14,
-            "pct": 7.78,
-            "hit_rate": 0.643,
-            "ev": 0.0057,
+            "n": 15,
+            "pct": 8.33,
+            "hit_rate": 0.667,
+            "ev": 0.0067,
             "bars": 6.6
           },
           "t-1": {
-            "n": 11,
-            "pct": 6.11,
-            "hit_rate": 0.727,
-            "ev": 0.0123,
-            "bars": 6.5
+            "n": 9,
+            "pct": 5.0,
+            "hit_rate": 0.778,
+            "ev": 0.0159,
+            "bars": 5.9
           },
           "t=0": {
             "n": 14,
@@ -16757,11 +16775,11 @@
             "bars": 7.1
           },
           "t+1": {
-            "n": 11,
-            "pct": 6.11,
-            "hit_rate": 0.545,
-            "ev": 0.003,
-            "bars": 8.5
+            "n": 10,
+            "pct": 5.56,
+            "hit_rate": 0.6,
+            "ev": 0.0047,
+            "bars": 5.8
           },
           "t+2": {
             "n": 5,
@@ -16771,11 +16789,11 @@
             "bars": 13.6
           },
           "ENTRE": {
-            "n": 125,
-            "pct": 69.44,
-            "hit_rate": 0.288,
-            "ev": -0.0087,
-            "bars": 16.3
+            "n": 127,
+            "pct": 70.56,
+            "hit_rate": 0.283,
+            "ev": -0.0089,
+            "bars": 16.4
           }
         },
         "first_passage": {
@@ -16859,18 +16877,18 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 124,
-          "pct_en_rango": 18.0,
-          "delta_medio": 11.7,
+          "n_en_rango": 123,
+          "pct_en_rango": 17.85,
+          "delta_medio": 11.6,
           "delta_mediana": 8.0
         },
         "slots_zz25": {
           "t-2": {
             "n": 19,
             "pct": 2.76,
-            "hit_rate": 0.368,
-            "ev": -0.0039,
-            "bars": 6.8
+            "hit_rate": 0.421,
+            "ev": -0.0029,
+            "bars": 6.9
           },
           "t-1": {
             "n": 33,
@@ -16880,18 +16898,18 @@
             "bars": 5.0
           },
           "t=0": {
-            "n": 26,
-            "pct": 3.77,
-            "hit_rate": 0.769,
-            "ev": 0.0165,
-            "bars": 4.0
+            "n": 24,
+            "pct": 3.48,
+            "hit_rate": 0.75,
+            "ev": 0.0157,
+            "bars": 3.8
           },
           "t+1": {
-            "n": 28,
-            "pct": 4.06,
-            "hit_rate": 0.5,
-            "ev": -0.0002,
-            "bars": 6.4
+            "n": 29,
+            "pct": 4.21,
+            "hit_rate": 0.483,
+            "ev": 0.0007,
+            "bars": 5.9
           },
           "t+2": {
             "n": 18,
@@ -16901,8 +16919,8 @@
             "bars": 7.2
           },
           "ENTRE": {
-            "n": 565,
-            "pct": 82.0,
+            "n": 566,
+            "pct": 82.15,
             "hit_rate": 0.519,
             "ev": 0.0033,
             "bars": 13.6
@@ -16973,53 +16991,53 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 212,
-          "pct_en_rango": 30.77,
+          "n_en_rango": 215,
+          "pct_en_rango": 31.2,
           "delta_medio": 10.3,
           "delta_mediana": 5.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 35,
-            "pct": 5.08,
-            "hit_rate": 0.629,
-            "ev": 0.0063,
-            "bars": 10.3
+            "n": 36,
+            "pct": 5.22,
+            "hit_rate": 0.639,
+            "ev": 0.007,
+            "bars": 10.2
           },
           "t-1": {
-            "n": 52,
-            "pct": 7.55,
-            "hit_rate": 0.769,
-            "ev": 0.0148,
-            "bars": 6.1
+            "n": 50,
+            "pct": 7.26,
+            "hit_rate": 0.78,
+            "ev": 0.0153,
+            "bars": 6.0
           },
           "t=0": {
-            "n": 44,
-            "pct": 6.39,
-            "hit_rate": 0.818,
-            "ev": 0.0165,
-            "bars": 4.9
+            "n": 50,
+            "pct": 7.26,
+            "hit_rate": 0.84,
+            "ev": 0.018,
+            "bars": 5.2
           },
           "t+1": {
-            "n": 38,
-            "pct": 5.52,
-            "hit_rate": 0.605,
+            "n": 39,
+            "pct": 5.66,
+            "hit_rate": 0.615,
             "ev": 0.0053,
-            "bars": 7.3
+            "bars": 7.0
           },
           "t+2": {
-            "n": 43,
-            "pct": 6.24,
-            "hit_rate": 0.767,
-            "ev": 0.0134,
-            "bars": 7.3
+            "n": 40,
+            "pct": 5.81,
+            "hit_rate": 0.775,
+            "ev": 0.0132,
+            "bars": 6.8
           },
           "ENTRE": {
-            "n": 477,
-            "pct": 69.23,
-            "hit_rate": 0.268,
-            "ev": -0.0104,
-            "bars": 14.4
+            "n": 474,
+            "pct": 68.8,
+            "hit_rate": 0.259,
+            "ev": -0.0108,
+            "bars": 14.6
           }
         },
         "first_passage": {
@@ -17105,7 +17123,7 @@
         "resumen_rango": {
           "n_en_rango": 41,
           "pct_en_rango": 18.47,
-          "delta_medio": 13.2,
+          "delta_medio": 13.0,
           "delta_mediana": 10.0
         },
         "slots_zz25": {
@@ -17217,52 +17235,52 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 65,
-          "pct_en_rango": 29.28,
-          "delta_medio": 11.0,
+          "n_en_rango": 69,
+          "pct_en_rango": 31.08,
+          "delta_medio": 10.7,
           "delta_mediana": 5.0
         },
         "slots_zz25": {
           "t-2": {
             "n": 14,
             "pct": 6.31,
-            "hit_rate": 0.571,
-            "ev": 0.0087,
-            "bars": 7.3
+            "hit_rate": 0.5,
+            "ev": 0.0043,
+            "bars": 7.0
           },
           "t-1": {
-            "n": 10,
-            "pct": 4.5,
-            "hit_rate": 0.5,
-            "ev": 0.0033,
-            "bars": 10.5
+            "n": 14,
+            "pct": 6.31,
+            "hit_rate": 0.571,
+            "ev": 0.0066,
+            "bars": 11.6
           },
           "t=0": {
-            "n": 13,
-            "pct": 5.86,
-            "hit_rate": 0.538,
-            "ev": 0.0024,
-            "bars": 9.4
+            "n": 12,
+            "pct": 5.41,
+            "hit_rate": 0.583,
+            "ev": 0.005,
+            "bars": 8.8
           },
           "t+1": {
-            "n": 17,
-            "pct": 7.66,
-            "hit_rate": 0.941,
-            "ev": 0.0209,
-            "bars": 5.9
+            "n": 19,
+            "pct": 8.56,
+            "hit_rate": 0.895,
+            "ev": 0.0185,
+            "bars": 6.7
           },
           "t+2": {
-            "n": 11,
-            "pct": 4.95,
-            "hit_rate": 0.545,
-            "ev": 0.0018,
-            "bars": 9.4
+            "n": 10,
+            "pct": 4.5,
+            "hit_rate": 0.4,
+            "ev": -0.0025,
+            "bars": 10.7
           },
           "ENTRE": {
-            "n": 157,
-            "pct": 70.72,
-            "hit_rate": 0.274,
-            "ev": -0.0102,
+            "n": 153,
+            "pct": 68.92,
+            "hit_rate": 0.275,
+            "ev": -0.0103,
             "bars": 14.6
           }
         },
@@ -17349,8 +17367,8 @@
         "resumen_rango": {
           "n_en_rango": 11,
           "pct_en_rango": 23.4,
-          "delta_medio": 14.8,
-          "delta_mediana": 8.0
+          "delta_medio": 13.2,
+          "delta_mediana": 7.0
         },
         "slots_zz25": {
           "t-2": {
@@ -17463,7 +17481,7 @@
         "resumen_rango": {
           "n_en_rango": 19,
           "pct_en_rango": 40.43,
-          "delta_medio": 11.0,
+          "delta_medio": 11.1,
           "delta_mediana": 6.0
         },
         "slots_zz25": {
@@ -17591,10 +17609,10 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 0,
-          "pct_en_rango": 0.0,
-          "delta_medio": 14.9,
-          "delta_mediana": 10.0
+          "n_en_rango": 1,
+          "pct_en_rango": 14.29,
+          "delta_medio": 8.6,
+          "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
@@ -17612,11 +17630,11 @@
             "bars": null
           },
           "t=0": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 14.29,
+            "hit_rate": 1.0,
+            "ev": 0.0241,
+            "bars": 2.0
           },
           "t+1": {
             "n": 0,
@@ -17633,11 +17651,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 7,
-            "pct": 100.0,
-            "hit_rate": 0.571,
-            "ev": 0.0099,
-            "bars": 8.0
+            "n": 6,
+            "pct": 85.71,
+            "hit_rate": 0.5,
+            "ev": 0.0076,
+            "bars": 9.0
           }
         },
         "first_passage": {
@@ -17707,8 +17725,8 @@
         "resumen_rango": {
           "n_en_rango": 1,
           "pct_en_rango": 14.29,
-          "delta_medio": 12.0,
-          "delta_mediana": 10.0
+          "delta_medio": 9.6,
+          "delta_mediana": 7.0
         },
         "slots_zz25": {
           "t-2": {
@@ -17837,7 +17855,7 @@
         "resumen_rango": {
           "n_en_rango": 14,
           "pct_en_rango": 28.0,
-          "delta_medio": 9.2,
+          "delta_medio": 8.4,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -17949,9 +17967,9 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 19,
-          "pct_en_rango": 38.0,
-          "delta_medio": 8.6,
+          "n_en_rango": 20,
+          "pct_en_rango": 40.0,
+          "delta_medio": 8.4,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -17963,11 +17981,11 @@
             "bars": 19.3
           },
           "t-1": {
-            "n": 1,
-            "pct": 2.0,
+            "n": 2,
+            "pct": 4.0,
             "hit_rate": 1.0,
-            "ev": 0.0187,
-            "bars": 3.0
+            "ev": 0.0178,
+            "bars": 3.5
           },
           "t=0": {
             "n": 6,
@@ -17980,8 +17998,8 @@
             "n": 8,
             "pct": 16.0,
             "hit_rate": 0.75,
-            "ev": 0.0065,
-            "bars": 3.9
+            "ev": 0.0081,
+            "bars": 3.6
           },
           "t+2": {
             "n": 1,
@@ -17991,11 +18009,11 @@
             "bars": 1.0
           },
           "ENTRE": {
-            "n": 31,
-            "pct": 62.0,
-            "hit_rate": 0.226,
-            "ev": -0.0097,
-            "bars": 13.0
+            "n": 30,
+            "pct": 60.0,
+            "hit_rate": 0.2,
+            "ev": -0.0111,
+            "bars": 13.3
           }
         },
         "first_passage": {
@@ -18081,7 +18099,7 @@
         "resumen_rango": {
           "n_en_rango": 48,
           "pct_en_rango": 20.08,
-          "delta_medio": 8.3,
+          "delta_medio": 8.2,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -18093,38 +18111,38 @@
             "bars": 4.9
           },
           "t-1": {
-            "n": 3,
-            "pct": 1.26,
-            "hit_rate": 0.667,
-            "ev": 0.0193,
-            "bars": 2.0
+            "n": 2,
+            "pct": 0.84,
+            "hit_rate": 1.0,
+            "ev": 0.0256,
+            "bars": 2.5
           },
           "t=0": {
-            "n": 1,
-            "pct": 0.42,
+            "n": 2,
+            "pct": 0.84,
             "hit_rate": 1.0,
-            "ev": 0.0199,
-            "bars": 1.0
+            "ev": 0.0281,
+            "bars": 4.0
           },
           "t+1": {
-            "n": 9,
-            "pct": 3.77,
-            "hit_rate": 0.556,
-            "ev": 0.0005,
-            "bars": 6.3
+            "n": 8,
+            "pct": 3.35,
+            "hit_rate": 0.5,
+            "ev": -0.0022,
+            "bars": 4.6
           },
           "t+2": {
-            "n": 24,
-            "pct": 10.04,
-            "hit_rate": 0.667,
-            "ev": 0.0101,
-            "bars": 5.8
+            "n": 25,
+            "pct": 10.46,
+            "hit_rate": 0.64,
+            "ev": 0.0099,
+            "bars": 5.6
           },
           "ENTRE": {
             "n": 191,
             "pct": 79.92,
             "hit_rate": 0.545,
-            "ev": 0.0038,
+            "ev": 0.0037,
             "bars": 12.8
           }
         },
@@ -18195,51 +18213,51 @@
         "resumen_rango": {
           "n_en_rango": 79,
           "pct_en_rango": 33.05,
-          "delta_medio": 8.3,
+          "delta_medio": 8.4,
           "delta_mediana": 5.0
         },
         "slots_zz25": {
           "t-2": {
             "n": 18,
             "pct": 7.53,
-            "hit_rate": 0.667,
-            "ev": 0.0062,
-            "bars": 10.3
+            "hit_rate": 0.778,
+            "ev": 0.01,
+            "bars": 7.7
           },
           "t-1": {
-            "n": 25,
-            "pct": 10.46,
-            "hit_rate": 0.56,
-            "ev": 0.0012,
-            "bars": 6.2
+            "n": 27,
+            "pct": 11.3,
+            "hit_rate": 0.593,
+            "ev": 0.003,
+            "bars": 6.1
           },
           "t=0": {
             "n": 23,
             "pct": 9.62,
             "hit_rate": 0.957,
-            "ev": 0.0269,
-            "bars": 3.2
+            "ev": 0.0274,
+            "bars": 3.1
           },
           "t+1": {
-            "n": 8,
-            "pct": 3.35,
+            "n": 6,
+            "pct": 2.51,
             "hit_rate": 1.0,
             "ev": 0.0231,
-            "bars": 4.8
+            "bars": 4.3
           },
           "t+2": {
             "n": 5,
             "pct": 2.09,
-            "hit_rate": 0.2,
-            "ev": -0.0156,
-            "bars": 5.8
+            "hit_rate": 0.0,
+            "ev": -0.0277,
+            "bars": 6.4
           },
           "ENTRE": {
             "n": 160,
             "pct": 66.95,
-            "hit_rate": 0.25,
-            "ev": -0.0116,
-            "bars": 13.9
+            "hit_rate": 0.244,
+            "ev": -0.0117,
+            "bars": 14.2
           }
         },
         "first_passage": {
@@ -18323,9 +18341,9 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 24,
-          "pct_en_rango": 44.44,
-          "delta_medio": 6.7,
+          "n_en_rango": 23,
+          "pct_en_rango": 42.59,
+          "delta_medio": 6.4,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -18344,11 +18362,11 @@
             "bars": null
           },
           "t=0": {
-            "n": 4,
-            "pct": 7.41,
-            "hit_rate": 0.75,
-            "ev": 0.0095,
-            "bars": 8.0
+            "n": 3,
+            "pct": 5.56,
+            "hit_rate": 0.667,
+            "ev": 0.0042,
+            "bars": 3.7
           },
           "t+1": {
             "n": 8,
@@ -18365,11 +18383,11 @@
             "bars": 6.3
           },
           "ENTRE": {
-            "n": 30,
-            "pct": 55.56,
-            "hit_rate": 0.4,
-            "ev": -0.0057,
-            "bars": 12.1
+            "n": 31,
+            "pct": 57.41,
+            "hit_rate": 0.419,
+            "ev": -0.0047,
+            "bars": 12.4
           }
         },
         "first_passage": {
@@ -18437,9 +18455,9 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 20,
-          "pct_en_rango": 37.04,
-          "delta_medio": 7.4,
+          "n_en_rango": 18,
+          "pct_en_rango": 33.33,
+          "delta_medio": 7.1,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -18451,18 +18469,18 @@
             "bars": 5.4
           },
           "t-1": {
-            "n": 9,
-            "pct": 16.67,
-            "hit_rate": 0.889,
-            "ev": 0.0219,
-            "bars": 5.4
+            "n": 8,
+            "pct": 14.81,
+            "hit_rate": 1.0,
+            "ev": 0.0281,
+            "bars": 4.9
           },
           "t=0": {
-            "n": 5,
-            "pct": 9.26,
-            "hit_rate": 0.8,
-            "ev": 0.019,
-            "bars": 3.4
+            "n": 4,
+            "pct": 7.41,
+            "hit_rate": 0.75,
+            "ev": 0.0169,
+            "bars": 2.8
           },
           "t+1": {
             "n": 1,
@@ -18479,11 +18497,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 34,
-            "pct": 62.96,
-            "hit_rate": 0.412,
-            "ev": -0.0022,
-            "bars": 13.2
+            "n": 36,
+            "pct": 66.67,
+            "hit_rate": 0.417,
+            "ev": -0.0021,
+            "bars": 12.9
           }
         },
         "first_passage": {
@@ -18569,7 +18587,7 @@
         "resumen_rango": {
           "n_en_rango": 6,
           "pct_en_rango": 46.15,
-          "delta_medio": 9.1,
+          "delta_medio": 9.3,
           "delta_mediana": 5.0
         },
         "slots_zz25": {
@@ -18581,11 +18599,11 @@
             "bars": 1.0
           },
           "t-1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 7.69,
+            "hit_rate": 1.0,
+            "ev": 0.0408,
+            "bars": 5.0
           },
           "t=0": {
             "n": 1,
@@ -18595,11 +18613,11 @@
             "bars": 1.0
           },
           "t+1": {
-            "n": 3,
-            "pct": 23.08,
-            "hit_rate": 0.333,
-            "ev": 0.0078,
-            "bars": 16.7
+            "n": 2,
+            "pct": 15.38,
+            "hit_rate": 0.5,
+            "ev": 0.0023,
+            "bars": 7.5
           },
           "t+2": {
             "n": 1,
@@ -18611,9 +18629,9 @@
           "ENTRE": {
             "n": 7,
             "pct": 53.85,
-            "hit_rate": 0.857,
-            "ev": 0.02,
-            "bars": 8.6
+            "hit_rate": 0.714,
+            "ev": 0.0169,
+            "bars": 12.9
           }
         },
         "first_passage": {
@@ -18683,7 +18701,7 @@
         "resumen_rango": {
           "n_en_rango": 3,
           "pct_en_rango": 23.08,
-          "delta_medio": 12.7,
+          "delta_medio": 11.1,
           "delta_mediana": 9.0
         },
         "slots_zz25": {
@@ -18927,8 +18945,8 @@
         "resumen_rango": {
           "n_en_rango": 0,
           "pct_en_rango": 0.0,
-          "delta_medio": 8.0,
-          "delta_mediana": 8.0
+          "delta_medio": 7.0,
+          "delta_mediana": 7.0
         },
         "slots_zz25": {
           "t-2": {
@@ -19171,7 +19189,7 @@
         "resumen_rango": {
           "n_en_rango": 8,
           "pct_en_rango": 88.89,
-          "delta_medio": 6.7,
+          "delta_medio": 4.3,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
@@ -19299,18 +19317,18 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 26,
-          "pct_en_rango": 31.33,
+          "n_en_rango": 24,
+          "pct_en_rango": 28.92,
           "delta_medio": 4.2,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 2,
-            "pct": 2.41,
+            "n": 1,
+            "pct": 1.2,
             "hit_rate": 0.0,
-            "ev": -0.0183,
-            "bars": 4.0
+            "ev": -0.0311,
+            "bars": 2.0
           },
           "t-1": {
             "n": 4,
@@ -19334,18 +19352,18 @@
             "bars": 4.2
           },
           "t+2": {
-            "n": 11,
-            "pct": 13.25,
-            "hit_rate": 0.545,
-            "ev": 0.0051,
-            "bars": 9.7
+            "n": 10,
+            "pct": 12.05,
+            "hit_rate": 0.6,
+            "ev": 0.0053,
+            "bars": 7.9
           },
           "ENTRE": {
-            "n": 57,
-            "pct": 68.67,
-            "hit_rate": 0.561,
-            "ev": 0.0019,
-            "bars": 10.1
+            "n": 59,
+            "pct": 71.08,
+            "hit_rate": 0.542,
+            "ev": 0.0018,
+            "bars": 10.4
           }
         },
         "first_passage": {
@@ -19415,7 +19433,7 @@
         "resumen_rango": {
           "n_en_rango": 34,
           "pct_en_rango": 40.96,
-          "delta_medio": 5.8,
+          "delta_medio": 5.4,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -19434,11 +19452,11 @@
             "bars": 5.1
           },
           "t=0": {
-            "n": 16,
-            "pct": 19.28,
-            "hit_rate": 0.75,
-            "ev": 0.0164,
-            "bars": 3.5
+            "n": 15,
+            "pct": 18.07,
+            "hit_rate": 0.733,
+            "ev": 0.0152,
+            "bars": 3.9
           },
           "t+1": {
             "n": 4,
@@ -19448,18 +19466,18 @@
             "bars": 5.0
           },
           "t+2": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 1.2,
+            "hit_rate": 1.0,
+            "ev": 0.0283,
+            "bars": 6.0
           },
           "ENTRE": {
             "n": 49,
             "pct": 59.04,
             "hit_rate": 0.286,
-            "ev": -0.0111,
-            "bars": 11.9
+            "ev": -0.011,
+            "bars": 11.7
           }
         },
         "first_passage": {
@@ -19543,18 +19561,18 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 15,
-          "pct_en_rango": 48.39,
-          "delta_medio": 3.5,
+          "n_en_rango": 14,
+          "pct_en_rango": 45.16,
+          "delta_medio": 3.6,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 3.23,
-            "hit_rate": 0.0,
-            "ev": -0.0325,
-            "bars": 1.0
+            "n": 2,
+            "pct": 6.45,
+            "hit_rate": 0.5,
+            "ev": 0.0012,
+            "bars": 5.0
           },
           "t-1": {
             "n": 0,
@@ -19578,18 +19596,18 @@
             "bars": 8.0
           },
           "t+2": {
-            "n": 8,
-            "pct": 25.81,
-            "hit_rate": 0.75,
-            "ev": 0.0157,
-            "bars": 12.8
+            "n": 6,
+            "pct": 19.35,
+            "hit_rate": 0.667,
+            "ev": 0.0085,
+            "bars": 12.5
           },
           "ENTRE": {
-            "n": 16,
-            "pct": 51.61,
-            "hit_rate": 0.438,
-            "ev": -0.005,
-            "bars": 10.9
+            "n": 17,
+            "pct": 54.84,
+            "hit_rate": 0.471,
+            "ev": -0.0024,
+            "bars": 11.3
           }
         },
         "first_passage": {
@@ -19657,32 +19675,32 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 15,
-          "pct_en_rango": 48.39,
-          "delta_medio": 4.6,
-          "delta_mediana": 3.0
+          "n_en_rango": 16,
+          "pct_en_rango": 51.61,
+          "delta_medio": 4.4,
+          "delta_mediana": 2.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 6,
-            "pct": 19.35,
-            "hit_rate": 0.667,
-            "ev": 0.0035,
-            "bars": 11.5
-          },
-          "t-1": {
-            "n": 1,
-            "pct": 3.23,
-            "hit_rate": 1.0,
-            "ev": 0.0235,
-            "bars": 2.0
-          },
-          "t=0": {
             "n": 7,
             "pct": 22.58,
-            "hit_rate": 0.571,
-            "ev": 0.0119,
-            "bars": 4.7
+            "hit_rate": 0.714,
+            "ev": 0.0079,
+            "bars": 10.9
+          },
+          "t-1": {
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
+          },
+          "t=0": {
+            "n": 8,
+            "pct": 25.81,
+            "hit_rate": 0.5,
+            "ev": 0.0046,
+            "bars": 4.6
           },
           "t+1": {
             "n": 1,
@@ -19699,11 +19717,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 16,
-            "pct": 51.61,
-            "hit_rate": 0.25,
-            "ev": -0.0116,
-            "bars": 12.1
+            "n": 15,
+            "pct": 48.39,
+            "hit_rate": 0.267,
+            "ev": -0.01,
+            "bars": 12.3
           }
         },
         "first_passage": {
@@ -20277,7 +20295,7 @@
         "resumen_rango": {
           "n_en_rango": 3,
           "pct_en_rango": 37.5,
-          "delta_medio": 11.1,
+          "delta_medio": 12.6,
           "delta_mediana": 8.5
         },
         "slots_zz25": {
@@ -20391,16 +20409,16 @@
         "resumen_rango": {
           "n_en_rango": 4,
           "pct_en_rango": 50.0,
-          "delta_medio": 4.0,
+          "delta_medio": 5.9,
           "delta_mediana": 2.5
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 12.5,
-            "hit_rate": 1.0,
-            "ev": 0.0174,
-            "bars": 2.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t-1": {
             "n": 1,
@@ -20417,11 +20435,11 @@
             "bars": null
           },
           "t+1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 12.5,
+            "hit_rate": 1.0,
+            "ev": 0.0174,
+            "bars": 2.0
           },
           "t+2": {
             "n": 2,
@@ -20765,7 +20783,7 @@
         "resumen_rango": {
           "n_en_rango": 6,
           "pct_en_rango": 16.22,
-          "delta_medio": 11.6,
+          "delta_medio": 12.1,
           "delta_mediana": 9.0
         },
         "slots_zz25": {
@@ -20879,7 +20897,7 @@
         "resumen_rango": {
           "n_en_rango": 11,
           "pct_en_rango": 29.73,
-          "delta_medio": 10.2,
+          "delta_medio": 10.6,
           "delta_mediana": 8.0
         },
         "slots_zz25": {
@@ -21007,18 +21025,18 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 26,
-          "pct_en_rango": 14.61,
-          "delta_medio": 10.5,
+          "n_en_rango": 25,
+          "pct_en_rango": 14.04,
+          "delta_medio": 10.8,
           "delta_mediana": 9.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 4,
-            "pct": 2.25,
-            "hit_rate": 0.25,
-            "ev": -0.0135,
-            "bars": 5.2
+            "n": 3,
+            "pct": 1.69,
+            "hit_rate": 0.0,
+            "ev": -0.0265,
+            "bars": 3.7
           },
           "t-1": {
             "n": 8,
@@ -21049,10 +21067,10 @@
             "bars": 6.3
           },
           "ENTRE": {
-            "n": 152,
-            "pct": 85.39,
-            "hit_rate": 0.553,
-            "ev": 0.0032,
+            "n": 153,
+            "pct": 85.96,
+            "hit_rate": 0.556,
+            "ev": 0.0033,
             "bars": 12.8
           }
         },
@@ -21121,53 +21139,53 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 59,
-          "pct_en_rango": 33.15,
-          "delta_medio": 9.6,
+          "n_en_rango": 55,
+          "pct_en_rango": 30.9,
+          "delta_medio": 9.9,
           "delta_mediana": 6.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 11,
-            "pct": 6.18,
+            "n": 10,
+            "pct": 5.62,
             "hit_rate": 1.0,
-            "ev": 0.0238,
-            "bars": 9.7
+            "ev": 0.0236,
+            "bars": 9.5
           },
           "t-1": {
-            "n": 18,
-            "pct": 10.11,
-            "hit_rate": 0.667,
-            "ev": 0.0114,
-            "bars": 5.9
+            "n": 17,
+            "pct": 9.55,
+            "hit_rate": 0.647,
+            "ev": 0.0108,
+            "bars": 4.6
           },
           "t=0": {
-            "n": 11,
-            "pct": 6.18,
-            "hit_rate": 0.818,
-            "ev": 0.0135,
-            "bars": 4.9
-          },
-          "t+1": {
             "n": 14,
             "pct": 7.87,
             "hit_rate": 0.714,
-            "ev": 0.0114,
-            "bars": 8.1
+            "ev": 0.0081,
+            "bars": 5.5
+          },
+          "t+1": {
+            "n": 11,
+            "pct": 6.18,
+            "hit_rate": 0.727,
+            "ev": 0.0111,
+            "bars": 7.6
           },
           "t+2": {
-            "n": 5,
-            "pct": 2.81,
-            "hit_rate": 0.4,
-            "ev": -0.004,
-            "bars": 11.4
+            "n": 3,
+            "pct": 1.69,
+            "hit_rate": 0.667,
+            "ev": 0.011,
+            "bars": 12.0
           },
           "ENTRE": {
-            "n": 119,
-            "pct": 66.85,
-            "hit_rate": 0.252,
-            "ev": -0.0113,
-            "bars": 13.8
+            "n": 123,
+            "pct": 69.1,
+            "hit_rate": 0.268,
+            "ev": -0.0103,
+            "bars": 13.9
           }
         },
         "first_passage": {
@@ -21251,25 +21269,25 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 73,
-          "pct_en_rango": 17.3,
-          "delta_medio": 11.4,
+          "n_en_rango": 71,
+          "pct_en_rango": 16.82,
+          "delta_medio": 11.5,
           "delta_mediana": 9.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 20,
-            "pct": 4.74,
-            "hit_rate": 0.3,
-            "ev": -0.0079,
-            "bars": 5.3
+            "n": 19,
+            "pct": 4.5,
+            "hit_rate": 0.316,
+            "ev": -0.0067,
+            "bars": 5.2
           },
           "t-1": {
-            "n": 14,
-            "pct": 3.32,
-            "hit_rate": 0.643,
-            "ev": 0.0081,
-            "bars": 3.9
+            "n": 13,
+            "pct": 3.08,
+            "hit_rate": 0.615,
+            "ev": 0.0066,
+            "bars": 3.5
           },
           "t=0": {
             "n": 9,
@@ -21281,9 +21299,9 @@
           "t+1": {
             "n": 17,
             "pct": 4.03,
-            "hit_rate": 0.471,
-            "ev": -0.0026,
-            "bars": 4.8
+            "hit_rate": 0.412,
+            "ev": -0.0058,
+            "bars": 4.9
           },
           "t+2": {
             "n": 13,
@@ -21293,11 +21311,11 @@
             "bars": 5.5
           },
           "ENTRE": {
-            "n": 349,
-            "pct": 82.7,
-            "hit_rate": 0.53,
-            "ev": 0.0028,
-            "bars": 13.7
+            "n": 351,
+            "pct": 83.18,
+            "hit_rate": 0.533,
+            "ev": 0.0029,
+            "bars": 13.6
           }
         },
         "first_passage": {
@@ -21367,51 +21385,51 @@
         "resumen_rango": {
           "n_en_rango": 138,
           "pct_en_rango": 32.7,
-          "delta_medio": 10.5,
+          "delta_medio": 10.7,
           "delta_mediana": 6.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 23,
-            "pct": 5.45,
-            "hit_rate": 0.652,
-            "ev": 0.0076,
-            "bars": 6.1
+            "n": 26,
+            "pct": 6.16,
+            "hit_rate": 0.654,
+            "ev": 0.0077,
+            "bars": 7.0
           },
           "t-1": {
-            "n": 35,
-            "pct": 8.29,
-            "hit_rate": 0.743,
-            "ev": 0.0102,
-            "bars": 6.6
+            "n": 36,
+            "pct": 8.53,
+            "hit_rate": 0.75,
+            "ev": 0.0111,
+            "bars": 6.9
           },
           "t=0": {
-            "n": 35,
-            "pct": 8.29,
-            "hit_rate": 0.857,
-            "ev": 0.0175,
-            "bars": 5.8
+            "n": 34,
+            "pct": 8.06,
+            "hit_rate": 0.824,
+            "ev": 0.0157,
+            "bars": 5.7
           },
           "t+1": {
             "n": 30,
             "pct": 7.11,
             "hit_rate": 0.733,
             "ev": 0.0119,
-            "bars": 5.6
+            "bars": 5.8
           },
           "t+2": {
-            "n": 15,
-            "pct": 3.55,
-            "hit_rate": 0.6,
-            "ev": 0.0052,
-            "bars": 5.9
+            "n": 12,
+            "pct": 2.84,
+            "hit_rate": 0.583,
+            "ev": 0.0048,
+            "bars": 4.8
           },
           "ENTRE": {
             "n": 284,
             "pct": 67.3,
-            "hit_rate": 0.278,
+            "hit_rate": 0.282,
             "ev": -0.0093,
-            "bars": 15.1
+            "bars": 15.0
           }
         },
         "first_passage": {
@@ -21497,7 +21515,7 @@
         "resumen_rango": {
           "n_en_rango": 23,
           "pct_en_rango": 20.35,
-          "delta_medio": 14.8,
+          "delta_medio": 15.3,
           "delta_mediana": 11.0
         },
         "slots_zz25": {
@@ -21609,18 +21627,18 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 34,
-          "pct_en_rango": 30.09,
-          "delta_medio": 12.6,
+          "n_en_rango": 36,
+          "pct_en_rango": 31.86,
+          "delta_medio": 13.1,
           "delta_mediana": 8.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 8,
-            "pct": 7.08,
-            "hit_rate": 0.75,
-            "ev": 0.0077,
-            "bars": 5.2
+            "n": 9,
+            "pct": 7.96,
+            "hit_rate": 0.778,
+            "ev": 0.0089,
+            "bars": 5.7
           },
           "t-1": {
             "n": 12,
@@ -21630,11 +21648,11 @@
             "bars": 7.4
           },
           "t=0": {
-            "n": 7,
-            "pct": 6.19,
-            "hit_rate": 0.714,
-            "ev": 0.0106,
-            "bars": 7.9
+            "n": 8,
+            "pct": 7.08,
+            "hit_rate": 0.75,
+            "ev": 0.0119,
+            "bars": 9.5
           },
           "t+1": {
             "n": 5,
@@ -21651,10 +21669,10 @@
             "bars": 4.0
           },
           "ENTRE": {
-            "n": 79,
-            "pct": 69.91,
-            "hit_rate": 0.291,
-            "ev": -0.0086,
+            "n": 77,
+            "pct": 68.14,
+            "hit_rate": 0.273,
+            "ev": -0.0093,
             "bars": 16.7
           }
         },
@@ -21853,10 +21871,10 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 7,
-          "pct_en_rango": 38.89,
-          "delta_medio": 10.8,
-          "delta_mediana": 6.0
+          "n_en_rango": 8,
+          "pct_en_rango": 44.44,
+          "delta_medio": 10.4,
+          "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
@@ -21881,11 +21899,11 @@
             "bars": 7.5
           },
           "t+1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 5.56,
+            "hit_rate": 1.0,
+            "ev": 0.0182,
+            "bars": 9.0
           },
           "t+2": {
             "n": 1,
@@ -21895,11 +21913,11 @@
             "bars": 13.0
           },
           "ENTRE": {
-            "n": 11,
-            "pct": 61.11,
-            "hit_rate": 0.182,
-            "ev": -0.0109,
-            "bars": 16.4
+            "n": 10,
+            "pct": 55.56,
+            "hit_rate": 0.1,
+            "ev": -0.0139,
+            "bars": 17.1
           }
         },
         "first_passage": {
@@ -22227,9 +22245,9 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 8,
-          "pct_en_rango": 17.02,
-          "delta_medio": 7.8,
+          "n_en_rango": 9,
+          "pct_en_rango": 19.15,
+          "delta_medio": 8.0,
           "delta_mediana": 6.0
         },
         "slots_zz25": {
@@ -22262,18 +22280,18 @@
             "bars": 3.0
           },
           "t+2": {
-            "n": 3,
-            "pct": 6.38,
-            "hit_rate": 0.333,
-            "ev": -0.0102,
-            "bars": 8.3
+            "n": 4,
+            "pct": 8.51,
+            "hit_rate": 0.25,
+            "ev": -0.0127,
+            "bars": 11.0
           },
           "ENTRE": {
-            "n": 39,
-            "pct": 82.98,
-            "hit_rate": 0.564,
-            "ev": 0.0041,
-            "bars": 13.5
+            "n": 38,
+            "pct": 80.85,
+            "hit_rate": 0.579,
+            "ev": 0.0048,
+            "bars": 13.4
           }
         },
         "first_passage": {
@@ -22341,10 +22359,10 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 16,
-          "pct_en_rango": 34.04,
-          "delta_medio": 8.3,
-          "delta_mediana": 6.0
+          "n_en_rango": 15,
+          "pct_en_rango": 31.91,
+          "delta_medio": 8.2,
+          "delta_mediana": 5.0
         },
         "slots_zz25": {
           "t-2": {
@@ -22355,11 +22373,11 @@
             "bars": 9.0
           },
           "t-1": {
-            "n": 7,
-            "pct": 14.89,
-            "hit_rate": 0.429,
-            "ev": -0.0026,
-            "bars": 7.7
+            "n": 6,
+            "pct": 12.77,
+            "hit_rate": 0.5,
+            "ev": 0.0002,
+            "bars": 7.0
           },
           "t=0": {
             "n": 4,
@@ -22383,11 +22401,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 31,
-            "pct": 65.96,
-            "hit_rate": 0.258,
-            "ev": -0.0086,
-            "bars": 15.2
+            "n": 32,
+            "pct": 68.09,
+            "hit_rate": 0.25,
+            "ev": -0.0089,
+            "bars": 15.1
           }
         },
         "first_passage": {
@@ -22473,7 +22491,7 @@
         "resumen_rango": {
           "n_en_rango": 18,
           "pct_en_rango": 14.75,
-          "delta_medio": 10.1,
+          "delta_medio": 10.2,
           "delta_mediana": 6.0
         },
         "slots_zz25": {
@@ -22492,25 +22510,25 @@
             "bars": 2.0
           },
           "t=0": {
-            "n": 4,
-            "pct": 3.28,
-            "hit_rate": 0.75,
-            "ev": 0.0038,
-            "bars": 4.8
+            "n": 5,
+            "pct": 4.1,
+            "hit_rate": 0.8,
+            "ev": 0.0055,
+            "bars": 5.0
           },
           "t+1": {
             "n": 6,
             "pct": 4.92,
             "hit_rate": 0.5,
-            "ev": -0.0011,
-            "bars": 8.0
+            "ev": -0.0003,
+            "bars": 8.3
           },
           "t+2": {
-            "n": 3,
-            "pct": 2.46,
-            "hit_rate": 0.333,
-            "ev": -0.0007,
-            "bars": 16.3
+            "n": 2,
+            "pct": 1.64,
+            "hit_rate": 0.0,
+            "ev": -0.0137,
+            "bars": 19.0
           },
           "ENTRE": {
             "n": 104,
@@ -22588,7 +22606,7 @@
           "n_en_rango": 47,
           "pct_en_rango": 38.52,
           "delta_medio": 9.6,
-          "delta_mediana": 5.0
+          "delta_mediana": 5.5
         },
         "slots_zz25": {
           "t-2": {
@@ -22602,15 +22620,15 @@
             "n": 15,
             "pct": 12.3,
             "hit_rate": 0.6,
-            "ev": 0.0072,
-            "bars": 6.8
+            "ev": 0.0079,
+            "bars": 6.7
           },
           "t=0": {
             "n": 15,
             "pct": 12.3,
             "hit_rate": 0.933,
-            "ev": 0.0237,
-            "bars": 4.7
+            "ev": 0.023,
+            "bars": 4.8
           },
           "t+1": {
             "n": 4,
@@ -22717,7 +22735,7 @@
         "resumen_rango": {
           "n_en_rango": 4,
           "pct_en_rango": 23.53,
-          "delta_medio": 8.9,
+          "delta_medio": 8.8,
           "delta_mediana": 7.0
         },
         "slots_zz25": {
@@ -22829,18 +22847,18 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 3,
-          "pct_en_rango": 17.65,
-          "delta_medio": 9.9,
+          "n_en_rango": 2,
+          "pct_en_rango": 11.76,
+          "delta_medio": 10.1,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 5.88,
-            "hit_rate": 1.0,
-            "ev": 0.0319,
-            "bars": 7.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t-1": {
             "n": 1,
@@ -22871,11 +22889,11 @@
             "bars": 7.0
           },
           "ENTRE": {
-            "n": 14,
-            "pct": 82.35,
-            "hit_rate": 0.357,
-            "ev": -0.0056,
-            "bars": 13.1
+            "n": 15,
+            "pct": 88.24,
+            "hit_rate": 0.4,
+            "ev": -0.0031,
+            "bars": 12.7
           }
         },
         "first_passage": {
@@ -22961,7 +22979,7 @@
         "resumen_rango": {
           "n_en_rango": 2,
           "pct_en_rango": 28.57,
-          "delta_medio": 15.1,
+          "delta_medio": 15.0,
           "delta_mediana": 14.0
         },
         "slots_zz25": {
@@ -22973,18 +22991,18 @@
             "bars": null
           },
           "t-1": {
-            "n": 1,
-            "pct": 14.29,
-            "hit_rate": 0.0,
-            "ev": 0.0059,
-            "bars": 1.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t=0": {
-            "n": 1,
-            "pct": 14.29,
+            "n": 2,
+            "pct": 28.57,
             "hit_rate": 0.0,
-            "ev": -0.0283,
-            "bars": 9.0
+            "ev": -0.0112,
+            "bars": 5.0
           },
           "t+1": {
             "n": 0,
@@ -23691,9 +23709,9 @@
       },
       "medicion_min": {
         "resumen_rango": {
-          "n_en_rango": 14,
-          "pct_en_rango": 33.33,
-          "delta_medio": 5.1,
+          "n_en_rango": 13,
+          "pct_en_rango": 30.95,
+          "delta_medio": 5.3,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -23719,25 +23737,25 @@
             "bars": 4.0
           },
           "t+1": {
-            "n": 3,
-            "pct": 7.14,
-            "hit_rate": 0.333,
-            "ev": -0.0194,
-            "bars": 5.3
+            "n": 2,
+            "pct": 4.76,
+            "hit_rate": 0.0,
+            "ev": -0.0408,
+            "bars": 2.5
           },
           "t+2": {
             "n": 3,
             "pct": 7.14,
-            "hit_rate": 0.333,
-            "ev": 0.0006,
-            "bars": 18.0
+            "hit_rate": 0.667,
+            "ev": 0.0074,
+            "bars": 10.0
           },
           "ENTRE": {
-            "n": 28,
-            "pct": 66.67,
-            "hit_rate": 0.679,
-            "ev": 0.0085,
-            "bars": 11.7
+            "n": 29,
+            "pct": 69.05,
+            "hit_rate": 0.655,
+            "ev": 0.0083,
+            "bars": 12.5
           }
         },
         "first_passage": {
@@ -23807,23 +23825,23 @@
         "resumen_rango": {
           "n_en_rango": 18,
           "pct_en_rango": 42.86,
-          "delta_medio": 6.3,
+          "delta_medio": 6.5,
           "delta_mediana": 3.5
         },
         "slots_zz25": {
           "t-2": {
-            "n": 4,
-            "pct": 9.52,
-            "hit_rate": 0.75,
-            "ev": 0.0106,
-            "bars": 6.2
+            "n": 3,
+            "pct": 7.14,
+            "hit_rate": 0.667,
+            "ev": 0.0065,
+            "bars": 6.0
           },
           "t-1": {
-            "n": 4,
-            "pct": 9.52,
-            "hit_rate": 0.25,
-            "ev": -0.0112,
-            "bars": 3.5
+            "n": 5,
+            "pct": 11.9,
+            "hit_rate": 0.4,
+            "ev": -0.0044,
+            "bars": 4.2
           },
           "t=0": {
             "n": 7,
@@ -23833,18 +23851,18 @@
             "bars": 8.0
           },
           "t+1": {
-            "n": 2,
-            "pct": 4.76,
-            "hit_rate": 0.5,
-            "ev": 0.0009,
-            "bars": 6.5
-          },
-          "t+2": {
             "n": 1,
             "pct": 2.38,
             "hit_rate": 1.0,
-            "ev": 0.0277,
-            "bars": 8.0
+            "ev": 0.0252,
+            "bars": 2.0
+          },
+          "t+2": {
+            "n": 2,
+            "pct": 4.76,
+            "hit_rate": 0.5,
+            "ev": 0.0021,
+            "bars": 9.5
           },
           "ENTRE": {
             "n": 24,
@@ -23942,17 +23960,17 @@
         },
         "slots_zz25": {
           "t-2": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 5.88,
+            "hit_rate": 0.0,
+            "ev": 0.0008,
+            "bars": 1.0
           },
           "t-1": {
-            "n": 2,
-            "pct": 11.76,
+            "n": 1,
+            "pct": 5.88,
             "hit_rate": 0.0,
-            "ev": -0.0117,
+            "ev": -0.0242,
             "bars": 1.0
           },
           "t=0": {
@@ -24155,250 +24173,6 @@
             "mfe_p90": 0.079,
             "bars_medio": 53.8,
             "p_value": 0.9492,
-            "n_timeout": 0,
-            "timeout_rate": 0.0,
-            "max_barras": 190
-          }
-        }
-      }
-    },
-    "4__4__4": {
-      "poblacion": {
-        "barras": 1,
-        "fire_rate_pct": 0.01,
-        "n_episodios": 1,
-        "duracion_media": 1.0,
-        "duracion_max": 1
-      },
-      "overflows": {
-        "n_episodios_tier_gte_1": 0,
-        "pct_episodios_overflow": 0.0,
-        "max_tier_d1": 0,
-        "max_tier_d2": 0,
-        "max_tier_d3": 0
-      },
-      "medicion_min": {
-        "resumen_rango": {
-          "n_en_rango": 0,
-          "pct_en_rango": 0.0,
-          "delta_medio": 3.0,
-          "delta_mediana": 3.0
-        },
-        "slots_zz25": {
-          "t-2": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t-1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t=0": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t+1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t+2": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "ENTRE": {
-            "n": 1,
-            "pct": 100.0,
-            "hit_rate": 1.0,
-            "ev": 0.0224,
-            "bars": 6.0
-          }
-        },
-        "first_passage": {
-          "zz25": {
-            "hit_rate": 1.0,
-            "baseline_hit": 0.539,
-            "hit_neto": 0.4609,
-            "ev": 0.0224,
-            "baseline_ev": 0.0041,
-            "ev_neto": 0.0183,
-            "profit_factor": 99.0,
-            "rr_asymmetry": 4.57,
-            "ev_por_barra": 0.003726,
-            "mae_medio": -0.0059,
-            "mae_p90": -0.0059,
-            "mfe_medio": 0.027,
-            "mfe_p90": 0.027,
-            "bars_medio": 6.0,
-            "p_value": 0.5391,
-            "n_timeout": 0,
-            "timeout_rate": 0.0,
-            "max_barras": 35
-          },
-          "zz50": {
-            "hit_rate": 1.0,
-            "baseline_hit": 0.58,
-            "hit_neto": 0.42,
-            "ev": 0.0503,
-            "baseline_ev": 0.0145,
-            "ev_neto": 0.0358,
-            "profit_factor": 99.0,
-            "rr_asymmetry": 8.95,
-            "ev_por_barra": 0.006284,
-            "mae_medio": -0.0059,
-            "mae_p90": -0.0059,
-            "mfe_medio": 0.0529,
-            "mfe_p90": 0.0529,
-            "bars_medio": 8.0,
-            "p_value": 0.58,
-            "n_timeout": 0,
-            "timeout_rate": 0.0,
-            "max_barras": 110
-          },
-          "zz75": {
-            "hit_rate": 1.0,
-            "baseline_hit": 0.616,
-            "hit_neto": 0.3845,
-            "ev": 0.0707,
-            "baseline_ev": 0.0266,
-            "ev_neto": 0.0441,
-            "profit_factor": 99.0,
-            "rr_asymmetry": 14.09,
-            "ev_por_barra": 0.004157,
-            "mae_medio": -0.0059,
-            "mae_p90": -0.0059,
-            "mfe_medio": 0.0833,
-            "mfe_p90": 0.0833,
-            "bars_medio": 17.0,
-            "p_value": 0.6155,
-            "n_timeout": 0,
-            "timeout_rate": 0.0,
-            "max_barras": 190
-          }
-        }
-      },
-      "medicion_max": {
-        "resumen_rango": {
-          "n_en_rango": 0,
-          "pct_en_rango": 0.0,
-          "delta_medio": 3.0,
-          "delta_mediana": 3.0
-        },
-        "slots_zz25": {
-          "t-2": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t-1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t=0": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t+1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t+2": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "ENTRE": {
-            "n": 1,
-            "pct": 100.0,
-            "hit_rate": 0.0,
-            "ev": -0.0224,
-            "bars": 6.0
-          }
-        },
-        "first_passage": {
-          "zz25": {
-            "hit_rate": 0.0,
-            "baseline_hit": 0.418,
-            "hit_neto": -0.4182,
-            "ev": -0.0224,
-            "baseline_ev": -0.0041,
-            "ev_neto": -0.0183,
-            "profit_factor": 0.0,
-            "rr_asymmetry": 0.22,
-            "ev_por_barra": -0.003726,
-            "mae_medio": 0.027,
-            "mae_p90": 0.027,
-            "mfe_medio": 0.0059,
-            "mfe_p90": 0.0059,
-            "bars_medio": 6.0,
-            "p_value": 1.0,
-            "n_timeout": 0,
-            "timeout_rate": 0.0,
-            "max_barras": 35
-          },
-          "zz50": {
-            "hit_rate": 0.0,
-            "baseline_hit": 0.366,
-            "hit_neto": -0.3655,
-            "ev": -0.0503,
-            "baseline_ev": -0.0145,
-            "ev_neto": -0.0358,
-            "profit_factor": 0.0,
-            "rr_asymmetry": 0.11,
-            "ev_por_barra": -0.006284,
-            "mae_medio": 0.0529,
-            "mae_p90": 0.0529,
-            "mfe_medio": 0.0059,
-            "mfe_p90": 0.0059,
-            "bars_medio": 8.0,
-            "p_value": 1.0,
-            "n_timeout": 0,
-            "timeout_rate": 0.0,
-            "max_barras": 110
-          },
-          "zz75": {
-            "hit_rate": 0.0,
-            "baseline_hit": 0.325,
-            "hit_neto": -0.3252,
-            "ev": -0.0707,
-            "baseline_ev": -0.0266,
-            "ev_neto": -0.0441,
-            "profit_factor": 0.0,
-            "rr_asymmetry": 0.07,
-            "ev_por_barra": -0.004157,
-            "mae_medio": 0.0833,
-            "mae_p90": 0.0833,
-            "mfe_medio": 0.0059,
-            "mfe_p90": 0.0059,
-            "bars_medio": 17.0,
-            "p_value": 1.0,
             "n_timeout": 0,
             "timeout_rate": 0.0,
             "max_barras": 190
@@ -24669,7 +24443,7 @@
         "resumen_rango": {
           "n_en_rango": 8,
           "pct_en_rango": 18.18,
-          "delta_medio": 10.0,
+          "delta_medio": 10.2,
           "delta_mediana": 9.0
         },
         "slots_zz25": {
@@ -24781,18 +24555,18 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 17,
-          "pct_en_rango": 38.64,
-          "delta_medio": 8.9,
+          "n_en_rango": 15,
+          "pct_en_rango": 34.09,
+          "delta_medio": 10.1,
           "delta_mediana": 6.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 2.27,
-            "hit_rate": 1.0,
-            "ev": 0.0248,
-            "bars": 4.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t-1": {
             "n": 4,
@@ -24802,18 +24576,18 @@
             "bars": 5.8
           },
           "t=0": {
-            "n": 7,
-            "pct": 15.91,
-            "hit_rate": 0.714,
-            "ev": 0.0071,
-            "bars": 4.4
+            "n": 8,
+            "pct": 18.18,
+            "hit_rate": 0.75,
+            "ev": 0.01,
+            "bars": 4.0
           },
           "t+1": {
-            "n": 4,
-            "pct": 9.09,
-            "hit_rate": 0.75,
-            "ev": 0.0115,
-            "bars": 3.2
+            "n": 2,
+            "pct": 4.55,
+            "hit_rate": 0.5,
+            "ev": -0.0003,
+            "bars": 2.0
           },
           "t+2": {
             "n": 1,
@@ -24823,11 +24597,11 @@
             "bars": 2.0
           },
           "ENTRE": {
-            "n": 27,
-            "pct": 61.36,
-            "hit_rate": 0.222,
-            "ev": -0.0113,
-            "bars": 17.5
+            "n": 29,
+            "pct": 65.91,
+            "hit_rate": 0.276,
+            "ev": -0.0091,
+            "bars": 16.7
           }
         },
         "first_passage": {
@@ -24913,7 +24687,7 @@
         "resumen_rango": {
           "n_en_rango": 22,
           "pct_en_rango": 21.36,
-          "delta_medio": 10.5,
+          "delta_medio": 10.6,
           "delta_mediana": 9.0
         },
         "slots_zz25": {
@@ -25025,32 +24799,32 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 38,
-          "pct_en_rango": 36.89,
-          "delta_medio": 9.3,
-          "delta_mediana": 5.0
+          "n_en_rango": 37,
+          "pct_en_rango": 35.92,
+          "delta_medio": 9.7,
+          "delta_mediana": 6.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 9,
-            "pct": 8.74,
-            "hit_rate": 0.667,
-            "ev": 0.0064,
-            "bars": 7.4
+            "n": 8,
+            "pct": 7.77,
+            "hit_rate": 0.625,
+            "ev": 0.0038,
+            "bars": 6.8
           },
           "t-1": {
-            "n": 7,
-            "pct": 6.8,
-            "hit_rate": 0.571,
-            "ev": -0.0006,
-            "bars": 3.0
+            "n": 8,
+            "pct": 7.77,
+            "hit_rate": 0.625,
+            "ev": 0.004,
+            "bars": 2.8
           },
           "t=0": {
-            "n": 14,
-            "pct": 13.59,
-            "hit_rate": 0.714,
-            "ev": 0.0126,
-            "bars": 4.4
+            "n": 13,
+            "pct": 12.62,
+            "hit_rate": 0.692,
+            "ev": 0.0112,
+            "bars": 4.6
           },
           "t+1": {
             "n": 4,
@@ -25067,10 +24841,10 @@
             "bars": 4.0
           },
           "ENTRE": {
-            "n": 65,
-            "pct": 63.11,
-            "hit_rate": 0.262,
-            "ev": -0.0115,
+            "n": 66,
+            "pct": 64.08,
+            "hit_rate": 0.273,
+            "ev": -0.011,
             "bars": 16.0
           }
         },
@@ -25157,8 +24931,8 @@
         "resumen_rango": {
           "n_en_rango": 3,
           "pct_en_rango": 16.67,
-          "delta_medio": 10.5,
-          "delta_mediana": 9.5
+          "delta_medio": 10.6,
+          "delta_mediana": 10.5
         },
         "slots_zz25": {
           "t-2": {
@@ -25269,18 +25043,18 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 3,
-          "pct_en_rango": 16.67,
-          "delta_medio": 9.3,
+          "n_en_rango": 4,
+          "pct_en_rango": 22.22,
+          "delta_medio": 10.1,
           "delta_mediana": 5.5
         },
         "slots_zz25": {
           "t-2": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 5.56,
+            "hit_rate": 1.0,
+            "ev": 0.0261,
+            "bars": 6.0
           },
           "t-1": {
             "n": 2,
@@ -25311,11 +25085,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 15,
-            "pct": 83.33,
-            "hit_rate": 0.267,
-            "ev": -0.0086,
-            "bars": 14.5
+            "n": 14,
+            "pct": 77.78,
+            "hit_rate": 0.214,
+            "ev": -0.0111,
+            "bars": 15.1
           }
         },
         "first_passage": {
@@ -25889,7 +25663,7 @@
         "resumen_rango": {
           "n_en_rango": 6,
           "pct_en_rango": 40.0,
-          "delta_medio": 5.7,
+          "delta_medio": 5.8,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -25908,18 +25682,18 @@
             "bars": 3.0
           },
           "t=0": {
-            "n": 2,
-            "pct": 13.33,
-            "hit_rate": 0.5,
-            "ev": -0.0094,
-            "bars": 9.5
+            "n": 1,
+            "pct": 6.67,
+            "hit_rate": 0.0,
+            "ev": -0.0327,
+            "bars": 3.0
           },
           "t+1": {
-            "n": 2,
-            "pct": 13.33,
-            "hit_rate": 0.0,
-            "ev": -0.0192,
-            "bars": 2.0
+            "n": 3,
+            "pct": 20.0,
+            "hit_rate": 0.333,
+            "ev": -0.0082,
+            "bars": 6.7
           },
           "t+2": {
             "n": 0,
@@ -26003,7 +25777,7 @@
         "resumen_rango": {
           "n_en_rango": 9,
           "pct_en_rango": 60.0,
-          "delta_medio": 4.5,
+          "delta_medio": 4.6,
           "delta_mediana": 1.0
         },
         "slots_zz25": {
@@ -26015,25 +25789,25 @@
             "bars": 9.0
           },
           "t-1": {
-            "n": 2,
-            "pct": 13.33,
-            "hit_rate": 0.5,
-            "ev": -0.0023,
-            "bars": 6.0
+            "n": 3,
+            "pct": 20.0,
+            "hit_rate": 0.667,
+            "ev": 0.0063,
+            "bars": 4.7
           },
           "t=0": {
-            "n": 6,
-            "pct": 40.0,
-            "hit_rate": 0.667,
-            "ev": 0.0092,
-            "bars": 4.8
+            "n": 4,
+            "pct": 26.67,
+            "hit_rate": 0.75,
+            "ev": 0.0114,
+            "bars": 2.8
           },
           "t+1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
+            "n": 1,
+            "pct": 6.67,
+            "hit_rate": 0.0,
+            "ev": -0.0138,
+            "bars": 16.0
           },
           "t+2": {
             "n": 0,
@@ -26247,16 +26021,16 @@
         "resumen_rango": {
           "n_en_rango": 12,
           "pct_en_rango": 36.36,
-          "delta_medio": 7.4,
-          "delta_mediana": 4.0
+          "delta_medio": 7.7,
+          "delta_mediana": 5.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 3,
-            "pct": 9.09,
-            "hit_rate": 0.333,
-            "ev": -0.0195,
-            "bars": 10.0
+            "n": 4,
+            "pct": 12.12,
+            "hit_rate": 0.25,
+            "ev": -0.0183,
+            "bars": 10.2
           },
           "t-1": {
             "n": 2,
@@ -26266,11 +26040,11 @@
             "bars": 1.0
           },
           "t=0": {
-            "n": 6,
-            "pct": 18.18,
-            "hit_rate": 0.5,
-            "ev": 0.0095,
-            "bars": 9.0
+            "n": 5,
+            "pct": 15.15,
+            "hit_rate": 0.6,
+            "ev": 0.0144,
+            "bars": 8.6
           },
           "t+1": {
             "n": 1,
@@ -26491,7 +26265,7 @@
         "resumen_rango": {
           "n_en_rango": 2,
           "pct_en_rango": 40.0,
-          "delta_medio": 6.0,
+          "delta_medio": 7.2,
           "delta_mediana": 4.0
         },
         "slots_zz25": {
@@ -26865,7 +26639,7 @@
         "resumen_rango": {
           "n_en_rango": 2,
           "pct_en_rango": 40.0,
-          "delta_medio": 3.2,
+          "delta_medio": 3.4,
           "delta_mediana": 3.0
         },
         "slots_zz25": {
@@ -26877,18 +26651,18 @@
             "bars": null
           },
           "t-1": {
-            "n": 0,
-            "pct": 0.0,
-            "hit_rate": null,
-            "ev": null,
-            "bars": null
-          },
-          "t=0": {
             "n": 1,
             "pct": 20.0,
             "hit_rate": 0.0,
             "ev": -0.0206,
             "bars": 9.0
+          },
+          "t=0": {
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t+1": {
             "n": 1,
@@ -27465,18 +27239,18 @@
       },
       "medicion_max": {
         "resumen_rango": {
-          "n_en_rango": 1,
-          "pct_en_rango": 50.0,
-          "delta_medio": 5.0,
-          "delta_mediana": 5.0
+          "n_en_rango": 0,
+          "pct_en_rango": 0.0,
+          "delta_medio": 6.0,
+          "delta_mediana": 6.0
         },
         "slots_zz25": {
           "t-2": {
-            "n": 1,
-            "pct": 50.0,
-            "hit_rate": 0.0,
-            "ev": -0.0193,
-            "bars": 13.0
+            "n": 0,
+            "pct": 0.0,
+            "hit_rate": null,
+            "ev": null,
+            "bars": null
           },
           "t-1": {
             "n": 0,
@@ -27507,11 +27281,11 @@
             "bars": null
           },
           "ENTRE": {
-            "n": 1,
-            "pct": 50.0,
+            "n": 2,
+            "pct": 100.0,
             "hit_rate": 0.0,
-            "ev": -0.0229,
-            "bars": 15.0
+            "ev": -0.0211,
+            "bars": 14.0
           }
         },
         "first_passage": {

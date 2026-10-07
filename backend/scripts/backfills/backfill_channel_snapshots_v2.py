@@ -83,7 +83,7 @@ def _rolling_linreg(close: np.ndarray, window: int):
         residuals = y - fitted
         res_std = float(np.std(residuals, ddof=1)) if len(residuals) > 1 else 1.0
 
-        slope_pct = (slope / y_mean * 100) if y_mean > 0 else 0.0
+        slope_pct = (slope / y_mean * 100) if y_mean > 0 else np.nan
 
         reg_values[i] = reg_val
         slopes_norm[i] = slope_pct
@@ -167,13 +167,13 @@ def _precompute_kalman(close: np.ndarray, volume: np.ndarray) -> list[dict]:
 
         if i >= 20:
             vol_20 = returns.iloc[max(0, i - 19):i + 1].std()
-            vol_adj = velocity / max(vol_20 * 100, 0.01)
+            vol_adj = (velocity / max(vol_20 * 100, 0.01)) if pd.notna(vol_20) else None
         else:
-            vol_adj = 0.0
+            vol_adj = None
 
         results.append({
-            'kalman_velocity': round(float(velocity), 6),
-            'vol_adj_delta': round(float(vol_adj), 6),
+            'kalman_velocity': round(float(velocity), 6) if velocity is not None else None,
+            'vol_adj_delta': round(float(vol_adj), 6) if vol_adj is not None else None,
         })
 
     return results
@@ -356,13 +356,15 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
             round(float(tide_std[idx]), 4), round(float(curr_std[idx]), 4), round(float(wave_std[idx]), 4),
             vs_tide_val, vs_curr_val, vs_wave_val,
             vt, vc, vw,
-            round(float(ts), 6), round(float(cs_val), 6), round(float(ws), 6),
+            round(float(ts), 6) if not np.isnan(ts) else None,
+            round(float(cs_val), 6) if not np.isnan(cs_val) else None,
+            round(float(ws), 6) if not np.isnan(ws) else None,
             round(float(t_accel), 6) if t_accel is not None else None,
             round(float(c_accel), 6) if c_accel is not None else None,
             round(float(w_accel), 6) if w_accel is not None else None,
-            round(float(ws - cs_val), 6),  # conj_wave_current
-            round(float(ws - ts), 6),      # conj_wave_tide
-            round(float(cs_val - ts), 6),  # conj_current_tide
+            round(float(ws - cs_val), 6) if (not np.isnan(ws) and not np.isnan(cs_val)) else None,  # conj_wave_current
+            round(float(ws - ts), 6) if (not np.isnan(ws) and not np.isnan(ts)) else None,      # conj_wave_tide
+            round(float(cs_val - ts), 6) if (not np.isnan(cs_val) and not np.isnan(ts)) else None,  # conj_current_tide
             round(float(s_tide - s_curr), 4),  # spread_tide_current
             round(float(s_tide - s_wave), 4),  # spread_tide_wave
             round(float(s_curr - s_wave), 4),  # spread_current_wave
@@ -379,9 +381,10 @@ def backfill_ticker(store: TimescaleDataStore, ticker: str, dsn: str) -> int:
             tension_wave,  # tension_wave
             comp,
             round(float(rsi_val), 1),
-            round(float(div_str), 4),
-            round(float(conv), 4),
-            float(k['kalman_velocity']), float(k['vol_adj_delta']),
+            round(float(div_str), 4) if div_str is not None else None,
+            round(float(conv), 4) if conv is not None else None,
+            float(k['kalman_velocity']) if k.get('kalman_velocity') is not None else None,
+            float(k['vol_adj_delta']) if k.get('vol_adj_delta') is not None else None,
             float(geo[0]), float(geo[1]), float(geo[2]), float(geo[3]), float(geo[4]),
             round(float(vol_surge[idx]), 4),
             int(w_dur),

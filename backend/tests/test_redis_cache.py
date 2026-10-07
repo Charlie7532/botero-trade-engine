@@ -226,9 +226,8 @@ class TestRedisCacheSingleton:
         rc_mod._instance = None
 
         with patch.dict(os.environ, {}, clear=True):
-            # Remove REDIS_URL if present
-            os.environ.pop("REDIS_URL", None)
-            result = rc_mod.get_redis_cache()
+            with patch("dotenv.load_dotenv"):
+                result = rc_mod.get_redis_cache()
 
         assert result is None
 

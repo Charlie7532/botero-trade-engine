@@ -1,0 +1,117 @@
+{
+  "timestamp_utc": "2026-10-07T14:13:56.825903+00:00",
+  "base_rev": "4fab158",
+  "target_rev": "HEAD",
+  "stations": {
+    "vix": {
+      "station": "vix",
+      "base_legs": 1577,
+      "target_legs": 1570,
+      "delta_legs": -7,
+      "states_modified": 83,
+      "total_states": 113,
+      "pct_modified": 73.45,
+      "max_dp_bull": 0.0699
+    },
+    "vvix": {
+      "station": "vvix",
+      "base_legs": 914,
+      "target_legs": 904,
+      "delta_legs": -10,
+      "states_modified": 66,
+      "total_states": 98,
+      "pct_modified": 67.35,
+      "max_dp_bull": 0.06
+    },
+    "pcr": {
+      "station": "pcr",
+      "base_legs": 880,
+      "target_legs": 873,
+      "delta_legs": -7,
+      "states_modified": 60,
+      "total_states": 95,
+      "pct_modified": 63.16,
+      "max_dp_bull": 0.0455
+    },
+    "fg": {
+      "station": "fg",
+      "base_legs": 499,
+      "target_legs": 501,
+      "delta_legs": 2,
+      "states_modified": 49,
+      "total_states": 82,
+      "pct_modified": 59.76,
+      "max_dp_bull": 0.0455
+    },
+    "sv5_turbulence": {
+      "station": "sv5_turbulence",
+      "base_legs": 1300,
+      "target_legs": 1571,
+      "delta_legs": 271,
+      "states_modified": 105,
+      "total_states": 117,
+      "pct_modified": 89.74,
+      "max_dp_bull": 0.1964
+    },
+    "skew": {
+      "station": "skew",
+      "base_legs": 1573,
+      "target_legs": 1567,
+      "delta_legs": -6,
+      "states_modified": 92,
+      "total_states": 118,
+      "pct_modified": 77.97,
+      "max_dp_bull": 0.0455
+    },
+    "credit": {
+      "station": "credit",
+      "base_legs": 832,
+      "target_legs": 832,
+      "delta_legs": 0,
+      "states_modified": 81,
+      "total_states": 104,
+      "pct_modified": 77.88,
+      "max_dp_bull": 0.0672
+    },
+    "yield_curve": {
+      "station": "yield_curve",
+      "base_legs": 1574,
+      "target_legs": 1568,
+      "delta_legs": -6,
+      "states_modified": 103,
+      "total_states": 131,
+      "pct_modified": 78.63,
+      "max_dp_bull": 0.0682
+    },
+    "rotation": {
+      "station": "rotation",
+      "base_legs": 1309,
+      "target_legs": 1301,
+      "delta_legs": -8,
+      "states_modified": 80,
+      "total_states": 123,
+      "pct_modified": 65.04,
+      "max_dp_bull": 0.0464
+    },
+    "bsi": {
+      "station": "bsi",
+      "base_legs": 1577,
+      "target_legs": 1571,
+      "delta_legs": -6,
+      "states_modified": 88,
+      "total_states": 113,
+      "pct_modified": 77.88,
+      "max_dp_bull": 0.0833
+    },
+    "dxy": {
+      "station": "dxy",
+      "base_legs": 1254,
+      "target_legs": 1246,
+      "delta_legs": -8,
+      "states_modified": 96,
+      "total_states": 129,
+      "pct_modified": 74.42,
+      "max_dp_bull": 0.0652
+    }
+  }
+}

@@ -1,0 +1,371 @@
+{
+  "timestamp_utc": "2026-10-07T14:13:41.054999+00:00",
+  "base_rev": "a8f11aa",
+  "target_rev": "HEAD",
+  "files": {
+    "backend/modules/entry_decision/domain/rules/s5v_triad_table.json": {
+      "base_generated_at": "2026-10-07T12:38:15.423477+00:00",
+      "target_generated_at": "2026-10-07T13:51:19.476628+00:00",
+      "type": "cells",
+      "total_cells": 405,
+      "cells_with_delta": 162,
+      "pct_with_delta": 40.0,
+      "top_displacements": [
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<<|>>|>>|+",
+          "n_target": 27,
+          "delta_n": 0,
+          "p_bot_target": 0.2963,
+          "delta_p_bot": 0.037,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<<|<<|<|+",
+          "n_target": 60,
+          "delta_n": 0,
+          "p_bot_target": 0.0667,
+          "delta_p_bot": 0.0167,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<<|>>|~|+",
+          "n_target": 61,
+          "delta_n": 0,
+          "p_bot_target": 0.0984,
+          "delta_p_bot": -0.0164,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<<|>>|>>",
+          "n_target": 70,
+          "delta_n": 0,
+          "p_bot_target": 0.2429,
+          "delta_p_bot": 0.0143,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<|<<|>|-",
+          "n_target": 159,
+          "delta_n": 0,
+          "p_bot_target": 0.0063,
+          "delta_p_bot": -0.0126,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<|>>|>>|+",
+          "n_target": 84,
+          "delta_n": 0,
+          "p_bot_target": 0.3333,
+          "delta_p_bot": -0.0119,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<<|<<|<",
+          "n_target": 108,
+          "delta_n": 0,
+          "p_bot_target": 0.0556,
+          "delta_p_bot": 0.0093,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<<|>|<|+",
+          "n_target": 113,
+          "delta_n": 0,
+          "p_bot_target": 0.0265,
+          "delta_p_bot": 0.0088,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<<|<<|~|-",
+          "n_target": 129,
+          "delta_n": 0,
+          "p_bot_target": 0.0543,
+          "delta_p_bot": -0.0077,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": ">|>>|>|+",
+          "n_target": 140,
+          "delta_n": 0,
+          "p_bot_target": 0.1857,
+          "delta_p_bot": 0.0071,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": ">>|<<|~|+",
+          "n_target": 285,
+          "delta_n": 0,
+          "p_bot_target": 0.0667,
+          "delta_p_bot": -0.007,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": ">>|~|>|+",
+          "n_target": 143,
+          "delta_n": 0,
+          "p_bot_target": 0.2028,
+          "delta_p_bot": 0.007,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<|>>|>>",
+          "n_target": 157,
+          "delta_n": 0,
+          "p_bot_target": 0.2675,
+          "delta_p_bot": -0.0064,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": ">>|<|<|+",
+          "n_target": 162,
+          "delta_n": 0,
+          "p_bot_target": 0.0802,
+          "delta_p_bot": 0.0061,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5v_triad_table.json",
+          "cell": "<<|~|<|+",
+          "n_target": 168,
+          "delta_n": 0,
+          "p_bot_target": 0.0357,
+          "delta_p_bot": 0.0059,
+          "delta_p_top": 0.0
+        }
+      ]
+    },
+    "backend/modules/entry_decision/domain/rules/s5v_relative_modifier.json": {
+      "base_generated_at": "2026-10-07T12:38:15.588376+00:00",
+      "target_generated_at": "2026-10-07T13:51:19.568461+00:00",
+      "type": "bins",
+      "bins": {
+        "<<": {
+          "n_target": 1557,
+          "n_base": 1557,
+          "bot_factor_target": 1.09,
+          "bot_factor_base": 1.092
+        },
+        "<": {
+          "n_target": 10364,
+          "n_base": 10360,
+          "bot_factor_target": 1.003,
+          "bot_factor_base": 0.997
+        },
+        "~": {
+          "n_target": 59307,
+          "n_base": 59307,
+          "bot_factor_target": 0.985,
+          "bot_factor_base": 0.985
+        },
+        ">": {
+          "n_target": 10072,
+          "n_base": 10075,
+          "bot_factor_target": 1.042,
+          "bot_factor_base": 1.042
+        },
+        ">>": {
+          "n_target": 1854,
+          "n_base": 1854,
+          "bot_factor_target": 1.156,
+          "bot_factor_base": 1.165
+        }
+      }
+    },
+    "backend/modules/entry_decision/domain/rules/s5_triad_table.json": {
+      "base_generated_at": "2026-10-07T12:40:14.417762+00:00",
+      "target_generated_at": "2026-10-07T13:50:20.119538+00:00",
+      "type": "cells",
+      "total_cells": 391,
+      "cells_with_delta": 133,
+      "pct_with_delta": 34.02,
+      "top_displacements": [
+        {
+          "file": "s5_triad_table.json",
+          "cell": ">>|<<|<<|-",
+          "n_target": 48,
+          "delta_n": 0,
+          "p_bot_target": 0.2917,
+          "delta_p_bot": -0.0416,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": ">>|<<|<<",
+          "n_target": 62,
+          "delta_n": 0,
+          "p_bot_target": 0.2419,
+          "delta_p_bot": -0.0323,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": ">>|<<",
+          "n_target": 91,
+          "delta_n": 0,
+          "p_bot_target": 0.2308,
+          "delta_p_bot": -0.0219,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": ">|<<|<<|-",
+          "n_target": 101,
+          "delta_n": 0,
+          "p_bot_target": 0.2178,
+          "delta_p_bot": -0.0099,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": ">|<<|<<",
+          "n_target": 132,
+          "delta_n": 0,
+          "p_bot_target": 0.1818,
+          "delta_p_bot": -0.0076,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": "~|<<|<|+",
+          "n_target": 143,
+          "delta_n": 0,
+          "p_bot_target": 0.1049,
+          "delta_p_bot": 0.007,
+          "delta_p_top": 0.007
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": ">>|~|<|+",
+          "n_target": 149,
+          "delta_n": 0,
+          "p_bot_target": 0.1007,
+          "delta_p_bot": 0.0067,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": "<<|<|<|+",
+          "n_target": 350,
+          "delta_n": 0,
+          "p_bot_target": 0.12,
+          "delta_p_bot": 0.0057,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": ">|<<",
+          "n_target": 175,
+          "delta_n": 0,
+          "p_bot_target": 0.1829,
+          "delta_p_bot": -0.0057,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": "<|<<|<|-",
+          "n_target": 392,
+          "delta_n": 0,
+          "p_bot_target": 0.2015,
+          "delta_p_bot": 0.0051,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": "<|<<|<<|+",
+          "n_target": 400,
+          "delta_n": 0,
+          "p_bot_target": 0.245,
+          "delta_p_bot": -0.005,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": ">|<|<|+",
+          "n_target": 215,
+          "delta_n": 0,
+          "p_bot_target": 0.1023,
+          "delta_p_bot": -0.0047,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": "~|>|~|-",
+          "n_target": 1447,
+          "delta_n": 0,
+          "p_bot_target": 0.02,
+          "delta_p_bot": 0.0034,
+          "delta_p_top": 0.0
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": "~|<<|<",
+          "n_target": 299,
+          "delta_n": 0,
+          "p_bot_target": 0.1572,
+          "delta_p_bot": 0.0034,
+          "delta_p_top": 0.0034
+        },
+        {
+          "file": "s5_triad_table.json",
+          "cell": "<<|<<|<<|+",
+          "n_target": 664,
+          "delta_n": 0,
+          "p_bot_target": 0.244,
+          "delta_p_bot": -0.003,
+          "delta_p_top": 0.0
+        }
+      ]
+    },
+    "backend/modules/entry_decision/domain/rules/s5_relative_modifier.json": {
+      "base_generated_at": "2026-10-07T12:40:14.473477+00:00",
+      "target_generated_at": "2026-10-07T13:50:20.164418+00:00",
+      "type": "bins",
+      "bins": {
+        "<<": {
+          "n_target": 3316,
+          "n_base": 3316,
+          "bot_factor_target": 1.869,
+          "bot_factor_base": 1.872
+        },
+        "<": {
+          "n_target": 14797,
+          "n_base": 14797,
+          "bot_factor_target": 1.513,
+          "bot_factor_base": 1.517
+        },
+        "~": {
+          "n_target": 38743,
+          "n_base": 38743,
+          "bot_factor_target": 1.005,
+          "bot_factor_base": 1.003
+        },
+        ">": {
+          "n_target": 15176,
+          "n_base": 15176,
+          "bot_factor_target": 0.539,
+          "bot_factor_base": 0.534
+        },
+        ">>": {
+          "n_target": 2644,
+          "n_base": 2644,
+          "bot_factor_target": 0.5,
+          "bot_factor_base": 0.501
+        }
+      }
+    }
+  }
+}

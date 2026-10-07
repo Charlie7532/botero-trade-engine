@@ -1,0 +1,1 @@
+0756658dda1800e24de094b81f1cce939e2c1910c39d45ed1f9f774a8fe1fba4  .hermes/prompts/2026-10-07-guidence-cierre-plan-remediacion.md

@@ -214,7 +214,6 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
-  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -295,7 +294,6 @@ export interface UserAvatar {
   id: number;
   alt?: string | null;
   user: number | User;
-  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -434,25 +432,57 @@ export interface BrokerAccount {
    */
   secretKeyMasked?: string | null;
   /**
-   * Required for Interactive Brokers. Your IB Account ID.
+   * Required for Interactive Brokers. Your IB Account ID (e.g. DU1234567 for paper).
    */
   ibAccountId?: string | null;
+  /**
+   * The 9-character consumer key you chose in IB's OAuth self-service portal.
+   */
+  ibConsumerKeyPlaintext?: string | null;
+  /**
+   * Your consumer key (last 4 characters only).
+   */
+  ibConsumerKeyMasked?: string | null;
+  /**
+   * Generated in IB's OAuth portal after uploading your public keys.
+   */
+  ibAccessTokenPlaintext?: string | null;
+  /**
+   * Your access token (last 4 characters only).
+   */
+  ibAccessTokenMasked?: string | null;
+  /**
+   * Generated alongside the access token — shown only once in IB's portal, save it then.
+   */
+  ibAccessTokenSecretPlaintext?: string | null;
+  /**
+   * Your access token secret (last 4 characters only).
+   */
+  ibAccessTokenSecretMasked?: string | null;
   /**
    * Alpaca API base URL (defaults to paper trading URL).
    */
   alpacaBaseUrl?: string | null;
   /**
-   * Interactive Brokers host (e.g., 127.0.0.1).
+   * Hex representation of the prime from your dhparam.pem, extracted via `openssl dhparam -in dhparam.pem -text -noout`. Not secret on its own — this is a public DH parameter — so it is stored as plain text, unlike the fields on the Credentials tab.
    */
-  ibHost?: string | null;
+  ibDhPrime?: string | null;
   /**
-   * Interactive Brokers port.
+   * Paste the full contents of private_signature.pem. Signs every request.
    */
-  ibPort?: number | null;
+  ibSignatureKeyPemPlaintext?: string | null;
   /**
-   * Interactive Brokers client ID.
+   * Signature key on file (fingerprint only).
    */
-  ibClientId?: number | null;
+  ibSignatureKeyPemMasked?: string | null;
+  /**
+   * Paste the full contents of private_encryption.pem. Decrypts the access token secret during login.
+   */
+  ibEncryptionKeyPemPlaintext?: string | null;
+  /**
+   * Encryption key on file (fingerprint only).
+   */
+  ibEncryptionKeyPemMasked?: string | null;
   /**
    * View all bots assigned to this broker account in Portfolio > Bot Assignments. Manage bot-to-account mappings at the portfolio level for a complete deployment strategy.
    */
@@ -463,6 +493,21 @@ export interface BrokerAccount {
   secretKeyEncrypted?: string | null;
   secretKeyIv?: string | null;
   secretKeyAuthTag?: string | null;
+  ibConsumerKeyEncrypted?: string | null;
+  ibConsumerKeyIv?: string | null;
+  ibConsumerKeyAuthTag?: string | null;
+  ibAccessTokenEncrypted?: string | null;
+  ibAccessTokenIv?: string | null;
+  ibAccessTokenAuthTag?: string | null;
+  ibAccessTokenSecretEncrypted?: string | null;
+  ibAccessTokenSecretIv?: string | null;
+  ibAccessTokenSecretAuthTag?: string | null;
+  ibSignatureKeyPemEncrypted?: string | null;
+  ibSignatureKeyPemIv?: string | null;
+  ibSignatureKeyPemAuthTag?: string | null;
+  ibEncryptionKeyPemEncrypted?: string | null;
+  ibEncryptionKeyPemIv?: string | null;
+  ibEncryptionKeyPemAuthTag?: string | null;
   /**
    * Vault ID storing this broker account credentials.
    */
@@ -1502,7 +1547,6 @@ export interface PayloadMigration {
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
-  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1596,7 +1640,6 @@ export interface MediaSelect<T extends boolean = true> {
 export interface UserAvatarSelect<T extends boolean = true> {
   alt?: T;
   user?: T;
-  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1687,10 +1730,18 @@ export interface BrokerAccountsSelect<T extends boolean = true> {
   secretKeyPlaintext?: T;
   secretKeyMasked?: T;
   ibAccountId?: T;
+  ibConsumerKeyPlaintext?: T;
+  ibConsumerKeyMasked?: T;
+  ibAccessTokenPlaintext?: T;
+  ibAccessTokenMasked?: T;
+  ibAccessTokenSecretPlaintext?: T;
+  ibAccessTokenSecretMasked?: T;
   alpacaBaseUrl?: T;
-  ibHost?: T;
-  ibPort?: T;
-  ibClientId?: T;
+  ibDhPrime?: T;
+  ibSignatureKeyPemPlaintext?: T;
+  ibSignatureKeyPemMasked?: T;
+  ibEncryptionKeyPemPlaintext?: T;
+  ibEncryptionKeyPemMasked?: T;
   botsInfo?: T;
   apiKeyEncrypted?: T;
   apiKeyIv?: T;
@@ -1698,6 +1749,21 @@ export interface BrokerAccountsSelect<T extends boolean = true> {
   secretKeyEncrypted?: T;
   secretKeyIv?: T;
   secretKeyAuthTag?: T;
+  ibConsumerKeyEncrypted?: T;
+  ibConsumerKeyIv?: T;
+  ibConsumerKeyAuthTag?: T;
+  ibAccessTokenEncrypted?: T;
+  ibAccessTokenIv?: T;
+  ibAccessTokenAuthTag?: T;
+  ibAccessTokenSecretEncrypted?: T;
+  ibAccessTokenSecretIv?: T;
+  ibAccessTokenSecretAuthTag?: T;
+  ibSignatureKeyPemEncrypted?: T;
+  ibSignatureKeyPemIv?: T;
+  ibSignatureKeyPemAuthTag?: T;
+  ibEncryptionKeyPemEncrypted?: T;
+  ibEncryptionKeyPemIv?: T;
+  ibEncryptionKeyPemAuthTag?: T;
   vaultId?: T;
   credentialId?: T;
   vaultSyncStatus?: T;

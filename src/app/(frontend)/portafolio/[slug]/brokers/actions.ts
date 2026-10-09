@@ -23,11 +23,16 @@ export type CreateBrokerAccountInput = {
   apiKeyPlaintext?: string
   secretKeyPlaintext?: string
   alpacaBaseUrl?: string
-  // Interactive Brokers
+  // Interactive Brokers — OAuth 1.0a Extended (First Party). See
+  // ib_adapter.py's module docstring for what each of these is and how
+  // they're generated in IB's OAuth self-service portal.
   ibAccountId?: string
-  ibHost?: string
-  ibPort?: number
-  ibClientId?: number
+  ibConsumerKeyPlaintext?: string
+  ibAccessTokenPlaintext?: string
+  ibAccessTokenSecretPlaintext?: string
+  ibDhPrime?: string
+  ibSignatureKeyPemPlaintext?: string
+  ibEncryptionKeyPemPlaintext?: string
 }
 
 export type CreateBrokerAccountResult =
@@ -89,14 +94,28 @@ export async function createBrokerAccount(
 
   if (input.brokerType === 'interactive_brokers') {
     const accountId = trim(input.ibAccountId)
+    const consumerKey = trim(input.ibConsumerKeyPlaintext)
+    const accessToken = trim(input.ibAccessTokenPlaintext)
+    const accessTokenSecret = trim(input.ibAccessTokenSecretPlaintext)
+    const dhPrime = trim(input.ibDhPrime)
+    const signatureKeyPem = trim(input.ibSignatureKeyPemPlaintext)
+    const encryptionKeyPem = trim(input.ibEncryptionKeyPemPlaintext)
+
     if (!accountId) return { ok: false, error: 'IB Account ID is required.' }
+    if (!consumerKey) return { ok: false, error: 'Consumer Key is required for Interactive Brokers.' }
+    if (!accessToken) return { ok: false, error: 'Access Token is required for Interactive Brokers.' }
+    if (!accessTokenSecret) return { ok: false, error: 'Access Token Secret is required for Interactive Brokers.' }
+    if (!dhPrime) return { ok: false, error: 'Diffie-Hellman prime is required for Interactive Brokers.' }
+    if (!signatureKeyPem) return { ok: false, error: 'RSA signature private key is required for Interactive Brokers.' }
+    if (!encryptionKeyPem) return { ok: false, error: 'RSA encryption private key is required for Interactive Brokers.' }
+
     data.ibAccountId = accountId
-    const host = trim(input.ibHost)
-    if (host) data.ibHost = host
-    if (typeof input.ibPort === 'number' && Number.isFinite(input.ibPort)) data.ibPort = input.ibPort
-    if (typeof input.ibClientId === 'number' && Number.isFinite(input.ibClientId)) {
-      data.ibClientId = input.ibClientId
-    }
+    data.ibConsumerKeyPlaintext = consumerKey
+    data.ibAccessTokenPlaintext = accessToken
+    data.ibAccessTokenSecretPlaintext = accessTokenSecret
+    data.ibDhPrime = dhPrime
+    data.ibSignatureKeyPemPlaintext = signatureKeyPem
+    data.ibEncryptionKeyPemPlaintext = encryptionKeyPem
   }
 
   const payload = await getPayload({ config: configPromise })

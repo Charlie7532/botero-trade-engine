@@ -1,7 +1,7 @@
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 backtrader>=1.9.78
-ib_insync>=0.9.86
+ibind[oauth]>=0.1.24  # IBKR Web API client (OAuth 1.0a Extended). oauth extra pulls pycryptodome (maintained), not the abandoned pyCrypto.
 alpaca-py>=0.26.0
 pandas>=2.0.0
 numpy>=1.26.0

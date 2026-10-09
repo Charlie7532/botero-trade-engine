@@ -126,8 +126,83 @@ export const brokerAccountsFields: Field[] = [
             type: 'text',
             required: false,
             admin: {
-              description: 'Required for Interactive Brokers. Your IB Account ID.',
+              description: 'Required for Interactive Brokers. Your IB Account ID (e.g. DU1234567 for paper).',
               condition: isBroker('interactive_brokers'),
+            },
+          },
+          {
+            name: 'ibConsumerKeyPlaintext',
+            label: 'Consumer Key',
+            type: 'text',
+            required: false,
+            admin: {
+              description: 'The 9-character consumer key you chose in IB\'s OAuth self-service portal.',
+              condition: isBroker('interactive_brokers'),
+            },
+            hooks: {
+              afterRead: [() => undefined],
+            },
+          },
+          {
+            name: 'ibConsumerKeyMasked',
+            type: 'text',
+            admin: {
+              readOnly: true,
+              condition: isBroker('interactive_brokers'),
+              description: 'Your consumer key (last 4 characters only).',
+            },
+            access: {
+              update: () => false,
+            },
+          },
+          {
+            name: 'ibAccessTokenPlaintext',
+            label: 'Access Token',
+            type: 'text',
+            required: false,
+            admin: {
+              description: 'Generated in IB\'s OAuth portal after uploading your public keys.',
+              condition: isBroker('interactive_brokers'),
+            },
+            hooks: {
+              afterRead: [() => undefined],
+            },
+          },
+          {
+            name: 'ibAccessTokenMasked',
+            type: 'text',
+            admin: {
+              readOnly: true,
+              condition: isBroker('interactive_brokers'),
+              description: 'Your access token (last 4 characters only).',
+            },
+            access: {
+              update: () => false,
+            },
+          },
+          {
+            name: 'ibAccessTokenSecretPlaintext',
+            label: 'Access Token Secret',
+            type: 'text',
+            required: false,
+            admin: {
+              description: 'Generated alongside the access token — shown only once in IB\'s portal, save it then.',
+              condition: isBroker('interactive_brokers'),
+            },
+            hooks: {
+              afterRead: [() => undefined],
+            },
+          },
+          {
+            name: 'ibAccessTokenSecretMasked',
+            type: 'text',
+            admin: {
+              readOnly: true,
+              condition: isBroker('interactive_brokers'),
+              description: 'Your access token secret (last 4 characters only).',
+            },
+            access: {
+              update: () => false,
             },
           },
         ],
@@ -144,27 +219,63 @@ export const brokerAccountsFields: Field[] = [
             },
           },
           {
-            name: 'ibHost',
+            name: 'ibDhPrime',
+            label: 'Diffie-Hellman Prime (hex)',
+            type: 'textarea',
+            admin: {
+              condition: isBroker('interactive_brokers'),
+              description:
+                'Hex representation of the prime from your dhparam.pem, extracted via `openssl dhparam -in dhparam.pem -text -noout`. Not secret on its own — this is a public DH parameter — so it is stored as plain text, unlike the fields on the Credentials tab.',
+            },
+          },
+          {
+            name: 'ibSignatureKeyPemPlaintext',
+            label: 'RSA Signature Private Key (PEM)',
+            type: 'textarea',
+            required: false,
+            admin: {
+              condition: isBroker('interactive_brokers'),
+              description: 'Paste the full contents of private_signature.pem. Signs every request.',
+            },
+            hooks: {
+              afterRead: [() => undefined],
+            },
+          },
+          {
+            name: 'ibSignatureKeyPemMasked',
             type: 'text',
             admin: {
+              readOnly: true,
               condition: isBroker('interactive_brokers'),
-              description: 'Interactive Brokers host (e.g., 127.0.0.1).',
+              description: 'Signature key on file (fingerprint only).',
+            },
+            access: {
+              update: () => false,
             },
           },
           {
-            name: 'ibPort',
-            type: 'number',
+            name: 'ibEncryptionKeyPemPlaintext',
+            label: 'RSA Encryption Private Key (PEM)',
+            type: 'textarea',
+            required: false,
             admin: {
               condition: isBroker('interactive_brokers'),
-              description: 'Interactive Brokers port.',
+              description: 'Paste the full contents of private_encryption.pem. Decrypts the access token secret during login.',
+            },
+            hooks: {
+              afterRead: [() => undefined],
             },
           },
           {
-            name: 'ibClientId',
-            type: 'number',
+            name: 'ibEncryptionKeyPemMasked',
+            type: 'text',
             admin: {
+              readOnly: true,
               condition: isBroker('interactive_brokers'),
-              description: 'Interactive Brokers client ID.',
+              description: 'Encryption key on file (fingerprint only).',
+            },
+            access: {
+              update: () => false,
             },
           },
         ],
@@ -231,6 +342,17 @@ export const brokerAccountsFields: Field[] = [
       hidden: true,
     },
   },
+  // Encrypted IB OAuth credential storage (hidden). Same AES-256-GCM
+  // pattern as apiKey/secretKey above — one (encrypted, iv, authTag) triple
+  // per secret field. ibDhPrime is intentionally NOT here: it's a public DH
+  // parameter, stored as plain text on the Advanced Settings tab.
+  ...(['ibConsumerKey', 'ibAccessToken', 'ibAccessTokenSecret', 'ibSignatureKeyPem', 'ibEncryptionKeyPem'].flatMap(
+    (base) => [
+      { name: `${base}Encrypted`, type: 'text' as const, admin: { hidden: true } },
+      { name: `${base}Iv`, type: 'text' as const, admin: { hidden: true } },
+      { name: `${base}AuthTag`, type: 'text' as const, admin: { hidden: true } },
+    ],
+  )),
   {
     name: 'vaultId',
     type: 'text',

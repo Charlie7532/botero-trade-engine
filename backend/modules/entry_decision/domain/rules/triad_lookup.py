@@ -23,6 +23,7 @@ _ETF_TO_TIER_LABEL: dict[str, str] = {
     "XLRE": "Defensive", "XLB": "Defensive",
     "XLE": "Mixed", "XLF": "Mixed", "XLC": "Mixed",
     "XLK": "Cyclical", "XLY": "Cyclical", "XLI": "Cyclical",
+    "QQQ": "High-Beta",
 }
 
 
@@ -51,7 +52,7 @@ class TriadSignal:
     net_bias: float         # P_bot_50 - P_top_50
 
     n_samples: int
-    level: str              # "L1_Defensive", "L1_SPY", "L2_global"
+    level: str              # e.g. "R4_L2_XLK_L1_Cyclical", "R4_L1_Cyclical", "R4_L0_global"
 
     # Relative modifier
     rel_fi_bin: str         # "<<", "<", "~", ">", ">>"
@@ -63,6 +64,15 @@ class TriadSignal:
     adj_p_top_50: float
 
     context_label: str      # Human-readable summary
+
+    # ── Phase 2 Enriched Fields (Additive, Rule 21 & Hermes F2 Specification) ──
+    ev_net_zz50: Optional[float] = None
+    rr_asymmetry_zz50: Optional[float] = None
+    duration_mean_days: Optional[float] = None
+    fatigue_stage: Optional[str] = None
+    timing_slot: Optional[str] = None
+    pct_en_rango: Optional[float] = None
+    sector_level: Optional[str] = None
 
 
 def _classify_bin(value: float, edges: list[float], labels: list[str]) -> str:
@@ -156,10 +166,13 @@ def lookup_triad_signal(
 
     triad_key = f"{th_bin}|{fi_bin}|{tw_bin}|{direction}"
 
-    # ── Step 2: Lookup cell with prefix fallback (R4 -> R3 -> R2 -> R1) & tier fallback (L1 -> L2) ──
-    min_n_prefix = table.get("_metadata", {}).get(
-        "hierarchical_fallback", {}
-    ).get("min_n_prefix", 30)
+    # ── Step 2: Lookup cell with prefix fallback (R4 -> R3 -> R2 -> R1) & tripartite hierarchy (Sector -> Tier -> Global) ──
+    min_n_prefix = (
+        table.get("hierarchical_fallback", {}).get("min_n_prefix")
+        or table.get("_documentation", {}).get("hierarchical_fallback", {}).get("min_n_prefix")
+        or table.get("_metadata", {}).get("hierarchical_fallback", {}).get("min_n_prefix")
+        or 20
+    )
 
     resolution_options = [
         (triad_key, "R4"),
@@ -169,9 +182,10 @@ def lookup_triad_signal(
     ]
 
     stats = None
-    level = "L2_baseline"
+    sector_resolved = None
+    level = "R1_L0_baseline"
 
-    # Determine L1 key
+    # Determine L1 tier key
     if sector_etf == "SPY":
         l1_key = "SPY"
     else:
@@ -184,7 +198,17 @@ def lookup_triad_signal(
         if not cell:
             continue
 
-        # Try L1 (tier/SPY) first
+        # 1. Try L2 (Sector) first if requested and available (N >= min_n_prefix)
+        if sector_etf and "sectors" in cell and sector_etf in cell["sectors"]:
+            candidate = cell["sectors"][sector_etf]
+            if candidate.get("n", 0) >= min_n_prefix:
+                stats = candidate
+                sector_resolved = sector_etf
+                tier_tag = f"_L1_{l1_key}" if l1_key else ""
+                level = f"{res_level}_L2_{sector_etf}{tier_tag}"
+                break
+
+        # 2. Try L1 (Tier / SPY) next (N >= min_n_prefix, or R4)
         if l1_key and l1_key in cell:
             candidate = cell[l1_key]
             if res_level == "R4" or candidate.get("n", 0) >= min_n_prefix:
@@ -192,18 +216,17 @@ def lookup_triad_signal(
                 level = f"{res_level}_L1_{l1_key}"
                 break
 
-        # Try L2 (global)
+        # 3. Try L0 (Global macro) next (N >= min_n_prefix, or R4)
         if "global" in cell:
             candidate = cell["global"]
             if res_level == "R4" or candidate.get("n", 0) >= min_n_prefix:
                 stats = candidate
-                level = f"{res_level}_L2_global"
+                level = f"{res_level}_L0_global"
                 break
 
     if stats is None:
         stats = baseline
-        level = "R1_L2_baseline"
-
+        level = "R1_L0_baseline"
 
     # ── Step 3: Extract probabilities ──
     p_bot_25 = stats.get("P_bot_2_5", 0.0)
@@ -219,6 +242,18 @@ def lookup_triad_signal(
     lift_bot = round(p_bot_50 / base_bot, 2) if base_bot > 0 else 0.0
     lift_top = round(p_top_50 / base_top, 2) if base_top > 0 else 0.0
     net_bias = round(p_bot_50 - p_top_50, 4)
+
+    # ── Step 3b: Extract Phase 2 enriched kinematic & timing fields ──
+    ev_net_zz50 = stats.get("zz50", {}).get("ev_net")
+    rr_asymmetry_zz50 = stats.get("zz50", {}).get("rr_asymmetry")
+    duration_mean_days = stats.get("duration_mean")
+    pct_en_rango = stats.get("pct_en_rango")
+
+    slots = stats.get("slots_canonicos", {})
+    timing_slot = max(slots.items(), key=lambda x: x[1])[0] if slots else None
+
+    fatigue = stats.get("fatigue_buckets", {})
+    fatigue_stage = max(fatigue.items(), key=lambda x: x[1].get("n", 0))[0] if fatigue else None
 
     # ── Step 4: Relative modifier ──
     rel_fi = fi_val - spy_fi_val
@@ -285,7 +320,15 @@ def lookup_triad_signal(
         adj_p_bot_50=round(adj_p_bot, 4),
         adj_p_top_50=round(adj_p_top, 4),
         context_label=" ".join(label_parts),
+        ev_net_zz50=ev_net_zz50,
+        rr_asymmetry_zz50=rr_asymmetry_zz50,
+        duration_mean_days=duration_mean_days,
+        fatigue_stage=fatigue_stage,
+        timing_slot=timing_slot,
+        pct_en_rango=pct_en_rango,
+        sector_level=sector_resolved,
     )
+
 
 
 def lookup_s5v_triad_signal(
@@ -333,10 +376,13 @@ def lookup_s5v_triad_signal(
 
     triad_key = f"{th_bin}|{fi_bin}|{tw_bin}|{direction}"
 
-    # ── Step 2: Lookup cell with prefix fallback (R4 -> R3 -> R2 -> R1) & tier fallback (L1 -> L2) ──
-    min_n_prefix = table.get("_metadata", {}).get(
-        "hierarchical_fallback", {}
-    ).get("min_n_prefix", 30)
+    # ── Step 2: Lookup cell with prefix fallback (R4 -> R3 -> R2 -> R1) & tripartite hierarchy (Sector -> Tier -> Global) ──
+    min_n_prefix = (
+        table.get("hierarchical_fallback", {}).get("min_n_prefix")
+        or table.get("_documentation", {}).get("hierarchical_fallback", {}).get("min_n_prefix")
+        or table.get("_metadata", {}).get("hierarchical_fallback", {}).get("min_n_prefix")
+        or 20
+    )
 
     resolution_options = [
         (triad_key, "R4"),
@@ -346,9 +392,10 @@ def lookup_s5v_triad_signal(
     ]
 
     stats = None
-    level = "L2_baseline"
+    sector_resolved = None
+    level = "R1_L0_baseline"
 
-    # Determine L1 key
+    # Determine L1 tier key
     if sector_etf == "SPY":
         l1_key = "SPY"
     else:
@@ -361,7 +408,17 @@ def lookup_s5v_triad_signal(
         if not cell:
             continue
 
-        # Try L1 (tier/SPY) first
+        # 1. Try L2 (Sector) first if requested and available (N >= min_n_prefix)
+        if sector_etf and "sectors" in cell and sector_etf in cell["sectors"]:
+            candidate = cell["sectors"][sector_etf]
+            if candidate.get("n", 0) >= min_n_prefix:
+                stats = candidate
+                sector_resolved = sector_etf
+                tier_tag = f"_L1_{l1_key}" if l1_key else ""
+                level = f"{res_level}_L2_{sector_etf}{tier_tag}"
+                break
+
+        # 2. Try L1 (Tier / SPY) next (N >= min_n_prefix, or R4)
         if l1_key and l1_key in cell:
             candidate = cell[l1_key]
             if res_level == "R4" or candidate.get("n", 0) >= min_n_prefix:
@@ -369,18 +426,17 @@ def lookup_s5v_triad_signal(
                 level = f"{res_level}_L1_{l1_key}"
                 break
 
-        # Try L2 (global)
+        # 3. Try L0 (Global macro) next (N >= min_n_prefix, or R4)
         if "global" in cell:
             candidate = cell["global"]
             if res_level == "R4" or candidate.get("n", 0) >= min_n_prefix:
                 stats = candidate
-                level = f"{res_level}_L2_global"
+                level = f"{res_level}_L0_global"
                 break
 
     if stats is None:
         stats = baseline
-        level = "R1_L2_baseline"
-
+        level = "R1_L0_baseline"
 
     # ── Step 3: Extract probabilities ──
     p_bot_25 = stats.get("P_bot_2_5", 0.0)
@@ -396,6 +452,18 @@ def lookup_s5v_triad_signal(
     lift_bot = round(p_bot_50 / base_bot, 2) if base_bot > 0 else 0.0
     lift_top = round(p_top_50 / base_top, 2) if base_top > 0 else 0.0
     net_bias = round(p_bot_50 - p_top_50, 4)
+
+    # ── Step 3b: Extract Phase 2 enriched kinematic & timing fields ──
+    ev_net_zz50 = stats.get("zz50", {}).get("ev_net")
+    rr_asymmetry_zz50 = stats.get("zz50", {}).get("rr_asymmetry")
+    duration_mean_days = stats.get("duration_mean")
+    pct_en_rango = stats.get("pct_en_rango")
+
+    slots = stats.get("slots_canonicos", {})
+    timing_slot = max(slots.items(), key=lambda x: x[1])[0] if slots else None
+
+    fatigue = stats.get("fatigue_buckets", {})
+    fatigue_stage = max(fatigue.items(), key=lambda x: x[1].get("n", 0))[0] if fatigue else None
 
     # ── Step 4: RoM (Rest of Market) Subtraction + Z-Score ──
     SECTOR_WEIGHTS = {
@@ -416,6 +484,8 @@ def lookup_s5v_triad_signal(
         w = SECTOR_WEIGHTS[sector_etf]
         rom_vfi = (spy_vfi_val - w * vfi_val) / (1.0 - w)
         rel_fi = vfi_val - rom_vfi
+    elif sector_etf == "QQQ":
+        rel_fi = vfi_val - spy_vfi_val
     else:
         rel_fi = 0.0
 
@@ -525,5 +595,12 @@ def lookup_s5v_triad_signal(
         adj_p_bot_50=round(adj_p_bot, 4),
         adj_p_top_50=round(adj_p_top, 4),
         context_label=" ".join(label_parts),
+        ev_net_zz50=ev_net_zz50,
+        rr_asymmetry_zz50=rr_asymmetry_zz50,
+        duration_mean_days=duration_mean_days,
+        fatigue_stage=fatigue_stage,
+        timing_slot=timing_slot,
+        pct_en_rango=pct_en_rango,
+        sector_level=sector_resolved,
     )
 

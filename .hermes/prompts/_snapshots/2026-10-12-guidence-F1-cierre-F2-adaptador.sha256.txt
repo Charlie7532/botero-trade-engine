@@ -1,0 +1,1 @@
+0a452843c349ee6c88feb0de638385dc9def7e33c86ec89de008a1997d45ccb9  .hermes/prompts/2026-10-12-guidence-F1-cierre-F2-adaptador.md

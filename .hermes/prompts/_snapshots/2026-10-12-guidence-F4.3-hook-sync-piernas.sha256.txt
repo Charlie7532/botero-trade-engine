@@ -1,0 +1,1 @@
+7db43d6c3b12a680dcd81d537d07368ba6471171a2fa7cb68fdca27675560418  .hermes/prompts/2026-10-12-guidence-F4.3-hook-sync-piernas.md

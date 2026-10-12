@@ -115,7 +115,7 @@ class EntryIntelligenceReport:
     sector_breadth_sizing: float = 1.0        # Sizing modifier (1.0, 1.15, 1.25)
 
     # ── S5 Triad Intelligence (TH × FI × TW, 125 states) ────────
-    # Evidence: s5_triad_table.json, 16705 obs, ZZ coincidence.
+    # Evidence: s5_triad_table.json, 83170 obs, ZZ coincidence.
     sector_s5_th: float = 0.0                 # S5_TH (% above 200-DMA)
     sector_s5_tw: float = 0.0                 # S5_TW (% above 20-DMA)
     sector_triad_key: str = ""                # "<<|<<|<<" (5-bin state)

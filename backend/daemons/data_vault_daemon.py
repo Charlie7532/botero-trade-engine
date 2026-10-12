@@ -1281,6 +1281,40 @@ def vault_analyst_credibility(store: TimescaleDataStore, tickers: list[str]) -> 
         return {"status": "error", "error": str(e)}
 
 
+def sync_canonical_rotation_zigzag_legs(store: TimescaleDataStore) -> dict:
+    """F4.3: Synchronize zigzag legs for the 13 canonical rotation entities (SPY, QQQ + 11 Sectors).
+    
+    Returns a dict with 'synced': list[str], 'failed': dict[str, str], 'total': int.
+    Guarantees no silent swallowing of errors and validates the 13-entity invariant.
+    """
+    from backend.daemons.zigzag_legs_daemon import sync_ticker_zigzag_legs
+    from backend.modules.shared.domain.constants.sectors import SECTOR_ETFS
+
+    canonical_etfs = ["SPY", "QQQ"] + list(SECTOR_ETFS.keys())
+    assert len(canonical_etfs) == 13, f"Expected exactly 13 canonical ETFs, got {len(canonical_etfs)}: {canonical_etfs}"
+
+    logger.info(f"⚡ Post-ingesta hook: Syncing zigzag legs for {len(canonical_etfs)} canonical ETFs...")
+    synced = []
+    failed = {}
+
+    for etf_sym in canonical_etfs:
+        try:
+            sync_ticker_zigzag_legs(store, etf_sym, rebuild=False)
+            synced.append(etf_sym)
+        except Exception as e_leg:
+            logger.error(f"❌ Failed to sync zigzag legs for {etf_sym}: {e_leg}", exc_info=True)
+            failed[etf_sym] = str(e_leg)
+
+    if failed:
+        logger.warning(
+            f"⚠️ Post-ingesta zigzag sync partial: {len(synced)}/{len(canonical_etfs)} synced. Failures: {list(failed.keys())}"
+        )
+    else:
+        logger.info(f"✅ Post-ingesta zigzag sync completed: {len(synced)}/{len(canonical_etfs)} ETFs synced successfully.")
+
+    return {"synced": synced, "failed": failed, "total": len(canonical_etfs)}
+
+
 # ═══════════════════════════════════════════════════════════════
 # 7. OHLCV BARS — Daily update (yfinance + Alpaca enrichment)
 # ═══════════════════════════════════════════════════════════════
@@ -1291,14 +1325,12 @@ def vault_ohlcv_bars(store: TimescaleDataStore, tickers: list[str], retry_ticker
         provider = OHLCVProvider()
         result = provider.run_full(store, tickers=tickers, retry_tickers=retry_tickers or [])
 
-        # F4.3: Hook post-ingesta — sync SPY zigzag legs automatically
+        # F4.3: Hook post-ingesta — sync canonical rotation zigzag legs automatically (SPY, QQQ + 11 sectors)
         if result.get("status") == "ok" or result.get("updated", 0) > 0:
             try:
-                from backend.daemons.zigzag_legs_daemon import sync_ticker_zigzag_legs
-                logger.info("⚡ Post-ingesta hook: Syncing SPY zigzag legs...")
-                sync_ticker_zigzag_legs(store, "SPY")
+                sync_canonical_rotation_zigzag_legs(store)
             except Exception as e_zz:
-                logger.warning(f"Post-ingesta SPY zigzag sync warning: {e_zz}")
+                logger.error(f"❌ Post-ingesta zigzag sync critical error: {e_zz}", exc_info=True)
 
         return result
     except Exception as e:

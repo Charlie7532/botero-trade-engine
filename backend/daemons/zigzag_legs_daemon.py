@@ -172,10 +172,10 @@ def sync_ticker_zigzag_legs(store: TimescaleDataStore, ticker: str, rebuild: boo
                     WITH ordered AS (
                         SELECT leg_id, start_price, end_price,
                                GREATEST((end_timestamp - start_timestamp), INTERVAL '1 day') AS dur,
-                               LAG(start_price) OVER (ORDER BY start_timestamp) AS prev_start_px,
-                               LAG(end_price) OVER (ORDER BY start_timestamp) AS prev_end_px,
+                               LAG(start_price) OVER (ORDER BY start_timestamp, leg_id) AS prev_start_px,
+                               LAG(end_price) OVER (ORDER BY start_timestamp, leg_id) AS prev_end_px,
                                LAG(GREATEST((end_timestamp - start_timestamp), INTERVAL '1 day'))
-                                   OVER (ORDER BY start_timestamp) AS prev_dur
+                                   OVER (ORDER BY start_timestamp, leg_id) AS prev_dur
                         FROM market.zigzag_legs
                         WHERE ticker = %s AND scale = %s
                     )

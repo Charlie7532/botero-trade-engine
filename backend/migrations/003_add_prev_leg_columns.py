@@ -76,7 +76,7 @@ def populate(store: TimescaleDataStore, ticker: str = "SPY"):
                            (end_timestamp - start_timestamp) AS duration_interval
                     FROM market.zigzag_legs
                     WHERE ticker = %s AND scale = %s
-                    ORDER BY start_timestamp ASC;
+                    ORDER BY start_timestamp ASC, leg_id ASC;
                 """, [ticker, scale])
                 rows = cur.fetchall()
 

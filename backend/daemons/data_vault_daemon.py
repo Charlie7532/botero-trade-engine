@@ -1342,13 +1342,26 @@ def vault_ohlcv_bars(store: TimescaleDataStore, tickers: list[str], retry_ticker
 # 8. CNN FEAR & GREED — Intra-Day Sentiment Candle Builder
 # ═══════════════════════════════════════════════════════════════
 
-def _should_poll_fear_greed() -> bool:
+def _should_poll_fear_greed(store: Optional[TimescaleDataStore] = None) -> bool:
     """Determine if we should poll F&G this cycle.
 
     During market hours (9:30-16:00 ET): every cycle (~5 min)
     Outside market hours: once per hour (first cycle window)
-    This keeps total requests sustainable (~42/day vs 288/day).
+    EXCEPTION: If store is provided and FG has a staleness lag (last_fg < last_spy),
+    do NOT throttle — poll immediately to heal the station.
     """
+    if _FORCE_REFRESH:
+        return True
+
+    if store:
+        try:
+            last_fg = store.bars_last_date("FG", "1d")
+            last_spy = store.bars_last_date("SPY", "1d")
+            if last_fg and last_spy and last_fg < last_spy:
+                return True
+        except Exception:
+            pass
+
     from datetime import timezone, timedelta as td
     ET = timezone(td(hours=-4))  # EDT (approximate)
     now_et = datetime.now(ET)
@@ -1375,10 +1388,19 @@ def vault_fear_greed(store: TimescaleDataStore) -> dict:
 
     Also persists each reading as MCP snapshot with delta tracking.
     """
-    if not _should_poll_fear_greed():
+    if not _should_poll_fear_greed(store):
         return {"status": "skipped", "reason": "off_hours_throttle"}
 
     try:
+        # ── Step 0: Heal any historical gap between last FG bar and SPY ──
+        try:
+            last_fg = store.bars_last_date("FG", "1d")
+            last_spy = store.bars_last_date("SPY", "1d")
+            if last_fg and last_spy and last_fg < last_spy:
+                _fetch_fg_score_github(store)
+        except Exception as e_gap:
+            logger.debug(f"FG gap heal check failed: {e_gap}")
+
         # ── Fallback chain: CNN API (2 attempts) → GitHub CSV (Rule 10) ──
         score, rating, hist_data, source = _fetch_fg_score_cnn()
 
@@ -2313,7 +2335,10 @@ def run_cycle(store: TimescaleDataStore) -> None:
     # Providers are independent: no shared mutable state, each gets its own
     # DB connection from ThreadedConnectionPool.
     with _retry_lock:
-        pending_retries = [k for k, v in _RETRY_TRACKER.items() if v > 0 and k.isupper() and len(k) <= 6]
+        pending_retries = [
+            k for k, v in _RETRY_TRACKER.items()
+            if v > 0 and k in neon_tickers
+        ]
 
     logger.info("⚡ Lane A: launching 14 external fetchers in parallel")
     with ThreadPoolExecutor(max_workers=8, thread_name_prefix="vault-a") as pool:

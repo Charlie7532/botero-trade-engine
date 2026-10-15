@@ -26,7 +26,7 @@ Priority hierarchy:
 import logging
 import os
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional
 
 import pandas as pd

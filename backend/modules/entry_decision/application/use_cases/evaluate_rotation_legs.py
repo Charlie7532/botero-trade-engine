@@ -5,15 +5,19 @@ Clean Architecture: Application Layer (Use Cases)
 Módulo: entry_decision / rotation
 
 Valora formalmente las Señales Disruptivas de Rotación y los Regímenes de Mercado
-midiendo la realidad integral de la cartera:
-  1. No solo la pierna teórica de SPY, sino el RENDIMIENTO REAL DEL PORTAFOLIO según la
-     composición que sostenía en ese instante (Pesos sectoriales, Cash, Defensivos).
-  2. Valor Fáctico de Protección: Capital salvado en dólares y % frente al colapso de la pierna bajista.
-  3. Valor Fáctico de Utilidad: Alpha real capturado en la pierna alcista gracias a la rotación de beta.
-  4. Dolor Real Incurrido (Portfolio MAE): Drawdown máximo que la cuenta soportó dentro de la pierna.
-  5. Calificación Canónica de Timing y Detección de Puntos Ciegos (Cash Drag, Ruptura de Correlación).
-  6. Arquitectura Dual: Evaluación Canónica T+0 (medición de señal en su punto exacto) y
-     Diagnóstico Secundario de Estrés Friccional (T+1 y deslizamiento en bps).
+bajo la Taxonomía Profesional de 4 Niveles de Drawdown (Pullback, Corrección,
+Bear Market Gradual, Crash Financiero Abrupto), midiendo la realidad integral de la cartera:
+  1. Reloj Dual Natural: Mide tanto la vigencia del Régimen (entered_at -> exited_at)
+     como el Ciclo Geométrico Oráculo (zz100 / zz125 de pivote a pivote).
+  2. Taxonomía Profesional de 4 Niveles: Clasifica la magnitud y la velocidad cinética
+     (delta % / delta t) del movimiento para discriminar entre un Pullback saludable,
+     una Corrección técnica, un Bear Market gradual y un Crash sistémico.
+  3. Protección Real Peak-to-Trough: Supera la métrica punto a punto calculando
+     MAE_SPY - MAE_Portafolio desde el pico geométrico hasta el valle.
+  4. Des-agrupación (Cooldown): Aplica filtro temporal de 10 barras para evitar
+     multi-triggering de señales en consolidaciones laterales.
+  5. Rendimiento Real del Portafolio: Evalúa los pesos sectoriales reales, cash y
+     defensivos que la cuenta sostenía en cada momento.
 """
 
 from typing import Dict, List, Optional, Any, Tuple
@@ -23,7 +27,6 @@ import pandas as pd
 import numpy as np
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
-from backend.modules.entry_decision.application.use_cases.quality_entry_gate import QualityEntryGate
 
 
 @dataclass
@@ -38,22 +41,30 @@ class RotationSignalEvent:
     # Magnitudes de la Pierna ZigZag (Subyacente SPY)
     spy_price_at_signal: float
     spy_pivot_price: float
-    spy_leg_return: float          # Retorno total de la pierna ZigZag
+    spy_leg_return: float          # Retorno total de la pierna ZigZag (%)
     spy_leg_direction: str         # "UP" o "DOWN"
     
-    # Realidad del Portafolio (Lo que la posición contenía en el momento)
+    # Realidad del Portafolio en la Pierna Geométrica
     portfolio_equity_at_signal: float
     portfolio_cash_weight: float   # Peso en Cash (0.0 a 1.0)
     portfolio_top_sectors: str     # Ej: "XLF: 33%, XLY: 33%, XLK: 33%" o "XLP: 17%, Cash: 50%"
-    portfolio_leg_return: float    # Retorno real que experimentó la cuenta en la pierna
+    portfolio_leg_return: float    # Retorno real que experimentó la cuenta en la pierna (%)
     portfolio_mae: float           # Drawdown real soportado por la cuenta en la pierna (%)
     portfolio_mfe: float           # Ganancia máxima alcanzada por la cuenta en la pierna (%)
     
     # Valor Económico Neto Generado
-    alpha_leg: float               # Retorno Portafolio - Retorno SPY en la pierna
-    economic_protection_val: float # % de caída que se evitó absorber (en piernas bajistas)
+    alpha_leg: float               # Retorno Portafolio - Retorno SPY en la pierna (pp)
+    economic_protection_val: float # % de caída que se evitó absorber (punto a punto)
     economic_utility_val: float    # % de subida capturada (en piernas alcistas)
     payoff_asymmetry: float        # Valor Generado / MAE Soportado
+    
+    # === MODERNIZACIÓN V41: TAXONOMÍA PROFESIONAL DE 4 NIVELES Y RELOJ DUAL ===
+    drawdown_tier: str             # "PULLBACK", "CORRECCION", "BEAR_MARKET_GRADUAL", "CRASH_ABRUPTO", "RALLY"
+    speed_pct_day: float           # Velocidad de caída o subida (% / día bursátil)
+    peak_to_trough_protection: float # MAE_SPY_Peak_to_Trough - MAE_Port_Peak_to_Trough (pp salvados)
+    regime_duration_bars: int      # Duración efectiva del régimen activado (Reloj de Régimen)
+    regime_return: float           # Retorno del portafolio durante el régimen activado (%)
+    regime_mae: float              # Drawdown soportado por el portafolio durante el régimen (%)
 
 
 class RotationLegEvaluator:
@@ -67,9 +78,98 @@ class RotationLegEvaluator:
     def __init__(self, store: Optional[TimescaleDataStore] = None):
         self.store = store or TimescaleDataStore()
 
-    def load_zigzag_legs(self, ticker: str = "SPY", scale: str = "zz50") -> pd.DataFrame:
-        """Carga piernas ZigZag confirmadas delegando en el DataStore parametrizado (CWE-89 safe)."""
-        return self.store.load_zigzag_legs(ticker=ticker, scale=scale)
+    @staticmethod
+    def compute_zigzag_from_bars(df_bars: pd.DataFrame, threshold_pct: float = 0.10) -> pd.DataFrame:
+        """
+        Calcula de forma exacta las piernas ZigZag sobre barras OHLCV diarias.
+        Por defecto utiliza threshold_pct = 0.10 (zz100, Corrección Técnica).
+        """
+        prices = df_bars['close'].values
+        dates = pd.to_datetime(df_bars.index).date
+        n = len(prices)
+        if n < 2:
+            return pd.DataFrame()
+            
+        legs = []
+        p0 = prices[0]
+        high_p, low_p = p0, p0
+        high_i, low_i = 0, 0
+        trend = 0
+        leg_id = 0
+        
+        for i in range(1, n):
+            p = prices[i]
+            if trend == 0:
+                if p >= low_p * (1.0 + threshold_pct):
+                    trend, high_p, high_i = 1, p, i
+                    last_pivot_i, last_pivot_p, last_pivot_type = low_i, low_p, 'MIN'
+                elif p <= high_p * (1.0 - threshold_pct):
+                    trend, low_p, low_i = -1, p, i
+                    last_pivot_i, last_pivot_p, last_pivot_type = high_i, high_p, 'MAX'
+                else:
+                    if p > high_p: high_p, high_i = p, i
+                    if p < low_p: low_p, low_i = p, i
+            elif trend == 1:
+                if p > high_p:
+                    high_p, high_i = p, i
+                elif p <= high_p * (1.0 - threshold_pct):
+                    leg_id += 1
+                    legs.append({
+                        'leg_id': leg_id,
+                        'start_d': dates[last_pivot_i],
+                        'end_d': dates[high_i],
+                        'start_type': 'MIN',
+                        'end_type': 'MAX',
+                        'start_price': last_pivot_p,
+                        'end_price': high_p,
+                        'ret': (high_p - last_pivot_p) / last_pivot_p,
+                        'leg_return': (high_p - last_pivot_p) / last_pivot_p,
+                        'leg_direction': 'UP',
+                        'duration_bars': high_i - last_pivot_i
+                    })
+                    trend, last_pivot_i, last_pivot_p, last_pivot_type = -1, high_i, high_p, 'MAX'
+                    low_p, low_i = p, i
+            elif trend == -1:
+                if p < low_p:
+                    low_p, low_i = p, i
+                elif p >= low_p * (1.0 + threshold_pct):
+                    leg_id += 1
+                    legs.append({
+                        'leg_id': leg_id,
+                        'start_d': dates[last_pivot_i],
+                        'end_d': dates[low_i],
+                        'start_type': 'MAX',
+                        'end_type': 'MIN',
+                        'start_price': last_pivot_p,
+                        'end_price': low_p,
+                        'ret': (low_p - last_pivot_p) / last_pivot_p,
+                        'leg_return': (low_p - last_pivot_p) / last_pivot_p,
+                        'leg_direction': 'DOWN',
+                        'duration_bars': low_i - last_pivot_i
+                    })
+                    trend, last_pivot_i, last_pivot_p, last_pivot_type = 1, low_i, low_p, 'MIN'
+                    high_p, high_i = p, i
+                    
+        return pd.DataFrame(legs)
+
+    def load_zigzag_legs(self, ticker: str = "SPY", scale: str = "zz100") -> pd.DataFrame:
+        """
+        Carga piernas ZigZag confirmadas.
+        Si la escala solicitada (ej. zz100, zz125) no reside en la base de datos,
+        la computa dinámicamente desde las barras OHLCV en Neon.
+        """
+        df = self.store.load_zigzag_legs(ticker=ticker, scale=scale)
+        if not df.empty:
+            return df
+            
+        # Computar dinámicamente a partir de las barras de SPY
+        df_bars = self.store.load_bars(ticker, "1d").sort_index()
+        threshold_map = {
+            "zz25": 0.025, "zz50": 0.05, "zz75": 0.075,
+            "zz100": 0.10, "zz125": 0.125, "zz150": 0.15, "zz200": 0.20
+        }
+        pct = threshold_map.get(scale, 0.10)
+        return self.compute_zigzag_from_bars(df_bars, threshold_pct=pct)
 
     @staticmethod
     def calc_bar_distance(df_daily: pd.DataFrame, target_d: date, piv_date: date) -> int:
@@ -100,26 +200,71 @@ class RotationLegEvaluator:
         else:
             return "ENTRE (En Cuerpo de Pierna)"
 
+    @staticmethod
+    def classify_drawdown_tier(drop_pct: float, bars_to_trough: int) -> Tuple[str, float]:
+        """
+        Clasifica formalmente el evento según la Taxonomía Profesional de 4 Niveles:
+          1. Pullback (Hasta -10%)
+          2. Corrección de Mercado (-10% a -19.9%)
+          3. Bear Market Gradual (>= -20%, velocidad < 0.35%/d)
+          4. Crash Financiero Abrupto (>= -20%, velocidad >= 0.35%/d o duracion <= 40b)
+        """
+        abs_drop = abs(drop_pct)
+        dur = max(1, bars_to_trough)
+        speed = abs_drop / dur
+        
+        if abs_drop < 10.0:
+            tier = "1. PULLBACK (< 10%)"
+        elif 10.0 <= abs_drop < 20.0:
+            tier = "2. CORRECCION (10% a 20%)"
+        else:
+            if speed >= 0.35 or dur <= 40:
+                tier = "4. CRASH_FINANCIERO_ABRUPTO (>= 20% veloz)"
+            else:
+                tier = "3. BEAR_MARKET_GRADUAL (>= 20% prolongado)"
+                
+        return tier, speed
+
     def evaluate_signals_on_portfolio(
         self,
         df_daily: pd.DataFrame,
         df_legs: pd.DataFrame,
-        signals_dict: Dict[str, Tuple[pd.Series, str]] # {"Nombre": (Series_booleana, "TOP"|"BOTTOM")}
+        signals_dict: Dict[str, Tuple[pd.Series, str]], # {"Nombre": (Series_booleana, "TOP"|"BOTTOM")}
+        cooldown_bars: int = 10
     ) -> List[RotationSignalEvent]:
         """
-        Evalúa cada disparo de señal correlacionando la pierna ZigZag con
-        la telemetría real del portafolio (equity, cash, retornos).
-        Mide la señal en su punto exacto canónico (T+0).
+        Evalúa cada disparo de señal correlacionando la pierna ZigZag y la duración de régimen
+        con la telemetría real del portafolio (equity, cash, retornos).
+        Aplica cooldown de des-agrupación y métrica Peak-to-Trough.
         """
         events: List[RotationSignalEvent] = []
+        df_daily = df_daily.sort_index()
+        daily_dates = [d.date() if hasattr(d, 'date') else d for d in df_daily.index]
         
         for sig_name, (sig_series, target_type) in signals_dict.items():
             # Disparos de flanco ascendente (primer día de la señal)
             fires = sig_series & (~sig_series.shift(1, fill_value=False))
-            fire_dates = df_daily[fires].index
+            raw_fire_dates = sig_series[fires].index
+            
+            # Des-agrupación por Cooldown
+            fire_dates = []
+            last_fire_idx = -9999
+            for dt in raw_fire_dates:
+                dt_d = dt.date() if hasattr(dt, 'date') else dt
+                try:
+                    curr_idx = daily_dates.index(dt_d)
+                except ValueError:
+                    curr_idx = -1
+                if curr_idx - last_fire_idx >= cooldown_bars:
+                    fire_dates.append(dt)
+                    last_fire_idx = curr_idx
             
             for dt in fire_dates:
                 target_d = dt.date() if hasattr(dt, 'date') else dt
+                try:
+                    target_idx = daily_dates.index(target_d)
+                except ValueError:
+                    continue
                 
                 # 1. Encontrar la pierna activa y siguiente
                 active_legs = df_legs[(df_legs["start_d"] <= target_d) & (df_legs["end_d"] >= target_d)]
@@ -165,22 +310,12 @@ class RotationLegEvaluator:
                 slot = self.classify_timing_slot(dist_bars)
                 spy_price_signal = float(df_daily.loc[dt, "spy"])
                 
-                # 3. Realidad de la Cartera en el Intervalo de la Pierna
-                leg_end_val = pd.to_datetime(eval_leg["end_d"])
-                dt_ts = pd.to_datetime(dt)
-                if df_daily.index.tz is not None:
-                    if leg_end_val.tz is None:
-                        leg_end_val = leg_end_val.tz_localize(df_daily.index.tz)
-                    if dt_ts.tz is None:
-                        dt_ts = dt_ts.tz_localize(df_daily.index.tz)
-                else:
-                    if leg_end_val.tz is not None:
-                        leg_end_val = leg_end_val.tz_localize(None)
-                    if dt_ts.tz is not None:
-                        dt_ts = dt_ts.tz_localize(None)
-
-                mask = (df_daily.index >= dt_ts) & (df_daily.index <= leg_end_val)
-                leg_slice = df_daily[mask]
+                # 3. Realidad de la Cartera en la Pierna Geométrica
+                leg_end_d = eval_leg["end_d"].date() if hasattr(eval_leg["end_d"], 'date') else eval_leg["end_d"]
+                leg_end_idx = int(np.searchsorted(daily_dates, leg_end_d, side='right') - 1)
+                leg_end_idx = max(target_idx + 1, min(len(df_daily) - 1, leg_end_idx))
+                
+                leg_slice = df_daily.iloc[target_idx : leg_end_idx + 1]
                 if len(leg_slice) < 2:
                     continue
                     
@@ -196,23 +331,80 @@ class RotationLegEvaluator:
                 spy_start = float(leg_slice["spy"].iloc[0])
                 spy_end = float(leg_slice["spy"].iloc[-1])
                 spy_ret = ((spy_end / spy_start) - 1.0) * 100.0
-                
                 alpha_leg = port_ret - spy_ret
                 
-                # Valor de Protección vs Utilidad
+                # 4. Clasificación Cinética y Métrica Peak-to-Trough
+                # Slice desde el pivote extremo hasta el fin de la pierna
+                piv_d = piv_date.date() if hasattr(piv_date, 'date') else piv_date
+                piv_idx = int(np.searchsorted(daily_dates, piv_d, side='right') - 1)
+                geom_start_idx = max(0, min(target_idx, piv_idx))
+                geom_slice = df_daily.iloc[geom_start_idx : leg_end_idx + 1]
+                
                 if target_type == "TOP":
-                    # Si SPY cayó -20% y el portafolio cayó -3%, protegimos 17%
+                    # Caída de SPY en la onda
+                    spy_geom = geom_slice["spy"]
+                    spy_pk = spy_geom.cummax()
+                    spy_drop_pct = float(((spy_geom - spy_pk) / spy_pk).min() * 100.0)
+                    
+                    port_geom = geom_slice["equity"]
+                    port_pk = port_geom.cummax()
+                    port_drop_pct = float(((port_geom - port_pk) / port_pk).min() * 100.0)
+                    
+                    # Protección Real Peak-to-Trough
+                    peak_to_trough_prot = abs(spy_drop_pct) - abs(port_drop_pct)
+                    
+                    # Clasificación formal
+                    bars_to_trough = len(geom_slice)
+                    tier, speed = self.classify_drawdown_tier(spy_drop_pct, bars_to_trough)
+                    
                     econ_prot = max(0.0, -spy_ret - max(0.0, -port_ret))
                     econ_util = 0.0
                     payoff = econ_prot / max(0.1, abs(port_mae))
-                else:
+                else: # BOTTOM
+                    spy_geom = geom_slice["spy"]
+                    spy_trough = spy_geom.min()
+                    spy_rally_pct = float(((spy_geom.iloc[-1] - spy_trough) / spy_trough) * 100.0)
+                    
+                    if spy_rally_pct < 10.0:
+                        tier = "RALLY_PULLBACK (< 10%)"
+                    elif 10.0 <= spy_rally_pct < 20.0:
+                        tier = "RALLY_ESTRUCTURAL (10% a 20%)"
+                    else:
+                        tier = "RALLY_BULL_MARKET (>= 20%)"
+                    speed = spy_rally_pct / max(1, len(geom_slice))
+                    peak_to_trough_prot = 0.0
+                    
                     econ_prot = 0.0
-                    # Si el portafolio subió +30% y SPY +20%, utilidad total de cartera
                     econ_util = max(0.0, port_ret)
                     payoff = econ_util / max(0.1, abs(port_mae))
-                    
+
+                # 5. Reloj de Régimen (Stateful Lifetime)
+                # Duración y retorno desde la señal hasta que el régimen transiciona a otro modo
                 active_mode = str(leg_slice["mode"].iloc[0])
+                mode_slice = df_daily.iloc[target_idx:]
+                regime_end_idx = target_idx
+                for m_idx in range(len(mode_slice)):
+                    if mode_slice["mode"].iloc[m_idx] != active_mode:
+                        regime_end_idx = target_idx + m_idx
+                        break
+                else:
+                    regime_end_idx = len(df_daily) - 1
+                    
+                reg_df = df_daily.iloc[target_idx : regime_end_idx + 1]
+                regime_dur_bars = len(reg_df)
+                if regime_dur_bars > 1:
+                    reg_eq_start = float(reg_df["equity"].iloc[0])
+                    reg_eq_end = float(reg_df["equity"].iloc[-1])
+                    regime_ret = ((reg_eq_end / reg_eq_start) - 1.0) * 100.0
+                    
+                    reg_eqs = reg_df["equity"]
+                    reg_pk = reg_eqs.cummax()
+                    regime_mae = float(((reg_eqs - reg_pk) / reg_pk).min() * 100.0)
+                else:
+                    regime_ret = 0.0
+                    regime_mae = 0.0
                 
+                # Datos de Cartera
                 if "cash_weight" in leg_slice.columns:
                     cash_w = float(leg_slice["cash_weight"].iloc[0])
                 else:
@@ -242,7 +434,13 @@ class RotationLegEvaluator:
                     alpha_leg=alpha_leg,
                     economic_protection_val=econ_prot,
                     economic_utility_val=econ_util,
-                    payoff_asymmetry=payoff
+                    payoff_asymmetry=payoff,
+                    drawdown_tier=tier,
+                    speed_pct_day=speed,
+                    peak_to_trough_protection=peak_to_trough_prot,
+                    regime_duration_bars=regime_dur_bars,
+                    regime_return=regime_ret,
+                    regime_mae=abs(regime_mae)
                 ))
                 
         return events

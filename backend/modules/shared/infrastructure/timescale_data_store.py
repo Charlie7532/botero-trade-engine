@@ -234,6 +234,35 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
         stale = is_data_stale(last_dt, asset_type="INDICATOR")
         return last_dt, stale
 
+    # ── ZigZag Legs ───────────────────────────────────────
+
+    def load_zigzag_legs(self, ticker: str = "SPY", scale: str = "zz50") -> pd.DataFrame:
+        """Load confirmed zigzag legs with parameterized SQL query (CWE-89 safe)."""
+        query = """
+            SELECT 
+                leg_id,
+                start_timestamp::date as start_d,
+                start_type,
+                start_price::float,
+                end_timestamp::date as end_d,
+                end_type,
+                end_price::float,
+                prev_leg_return::float,
+                prev_leg_duration
+            FROM market.zigzag_legs
+            WHERE ticker = %s AND scale = %s
+            ORDER BY start_timestamp
+        """
+        conn = self._conn()
+        try:
+            df = pd.read_sql(query, conn, params=(ticker.upper(), scale))
+            if not df.empty:
+                df["leg_return"] = (df["end_price"] - df["start_price"]) / df["start_price"]
+                df["leg_direction"] = df["end_type"].map(lambda x: "UP" if x == "MAX" else "DOWN")
+            return df
+        finally:
+            self._put(conn)
+
     # ── Macro Data ────────────────────────────────────────
 
     def save_macro(self, name: str, df: pd.DataFrame) -> None:

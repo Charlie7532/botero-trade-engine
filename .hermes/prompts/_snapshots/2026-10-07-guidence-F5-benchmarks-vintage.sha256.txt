@@ -1,0 +1,1 @@
+2bb305717b78f2238a845fbf749dbeebedcaa4d7c682bd6289a78cf6f86f3d25  .hermes/prompts/2026-10-07-guidence-F5-benchmarks-vintage.md

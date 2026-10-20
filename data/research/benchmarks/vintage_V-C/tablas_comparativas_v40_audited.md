@@ -1,7 +1,7 @@
 # 📊 REPORTES DE BENCHMARK MAESTRO V40 — AUDITORÍA INTEGRAL (2000 - 2026)
 
 > [!IMPORTANT]
-> Este informe consolida la auditoría cuantitativa del **Quality Entry Gate V40** ejecutado sobre el histórico continuo de **6,730 días de mercado (2000-01-03 a 2026-10-06)**.
+> Este informe consolida la auditoría cuantitativa del **Quality Entry Gate V40** ejecutado sobre el histórico continuo de **6,732 días de mercado (2000-01-03 a 2026-10-12)**.
 > Incorpora la arquitectura **Vault-First** con contingencia **SV5_SHOCK** para protección anti-fallos en episodios de degradación de data macro/VIX.
 > **Vintage:** V-C (Series homogéneas EMA5 + barras curadas post-rebuild 2026-10-04).
 
@@ -9,10 +9,10 @@
 
 | Métrica | V40 Estándar (VIX + SV5_SHOCK) | V40 Contingencia (Sin VIX) | SPY Benchmark | Audit Diff |
 | :--- | :---: | :---: | :---: | :---: |
-| **Acciones SPY Finales** | **`460.87`** | **`442.92`** | `100.00` | `+17.95 acc` |
-| **Equity Final** | **`$359,056.27`** | **`$345,074.36`** | - | - |
+| **Acciones SPY Finales** | **`472.80`** | **`454.39`** | `100.00` | `+18.41 acc` |
+| **Equity Final** | **`$367,781.39`** | **`$353,459.72`** | - | - |
 | **Max Drawdown** | **`-42.74%`** | **`-52.42%`** | `-55.19%` | `-9.68%` |
-| **Recovery vs Sin Fallback** | **`100.0%`** | **`104.0%`** | `0.0%` | **96.9% Protegido** |
+| **Recovery vs Sin Fallback** | **`100.0%`** | **`104.2%`** | `0.0%` | **96.9% Protegido** |
 
 ---
 
@@ -23,7 +23,7 @@ _Cálculo auditado mediante Episode-Aware Compounding (compuesto intra-episodio 
 | Régimen de Mercado | Días Totales | Episodios | Ret. Acumulado (%) | Win Rate Diario (%) | Profit Factor | Ret. Promedio Diario (%) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **`MERCADO_SANO`** | 4,322 | 102 | **+854.61%** | 55.3% | 1.21 | **+0.0568%** |
-| **`DISTRIBUCION_PRE_CRASH`** | 806 | 269 | **+16.60%** | 52.5% | 1.09 | **+0.0350%** |
+| **`DISTRIBUCION_PRE_CRASH`** | 808 | 269 | **+19.43%** | 52.7% | 1.10 | **+0.0393%** |
 | **`PISO_GENERACIONAL`** | 623 | 25 | **+188.88%** | 53.0% | 1.24 | **+0.2179%** |
 | **`RE_ACUMULACION_ALCISTA`** | 524 | 269 | **+29.78%** | 53.9% | 1.28 | **+0.1097%** |
 | **`NORMAL`** | 211 | 33 | **-0.47%** | 52.0% | 1.02 | **+0.0129%** |
@@ -40,7 +40,7 @@ _Evaluación con VIX deshabilitado (usando SV5_SHOCK ≤ 10.0 desde Vault)._
 | Régimen de Mercado | Días Totales | Episodios | Ret. Acumulado (%) | Win Rate Diario (%) | Profit Factor | Ret. Promedio Diario (%) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **`MERCADO_SANO`** | 4,321 | 102 | **+830.31%** | 55.3% | 1.21 | **+0.0562%** |
-| **`DISTRIBUCION_PRE_CRASH`** | 822 | 271 | **+15.76%** | 52.6% | 1.08 | **+0.0330%** |
+| **`DISTRIBUCION_PRE_CRASH`** | 824 | 271 | **+18.57%** | 52.8% | 1.09 | **+0.0372%** |
 | **`PISO_GENERACIONAL`** | 658 | 26 | **+239.82%** | 52.1% | 1.26 | **+0.2335%** |
 | **`RE_ACUMULACION_ALCISTA`** | 524 | 269 | **+29.78%** | 53.9% | 1.28 | **+0.1097%** |
 | **`NORMAL`** | 251 | 35 | **+3.26%** | 51.6% | 1.05 | **+0.0298%** |
@@ -80,7 +80,7 @@ _Evaluación con VIX deshabilitado (usando SV5_SHOCK ≤ 10.0 desde Vault)._
 | **2023** | **+30.11%** | +26.71% | **+3.40%** | **385.51** |
 | **2024** | **+27.44%** | +25.59% | **+1.86%** | **391.74** |
 | **2025** | **+43.14%** | +18.01% | **+25.13%** | **476.45** |
-| **2026** | **+10.76%** | +14.93% | -4.17% | **460.87** |
+| **2026** | **+13.45%** | +14.75% | -1.30% | **472.80** |
 
 ---
 

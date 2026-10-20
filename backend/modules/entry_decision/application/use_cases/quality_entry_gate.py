@@ -109,8 +109,11 @@ class QualityEntryGate:
     SV5_SHOCK_EXTREME_THRESHOLD = _EXTREME_TH  # Alias for backward compatibility
 
 
-    def __init__(self, min_regime_days: int = 20):
+    def __init__(self, min_regime_days: int = 20, dist_exit_confirm: int = 2, dist_exit_hyst: bool = True):
         self.min_regime_days = min_regime_days
+        self.dist_exit_confirm = dist_exit_confirm
+        self.dist_exit_hyst = dist_exit_hyst
+        self.exit_count = 0
         self.inv_fi_streak = 0
         self.prev_tw = None
         self.fgbi_window = []
@@ -210,9 +213,10 @@ class QualityEntryGate:
         is_bullish_reabsorption = (th >= 60.0 and fi <= 45.0 and v_tw >= 60.0 and ratio_tw_fi <= 1.2 and div_fi >= 0.0)
         is_volume_capitulation = (th <= 25.0 and v_tw >= 60.0)
         
-        # Antena de Capitulación Defensiva (XLP Floor)
+        # Antena de Capitulación Defensiva (XLP Floor) - V41 Candado 1:
+        # Requiere que no haya colapso bancario/sistémico (n_dead <= 5) y VIX < 35 para evitar falsos suelos (ej. Lehman 2008)
         xlp_fi = sec_fi.get("XLP", 50.0)
-        has_defensive_floor = (xlp_fi >= 25.0)
+        has_defensive_floor = (xlp_fi >= 25.0 and n_dead <= 5 and (vix is None or vix < 35.0))
 
         new_mode = current_mode
 
@@ -248,11 +252,19 @@ class QualityEntryGate:
         elif current_mode == "DISTRIBUCION_PRE_CRASH":
             if th < 30.0 and fi < 25.0 and tw < 20.0:
                 new_mode = "CRASH_SISTEMICO"
-            elif is_bullish_reabsorption or (n_dead == 0 and th > 50.0):
-                # V38 Directive: Transición inmediata a RE_ACUMULACION_ALCISTA si n_dead == 0 y TH > 50%
-                new_mode = "RE_ACUMULACION_ALCISTA"
-            elif not is_pre_crash_distribution and can_switch and th > 50.0:
-                new_mode = "MERCADO_SANO"
+                self.exit_count = 0
+            else:
+                # V41 CONF2+HYST: Veta salida si antenas pre-crash siguen activas (dist_exit_hyst)
+                # y exige confirmación de 2 días consecutivos (dist_exit_confirm)
+                ex_re = is_bullish_reabsorption or (n_dead == 0 and th > 50.0 and (not self.dist_exit_hyst or not is_pre_crash_distribution))
+                ex_ms = (not is_pre_crash_distribution) and can_switch and th > 50.0
+                if ex_re or ex_ms:
+                    self.exit_count += 1
+                    if self.exit_count >= self.dist_exit_confirm:
+                        new_mode = "RE_ACUMULACION_ALCISTA" if ex_re else "MERCADO_SANO"
+                        self.exit_count = 0
+                else:
+                    self.exit_count = 0
 
         elif current_mode == "CRASH_SISTEMICO":
             # V32a: Candado táctico de 3 días para salir de cash en lugar del candado global de 20d
@@ -266,12 +278,11 @@ class QualityEntryGate:
                     if th >= 40.0 or (vbi is not None and vbi > 1.5):
                         is_fgbi_reversal = True
 
-            if is_volume_capitulation or (has_defensive_floor and can_switch_crash) or (is_fgbi_reversal and can_switch_crash):
+            washout = (n_dead >= 6 and tw > 40.0 and can_switch_crash)
+            if is_volume_capitulation or (has_defensive_floor and can_switch_crash) or (is_fgbi_reversal and can_switch_crash) or washout:
                 new_mode = "PISO_GENERACIONAL"
             elif can_switch_crash and tw > 45.0 and fi > 35.0 and th > 25.0 and n_dead <= 4:
                 new_mode = "RECUPERACION"
-            elif n_dead >= 6 and tw > 40.0 and can_switch_crash:
-                new_mode = "PISO_GENERACIONAL"
 
         # CAPITULACION_SECTORIAL: actualmente interceptado por H1a (Divergent Leadership)
         # antes de alcanzar estos umbrales. Contribución V28 = 0.00 acc en 27.5 años.
@@ -349,6 +360,7 @@ class QualityEntryGate:
         sec_vbi: Optional[Dict[str, float]] = None,
         sv5_turbulence: Optional[float] = None,
         sv5_shock: Optional[float] = None,
+        vix: Optional[float] = None,
     ) -> Dict[str, float]:
         """
         Calcula las ponderaciones objetivo por sector según el modo V35.
@@ -433,12 +445,16 @@ class QualityEntryGate:
                 non_def = avail_sectors
             beaten_down = sorted(non_def, key=lambda s: sec_tw.get(s, 50.0))[:3]
             tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in beaten_down)
+            scale = 1.0
+            n_dead = sum(1 for s in avail_sectors if sec_th.get(s, 0) < 25.0)
+            if n_dead >= 8 and (vix is not None and vix >= 40.0):
+                scale = 0.70  # Candado 2: Amortiguación al 70% de despliegue en pánico sistémico extremo
             if tot > 0.0:
                 for s in beaten_down:
-                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
+                    target[s] = scale * SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
             else:
                 for s in beaten_down:
-                    target[s] = 1.0 / len(beaten_down)
+                    target[s] = scale / len(beaten_down)
 
         elif mode == "BEAR_RALLY":
             safe = [(s, sec_th[s]) for s in avail_sectors if sec_th.get(s, 0) >= 40.0]

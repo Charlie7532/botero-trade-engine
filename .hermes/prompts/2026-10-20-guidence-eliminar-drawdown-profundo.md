@@ -242,7 +242,7 @@ graph TD
 - **D-2** Prioridad: P2 (salida de CRASH / PISO) o P3/P5 (MERCADO_SANO). Nota: MERCADO_SANO fue el peor modo en los eventos 2001, 2002 y 2011; PISO en 2008 y 2020.
 - **D-3** ¿Regla interpretable o modelo probabilístico en producción?
 - **D-4** ¿Techo de concentración? (medido: empeora acciones y MaxDD, §8).
-- **D-5** Baseline oficial: se propone **584,52 / −34,93% / cierre 2026-10-20** (§1).
+- **D-5** Baseline oficial: **RESUELTA por el dueño (2026-10-21): 584,52 / −34,93% / cierre 2026-10-20, medida oficial T+0 con T+1 como prueba obligatoria** (§9).
 - **D-6** ¿Trims en MERCADO_SANO como mecanismo permanente?
 
 ---
@@ -272,3 +272,55 @@ Script: `scratch/dd_guidance_harness.py`. Hay 13 variantes **pre-registradas** e
 5. SANO_DEG sólo actuó en 89 de 4.262 barras. El estado sale de MERCADO_SANO antes de perder sus 3 condiciones, así que la zona muerta de P3 es menos frecuente de lo que la guía suponía.
 
 **Próximo paso científico** (no la palanca de tamaño): diseccionar 2001-12 → 2002-07, el único evento que ninguna variante toca, y estudiar la cascada de escalas (§3) con validación purgada.
+
+### 8.2 Autopsia profunda y robustez (21-Oct, tarde) — detalle en `autopsia_profunda_drawdown_detalles.md`
+
+- **Exposición vs selección:** en las 47 caídas, −549,3 log-pp = exposición −545,0 + selección −4,3. La selección es la fuente del alpha (≈ +170 en toda la muestra). ⇒ La palanca es la exposición, no la concentración.
+- **2002:** S5TH se mantuvo en 69–71% durante 97 barras mientras SPY caía (bajista de mega-caps; QQQ 45%). Le siguió una zona muerta de 43 barras (35 < th < 60 con fi < 30) sin ninguna regla de salida. El contador de 10 barras consecutivas de la Antena 1 se reinició cada 2–3 barras.
+- **Entradas inactivas en el benchmark:** `s5cap_fi`, `sec_vbi`, `rs_roc_*`, `sec_stage4`, `sv5_turbulence`, `fgbi` y `vbi` no se alimentan.
+- **T+1:** la base pasa a 599,34 / **−40,78%**. Ninguna variante (NOREDIR, SANO_DEG, CRASHHOLD y sus combinaciones) sobrevive a T+1. Con 23 pruebas acumuladas, ninguna es significativa tras Bonferroni.
+- **Lote 3, regreso PISO→CRASH: REFUTADO.** T+0: 208–362 acciones. T+1: 295–552 acciones. Ninguna versión mejora ambas métricas en los dos regímenes.
+- **Regla nueva de aceptación propuesta:** mejorar acciones Y MaxDD en T+0, en T+1 y en la mayoría de los orígenes.
+
+### 8.3 Ejercicio final pre-registrado (21-Oct) — detalle en `dictamen_final_regimen_activo_decantacion.md`
+
+Scripts en scratch: `dd_final_exercise.py`, `dd_final_robustez.py`, `dd_final_posthoc.py` y `zz_impact.py`. Multiplicidad acumulada: 30 pruebas; umbral Bonferroni p < 0,00167.
+
+**Criterio «superar todo»:**
+- (c1) T+0 mejora acciones y MaxDD.
+- (c2) T+1 mejora acciones y MaxDD.
+- (c3) Mejora ambas métricas en ≥ 5 de 7 orígenes.
+- (c4) Prueba de signo por ciclo zz100 con p < 0,00167.
+- (c5) Menos caídas ≥20% en T+0 y en T+1.
+
+**Hallazgos:**
+- **¿El régimen es correcto?** Medido como primer toque SPY ±5/10%:
+  - MERCADO_SANO acierta el 63,0%, igual que la referencia «siempre invertido» (62,9%). No aporta timing; sus barras erróneas suman −210,7 log-pp.
+  - Los errores de PISO suman −236,9, pero PISO es neto positivo (+143,5).
+  - Origen de las caídas ≥20%: MERCADO_SANO en la formación (2001, 2002, 2011) y PISO prematuro (2008, 2020).
+  - 2002 y 2011 **no son cisnes negros** (la cartera cayó más que SPY).
+- **Activo por régimen:** DEF tiene el menor MaxDD en 6 de 8 regímenes, pero cuesta retorno. La regla walk-forward régimen→activo da 139 acciones / −50,2%: el mapeo **no es estable**.
+- **Decantación (n_dead × n_hold):** invierte el signo entre 1999-2012 y 2013-2026 al contar episodios. No es una regla estacionaria.
+- **Formación 2001/2002:**
+  - Visible en dos firmas: los holders cayeron a la mitad y la amplitud cap-weighted divergió (capFI 32 frente a FI 47).
+  - La misma firma precedió subidas en el 80% de los casos tras 2013.
+- **Candidatos:** FULLIN, CAPDIV, ANT1_HYST, HOLDERS_DIST, WF_ASSET y TRIM_HOLDERS, más SANO_HOLD4 post-hoc. **Ninguno supera c1–c5.**
+  - Activar las entradas dormidas (FULLIN) cuesta −135 acciones.
+- **Homogeneización zigzag** (`compute_zigzag_from_bars` pasa al kernel canónico, `load_zigzag_legs` con `confirm_d` y orden determinista):
+  - Cartera sin cambio.
+  - c4 recalculado con ciclos HLC: sigue sin pasar ninguna variante (mejor: SANO_DEG p=0,038).
+  - Señales robustas en ambas físicas: A5_REABSORCION_3D zz50, TRIADA_S5_ACUM zz50 y METAR_fg_D3_agitado zz200.
+
+---
+
+## 9. CIERRE DE LA LÍNEA (aprobado por el dueño, 2026-10-21)
+
+- **Sistema oficial: B0 = 584,52 acciones / MaxDD −34,93%** (T+0, cierre 2026-10-20). T+1 = 599,34 / −40,78% como prueba obligatoria. No se adopta ninguna variante.
+- El objetivo «cero caídas ≥20% salvo cisne negro» **no se alcanza** con la máquina de estados e información actuales (amplitud S5/SV5 + VIX). Quedan abiertos los fallos propios de 2002 y 2011.
+- **Refutadas, no volver a proponer sin información nueva:**
+  - techo 35% (cash o SPY), DIST50, VIX28, PISO_SPY, COMBO_A–D;
+  - PISO_RECRASH A/B;
+  - FULLIN, CAPDIV, ANT1_HYST, HOLDERS_DIST, WF_ASSET, TRIM_HOLDERS, SANO_HOLD4.
+  - No significativas tras Bonferroni (no adoptar): NOREDIR, SANO_DEG, CRASHHOLD.
+- **Observación abierta, no evaluada:** `min_regime_days = 20` (`can_switch`) sigue siendo un candado de días dentro del gate.
+

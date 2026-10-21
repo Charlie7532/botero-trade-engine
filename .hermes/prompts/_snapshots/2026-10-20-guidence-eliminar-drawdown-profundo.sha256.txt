@@ -1,1 +1,1 @@
-7434ce5c71353290ae7acdbe86bb21d23465ab1e066b388f3ecf428a7f99825c  .hermes/prompts/2026-10-20-guidence-eliminar-drawdown-profundo.md
+0b9ce929dd8f5b1e40459e1ee65ba66200bb073c93a120d76dd8917a2726ddad  .hermes/prompts/2026-10-20-guidence-eliminar-drawdown-profundo.md

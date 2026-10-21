@@ -247,11 +247,13 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
                 end_timestamp::date as end_d,
                 end_type,
                 end_price::float,
+                confirmed_at_timestamp::date as confirm_d,
+                status,
                 prev_leg_return::float,
                 prev_leg_duration
             FROM market.zigzag_legs
             WHERE ticker = %s AND scale = %s
-            ORDER BY start_timestamp
+            ORDER BY start_timestamp, end_timestamp, confirmed_at_timestamp
         """
         conn = self._conn()
         try:
@@ -259,6 +261,7 @@ class TimescaleDataStore(TimeSeriesPort, MLDataPort, ChannelSnapshotPort):
             if not df.empty:
                 df["leg_return"] = (df["end_price"] - df["start_price"]) / df["start_price"]
                 df["leg_direction"] = df["end_type"].map(lambda x: "UP" if x == "MAX" else "DOWN")
+                df["confirmed"] = df["status"] == "CONFIRMED"
             return df
         finally:
             self._put(conn)

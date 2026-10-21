@@ -24,7 +24,9 @@ def spy_bars():
     store = TimescaleDataStore()
     df = store.load_bars("SPY", "1d")
     assert df is not None and not df.empty, "Failed to load SPY bars from Neon Vault"
-    return df.sort_index()
+    # Corte inmutable: los conteos congelados corresponden al conjunto confirmado al 2026-09-30.
+    # La pierna zz25 n.º 1585 se confirma el 2026-10-16; sin corte el test depende de barras en vivo.
+    return df.sort_index().loc[:"2026-09-30"]
 
 
 def test_zigzag_points_parity_spy(spy_bars):
@@ -88,3 +90,19 @@ def test_zigzag_dispatcher_modes(spy_bars):
     assert len(legs) == 454
     assert isinstance(legs[0], dict)
     assert "confirmed_at_timestamp" in legs[0]
+
+
+@pytest.mark.parametrize("scale,pct", [("zz25", 0.025), ("zz50", 0.050), ("zz75", 0.075)])
+def test_rotation_evaluator_legs_match_vault(spy_bars, scale, pct):
+    """El evaluador de rotación calcula sus piernas con el mismo kernel que market.zigzag_legs:
+    mismos pivotes, misma barra de confirmación y mismo precio en las escalas persistidas."""
+    from backend.modules.entry_decision.application.use_cases.evaluate_rotation_legs import RotationLegEvaluator
+
+    mine = RotationLegEvaluator.compute_zigzag_from_bars(spy_bars, pct)
+    vault = TimescaleDataStore().load_zigzag_legs("SPY", scale)
+    vault = vault[pd.to_datetime(vault["confirm_d"]) <= pd.Timestamp("2026-09-30")].reset_index(drop=True)
+
+    assert len(mine) == len(vault)
+    assert list(mine["end_d"]) == list(vault["end_d"])
+    assert list(mine["confirm_d"]) == list(vault["confirm_d"])
+    assert np.allclose(mine["end_price"].values, vault["end_price"].values, atol=1e-3)

@@ -32,6 +32,7 @@ import pandas as pd
 import numpy as np
 
 from backend.modules.shared.infrastructure.timescale_data_store import TimescaleDataStore
+from backend.modules.shared.domain.rules.zigzag_core import compute_zigzag_legs
 
 
 @dataclass
@@ -204,99 +205,41 @@ class RotationLegEvaluator:
     def compute_zigzag_from_bars(df_bars: pd.DataFrame, threshold_pct: float = 0.10,
                                  include_provisional: bool = False) -> pd.DataFrame:
         """
-        Calcula de forma exacta las piernas ZigZag sobre barras OHLCV diarias.
-        Por defecto utiliza threshold_pct = 0.10 (zz100, Corrección Técnica).
+        Piernas ZigZag desde el kernel canónico de dominio (zigzag_core.compute_zigzag_legs): misma física que
+        market.zigzag_legs (pivotes en high/low, confirmación cuando el extremo opuesto toca ±threshold_pct).
+        Si df_bars sólo trae 'close', se usa close como high y low (física de cierre).
+        Por defecto threshold_pct = 0.10 (zz100, Corrección Técnica).
         include_provisional=True agrega la última pierna en curso (confirmed=False) para no
         descartar el tramo final de la muestra. Por defecto se mantiene el conjunto histórico.
         """
-        prices = df_bars['close'].values
+        close = df_bars['close'].values.astype(float)
+        high = df_bars['high'].values.astype(float) if 'high' in df_bars.columns else close
+        low = df_bars['low'].values.astype(float) if 'low' in df_bars.columns else close
         dates = pd.to_datetime(df_bars.index).date
-        n = len(prices)
-        if n < 2:
-            return pd.DataFrame()
-            
-        legs = []
-        p0 = prices[0]
-        high_p, low_p = p0, p0
-        high_i, low_i = 0, 0
-        trend = 0
-        leg_id = 0
-        
-        for i in range(1, n):
-            p = prices[i]
-            if trend == 0:
-                if p >= low_p * (1.0 + threshold_pct):
-                    trend, high_p, high_i = 1, p, i
-                    last_pivot_i, last_pivot_p, last_pivot_type = low_i, low_p, 'MIN'
-                elif p <= high_p * (1.0 - threshold_pct):
-                    trend, low_p, low_i = -1, p, i
-                    last_pivot_i, last_pivot_p, last_pivot_type = high_i, high_p, 'MAX'
-                else:
-                    if p > high_p: high_p, high_i = p, i
-                    if p < low_p: low_p, low_i = p, i
-            elif trend == 1:
-                if p > high_p:
-                    high_p, high_i = p, i
-                elif p <= high_p * (1.0 - threshold_pct):
-                    leg_id += 1
-                    legs.append({
-                        'leg_id': leg_id,
-                        'start_d': dates[last_pivot_i],
-                        'end_d': dates[high_i],
-                        'start_type': 'MIN',
-                        'end_type': 'MAX',
-                        'start_price': last_pivot_p,
-                        'end_price': high_p,
-                        'ret': (high_p - last_pivot_p) / last_pivot_p,
-                        'leg_return': (high_p - last_pivot_p) / last_pivot_p,
-                        'leg_direction': 'UP',
-                        'duration_bars': high_i - last_pivot_i,
-                        'confirm_d': dates[i],   # barra en que el giro se vuelve observable
-                    })
-                    trend, last_pivot_i, last_pivot_p, last_pivot_type = -1, high_i, high_p, 'MAX'
-                    low_p, low_i = p, i
-            elif trend == -1:
-                if p < low_p:
-                    low_p, low_i = p, i
-                elif p >= low_p * (1.0 + threshold_pct):
-                    leg_id += 1
-                    legs.append({
-                        'leg_id': leg_id,
-                        'start_d': dates[last_pivot_i],
-                        'end_d': dates[low_i],
-                        'start_type': 'MAX',
-                        'end_type': 'MIN',
-                        'start_price': last_pivot_p,
-                        'end_price': low_p,
-                        'ret': (low_p - last_pivot_p) / last_pivot_p,
-                        'leg_return': (low_p - last_pivot_p) / last_pivot_p,
-                        'leg_direction': 'DOWN',
-                        'duration_bars': low_i - last_pivot_i,
-                        'confirm_d': dates[i],   # barra en que el giro se vuelve observable
-                    })
-                    trend, last_pivot_i, last_pivot_p, last_pivot_type = 1, low_i, low_p, 'MIN'
-                    high_p, high_i = p, i
+        raw = compute_zigzag_legs(dates=np.arange(len(close)), opens=close, highs=high, lows=low, closes=close,
+                                  scale_name=f"zz{int(round(threshold_pct * 1000))}", min_pct=threshold_pct)
 
-        for leg in legs:
-            leg['confirmed'] = True
-        if include_provisional and trend != 0:
-            end_i, end_p = (high_i, high_p) if trend == 1 else (low_i, low_p)
-            if end_i > last_pivot_i:
-                legs.append({
-                    'leg_id': leg_id + 1,
-                    'start_d': dates[last_pivot_i],
-                    'end_d': dates[end_i],
-                    'start_type': last_pivot_type,
-                    'end_type': 'MAX' if trend == 1 else 'MIN',
-                    'start_price': last_pivot_p,
-                    'end_price': end_p,
-                    'ret': (end_p - last_pivot_p) / last_pivot_p,
-                    'leg_return': (end_p - last_pivot_p) / last_pivot_p,
-                    'leg_direction': 'UP' if trend == 1 else 'DOWN',
-                    'duration_bars': end_i - last_pivot_i,
-                    'confirm_d': None,
-                    'confirmed': False,
-                })
+        def leg(k, si, ei, st, et, sp, ep, ci):
+            return {'leg_id': k, 'start_d': dates[si], 'end_d': dates[ei], 'start_type': st, 'end_type': et,
+                    'start_price': sp, 'end_price': ep, 'ret': (ep - sp) / sp, 'leg_return': (ep - sp) / sp,
+                    'leg_direction': 'UP' if et == 'MAX' else 'DOWN', 'duration_bars': ei - si,
+                    'confirm_d': dates[ci] if ci is not None else None, 'confirmed': ci is not None}
+
+        legs = [leg(k, int(r['start_timestamp']), int(r['end_timestamp']), r['start_type'], r['end_type'],
+                    r['start_price'], r['end_price'], int(r['confirmed_at_timestamp']))
+                for k, r in enumerate(raw, 1)]
+        if include_provisional and raw:
+            # Estado del kernel tras la última confirmación: el extremo en curso arranca en la barra de confirmación.
+            last = raw[-1]
+            ci, ei = int(last['confirmed_at_timestamp']), int(last['end_timestamp'])
+            if last['end_type'] == 'MAX':
+                end_i, et = ci + int(np.argmin(low[ci:])), 'MIN'
+                end_p = float(low[end_i])
+            else:
+                end_i, et = ci + int(np.argmax(high[ci:])), 'MAX'
+                end_p = float(high[end_i])
+            if end_i > ei:
+                legs.append(leg(len(raw) + 1, ei, end_i, last['end_type'], et, last['end_price'], end_p, None))
         return pd.DataFrame(legs)
 
     def load_zigzag_legs(self, ticker: str = "SPY", scale: str = "zz100") -> pd.DataFrame:

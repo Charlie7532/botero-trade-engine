@@ -51,7 +51,7 @@ SP500_SECTOR_MAP: dict[str, str] = {
     "TYL": "XLK", "SMCI": "XLK", "ANET": "XLK", "GEN": "XLK", "EPAM": "XLK",
     "AKAM": "XLK", "JNPR": "XLK", "FFIV": "XLK", "SWKS": "XLK", "QRVO": "XLK",
     "TECH": "XLK", "HPE": "XLK", "HPQ": "XLK", "WDC": "XLK", "STX": "XLK",
-    "NTAP": "XLK", "LITE": "XLK", "ENPH": "XLK",
+    "NTAP": "XLK", "LITE": "XLK", "ENPH": "XLK", "TWLO": "XLK",
 
     # Healthcare (XLV)
     "UNH": "XLV", "JNJ": "XLV", "LLY": "XLV", "ABBV": "XLV", "MRK": "XLV",
@@ -63,7 +63,7 @@ SP500_SECTOR_MAP: dict[str, str] = {
     "MTD": "XLV", "BAX": "XLV", "GEHC": "XLV", "PODD": "XLV", "ALGN": "XLV",
     "HOLX": "XLV", "CNC": "XLV", "MOH": "XLV", "CAH": "XLV", "RMD": "XLV",
     "STE": "XLV", "COO": "XLV", "VTRS": "XLV", "BIIB": "XLV", "RVTY": "XLV",
-    "SOLV": "XLV", "INCY": "XLV", "MRNA": "XLV",
+    "SOLV": "XLV", "INCY": "XLV", "MRNA": "XLV", "VEEV": "XLV",
 
     # Financials (XLF)
     "BRK-B": "XLF", "JPM": "XLF", "V": "XLF", "MA": "XLF", "BAC": "XLF",
@@ -111,7 +111,7 @@ SP500_SECTOR_MAP: dict[str, str] = {
     "XYL": "XLI", "IEX": "XLI", "DOV": "XLI", "ROP": "XLI", "WAB": "XLI",
     "AXON": "XLI", "VRSK": "XLI", "PWR": "XLI", "J": "XLI", "LDOS": "XLI",
     "BR": "XLI", "ALLE": "XLI", "GNRC": "XLI", "DAY": "XLI", "TKO": "XLI",
-    "HUBB": "XLI", "PNR": "XLI", "CHRW": "XLI", "JBHT": "XLI",
+    "HUBB": "XLI", "PNR": "XLI", "CHRW": "XLI", "JBHT": "XLI", "FERG": "XLI",
 
     # Energy (XLE)
     "XOM": "XLE", "CVX": "XLE", "COP": "XLE", "SLB": "XLE", "EOG": "XLE",
@@ -147,6 +147,7 @@ SP500_SECTOR_MAP: dict[str, str] = {
     "EA": "XLC", "TTWO": "XLC", "WBD": "XLC", "PARA": "XLC", "OMC": "XLC",
     "IPG": "XLC", "LYV": "XLC", "MTCH": "XLC", "FOXA": "XLC", "FOX": "XLC",
     "TTD": "XLC", "PINS": "XLC", "SNAP": "XLC", "RBLX": "XLC", "ZM": "XLC",
+    "RDDT": "XLC", "SKYD": "XLC",
 }
 
 

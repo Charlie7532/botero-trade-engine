@@ -1,138 +1,76 @@
 """
-QUALITY ENTRY GATE (V28 DIVERGENT LEADERSHIP + WEINSTEIN SMART VETO)
-=====================================================================
-Capa de decisión táctica y de régimen de rotación sectorial basada en
-la síntesis cuantitativa de 27.5 años (1999 - 2026):
+QUALITY ENTRY GATE — USE CASE ORCHESTRATOR (CANONICAL B0 BASELINE)
+===================================================================
+Clean Architecture: Application Layer (Use Cases)
+Module: entry_decision / application / use_cases
 
-  1. ANTENA PRE-CRASH (Inversión Persistente SV5_FI > S5_FI durante >= 10 días):
-     Detecta la distribución de volumen institucional 30 días antes del techo
-     (ganó +24.73 acciones de SPY en el Bear Market de 2022).
-  2. ANTENA DE SELECCIÓN CORE DINÁMICA:
-     Excluye sectores Core estancados (S5_FI < 55%) en Mercado Sano.
-  3. Super-Patrón de Re-Absorción Alcista (S5_TH >= 60% + S5_FI <= 45% + SV5_TW >= 60% → 86.9% WR Buy).
-  4. Gatillo de Capitulación de Volumen en Suelo (Anomalía C: S5_TH <= 25% + SV5_TW >= 60% → 82.8% WR Buy).
-  5. Filtro Anti-Cuchillo Cayendo (v_FI <= -15pp → Congela rebalanceos en caída libre).
-  6. V25 PULLBACK TACTICAL VOLUME: En PULLBACK_ALCISTA, prefiere sectores donde
-     instituciones están comprando el dip activamente (SV5_TW >= 50%).
-     Backtest: +26.27 acciones adicionales.
-  7. V26 RECUPERACION SPY BLEND: En RECUPERACION, 50% SPY + 50% sectores líderes.
-     SPY captura el rebote amplio de sectores excluidos del Core.
-     Backtest: +8.84 acciones adicionales.
-  8. V28 DIVERGENT LEADERSHIP (hot_tw <= 1 AND cold_tw >= 7):
-     3er disparador de DISTRIBUCION_PRE_CRASH. Detecta mercados estrechos
-     donde solo 1 sector lidera mientras 7+ colapsan en amplitud táctica.
-     Backtest: +77.60 acciones sobre V27.
-  9. V28 WEINSTEIN SMART VETO: Veta sectores en Stage 4 (precio < MA150,
-     pendiente negativa) del pool de satélites, EXCEPTO cuando instituciones
-     acumulan masivamente (vol_div > 15). Override por oportunidad clara.
-     Backtest: +6.60 acciones solo, +84.79 combinado con H1a.
+Official Institutional Baseline:
+  - Canonical Output: 584.52 SPY shares / MaxDD -34.93% (T+0, close 2026-10-20)
+  - Mandatory Latency Test: 599.34 SPY shares / MaxDD -40.78% (T+1)
+
+Clean Architecture Decoupling:
+  1. Pure Domain Regime Rules → QualityRegimeRules (domain/rules/quality_regime_rules.py)
+  2. Pure Domain Allocation Rules → QualityAllocationRules (domain/rules/quality_allocation_rules.py)
+  3. Formal Port Contract → QualityEntryGatePort (domain/ports/quality_entry_gate_port.py)
+  4. Universal Action DTO → QualityRotationDTO (application/dtos/quality_rotation_dto.py)
+  5. Orchestrator Integration → evaluate(ticker) satisfies QualityOrchestrator pipeline.
 """
 
-import json
-from pathlib import Path
 from typing import Dict, Any, List, Optional
-from backend.modules.shared.domain.constants.sectors import SECTOR_ETFS, SECTOR_CAP_WEIGHTS
+from backend.modules.entry_decision.domain.ports.quality_entry_gate_port import QualityEntryGatePort
+from backend.modules.entry_decision.domain.rules.quality_regime_rules import QualityRegimeRules
+from backend.modules.entry_decision.domain.rules.quality_allocation_rules import QualityAllocationRules
+from backend.modules.entry_decision.application.dtos.quality_rotation_dto import QualityRotationDTO
 
-class QualityEntryGate:
+
+class QualityEntryGate(QualityEntryGatePort):
     """
-    Gate V28 Divergent Leadership + Weinstein Smart Veto.
-    Logra 468.20 acciones finales de SPY (+368.20 sobre benchmark)
-    en 27.5 años de auditoría (1999-2026).
-    V25: SV5_TW >= 50% en PULLBACK_ALCISTA (+26.27 acc).
-    V26: 50% SPY + 50% sectores en RECUPERACION (+8.84 acc).
-    V28: Divergent Leadership + Weinstein Smart Veto (+84.79 acc).
+    Canonical Quality Entry Gate (B0 Baseline: 584.52 shares / -34.93% MaxDD T+0).
+    Orchestrates domain regime transitions, portfolio weights, and ticker validation.
     """
 
-    # Constantes de clasificación para el anidamiento conjunto S5xSV5
-    S5_EDGES = {
-        "TH": [27.6, 54.8, 82.8, 93.5],
-        "FI": [20.0, 46.7, 76.9, 90.4],
-        "TW": [16.7, 41.9, 75.0, 90.0]
-    }
-    SV5_EDGES = {
-        "TH": [24.6, 37.2, 58.0, 73.8],
-        "FI": [27.0, 37.8, 55.5, 68.4],
-        "TW": [23.9, 34.5, 50.8, 65.4]
-    }
-    LABELS = ["<<", "<", "~", ">", ">>"]
+    # Expose canonical domain constants for backward compatibility
+    S5_EDGES = QualityRegimeRules.S5_EDGES
+    SV5_EDGES = QualityRegimeRules.SV5_EDGES
+    LABELS = QualityRegimeRules.LABELS
+    TOP_DISTRIBUTION_STATES = QualityRegimeRules.TOP_DISTRIBUTION_STATES
+    SV5_STD_VIX_CRASH_THRESHOLD = QualityRegimeRules.SV5_STD_VIX_CRASH_THRESHOLD
+    SV5_TURBULENCE_HIGH_THRESHOLD = QualityRegimeRules.SV5_TURBULENCE_HIGH_THRESHOLD
+    SV5_TURBULENCE_EXTREME_THRESHOLD = QualityRegimeRules.SV5_TURBULENCE_EXTREME_THRESHOLD
+    SV5_SHOCK_HIGH_THRESHOLD = QualityRegimeRules.SV5_SHOCK_HIGH_THRESHOLD
+    SV5_SHOCK_EXTREME_THRESHOLD = QualityRegimeRules.SV5_SHOCK_EXTREME_THRESHOLD
 
-    # Estados de distribución optimizados (Subset 2: dirección '+')
-    TOP_DISTRIBUTION_STATES = {
-        "<<|<<|~|>>|>>|<|+",
-        "<<|<<|<<|>>|>>|>>|+",
-        "<<|<<|~|>>|>>|<<|+",
-        "<<|<<|<<|>>|>>|>|+",
-        ">>|>|>|<<|~|~|+",
-        "<<|~|~|~|>|~|+",
-        "<<|<<|<<|>|>>|>>|+"
-    }
-
-    @staticmethod
-    def _load_turbulence_thresholds() -> tuple[float, float, float]:
-        """Dynamically load empirical thresholds from sv5_turbulence_fact_store.json (Rule 21).
-        
-        Returns:
-            (crash_thresh, high_thresh, extreme_thresh) from fact store operational_thresholds.
-            Explicitly declared fallback for offline/cold-start: (11.21, 8.82, 12.06).
-        """
-        DECLARED_FALLBACK = (11.21, 8.82, 12.06)
-        fact_path = Path(__file__).resolve().parent.parent / "rules" / "sv5_turbulence_fact_store.json"
-        try:
-            if fact_path.exists():
-                with open(fact_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                doc = data.get("_documentation", {})
-                op_thresh = doc.get("operational_thresholds", {})
-                if op_thresh:
-                    crash_thresh = float(op_thresh.get("crash_threshold", DECLARED_FALLBACK[0]))
-                    high_thresh = float(op_thresh.get("high_threshold", DECLARED_FALLBACK[1]))
-                    extreme_thresh = float(op_thresh.get("extreme_threshold", DECLARED_FALLBACK[2]))
-                    return crash_thresh, high_thresh, extreme_thresh
-                
-                # Fallback to taxonomy value edges
-                edges = doc.get("taxonomy", {}).get("d1", {}).get("value_edges", [])
-                if len(edges) >= 5:
-                    crash_thresh = round(float(edges[3]), 2)  # +1sigma edge
-                    high_thresh = DECLARED_FALLBACK[1]
-                    extreme_thresh = DECLARED_FALLBACK[2]
-                    return crash_thresh, high_thresh, extreme_thresh
-        except Exception:
-            pass
-        return DECLARED_FALLBACK
-
-    # V40/V41: Dynamic empirical thresholds loaded from sv5_turbulence_fact_store.json
-    _CRASH_TH, _HIGH_TH, _EXTREME_TH = _load_turbulence_thresholds.__func__()
-    SV5_STD_VIX_CRASH_THRESHOLD = _CRASH_TH
-    SV5_TURBULENCE_HIGH_THRESHOLD = _HIGH_TH
-    SV5_TURBULENCE_EXTREME_THRESHOLD = _EXTREME_TH
-    SV5_SHOCK_HIGH_THRESHOLD = _HIGH_TH  # Alias for backward compatibility
-    SV5_SHOCK_EXTREME_THRESHOLD = _EXTREME_TH  # Alias for backward compatibility
-
-
-    def __init__(self, min_regime_days: int = 20, dist_exit_confirm: int = 2, dist_exit_hyst: bool = True):
+    def __init__(
+        self,
+        min_regime_days: int = 20,
+        dist_exit_confirm: int = 2,
+        dist_exit_hyst: bool = True,
+    ):
         self.min_regime_days = min_regime_days
         self.dist_exit_confirm = dist_exit_confirm
         self.dist_exit_hyst = dist_exit_hyst
         self.exit_count = 0
         self.inv_fi_streak = 0
-        self.prev_tw = None
-        self.fgbi_window = []
-        self.ratio_window = []
+        self.prev_tw: Optional[float] = None
+        self.fgbi_window: List[float] = []
+        self.ratio_window: List[float] = []
+        self.current_mode = "NORMAL"
+        self.days_in_mode = 0
 
-    def _classify_bin(self, v: float, edges: list[float]) -> str:
-        for idx, e in enumerate(edges):
-            if v < e: return self.LABELS[idx]
-        return self.LABELS[-1]
+    def _classify_bin(self, v: float, edges: List[float]) -> str:
+        return QualityRegimeRules.classify_bin(v, edges)
 
-    def _get_spy_joint_state(self, th: float, fi: float, tw: float, tw_prev: float, v_th: float, v_fi: float, v_tw: float) -> str:
-        s5_th_b = self._classify_bin(th, self.S5_EDGES["TH"])
-        s5_fi_b = self._classify_bin(fi, self.S5_EDGES["FI"])
-        s5_tw_b = self._classify_bin(tw, self.S5_EDGES["TW"])
-        dir_b = "+" if tw > tw_prev else "-"
-        sv5_th_b = self._classify_bin(v_th, self.SV5_EDGES["TH"])
-        sv5_fi_b = self._classify_bin(v_fi, self.SV5_EDGES["FI"])
-        sv5_tw_b = self._classify_bin(v_tw, self.SV5_EDGES["TW"])
-        return f"{s5_th_b}|{s5_fi_b}|{s5_tw_b}|{sv5_th_b}|{sv5_fi_b}|{sv5_tw_b}|{dir_b}"
+    def _get_spy_joint_state(
+        self,
+        th: float,
+        fi: float,
+        tw: float,
+        tw_prev: float,
+        v_th: float,
+        v_fi: float,
+        v_tw: float,
+    ) -> str:
+        return QualityRegimeRules.get_spy_joint_state(th, fi, tw, tw_prev, v_th, v_fi, v_tw)
 
     def evaluate_regime(
         self,
@@ -158,188 +96,56 @@ class QualityEntryGate:
         sv5_shock: Optional[float] = None,
     ) -> str:
         """
-        Clasifica el modo de mercado usando las 3 Antenas Pre-Evento de V28
-        y disparadores híbridos de tríadas S5xSV5.
+        Classifies the market mode using pure domain rules while maintaining telemetry windows.
         """
-        if sv5_turbulence is None and sv5_shock is not None:
-            sv5_turbulence = sv5_shock
-
         if fgbi is not None:
             self.fgbi_window.append(fgbi)
             if len(self.fgbi_window) > 15:
                 self.fgbi_window.pop(0)
 
-        # Track ratio history
         ratio = tw / max(1.0, v_tw)
         self.ratio_window.append(ratio)
         if len(self.ratio_window) > 7:
             self.ratio_window.pop(0)
 
-
-
-        n_dead = sum(1 for v in sec_th.values() if v < 25.0)
-        can_switch = days_in_mode >= self.min_regime_days
-        
-        # Antena 1: Inversión Persistente SV5_FI > S5_FI
-        spread_fi = fi - v_fi
-        if spread_fi < -5.0:
-            self.inv_fi_streak += 1
-        else:
-            self.inv_fi_streak = 0
-            
-        # Calcular dirección del SPY de forma interna y robusta para retrocompatibilidad
-        if tw_prev is None:
-            tw_prev = self.prev_tw if self.prev_tw is not None else tw
+        effective_tw_prev = tw if tw_prev is None else (self.prev_tw if self.prev_tw is not None else tw)
         self.prev_tw = tw
-        
-        # Disparador híbrido basado en estados conjuntos de SPY
-        spy_joint = self._get_spy_joint_state(th, fi, tw, tw_prev, v_th, v_fi, v_tw)
-        is_pre_crash_distribution = (self.inv_fi_streak >= 10) or (spy_joint in self.TOP_DISTRIBUTION_STATES)
 
-        # Antena 3 (V28): Divergent Leadership — mercado estrecho
-        # Solo 1 sector caliente (TW > 50%) mientras 7+ colapsan (TW < 20%)
-        # detecta distribución silenciosa invisible a las antenas agregadas.
-        # Backtest: +77.60 acc, ganancias distribuidas en 16/20 años.
-        hot_tw = sum(1 for v in sec_tw.values() if v > 50.0)
-        cold_tw = sum(1 for v in sec_tw.values() if v < 20.0)
-        is_divergent_leadership = (hot_tw <= 1 and cold_tw >= 7)
-        is_pre_crash_distribution = is_pre_crash_distribution or is_divergent_leadership
-        
-        is_falling_knife = (fi_velocity >= 5.0 or (fi < 30.0 and tw < 15.0 and th > 35.0))
-        
-        # V37.1 Approved 3D Re-absorption: Require tactical ratio TW/FI <= 1.2 and Div_FI >= 0.0
-        div_fi = v_fi - fi
-        ratio_tw_fi = tw / max(1.0, fi)
-        is_bullish_reabsorption = (th >= 60.0 and fi <= 45.0 and v_tw >= 60.0 and ratio_tw_fi <= 1.2 and div_fi >= 0.0)
-        is_volume_capitulation = (th <= 25.0 and v_tw >= 60.0)
-        
-        # Antena de Capitulación Defensiva (XLP Floor) - V41 Candado 1:
-        # Requiere que no haya colapso bancario/sistémico (n_dead <= 5) y VIX < 35 para evitar falsos suelos (ej. Lehman 2008)
-        xlp_fi = sec_fi.get("XLP", 50.0)
-        has_defensive_floor = (xlp_fi >= 25.0 and n_dead <= 5 and (vix is None or vix < 35.0))
+        new_mode, self.inv_fi_streak, self.exit_count = QualityRegimeRules.evaluate_transition(
+            th=th,
+            fi=fi,
+            tw=tw,
+            v_th=v_th,
+            v_fi=v_fi,
+            v_tw=v_tw,
+            sec_th=sec_th,
+            sec_fi=sec_fi,
+            sec_tw=sec_tw,
+            sec_v_tw=sec_v_tw,
+            fi_velocity=fi_velocity,
+            current_mode=current_mode,
+            days_in_mode=days_in_mode,
+            tw_prev=effective_tw_prev,
+            fgbi=fgbi,
+            vbi=vbi,
+            fgbi_peak_15d=fgbi_peak_15d,
+            vix=vix,
+            sv5_turbulence=sv5_turbulence,
+            sv5_shock=sv5_shock,
+            min_regime_days=self.min_regime_days,
+            dist_exit_confirm=self.dist_exit_confirm,
+            dist_exit_hyst=self.dist_exit_hyst,
+            inv_fi_streak=self.inv_fi_streak,
+            exit_count=self.exit_count,
+            fgbi_window=self.fgbi_window,
+            ratio_window=self.ratio_window,
+        )
 
-        new_mode = current_mode
-
-        if current_mode in ("NORMAL", "MERCADO_SANO", "RE_ACUMULACION_ALCISTA"):
-            if th < 30.0 and fi < 25.0 and tw < 20.0:
-                new_mode = "CRASH_SISTEMICO" if n_dead >= 5 else "CAPITULACION_SECTORIAL"
-            elif is_pre_crash_distribution:
-                new_mode = "DISTRIBUCION_PRE_CRASH"
-            elif is_volume_capitulation:
-                new_mode = "PISO_GENERACIONAL"
-            elif is_bullish_reabsorption:
-                new_mode = "RE_ACUMULACION_ALCISTA"
-            elif is_falling_knife:
-                pass
-            elif th < 35.0 and fi < 30.0 and tw > 40.0:
-                new_mode = "BEAR_RALLY"
-            elif th > 40.0 and fi > 40.0 and tw < 30.0 and can_switch:
-                # V37 Spectral Check: Ensure volume divergence supports dip-buying (v_tw - tw >= -5.0)
-                # and at least 2 sectors maintain active volume support (sec_v_tw >= 40.0)
-                vol_div = v_tw - tw
-                sec_v_tw_dict = sec_v_tw if sec_v_tw is not None else {}
-                strong_sec_vol = sum(1 for s in sec_v_tw_dict.values() if s >= 40.0)
-                if vol_div >= -5.0 and (not sec_v_tw_dict or strong_sec_vol >= 2):
-                    # V37.2 Ceiling Filter: Block entry if a dilated ceiling (ratio >= 3.50) occurred in last 5 days
-                    had_recent_ceiling = any(r >= 3.50 for r in self.ratio_window[:-1]) if len(self.ratio_window) > 1 else False
-                    if not had_recent_ceiling:
-                        new_mode = "PULLBACK_ALCISTA"
-            elif th > 60.0 and fi > 50.0 and tw > 40.0:
-                new_mode = "MERCADO_SANO"
-            elif th < 40.0 and fi < 35.0 and tw > 35.0:
-                new_mode = "RECUPERACION"
-
-        elif current_mode == "DISTRIBUCION_PRE_CRASH":
-            if th < 30.0 and fi < 25.0 and tw < 20.0:
-                new_mode = "CRASH_SISTEMICO"
-                self.exit_count = 0
-            else:
-                # V41 CONF2+HYST: Veta salida si antenas pre-crash siguen activas (dist_exit_hyst)
-                # y exige confirmación de 2 días consecutivos (dist_exit_confirm)
-                ex_re = is_bullish_reabsorption or (n_dead == 0 and th > 50.0 and (not self.dist_exit_hyst or not is_pre_crash_distribution))
-                ex_ms = (not is_pre_crash_distribution) and can_switch and th > 50.0
-                if ex_re or ex_ms:
-                    self.exit_count += 1
-                    if self.exit_count >= self.dist_exit_confirm:
-                        new_mode = "RE_ACUMULACION_ALCISTA" if ex_re else "MERCADO_SANO"
-                        self.exit_count = 0
-                else:
-                    self.exit_count = 0
-
-        elif current_mode == "CRASH_SISTEMICO":
-            # V32a: Candado táctico de 3 días para salir de cash en lugar del candado global de 20d
-            can_switch_crash = (days_in_mode >= 3)
-            
-            # V34: FGBI Reversal + VBI Panic Capitulation filter
-            is_fgbi_reversal = False
-            effective_peak = fgbi_peak_15d if fgbi_peak_15d is not None else (max(self.fgbi_window) if self.fgbi_window else None)
-            if fgbi is not None and effective_peak is not None:
-                if effective_peak > 20.0 and (fgbi < 15.0 or fgbi <= (effective_peak - 5.0)):
-                    if th >= 40.0 or (vbi is not None and vbi > 1.5):
-                        is_fgbi_reversal = True
-
-            washout = (n_dead >= 6 and tw > 40.0 and can_switch_crash)
-            if is_volume_capitulation or (has_defensive_floor and can_switch_crash) or (is_fgbi_reversal and can_switch_crash) or washout:
-                new_mode = "PISO_GENERACIONAL"
-            elif can_switch_crash and tw > 45.0 and fi > 35.0 and th > 25.0 and n_dead <= 4:
-                new_mode = "RECUPERACION"
-
-        # CAPITULACION_SECTORIAL: actualmente interceptado por H1a (Divergent Leadership)
-        # antes de alcanzar estos umbrales. Contribución V28 = 0.00 acc en 27.5 años.
-        # Se mantiene como red de seguridad si H1a se modifica en el futuro.
-        elif current_mode == "CAPITULACION_SECTORIAL":
-            if n_dead >= 5:
-                new_mode = "CRASH_SISTEMICO"
-            elif is_volume_capitulation or (has_defensive_floor and can_switch):
-                new_mode = "PISO_GENERACIONAL"
-            elif can_switch and th > 40.0:
-                new_mode = "NORMAL"
-            elif can_switch and fi > 40.0 and tw > 40.0:
-                new_mode = "RECUPERACION"
-
-        elif current_mode == "PISO_GENERACIONAL":
-            if can_switch and th > 35.0:
-                new_mode = "NORMAL"
-            elif can_switch and fi > 50.0:
-                new_mode = "RECUPERACION"
-
-        elif current_mode == "BEAR_RALLY":
-            if th < 30.0 and fi < 25.0 and tw < 20.0:
-                new_mode = "CRASH_SISTEMICO" if n_dead >= 5 else "CAPITULACION_SECTORIAL"
-            elif can_switch and th > 45.0:
-                new_mode = "NORMAL"
-
-        elif current_mode == "PULLBACK_ALCISTA":
-            if is_pre_crash_distribution:
-                new_mode = "DISTRIBUCION_PRE_CRASH"
-            elif is_bullish_reabsorption:
-                new_mode = "RE_ACUMULACION_ALCISTA"
-            elif is_falling_knife:
-                pass
-            elif tw > 40.0 or (can_switch and fi > 50.0):
-                new_mode = "NORMAL"
-            elif th < 35.0:
-                new_mode = "BEAR_RALLY"
-
-        elif current_mode == "RECUPERACION":
-            # V37.1 Fast V-shaped recovery escape hatch: allow transition if momentum & volume lead (tw > 60, v_fi > 55, th > 40)
-            if can_switch and ((th > 50.0 and fi > 50.0) or (tw > 60.0 and v_fi > 55.0 and th > 40.0)):
-                new_mode = "MERCADO_SANO"
-            elif th < 25.0 and n_dead >= 5:
-                new_mode = "CRASH_SISTEMICO"
-
-        # V36 Calibrated Redirection: If transitioning into CRASH_SISTEMICO from non-crash state,
-        # but VIX <= 28.0 and v_th >= 25.0, redirect to PISO_GENERACIONAL.
-        # V40: When VIX unavailable (None), use SV5_TURBULENCE from Vault as crash detector.
-        # SV5_TURBULENCE = std(Δ_SV5TW, 10d). >10 = institutional panic = real crash.
-        # Empirically recovers 96.9% of VIX's protective value (26yr benchmark).
-        if current_mode != "CRASH_SISTEMICO" and new_mode == "CRASH_SISTEMICO" and v_th >= 25.0:
-            if vix is not None:
-                if vix <= 28.0:
-                    new_mode = "PISO_GENERACIONAL"
-            elif sv5_turbulence is not None and sv5_turbulence <= self.SV5_STD_VIX_CRASH_THRESHOLD:
-                # V40 Contingency: institutions calm → not a real crash
-                new_mode = "PISO_GENERACIONAL"
+        if new_mode == self.current_mode:
+            self.days_in_mode += 1
+        else:
+            self.current_mode = new_mode
+            self.days_in_mode = 1
 
         return new_mode
 
@@ -363,255 +169,84 @@ class QualityEntryGate:
         vix: Optional[float] = None,
     ) -> Dict[str, float]:
         """
-        Calcula las ponderaciones objetivo por sector según el modo V35.
-        V35: adds S5cap/VBI institutional filtering in MERCADO_SANO
-             and VBI volume conviction boost in RE_ACUMULACION_ALCISTA.
+        Calculates sector target weights delegating to pure domain allocation rules.
         """
-        if not avail_sectors:
-            return {}
-            
-        target = {}
+        return QualityAllocationRules.calculate_target_weights(
+            mode=mode,
+            sec_th=sec_th,
+            sec_fi=sec_fi,
+            sec_tw=sec_tw,
+            avail_sectors=avail_sectors,
+            sec_v_fi=sec_v_fi,
+            sec_v_tw=sec_v_tw,
+            rs_roc_5d=rs_roc_5d,
+            sec_stage4=sec_stage4,
+            rs_roc_50d=rs_roc_50d,
+            rs_roc_20d=rs_roc_20d,
+            s5cap_fi=s5cap_fi,
+            sec_vbi=sec_vbi,
+            sv5_turbulence=sv5_turbulence,
+            sv5_shock=sv5_shock,
+            vix=vix,
+        )
+
+    def evaluate(self, ticker: str, **kwargs: Any) -> QualityRotationDTO:
+        """
+        Evaluates a ticker for Quality Department admission.
+        Provides contract satisfaction for QualityOrchestrator pipeline.
+        """
+        mode = self.current_mode
 
         if mode == "CRASH_SISTEMICO":
-            return {s: 0.0 for s in avail_sectors}
+            return QualityRotationDTO(
+                mode=mode,
+                ticker=ticker,
+                action_code="STK_BLOCK_CRISIS",
+                urgency="URGENCY_EMERGENCY",
+                final_verdict="BLOCK",
+                final_reason="Market in CRASH_SISTEMICO (100% Cash preservation)",
+                final_scale=0.0,
+            )
 
-        elif mode == "DISTRIBUCION_PRE_CRASH":
-            def_pool = ["XLP", "XLU", "XLV"]
-            tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in def_pool if s in avail_sectors)
-            for s in def_pool:
-                if s in avail_sectors:
-                    target[s] = 0.50 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap)
+        if mode == "DISTRIBUCION_PRE_CRASH":
+            defensive_tickers = {"XLP", "XLU", "XLV"}
+            if ticker in defensive_tickers:
+                return QualityRotationDTO(
+                    mode=mode,
+                    ticker=ticker,
+                    action_code="STK_HOLD_STABLE",
+                    urgency="URGENCY_NORMAL",
+                    final_verdict="ALLOW",
+                    final_reason="Defensive shelter approved in pre-crash distribution",
+                    final_scale=0.50,
+                )
+            return QualityRotationDTO(
+                mode=mode,
+                ticker=ticker,
+                action_code="STK_TRIM_TACTICAL",
+                urgency="URGENCY_HIGH",
+                final_verdict="STALK",
+                final_reason="Pre-crash institutional distribution detected — non-defensives on hold",
+                final_scale=0.50,
+            )
 
-        elif mode == "RE_ACUMULACION_ALCISTA":
-            # Regla 19: Core pool canónico CapWeight >= 8% (XLK, XLF, XLV, XLY, XLC, XLI)
-            core_pool = [s for s, w in SECTOR_CAP_WEIGHTS.items() if w >= 0.08 and s in avail_sectors]
-            if rs_roc_50d:
-                rs_scores = {s: rs_roc_50d.get(s, -999.0) for s in core_pool if not (sec_stage4 and sec_stage4.get(s, False))}
-                top_leaders = sorted(rs_scores.keys(), key=lambda x: rs_scores[x], reverse=True)[:2]
-            else:
-                top_leaders = []
+        if mode == "PISO_GENERACIONAL":
+            return QualityRotationDTO(
+                mode=mode,
+                ticker=ticker,
+                action_code="STK_BUY_DIP_TACTICAL",
+                urgency="URGENCY_HIGH",
+                final_verdict="ALLOW",
+                final_reason="Generational floor capitulation — offensive accumulation approved",
+                final_scale=1.0,
+            )
 
-            active_core = [s for s in core_pool if s in top_leaders or sec_fi.get(s, 100.0) <= 45.0]
-            if not active_core:
-                active_core = core_pool
-
-            # V34: Cap-Weight Divergence extreme penalty (div > 25% gets 0.5x weight)
-            # V35: VBI Volume Conviction Boost (> 0.8 gets 1.4x, < -0.2 gets 0.6x)
-            tot_cap = 0.0
-            weights_temp = {}
-            for s in active_core:
-                base_w = SECTOR_CAP_WEIGHTS.get(s, 0.05)
-                if s5cap_fi is not None and s in s5cap_fi and s5cap_fi[s] is not None:
-                    div = sec_fi.get(s, 50.0) - s5cap_fi[s]
-                    if div > 25.0:
-                        base_w *= 0.5
-                if sec_vbi is not None and s in sec_vbi and sec_vbi[s] is not None:
-                    vbi_val = sec_vbi[s]
-                    if vbi_val > 0.8:
-                        base_w *= 1.4
-                    elif vbi_val < -0.2:
-                        base_w *= 0.6
-                weights_temp[s] = base_w
-                tot_cap += base_w
-
-            if tot_cap > 0.0:
-                for s in active_core:
-                    target[s] = weights_temp[s] / tot_cap
-            else:
-                for s in active_core:
-                    target[s] = 1.0 / len(active_core)
-
-        elif mode == "CAPITULACION_SECTORIAL":
-            if sec_v_fi:
-                survivors = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors if sec_th.get(s, 0) >= 30.0], key=lambda x: x[1], reverse=True)[:4]
-                if not survivors:
-                    survivors = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:4]
-            else:
-                survivors = [(s, sec_th[s]) for s in avail_sectors if sec_th.get(s, 0) >= 30.0]
-                if not survivors:
-                    survivors = sorted([(s, sec_th.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:4]
-            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in survivors)
-            if tot > 0.0:
-                for s, _ in survivors:
-                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
-            else:
-                for s, _ in survivors:
-                    target[s] = 1.0 / len(survivors)
-
-        elif mode == "PISO_GENERACIONAL":
-            # V38 Directive: Acumulación Ofensiva en Sectores Alta Beta Castigados (No Defensivos: XLK, XLF, XLY, XLI, etc.)
-            non_def = [s for s in avail_sectors if s not in ("XLP", "XLU", "XLV")]
-            if not non_def:
-                non_def = avail_sectors
-            beaten_down = sorted(non_def, key=lambda s: sec_tw.get(s, 50.0))[:3]
-            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in beaten_down)
-            scale = 1.0
-            n_dead = sum(1 for s in avail_sectors if sec_th.get(s, 0) < 25.0)
-            if n_dead >= 8 and (vix is not None and vix >= 40.0):
-                scale = 0.70  # Candado 2: Amortiguación al 70% de despliegue en pánico sistémico extremo
-            if tot > 0.0:
-                for s in beaten_down:
-                    target[s] = scale * SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
-            else:
-                for s in beaten_down:
-                    target[s] = scale / len(beaten_down)
-
-        elif mode == "BEAR_RALLY":
-            safe = [(s, sec_th[s]) for s in avail_sectors if sec_th.get(s, 0) >= 40.0]
-            if safe:
-                tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in safe)
-                for s, _ in safe:
-                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
-            else:
-                target = {s: 0.0 for s in avail_sectors}
-
-        elif mode == "PULLBACK_ALCISTA":
-            if sec_v_fi:
-                # V25: Prefer sectors where institutions are actively buying the dip
-                # SV5_TW >= 50 = tactical volume spike confirms smart money accumulation
-                if sec_v_tw:
-                    oversold = sorted([
-                        (s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0))
-                        for s in avail_sectors
-                        if sec_th.get(s, 0) > 45.0
-                        and sec_tw.get(s, 0) < 35.0
-                        and sec_v_tw.get(s, 50.0) >= 50.0
-                    ], key=lambda x: x[1], reverse=True)[:5]
-                else:
-                    oversold = []
-                # Fallback: drop SV5_TW filter if no sectors pass
-                if not oversold:
-                    oversold = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors if sec_th.get(s, 0) > 45.0 and sec_tw.get(s, 0) < 35.0], key=lambda x: x[1], reverse=True)[:5]
-                if not oversold:
-                    oversold = sorted([(s, sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
-            else:
-                oversold = [(s, sec_th.get(s, 0) - sec_tw.get(s, 0)) for s in avail_sectors if sec_th.get(s, 0) > 45.0 and sec_tw.get(s, 0) < 35.0]
-                if not oversold:
-                    oversold = sorted([(s, sec_th.get(s, 0)) for s in avail_sectors], key=lambda x: x[1], reverse=True)[:5]
-            tot = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s, _ in oversold)
-            if tot > 0.0:
-                for s, _ in oversold:
-                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot
-            else:
-                for s, _ in oversold:
-                    target[s] = 1.0 / len(oversold)
-
-        elif mode == "RECUPERACION":
-            # V33c: Resiliencia Híbrida (RS 20d a la baja x Absorción de Volumen SV5_TW)
-            hybrid_scores = {}
-            for s in avail_sectors:
-                rs_val = rs_roc_20d.get(s, 0.0) if rs_roc_20d else 0.0
-                v_tw_val = sec_v_tw.get(s, 50.0) if sec_v_tw else 50.0
-                hybrid_scores[s] = (rs_val + 1.0) * v_tw_val
-            top_hyb = sorted(hybrid_scores.keys(), key=lambda x: hybrid_scores[x], reverse=True)[:3]
-            tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in top_hyb)
-            if tot_cap > 0.0:
-                for s in top_hyb:
-                    target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
-            else:
-                for s in top_hyb:
-                    target[s] = 1.0 / len(top_hyb)
-
-        else:  # NORMAL, MERCADO_SANO
-            # Antena 2: Excluir del Core Pool a sectores estancados (S5_FI < 55%) en Mercado Sano
-            # V35: Excluir sectores con S5CAP_FI < 40.0 o VBI < -0.5 (distribución silenciosa)
-            core_pool = ["XLK", "XLC", "XLF", "XLI", "XLV", "XLP"]
-            healthy_core = [s for s in core_pool if s in avail_sectors and sec_th.get(s, 0) >= 40.0 and sec_fi.get(s, 0) >= 55.0]
-            if s5cap_fi or sec_vbi:
-                filtered_nextgen = []
-                for s in healthy_core:
-                    cap_val = s5cap_fi.get(s) if s5cap_fi else None
-                    vbi_val = sec_vbi.get(s) if sec_vbi else None
-                    if (cap_val is not None and cap_val < 40.0) or (vbi_val is not None and vbi_val < -0.5):
-                        continue
-                    filtered_nextgen.append(s)
-                if filtered_nextgen:
-                    healthy_core = filtered_nextgen
-
-            if not healthy_core:
-                healthy_core = [s for s in core_pool if s in avail_sectors and sec_th.get(s, 0) >= 40.0]
-            if not healthy_core:
-                healthy_core = [s for s in core_pool if s in avail_sectors]
-
-            sats = [s for s in avail_sectors if s not in healthy_core]
-            best_sat, best_score = None, 0.0
-            
-            # Si tenemos sec_v_fi y rs_roc_5d, aplicamos la optimización estocástica de cambio de sentido
-            if sec_v_fi and rs_roc_5d:
-                for s in sats:
-                    if sec_th.get(s, 0) >= 40.0 and sec_fi.get(s, 100.0) <= 35.0:
-                        rs_roc = rs_roc_5d.get(s, 0.0)
-                        vol_div = sec_v_fi.get(s, 50.0) - sec_fi.get(s, 50.0)
-                        if rs_roc > 0.0 and vol_div > 10.0:
-                            score = vol_div * rs_roc
-
-                            # V28: Weinstein Stage 4 Smart Veto
-                            # Veta sectores en declive estructural (precio < MA150,
-                            # pendiente negativa) del pool de satélites.
-                            # Override: si vol_div > 15, instituciones están acumulando
-                            # masivamente pese al Stage 4 → oportunidad clara, dejar pasar.
-                            # Backtest: +6.60 acc solo, +84.79 combinado con H1a.
-                            if sec_stage4 and sec_stage4.get(s, False):
-                                if vol_div <= 15.0:
-                                    continue  # Veto holds — no institutional interest
-                                # else: override — clear opportunity
-
-                            if score > best_score:
-                                best_score = score
-                                best_sat = s
-            else:
-                # Fallback clásico a V22
-                for s in sats:
-                    if sec_th.get(s, 0) >= 40.0 and sec_fi.get(s, 100.0) <= 35.0:
-                        score = 40.0 - sec_fi.get(s, 40.0)
-                        if score > best_score:
-                            best_score = score
-                            best_sat = s
-
-            if best_sat:
-                tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in healthy_core)
-                if tot_cap > 0.0:
-                    for s in healthy_core:
-                        target[s] = 0.80 * (SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap)
-                else:
-                    for s in healthy_core:
-                        target[s] = 0.80 / len(healthy_core)
-                target[best_sat] = 0.20
-            else:
-                tot_cap = sum(SECTOR_CAP_WEIGHTS.get(s, 0.05) for s in healthy_core)
-                if tot_cap > 0.0:
-                    for s in healthy_core:
-                        target[s] = SECTOR_CAP_WEIGHTS.get(s, 0.05) / tot_cap
-                else:
-                    for s in healthy_core:
-                        target[s] = 1.0 / len(healthy_core)
-
-        # V39 Competitive Advantage Directive:
-        # QQQ delivers massive alpha (+102.08 SPY shares) in NORMAL, RE_ACUMULACION_ALCISTA, and MERCADO_SANO.
-        # In RECUPERACION, PISO_GENERACIONAL, and PULLBACK_ALCISTA, individual sector picking is preserved.
-        if mode in ("NORMAL", "RE_ACUMULACION_ALCISTA", "MERCADO_SANO"):
-            if "QQQ" in avail_sectors and "XLK" in target and target["XLK"] > 0:
-                xlk_w = target.pop("XLK")
-                target["QQQ"] = xlk_w
-
-        tot_w = sum(target.values())
-        if tot_w > 0:
-            target = {s: w / tot_w for s, w in target.items()}
-
-        # V41 SV5_TURBULENCE Institutional Volume Risk Modifiers (Dynamic from Fact Store):
-        # 1. RECUPERACION + SV5_TURBULENCE > HIGH_THRESHOLD (P75 ~8.82) -> 0.50x risk factor (mitigates false bull-market rallies)
-        # 2. RE_ACUMULACION_ALCISTA + HIGH_THRESHOLD <= SV5_TURBULENCE < EXTREME_THRESHOLD (P75-P90 ~8.82-12.06) -> 0.75x risk factor
-        if sv5_turbulence is None and sv5_shock is not None:
-            sv5_turbulence = sv5_shock
-
-        if sv5_turbulence is not None:
-            if mode == "RECUPERACION" and sv5_turbulence > self.SV5_TURBULENCE_HIGH_THRESHOLD:
-                target = {s: w * 0.50 for s, w in target.items()}
-            elif mode == "RE_ACUMULACION_ALCISTA" and (self.SV5_TURBULENCE_HIGH_THRESHOLD <= sv5_turbulence < self.SV5_TURBULENCE_EXTREME_THRESHOLD):
-                target = {s: w * 0.75 for s, w in target.items()}
-
-        tot_w_final = sum(target.values())
-        if tot_w_final > 0:
-            return {s: round(w, 4) for s, w in target.items()}
-        return {s: 0.0 for s in avail_sectors}
-
+        return QualityRotationDTO(
+            mode=mode,
+            ticker=ticker,
+            action_code="STK_ACCUMULATE_STRUCTURAL",
+            urgency="URGENCY_NORMAL",
+            final_verdict="ALLOW",
+            final_reason=f"Regime {mode} supports structural quality allocation",
+            final_scale=1.0,
+        )
